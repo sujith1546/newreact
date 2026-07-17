@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Disallow sensitive paths
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://sujith-thota.vercel.app/sitemap.xml

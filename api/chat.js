@@ -1,0 +1,371 @@
+import "dotenv/config";
+import { readFile, writeFile, mkdir } from "fs/promises";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const VOYAGE_MODEL = "voyage-3-lite"; // free-tier eligible, fast, good enough for a portfolio-sized knowledge base
+const GROQ_MODEL = "llama-3.3-70b-versatile";
+const EMBEDDINGS_PATH = path.join(process.cwd(), "src", "data", "embeddings.json");
+
+const SYSTEM_PROMPT = `You are Sujith Thota, speaking as yourself in the first person (e.g. "I built...", "My CGPA is..."), answering a recruiter or visitor's question on your portfolio site.
+
+Rules you must always follow:
+- Answer ONLY using the context provided below. Never invent facts not in the context.
+- Stay strictly on topic: your background, projects, skills, education, experience, certifications, and availability. If the question is off-topic (general chit-chat, unrelated topics, requests unrelated to your portfolio), politely decline and steer the conversation back, e.g. "I'm just set up to talk about my background and work — feel free to ask me about my projects or experience!"
+- If the context doesn't contain the answer, say so honestly and suggest the visitor reach out to you directly by email, rather than guessing.
+- Keep answers concise and conversational, like you're chatting with a recruiter, not writing a report.
+- Cite sources inline using [1], [2] etc. matching the numbered context you're given.`;
+
+// =============================================================================
+// STEP 4: YOUR KNOWLEDGE BASE — Sujith's portfolio content
+// =============================================================================
+const KNOWLEDGE = [
+  {
+    source: "bio",
+    section: "about",
+    chunks: [
+      "I'm Thota Sujith Reddy, commonly known as Sujith. I'm a final-year B.Tech Computer Science and Engineering (Data Science) student at VIT University (Vellore Institute of Technology), Vellore with an 8.7 CGPA. I'm originally from Andhra Pradesh, India. I specialize in applied machine learning, neural networks, and fintech.",
+      "I focus on bridging the gap between backend data science architectures and responsive frontend user interfaces, building applications that are both highly intelligent and beautiful. I'm also preparing for CAT 2026, aiming for an MBA to complement my engineering skills with business leadership and strategic management."
+    ],
+  },
+  {
+    source: "project:sms-finance",
+    section: "projects",
+    chunks: [
+      "My flagship project is SMS Finance Analyzer, a privacy-first RAG pipeline using Gemini 2.5 Flash and ChromaDB to analyze financial SMS patterns. It features a 200+ term custom financial knowledge base and multi-factor fraud detection with automatic PII (Personally Identifiable Information) masking.",
+      "The project is built as a Streamlit and FastAPI web app, processing over 600+ requests per hour with sub-2s latency. It leverages vector databases to detect patterns and extract transaction details directly from SMS notifications without compromising privacy."
+    ],
+  },
+  {
+    source: "project:finbert",
+    section: "projects",
+    chunks: [
+      "My academic project is Financial Sentiment Analysis, where I custom fine-tuned a pre-trained FinBERT model on 26,961 Indian financial news articles and headlines, reaching a high sentiment classification test accuracy of 87.52%. It was trained on an NVIDIA Tesla T4 GPU.",
+      "This project served as the predecessor to NewsTrader AI. I implemented a Market Mood Index, GNews API news ingestion, portfolio management features, and a signal generator (BUY/SELL/NEUTRAL). It was created in collaboration with Vaka Venkata Rahul Reddy and Vemulapati Bhanu Prakash Reddy under faculty advisor Kanagaraj R at VIT's School of CSE, resulting in a 75+ page VIT academic report, research paper, and poster presentation."
+    ],
+  },
+  {
+    source: "project:spend-prediction",
+    section: "projects",
+    chunks: [
+      "I built the Online Retail Spend Prediction project, which is an end-to-end ML pipeline trained on a massive UCI online retail dataset of 397k+ transactions to predict a customer's 30-day future spend, achieving an outstanding R2 score of 0.883.",
+      "The pipeline uses robust RFM (Recency, Frequency, Monetary) temporal feature engineering and dual predictive paths benchmarked using XGBoost, LightGBM, and Random Forest algorithms."
+    ],
+  },
+  {
+    source: "skills",
+    section: "skills",
+    chunks: [
+      "I have advanced experience in Python (92% proficiency, 3 years, 14 projects) and intermediate experience in Java (70%). For machine learning, deep learning, and data science, I work with TensorFlow, Scikit-learn, Pandas (95%), NumPy, Matplotlib, Seaborn, XGBoost, LightGBM, and Random Forest.",
+      "In the AI space, I build applications using Gemini API, Voyage AI, Groq SDK, RAG pipelines, and vector databases like ChromaDB, and I'm currently learning LangChain and autonomous AI agents. For web development, I use React, FastAPI, Streamlit, HTML, CSS, JavaScript/TypeScript, Supabase, Postgres, MySQL, and Vercel deployment. My tools include Git, GitHub, and GitHub Actions."
+    ],
+  },
+  {
+    source: "education",
+    section: "education",
+    chunks: [
+      "I am pursuing my Bachelor of Technology (B.Tech) in Computer Science and Engineering with a specialization in Data Science at VIT University (Vellore Institute of Technology), Vellore, expecting to graduate in 2026. My current CGPA is 8.7 / 10. Highlights of my coursework include DSA, Database Systems, Machine Learning, Neural Networks, and Big Data.",
+      "For my intermediate education (11th & 12th grade), I attended Narayana Junior College in Vijayawada, scoring 92.7% (927/1000) under the PCM stream (Physics, Chemistry, Mathematics) from 2019 to 2022. I completed my secondary education (10th grade) at Viswabharathi High School in Gudivada, achieving a perfect 10/10 GPA (100%) from 2015 to 2019."
+    ],
+  },
+  {
+    source: "certifications",
+    section: "certifications",
+    chunks: [
+      "I hold the Google TensorFlow Developer Certificate (issued in 2023), validating my proficiency in building and training deep learning models using TensorFlow for computer vision, NLP, and time series forecasting.",
+      "I also hold the Oracle Generative AI Certificate (issued in 2024), validating my expertise in generative AI architectures, large language models (LLMs), and implementing enterprise-grade AI solutions using Oracle Cloud Infrastructure."
+    ],
+  },
+  {
+    source: "contact",
+    section: "contact",
+    chunks: [
+      "You can contact me by email at sujithreddy1546@gmail.com, or through the LinkedIn (linkedin.com/in/sujith-thota) and GitHub (github.com/sujith-thota) links on this site. I typically reply within 2-4 hours during my active hours, which are from 9:30 AM to 11:30 PM IST.",
+      "I'm actively seeking exciting software engineering and applied ML opportunities. I'm open to full-time roles, internships, and collaborations in Data Science, Machine Learning, and Software Engineering. I am not open to spam or unrelated outreach."
+    ],
+  },
+  {
+    source: "stats_hobbies",
+    section: "about",
+    chunks: [
+      "I have over 3.5+ years of coding experience, shipped 10+ projects, solved 200+ DSA problems, and have a CGPA of 8.7.",
+      "Beyond technical development, my hobbies and interests include Chess (which helps build my strategic thinking), reading, fitness & sports, and traveling."
+    ],
+  }
+];
+
+// =============================================================================
+// VOYAGE EMBEDDING HELPERS
+// =============================================================================
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function embedTexts(texts, inputType, retries = 3, initialDelay = 2000) {
+  let currentDelay = initialDelay;
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      const res = await fetch("https://api.voyageai.com/v1/embeddings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.VOYAGE_API_KEY}`,
+        },
+        body: JSON.stringify({ input: texts, model: VOYAGE_MODEL, input_type: inputType }),
+      });
+      
+      if (res.status === 429 && attempt < retries) {
+        console.warn(`Voyage rate limited (429). Retrying attempt ${attempt}/${retries} in ${currentDelay}ms...`);
+        await delay(currentDelay);
+        currentDelay *= 2; // exponential backoff
+        continue;
+      }
+      
+      if (!res.ok) throw new Error(`Voyage embedding failed: ${res.status} ${await res.text()}`);
+      
+      const data = await res.json();
+      return data.data.map((d) => d.embedding);
+    } catch (err) {
+      if (attempt === retries) throw err;
+      console.warn(`Embedding attempt ${attempt} failed: ${err.message}. Retrying in ${currentDelay}ms...`);
+      await delay(currentDelay);
+      currentDelay *= 2;
+    }
+  }
+}
+
+async function embedQuery(text) {
+  const [embedding] = await embedTexts([text], "query");
+  return embedding;
+}
+
+// =============================================================================
+// INGESTION — embeds KNOWLEDGE and writes src/data/embeddings.json
+// =============================================================================
+async function runIngestion() {
+  console.log("Starting ingestion...\n");
+  const allChunks = [];
+  let nextId = 1;
+
+  // Flatten all chunks into a single array
+  const flatChunks = [];
+  for (const group of KNOWLEDGE) {
+    group.chunks.forEach((content) => {
+      flatChunks.push({ source: group.source, section: group.section, content });
+    });
+  }
+
+  console.log(`Embedding all ${flatChunks.length} chunk(s) in a single batch request...`);
+  const textsToEmbed = flatChunks.map(c => c.content);
+  const embeddings = await embedTexts(textsToEmbed, "document");
+
+  flatChunks.forEach((item, i) => {
+    allChunks.push({
+      id: nextId++,
+      source: item.source,
+      section: item.section,
+      content: item.content,
+      embedding: embeddings[i]
+    });
+  });
+
+  await mkdir(path.dirname(EMBEDDINGS_PATH), { recursive: true });
+  await writeFile(
+    EMBEDDINGS_PATH,
+    JSON.stringify({ model: VOYAGE_MODEL, generatedAt: new Date().toISOString(), chunks: allChunks }, null, 2)
+  );
+
+  console.log(`\n✓ Wrote ${allChunks.length} chunks to ${EMBEDDINGS_PATH}`);
+  console.log("Commit this file to your repo. Re-run this script any time KNOWLEDGE changes.");
+}
+
+// =============================================================================
+// RETRIEVAL — hybrid cosine-similarity + keyword search, no database
+// =============================================================================
+let cachedChunks = null;
+
+async function loadChunks() {
+  if (cachedChunks) return cachedChunks;
+  const raw = await readFile(EMBEDDINGS_PATH, "utf-8");
+  cachedChunks = JSON.parse(raw).chunks;
+  return cachedChunks;
+}
+
+function cosineSimilarity(a, b) {
+  let dot = 0, magA = 0, magB = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i];
+    magA += a[i] * a[i];
+    magB += b[i] * b[i];
+  }
+  return dot / (Math.sqrt(magA) * Math.sqrt(magB));
+}
+
+function keywordScore(query, content) {
+  const queryTerms = query.toLowerCase().match(/[a-z0-9.]+/g) || [];
+  const contentLower = content.toLowerCase();
+  let hits = 0;
+  for (const term of queryTerms) {
+    if (term.length > 2 && contentLower.includes(term)) hits++;
+  }
+  return hits;
+}
+
+function rrfMerge(vectorRanked, keywordRanked, k = 50) {
+  const scores = new Map();
+  vectorRanked.forEach((item, rank) => scores.set(item.id, (scores.get(item.id) || 0) + 1 / (k + rank + 1)));
+  keywordRanked.forEach((item, rank) => scores.set(item.id, (scores.get(item.id) || 0) + 1 / (k + rank + 1)));
+  return scores;
+}
+
+async function retrieve(queryEmbedding, queryText, topN = 5) {
+  const chunks = await loadChunks();
+
+  const vectorRanked = chunks
+    .map((c) => ({ id: c.id, sim: cosineSimilarity(queryEmbedding, c.embedding) }))
+    .sort((a, b) => b.sim - a.sim)
+    .slice(0, 20);
+
+  const keywordRanked = chunks
+    .map((c) => ({ id: c.id, score: keywordScore(queryText, c.content) }))
+    .filter((c) => c.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 20);
+
+  const fusedScores = rrfMerge(vectorRanked, keywordRanked);
+  const byId = new Map(chunks.map((c) => [c.id, c]));
+
+  return [...fusedScores.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, topN)
+    .map(([id]) => byId.get(id));
+}
+
+// =============================================================================
+// QUERY REWRITING — turns follow-ups ("what about his GPA?") into
+// standalone questions using chat history, before embedding. Cheap Groq call.
+// =============================================================================
+async function rewriteQuery(history, latestMessage) {
+  if (!history || history.length === 0) return latestMessage;
+
+  const historyText = history.slice(-4).map((m) => `${m.role}: ${m.content}`).join("\n");
+
+  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.GROQ_API_KEY}` },
+    body: JSON.stringify({
+      model: GROQ_MODEL,
+      temperature: 0,
+      max_tokens: 60,
+      messages: [
+        {
+          role: "system",
+          content:
+            "Rewrite the user's latest message as a standalone question that makes sense without the prior conversation. If it's already standalone, return it unchanged. Reply with ONLY the rewritten question, nothing else.",
+        },
+        { role: "user", content: `Conversation so far:\n${historyText}\n\nLatest message: "${latestMessage}"` },
+      ],
+    }),
+  });
+
+  if (!res.ok) return latestMessage; // fail open — use the original message
+  const data = await res.json();
+  return data.choices?.[0]?.message?.content?.trim() || latestMessage;
+}
+
+// =============================================================================
+// PROMPT BUILDING
+// =============================================================================
+function buildUserPrompt(retrievedChunks, question) {
+  if (retrievedChunks.length === 0) {
+    return `No relevant context was found for: "${question}". Follow your instructions: say you don't have that information and suggest reaching out by email.`;
+  }
+  const context = retrievedChunks.map((c, i) => `[${i + 1}] (source: ${c.source}) ${c.content}`).join("\n\n");
+  return `Context:\n${context}\n\nQuestion: ${question}`;
+}
+
+// =============================================================================
+// VERCEL SERVERLESS HANDLER — POST /api/chat
+// =============================================================================
+export default async function handler(req, res) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  try {
+    const { message, history = [] } = req.body;
+    if (!message || typeof message !== "string") {
+      return res.status(400).json({ error: "Missing 'message' in request body" });
+    }
+
+    const standaloneQuestion = await rewriteQuery(history, message);
+    const queryEmbedding = await embedQuery(standaloneQuestion);
+    const chunks = await retrieve(queryEmbedding, standaloneQuestion, 5);
+    const userPrompt = buildUserPrompt(chunks, standaloneQuestion);
+
+    const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.GROQ_API_KEY}` },
+      body: JSON.stringify({
+        model: GROQ_MODEL,
+        temperature: 0.4,
+        stream: true,
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: userPrompt },
+        ],
+      }),
+    });
+
+    if (!groqRes.ok || !groqRes.body) {
+      return res.status(502).json({ error: "Groq request failed" });
+    }
+
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+
+    // Send sources first so the frontend can render citation chips immediately
+    res.write(
+      `data: ${JSON.stringify({ type: "sources", sources: chunks.map((c) => ({ source: c.source, section: c.section })) })}\n\n`
+    );
+
+    const reader = groqRes.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+
+      const lines = buffer.split("\n");
+      buffer = lines.pop();
+
+      for (const line of lines) {
+        if (!line.startsWith("data: ")) continue;
+        const payload = line.slice(6);
+        if (payload === "[DONE]") continue;
+        try {
+          const json = JSON.parse(payload);
+          const token = json.choices?.[0]?.delta?.content;
+          if (token) res.write(`data: ${JSON.stringify({ type: "token", token })}\n\n`);
+        } catch {
+          // ignore malformed keep-alive chunks
+        }
+      }
+    }
+
+    res.write(`data: ${JSON.stringify({ type: "done" })}\n\n`);
+    res.end();
+  } catch (err) {
+    console.error("Chat pipeline error:", err);
+    res.status(500).json({ error: "Something went wrong generating a response." });
+  }
+}
+
+// =============================================================================
+// MODE SWITCH — `node api/chat.js` ingests instead of handling requests
+// =============================================================================
+const isRunDirectly = process.argv[1] === fileURLToPath(import.meta.url);
+if (isRunDirectly) {
+  runIngestion();
+}

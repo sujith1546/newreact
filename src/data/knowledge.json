@@ -1,0 +1,115 @@
+{
+  "personal": {
+    "name": "Thota Sujith Reddy",
+    "nickname": "Sujith",
+    "email": "sujithreddy1546@gmail.com",
+    "phone": "+91 8501889996",
+    "location": "Vellore, India",
+    "linkedin": "https://linkedin.com/in/sujith-thota",
+    "github": "https://github.com/sujith-thota",
+    "bio": "I'm Thota Sujith Reddy, a dedicated B.Tech student at VIT University, Vellore. I'm pursuing Computer Science and Engineering with a specialization in Data Science. I bridge the gap between complex backend data structures and sleek, responsive frontend user interfaces, striving to build applications that are as intelligent as they are beautiful.",
+    "tagline": "Passionate developer crafting digital experiences",
+    "availability": "I'm actively seeking exciting engineering opportunities. I'm open to full-time roles, internships, and collaborations in Data Science, Machine Learning, and Software Engineering.",
+    "workingHours": "I'm usually online from 9:30 AM to 11:30 PM IST",
+    "responseTime": "I typically reply within 2-4 hours during active hours"
+  },
+  "education": [
+    {
+      "degree": "Bachelor of Technology (B.Tech)",
+      "field": "Computer Science and Engineering",
+      "specialization": "Data Science",
+      "institution": "VIT University",
+      "location": "Katpadi, Vellore",
+      "cgpa": "8.7 / 10",
+      "period": "2022 - 2026",
+      "highlights": ["CS & Engineering", "DSA & Dev", "Coding", "Machine Learning", "Neural Networks", "Big Data"]
+    },
+    {
+      "degree": "Intermediate (11th & 12th)",
+      "field": "PCM Stream (Physics, Chemistry, Mathematics)",
+      "institution": "Narayana Junior College",
+      "location": "Vijayawada",
+      "score": "92.7% (927/1000)",
+      "period": "2019 - 2022",
+      "highlights": ["JEE/EAMCET preparation", "Excellent academics"]
+    },
+    {
+      "degree": "Secondary Education (10th Grade)",
+      "institution": "Viswabharathi High School",
+      "location": "Gudivada",
+      "score": "10/10 GPA (100%)",
+      "period": "2015 - 2019",
+      "highlights": ["Perfect GPA", "Math & Science", "Extracurriculars"]
+    },
+    {
+      "degree": "Primary Education",
+      "institution": "Aditya Birla Public School",
+      "location": "Thummalapenta",
+      "period": "2009 - 2015"
+    }
+  ],
+  "projects": [
+    {
+      "title": "SMS Finance Analyzer",
+      "description": "Built a privacy-first RAG pipeline using Gemini 2.5 Flash and ChromaDB to analyze financial SMS patterns. Features a 200+ term knowledge base, multi-factor fraud detection with automatic PII masking, and a Streamlit/FastAPI web app processing 600+ requests/hour with sub-2s latency.",
+      "tags": ["Python", "ChromaDB", "Gemini API", "Streamlit", "FastAPI", "RAG"],
+      "type": "Machine Learning / AI"
+    },
+    {
+      "title": "Financial Sentiment Analysis",
+      "description": "Fine-tuned a pre-trained FinBERT model on 20,000+ financial news articles to achieve 87% accuracy in sentiment classification. Implemented advanced NLP preprocessing, attention masking, and a comprehensive evaluation framework to identify key financial indicators.",
+      "tags": ["Python", "TensorFlow", "FinBERT", "NLP", "Machine Learning"],
+      "type": "Machine Learning / NLP"
+    },
+    {
+      "title": "Online Retail Spend Prediction",
+      "description": "Engineered an end-to-end ML pipeline on a massive UCI dataset (397k+ transactions) to predict 30-day customer spend, achieving an R2 of 0.883. Developed robust RFM-based temporal features and dual prediction pipelines, benchmarked against XGBoost and LightGBM.",
+      "tags": ["Python", "Scikit-learn", "XGBoost", "LightGBM", "Random Forest"],
+      "type": "Machine Learning / Predictive Analytics"
+    }
+  ],
+  "skills": {
+    "languages": ["Python (Advanced, 92%)", "Java (Intermediate, 70%)"],
+    "databases": ["SQL", "PostgreSQL", "MySQL", "ChromaDB"],
+    "ml_data_science": ["TensorFlow (Advanced)", "Scikit-learn (Advanced)", "Pandas (Advanced, 95%)", "NumPy (Advanced)", "Matplotlib", "Seaborn", "FinBERT", "XGBoost", "LightGBM", "Random Forest"],
+    "ai_llm": ["Gemini API", "RAG pipelines", "LangChain (Learning)", "Prompt Engineering", "Vector Databases"],
+    "web": ["React", "FastAPI", "Streamlit", "HTML", "CSS", "JavaScript"],
+    "tools": ["Git (Advanced)", "GitHub", "GitHub Actions"],
+    "soft_skills": ["Problem Solving", "Team Collaboration", "Communication"],
+    "learning": ["LangChain", "Autonomous AI Agents", "Complex LLM Orchestrations"]
+  },
+  "stats": {
+    "yearsOfCoding": "3.5+",
+    "projectsShipped": "10+",
+    "dsaSolved": "200+",
+    "cgpa": "8.7"
+  },
+  "hobbies": ["Chess (Strategic Thinking)", "Avid Reader", "Fitness & Sports", "Traveling"],
+  "contact": {
+    "preferredContact": "Email or LinkedIn",
+    "openTo": ["Full-time Data Science roles", "Machine Learning Engineer roles", "Software Engineering roles", "Internships", "Research collaborations", "Freelance projects"],
+    "notOpenTo": ["Spam or unrelated outreach"]
+  },
+  "faq": [
+    {
+      "q": "Is Sujith available for hiring?",
+      "a": "Yes! I'm actively seeking exciting engineering opportunities. I'm open to full-time roles, internships, and collaborations in Data Science, ML, and Software Engineering."
+    },
+    {
+      "q": "What is Sujith's strongest skill?",
+      "a": "My strongest skills are Python (92%, 3 years, 14 projects), Pandas (95%), and Machine Learning with TensorFlow and Scikit-learn. I specialize in building end-to-end ML pipelines and RAG-based AI applications."
+    },
+    {
+      "q": "What is Sujith's CGPA?",
+      "a": "My CGPA at VIT University is 8.7 / 10."
+    },
+    {
+      "q": "Does Sujith know React?",
+      "a": "Yes! I built this entire portfolio using React. I'm comfortable with React, Framer Motion, Vite, and modern frontend development practices."
+    },
+    {
+      "q": "How can I contact Sujith?",
+      "a": "You can reach me at sujithreddy1546@gmail.com or connect on LinkedIn. I typically reply within 2-4 hours during active hours (9:30 AM - 11:30 PM IST)."
+    }
+  ]
+}
