@@ -473,6 +473,7 @@ export default function Contact() {
             margin-top: 4px;
             overflow: hidden;
             position: relative;
+            color: #ffffff !important;
           }
 
           .char-counter {
