@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Award, FileText, Share, X, Moon, Sun, FileDown } from 'lucide-react';
+import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Award, FileText, Share, X, Moon, Sun, FileDown, Settings, ChevronLeft, Monitor, Bell, Wand2, Globe, Trash2 } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocalTime } from '../hooks/useLocalTime';
@@ -7,11 +7,14 @@ import { useTheme } from '../context/ThemeContext';
 
 export default function MobileBottomNav({ activeSection, onNavClick }) {
   const [isMoreOpen, setIsMoreOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(false);
   // IntersectionObserver removed because we now render components dynamically instead of in a single scrolling feed.
   const localTime = useLocalTime();
   const { theme, toggleTheme } = useTheme();
 
   const drawerRef = useRef(null);
+  const settingsRef = useRef(null);
   const moreBtnRef = useRef(null);
 
   // Keyboard accessibility and Focus trapping in More Drawer
@@ -205,15 +208,131 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
                   <Share size={18} />
                   <span>Share portfolio</span>
                 </button>
+                <button onClick={() => setIsSettingsOpen(true)} className="drawer-action-row-btn">
+                  <Settings size={18} />
+                  <span>Settings</span>
+                </button>
               </div>
             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-            {/* Redundant theme toggle at the bottom */}
-            <div className="drawer-theme-row" onClick={toggleTheme}>
-              <span>Dark mode</span>
-              <button className="drawer-theme-toggle-btn-icon" aria-label="Toggle dark mode">
-                {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+      {/* Settings Slide-In Drawer */}
+      <AnimatePresence>
+        {isSettingsOpen && (
+          <motion.div
+            ref={settingsRef}
+            className="settings-overlay-sheet"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Settings menu"
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
+          >
+            <div className="settings-header">
+              <button 
+                className="settings-back-btn" 
+                onClick={() => setIsSettingsOpen(false)}
+                aria-label="Go back"
+              >
+                <ChevronLeft size={24} />
               </button>
+              <h3>Settings</h3>
+            </div>
+            
+            <div className="settings-content">
+              
+              <div className="settings-group">
+                <span className="settings-group-label">Appearance</span>
+                <div className="settings-card">
+                  <div className="settings-row" onClick={toggleTheme}>
+                    <div className="settings-row-left">
+                      <div className="settings-row-icon">
+                        {theme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}
+                      </div>
+                      <div className="settings-row-text">
+                        <h4>Dark Mode</h4>
+                        <p>Toggle dark or light theme</p>
+                      </div>
+                    </div>
+                    <div className={`settings-toggle ${theme === 'dark' ? 'active' : ''}`}>
+                      <div className="settings-toggle-knob" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="settings-group">
+                <span className="settings-group-label">Accessibility</span>
+                <div className="settings-card">
+                  <div className="settings-row" onClick={() => setReduceMotion(!reduceMotion)}>
+                    <div className="settings-row-left">
+                      <div className="settings-row-icon">
+                        <Wand2 size={16} />
+                      </div>
+                      <div className="settings-row-text">
+                        <h4>Reduce Motion</h4>
+                        <p>Disable heavy animations</p>
+                      </div>
+                    </div>
+                    <div className={`settings-toggle ${reduceMotion ? 'active' : ''}`}>
+                      <div className="settings-toggle-knob" />
+                    </div>
+                  </div>
+                  
+                  <div className="settings-row" onClick={() => alert("Haptics toggled (Mock)")}>
+                    <div className="settings-row-left">
+                      <div className="settings-row-icon">
+                        <Bell size={16} />
+                      </div>
+                      <div className="settings-row-text">
+                        <h4>System Haptics</h4>
+                        <p>Vibrate on interactions</p>
+                      </div>
+                    </div>
+                    <div className={`settings-toggle active`}>
+                      <div className="settings-toggle-knob" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="settings-group">
+                <span className="settings-group-label">System</span>
+                <div className="settings-card">
+                  <div className="settings-row">
+                    <div className="settings-row-left">
+                      <div className="settings-row-icon">
+                        <Globe size={16} />
+                      </div>
+                      <div className="settings-row-text">
+                        <h4>Language</h4>
+                        <p>English (US)</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="settings-row" onClick={() => {
+                    if(confirm("Are you sure you want to clear local data?")) {
+                      localStorage.clear();
+                      alert("Cache cleared successfully.");
+                    }
+                  }}>
+                    <div className="settings-row-left">
+                      <div className="settings-row-icon" style={{color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.2)', background: 'rgba(239, 68, 68, 0.05)'}}>
+                        <Trash2 size={16} />
+                      </div>
+                      <div className="settings-row-text">
+                        <h4 style={{color: '#ef4444'}}>Clear App Cache</h4>
+                        <p>Free up local storage</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </motion.div>
         )}
