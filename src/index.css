@@ -2005,7 +2005,7 @@ html {
     height: 100dvh !important;
     padding-top: 60px !important;      /* clears the fixed header */
     padding-bottom: 90px !important;   /* clears the fixed bottom dock + safe area */
-    overflow-y: auto;
+    overflow: hidden;
     box-sizing: border-box;
   }
 
@@ -2106,8 +2106,10 @@ html {
 
   .text-content {
     max-width: 100%;
+    height: 100%;
+    overflow-y: auto;
     padding: 16px;
-    margin-bottom: 40px;
+    margin-bottom: 0;
   }
 
   .text-content.home-content {

@@ -333,19 +333,19 @@ export default function Home({ onNavClick }) {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
             border-radius: 20px;
-            padding: 12px 16px;
+            padding: 20px 24px;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 16px;
             box-shadow: var(--shadow-sm);
             text-align: left;
             flex-shrink: 0;
           }
 
           .dashboard-avatar {
-            width: 54px;
-            height: 54px;
-            border-radius: 50%;
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
             border: 1.5px solid var(--primary-blue);
             object-fit: cover;
             flex-shrink: 0;
