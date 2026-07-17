@@ -315,7 +315,7 @@ export default function Home({ onNavClick }) {
             justify-content: flex-start;
             box-sizing: border-box;
             width: 100%;
-            padding: 16px;
+            padding: 0;
             gap: 16px;
           }
 
