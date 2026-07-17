@@ -1,12 +1,6 @@
 {
-  "name": "Sujith Thota | Portfolio",
-  "short_name": "Sujith",
-  "description": "Portfolio of Sujith Thota — Data Science & Full Stack Developer",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#f4f4f4",
-  "theme_color": "#007bff",
-  "orientation": "portrait-primary",
+  "short_name": "Sujith Portfolio",
+  "name": "Sujith Thota Portfolio",
   "icons": [
     {
       "src": "/profile_photo.png",
@@ -17,10 +11,11 @@
     {
       "src": "/profile_photo.png",
       "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "type": "image/png"
     }
   ],
-  "categories": ["portfolio", "developer", "technology"],
-  "lang": "en"
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#007bff",
+  "background_color": "#f4f4f4"
 }

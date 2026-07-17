@@ -11,7 +11,7 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
   const [reduceMotion, setReduceMotion] = useState(false);
   // IntersectionObserver removed because we now render components dynamically instead of in a single scrolling feed.
   const localTime = useLocalTime();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme, accentColor, setAccentColor, fontFamily, setFontFamily, uiAudio, setUiAudio, playSound } = useTheme();
 
   const drawerRef = useRef(null);
   const settingsRef = useRef(null);
@@ -62,6 +62,7 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
   }, [isMoreOpen]);
 
   const handleTabClick = (sectionId) => {
+    playSound();
     onNavClick(sectionId);
     setIsMoreOpen(false);
     
@@ -248,7 +249,7 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
               <div className="settings-group">
                 <span className="settings-group-label">Appearance</span>
                 <div className="settings-card">
-                  <div className="settings-row" onClick={toggleTheme}>
+                  <div className="settings-row" onClick={() => { playSound(); toggleTheme(); }}>
                     <div className="settings-row-left">
                       <div className="settings-row-icon">
                         {theme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}
@@ -262,13 +263,57 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
                       <div className="settings-toggle-knob" />
                     </div>
                   </div>
+                  
+                  <div className="settings-row" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '12px' }}>
+                    <div className="settings-row-text">
+                      <h4>Accent Color</h4>
+                      <p>Personalize the app color scheme</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                      {['blue', 'purple', 'emerald', 'rose'].map(color => (
+                        <div 
+                          key={color}
+                          onClick={() => { playSound(); setAccentColor(color); }}
+                          style={{
+                            width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer',
+                            background: color === 'blue' ? '#007bff' : color === 'purple' ? '#8b5cf6' : color === 'emerald' ? '#10b981' : '#f43f5e',
+                            border: accentColor === color ? '3px solid var(--text-primary)' : '2px solid transparent',
+                            transform: accentColor === color ? 'scale(1.1)' : 'scale(1)',
+                            transition: 'all 0.2s'
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="settings-row" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '12px' }}>
+                    <div className="settings-row-text">
+                      <h4>Typography</h4>
+                      <p>Change the app font style</p>
+                    </div>
+                    <div style={{ display: 'flex', width: '100%', background: 'var(--bg-secondary)', borderRadius: '10px', padding: '4px', border: '1px solid var(--border-color)' }}>
+                      <button 
+                        onClick={() => { playSound(); setFontFamily('modern'); }}
+                        style={{ flex: 1, padding: '8px', border: 'none', background: fontFamily === 'modern' ? 'var(--bg-primary)' : 'transparent', borderRadius: '8px', color: 'var(--text-primary)', fontWeight: 600, fontSize: '13px', fontFamily: "'Inter', sans-serif" }}
+                      >
+                        Modern Sans
+                      </button>
+                      <button 
+                        onClick={() => { playSound(); setFontFamily('developer'); }}
+                        style={{ flex: 1, padding: '8px', border: 'none', background: fontFamily === 'developer' ? 'var(--bg-primary)' : 'transparent', borderRadius: '8px', color: 'var(--text-primary)', fontWeight: 600, fontSize: '13px', fontFamily: "'Fira Code', monospace" }}
+                      >
+                        Dev Mono
+                      </button>
+                    </div>
+                  </div>
+
                 </div>
               </div>
 
               <div className="settings-group">
                 <span className="settings-group-label">Accessibility</span>
                 <div className="settings-card">
-                  <div className="settings-row" onClick={() => setReduceMotion(!reduceMotion)}>
+                  <div className="settings-row" onClick={() => { playSound(); setReduceMotion(!reduceMotion); }}>
                     <div className="settings-row-left">
                       <div className="settings-row-icon">
                         <Wand2 size={16} />
@@ -283,17 +328,17 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
                     </div>
                   </div>
                   
-                  <div className="settings-row" onClick={() => alert("Haptics toggled (Mock)")}>
+                  <div className="settings-row" onClick={() => { setUiAudio(!uiAudio); if(!uiAudio) { setTimeout(playSound, 50); } }}>
                     <div className="settings-row-left">
                       <div className="settings-row-icon">
                         <Bell size={16} />
                       </div>
                       <div className="settings-row-text">
-                        <h4>System Haptics</h4>
-                        <p>Vibrate on interactions</p>
+                        <h4>UI Audio</h4>
+                        <p>Sound effects on interactions</p>
                       </div>
                     </div>
-                    <div className={`settings-toggle active`}>
+                    <div className={`settings-toggle ${uiAudio ? 'active' : ''}`}>
                       <div className="settings-toggle-knob" />
                     </div>
                   </div>
@@ -327,6 +372,20 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
                       <div className="settings-row-text">
                         <h4 style={{color: '#ef4444'}}>Clear App Cache</h4>
                         <p>Free up local storage</p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="settings-row" onClick={() => {
+                    alert("To install: Tap the Share icon in Safari, then 'Add to Home Screen'.");
+                  }}>
+                    <div className="settings-row-left">
+                      <div className="settings-row-icon" style={{color: '#0ea5e9', borderColor: 'rgba(14, 165, 233, 0.2)', background: 'rgba(14, 165, 233, 0.05)'}}>
+                        <FileDown size={16} />
+                      </div>
+                      <div className="settings-row-text">
+                        <h4 style={{color: '#0ea5e9'}}>Install App</h4>
+                        <p>Add to Home Screen</p>
                       </div>
                     </div>
                   </div>
