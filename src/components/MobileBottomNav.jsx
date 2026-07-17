@@ -227,7 +227,7 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
       </AnimatePresence>
 
       {/* Bottom Nav Capsule */}
-      <nav className="mobile-bottom-nav">
+      <nav className="mobile-nav-capsule" role="navigation" aria-label="Mobile navigation">
         {navItems.map(({ id, label, Icon }) => {
           // Highlight based on the IntersectionObserver observed active section
           const isActive = observedActive === id && !isMoreOpen;
@@ -235,11 +235,13 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
             <motion.button
               key={id}
               onClick={() => handleTabClick(id)}
-              className={`mobile-nav-tab ${isActive ? 'active' : ''}`}
+              className={`nav-capsule-tab${isActive ? ' nav-capsule-tab-active' : ''}`}
+              aria-current={isActive ? "page" : undefined}
+              aria-label={label}
               whileTap={{ scale: 0.9 }}
             >
-              <Icon size={20} className="tab-icon" />
-              <span className="tab-label">{label}</span>
+              <Icon size={18} aria-hidden="true" />
+              <span>{label}</span>
             </motion.button>
           );
         })}
@@ -248,13 +250,14 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
         <motion.button
           ref={moreBtnRef}
           onClick={() => setIsMoreOpen(!isMoreOpen)}
-          className={`mobile-nav-tab ${isMoreOpen ? 'active' : ''}`}
-          whileTap={{ scale: 0.9 }}
+          className={`nav-capsule-tab${isMoreOpen ? ' nav-capsule-tab-active' : ''}`}
           aria-expanded={isMoreOpen}
           aria-haspopup="dialog"
+          aria-label="More options menu"
+          whileTap={{ scale: 0.9 }}
         >
-          <MoreHorizontal size={20} className="tab-icon" />
-          <span className="tab-label">More</span>
+          <MoreHorizontal size={18} aria-hidden="true" />
+          <span>More</span>
         </motion.button>
       </nav>
 
