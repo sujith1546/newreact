@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Plus, X, FileText, Mail } from 'lucide-react';
+import './FAB.css';
 
 export default function FAB({ onNavClick, triggerResume }) {
   const [open, setOpen] = useState(false);

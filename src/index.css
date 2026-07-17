@@ -2101,7 +2101,7 @@ html {
 
   /* Make content layouts stack/adjust cleanly without zoom */
   .scroll-container {
-    padding: 16px;
+    padding: 0;
   }
 
   .text-content {
@@ -2113,6 +2113,7 @@ html {
   .text-content.home-content {
     width: 100%;
     min-height: auto;
+    padding: 0;
   }
 
   .home-image-side {
