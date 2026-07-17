@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Award, FileText, QrCode, X, Moon, Sun, FileDown, Bot } from 'lucide-react';
+import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Award, FileText, QrCode, X, Moon, Sun, FileDown } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocalTime } from '../hooks/useLocalTime';
@@ -100,7 +100,6 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
     { id: 'home', label: 'Home', Icon: Home },
     { id: 'skills', label: 'Skills', Icon: Cpu },
     { id: 'projects', label: 'Projects', Icon: Briefcase },
-    { id: 'ai', label: 'AI', Icon: Bot, isAction: true, event: 'trigger-chatbot' },
     { id: 'contact', label: 'Contact', Icon: Mail },
   ];
 
@@ -222,13 +221,13 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
 
       {/* Bottom Nav Capsule */}
       <nav className="mobile-nav-capsule" role="navigation" aria-label="Mobile navigation">
-        {navItems.map(({ id, label, Icon, isAction, event }) => {
+        {navItems.map(({ id, label, Icon }) => {
           // Highlight based on the currently active section prop
           const isActive = activeSection === id && !isMoreOpen;
           return (
             <motion.button
               key={id}
-              onClick={() => isAction ? triggerEvent(event) : handleTabClick(id)}
+              onClick={() => handleTabClick(id)}
               className={`nav-capsule-tab${isActive ? ' nav-capsule-tab-active' : ''}`}
               aria-current={isActive ? "page" : undefined}
               aria-label={label}
