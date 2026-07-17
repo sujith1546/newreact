@@ -68,63 +68,6 @@ export default function MobileDashboard() {
           box-sizing: border-box;
         }
 
-        /* Header */
-        .mda-header {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          margin-bottom: 8px;
-        }
-        .mda-avatar {
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          background: rgba(217, 119, 6, 0.12); /* amber-100 equivalent */
-          color: #d97706; /* amber-600 */
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 15px;
-          font-weight: 700;
-          flex-shrink: 0;
-        }
-        [data-theme="dark"] .mda-avatar {
-          background: rgba(251, 191, 36, 0.15); /* amber-400 equivalent */
-          color: #fbbf24;
-        }
-        
-        .mda-header-text {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-        }
-        .mda-name {
-          font-size: 15px;
-          font-weight: 700;
-          color: var(--text-primary);
-          margin: 0;
-        }
-        .mda-status {
-          font-size: 11px;
-          font-weight: 600;
-          color: #10b981; /* emerald-500 */
-          display: flex;
-          align-items: center;
-          gap: 6px;
-        }
-        .mda-status-dot {
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background: #10b981;
-          animation: pulse-dot 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-        @keyframes pulse-dot {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.4; transform: scale(1.4); }
-        }
-
         /* Generic Card */
         .mda-card {
           background: var(--bg-secondary);
@@ -322,18 +265,6 @@ export default function MobileDashboard() {
         [data-theme="dark"] .hm-level-3 { background: rgba(251, 191, 36, 0.7); }
         [data-theme="dark"] .hm-level-4 { background: #fbbf24; }
       `}</style>
-
-      {/* Header */}
-      <div className="mda-header">
-        <div className="mda-avatar">ST</div>
-        <div className="mda-header-text">
-          <p className="mda-name">Sujith Thota</p>
-          <p className="mda-status">
-            <span className="mda-status-dot" /> Online now &middot; IST
-          </p>
-        </div>
-        <FaGithub size={18} color="var(--text-muted)" />
-      </div>
 
       {/* Ask my AI twin */}
       <div className="mda-card">
