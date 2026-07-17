@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import ScrollReveal from '../components/ScrollReveal';
-import { Terminal, Code, Briefcase, Mail, ArrowRight } from 'lucide-react';
+import { Code, Briefcase, Mail, FileText, Sparkles, Trophy } from 'lucide-react';
 
 const ROLES = [
   "Building Modern Web Apps",
@@ -17,7 +17,6 @@ function Typewriter() {
     const currentRole = ROLES[roleIndex];
     let timer;
     if (isDeleting) {
-      // Fast, mechanical delete speed
       timer = setTimeout(() => {
         setText(currentRole.substring(0, text.length - 1));
         if (text.length === 0) {
@@ -26,7 +25,6 @@ function Typewriter() {
         }
       }, 30);
     } else {
-      // Variable typing speed simulating a human (between 40ms and 110ms)
       const humanize = Math.random() * 70 + 40;
       timer = setTimeout(() => {
         setText(currentRole.substring(0, text.length + 1));
@@ -49,6 +47,14 @@ function Typewriter() {
 }
 
 export default function Home({ onNavClick }) {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 900);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return 'Good morning';
@@ -56,88 +62,20 @@ export default function Home({ onNavClick }) {
     return 'Good evening';
   };
 
-  const paneRef = useRef(null);
-  const innerRef = useRef(null);
-  const [scale, setScale] = useState(1);
-  const [overflow, setOverflow] = useState('hidden');
-
-  useEffect(() => {
-    const fitHomePane = () => {
-      const pane = paneRef.current;
-      const inner = innerRef.current;
-      if (!pane || !inner) return;
-
-      if (window.innerWidth <= 900) {
-        // Temporary reset before measurement
-        inner.style.transform = 'scale(1)';
-        inner.style.width = '100%';
-
-        const paneHeight = pane.clientHeight;
-        const contentHeight = inner.scrollHeight;
-
-        if (contentHeight > paneHeight && paneHeight > 0) {
-          const rawScale = paneHeight / contentHeight;
-          const boundedScale = Math.max(rawScale, 0.75);
-          setScale(boundedScale);
-          
-          if (rawScale < 0.75) {
-            setOverflow('auto');
-          } else {
-            setOverflow('hidden');
-          }
-        } else {
-          setScale(1);
-          setOverflow('hidden');
-        }
-      } else {
-        setScale(1);
-        setOverflow('hidden');
-      }
-    };
-
-    fitHomePane();
-
-    window.addEventListener('resize', fitHomePane);
-    window.addEventListener('orientationchange', fitHomePane);
-
-    const timer1 = setTimeout(fitHomePane, 150);
-    const timer2 = setTimeout(fitHomePane, 500);
-
-    return () => {
-      window.removeEventListener('resize', fitHomePane);
-      window.removeEventListener('orientationchange', fitHomePane);
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-    };
-  }, []);
+  const triggerResume = () => {
+    window.dispatchEvent(new CustomEvent('open-resume'));
+  };
 
   return (
-    <ScrollReveal 
-      className="home-content home-pane" 
-      ref={paneRef}
-      style={{ overflowY: window.innerWidth <= 900 ? overflow : 'visible' }}
-    >
+    <ScrollReveal className="home-content">
       <style>{`
+        /* Desktop styles (Default) */
         .home-content .home-grid {
           display: grid;
           grid-template-columns: 1.1fr 0.9fr;
           gap: 60px;
           align-items: center;
           width: 100%;
-        }
-        @media (max-width: 900px) {
-          .home-content .home-grid { grid-template-columns: 1fr; gap: 40px; text-align: center; }
-          
-          .home-content.home-pane {
-            height: calc(100dvh - 60px - 90px);
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-sizing: border-box;
-            width: 100%;
-            padding: 16px;
-          }
         }
         
         .home-content .hero-info {
@@ -179,10 +117,6 @@ export default function Home({ onNavClick }) {
           border-radius: 8px;
           width: fit-content;
         }
-        
-        @media (max-width: 900px) {
-          .home-content .hero-typewriter-container { margin: 12px auto 0; }
-        }
 
         .home-content .typing-cursor {
           display: inline-block;
@@ -200,9 +134,6 @@ export default function Home({ onNavClick }) {
           line-height: 1.6;
           max-width: 480px;
           margin: 16px 0 0;
-        }
-        @media (max-width: 900px) {
-          .home-content p.hero-subtitle-text { margin: 16px auto 0; }
         }
 
         .home-content .fc-badge {
@@ -224,47 +155,34 @@ export default function Home({ onNavClick }) {
           box-shadow: 0 2px 10px rgba(0,0,0,0.02);
           cursor: default;
         }
+        
         .home-content .fc-badge:hover {
           border-color: #10b981;
           box-shadow: 0 4px 15px rgba(16, 185, 129, 0.12);
           transform: translateY(-1px);
         }
-        @media (max-width: 900px) {
-          .home-content .fc-badge { margin: 0 auto 12px; }
-        }
-        
-        /* Premium Shine Sweep Effect */
+
         .home-content .fc-badge::before {
           content: '';
           position: absolute;
           top: 0; left: -100%;
           width: 50%;
           height: 100%;
-          background: linear-gradient(
-            to right,
-            transparent,
-            rgba(255, 255, 255, 0.6),
-            transparent
-          );
+          background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.6), transparent);
           transform: skewX(-20deg);
           animation: shine 5s infinite;
           pointer-events: none;
         }
         [data-theme="dark"] .home-content .fc-badge::before {
-          background: linear-gradient(
-            to right,
-            transparent,
-            rgba(255, 255, 255, 0.1),
-            transparent
-          );
+          background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
         }
+
         @keyframes shine {
           0% { left: -100%; }
           15% { left: 200%; }
           100% { left: 200%; }
         }
         
-        /* Advanced Radar Ripple */
         .home-content .fc-badge-dot-wrap {
           position: relative;
           width: 8px;
@@ -295,15 +213,11 @@ export default function Home({ onNavClick }) {
           100% { transform: scale(3.5); opacity: 0; }
         }
 
-        /* Quick Actions Grid */
         .home-content .home-quick-actions {
           display: flex;
           gap: 12px;
           margin-top: 32px;
           flex-wrap: wrap;
-        }
-        @media (max-width: 900px) {
-          .home-content .home-quick-actions { justify-content: center; }
         }
 
         .home-content .qa-card {
@@ -370,7 +284,6 @@ export default function Home({ onNavClick }) {
           transform: translateX(0);
         }
 
-        /* Image Side */
         .home-content .home-image-side {
           display: flex;
           justify-content: center;
@@ -392,20 +305,193 @@ export default function Home({ onNavClick }) {
         .home-content .hero-img-new:hover {
           transform: scale(1.02);
         }
+
+        /* ============================================
+           MOBILE DASHBOARD APP UI (<= 900px)
+           ============================================ */
+        @media (max-width: 900px) {
+          .home-content {
+            padding: 8px 4px 16px 4px !important;
+          }
+
+          .mobile-dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            width: 100%;
+          }
+
+          .dashboard-profile-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: var(--shadow-sm);
+            text-align: left;
+          }
+
+          .dashboard-avatar {
+            width: 68px;
+            height: 68px;
+            border-radius: 50%;
+            border: 1.5px solid var(--primary-blue);
+            object-fit: cover;
+          }
+
+          .dashboard-welcome h3 {
+            font-size: 12px;
+            font-weight: 550;
+            color: var(--text-secondary);
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+          }
+
+          .dashboard-welcome h2 {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin: 2px 0 6px 0;
+            letter-spacing: -0.02em;
+          }
+
+          .dashboard-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(16, 185, 129, 0.08);
+            color: #10b981;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 10.5px;
+            font-weight: 600;
+          }
+
+          .status-dot {
+            width: 6px;
+            height: 6px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: status-pulse 2s infinite;
+          }
+
+          @keyframes status-pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.5); opacity: 0.3; }
+            100% { transform: scale(1); opacity: 1; }
+          }
+
+          .dashboard-stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+          }
+
+          .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 12px 6px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+          }
+
+          .stat-card h4 {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--primary-blue);
+            margin: 0 0 2px 0;
+          }
+
+          .stat-card p {
+            font-size: 9px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+          }
+
+          .dashboard-bio-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 14px 16px;
+            box-shadow: var(--shadow-sm);
+            text-align: left;
+          }
+
+          .dashboard-bio-card p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin: 0;
+          }
+
+          .dashboard-links-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+          }
+
+          .dashboard-link-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 14px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
+            outline: none;
+          }
+
+          .dashboard-link-card:active {
+            transform: scale(0.97);
+            border-color: var(--primary-blue);
+          }
+
+          .card-icon-box {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(0, 123, 255, 0.08);
+            color: var(--primary-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+
+          .dashboard-link-card h4 {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+          }
+
+          .dashboard-link-card p {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin: 0;
+            line-height: 1.3;
+          }
+        }
       `}</style>
-      
-      <div 
-        className="home-pane-inner" 
-        ref={innerRef}
-        style={{
-          transform: window.innerWidth <= 900 ? `scale(${scale})` : 'none',
-          transformOrigin: 'center center',
-          width: '100%'
-        }}
-      >
+
+      {!isMobile ? (
+        /* Desktop grid view */
         <div className="home-grid">
           <div className="hero-info">
-            
             <div className="fc-badge">
               <div className="fc-badge-dot-wrap">
                 <div className="fc-badge-dot" />
@@ -446,14 +532,86 @@ export default function Home({ onNavClick }) {
                 </div>
               </button>
             </div>
-            
           </div>
           
           <div className="home-image-side">
             <img src="/IMG_0322.jpg" alt="Sujith Thota" className="hero-img-new" />
           </div>
         </div>
-      </div>
+      ) : (
+        /* Mobile dashboard app view */
+        <div className="mobile-dashboard">
+          
+          {/* Avatar Welcome Banner Card */}
+          <div className="dashboard-profile-card">
+            <img src="/IMG_0322.jpg" alt="Sujith Thota" className="dashboard-avatar" />
+            <div className="dashboard-welcome">
+              <h3>{getGreeting()}</h3>
+              <h2>Sujith Thota</h2>
+              <div className="dashboard-status">
+                <div className="status-dot" />
+                <span>Available for Opportunities</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Stats Grid */}
+          <div className="dashboard-stats-row">
+            <div className="stat-card">
+              <h4>8.7</h4>
+              <p>VIT CGPA</p>
+            </div>
+            <div className="stat-card">
+              <h4>15+</h4>
+              <p>Certifications</p>
+            </div>
+            <div className="stat-card">
+              <h4>5+</h4>
+              <p>ML Projects</p>
+            </div>
+          </div>
+
+          {/* Intro Bio Card */}
+          <div className="dashboard-bio-card">
+            <p>
+              VIT University Data Science graduate exploring the boundary between predictive machine learning intelligence and reactive web experiences.
+            </p>
+          </div>
+
+          {/* Typewriter text line */}
+          <div className="hero-typewriter-container" style={{ margin: '0 auto', background: 'var(--bg-secondary)' }}>
+            <Typewriter />
+          </div>
+
+          {/* Dashboard Action cards */}
+          <div className="dashboard-links-grid">
+            <button className="dashboard-link-card" onClick={() => onNavClick?.('skills')}>
+              <div className="card-icon-box"><Code size={18} /></div>
+              <h4>Core Stack</h4>
+              <p>Languages, ML models & web tech frameworks.</p>
+            </button>
+
+            <button className="dashboard-link-card" onClick={() => onNavClick?.('projects')}>
+              <div className="card-icon-box"><Briefcase size={18} /></div>
+              <h4>Projects</h4>
+              <p>Swipe through code showcase & demo apps.</p>
+            </button>
+
+            <button className="dashboard-link-card" onClick={triggerResume}>
+              <div className="card-icon-box"><FileText size={18} /></div>
+              <h4>Resume</h4>
+              <p>Open interactive PDF & download offline copy.</p>
+            </button>
+
+            <button className="dashboard-link-card" onClick={() => onNavClick?.('contact')}>
+              <div className="card-icon-box"><Mail size={18} /></div>
+              <h4>Connect</h4>
+              <p>Send a direct message & collaborate.</p>
+            </button>
+          </div>
+
+        </div>
+      )}
     </ScrollReveal>
   );
 }
