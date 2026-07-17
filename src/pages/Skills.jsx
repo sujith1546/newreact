@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { X } from 'lucide-react';
 import ScrollReveal from '../components/ScrollReveal';
 import { skillCategories } from '../data/skillsData';
 import { categoryIconMap } from '../components/skillIcons';
@@ -17,7 +18,7 @@ const itemVariants = {
 
 export default function Skills() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
-  const [activeTab, setActiveTab] = useState('languages');
+  const [activeTab, setActiveTab] = useState(null); // null means drawer is closed
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 900);
@@ -129,63 +130,161 @@ export default function Skills() {
           border-color: #111827;
         }
 
-        /* ============================================
-           MOBILE SEGMENTED CONTROLS & CARDS (<= 900px)
+          /* ============================================
+           MOBILE BENTO GRID & DRAWER (<= 900px)
            ============================================ */
         @media (max-width: 900px) {
           .skills-header {
             text-align: left;
           }
 
-          .mobile-tabs-container {
+          .mobile-bento-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
             width: 100%;
-            overflow-x: auto;
-            padding-bottom: 8px;
-            margin-bottom: 12px;
-            display: flex;
-            gap: 8px;
-            scrollbar-width: none;
-            -webkit-overflow-scrolling: touch;
-          }
-          .mobile-tabs-container::-webkit-scrollbar {
-            display: none;
           }
 
-          .mobile-tab-btn {
-            white-space: nowrap;
-            border: 1px solid var(--border-color);
+          .bento-card {
             background: var(--bg-secondary);
-            color: var(--text-secondary);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 12.5px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            outline: none;
-          }
-
-          .mobile-tab-btn.active {
-            background: var(--primary-blue);
-            color: white;
-            border-color: var(--primary-blue);
-            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
-          }
-
-          .mobile-skills-list {
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 16px;
             display: flex;
             flex-direction: column;
             gap: 12px;
-            width: 100%;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            text-align: left;
+            transition: transform 0.2s;
+            outline: none;
+          }
+
+          .bento-card:active {
+            transform: scale(0.96);
+          }
+
+          .bento-icon-box {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: rgba(0, 123, 255, 0.08);
+            color: var(--primary-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+
+          .bento-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+            line-height: 1.2;
+          }
+
+          .bento-pills-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: auto;
+          }
+
+          .bento-mini-pill {
+            font-size: 9px;
+            font-weight: 600;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            padding: 2px 6px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+          }
+
+          /* Drawer Styles */
+          .skills-drawer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+          }
+
+          .skills-drawer-sheet {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-primary);
+            border-top-left-radius: 24px;
+            border-top-right-radius: 24px;
+            z-index: 1001;
+            padding: 24px 20px 40px 20px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
+          }
+
+          .skills-drawer-handle {
+            width: 40px;
+            height: 4px;
+            background: #d1d5db;
+            border-radius: 2px;
+            margin: 0 auto 20px auto;
+          }
+
+          .skills-drawer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+          }
+
+          .skills-drawer-title-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+          }
+
+          .skills-drawer-title-row h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+          }
+
+          .skills-drawer-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 16px;
+            background: var(--bg-secondary);
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+          }
+
+          .skills-drawer-content {
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-bottom: 20px;
+          }
+          .skills-drawer-content::-webkit-scrollbar {
+            display: none;
           }
 
           .mobile-skill-card {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
-            border-radius: 20px;
+            border-radius: 16px;
             padding: 16px;
-            box-shadow: var(--shadow-sm);
-            text-align: left;
             display: flex;
             flex-direction: column;
             gap: 12px;
@@ -201,23 +300,11 @@ export default function Skills() {
           .mobile-skill-card-left {
             display: flex;
             align-items: center;
-            gap: 10px;
-          }
-
-          .mobile-skill-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            background: rgba(0, 123, 255, 0.05);
-            color: var(--primary-blue);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
+            gap: 8px;
           }
 
           .mobile-skill-name {
-            font-size: 14.5px;
+            font-size: 14px;
             font-weight: 700;
             color: var(--text-primary);
             margin: 0;
@@ -228,7 +315,7 @@ export default function Skills() {
             font-weight: 600;
             color: var(--primary-blue);
             background: rgba(0, 123, 255, 0.08);
-            padding: 2px 8px;
+            padding: 3px 8px;
             border-radius: 12px;
           }
 
@@ -241,7 +328,7 @@ export default function Skills() {
 
           .details-progress-track {
             height: 6px;
-            background: var(--bg-primary);
+            background: var(--bg-secondary);
             border-radius: 3px;
             overflow: hidden;
             width: 100%;
@@ -267,13 +354,13 @@ export default function Skills() {
           }
 
           .details-tool-tag {
-            font-size: 9.5px;
+            font-size: 10px;
             font-weight: 600;
             background: var(--bg-primary);
             color: var(--text-secondary);
             border: 1px solid var(--border-color);
-            padding: 2px 6px;
-            border-radius: 5px;
+            padding: 4px 8px;
+            border-radius: 6px;
           }
         }
 
@@ -339,77 +426,111 @@ export default function Skills() {
             })}
           </motion.div>
         ) : (
-          /* Mobile swipeable category selector + direct skill cards list */
-          <motion.div className="mobile-skills-section" variants={containerVariants}>
-            
-            {/* Horizontal Tabs Bar */}
-            <div className="mobile-tabs-container">
-              {skillCategories.map(category => (
-                <button
-                  key={category.id}
+          /* Mobile Bento Grid Category Selector */
+          <motion.div className="mobile-bento-grid" variants={containerVariants}>
+            {skillCategories.map(category => {
+              const CategoryIcon = categoryIconMap[category.id] || categoryIconMap.languages;
+              const isFullWidth = category.id === 'exploring';
+
+              return (
+                <button 
+                  key={category.id} 
+                  className="bento-card"
+                  style={isFullWidth ? { gridColumn: '1 / -1' } : {}}
                   onClick={() => setActiveTab(category.id)}
-                  className={`mobile-tab-btn ${activeTab === category.id ? 'active' : ''}`}
                 >
-                  {category.title}
+                  <div className="bento-icon-box">
+                    <CategoryIcon size={20} />
+                  </div>
+                  <h3 className="bento-title">{category.title}</h3>
+                  <div className="bento-pills-preview">
+                    {category.skills.slice(0, 4).map(skill => (
+                      <span key={skill.id} className="bento-mini-pill">
+                        {skill.name}
+                      </span>
+                    ))}
+                    {category.skills.length > 4 && (
+                      <span className="bento-mini-pill">+{category.skills.length - 4}</span>
+                    )}
+                  </div>
                 </button>
-              ))}
-            </div>
+              );
+            })}
 
-            {/* Selected category skills feed */}
-            <AnimatePresence mode="wait">
-              <motion.div 
-                key={activeTab}
-                className="mobile-skills-list"
-                initial={{ opacity: 0, x: 10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -10 }}
-                transition={{ duration: 0.2 }}
-              >
-                {activeCategory.skills.map(skill => {
-                  return (
-                    <div key={skill.id} className="mobile-skill-card">
-                      <div className="mobile-skill-card-top">
-                        <div className="mobile-skill-card-left">
-                          <div className="mobile-skill-avatar">
-                            <ActiveIcon size={16} />
-                          </div>
-                          <h4 className="mobile-skill-name">{skill.name}</h4>
+            {/* Slide-Up Drawer for Selected Category */}
+            <AnimatePresence>
+              {activeTab && (
+                <>
+                  <motion.div
+                    className="skills-drawer-overlay"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    onClick={() => setActiveTab(null)}
+                  />
+                  <motion.div
+                    className="skills-drawer-sheet"
+                    initial={{ y: '100%' }}
+                    animate={{ y: 0 }}
+                    exit={{ y: '100%' }}
+                    transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+                  >
+                    <div className="skills-drawer-handle" />
+                    
+                    <div className="skills-drawer-header">
+                      <div className="skills-drawer-title-row">
+                        <div className="bento-icon-box" style={{ width: 32, height: 32 }}>
+                          {(() => {
+                            const Icon = categoryIconMap[activeTab] || categoryIconMap.languages;
+                            return <Icon size={16} />;
+                          })()}
                         </div>
-                        {skill.level && <span className="mobile-skill-level">{skill.level}</span>}
+                        <h2>{skillCategories.find(c => c.id === activeTab)?.title}</h2>
                       </div>
-
-                      {/* Proficiency Indicator (Progress Bar) */}
-                      {skill.percent && (
-                        <div className="details-progress-bar-wrap">
-                          <div className="details-progress-track">
-                            <div 
-                              className="details-progress-fill" 
-                              style={{ width: `${skill.percent}%` }}
-                            />
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Bio description inline */}
-                      {skill.description && (
-                        <p className="details-description">{skill.description}</p>
-                      )}
-
-                      {/* Related tools row inline */}
-                      {skill.relatedTools && skill.relatedTools.length > 0 && (
-                        <div className="details-tag-row">
-                          {skill.relatedTools.map(tool => (
-                            <span key={tool} className="details-tool-tag">{tool}</span>
-                          ))}
-                        </div>
-                      )}
-
+                      <button className="skills-drawer-close" onClick={() => setActiveTab(null)}>
+                        <X size={18} />
+                      </button>
                     </div>
-                  );
-                })}
-              </motion.div>
-            </AnimatePresence>
 
+                    <div className="skills-drawer-content">
+                      {skillCategories.find(c => c.id === activeTab)?.skills.map(skill => (
+                        <div key={skill.id} className="mobile-skill-card">
+                          <div className="mobile-skill-card-top">
+                            <div className="mobile-skill-card-left">
+                              <h4 className="mobile-skill-name">{skill.name}</h4>
+                            </div>
+                            {skill.level && <span className="mobile-skill-level">{skill.level}</span>}
+                          </div>
+
+                          {skill.percent && (
+                            <div className="details-progress-bar-wrap">
+                              <div className="details-progress-track">
+                                <div 
+                                  className="details-progress-fill" 
+                                  style={{ width: `${skill.percent}%` }}
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          {skill.description && (
+                            <p className="details-description">{skill.description}</p>
+                          )}
+
+                          {skill.relatedTools && skill.relatedTools.length > 0 && (
+                            <div className="details-tag-row">
+                              {skill.relatedTools.map(tool => (
+                                <span key={tool} className="details-tool-tag">{tool}</span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
           </motion.div>
         )}
 
