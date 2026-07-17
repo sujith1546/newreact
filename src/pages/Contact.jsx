@@ -13,6 +13,11 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } },
 };
 
+const shakeVariants = {
+  shake: { x: [-5, 5, -5, 5, 0], transition: { duration: 0.4 } },
+  idle: { x: 0 }
+};
+
 export default function Contact() {
   const email = "sujithreddy1546@gmail.com";
   const phone = "+91 8501889996";
@@ -420,25 +425,65 @@ export default function Contact() {
           .mobile-form {
             display: flex;
             flex-direction: column;
-            gap: 14px;
+            gap: 18px;
             width: 100%;
           }
 
+          .mobile-form .fc-field {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+          }
+
           .mobile-form .fc-field label {
+            position: absolute;
+            left: 12px;
+            top: 12px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+            pointer-events: none;
+            padding: 0 4px;
+            background: transparent;
+          }
+
+          .mobile-form .fc-input:focus ~ label,
+          .mobile-form .fc-input:not(:placeholder-shown) ~ label {
+            top: -8px;
+            left: 10px;
             font-size: 11px;
             font-weight: 700;
-            color: var(--text-secondary);
+            color: var(--primary-blue);
+            background: var(--bg-secondary);
+            border-radius: 4px;
           }
 
           .mobile-form .fc-input {
-            padding: 10px 12px;
-            font-size: 13px;
+            padding: 12px 14px;
+            font-size: 13.5px;
             border-radius: 14px;
+          }
+          
+          .mobile-form .fc-input:focus {
+            box-shadow: 0 0 0 2px var(--primary-blue);
           }
 
           .mobile-form .fc-submit-btn {
             border-radius: 14px;
             margin-top: 4px;
+            overflow: hidden;
+            position: relative;
+          }
+
+          .char-counter {
+            font-size: 10px;
+            color: var(--text-muted);
+            align-self: flex-end;
+            margin-top: 4px;
+            font-weight: 600;
+          }
+          .char-counter.limit {
+            color: #ef4444;
           }
         }
       `}</style>
@@ -620,73 +665,93 @@ export default function Contact() {
                 </motion.div>
               ) : (
                 <form className="mobile-form" onSubmit={handleSubmit}>
-                  <div className="fc-field">
-                    <label htmlFor="m-fc-name">Your name</label>
+                  <motion.div className="fc-field" animate={touched.name && errors.name ? "shake" : "idle"} variants={shakeVariants}>
                     <input
                       id="m-fc-name"
                       name="name"
                       className={`fc-input ${touched.name && errors.name ? 'error' : ''}`}
-                      placeholder="Thota Sujith Reddy"
+                      placeholder=" "
                       value={form.name}
                       onChange={handleChange}
                       onBlur={handleBlur}
                       required
                     />
+                    <label htmlFor="m-fc-name">Your name</label>
                     {touched.name && errors.name && (
                       <span className="fc-error-text">{errors.name}</span>
                     )}
-                  </div>
+                  </motion.div>
 
-                  <div className="fc-field">
-                    <label htmlFor="m-fc-email">Your email</label>
+                  <motion.div className="fc-field" animate={touched.email && errors.email ? "shake" : "idle"} variants={shakeVariants}>
                     <input
                       id="m-fc-email"
                       name="email"
                       type="email"
                       className={`fc-input ${touched.email && errors.email ? 'error' : ''}`}
-                      placeholder="sujithreddy1546@gmail.com"
+                      placeholder=" "
                       value={form.email}
                       onChange={handleChange}
                       onBlur={handleBlur}
                       required
                     />
+                    <label htmlFor="m-fc-email">Your email</label>
                     {touched.email && errors.email && (
                       <span className="fc-error-text">{errors.email}</span>
                     )}
-                  </div>
+                  </motion.div>
 
-                  <div className="fc-field">
-                    <label htmlFor="m-fc-message">Message</label>
+                  <motion.div className="fc-field" animate={touched.message && errors.message ? "shake" : "idle"} variants={shakeVariants}>
                     <textarea
                       id="m-fc-message"
                       name="message"
                       className={`fc-input ${touched.message && errors.message ? 'error' : ''}`}
                       rows={4}
-                      placeholder="Tell me what you'd like to discuss..."
+                      placeholder=" "
                       value={form.message}
                       onChange={handleChange}
                       onBlur={handleBlur}
+                      maxLength={500}
                       required
                     />
-                    {touched.message && errors.message && (
-                      <span className="fc-error-text">{errors.message}</span>
-                    )}
-                  </div>
+                    <label htmlFor="m-fc-message">Message</label>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                      {touched.message && errors.message ? (
+                        <span className="fc-error-text">{errors.message}</span>
+                      ) : <span />}
+                      <span className={`char-counter ${form.message.length >= 480 ? 'limit' : ''}`}>
+                        {form.message.length} / 500
+                      </span>
+                    </div>
+                  </motion.div>
 
                   <button
                     type="submit"
                     className="fc-submit-btn"
                     disabled={status === "sending"}
                   >
-                    {status === "sending" ? (
-                      <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <Loader2 size={16} className="fc-spin" /> Sending...
-                      </span>
-                    ) : (
-                      <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        Send message <ArrowRight size={15} />
-                      </span>
-                    )}
+                    <AnimatePresence mode="wait">
+                      {status === "sending" ? (
+                        <motion.span 
+                          key="sending"
+                          initial={{ opacity: 0, x: -20, y: 20 }}
+                          animate={{ opacity: 1, x: 100, y: -100 }}
+                          transition={{ duration: 0.8, ease: "easeIn" }}
+                          style={{ display: "flex", alignItems: "center", position: "absolute" }}
+                        >
+                          <Send size={20} />
+                        </motion.span>
+                      ) : (
+                        <motion.span 
+                          key="idle"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          style={{ display: "flex", alignItems: "center", gap: 8 }}
+                        >
+                          Send message <ArrowRight size={15} />
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
                   </button>
                 </form>
               )}
