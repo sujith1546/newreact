@@ -308,7 +308,7 @@ export default function Home({ onNavClick }) {
            ============================================ */
         @media (max-width: 900px) {
           .home-content.home-pane {
-            height: calc(100dvh - 60px - 90px);
+            height: 100%;
             overflow: hidden;
             display: flex;
             flex-direction: column;
@@ -441,11 +441,10 @@ export default function Home({ onNavClick }) {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
             border-radius: 20px;
-            padding: 12px 16px;
+            padding: 16px 20px;
             box-shadow: var(--shadow-sm);
             text-align: left;
             flex-shrink: 0;
-            flex-grow: 1;
             display: flex;
             align-items: center;
           }
