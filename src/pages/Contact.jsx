@@ -376,7 +376,7 @@ export default function Contact() {
           .mobile-contact-container {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
-            border-radius: 20px;
+            border-radius: 24px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
@@ -408,7 +408,7 @@ export default function Contact() {
           .chat-bubble-content {
             background: var(--bg-primary);
             border: 1px solid var(--border-color);
-            border-radius: 4px 16px 16px 16px;
+            border-radius: 6px 20px 20px 20px;
             padding: 10px 14px;
             font-size: 13px;
             line-height: 1.5;
@@ -433,11 +433,11 @@ export default function Contact() {
           .mobile-form .fc-input {
             padding: 10px 12px;
             font-size: 13px;
-            border-radius: 10px;
+            border-radius: 14px;
           }
 
           .mobile-form .fc-submit-btn {
-            border-radius: 10px;
+            border-radius: 14px;
             margin-top: 4px;
           }
         }

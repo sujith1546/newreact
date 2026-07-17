@@ -331,7 +331,7 @@ export default function Home({ onNavClick }) {
           .dashboard-profile-card {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
-            border-radius: 16px;
+            border-radius: 20px;
             padding: 12px 16px;
             display: flex;
             align-items: center;
@@ -409,7 +409,7 @@ export default function Home({ onNavClick }) {
           .stat-card {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
+            border-radius: 14px;
             padding: 10px 4px;
             text-align: center;
             box-shadow: var(--shadow-sm);
@@ -439,7 +439,7 @@ export default function Home({ onNavClick }) {
           .dashboard-bio-card {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
-            border-radius: 16px;
+            border-radius: 20px;
             padding: 12px 16px;
             box-shadow: var(--shadow-sm);
             text-align: left;
@@ -466,7 +466,7 @@ export default function Home({ onNavClick }) {
           .dashboard-link-card {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
-            border-radius: 16px;
+            border-radius: 20px;
             padding: 10px 12px;
             display: flex;
             flex-direction: column;

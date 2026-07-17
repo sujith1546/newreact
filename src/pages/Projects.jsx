@@ -178,7 +178,7 @@ export default function Projects() {
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
           border: 1px solid rgba(0,0,0,0.06);
-          border-radius: 16px;
+          border-radius: 20px;
           overflow: hidden;
           display: flex;
           flex-direction: column;
@@ -512,8 +512,8 @@ export default function Projects() {
             width: 100%;
             background: var(--bg-secondary);
             border-top: 1px solid var(--border-color);
-            border-top-left-radius: 24px;
-            border-top-right-radius: 24px;
+            border-top-left-radius: 28px;
+            border-top-right-radius: 28px;
             padding: 24px 20px calc(24px + env(safe-area-inset-bottom, 16px)) 20px;
             z-index: 101;
             box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.15);
@@ -566,7 +566,7 @@ export default function Projects() {
           .details-sheet-image {
             width: 100%;
             height: 180px;
-            border-radius: 16px;
+            border-radius: 20px;
             overflow: hidden;
             background: linear-gradient(120deg, #e0e7ff 0%, #dcfce7 100%);
             margin-bottom: 20px;
@@ -614,7 +614,7 @@ export default function Projects() {
           .details-action-pill {
             flex: 1;
             height: 46px;
-            border-radius: 12px;
+            border-radius: 14px;
             border: 1px solid var(--border-color);
             background: var(--bg-secondary);
             color: var(--text-primary);

@@ -182,7 +182,7 @@ export default function Skills() {
           .mobile-skill-card {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
-            border-radius: 16px;
+            border-radius: 20px;
             padding: 16px;
             box-shadow: var(--shadow-sm);
             text-align: left;
