@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Award, FileText, QrCode, X, Moon, Sun, FileDown } from 'lucide-react';
+import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Award, FileText, Share, X, Moon, Sun, FileDown } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocalTime } from '../hooks/useLocalTime';
@@ -133,7 +133,7 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+            transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
           >
             <div className="drawer-handle" />
             
@@ -202,8 +202,8 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
                   <span>View resume</span>
                 </button>
                 <button onClick={handleShare} className="drawer-action-row-btn">
-                  <QrCode size={18} />
-                  <span>Share portfolio / QR</span>
+                  <Share size={18} />
+                  <span>Share portfolio</span>
                 </button>
               </div>
             </div>

@@ -208,9 +208,8 @@ export default function Skills() {
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.4);
+            background: rgba(0,0,0,0.6);
             z-index: 1000;
-            backdrop-filter: blur(4px);
           }
 
           .skills-drawer-sheet {
@@ -480,7 +479,7 @@ export default function Skills() {
                       initial={{ y: '100%' }}
                       animate={{ y: 0 }}
                       exit={{ y: '100%' }}
-                      transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+                      transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
                     >
                       <div className="skills-drawer-handle" />
                       

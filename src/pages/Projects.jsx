@@ -521,9 +521,7 @@ export default function Projects() {
           .details-sheet-backdrop {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+            background: rgba(0, 0, 0, 0.6);
             z-index: 100;
           }
 
@@ -691,7 +689,7 @@ export default function Projects() {
                 initial={{ y: '100%' }}
                 animate={{ y: 0 }}
                 exit={{ y: '100%' }}
-                transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+                transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
               >
                 <div className="details-sheet-handle" />
                 
