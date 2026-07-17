@@ -2101,21 +2101,35 @@ html {
 
   /* Make content layouts stack/adjust cleanly without zoom */
   .scroll-container {
-    padding: 0;
+    padding: 12px;
   }
 
+  /* Make EVERY page look like a premium box just like the home page */
   .text-content {
     max-width: 100%;
     height: 100%;
     overflow-y: auto;
-    padding: 16px;
+    padding: 20px;
     margin-bottom: 0;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
   }
 
+  [data-theme="dark"] .text-content {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  /* But Home page already has its own cards and doesn't need a double box */
   .text-content.home-content {
     width: 100%;
     min-height: auto;
     padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
   }
 
   .home-image-side {
