@@ -315,18 +315,24 @@ export default function Certifications() {
           .mobile-certs-carousel .cert-card {
             flex: 0 0 85%;
             scroll-snap-align: center;
+            height: 360px; /* Match project card height */
           }
 
           .carousel-nav-arrows {
+            position: absolute;
+            top: calc(50% - 20px);
+            left: -8px;
+            right: -8px;
+            transform: translateY(-50%);
             display: flex;
-            justify-content: flex-end;
-            gap: 12px;
-            margin-bottom: 16px;
+            justify-content: space-between;
+            pointer-events: none;
+            z-index: 10;
           }
 
           .carousel-arrow {
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
@@ -335,12 +341,15 @@ export default function Certifications() {
             justify-content: center;
             color: var(--text-primary);
             cursor: pointer;
+            pointer-events: auto;
             box-shadow: var(--shadow-sm);
             transition: all 0.2s ease;
+            opacity: 0.85;
           }
 
           .carousel-arrow:active {
             transform: scale(0.9);
+            background: var(--bg-primary);
           }
 
           .carousel-indicators {
