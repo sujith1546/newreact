@@ -127,7 +127,7 @@ export default function MainLayout() {
       <CommandPalette />
 
       {/* Mobile-only floating bottom tab capsule */}
-      <MobileBottomNav activeSection={activeSection} onNavClick={handleNavClick} />
+      {isMobile && <MobileBottomNav activeSection={activeSection} onNavClick={handleNavClick} />}
     </div>
   );
 }
