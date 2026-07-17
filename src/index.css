@@ -2180,6 +2180,44 @@ html {
     margin-bottom: 30px !important;
   }
 
+  .timeline-item {
+    padding-left: 50px !important;
+  }
+
+  /* =========================================
+     GLOBAL UI STANDARDIZATION (Except Education)
+     ========================================= */
+  
+  /* 1. Unified Headings */
+  .text-content:not(#education) h1 {
+    font-size: 18px !important;
+    margin-bottom: 4px !important;
+  }
+  .text-content:not(#education) [class$="-header"] p,
+  .text-content:not(#education) .about-intro {
+    font-size: 11.5px !important;
+    line-height: 1.4 !important;
+  }
+
+  /* 2. Unified Box Sizes and Styles */
+  .mobile-skill-card, 
+  .cert-card,
+  .contact-method-card {
+    background: var(--bg-primary) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 20px !important;
+    min-height: 180px !important; /* Uniform height constraint */
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  [data-theme="dark"] .mobile-skill-card, 
+  [data-theme="dark"] .cert-card,
+  [data-theme="dark"] .contact-method-card {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+
   .timeline-icon {
     left: 20px !important;
     width: 40px !important;
