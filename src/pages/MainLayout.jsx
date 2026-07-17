@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Sidebar from '../components/Sidebar';
 import WelcomeModal from '../components/WelcomeModal';
+import MobileBottomNav from '../components/MobileBottomNav';
 import DarkModeToggle from '../components/DarkModeToggle';
 import TimezoneStatus from '../components/TimezoneStatus';
 import ChatBot from '../components/ChatBot';
@@ -54,6 +55,14 @@ export default function MainLayout() {
 
   return (
     <div className="layout">
+      {/* Mobile-only header bar */}
+      <header className="mobile-top-header">
+        <div className="mobile-header-left" onDoubleClick={() => window.dispatchEvent(new CustomEvent('open-qr'))}>
+          <img src="/profile_photo.png" alt="Sujith Thota" />
+          <h2>Sujith Thota</h2>
+        </div>
+      </header>
+
       <ParticleCanvas />
       <Sidebar activeSection={activeSection} onNavClick={handleNavClick} />
       <main className="main-content" ref={scrollRef}>
@@ -61,6 +70,7 @@ export default function MainLayout() {
           <AnimatePresence mode="wait">
             <motion.div
               key={activeSection}
+              id={activeSection}
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -15 }}
@@ -79,6 +89,9 @@ export default function MainLayout() {
       <DarkModeToggle />
       <ChatBot />
       <CommandPalette />
+
+      {/* Mobile-only floating bottom tab capsule */}
+      <MobileBottomNav activeSection={activeSection} onNavClick={handleNavClick} />
     </div>
   );
 }

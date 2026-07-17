@@ -67,8 +67,13 @@ export default function Sidebar({ activeSection, onNavClick }) {
 
   useEffect(() => {
     const handleOpenResume = () => setIsPreviewOpen(true);
+    const handleOpenQr = () => setQrOpen(true);
     window.addEventListener('open-resume', handleOpenResume);
-    return () => window.removeEventListener('open-resume', handleOpenResume);
+    window.addEventListener('open-qr', handleOpenQr);
+    return () => {
+      window.removeEventListener('open-resume', handleOpenResume);
+      window.removeEventListener('open-qr', handleOpenQr);
+    };
   }, []);
 
   const handleDownloadClick = (e) => {
