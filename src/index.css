@@ -2069,23 +2069,25 @@ html {
     min-height: auto;
   }
 
-  .hero-container {
-    flex-direction: column-reverse;
-    text-align: center;
-    gap: 20px;
-    padding: 20px 10px;
+  .home-image-side {
+    min-height: 180px;
+    display: flex;
+    justify-content: center;
   }
 
-  .hero-title {
-    font-size: 1.8rem;
+  .hero-img-new {
+    min-height: 180px;
+    max-height: 320px;
+    object-fit: cover;
   }
 
-  .hero-name {
-    font-size: 2.2rem;
-  }
-
-  .hero-subtitle {
-    font-size: 1rem;
+  /* Rare fallback for very short screens (like iPhone SE) */
+  @media (max-height: 700px) {
+    .hero-subtitle-text {
+      max-height: 80px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
   }
 
   .hero-img {
