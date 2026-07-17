@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import ScrollReveal from '../components/ScrollReveal';
 import { Terminal, Code, Briefcase, Mail, ArrowRight } from 'lucide-react';
 
@@ -56,8 +56,67 @@ export default function Home({ onNavClick }) {
     return 'Good evening';
   };
 
+  const paneRef = useRef(null);
+  const innerRef = useRef(null);
+  const [scale, setScale] = useState(1);
+  const [overflow, setOverflow] = useState('hidden');
+
+  useEffect(() => {
+    const fitHomePane = () => {
+      const pane = paneRef.current;
+      const inner = innerRef.current;
+      if (!pane || !inner) return;
+
+      if (window.innerWidth <= 900) {
+        // Temporary reset before measurement
+        inner.style.transform = 'scale(1)';
+        inner.style.width = '100%';
+
+        const paneHeight = pane.clientHeight;
+        const contentHeight = inner.scrollHeight;
+
+        if (contentHeight > paneHeight && paneHeight > 0) {
+          const rawScale = paneHeight / contentHeight;
+          const boundedScale = Math.max(rawScale, 0.75);
+          setScale(boundedScale);
+          
+          if (rawScale < 0.75) {
+            setOverflow('auto');
+          } else {
+            setOverflow('hidden');
+          }
+        } else {
+          setScale(1);
+          setOverflow('hidden');
+        }
+      } else {
+        setScale(1);
+        setOverflow('hidden');
+      }
+    };
+
+    fitHomePane();
+
+    window.addEventListener('resize', fitHomePane);
+    window.addEventListener('orientationchange', fitHomePane);
+
+    const timer1 = setTimeout(fitHomePane, 150);
+    const timer2 = setTimeout(fitHomePane, 500);
+
+    return () => {
+      window.removeEventListener('resize', fitHomePane);
+      window.removeEventListener('orientationchange', fitHomePane);
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
+  }, []);
+
   return (
-    <ScrollReveal className="home-content">
+    <ScrollReveal 
+      className="home-content home-pane" 
+      ref={paneRef}
+      style={{ overflowY: window.innerWidth <= 900 ? overflow : 'visible' }}
+    >
       <style>{`
         .home-content .home-grid {
           display: grid;
@@ -68,6 +127,17 @@ export default function Home({ onNavClick }) {
         }
         @media (max-width: 900px) {
           .home-content .home-grid { grid-template-columns: 1fr; gap: 40px; text-align: center; }
+          
+          .home-content.home-pane {
+            height: calc(100dvh - 60px - 90px);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            width: 100%;
+            padding: 16px;
+          }
         }
         
         .home-content .hero-info {
@@ -324,54 +394,64 @@ export default function Home({ onNavClick }) {
         }
       `}</style>
       
-      <div className="home-grid">
-        <div className="hero-info">
-          
-          <div className="fc-badge">
-            <div className="fc-badge-dot-wrap">
-              <div className="fc-badge-dot" />
-            </div>
-            Available for Opportunities
-          </div>
-
-          <div>
-            <div className="hero-greeting">{getGreeting()}</div>
-            <h1 className="hero-title-main">Sujith Thota</h1>
+      <div 
+        className="home-pane-inner" 
+        ref={innerRef}
+        style={{
+          transform: window.innerWidth <= 900 ? `scale(${scale})` : 'none',
+          transformOrigin: 'center center',
+          width: '100%'
+        }}
+      >
+        <div className="home-grid">
+          <div className="hero-info">
             
-            <div className="hero-typewriter-container">
-              <Typewriter />
+            <div className="fc-badge">
+              <div className="fc-badge-dot-wrap">
+                <div className="fc-badge-dot" />
+              </div>
+              Available for Opportunities
+            </div>
+
+            <div>
+              <div className="hero-greeting">{getGreeting()}</div>
+              <h1 className="hero-title-main">Sujith Thota</h1>
+              
+              <div className="hero-typewriter-container">
+                <Typewriter />
+              </div>
+              
+              <p className="hero-subtitle-text">
+                A passionate <strong>B.Tech Graduate from VIT (8.7 CGPA)</strong>, actively exploring the boundaries between complex data logic and seamless web experiences.
+              </p>
+            </div>
+
+            <div className="home-quick-actions">
+              <button className="qa-card" onClick={() => onNavClick?.('skills')}>
+                <div className="qa-icon-wrap"><Code size={16} /></div>
+                <div className="qa-title">
+                  Core Skills <ArrowRight size={14} className="qa-arrow" />
+                </div>
+              </button>
+              <button className="qa-card" onClick={() => onNavClick?.('projects')}>
+                <div className="qa-icon-wrap"><Briefcase size={16} /></div>
+                <div className="qa-title">
+                  Projects <ArrowRight size={14} className="qa-arrow" />
+                </div>
+              </button>
+              <button className="qa-card" onClick={() => onNavClick?.('contact')}>
+                <div className="qa-icon-wrap"><Mail size={16} /></div>
+                <div className="qa-title">
+                  Contact Me <ArrowRight size={14} className="qa-arrow" />
+                </div>
+              </button>
             </div>
             
-            <p className="hero-subtitle-text">
-              A passionate <strong>B.Tech Graduate from VIT (8.7 CGPA)</strong>, actively exploring the boundaries between complex data logic and seamless web experiences.
-            </p>
-          </div>
-
-          <div className="home-quick-actions">
-            <button className="qa-card" onClick={() => onNavClick?.('skills')}>
-              <div className="qa-icon-wrap"><Code size={16} /></div>
-              <div className="qa-title">
-                Core Skills <ArrowRight size={14} className="qa-arrow" />
-              </div>
-            </button>
-            <button className="qa-card" onClick={() => onNavClick?.('projects')}>
-              <div className="qa-icon-wrap"><Briefcase size={16} /></div>
-              <div className="qa-title">
-                Projects <ArrowRight size={14} className="qa-arrow" />
-              </div>
-            </button>
-            <button className="qa-card" onClick={() => onNavClick?.('contact')}>
-              <div className="qa-icon-wrap"><Mail size={16} /></div>
-              <div className="qa-title">
-                Contact Me <ArrowRight size={14} className="qa-arrow" />
-              </div>
-            </button>
           </div>
           
-        </div>
-        
-        <div className="home-image-side">
-          <img src="/IMG_0322.jpg" alt="Sujith Thota" className="hero-img-new" />
+          <div className="home-image-side">
+            <img src="/IMG_0322.jpg" alt="Sujith Thota" className="hero-img-new" />
+          </div>
         </div>
       </div>
     </ScrollReveal>
