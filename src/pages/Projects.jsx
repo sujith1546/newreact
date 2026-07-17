@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import ScrollReveal from '../components/ScrollReveal';
 import { ExternalLink, Code2, X, ChevronRight, ChevronLeft } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
@@ -531,9 +532,7 @@ export default function Projects() {
             bottom: 0;
             left: 0;
             width: 100%;
-            background: rgba(255, 255, 255, 0.4);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: var(--bg-primary);
             border-top: 1px solid var(--border-color);
             border-top-left-radius: 32px;
             border-top-right-radius: 32px;
@@ -541,8 +540,10 @@ export default function Projects() {
             z-index: 101;
             box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.12);
             box-sizing: border-box;
-            max-height: 85vh;
-            overflow-y: auto;
+            height: 85vh;
+            height: 85dvh;
+            display: flex;
+            flex-direction: column;
             text-align: left;
           }
 
@@ -552,6 +553,7 @@ export default function Projects() {
             background: var(--border-color);
             border-radius: 2px;
             margin: 0 auto 16px auto;
+            flex-shrink: 0;
           }
 
           .details-sheet-header {
@@ -559,6 +561,19 @@ export default function Projects() {
             align-items: flex-start;
             justify-content: space-between;
             margin-bottom: 16px;
+            flex-shrink: 0;
+          }
+
+          .details-sheet-content {
+            overflow-y: auto;
+            flex: 1 1 auto;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 20px;
+          }
+          .details-sheet-content::-webkit-scrollbar {
+            display: none;
           }
 
           .details-sheet-title h3 {
@@ -655,101 +670,106 @@ export default function Projects() {
       `}</style>
 
       {/* Details Sheet Overlay */}
-      <AnimatePresence>
-        {selectedProject && (
-          <>
-            <motion.div 
-              className="details-sheet-backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSelectedProject(null)}
-            />
-            <motion.div 
-              ref={detailsSheetRef}
-              className="details-sheet"
-              role="dialog"
-              aria-modal="true"
-              aria-live="polite"
-              aria-label={`Project details for ${selectedProject.title}`}
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-            >
-              <div className="details-sheet-handle" />
-              
-              <div className="details-sheet-header">
-                <div className="details-sheet-title">
-                  <h3>{selectedProject.title}</h3>
-                  {selectedProject.liveUrl && (
-                    <div className="live-badge" style={{ width: 'fit-content' }}>
-                      <span className="live-dot">
-                        <span className="live-ping"></span>
-                        <span className="live-dot-core"></span>
-                      </span>
-                      <span className="live-text">Live Demo</span>
-                    </div>
-                  )}
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {selectedProject && (
+            <div style={{ position: 'relative', zIndex: 9999 }}>
+              <motion.div 
+                className="details-sheet-backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSelectedProject(null)}
+              />
+              <motion.div 
+                ref={detailsSheetRef}
+                className="details-sheet"
+                role="dialog"
+                aria-modal="true"
+                aria-live="polite"
+                aria-label={`Project details for ${selectedProject.title}`}
+                initial={{ y: '100%' }}
+                animate={{ y: 0 }}
+                exit={{ y: '100%' }}
+                transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+              >
+                <div className="details-sheet-handle" />
+                
+                <div className="details-sheet-header">
+                  <div className="details-sheet-title">
+                    <h3>{selectedProject.title}</h3>
+                    {selectedProject.liveUrl && (
+                      <div className="live-badge" style={{ width: 'fit-content' }}>
+                        <span className="live-dot">
+                          <span className="live-ping"></span>
+                          <span className="live-dot-core"></span>
+                        </span>
+                        <span className="live-text">Live Demo</span>
+                      </div>
+                    )}
+                  </div>
+                  <button 
+                    className="details-sheet-close-btn"
+                    onClick={() => setSelectedProject(null)}
+                    aria-label="Close project sheet"
+                  >
+                    <X size={18} />
+                  </button>
                 </div>
-                <button 
-                  className="details-sheet-close-btn"
-                  onClick={() => setSelectedProject(null)}
-                  aria-label="Close project sheet"
-                >
-                  <X size={18} />
-                </button>
-              </div>
 
-              {/* Cover Image in sheet */}
-              <div className="details-sheet-image">
-                <div className="mesh-gradient"></div>
-                {selectedProject.image ? (
-                  <img src={selectedProject.image} alt={selectedProject.title} style={{ width: '100%', height: '100%', objectFit: 'cover', zIndex: 1, position: 'relative' }} />
-                ) : (
-                  <Code2 size={48} className="project-image-icon" style={{ zIndex: 1, position: 'relative' }} />
-                )}
-              </div>
+                <div className="details-sheet-content">
+                  {/* Cover Image in sheet */}
+                  <div className="details-sheet-image">
+                    <div className="mesh-gradient"></div>
+                    {selectedProject.image ? (
+                      <img src={selectedProject.image} alt={selectedProject.title} style={{ width: '100%', height: '100%', objectFit: 'cover', zIndex: 1, position: 'relative' }} />
+                    ) : (
+                      <Code2 size={48} className="project-image-icon" style={{ zIndex: 1, position: 'relative' }} />
+                    )}
+                  </div>
 
-              {/* Full Description */}
-              <p className="details-sheet-desc">{selectedProject.description}</p>
+                  {/* Full Description */}
+                  <p className="details-sheet-desc">{selectedProject.description}</p>
 
-              {/* Tags list */}
-              <div className="details-sheet-tags">
-                {selectedProject.tags.map(tag => (
-                  <span key={tag} className="details-sheet-tag">{tag}</span>
-                ))}
-              </div>
+                  {/* Tags list */}
+                  <div className="details-sheet-tags">
+                    {selectedProject.tags.map(tag => (
+                      <span key={tag} className="details-sheet-tag">{tag}</span>
+                    ))}
+                  </div>
 
-              {/* Launch actions */}
-              <div className="details-sheet-actions">
-                {selectedProject.githubUrl && (
-                  <a 
-                    href={selectedProject.githubUrl} 
-                    target="_blank" 
-                    rel="noreferrer" 
-                    className="details-action-pill"
-                  >
-                    <FaGithub size={16} /> Code
-                  </a>
-                )}
-                {selectedProject.liveUrl && (
-                  <a 
-                    href={selectedProject.liveUrl} 
-                    target="_blank" 
-                    rel="noreferrer" 
-                    className="details-action-pill"
-                    style={{ background: 'var(--primary-blue)', color: 'white', borderColor: 'var(--primary-blue)' }}
-                  >
-                    <ExternalLink size={16} /> Live Demo
-                  </a>
-                )}
-              </div>
+                  {/* Launch actions */}
+                  <div className="details-sheet-actions">
+                    {selectedProject.githubUrl && (
+                      <a 
+                        href={selectedProject.githubUrl} 
+                        target="_blank" 
+                        rel="noreferrer" 
+                        className="details-action-pill"
+                      >
+                        <FaGithub size={16} /> Code
+                      </a>
+                    )}
+                    {selectedProject.liveUrl && (
+                      <a 
+                        href={selectedProject.liveUrl} 
+                        target="_blank" 
+                        rel="noreferrer" 
+                        className="details-action-pill"
+                        style={{ background: 'var(--primary-blue)', color: 'white', borderColor: 'var(--primary-blue)' }}
+                      >
+                        <ExternalLink size={16} /> Live Demo
+                      </a>
+                    )}
+                  </div>
+                </div>
 
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       <div className="projects-header">
         <h1>Featured Projects</h1>
