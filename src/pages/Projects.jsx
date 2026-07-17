@@ -489,7 +489,6 @@ export default function Projects() {
             box-shadow: var(--shadow-sm);
             background: var(--bg-primary);
             border: 1px solid var(--border-color);
-            height: 380px !important; /* Force exact match with cert card */
           }
 
           [data-theme="dark"] .mobile-projects-carousel .project-card {
