@@ -612,6 +612,9 @@ export default function ChatBot() {
       {/* FAB Button */}
       <motion.button
         className="chatbot-fab"
+        drag={!isOpen}
+        dragMomentum={false}
+        animate={isOpen ? { x: 0, y: 0 } : undefined}
         onClick={() => setIsOpen(o => !o)}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.95 }}
