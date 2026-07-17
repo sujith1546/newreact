@@ -510,13 +510,15 @@ export default function Projects() {
             bottom: 0;
             left: 0;
             width: 100%;
-            background: var(--bg-secondary);
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border-top: 1px solid var(--border-color);
-            border-top-left-radius: 28px;
-            border-top-right-radius: 28px;
+            border-top-left-radius: 32px;
+            border-top-right-radius: 32px;
             padding: 24px 20px calc(24px + env(safe-area-inset-bottom, 16px)) 20px;
             z-index: 101;
-            box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.12);
             box-sizing: border-box;
             max-height: 85vh;
             overflow-y: auto;
@@ -606,11 +608,6 @@ export default function Projects() {
 
           .details-sheet-actions {
             display: flex;
-            gap: 12px;
-            border-top: 1px solid var(--border-color);
-            padding-top: 16px;
-          }
-
           .details-action-pill {
             flex: 1;
             height: 46px;
@@ -625,7 +622,7 @@ export default function Projects() {
             font-size: 13.5px;
             font-weight: 600;
             text-decoration: none;
-            transition: all 0.2s ease;
+            transition: all 0.2s ease, transform 0.2s ease;
             outline: none;
           }
 
@@ -652,6 +649,7 @@ export default function Projects() {
               className="details-sheet"
               role="dialog"
               aria-modal="true"
+              aria-live="polite"
               aria-label={`Project details for ${selectedProject.title}`}
               initial={{ y: '100%' }}
               animate={{ y: 0 }}

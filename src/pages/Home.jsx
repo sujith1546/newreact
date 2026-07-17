@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import ScrollReveal from '../components/ScrollReveal';
 import { Code, Briefcase, Mail, FileText, Sparkles, ArrowRight } from 'lucide-react';
+import MobileDashboard from '../components/MobileDashboard';
 
 export default function Home({ onNavClick }) {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
@@ -311,20 +312,20 @@ export default function Home({ onNavClick }) {
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: flex-start;
             box-sizing: border-box;
             width: 100%;
-            padding: 12px 16px;
-            gap: 12px;
+            padding: 16px;
+            gap: 16px;
           }
 
           .mobile-dashboard {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 16px;
             width: 100%;
             height: 100%;
-            justify-content: space-between;
+            justify-content: flex-start;
             overflow: hidden;
           }
 
@@ -444,6 +445,9 @@ export default function Home({ onNavClick }) {
             box-shadow: var(--shadow-sm);
             text-align: left;
             flex-shrink: 0;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
           }
 
           .dashboard-bio-card p {
@@ -453,13 +457,14 @@ export default function Home({ onNavClick }) {
             margin: 0;
           }
 
-          /* Action links grid: fixed compact height, never overflow */
+          /* Action links grid: expands to utilize available vertical space intelligently */
           .dashboard-links-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            grid-template-rows: repeat(2, 78px);
-            gap: 8px;
-            flex-shrink: 0;
+            grid-template-rows: repeat(2, 1fr);
+            gap: 12px;
+            flex-grow: 1;
+            min-height: 160px;
           }
 
           .dashboard-link-card {
@@ -469,8 +474,8 @@ export default function Home({ onNavClick }) {
             padding: 10px 12px;
             display: flex;
             flex-direction: column;
-            justify-content: flex-start;
-            gap: 3px;
+            justify-content: center;
+            gap: 4px;
             box-shadow: var(--shadow-sm);
             text-align: left;
             cursor: pointer;
@@ -574,72 +579,7 @@ export default function Home({ onNavClick }) {
         </div>
       ) : (
         /* Mobile dashboard app view: perfectly fits viewport without scroll */
-        <div className="mobile-dashboard">
-          
-          {/* Greeting Card */}
-          <div className="dashboard-profile-card">
-            <img src="/IMG_0322.jpg" alt="Sujith Thota" className="dashboard-avatar" />
-            <div className="dashboard-welcome">
-              <h3>{getGreeting()}, Sujith here 👋</h3>
-              <h2>Sujith Thota</h2>
-              <div className="dashboard-status">
-                <span className="status-dot" />
-                <span>Available for opportunities</span>
-              </div>
-            </div>
-          </div>
-
-          {/* 3-Column Stats Row */}
-          <div className="dashboard-stats-row">
-            <div className="stat-card">
-              <h4>8.7</h4>
-              <p>VIT CGPA</p>
-            </div>
-            <div className="stat-card">
-              <h4>15+</h4>
-              <p>Certifications</p>
-            </div>
-            <div className="stat-card">
-              <h4>5+</h4>
-              <p>ML Projects</p>
-            </div>
-          </div>
-
-          {/* Short Bio Card */}
-          <div className="dashboard-bio-card">
-            <p>
-              I am a VIT University Data Science graduate exploring the intersection of predictive machine learning systems and reactive web frameworks.
-            </p>
-          </div>
-
-          {/* 2x2 Grid Action Cards (Flex/Grid scales dynamically) */}
-          <div className="dashboard-links-grid">
-            <button className="dashboard-link-card" onClick={() => onNavClick?.('skills')}>
-              <div className="card-icon-box"><Code size={16} /></div>
-              <h4>Core stack</h4>
-              <p>Languages, ML and web frameworks.</p>
-            </button>
-
-            <button className="dashboard-link-card" onClick={() => onNavClick?.('projects')}>
-              <div className="card-icon-box"><Briefcase size={16} /></div>
-              <h4>Projects</h4>
-              <p>Code showcase and demo apps.</p>
-            </button>
-
-            <button className="dashboard-link-card" onClick={triggerResume}>
-              <div className="card-icon-box"><FileText size={16} /></div>
-              <h4>Resume</h4>
-              <p>Open PDF or download a copy.</p>
-            </button>
-
-            <button className="dashboard-link-card" onClick={() => onNavClick?.('contact')}>
-              <div className="card-icon-box"><Mail size={16} /></div>
-              <h4>Connect</h4>
-              <p>Send a message and collaborate.</p>
-            </button>
-          </div>
-
-        </div>
+        <MobileDashboard onNavClick={onNavClick} />
       )}
     </ScrollReveal>
   );
