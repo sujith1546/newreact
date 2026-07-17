@@ -280,14 +280,20 @@ export default function Certifications() {
             flex-direction: column;
           }
           .cert-hologram-area {
-            height: 100px;
+            width: 100%;
+            height: 140px;
             border-right: none;
             border-bottom: 1px solid rgba(0,0,0,0.03);
           }
           [data-theme="dark"] .cert-hologram-area {
             border-bottom-color: rgba(255,255,255,0.05);
           }
+        }
 
+        /* ============================================
+           MOBILE CAROUSEL (<= 900px)
+           ============================================ */
+        @media (max-width: 900px) {
           .certs-grid {
             display: none;
           }
@@ -315,7 +321,6 @@ export default function Certifications() {
           .mobile-certs-carousel .cert-card {
             flex: 0 0 85%;
             scroll-snap-align: center;
-            height: 380px !important; /* Force exact match with project card */
           }
 
           .carousel-nav-arrows {
