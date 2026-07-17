@@ -453,55 +453,71 @@ export default function Home({ onNavClick }) {
             margin: 0;
           }
 
-          /* Action links grid: takes remaining space */
+          /* Action links grid: fixed compact height, never overflow */
           .dashboard-links-grid {
-            flex: 1;
-            min-height: 0;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1fr;
+            grid-template-rows: repeat(2, 78px);
             gap: 8px;
+            flex-shrink: 0;
           }
 
           .dashboard-link-card {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
-            border-radius: 20px;
+            border-radius: 16px;
             padding: 10px 12px;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            gap: 4px;
+            justify-content: flex-start;
+            gap: 3px;
             box-shadow: var(--shadow-sm);
             text-align: left;
             cursor: pointer;
             box-sizing: border-box;
             outline: none;
-            height: 100%;
+            overflow: hidden;
+            transition: border-color 0.15s ease, background 0.15s ease;
           }
 
           .dashboard-link-card:active {
             border-color: var(--primary-blue);
-            background: var(--bg-primary);
+            background: rgba(0,123,255,0.04);
           }
 
           .card-icon-box {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: rgba(0,123,255,0.1);
             color: var(--primary-blue);
-            margin-bottom: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 4px;
+            flex-shrink: 0;
           }
 
           .dashboard-link-card h4 {
-            font-size: 12.5px;
+            font-size: 12px;
             font-weight: 700;
             color: var(--text-primary);
             margin: 0;
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
           }
 
           .dashboard-link-card p {
-            font-size: 9.5px;
+            font-size: 9px;
             color: var(--text-muted);
             margin: 0;
             line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
           }
         }
       `}</style>
