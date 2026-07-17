@@ -238,8 +238,16 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
               className={`nav-capsule-tab${isActive ? ' nav-capsule-tab-active' : ''}`}
               aria-current={isActive ? "page" : undefined}
               aria-label={label}
-              whileTap={{ scale: 0.9 }}
+              whileTap={{ scale: 0.85 }}
+              transition={{ type: "spring", stiffness: 400, damping: 32 }}
             >
+              {isActive && (
+                <motion.div
+                  layoutId="active-nav-pill"
+                  className="nav-capsule-active-pill"
+                  transition={{ type: "spring", stiffness: 400, damping: 32 }}
+                />
+              )}
               <Icon size={18} aria-hidden="true" />
               <span>{label}</span>
             </motion.button>
@@ -254,8 +262,16 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
           aria-expanded={isMoreOpen}
           aria-haspopup="dialog"
           aria-label="More options menu"
-          whileTap={{ scale: 0.9 }}
+          whileTap={{ scale: 0.85 }}
+          transition={{ type: "spring", stiffness: 400, damping: 32 }}
         >
+          {isMoreOpen && (
+            <motion.div
+              layoutId="active-nav-pill"
+              className="nav-capsule-active-pill"
+              transition={{ type: "spring", stiffness: 400, damping: 32 }}
+            />
+          )}
           <MoreHorizontal size={18} aria-hidden="true" />
           <span>More</span>
         </motion.button>
