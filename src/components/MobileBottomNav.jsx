@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Clock, Award, FileText, QrCode, X } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Award, FileText, QrCode, X, Moon, Sun, FileDown } from 'lucide-react';
+import { FaGithub } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocalTime } from '../hooks/useLocalTime';
 import { useTheme } from '../context/ThemeContext';
@@ -166,7 +167,10 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
               <img src="/profile_photo.png" alt="Sujith Thota" className="drawer-avatar" />
               <div className="drawer-profile-info">
                 <h4>Sujith Thota</h4>
-                <p>Vellore, India · {localTime}</p>
+                <div className="drawer-status-badge">
+                  <span className="drawer-status-dot" />
+                  <span>Available for opportunities</span>
+                </div>
               </div>
               <button 
                 className="drawer-close-btn" 
@@ -180,49 +184,60 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
               </button>
             </div>
             
-            {/* Secondary Sections */}
-            <div className="drawer-sections-label">SECONDARY SECTIONS</div>
-            <div className="drawer-grid">
-              <button onClick={() => handleTabClick('education')} className="drawer-item">
-                <div className="drawer-icon-wrapper">
-                  <GraduationCap size={20} />
-                </div>
-                <span>Education</span>
-              </button>
+            {/* Explore Section */}
+            <div className="drawer-section">
+              <div className="drawer-sections-label">Explore</div>
+              <div className="drawer-explore-row">
+                <button onClick={() => handleTabClick('education')} className="drawer-explore-item">
+                  <div className="drawer-item-box">
+                    <GraduationCap size={20} />
+                  </div>
+                  <span>Education</span>
+                </button>
 
-              <button onClick={() => handleTabClick('experience')} className="drawer-item">
-                <div className="drawer-icon-wrapper">
-                  <Clock size={20} />
-                </div>
-                <span>Experience</span>
-              </button>
+                <button onClick={() => handleTabClick('experience')} className="drawer-explore-item">
+                  <div className="drawer-item-box">
+                    <Briefcase size={20} />
+                  </div>
+                  <span>Experience</span>
+                </button>
 
-              <button onClick={() => handleTabClick('certifications')} className="drawer-item">
-                <div className="drawer-icon-wrapper">
-                  <Award size={20} />
-                </div>
-                <span>Certificates</span>
-              </button>
+                <button onClick={() => handleTabClick('certifications')} className="drawer-explore-item">
+                  <div className="drawer-item-box">
+                    <Award size={20} />
+                  </div>
+                  <span>Certificates</span>
+                </button>
+
+                <a href="https://github.com/sujith1546" target="_blank" rel="noopener noreferrer" className="drawer-explore-item">
+                  <div className="drawer-item-box">
+                    <FaGithub size={20} />
+                  </div>
+                  <span>GitHub</span>
+                </a>
+              </div>
             </div>
 
-            {/* Quick action buttons */}
-            <div className="drawer-sections-label">ACTIONS</div>
-            <div className="drawer-actions-row">
-              <button onClick={() => triggerEvent('open-resume')} className="action-button-pill">
-                <FileText size={16} />
-                <span>View Resume</span>
-              </button>
-              <button onClick={handleShare} className="action-button-pill">
-                <QrCode size={16} />
-                <span>Share Portfolio</span>
-              </button>
+            {/* Actions Section */}
+            <div className="drawer-section">
+              <div className="drawer-sections-label">Actions</div>
+              <div className="drawer-actions-list">
+                <button onClick={() => triggerEvent('open-resume')} className="drawer-action-row-btn">
+                  <FileDown size={18} />
+                  <span>View resume</span>
+                </button>
+                <button onClick={handleShare} className="drawer-action-row-btn">
+                  <QrCode size={18} />
+                  <span>Share portfolio / QR</span>
+                </button>
+              </div>
             </div>
 
             {/* Redundant theme toggle at the bottom */}
-            <div className="drawer-theme-row">
-              <span>Theme Preference</span>
-              <button onClick={toggleTheme} className="drawer-theme-toggle-btn" aria-label="Toggle dark mode">
-                {theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            <div className="drawer-theme-row" onClick={toggleTheme}>
+              <span>Dark mode</span>
+              <button className="drawer-theme-toggle-btn-icon" aria-label="Toggle dark mode">
+                {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
               </button>
             </div>
           </motion.div>
