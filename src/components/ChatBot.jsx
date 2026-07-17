@@ -19,10 +19,17 @@ const WELCOME_MESSAGE = {
 
 export default function ChatBot() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
   const [messages, setMessages] = useState([WELCOME_MESSAGE]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 900);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   const [hasError, setHasError] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -612,7 +619,7 @@ export default function ChatBot() {
       {/* FAB Button */}
       <motion.button
         className="chatbot-fab"
-        drag={!isOpen}
+        drag={isMobile && !isOpen}
         dragMomentum={false}
         animate={isOpen ? { x: 0, y: 0 } : undefined}
         onClick={() => setIsOpen(o => !o)}
