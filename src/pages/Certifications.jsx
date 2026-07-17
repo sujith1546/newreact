@@ -1,6 +1,6 @@
-import { useRef } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import ScrollReveal from '../components/ScrollReveal';
-import { Award, ExternalLink, ShieldCheck } from 'lucide-react';
+import { Award, ExternalLink, ShieldCheck, ChevronLeft, ChevronRight } from 'lucide-react';
 import { certificationsData } from '../data/certificationsData';
 
 function CertificationCard({ cert }) {
@@ -47,6 +47,39 @@ function CertificationCard({ cert }) {
 }
 
 export default function Certifications() {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
+  const [scrollIndex, setScrollIndex] = useState(0);
+  const carouselRef = useRef(null);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 900);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const handleScroll = () => {
+    if (!carouselRef.current) return;
+    const width = carouselRef.current.clientWidth;
+    const scrollLeft = carouselRef.current.scrollLeft;
+    const cardWidth = width * 0.85 + 16;
+    const index = Math.round(scrollLeft / cardWidth);
+    setScrollIndex(Math.min(Math.max(index, 0), certificationsData.length - 1));
+  };
+
+  const handlePrev = () => {
+    if (carouselRef.current) {
+      const cardWidth = carouselRef.current.querySelector('.cert-card')?.clientWidth || 300;
+      carouselRef.current.scrollBy({ left: -(cardWidth + 16), behavior: 'smooth' });
+    }
+  };
+
+  const handleNext = () => {
+    if (carouselRef.current) {
+      const cardWidth = carouselRef.current.querySelector('.cert-card')?.clientWidth || 300;
+      carouselRef.current.scrollBy({ left: cardWidth + 16, behavior: 'smooth' });
+    }
+  };
+
   return (
     <ScrollReveal className="wide-content">
       <style>{`
@@ -254,6 +287,88 @@ export default function Certifications() {
           [data-theme="dark"] .cert-hologram-area {
             border-bottom-color: rgba(255,255,255,0.05);
           }
+
+          .certs-grid {
+            display: none;
+          }
+          
+          .mobile-certs-wrapper {
+            position: relative;
+            width: 100%;
+            margin-top: 16px;
+          }
+
+          .mobile-certs-carousel {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 24px;
+          }
+          
+          .mobile-certs-carousel::-webkit-scrollbar {
+            display: none;
+          }
+
+          .mobile-certs-carousel .cert-card {
+            flex: 0 0 85%;
+            scroll-snap-align: center;
+          }
+
+          .carousel-nav-arrows {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-bottom: 16px;
+          }
+
+          .carousel-arrow {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s ease;
+          }
+
+          .carousel-arrow:active {
+            transform: scale(0.9);
+          }
+
+          .carousel-indicators {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 12px;
+          }
+
+          .indicator-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--border-color);
+            transition: all 0.3s ease;
+          }
+
+          .indicator-dot.active {
+            background: var(--primary-blue);
+            width: 16px;
+            border-radius: 4px;
+          }
+        }
+
+        @media (min-width: 901px) {
+          .mobile-certs-wrapper {
+            display: none;
+          }
         }
       `}</style>
 
@@ -268,6 +383,36 @@ export default function Certifications() {
         {certificationsData.map((cert) => (
           <CertificationCard key={cert.id} cert={cert} />
         ))}
+      </div>
+
+      <div className="mobile-certs-wrapper">
+        <div className="carousel-nav-arrows">
+          <button className="carousel-arrow" onClick={handlePrev} aria-label="Previous">
+            <ChevronLeft size={18} />
+          </button>
+          <button className="carousel-arrow" onClick={handleNext} aria-label="Next">
+            <ChevronRight size={18} />
+          </button>
+        </div>
+
+        <div 
+          className="mobile-certs-carousel" 
+          ref={carouselRef} 
+          onScroll={handleScroll}
+        >
+          {certificationsData.map((cert) => (
+            <CertificationCard key={cert.id} cert={cert} />
+          ))}
+        </div>
+
+        <div className="carousel-indicators">
+          {certificationsData.map((_, i) => (
+            <span 
+              key={i} 
+              className={`indicator-dot ${i === scrollIndex ? 'active' : ''}`}
+            />
+          ))}
+        </div>
       </div>
     </ScrollReveal>
   );
