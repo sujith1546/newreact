@@ -404,6 +404,20 @@ export default function Projects() {
            MOBILE HORIZONTAL CAROUSEL & SHEET (<= 900px)
            ============================================ */
         @media (max-width: 900px) {
+          .projects-header {
+            margin-bottom: 16px;
+          }
+          
+          .projects-header h1 {
+            font-size: 18px;
+            margin-bottom: 4px;
+          }
+          
+          .projects-header p {
+            font-size: 11.5px;
+            line-height: 1.4;
+          }
+
           .mobile-view-details-btn {
             display: flex;
             align-items: center;
@@ -473,6 +487,13 @@ export default function Projects() {
             flex: 0 0 85%;
             scroll-snap-align: center;
             box-shadow: var(--shadow-sm);
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+          }
+
+          [data-theme="dark"] .mobile-projects-carousel .project-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.08);
           }
 
           .carousel-indicators {
