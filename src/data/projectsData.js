@@ -7,7 +7,13 @@ export const projectsData = [
     tags: ["Python", "ChromaDB", "Gemini API", "Streamlit", "FastAPI", "RAG"],
     githubUrl: "#",
     liveUrl: "#",
-    featured: true
+    featured: true,
+    stats: [
+      { label: "Requests/hr", value: 600, suffix: "+" },
+      { label: "Latency", value: 2, prefix: "<", suffix: "s" }
+    ],
+    architecture: ["SMS", "PII mask", "ChromaDB", "Gemini"],
+    code: `results = collection.query(\n    query_texts=[sms_text],\n    n_results=5\n)`
   },
   {
     id: "financial-sentiment",
@@ -17,7 +23,13 @@ export const projectsData = [
     tags: ["Python", "TensorFlow", "FinBERT", "NLP", "Machine Learning"],
     githubUrl: "#",
     liveUrl: null,
-    featured: true
+    featured: true,
+    stats: [
+      { label: "Accuracy", value: 87, suffix: "%" },
+      { label: "Articles", value: 20, suffix: "k+" }
+    ],
+    architecture: ["News text", "Tokenize", "FinBERT", "Sentiment"],
+    code: `inputs = tokenizer(text, return_tensors="pt")\noutputs = model(**inputs)`
   },
   {
     id: "retail-spend-prediction",
@@ -27,6 +39,12 @@ export const projectsData = [
     tags: ["Python", "Scikit-learn", "XGBoost", "LightGBM", "Random Forest"],
     githubUrl: "#",
     liveUrl: "#",
-    featured: true
+    featured: true,
+    stats: [
+      { label: "R2 score", value: 0.883, decimals: 3 },
+      { label: "Transactions", value: 397, suffix: "k+" }
+    ],
+    architecture: ["Transactions", "RFM features", "XGBoost/LightGBM", "30-day spend"],
+    code: `model = xgb.XGBRegressor()\nmodel.fit(X_train, y_train)`
   }
 ];

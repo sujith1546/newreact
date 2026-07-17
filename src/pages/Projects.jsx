@@ -65,13 +65,59 @@ function ProjectCard({ project, onCardClick }) {
   );
 }
 
+function useCountUp(target, decimals = 0, active = false) {
+  const [value, setValue] = useState(0);
+  useEffect(() => {
+    if (!active) return;
+    let raf;
+    const duration = 800;
+    const start = performance.now();
+    const tick = (now) => {
+      const t = Math.min((now - start) / duration, 1);
+      setValue(target * (1 - Math.pow(1 - t, 3))); // ease-out cubic
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [active, target]);
+  return value.toFixed(decimals);
+}
+
+function StatCard({ stat, active }) {
+  const display = useCountUp(stat.value, stat.decimals ?? 0, active);
+  return (
+    <div className="ps-stat">
+      <p className="ps-stat-label">{stat.label}</p>
+      <p className="ps-stat-value">
+        {stat.prefix}
+        {display}
+        {stat.suffix}
+      </p>
+    </div>
+  );
+}
+
 export default function Projects() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
   const [selectedProject, setSelectedProject] = useState(null);
   const [scrollIndex, setScrollIndex] = useState(0);
+  const [tab, setTab] = useState("overview");
+  const [copied, setCopied] = useState(false);
+  const dragStartY = useRef(0);
   
   const carouselRef = useRef(null);
   const detailsSheetRef = useRef(null);
+
+  useEffect(() => {
+    if (selectedProject) setTab("overview");
+  }, [selectedProject]);
+
+  const copyCode = () => {
+    if (!selectedProject?.code) return;
+    navigator.clipboard.writeText(selectedProject.code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 900);
@@ -619,6 +665,104 @@ export default function Projects() {
             margin: 0 0 20px 0;
           }
 
+          .ps-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+          }
+          .ps-stat {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px 14px;
+          }
+          .ps-stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin: 0;
+            font-weight: 500;
+          }
+          .ps-stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 4px 0 0;
+          }
+          .ps-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+          }
+          .ps-tab {
+            border: none;
+            background: none;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 8px 12px;
+            color: var(--text-secondary);
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+          }
+          .ps-tab-active {
+            color: var(--text-primary);
+            border-bottom-color: var(--primary-blue);
+          }
+          .ps-arch {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 6px;
+            font-size: 12.5px;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+          }
+          .ps-arch-step {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 6px 10px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            font-weight: 500;
+          }
+          .ps-arch-arrow {
+            color: var(--text-secondary);
+            opacity: 0.6;
+          }
+          .ps-code-block {
+            position: relative;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+          }
+          .ps-code-block pre {
+            margin: 0;
+            font-family: monospace;
+            font-size: 12px;
+            color: var(--text-primary);
+            white-space: pre-wrap;
+          }
+          .ps-copy {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 11px;
+            font-weight: 600;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border-radius: 6px;
+            padding: 4px 10px;
+            cursor: pointer;
+            z-index: 2;
+          }
+
           .details-sheet-tags {
             display: flex;
             flex-wrap: wrap;
@@ -690,6 +834,13 @@ export default function Projects() {
                 animate={{ y: 0 }}
                 exit={{ y: '100%' }}
                 transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
+                drag="y"
+                dragConstraints={{ top: 0, bottom: 0 }}
+                dragElastic={{ top: 0, bottom: 0.4 }}
+                onDragStart={(_, info) => (dragStartY.current = info.point.y)}
+                onDragEnd={(_, info) => {
+                  if (info.offset.y > 120 || info.velocity.y > 600) setSelectedProject(null);
+                }}
               >
                 <div className="details-sheet-handle" />
                 
@@ -726,15 +877,64 @@ export default function Projects() {
                     )}
                   </div>
 
-                  {/* Full Description */}
-                  <p className="details-sheet-desc">{selectedProject.description}</p>
+                  {selectedProject.stats && (
+                    <div className="ps-stats">
+                      {selectedProject.stats.map((s) => (
+                        <StatCard key={s.label} stat={s} active={!!selectedProject} />
+                      ))}
+                    </div>
+                  )}
 
-                  {/* Tags list */}
-                  <div className="details-sheet-tags">
-                    {selectedProject.tags.map(tag => (
-                      <span key={tag} className="details-sheet-tag">{tag}</span>
-                    ))}
-                  </div>
+                  {(() => {
+                    const availableTabs = ["overview"];
+                    if (selectedProject.architecture) availableTabs.push("architecture");
+                    if (selectedProject.code) availableTabs.push("code");
+                    
+                    return availableTabs.length > 1 && (
+                      <div className="ps-tabs">
+                        {availableTabs.map((t) => (
+                          <button
+                            key={t}
+                            className={`ps-tab${tab === t ? " ps-tab-active" : ""}`}
+                            onClick={() => setTab(t)}
+                          >
+                            {t[0].toUpperCase() + t.slice(1)}
+                          </button>
+                        ))}
+                      </div>
+                    );
+                  })()}
+
+                  {tab === "overview" && (
+                    <>
+                      <p className="details-sheet-desc">{selectedProject.description}</p>
+                      <div className="details-sheet-tags">
+                        {selectedProject.tags.map(tag => (
+                          <span key={tag} className="details-sheet-tag">{tag}</span>
+                        ))}
+                      </div>
+                    </>
+                  )}
+
+                  {tab === "architecture" && selectedProject.architecture && (
+                    <div className="ps-arch">
+                      {selectedProject.architecture.map((step, i) => (
+                        <span key={step} className="ps-arch-step">
+                          {step}
+                          {i < selectedProject.architecture.length - 1 && <span className="ps-arch-arrow">&rarr;</span>}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {tab === "code" && selectedProject.code && (
+                    <div className="ps-code-block">
+                      <button className="ps-copy" onClick={copyCode}>
+                        {copied ? "Copied" : "Copy"}
+                      </button>
+                      <pre>{selectedProject.code}</pre>
+                    </div>
+                  )}
 
                   {/* Launch actions */}
                   <div className="details-sheet-actions">
