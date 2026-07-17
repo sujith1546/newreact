@@ -2002,10 +2002,11 @@ html {
 
   .main-content {
     flex: 1;
-    height: calc(100dvh - 60px);
-    padding-top: 60px;      /* clears the fixed header */
-    padding-bottom: 90px;   /* clears the fixed bottom dock + safe area */
+    height: 100dvh !important;
+    padding-top: 60px !important;      /* clears the fixed header */
+    padding-bottom: 90px !important;   /* clears the fixed bottom dock + safe area */
     overflow-y: auto;
+    box-sizing: border-box;
   }
 
   .mobile-top-header {
@@ -2053,6 +2054,51 @@ html {
     margin: 0;
   }
 
+  .mobile-header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .mobile-header-right .timezone-status-wrapper {
+    position: static !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    transform: none !important;
+  }
+
+  .mobile-header-right .timezone-pill-container {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+
+  .mobile-header-right .cmdk-hint-pill {
+    display: none !important;
+  }
+
+  .mobile-header-right .tz-globe-icon {
+    display: none !important;
+  }
+
+  .mobile-header-right .timezone-pill span:last-child {
+    display: none !important;
+  }
+
+  .mobile-header-right .theme-toggle-pill {
+    position: static !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    background: var(--bg-secondary) !important;
+    border: 1px solid var(--border-color) !important;
+    z-index: auto !important;
+    transform: none !important;
+  }
+
   /* Make content layouts stack/adjust cleanly without zoom */
   .scroll-container {
     padding: 16px;
@@ -2093,18 +2139,6 @@ html {
   .hero-img {
     max-width: 160px;
     margin: 0 auto;
-  }
-
-  /* Positioning Top Bar elements in the Mobile Header */
-  .timezone-status-wrapper {
-    top: 13px !important;
-    right: 96px !important;
-  }
-
-  .theme-toggle-pill {
-    top: 13px !important;
-    right: 16px !important;
-    z-index: 2000;
   }
 
   /* Offset Chatbot FAB above the bottom nav */

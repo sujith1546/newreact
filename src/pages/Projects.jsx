@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import ScrollReveal from '../components/ScrollReveal';
-import { ExternalLink, Code2, X, ChevronRight } from 'lucide-react';
+import { ExternalLink, Code2, X, ChevronRight, ChevronLeft } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
 import { projectsData } from '../data/projectsData';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -71,7 +71,6 @@ export default function Projects() {
   
   const carouselRef = useRef(null);
   const detailsSheetRef = useRef(null);
-  const triggerCardRef = useRef(null);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 900);
@@ -84,8 +83,24 @@ export default function Projects() {
     if (!carouselRef.current) return;
     const width = carouselRef.current.clientWidth;
     const scrollLeft = carouselRef.current.scrollLeft;
-    const index = Math.round(scrollLeft / (width * 0.8));
+    // We base index calculation on the width of a card (85% of viewport width) plus gap (16px)
+    const cardWidth = width * 0.85 + 16;
+    const index = Math.round(scrollLeft / cardWidth);
     setScrollIndex(Math.min(Math.max(index, 0), projectsData.length - 1));
+  };
+
+  const handlePrev = () => {
+    if (carouselRef.current) {
+      const cardWidth = carouselRef.current.querySelector('.project-card')?.clientWidth || 300;
+      carouselRef.current.scrollBy({ left: -(cardWidth + 16), behavior: 'smooth' });
+    }
+  };
+
+  const handleNext = () => {
+    if (carouselRef.current) {
+      const cardWidth = carouselRef.current.querySelector('.project-card')?.clientWidth || 300;
+      carouselRef.current.scrollBy({ left: cardWidth + 16, behavior: 'smooth' });
+    }
   };
 
   // Keyboard accessibility & Focus trap inside project drawer sheet
@@ -401,6 +416,45 @@ export default function Projects() {
             border-top: 1px solid var(--border-color);
           }
 
+          .mobile-projects-wrapper {
+            position: relative;
+            width: 100%;
+          }
+
+          .carousel-nav-arrows {
+            position: absolute;
+            top: calc(50% - 20px);
+            left: -8px;
+            right: -8px;
+            transform: translateY(-50%);
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+            z-index: 10;
+          }
+
+          .carousel-arrow {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            cursor: pointer;
+            pointer-events: auto;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s ease;
+            opacity: 0.85;
+          }
+
+          .carousel-arrow:active {
+            transform: scale(0.9);
+            background: var(--bg-primary);
+          }
+
           .mobile-projects-carousel {
             width: 100%;
             overflow-x: auto;
@@ -693,8 +747,18 @@ export default function Projects() {
           ))}
         </div>
       ) : (
-        /* Mobile horizontal swiping carousel */
+        /* Mobile horizontal swiping carousel with arrow navigation overlay */
         <div className="mobile-projects-wrapper">
+          {/* Arrow navigation buttons overlay */}
+          <div className="carousel-nav-arrows">
+            <button className="carousel-arrow left" onClick={handlePrev} aria-label="Previous project">
+              <ChevronLeft size={16} />
+            </button>
+            <button className="carousel-arrow right" onClick={handleNext} aria-label="Next project">
+              <ChevronRight size={16} />
+            </button>
+          </div>
+
           <div 
             className="mobile-projects-carousel"
             ref={carouselRef}

@@ -1,50 +1,6 @@
 import { useState, useEffect } from 'react';
 import ScrollReveal from '../components/ScrollReveal';
-import { Code, Briefcase, Mail, FileText, Sparkles, Trophy } from 'lucide-react';
-
-const ROLES = [
-  "Building Modern Web Apps",
-  "Exploring Data Science",
-  "Solving Complex Problems"
-];
-
-function Typewriter() {
-  const [text, setText] = useState('');
-  const [roleIndex, setRoleIndex] = useState(0);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  useEffect(() => {
-    const currentRole = ROLES[roleIndex];
-    let timer;
-    if (isDeleting) {
-      timer = setTimeout(() => {
-        setText(currentRole.substring(0, text.length - 1));
-        if (text.length === 0) {
-          setIsDeleting(false);
-          setRoleIndex((roleIndex + 1) % ROLES.length);
-        }
-      }, 30);
-    } else {
-      const humanize = Math.random() * 70 + 40;
-      timer = setTimeout(() => {
-        setText(currentRole.substring(0, text.length + 1));
-        if (text.length === currentRole.length) {
-          timer = setTimeout(() => setIsDeleting(true), 3000);
-        }
-      }, humanize);
-    }
-    return () => clearTimeout(timer);
-  }, [text, isDeleting, roleIndex]);
-
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', whiteSpace: 'pre' }}>
-      <span style={{ color: 'var(--primary-blue)', fontWeight: 700, marginRight: '10px', letterSpacing: '-1px' }}>{'>_'}</span>
-      <span style={{ color: 'var(--text-primary)' }}>
-        {text}<span className="typing-cursor"></span>
-      </span>
-    </div>
-  );
-}
+import { Code, Briefcase, Mail, FileText, Sparkles } from 'lucide-react';
 
 export default function Home({ onNavClick }) {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
@@ -66,8 +22,48 @@ export default function Home({ onNavClick }) {
     window.dispatchEvent(new CustomEvent('open-resume'));
   };
 
+  // Typing typewriter component ONLY for desktop
+  function DesktopTypewriter() {
+    const [text, setText] = useState('');
+    const [roleIndex, setRoleIndex] = useState(0);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const roles = ["Building Modern Web Apps", "Exploring Data Science", "Solving Complex Problems"];
+
+    useEffect(() => {
+      const currentRole = roles[roleIndex];
+      let timer;
+      if (isDeleting) {
+        timer = setTimeout(() => {
+          setText(currentRole.substring(0, text.length - 1));
+          if (text.length === 0) {
+            setIsDeleting(false);
+            setRoleIndex((roleIndex + 1) % roles.length);
+          }
+        }, 30);
+      } else {
+        const humanize = Math.random() * 70 + 40;
+        timer = setTimeout(() => {
+          setText(currentRole.substring(0, currentRole.length + 1)); // Fix: use currentRole length
+          if (text.length === currentRole.length) {
+            timer = setTimeout(() => setIsDeleting(true), 3000);
+          }
+        }, humanize);
+      }
+      return () => clearTimeout(timer);
+    }, [text, isDeleting, roleIndex]);
+
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', whiteSpace: 'pre' }}>
+        <span style={{ color: 'var(--primary-blue)', fontWeight: 700, marginRight: '10px', letterSpacing: '-1px' }}>{'>_'}</span>
+        <span style={{ color: 'var(--text-primary)' }}>
+          {text}<span className="typing-cursor"></span>
+        </span>
+      </div>
+    );
+  }
+
   return (
-    <ScrollReveal className="home-content">
+    <ScrollReveal className="home-content home-pane">
       <style>{`
         /* Desktop styles (Default) */
         .home-content .home-grid {
@@ -310,40 +306,59 @@ export default function Home({ onNavClick }) {
            MOBILE DASHBOARD APP UI (<= 900px)
            ============================================ */
         @media (max-width: 900px) {
-          .home-content {
-            padding: 8px 4px 16px 4px !important;
+          .home-content.home-pane {
+            height: calc(100dvh - 60px - 90px);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
+            width: 100%;
+            padding: 12px 16px;
+            gap: 12px;
           }
 
           .mobile-dashboard {
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 12px;
             width: 100%;
+            height: 100%;
+            justify-content: space-between;
+            overflow: hidden;
           }
 
           .dashboard-profile-card {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 16px;
+            border-radius: 16px;
+            padding: 12px 16px;
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 12px;
             box-shadow: var(--shadow-sm);
             text-align: left;
+            flex-shrink: 0;
           }
 
           .dashboard-avatar {
-            width: 68px;
-            height: 68px;
+            width: 54px;
+            height: 54px;
             border-radius: 50%;
             border: 1.5px solid var(--primary-blue);
             object-fit: cover;
+            flex-shrink: 0;
+          }
+
+          .dashboard-welcome {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
           }
 
           .dashboard-welcome h3 {
-            font-size: 12px;
-            font-weight: 550;
+            font-size: 11px;
+            font-weight: 600;
             color: var(--text-secondary);
             margin: 0;
             text-transform: uppercase;
@@ -351,23 +366,22 @@ export default function Home({ onNavClick }) {
           }
 
           .dashboard-welcome h2 {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 800;
             color: var(--text-primary);
-            margin: 2px 0 6px 0;
+            margin: 0;
             letter-spacing: -0.02em;
+            line-height: 1.2;
           }
 
           .dashboard-status {
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: rgba(16, 185, 129, 0.08);
             color: #10b981;
-            padding: 4px 10px;
-            border-radius: 20px;
             font-size: 10.5px;
-            font-weight: 600;
+            font-weight: 700;
+            margin-top: 2px;
           }
 
           .status-dot {
@@ -375,6 +389,7 @@ export default function Home({ onNavClick }) {
             height: 6px;
             background: #10b981;
             border-radius: 50%;
+            display: inline-block;
             animation: status-pulse 2s infinite;
           }
 
@@ -388,13 +403,14 @@ export default function Home({ onNavClick }) {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 8px;
+            flex-shrink: 0;
           }
 
           .stat-card {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 12px 6px;
+            border-radius: 12px;
+            padding: 10px 4px;
             text-align: center;
             box-shadow: var(--shadow-sm);
             display: flex;
@@ -408,11 +424,12 @@ export default function Home({ onNavClick }) {
             font-weight: 800;
             color: var(--primary-blue);
             margin: 0 0 2px 0;
+            line-height: 1.1;
           }
 
           .stat-card p {
-            font-size: 9px;
-            font-weight: 600;
+            font-size: 8.5px;
+            font-weight: 650;
             color: var(--text-muted);
             margin: 0;
             text-transform: uppercase;
@@ -422,65 +439,66 @@ export default function Home({ onNavClick }) {
           .dashboard-bio-card {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
-            border-radius: 18px;
-            padding: 14px 16px;
+            border-radius: 16px;
+            padding: 12px 16px;
             box-shadow: var(--shadow-sm);
             text-align: left;
+            flex-shrink: 0;
           }
 
           .dashboard-bio-card p {
-            font-size: 13px;
+            font-size: 12.5px;
             color: var(--text-secondary);
             line-height: 1.5;
             margin: 0;
           }
 
+          /* Action links grid: takes remaining space */
           .dashboard-links-grid {
+            flex: 1;
+            min-height: 0;
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 8px;
           }
 
           .dashboard-link-card {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
             border-radius: 16px;
-            padding: 14px 12px;
+            padding: 10px 12px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            justify-content: center;
+            gap: 4px;
+            box-shadow: var(--shadow-sm);
             text-align: left;
             cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: var(--shadow-sm);
+            box-sizing: border-box;
             outline: none;
+            height: 100%;
           }
 
           .dashboard-link-card:active {
-            transform: scale(0.97);
             border-color: var(--primary-blue);
+            background: var(--bg-primary);
           }
 
           .card-icon-box {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            background: rgba(0, 123, 255, 0.08);
             color: var(--primary-blue);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            margin-bottom: 2px;
           }
 
           .dashboard-link-card h4 {
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 700;
             color: var(--text-primary);
             margin: 0;
           }
 
           .dashboard-link-card p {
-            font-size: 10px;
+            font-size: 9.5px;
             color: var(--text-muted);
             margin: 0;
             line-height: 1.3;
@@ -504,7 +522,7 @@ export default function Home({ onNavClick }) {
               <h1 className="hero-title-main">Sujith Thota</h1>
               
               <div className="hero-typewriter-container">
-                <Typewriter />
+                <DesktopTypewriter />
               </div>
               
               <p className="hero-subtitle-text">
@@ -539,23 +557,23 @@ export default function Home({ onNavClick }) {
           </div>
         </div>
       ) : (
-        /* Mobile dashboard app view */
+        /* Mobile dashboard app view: perfectly fits viewport without scroll */
         <div className="mobile-dashboard">
           
-          {/* Avatar Welcome Banner Card */}
+          {/* Greeting Card */}
           <div className="dashboard-profile-card">
             <img src="/IMG_0322.jpg" alt="Sujith Thota" className="dashboard-avatar" />
             <div className="dashboard-welcome">
-              <h3>{getGreeting()}</h3>
+              <h3>{getGreeting()}, Sujith here 👋</h3>
               <h2>Sujith Thota</h2>
               <div className="dashboard-status">
-                <div className="status-dot" />
-                <span>Available for Opportunities</span>
+                <span className="status-dot" />
+                <span>Available for opportunities</span>
               </div>
             </div>
           </div>
 
-          {/* Quick Stats Grid */}
+          {/* 3-Column Stats Row */}
           <div className="dashboard-stats-row">
             <div className="stat-card">
               <h4>8.7</h4>
@@ -571,42 +589,37 @@ export default function Home({ onNavClick }) {
             </div>
           </div>
 
-          {/* Intro Bio Card */}
+          {/* Short Bio Card */}
           <div className="dashboard-bio-card">
             <p>
-              VIT University Data Science graduate exploring the boundary between predictive machine learning intelligence and reactive web experiences.
+              I am a VIT University Data Science graduate exploring the intersection of predictive machine learning systems and reactive web frameworks.
             </p>
           </div>
 
-          {/* Typewriter text line */}
-          <div className="hero-typewriter-container" style={{ margin: '0 auto', background: 'var(--bg-secondary)' }}>
-            <Typewriter />
-          </div>
-
-          {/* Dashboard Action cards */}
+          {/* 2x2 Grid Action Cards (Flex/Grid scales dynamically) */}
           <div className="dashboard-links-grid">
             <button className="dashboard-link-card" onClick={() => onNavClick?.('skills')}>
-              <div className="card-icon-box"><Code size={18} /></div>
-              <h4>Core Stack</h4>
-              <p>Languages, ML models & web tech frameworks.</p>
+              <div className="card-icon-box"><Code size={16} /></div>
+              <h4>Core stack</h4>
+              <p>Languages, ML and web frameworks.</p>
             </button>
 
             <button className="dashboard-link-card" onClick={() => onNavClick?.('projects')}>
-              <div className="card-icon-box"><Briefcase size={18} /></div>
+              <div className="card-icon-box"><Briefcase size={16} /></div>
               <h4>Projects</h4>
-              <p>Swipe through code showcase & demo apps.</p>
+              <p>Code showcase and demo apps.</p>
             </button>
 
             <button className="dashboard-link-card" onClick={triggerResume}>
-              <div className="card-icon-box"><FileText size={18} /></div>
+              <div className="card-icon-box"><FileText size={16} /></div>
               <h4>Resume</h4>
-              <p>Open interactive PDF & download offline copy.</p>
+              <p>Open PDF or download a copy.</p>
             </button>
 
             <button className="dashboard-link-card" onClick={() => onNavClick?.('contact')}>
-              <div className="card-icon-box"><Mail size={18} /></div>
+              <div className="card-icon-box"><Mail size={16} /></div>
               <h4>Connect</h4>
-              <p>Send a direct message & collaborate.</p>
+              <p>Send a message and collaborate.</p>
             </button>
           </div>
 

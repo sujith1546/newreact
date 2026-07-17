@@ -4,7 +4,6 @@ import ScrollReveal from '../components/ScrollReveal';
 import { skillCategories } from '../data/skillsData';
 import { categoryIconMap } from '../components/skillIcons';
 import SkillTooltip from '../components/SkillTooltip';
-import { ChevronDown, ChevronUp, Calendar, Briefcase, Award } from 'lucide-react';
 
 const containerVariants = {
   hidden: {},
@@ -19,7 +18,6 @@ const itemVariants = {
 export default function Skills() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
   const [activeTab, setActiveTab] = useState('languages');
-  const [expandedSkill, setExpandedSkill] = useState(null);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 900);
@@ -29,14 +27,6 @@ export default function Skills() {
 
   const activeCategory = skillCategories.find(c => c.id === activeTab) || skillCategories[0];
   const ActiveIcon = categoryIconMap[activeCategory.id] || categoryIconMap.languages;
-
-  const toggleSkill = (skillId) => {
-    if (expandedSkill === skillId) {
-      setExpandedSkill(null);
-    } else {
-      setExpandedSkill(skillId);
-    }
-  };
 
   return (
     <ScrollReveal>
@@ -150,15 +140,15 @@ export default function Skills() {
           .mobile-tabs-container {
             width: 100%;
             overflow-x: auto;
-            padding-bottom: 6px;
+            padding-bottom: 8px;
             margin-bottom: 12px;
             display: flex;
             gap: 8px;
-            scrollbar-width: none; /* Hide scrollbar for Firefox */
+            scrollbar-width: none;
             -webkit-overflow-scrolling: touch;
           }
           .mobile-tabs-container::-webkit-scrollbar {
-            display: none; /* Hide scrollbar for Chrome/Safari */
+            display: none;
           }
 
           .mobile-tab-btn {
@@ -196,10 +186,9 @@ export default function Skills() {
             padding: 16px;
             box-shadow: var(--shadow-sm);
             text-align: left;
-            overflow: hidden;
             display: flex;
             flex-direction: column;
-            cursor: pointer;
+            gap: 12px;
           }
 
           .mobile-skill-card-top {
@@ -212,18 +201,19 @@ export default function Skills() {
           .mobile-skill-card-left {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
           }
 
           .mobile-skill-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
             background: rgba(0, 123, 255, 0.05);
             color: var(--primary-blue);
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
           }
 
           .mobile-skill-name {
@@ -234,7 +224,7 @@ export default function Skills() {
           }
 
           .mobile-skill-level {
-            font-size: 11px;
+            font-size: 10.5px;
             font-weight: 600;
             color: var(--primary-blue);
             background: rgba(0, 123, 255, 0.08);
@@ -242,57 +232,11 @@ export default function Skills() {
             border-radius: 12px;
           }
 
-          .mobile-skill-card-arrow {
-            color: var(--text-secondary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: transform 0.2s ease;
-          }
-
-          .mobile-skill-card-arrow.expanded {
-            transform: rotate(180deg);
-          }
-
-          .mobile-skill-details-panel {
-            margin-top: 16px;
-            padding-top: 16px;
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-          }
-
-          .details-metric-row {
-            display: flex;
-            gap: 16px;
-          }
-
-          .details-metric {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 11.5px;
-            color: var(--text-secondary);
-            font-weight: 550;
-          }
-
-          .details-metric svg {
-            color: var(--primary-blue);
-          }
-
           .details-progress-bar-wrap {
             display: flex;
             flex-direction: column;
-            gap: 6px;
-          }
-
-          .details-progress-bar-header {
-            display: flex;
-            justify-content: space-between;
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--text-secondary);
+            gap: 4px;
+            margin-top: 2px;
           }
 
           .details-progress-track {
@@ -313,24 +257,23 @@ export default function Skills() {
             font-size: 12.5px;
             line-height: 1.5;
             color: var(--text-secondary);
-            margin: 4px 0 0 0;
+            margin: 0;
           }
 
           .details-tag-row {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 4px;
+            gap: 6px;
           }
 
           .details-tool-tag {
-            font-size: 10px;
+            font-size: 9.5px;
             font-weight: 600;
             background: var(--bg-primary);
             color: var(--text-secondary);
             border: 1px solid var(--border-color);
-            padding: 3px 8px;
-            border-radius: 6px;
+            padding: 2px 6px;
+            border-radius: 5px;
           }
         }
 
@@ -396,7 +339,7 @@ export default function Skills() {
             })}
           </motion.div>
         ) : (
-          /* Mobile app tab interface */
+          /* Mobile swipeable category selector + direct skill cards list */
           <motion.div className="mobile-skills-section" variants={containerVariants}>
             
             {/* Horizontal Tabs Bar */}
@@ -404,10 +347,7 @@ export default function Skills() {
               {skillCategories.map(category => (
                 <button
                   key={category.id}
-                  onClick={() => {
-                    setActiveTab(category.id);
-                    setExpandedSkill(null);
-                  }}
+                  onClick={() => setActiveTab(category.id)}
                   className={`mobile-tab-btn ${activeTab === category.id ? 'active' : ''}`}
                 >
                   {category.title}
@@ -426,81 +366,43 @@ export default function Skills() {
                 transition={{ duration: 0.2 }}
               >
                 {activeCategory.skills.map(skill => {
-                  const isExpanded = expandedSkill === skill.id;
-                  
                   return (
-                    <div 
-                      key={skill.id} 
-                      className="mobile-skill-card"
-                      onClick={() => toggleSkill(skill.id)}
-                    >
+                    <div key={skill.id} className="mobile-skill-card">
                       <div className="mobile-skill-card-top">
                         <div className="mobile-skill-card-left">
                           <div className="mobile-skill-avatar">
-                            <ActiveIcon size={18} />
+                            <ActiveIcon size={16} />
                           </div>
                           <h4 className="mobile-skill-name">{skill.name}</h4>
-                          {skill.level && <span className="mobile-skill-level">{skill.level}</span>}
                         </div>
-                        <div className={`mobile-skill-card-arrow ${isExpanded ? 'expanded' : ''}`}>
-                          <ChevronDown size={18} />
-                        </div>
+                        {skill.level && <span className="mobile-skill-level">{skill.level}</span>}
                       </div>
 
-                      {/* Expandable Info block */}
-                      <AnimatePresence>
-                        {isExpanded && (
-                          <motion.div 
-                            className="mobile-skill-details-panel"
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: 'auto', opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.25, ease: 'easeInOut' }}
-                          >
-                            <div className="details-metric-row">
-                              {skill.years > 0 && (
-                                <div className="details-metric">
-                                  <Calendar size={14} />
-                                  <span>{skill.years} {skill.years === 1 ? 'Year' : 'Years'} Exp</span>
-                                </div>
-                              )}
-                              {skill.projectCount > 0 && (
-                                <div className="details-metric">
-                                  <Briefcase size={14} />
-                                  <span>{skill.projectCount} {skill.projectCount === 1 ? 'Project' : 'Projects'}</span>
-                                </div>
-                              )}
-                            </div>
+                      {/* Proficiency Indicator (Progress Bar) */}
+                      {skill.percent && (
+                        <div className="details-progress-bar-wrap">
+                          <div className="details-progress-track">
+                            <div 
+                              className="details-progress-fill" 
+                              style={{ width: `${skill.percent}%` }}
+                            />
+                          </div>
+                        </div>
+                      )}
 
-                            {skill.percent && (
-                              <div className="details-progress-bar-wrap">
-                                <div className="details-progress-bar-header">
-                                  <span>Proficiency</span>
-                                  <span>{skill.percent}%</span>
-                                </div>
-                                <div className="details-progress-track">
-                                  <div 
-                                    className="details-progress-fill" 
-                                    style={{ width: `${skill.percent}%` }}
-                                  />
-                                </div>
-                              </div>
-                            )}
+                      {/* Bio description inline */}
+                      {skill.description && (
+                        <p className="details-description">{skill.description}</p>
+                      )}
 
-                            {skill.description && (
-                              <p className="details-description">{skill.description}</p>
-                            )}
-
-                            {skill.relatedTools && skill.relatedTools.length > 0 && (
-                              <div className="details-tag-row">
-                                {skill.relatedTools.map(tool => (
-                                  <span key={tool} className="details-tool-tag">{tool}</span>
-                                ))}
-                              </div>
-                            )}
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+                      {/* Related tools row inline */}
+                      {skill.relatedTools && skill.relatedTools.length > 0 && (
+                        <div className="details-tag-row">
+                          {skill.relatedTools.map(tool => (
+                            <span key={tool} className="details-tool-tag">{tool}</span>
+                          ))}
+                        </div>
+                      )}
 
                     </div>
                   );

@@ -30,7 +30,14 @@ const SECTIONS = [
 
 export default function MainLayout() {
   const [activeSection, setActiveSection] = useState('home');
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
   const scrollRef = useRef(null);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 900);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const handleNavigate = (e) => {
@@ -61,6 +68,10 @@ export default function MainLayout() {
           <img src="/profile_photo.png" alt="Sujith Thota" />
           <h2>Sujith Thota</h2>
         </div>
+        <div className="mobile-header-right">
+          <TimezoneStatus />
+          <DarkModeToggle />
+        </div>
       </header>
 
       <ParticleCanvas />
@@ -85,8 +96,12 @@ export default function MainLayout() {
 
       <WelcomeModal onNavClick={handleNavClick} />
       
-      <TimezoneStatus />
-      <DarkModeToggle />
+      {!isMobile && (
+        <>
+          <TimezoneStatus />
+          <DarkModeToggle />
+        </>
+      )}
       <ChatBot />
       <CommandPalette />
 

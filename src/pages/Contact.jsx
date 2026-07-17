@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Phone, ArrowRight, Check, Loader2, Send, RotateCcw } from "lucide-react";
+import { Mail, Phone, ArrowRight, Check, Loader2, Send } from "lucide-react";
 import ScrollReveal from '../components/ScrollReveal';
 
 const panelVariants = {
@@ -18,17 +18,10 @@ export default function Contact() {
   const phone = "+91 8501889996";
 
   const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [errors, setErrors] = useState({ name: "", email: "", message: "" });
+  const [touched, setTouched] = useState({ name: false, email: false, message: false });
   const [status, setStatus] = useState("idle"); // idle | sending | sent
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
-
-  // Mobile Chat State Machine
-  const [chatStep, setChatStep] = useState(0); // 0: Name, 1: Email, 2: Message, 3: Sending, 4: Done
-  const [chatInput, setChatInput] = useState("");
-  const [chatHistory, setChatHistory] = useState([
-    { sender: 'bot', text: "Hey! Sujith here. What is your name? 👋" }
-  ]);
-
-  const chatEndRef = useRef(null);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 900);
@@ -36,18 +29,60 @@ export default function Contact() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Auto-scroll mobile chat feed to bottom
-  useEffect(() => {
-    if (isMobile && chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+  // Validate form on input change or blur
+  const validateField = (name, value) => {
+    let error = "";
+    if (!value.trim()) {
+      error = `${name.charAt(0).toUpperCase() + name.slice(1)} is required.`;
+    } else if (name === "email") {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(value)) {
+        error = "Please enter a valid email address.";
+      }
     }
-  }, [chatHistory, isMobile]);
+    setErrors(prev => ({ ...prev, [name]: error }));
+  };
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
+    if (touched[name]) {
+      validateField(name, value);
+    }
+  };
 
-  // Normal Desktop Submit
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    setTouched(prev => ({ ...prev, [name]: true }));
+    validateField(name, value);
+  };
+
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
+
+    // Validate all fields before submitting
+    const newErrors = {};
+    let hasErrors = false;
+    Object.keys(form).forEach(key => {
+      validateField(key, form[key]);
+      if (!form[key].trim()) {
+        newErrors[key] = `${key.charAt(0).toUpperCase() + key.slice(1)} is required.`;
+        hasErrors = true;
+      } else if (key === "email") {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(form[key])) {
+          newErrors[key] = "Please enter a valid email address.";
+          hasErrors = true;
+        }
+      }
+    });
+
+    setTouched({ name: true, email: true, message: true });
+    if (hasErrors) {
+      setErrors(newErrors);
+      return;
+    }
+
     setStatus("sending");
 
     try {
@@ -68,7 +103,8 @@ export default function Contact() {
       if (response.ok && result.success) {
         setStatus("sent");
         setForm({ name: "", email: "", message: "" });
-        setTimeout(() => setStatus("idle"), 3000);
+        setTouched({ name: false, email: false, message: false });
+        setTimeout(() => setStatus("idle"), 5000);
       } else {
         throw new Error(result.error || "Failed to submit form");
       }
@@ -76,108 +112,6 @@ export default function Contact() {
       console.error("Contact Form Submission Error:", error);
       alert(`Oops! Something went wrong: ${error.message || 'Please try again later.'}`);
       setStatus("idle");
-    }
-  };
-
-  // Mobile Chat Form Submit Trigger
-  const triggerChatSubmit = async (finalMessage, finalName, finalEmail) => {
-    setChatStep(3);
-    setStatus("sending");
-
-    try {
-      const response = await fetch("/api/contact", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json"
-        },
-        body: JSON.stringify({
-          name: finalName,
-          email: finalEmail,
-          message: finalMessage
-        })
-      });
-
-      const result = await response.json();
-      if (response.ok && result.success) {
-        setChatHistory(prev => [
-          ...prev,
-          { sender: 'bot', text: "Perfect! Message sent successfully. I will get back to you within a day. 🚀" }
-        ]);
-        setChatStep(4);
-        setStatus("sent");
-      } else {
-        throw new Error(result.error || "Failed to submit form");
-      }
-    } catch (error) {
-      console.error("Chat Form Submission Error:", error);
-      setChatHistory(prev => [
-        ...prev,
-        { sender: 'bot', text: `Oops, something went wrong: ${error.message || 'Server error'}. Please tap reset and try again.` }
-      ]);
-      setChatStep(4);
-      setStatus("idle");
-    }
-  };
-
-  const handleChatSend = () => {
-    const text = chatInput.trim();
-    if (!text) return;
-
-    setChatInput("");
-
-    if (chatStep === 0) {
-      // Save Name
-      setForm(prev => ({ ...prev, name: text }));
-      setChatHistory(prev => [
-        ...prev,
-        { sender: 'user', text },
-        { sender: 'bot', text: `Nice to meet you, ${text}! What is your email address so I can write back? ✉️` }
-      ]);
-      setChatStep(1);
-    } else if (chatStep === 1) {
-      // Save Email
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(text)) {
-        setChatHistory(prev => [
-          ...prev,
-          { sender: 'user', text },
-          { sender: 'bot', text: "Hmm, that email doesn't look valid. Could you please double check? 🔍" }
-        ]);
-        return;
-      }
-      setForm(prev => ({ ...prev, email: text }));
-      setChatHistory(prev => [
-        ...prev,
-        { sender: 'user', text },
-        { sender: 'bot', text: "Excellent! What would you like to discuss? Type your message below. 💬" }
-      ]);
-      setChatStep(2);
-    } else if (chatStep === 2) {
-      // Save Message & Submit
-      setForm(prev => ({ ...prev, message: text }));
-      setChatHistory(prev => [
-        ...prev,
-        { sender: 'user', text },
-        { sender: 'bot', text: "Got it! Sending message now..." }
-      ]);
-      triggerChatSubmit(text, form.name, form.email);
-    }
-  };
-
-  const handleChatReset = () => {
-    setForm({ name: "", email: "", message: "" });
-    setChatStep(0);
-    setChatInput("");
-    setChatHistory([
-      { sender: 'bot', text: "Hey! Sujith here. What is your name? 👋" }
-    ]);
-    setStatus("idle");
-  };
-
-  const handleChatKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      handleChatSend();
     }
   };
 
@@ -200,15 +134,6 @@ export default function Contact() {
           color: var(--text-secondary);
           margin: 0 0 6px;
           font-size: 14.5px;
-        }
-        .contact-plain-header ul {
-          margin: 0 0 32px 20px;
-          padding: 0;
-        }
-        .contact-plain-header li {
-          margin: 6px 0;
-          font-size: 14px;
-          color: var(--text-secondary);
         }
 
         .fc-wrapper {
@@ -418,6 +343,18 @@ export default function Contact() {
           margin: 0;
         }
 
+        /* Error Styles */
+        .fc-error-text {
+          font-size: 11.5px;
+          color: #ef4444;
+          margin: 0;
+          text-align: left;
+        }
+
+        .fc-input.error {
+          border-color: #ef4444 !important;
+        }
+
         /* Dark Mode overrides */
         [data-theme="dark"] .fc-wrapper { border-color: #374151; }
         [data-theme="dark"] .fc-right-col { background: #252525; }
@@ -428,7 +365,7 @@ export default function Contact() {
         [data-theme="dark"] .fc-success-circle { background: #064e3b; }
 
         /* ============================================
-           MOBILE APP INSTANT MESSENGER UI (<= 900px)
+           MOBILE ACCESSIBLE CHAT + FORM UI (<= 900px)
            ============================================ */
         @media (max-width: 900px) {
           .contact-plain-header {
@@ -436,183 +373,72 @@ export default function Contact() {
             margin-bottom: 16px;
           }
 
-          .mobile-chat-app {
+          .mobile-contact-container {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
-            border-radius: 24px;
+            border-radius: 20px;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            height: 480px;
             box-shadow: var(--shadow-md);
             box-sizing: border-box;
             width: 100%;
+            padding: 16px;
+            gap: 16px;
           }
 
-          /* Chat header */
-          .chat-app-header {
-            height: 54px;
-            background: var(--bg-primary);
-            border-bottom: 1px solid var(--border-color);
+          /* Chat bubble greeting */
+          .chat-greeting-bubble {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 16px;
-            box-sizing: border-box;
-          }
-
-          .chat-header-profile {
-            display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 10px;
+            margin-bottom: 4px;
+            text-align: left;
           }
 
-          .chat-header-avatar {
-            width: 32px;
-            height: 32px;
+          .chat-avatar {
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             border: 1.5px solid var(--primary-blue);
             object-fit: cover;
+            flex-shrink: 0;
           }
 
-          .chat-header-info {
-            text-align: left;
-          }
-
-          .chat-header-name {
-            font-size: 13.5px;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin: 0;
-            line-height: 1.2;
-          }
-
-          .chat-header-status {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 10px;
-            color: #10b981;
-            font-weight: 600;
-          }
-
-          .chat-header-dot {
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-            background: #10b981;
-          }
-
-          .chat-reset-btn {
-            border: none;
-            background: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 6px;
-            border-radius: 50%;
-            transition: background 0.2s ease;
-          }
-
-          .chat-reset-btn:active {
-            background: rgba(128, 128, 128, 0.08);
-          }
-
-          /* Chat feed area */
-          .chat-feed-box {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            background: var(--bg-secondary);
-            box-sizing: border-box;
-          }
-
-          .chat-bubble-row {
-            display: flex;
-            width: 100%;
-          }
-
-          .chat-bubble-row.bot {
-            justify-content: flex-start;
-          }
-
-          .chat-bubble-row.user {
-            justify-content: flex-end;
-          }
-
-          .chat-bubble {
-            max-width: 80%;
+          .chat-bubble-content {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px 16px 16px 16px;
             padding: 10px 14px;
             font-size: 13px;
             line-height: 1.5;
-            text-align: left;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-          }
-
-          .chat-bubble.bot {
-            background: var(--bg-primary);
             color: var(--text-primary);
-            border-radius: 16px 16px 16px 4px;
-            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-sm);
           }
 
-          .chat-bubble.user {
-            background: var(--primary-blue);
-            color: white;
-            border-radius: 16px 16px 4px 16px;
-          }
-
-          /* Input panel bar */
-          .chat-input-panel {
-            height: 60px;
-            background: var(--bg-primary);
-            border-top: 1px solid var(--border-color);
+          /* Form inside Mobile container */
+          .mobile-form {
             display: flex;
-            align-items: center;
-            padding: 8px 12px;
-            gap: 8px;
-            box-sizing: border-box;
+            flex-direction: column;
+            gap: 14px;
+            width: 100%;
           }
 
-          .chat-input-box {
-            flex: 1;
-            height: 38px;
-            border-radius: 20px;
-            border: 1px solid var(--border-color);
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-            padding: 0 14px;
+          .mobile-form .fc-field label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-secondary);
+          }
+
+          .mobile-form .fc-input {
+            padding: 10px 12px;
             font-size: 13px;
-            outline: none;
-            box-sizing: border-box;
+            border-radius: 10px;
           }
 
-          .chat-input-box:focus {
-            border-color: var(--primary-blue);
-          }
-
-          .chat-send-btn {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            background: var(--primary-blue);
-            color: white;
-            border: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: opacity 0.2s ease;
-          }
-
-          .chat-send-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
+          .mobile-form .fc-submit-btn {
+            border-radius: 10px;
+            margin-top: 4px;
           }
         }
       `}</style>
@@ -687,12 +513,16 @@ export default function Contact() {
                       <input
                         id="fc-name"
                         name="name"
-                        className="fc-input"
+                        className={`fc-input ${touched.name && errors.name ? 'error' : ''}`}
                         placeholder="Thota Sujith Reddy"
                         value={form.name}
                         onChange={handleChange}
+                        onBlur={handleBlur}
                         required
                       />
+                      {touched.name && errors.name && (
+                        <span className="fc-error-text">{errors.name}</span>
+                      )}
                     </motion.div>
 
                     <motion.div variants={itemVariants} className="fc-field">
@@ -701,12 +531,16 @@ export default function Contact() {
                         id="fc-email"
                         name="email"
                         type="email"
-                        className="fc-input"
+                        className={`fc-input ${touched.email && errors.email ? 'error' : ''}`}
                         placeholder="sujithreddy1546@gmail.com"
                         value={form.email}
                         onChange={handleChange}
+                        onBlur={handleBlur}
                         required
                       />
+                      {touched.email && errors.email && (
+                        <span className="fc-error-text">{errors.email}</span>
+                      )}
                     </motion.div>
 
                     <motion.div variants={itemVariants} className="fc-field">
@@ -714,13 +548,17 @@ export default function Contact() {
                       <textarea
                         id="fc-message"
                         name="message"
-                        className="fc-input"
+                        className={`fc-input ${touched.message && errors.message ? 'error' : ''}`}
                         rows={4}
                         placeholder="Tell me a bit about what you'd like to discuss..."
                         value={form.message}
                         onChange={handleChange}
+                        onBlur={handleBlur}
                         required
                       />
+                      {touched.message && errors.message && (
+                        <span className="fc-error-text">{errors.message}</span>
+                      )}
                     </motion.div>
 
                     <motion.button
@@ -753,81 +591,106 @@ export default function Contact() {
             </div>
           </div>
         ) : (
-          /* Mobile Interactive Messenger App */
-          <div className="mobile-chat-app">
-            
-            {/* Header bar */}
-            <div className="chat-app-header">
-              <div className="chat-header-profile">
-                <img src="/IMG_0322.jpg" alt="Sujith Thota" className="chat-header-avatar" />
-                <div className="chat-header-info">
-                  <h4 className="chat-header-name">Sujith Thota</h4>
-                  <div className="chat-header-status">
-                    <div className="chat-header-dot" />
-                    <span>Active Now</span>
-                  </div>
-                </div>
+          /* Mobile Chat Greeting + Accessible Form Layout */
+          <div className="mobile-contact-container">
+            {/* Friendly Chat Bubble Greeting at the Top */}
+            <div className="chat-greeting-bubble">
+              <img src="/IMG_0322.jpg" alt="Sujith Thota" className="chat-avatar" />
+              <div className="chat-bubble-content">
+                Hi! Sujith here. Drop a line below with your name, email, and message, and I'll get back to you within a day! 🚀
               </div>
-              <button onClick={handleChatReset} className="chat-reset-btn" title="Restart conversation" aria-label="Restart conversation">
-                <RotateCcw size={16} />
-              </button>
             </div>
 
-            {/* Chat message bubbles feed */}
-            <div className="chat-feed-box">
-              {chatHistory.map((msg, idx) => (
-                <motion.div 
-                  key={idx} 
-                  className={`chat-bubble-row ${msg.sender}`}
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ duration: 0.25 }}
+            {/* Standard Accessible Labeled Form Fields */}
+            <AnimatePresence mode="wait" initial={false}>
+              {status === "sent" ? (
+                <motion.div
+                  key="success-mobile"
+                  className="fc-success"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  style={{ padding: '24px 0' }}
                 >
-                  <div className={`chat-bubble ${msg.sender}`}>
-                    {msg.text}
+                  <div className="fc-success-circle">
+                    <Check size={28} color="#16a34a" strokeWidth={2.5} />
                   </div>
+                  <p className="fc-success-title">Message sent!</p>
+                  <p className="fc-success-sub">Thank you, I'll write back to you soon.</p>
                 </motion.div>
-              ))}
-              
-              {/* Typing indicator bubble */}
-              {status === "sending" && chatStep === 3 && (
-                <motion.div className="chat-bubble-row bot" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  <div className="chat-bubble bot" style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
-                    <Loader2 size={12} className="fc-spin" />
-                    <span>Sujith is writing...</span>
+              ) : (
+                <form className="mobile-form" onSubmit={handleSubmit}>
+                  <div className="fc-field">
+                    <label htmlFor="m-fc-name">Your name</label>
+                    <input
+                      id="m-fc-name"
+                      name="name"
+                      className={`fc-input ${touched.name && errors.name ? 'error' : ''}`}
+                      placeholder="Thota Sujith Reddy"
+                      value={form.name}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      required
+                    />
+                    {touched.name && errors.name && (
+                      <span className="fc-error-text">{errors.name}</span>
+                    )}
                   </div>
-                </motion.div>
+
+                  <div className="fc-field">
+                    <label htmlFor="m-fc-email">Your email</label>
+                    <input
+                      id="m-fc-email"
+                      name="email"
+                      type="email"
+                      className={`fc-input ${touched.email && errors.email ? 'error' : ''}`}
+                      placeholder="sujithreddy1546@gmail.com"
+                      value={form.email}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      required
+                    />
+                    {touched.email && errors.email && (
+                      <span className="fc-error-text">{errors.email}</span>
+                    )}
+                  </div>
+
+                  <div className="fc-field">
+                    <label htmlFor="m-fc-message">Message</label>
+                    <textarea
+                      id="m-fc-message"
+                      name="message"
+                      className={`fc-input ${touched.message && errors.message ? 'error' : ''}`}
+                      rows={4}
+                      placeholder="Tell me what you'd like to discuss..."
+                      value={form.message}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      required
+                    />
+                    {touched.message && errors.message && (
+                      <span className="fc-error-text">{errors.message}</span>
+                    )}
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="fc-submit-btn"
+                    disabled={status === "sending"}
+                  >
+                    {status === "sending" ? (
+                      <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <Loader2 size={16} className="fc-spin" /> Sending...
+                      </span>
+                    ) : (
+                      <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        Send message <ArrowRight size={15} />
+                      </span>
+                    )}
+                  </button>
+                </form>
               )}
-              
-              <div ref={chatEndRef} />
-            </div>
-
-            {/* Input bar panels */}
-            <div className="chat-input-panel">
-              <input 
-                type="text"
-                className="chat-input-box"
-                placeholder={
-                  chatStep === 0 ? "Type your name..." :
-                  chatStep === 1 ? "Type your email..." :
-                  chatStep === 2 ? "Type your message..." :
-                  "Conversation complete."
-                }
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                onKeyDown={handleChatKeyDown}
-                disabled={chatStep >= 3}
-              />
-              <button 
-                onClick={handleChatSend}
-                className="chat-send-btn"
-                disabled={!chatInput.trim() || chatStep >= 3}
-                aria-label="Send message"
-              >
-                <Send size={16} style={{ marginLeft: 1 }} />
-              </button>
-            </div>
-
+            </AnimatePresence>
           </div>
         )}
       </div>
