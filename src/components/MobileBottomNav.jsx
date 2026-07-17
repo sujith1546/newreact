@@ -7,37 +7,12 @@ import { useTheme } from '../context/ThemeContext';
 
 export default function MobileBottomNav({ activeSection, onNavClick }) {
   const [isMoreOpen, setIsMoreOpen] = useState(false);
-  const [observedActive, setObservedActive] = useState('home');
+  // IntersectionObserver removed because we now render components dynamically instead of in a single scrolling feed.
   const localTime = useLocalTime();
   const { theme, toggleTheme } = useTheme();
 
   const drawerRef = useRef(null);
   const moreBtnRef = useRef(null);
-
-  // IntersectionObserver to detect which section is currently active/visible
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setObservedActive(entry.target.id);
-          }
-        });
-      },
-      {
-        rootMargin: '-15% 0px -55% 0px',
-        threshold: 0
-      }
-    );
-
-    const ids = ['home', 'skills', 'projects', 'contact'];
-    ids.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    });
-
-    return () => observer.disconnect();
-  }, [activeSection]); // Re-run when section mounts/unmounts
 
   // Keyboard accessibility and Focus trapping in More Drawer
   useEffect(() => {
@@ -247,8 +222,8 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
       {/* Bottom Nav Capsule */}
       <nav className="mobile-nav-capsule" role="navigation" aria-label="Mobile navigation">
         {navItems.map(({ id, label, Icon }) => {
-          // Highlight based on the IntersectionObserver observed active section
-          const isActive = observedActive === id && !isMoreOpen;
+          // Highlight based on the currently active section prop
+          const isActive = activeSection === id && !isMoreOpen;
           return (
             <motion.button
               key={id}
