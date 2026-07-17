@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X } from 'lucide-react';
+import { X, ChevronDown } from 'lucide-react';
 import ScrollReveal from '../components/ScrollReveal';
 import { skillCategories } from '../data/skillsData';
 import { categoryIconMap } from '../components/skillIcons';
@@ -20,6 +20,28 @@ const itemVariants = {
 export default function Skills() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
   const [activeTab, setActiveTab] = useState(null); // null means drawer is closed
+  const [hasScrolled, setHasScrolled] = useState(false);
+  const [isScrollable, setIsScrollable] = useState(false);
+  const drawerContentRef = useRef(null);
+
+  useEffect(() => {
+    if (activeTab) {
+      setHasScrolled(false);
+      setIsScrollable(false);
+      setTimeout(() => {
+        if (drawerContentRef.current) {
+          const { scrollHeight, clientHeight } = drawerContentRef.current;
+          setIsScrollable(scrollHeight > clientHeight + 5);
+        }
+      }, 150);
+    }
+  }, [activeTab]);
+
+  const handleScroll = (e) => {
+    if (e.target.scrollTop > 10 && !hasScrolled) {
+      setHasScrolled(true);
+    }
+  };
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 900);
@@ -367,6 +389,22 @@ export default function Skills() {
             padding: 4px 8px;
             border-radius: 6px;
           }
+
+          .skills-drawer-scroll-indicator {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: linear-gradient(to top, var(--bg-primary) 30%, transparent);
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 12px;
+            pointer-events: none;
+            color: var(--text-secondary);
+            z-index: 100;
+          }
         }
 
         /* Dark Mode Overrides */
@@ -498,7 +536,7 @@ export default function Skills() {
                         </button>
                       </div>
 
-                      <div className="skills-drawer-content">
+                      <div className="skills-drawer-content" ref={drawerContentRef} onScroll={handleScroll}>
                         {skillCategories.find(c => c.id === activeTab)?.skills.map(skill => (
                           <div key={skill.id} className="mobile-skill-card">
                             <div className="mobile-skill-card-top">
@@ -533,6 +571,28 @@ export default function Skills() {
                           </div>
                         ))}
                       </div>
+
+                      {/* Scroll Indicator */}
+                      <AnimatePresence>
+                        {isScrollable && !hasScrolled && (
+                          <motion.div 
+                            className="skills-drawer-scroll-indicator"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <motion.div
+                              animate={{ y: [0, 6, 0] }}
+                              transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                              style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+                            >
+                              <span style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '2px' }}>Scroll</span>
+                              <ChevronDown size={16} />
+                            </motion.div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </motion.div>
                   </div>
                 )}
