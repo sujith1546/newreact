@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   IconCpu2,
@@ -221,7 +220,7 @@ export default function SystemDiagnostics({ open, onClose }) {
 
   return (
     <AnimatePresence>
-      {open && createPortal(
+      {open && (
         <motion.div
           style={S.backdrop}
           variants={backdropAnim}
@@ -366,7 +365,7 @@ export default function SystemDiagnostics({ open, onClose }) {
             </motion.div>
           </motion.div>
         </motion.div>
-      , document.body)}
+      )}
     </AnimatePresence>
   );
 }
