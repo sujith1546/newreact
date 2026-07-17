@@ -244,13 +244,6 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
               whileTap={{ scale: 0.85 }}
               transition={{ type: "spring", stiffness: 400, damping: 32 }}
             >
-              {isActive && (
-                <motion.div
-                  layoutId="active-nav-pill"
-                  className="nav-capsule-active-pill"
-                  transition={{ type: "spring", stiffness: 400, damping: 32 }}
-                />
-              )}
               <Icon size={18} aria-hidden="true" />
               <span>{label}</span>
             </motion.button>
@@ -268,13 +261,6 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
           whileTap={{ scale: 0.85 }}
           transition={{ type: "spring", stiffness: 400, damping: 32 }}
         >
-          {isMoreOpen && (
-            <motion.div
-              layoutId="active-nav-pill"
-              className="nav-capsule-active-pill"
-              transition={{ type: "spring", stiffness: 400, damping: 32 }}
-            />
-          )}
           <MoreHorizontal size={18} aria-hidden="true" />
           <span>More</span>
         </motion.button>
