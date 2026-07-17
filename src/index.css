@@ -2444,4 +2444,21 @@ html {
     background: rgba(128, 128, 128, 0.08);
     border-color: var(--primary-blue);
   }
+
+  .mobile-sections-feed {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .mobile-section-container {
+    width: 100%;
+    margin-bottom: 48px;
+    box-sizing: border-box;
+  }
+
+  .mobile-section-container:last-child {
+    margin-bottom: 0;
+  }
 }

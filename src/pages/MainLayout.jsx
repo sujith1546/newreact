@@ -52,8 +52,17 @@ export default function MainLayout() {
 
   const handleNavClick = (id) => {
     setActiveSection(id);
-    if (scrollRef.current) {
-      scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    if (isMobile) {
+      setTimeout(() => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 50);
+    } else {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     }
   };
 
@@ -78,19 +87,31 @@ export default function MainLayout() {
       <Sidebar activeSection={activeSection} onNavClick={handleNavClick} />
       <main className="main-content" ref={scrollRef}>
         <div className="scroll-container">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeSection}
-              id={activeSection}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 8 }}
-              transition={{ duration: 0.2, ease: "easeInOut" }}
-              className={`text-content${activeSection === 'home' ? ' home-content' : ''}${['contact','education','about','skills','experience','projects','certifications'].includes(activeSection) ? ' wide-content' : ''}`}
-            >
-              <ActiveComponent onNavClick={handleNavClick} />
-            </motion.div>
-          </AnimatePresence>
+          {!isMobile ? (
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeSection}
+                id={activeSection}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 8 }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+                className={`text-content${activeSection === 'home' ? ' home-content' : ''}${['contact','education','about','skills','experience','projects','certifications'].includes(activeSection) ? ' wide-content' : ''}`}
+              >
+                <ActiveComponent onNavClick={handleNavClick} />
+              </motion.div>
+            </AnimatePresence>
+          ) : (
+            <div className="mobile-sections-feed">
+              <div id="home" className="mobile-section-container"><Home onNavClick={handleNavClick} /></div>
+              <div id="skills" className="mobile-section-container"><Skills /></div>
+              <div id="projects" className="mobile-section-container"><Projects /></div>
+              <div id="education" className="mobile-section-container"><Education /></div>
+              <div id="experience" className="mobile-section-container"><Experience /></div>
+              <div id="certifications" className="mobile-section-container"><Certifications /></div>
+              <div id="contact" className="mobile-section-container"><Contact /></div>
+            </div>
+          )}
         </div>
       </main>
 
