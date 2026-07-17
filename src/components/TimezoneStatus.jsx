@@ -93,12 +93,7 @@ export default function TimezoneStatus() {
           gap: 10px;
         }
 
-        @media (max-width: 900px) {
-          .timezone-status-wrapper {
-            top: 16px;
-            right: 96px; /* 16px (toggle right) + 68px (toggle width) + 12px gap */
-          }
-        }
+
 
         .cmdk-hint-pill {
           height: 34px;
@@ -291,14 +286,7 @@ export default function TimezoneStatus() {
         .tc-status.awake { color: #16a34a; }
         .tc-status.sleeping { color: #6b7280; }
         
-        @media (max-width: 480px) {
-          .cmdk-hint-pill, .timezone-pill-container {
-            display: none !important;
-          }
-          .timezone-status-wrapper {
-            right: 96px; /* Position the single diagnostics button next to theme slider on small mobile */
-          }
-        }
+
       `}</style>
 
       <div className="timezone-status-wrapper">
