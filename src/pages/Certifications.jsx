@@ -305,7 +305,7 @@ export default function Certifications() {
             scroll-snap-type: x mandatory;
             scrollbar-width: none;
             -webkit-overflow-scrolling: touch;
-            padding-bottom: 24px;
+            padding: 8px 4px 16px 4px;
           }
           
           .mobile-certs-carousel::-webkit-scrollbar {
@@ -315,7 +315,7 @@ export default function Certifications() {
           .mobile-certs-carousel .cert-card {
             flex: 0 0 85%;
             scroll-snap-align: center;
-            height: 360px; /* Match project card height */
+            height: 380px !important; /* Force exact match with project card */
           }
 
           .carousel-nav-arrows {
