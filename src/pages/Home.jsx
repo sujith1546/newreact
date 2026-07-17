@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import ScrollReveal from '../components/ScrollReveal';
-import { Code, Briefcase, Mail, FileText, Sparkles } from 'lucide-react';
+import { Code, Briefcase, Mail, FileText, Sparkles, ArrowRight } from 'lucide-react';
 
 export default function Home({ onNavClick }) {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
