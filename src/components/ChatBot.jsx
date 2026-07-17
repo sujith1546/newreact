@@ -240,8 +240,6 @@ export default function ChatBot() {
     setInput('');
   };
 
-  if (isMobile) return null;
-
   return createPortal(
     <>
       <style>{`
