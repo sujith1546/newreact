@@ -827,36 +827,39 @@ export default function Education() {
         @media (max-width: 900px) {
           .edu-rail, .edu-grid, .education-arrow-flow, .section-subtitle, .edu-closing-summary { display: none !important; }
           .mobile-edu-feed {
-            display: grid; grid-template-columns: repeat(2, 1fr); gap: 11px; width: 100%;
+            display: flex; flex-direction: column; gap: 12px; width: 100%;
           }
 
           .medu-card {
             position: relative; overflow: hidden;
-            display: flex; flex-direction: column; gap: 10px;
-            padding: 16px 14px 14px;
+            display: flex; align-items: flex-start; gap: 13px;
+            padding: 14px 14px 14px 18px;
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
             border-radius: 18px;
             width: 100%; text-align: left; cursor: pointer;
             transition: background 0.15s; outline: none;
           }
-          .medu-card:active { background: var(--bg-primary); transform: scale(0.97); }
+          .medu-card:active { background: var(--bg-primary); }
           
           .medu-stripe {
-            position: absolute; top: 0; left: 0; right: 0;
-            height: 3px; border-radius: 18px 18px 0 0;
+            position: absolute; left: 0; top: 0; bottom: 0;
+            width: 3px; border-radius: 18px 0 0 18px;
           }
 
           .medu-icon-wrap {
-            width: 38px; height: 38px; border-radius: 12px;
+            width: 42px; height: 42px; border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0; background: var(--bg-primary);
-            border: 1px solid var(--border-color);
+            flex-shrink: 0; position: relative; overflow: hidden;
+            border: 1px solid;
           }
 
-          .medu-info { display: flex; flex-direction: column; gap: 4px; }
-          .medu-title { font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin: 0; line-height: 1.25; }
-          .medu-inst { font-size: 10.5px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.02em; margin: 0; }
+          .medu-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+          .medu-title-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; flex-wrap: wrap; }
+          .medu-title { font-size: 14.5px; font-weight: 700; color: var(--text-primary); margin: 0; line-height: 1.2; }
+          .medu-inst { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; }
+          
+          .medu-chevron { color: var(--text-muted); flex-shrink: 0; margin-top: 2px; }
 
           /* ANIMATED DETAIL SHEET */
           .dsheet-backdrop {
@@ -999,13 +1002,16 @@ export default function Education() {
                   onClick={() => setSelectedItem(item)}
                 >
                   <div className="medu-stripe" style={{ background: accent }} />
-                  <div className="medu-icon-wrap" style={{ color: accent }}>
-                    <Icon size={18} />
+                  <div className="medu-icon-wrap" style={{ background: accent + '18', color: accent, borderColor: accent + '30' }}>
+                    <Icon size={20} style={{ color: accent }} />
                   </div>
                   <div className="medu-info">
-                    <p className="medu-title">{item.title}</p>
-                    <p className="medu-inst" style={{ color: accent, marginTop: 4 }}>{item.institution}</p>
+                    <div className="medu-title-row">
+                      <h3 className="medu-title">{item.title}</h3>
+                    </div>
+                    <p className="medu-inst" style={{ color: accent }}>{item.institution}</p>
                   </div>
+                  <ChevronRight size={15} className="medu-chevron" />
                 </button>
               );
             })}
