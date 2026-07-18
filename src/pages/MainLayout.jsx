@@ -43,6 +43,7 @@ const SECTION_LABELS = {
 };
 
 export default function MainLayout() {
+  const { theme, pageTransition } = useTheme();
   const [activeSection, setActiveSection] = useState('home');
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
   const [beaconOpen, setBeaconOpen] = useState(false);
@@ -204,10 +205,32 @@ export default function MainLayout() {
             <motion.div
               key={activeSection}
               id={activeSection}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 8 }}
-              transition={{ duration: 0.2, ease: "easeInOut" }}
+              initial={
+                pageTransition === 'slide' ? { opacity: 0, x: 50 } :
+                pageTransition === 'scale' ? { opacity: 0, scale: 0.95 } :
+                pageTransition === 'flip'  ? { opacity: 0, rotateY: 90 } :
+                { opacity: 0, y: 8 } // Default fade
+              }
+              animate={
+                pageTransition === 'slide' ? { opacity: 1, x: 0 } :
+                pageTransition === 'scale' ? { opacity: 1, scale: 1 } :
+                pageTransition === 'flip'  ? { opacity: 1, rotateY: 0 } :
+                { opacity: 1, y: 0 }
+              }
+              exit={
+                pageTransition === 'slide' ? { opacity: 0, x: -50 } :
+                pageTransition === 'scale' ? { opacity: 0, scale: 1.05 } :
+                pageTransition === 'flip'  ? { opacity: 0, rotateY: -90 } :
+                { opacity: 0, y: -8 }
+              }
+              transition={{ 
+                duration: pageTransition === 'flip' ? 0.4 : 0.25, 
+                ease: "easeInOut" 
+              }}
+              style={{
+                perspective: pageTransition === 'flip' ? '1000px' : 'none',
+                transformStyle: pageTransition === 'flip' ? 'preserve-3d' : 'flat'
+              }}
               className={`text-content${activeSection === 'home' ? ' home-content' : ''}${['contact','education','about','skills','experience','projects','certifications'].includes(activeSection) ? ' wide-content' : ''}`}
             >
               <ActiveComponent onNavClick={handleNavClick} />

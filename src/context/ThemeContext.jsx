@@ -13,6 +13,7 @@ export function ThemeProvider({ children }) {
   const [accentColor, setAccentColor] = useState(localStorage.getItem('accentColor') || 'blue');
   const [fontFamily, setFontFamily] = useState(localStorage.getItem('fontFamily') || 'modern');
   const [uiAudio, setUiAudio] = useState(localStorage.getItem('uiAudio') !== 'false');
+  const [pageTransition, setPageTransition] = useState(localStorage.getItem('pageTransition') || 'fade');
   
   // Tier 1 & 3 Advanced settings
   const [notifyOnContact, setNotifyOnContact] = useState(
@@ -81,12 +82,13 @@ export function ThemeProvider({ children }) {
     localStorage.setItem('accentColor', accentColor);
     localStorage.setItem('fontFamily', fontFamily);
     localStorage.setItem('uiAudio', uiAudio);
+    localStorage.setItem('pageTransition', pageTransition);
     localStorage.setItem('notifyOnContact', JSON.stringify(notifyOnContact));
     if (photoAccent) localStorage.setItem('photoAccent', photoAccent);
     localStorage.setItem('activePreset', activePreset || '');
     localStorage.setItem('devMode', String(devMode));
     localStorage.setItem('devFlags', JSON.stringify(flags));
-  }, [theme, accentColor, fontFamily, uiAudio, notifyOnContact, photoAccent, activePreset, devMode, flags]);
+  }, [theme, accentColor, fontFamily, uiAudio, pageTransition, notifyOnContact, photoAccent, activePreset, devMode, flags]);
 
   const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark');
 
@@ -96,6 +98,7 @@ export function ThemeProvider({ children }) {
     accentColor,
     fontFamily,
     uiAudio,
+    pageTransition,
     notifyOnContact,
     photoAccent,
     devMode,
@@ -108,6 +111,7 @@ export function ThemeProvider({ children }) {
     if ('accentColor' in obj) setAccentColor(obj.accentColor);
     if ('fontFamily' in obj) setFontFamily(obj.fontFamily);
     if ('uiAudio' in obj) setUiAudio(obj.uiAudio);
+    if ('pageTransition' in obj) setPageTransition(obj.pageTransition);
     if ('notifyOnContact' in obj) setNotifyOnContact(obj.notifyOnContact);
     if ('photoAccent' in obj) setPhotoAccent(obj.photoAccent);
     if ('devMode' in obj) setDevMode(obj.devMode);
@@ -130,6 +134,7 @@ export function ThemeProvider({ children }) {
       accentColor, setAccentColor,
       fontFamily, setFontFamily,
       uiAudio, setUiAudio,
+      pageTransition, setPageTransition,
       playSound,
       notifyOnContact, setNotifyOnContact,
       photoAccent, setPhotoAccent,

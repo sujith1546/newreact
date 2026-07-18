@@ -26,7 +26,8 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
     theme, toggleTheme, 
     accentColor, setAccentColor, 
     fontFamily, setFontFamily, 
-    uiAudio, setUiAudio, 
+    uiAudio, setUiAudio,
+    pageTransition, setPageTransition,
     playSound,
     notifyOnContact, setNotifyOnContact,
     photoAccent, setPhotoAccent,
@@ -644,17 +645,50 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
                     </div>
                     <div style={{ display: 'flex', width: '100%', background: 'var(--bg-secondary)', borderRadius: '10px', padding: '4px', border: '1px solid var(--border-color)' }}>
                       <button 
-                        onClick={() => handleFontSelect('modern')}
+                        onClick={() => { playSound(); setFontFamily('modern'); }}
                         style={{ flex: 1, padding: '8px', border: 'none', background: fontFamily === 'modern' ? 'var(--bg-primary)' : 'transparent', borderRadius: '8px', color: 'var(--text-primary)', fontWeight: 600, fontSize: '13px', fontFamily: "'Inter', sans-serif" }}
                       >
                         Modern Sans
                       </button>
                       <button 
-                        onClick={() => handleFontSelect('developer')}
+                        onClick={() => { playSound(); setFontFamily('developer'); }}
                         style={{ flex: 1, padding: '8px', border: 'none', background: fontFamily === 'developer' ? 'var(--bg-primary)' : 'transparent', borderRadius: '8px', color: 'var(--text-primary)', fontWeight: 600, fontSize: '13px', fontFamily: "'Fira Code', monospace" }}
                       >
                         Dev Mono
                       </button>
+                    </div>
+                  </div>
+
+                  <div className="settings-row" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '12px' }}>
+                    <div className="settings-row-text">
+                      <h4>Page Transitions</h4>
+                      <p>Advanced navigation animations</p>
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', width: '100%' }}>
+                      {[
+                        { id: 'fade', label: 'Classic Fade' },
+                        { id: 'slide', label: 'iOS Slide' },
+                        { id: 'scale', label: 'Liquid Scale' },
+                        { id: 'flip', label: '3D Flip' }
+                      ].map(t => (
+                        <button
+                          key={t.id}
+                          onClick={() => { playSound(); setPageTransition(t.id); }}
+                          style={{
+                            padding: '10px',
+                            border: `1px solid ${pageTransition === t.id ? 'var(--primary-blue)' : 'var(--border-color)'}`,
+                            background: pageTransition === t.id ? 'rgba(0, 123, 255, 0.08)' : 'var(--bg-primary)',
+                            borderRadius: '10px',
+                            color: pageTransition === t.id ? 'var(--primary-blue)' : 'var(--text-primary)',
+                            fontWeight: 600,
+                            fontSize: '12.5px',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                          }}
+                        >
+                          {t.label}
+                        </button>
+                      ))}
                     </div>
                   </div>
 
