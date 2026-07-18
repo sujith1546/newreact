@@ -11,9 +11,25 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
+  const [toast, setToast] = useState(null); // { label, prevValue, nextValue, undo }
+  const [tapCount, setTapCount] = useState(0);
+
   // IntersectionObserver removed because we now render components dynamically instead of in a single scrolling feed.
   const localTime = useLocalTime();
-  const { theme, toggleTheme, accentColor, setAccentColor, fontFamily, setFontFamily, uiAudio, setUiAudio, playSound } = useTheme();
+  const { 
+    theme, toggleTheme, 
+    accentColor, setAccentColor, 
+    fontFamily, setFontFamily, 
+    uiAudio, setUiAudio, 
+    playSound,
+    notifyOnContact, setNotifyOnContact,
+    photoAccent, setPhotoAccent,
+    activePreset, setActivePreset,
+    devMode, setDevMode,
+    flags, setFlags,
+    getAllPrefs, applyAllPrefs,
+    applyPreset
+  } = useTheme();
 
   const drawerRef = useRef(null);
   const settingsRef = useRef(null);
@@ -126,6 +142,133 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
     } else {
       navigator.clipboard.writeText(shareData.url);
       alert('Link copied to clipboard!');
+    }
+  };
+
+  const announce = (label, prevValue, nextValue, undo) => {
+    setToast({ label, prevValue, nextValue, undo });
+    setTimeout(() => setToast(null), 4000);
+  };
+
+  const handleDarkModeToggle = () => {
+    playSound();
+    const prev = theme;
+    const next = theme === 'dark' ? 'light' : 'dark';
+    toggleTheme();
+    announce('Dark Mode', prev === 'dark' ? 'On' : 'Off', next === 'dark' ? 'On' : 'Off', () => {
+      toggleTheme();
+    });
+  };
+
+  const handleAccentColorSelect = (color) => {
+    playSound();
+    const prev = accentColor;
+    setAccentColor(color);
+    announce('Accent Color', prev, color, () => {
+      setAccentColor(prev);
+    });
+  };
+
+  const handlePhotoAccentClick = () => {
+    playSound();
+    const img = document.getElementById('profile-avatar-img');
+    if (!img) return;
+    try {
+      const color = extractDominantColor(img);
+      const prev = accentColor;
+      setPhotoAccent(color);
+      setAccentColor(color);
+      announce('Accent Color', prev, 'Photo Accent', () => {
+        setAccentColor(prev);
+      });
+    } catch (e) {
+      console.error(e);
+      alert("Could not extract color. Make sure the profile image is fully loaded.");
+    }
+  };
+
+  const handleFontSelect = (font) => {
+    playSound();
+    const prev = fontFamily;
+    setFontFamily(font);
+    announce('Typography', prev === 'modern' ? 'Modern' : 'Mono', font === 'modern' ? 'Modern' : 'Mono', () => {
+      setFontFamily(prev);
+    });
+  };
+
+  const handleNotifyToggle = () => {
+    playSound();
+    const prev = notifyOnContact;
+    const next = !notifyOnContact;
+    setNotifyOnContact(next);
+    announce('Notifications', prev ? 'On' : 'Off', next ? 'On' : 'Off', () => {
+      setNotifyOnContact(prev);
+    });
+  };
+
+  const handleReduceMotionToggle = () => {
+    playSound();
+    const prev = reduceMotion;
+    const next = !reduceMotion;
+    setReduceMotion(next);
+    announce('Reduce Motion', prev ? 'On' : 'Off', next ? 'On' : 'Off', () => {
+      setReduceMotion(prev);
+    });
+  };
+
+  const handleUiAudioToggle = () => {
+    const prev = uiAudio;
+    const next = !uiAudio;
+    setUiAudio(next);
+    if (next) setTimeout(playSound, 50);
+    announce('UI Audio', prev ? 'On' : 'Off', next ? 'On' : 'Off', () => {
+      setUiAudio(prev);
+    });
+  };
+
+  const handleFlagToggle = (key, value) => {
+    playSound();
+    const nextFlags = { ...flags, [key]: !value };
+    setFlags(nextFlags);
+    announce(`Flag: ${key}`, value ? 'On' : 'Off', !value ? 'On' : 'Off', () => {
+      setFlags(flags);
+    });
+  };
+
+  const handleExportPrefs = () => {
+    playSound();
+    const json = JSON.stringify(getAllPrefs(), null, 2);
+    navigator.clipboard.writeText(json);
+    announce('Settings Export', 'State', 'Copied to Clipboard', () => {});
+  };
+
+  const handleImportPrefs = () => {
+    playSound();
+    const input = prompt('Paste your exported settings JSON:');
+    if (!input) return;
+    try {
+      const parsed = JSON.parse(input);
+      const prev = getAllPrefs();
+      applyAllPrefs(parsed);
+      announce('Settings Import', 'Custom Config', 'Restored', () => {
+        applyAllPrefs(prev);
+      });
+    } catch (e) {
+      alert('That JSON could not be read. Check it and try again.');
+    }
+  };
+
+  const handleVersionTap = () => {
+    playSound();
+    const next = tapCount + 1;
+    if (next >= 5) {
+      setDevMode(true);
+      setTapCount(0);
+      announce('Dev Mode', 'Locked', 'Unlocked 🛠️', () => {
+        setDevMode(false);
+      });
+    } else {
+      setTapCount(next);
     }
   };
 
@@ -292,7 +435,7 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
                 <div className="profile-identity">
                   <div className="avatar-row">
                     <div className="profile-avatar-square">
-                      <img src="/profile_photo.png" alt="Sujith Thota" />
+                      <img id="profile-avatar-img" src="/profile_photo.png" alt="Sujith Thota" />
                     </div>
                     <div className="status-row">
                       <span className="status-dot"></span>
@@ -401,12 +544,36 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
               <h3>Settings</h3>
             </div>
             
-            <div className="settings-content">
+            <div className="settings-content" style={{ paddingBottom: '40px' }}>
               
+              {/* Presets Profiles */}
               <div className="settings-group">
+                <span className="settings-group-label">Profiles</span>
+                <div className="settings-profile-list" style={{ padding: '0px' }}>
+                  {['Presentation mode', 'Night browsing', 'Retro Terminal'].map((name) => (
+                    <button
+                      key={name}
+                      className={`settings-profile-chip${name === activePreset ? ' settings-profile-chip--active' : ''}`}
+                      onClick={() => {
+                        playSound();
+                        const prev = activePreset;
+                        applyPreset(name);
+                        announce('Preset Profile', prev || 'Custom', name, () => {
+                          if (prev) applyPreset(prev);
+                          else setActivePreset(null);
+                        });
+                      }}
+                    >
+                      {name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="settings-group" style={{ marginTop: '16px' }}>
                 <span className="settings-group-label">Appearance</span>
                 <div className="settings-card">
-                  <div className="settings-row" onClick={() => { playSound(); toggleTheme(); }}>
+                  <div className="settings-row" onClick={handleDarkModeToggle}>
                     <div className="settings-row-left">
                       <div className="settings-row-icon">
                         {theme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}
@@ -426,11 +593,11 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
                       <h4>Accent Color</h4>
                       <p>Personalize the app color scheme</p>
                     </div>
-                    <div style={{ display: 'flex', gap: '12px' }}>
+                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                       {['blue', 'purple', 'emerald', 'rose'].map(color => (
                         <div 
                           key={color}
-                          onClick={() => { playSound(); setAccentColor(color); }}
+                          onClick={() => handleAccentColorSelect(color)}
                           style={{
                             width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer',
                             background: color === 'blue' ? '#007bff' : color === 'purple' ? '#8b5cf6' : color === 'emerald' ? '#10b981' : '#f43f5e',
@@ -440,6 +607,21 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
                           }}
                         />
                       ))}
+                      
+                      {/* 5th swatch: dynamic color extraction */}
+                      <button
+                        className="accent-swatch accent-swatch--photo"
+                        style={{
+                          width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer',
+                          background: photoAccent ?? 'conic-gradient(red, purple, blue, green, red)',
+                          border: accentColor === photoAccent ? '3px solid var(--text-primary)' : '2px solid transparent',
+                          transform: accentColor === photoAccent ? 'scale(1.1)' : 'scale(1)',
+                          transition: 'all 0.2s',
+                          padding: 0
+                        }}
+                        onClick={handlePhotoAccentClick}
+                        aria-label="Use color from your photo"
+                      />
                     </div>
                   </div>
 
@@ -450,13 +632,13 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
                     </div>
                     <div style={{ display: 'flex', width: '100%', background: 'var(--bg-secondary)', borderRadius: '10px', padding: '4px', border: '1px solid var(--border-color)' }}>
                       <button 
-                        onClick={() => { playSound(); setFontFamily('modern'); }}
+                        onClick={() => handleFontSelect('modern')}
                         style={{ flex: 1, padding: '8px', border: 'none', background: fontFamily === 'modern' ? 'var(--bg-primary)' : 'transparent', borderRadius: '8px', color: 'var(--text-primary)', fontWeight: 600, fontSize: '13px', fontFamily: "'Inter', sans-serif" }}
                       >
                         Modern Sans
                       </button>
                       <button 
-                        onClick={() => { playSound(); setFontFamily('developer'); }}
+                        onClick={() => handleFontSelect('developer')}
                         style={{ flex: 1, padding: '8px', border: 'none', background: fontFamily === 'developer' ? 'var(--bg-primary)' : 'transparent', borderRadius: '8px', color: 'var(--text-primary)', fontWeight: 600, fontSize: '13px', fontFamily: "'Fira Code', monospace" }}
                       >
                         Dev Mono
@@ -467,10 +649,28 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
                 </div>
               </div>
 
+              {/* Notifications Preferences Section (Tier 1.1) */}
+              <div className="settings-group">
+                <span className="settings-group-label">Notifications</span>
+                <div className="settings-card">
+                  <div className="settings-row" onClick={handleNotifyToggle}>
+                    <div className="settings-row-left">
+                      <div className="settings-row-text">
+                        <h4>Confirmation Emails</h4>
+                        <p>Send visitors a confirmation email on contact</p>
+                      </div>
+                    </div>
+                    <div className={`settings-toggle ${notifyOnContact ? 'active' : ''}`}>
+                      <div className="settings-toggle-knob" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className="settings-group">
                 <span className="settings-group-label">Accessibility</span>
                 <div className="settings-card">
-                  <div className="settings-row" onClick={() => { playSound(); setReduceMotion(!reduceMotion); }}>
+                  <div className="settings-row" onClick={handleReduceMotionToggle}>
                     <div className="settings-row-left">
                       <div className="settings-row-icon">
                         <Wand2 size={16} />
@@ -485,7 +685,7 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
                     </div>
                   </div>
                   
-                  <div className="settings-row" onClick={() => { setUiAudio(!uiAudio); if(!uiAudio) { setTimeout(playSound, 50); } }}>
+                  <div className="settings-row" onClick={handleUiAudioToggle}>
                     <div className="settings-row-left">
                       <div className="settings-row-icon">
                         <Bell size={16} />
@@ -502,6 +702,28 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
                 </div>
               </div>
 
+              {/* Developer Panel (Tier 3.6) */}
+              {devMode && (
+                <div className="settings-group">
+                  <span className="settings-group-label">Developer Mode</span>
+                  <div className="settings-card">
+                    {Object.entries(flags).map(([key, value]) => (
+                      <div className="settings-row" key={key} onClick={() => handleFlagToggle(key, value)}>
+                        <div className="settings-row-left">
+                          <div className="settings-row-text">
+                            <h4>{key.replace(/([A-Z])/g, ' $1').trim()}</h4>
+                            <p>Toggle developer flag</p>
+                          </div>
+                        </div>
+                        <div className={`settings-toggle ${value ? 'active' : ''}`}>
+                          <div className="settings-toggle-knob" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="settings-group">
                 <span className="settings-group-label">System</span>
                 <div className="settings-card">
@@ -516,6 +738,31 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
                       </div>
                     </div>
                   </div>
+                  
+                  {/* JSON Export/Import Rows (Tier 3.8) */}
+                  <div className="settings-row" onClick={handleExportPrefs}>
+                    <div className="settings-row-left">
+                      <div className="settings-row-icon">
+                        <FileText size={16} />
+                      </div>
+                      <div className="settings-row-text">
+                        <h4>Export Settings</h4>
+                        <p>Copy preferences as JSON to clipboard</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="settings-row" onClick={handleImportPrefs}>
+                    <div className="settings-row-left">
+                      <div className="settings-row-icon">
+                        <Globe size={16} />
+                      </div>
+                      <div className="settings-row-text">
+                        <h4>Import Settings</h4>
+                        <p>Paste JSON string to restore preferences</p>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="settings-row" onClick={() => {
                     if(confirm("Are you sure you want to clear local data?")) {
                       localStorage.clear();
@@ -546,7 +793,28 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
                       </div>
                     </div>
                   </div>
+
+                  {/* Privacy Disclosure Row (Tier 1.2) */}
+                  <div className="settings-row settings-row--info">
+                    <div className="settings-row-left" style={{ gap: '10px' }}>
+                      <div className="settings-row-text">
+                        <h4 style={{ fontSize: '13.5px' }}>Privacy Disclosure</h4>
+                        <p style={{ lineHeight: '1.4', fontSize: '11px', marginTop: '2px' }}>
+                          Your preferences are stored only in this browser's local storage. Nothing is sent to a server.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
                 </div>
+              </div>
+
+              {/* Version Footer (Tier 1.3) */}
+              <div className="settings-version-footer" onClick={handleVersionTap} style={{ cursor: 'default', userSelect: 'none' }}>
+                v1.4.0 · built with Vite + React
+                {tapCount > 0 && tapCount < 5 && (
+                  <span style={{ opacity: 0.5 }}> ({5 - tapCount} more to unlock dev options)</span>
+                )}
               </div>
 
             </div>
@@ -591,9 +859,67 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
         </motion.button>
       </nav>
 
+      {/* Settings Action Toast (Tier 2.5: Diff/Undo) */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            className="settings-toast"
+            initial={{ opacity: 0, y: 50, x: '-50%' }}
+            animate={{ opacity: 1, y: 0, x: '-50%' }}
+            exit={{ opacity: 0, y: 50, x: '-50%' }}
+            transition={{ type: 'spring', damping: 25, stiffness: 220 }}
+          >
+            <span>
+              {toast.label}: {toast.prevValue} → {toast.nextValue}
+            </span>
+            <button
+              onClick={() => {
+                toast.undo();
+                setToast(null);
+              }}
+            >
+              Undo
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <style>{`
         /* Style configurations are declared globally in index.css as requested */
       `}</style>
     </>
   );
+}
+
+// >>> UTILS for dynamic color extraction and settings undo
+function extractDominantColor(imgElement) {
+  try {
+    const canvas = document.createElement('canvas');
+    const size = 50;
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(imgElement, 0, 0, size, size);
+
+    const { data } = ctx.getImageData(0, 0, size, size);
+    let r = 0, g = 0, b = 0, count = 0;
+
+    for (let i = 0; i < data.length; i += 4) {
+      const alpha = data[i + 3];
+      if (alpha < 200) continue; // skip transparent pixels
+      r += data[i];
+      g += data[i + 1];
+      b += data[i + 2];
+      count++;
+    }
+
+    r = Math.round(r / count);
+    g = Math.round(g / count);
+    b = Math.round(b / count);
+
+    return `rgb(${r}, ${g}, ${b})`;
+  } catch (e) {
+    console.error("Canvas sampling error", e);
+    return '#007bff'; // fallback to standard blue
+  }
 }

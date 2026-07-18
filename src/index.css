@@ -2991,14 +2991,81 @@ html {
     box-sizing: border-box;
   }
 
-  .mobile-section-container {
-    width: 100%;
-    margin-bottom: 48px;
+  .mobile-section-container:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Advanced Settings UI Styles */
+  .settings-row--info {
+    border-left: 3px solid var(--primary-blue);
+    background: rgba(0, 123, 255, 0.03);
+  }
+
+  .settings-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #14161a;
+    color: #fff;
+    padding: 12px 18px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    z-index: 2000;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    width: 90%;
+    max-width: 320px;
+    justify-content: space-between;
     box-sizing: border-box;
   }
 
-  .mobile-section-container:last-child {
-    margin-bottom: 0;
+  .settings-toast button {
+    background: none;
+    border: none;
+    color: var(--primary-blue, #007bff);
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    padding: 0;
+    outline: none;
+  }
+
+  .settings-profile-list {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 4px 16px 14px 16px;
+  }
+
+  .settings-profile-chip {
+    padding: 8px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .settings-profile-chip--active {
+    background: var(--primary-blue);
+    color: #fff !important;
+    border-color: transparent;
+  }
+
+  .settings-version-footer {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-muted);
+    padding: 24px 0 16px;
+    font-weight: 500;
   }
 }
 

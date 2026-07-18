@@ -2,11 +2,46 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const ThemeContext = createContext();
 
+export const PRESETS = {
+  'Presentation mode': { theme: 'light', fontFamily: 'modern', uiAudio: false, accentColor: 'blue' },
+  'Night browsing':    { theme: 'dark',  fontFamily: 'modern', uiAudio: true,  accentColor: 'purple' },
+  'Retro Terminal':    { theme: 'dark',  fontFamily: 'developer', uiAudio: true,  accentColor: 'emerald' }
+};
+
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
   const [accentColor, setAccentColor] = useState(localStorage.getItem('accentColor') || 'blue');
   const [fontFamily, setFontFamily] = useState(localStorage.getItem('fontFamily') || 'modern');
   const [uiAudio, setUiAudio] = useState(localStorage.getItem('uiAudio') !== 'false');
+  
+  // Tier 1 & 3 Advanced settings
+  const [notifyOnContact, setNotifyOnContact] = useState(
+    () => JSON.parse(localStorage.getItem('notifyOnContact') ?? 'true')
+  );
+  const [photoAccent, setPhotoAccent] = useState(
+    () => localStorage.getItem('photoAccent') || null
+  );
+  const [activePreset, setActivePreset] = useState(
+    () => localStorage.getItem('activePreset') || null
+  );
+  const [devMode, setDevMode] = useState(
+    () => localStorage.getItem('devMode') === 'true'
+  );
+  const [flags, setFlags] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('devFlags')) || {
+        showFPSCounter: false,
+        verboseConsoleLogs: false,
+        experimentalChatbotUI: false,
+      };
+    } catch {
+      return {
+        showFPSCounter: false,
+        verboseConsoleLogs: false,
+        experimentalChatbotUI: false,
+      };
+    }
+  });
 
   // Accent Colors dictionary
   const colors = {
@@ -26,7 +61,6 @@ export function ThemeProvider({ children }) {
   const playSound = () => {
     if (!uiAudio) return;
     try {
-      // Tiny base64 "tick" sound
       const audio = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAD//wIA");
       audio.volume = 0.2;
       audio.play().catch(() => {});
@@ -36,7 +70,10 @@ export function ThemeProvider({ children }) {
   useEffect(() => {
     const root = document.documentElement;
     root.setAttribute('data-theme', theme);
-    root.style.setProperty('--primary-blue', colors[accentColor]);
+    
+    // Check if the current accentColor is in the default dict or is a dynamic photo color
+    const hexColor = colors[accentColor] || accentColor;
+    root.style.setProperty('--primary-blue', hexColor);
     root.style.setProperty('--app-font', fonts[fontFamily]);
     
     // Save preferences
@@ -44,9 +81,48 @@ export function ThemeProvider({ children }) {
     localStorage.setItem('accentColor', accentColor);
     localStorage.setItem('fontFamily', fontFamily);
     localStorage.setItem('uiAudio', uiAudio);
-  }, [theme, accentColor, fontFamily, uiAudio]);
+    localStorage.setItem('notifyOnContact', JSON.stringify(notifyOnContact));
+    if (photoAccent) localStorage.setItem('photoAccent', photoAccent);
+    localStorage.setItem('activePreset', activePreset || '');
+    localStorage.setItem('devMode', String(devMode));
+    localStorage.setItem('devFlags', JSON.stringify(flags));
+  }, [theme, accentColor, fontFamily, uiAudio, notifyOnContact, photoAccent, activePreset, devMode, flags]);
 
   const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark');
+
+  // Serialization helpers
+  const getAllPrefs = () => ({
+    theme,
+    accentColor,
+    fontFamily,
+    uiAudio,
+    notifyOnContact,
+    photoAccent,
+    devMode,
+    flags
+  });
+
+  const applyAllPrefs = (obj) => {
+    if (!obj || typeof obj !== 'object') return;
+    if ('theme' in obj) setTheme(obj.theme);
+    if ('accentColor' in obj) setAccentColor(obj.accentColor);
+    if ('fontFamily' in obj) setFontFamily(obj.fontFamily);
+    if ('uiAudio' in obj) setUiAudio(obj.uiAudio);
+    if ('notifyOnContact' in obj) setNotifyOnContact(obj.notifyOnContact);
+    if ('photoAccent' in obj) setPhotoAccent(obj.photoAccent);
+    if ('devMode' in obj) setDevMode(obj.devMode);
+    if ('flags' in obj) setFlags(obj.flags);
+  };
+
+  const applyPreset = (name) => {
+    const preset = PRESETS[name];
+    if (!preset) return;
+    setTheme(preset.theme);
+    setFontFamily(preset.fontFamily);
+    setUiAudio(preset.uiAudio);
+    setAccentColor(preset.accentColor);
+    setActivePreset(name);
+  };
 
   return (
     <ThemeContext.Provider value={{ 
@@ -54,7 +130,14 @@ export function ThemeProvider({ children }) {
       accentColor, setAccentColor,
       fontFamily, setFontFamily,
       uiAudio, setUiAudio,
-      playSound
+      playSound,
+      notifyOnContact, setNotifyOnContact,
+      photoAccent, setPhotoAccent,
+      activePreset, setActivePreset,
+      devMode, setDevMode,
+      flags, setFlags,
+      getAllPrefs, applyAllPrefs,
+      applyPreset
     }}>
       {children}
     </ThemeContext.Provider>
