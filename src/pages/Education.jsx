@@ -825,7 +825,7 @@ export default function Education() {
         /* ============ MOBILE LAYOUT ============ */
         .mobile-edu-feed { display: none; }
         @media (max-width: 900px) {
-          .edu-rail, .edu-grid, .education-arrow-flow, .section-subtitle { display: none !important; }
+          .edu-rail, .edu-grid, .education-arrow-flow, .section-subtitle, .edu-closing-summary { display: none !important; }
           .mobile-edu-feed {
             display: flex; flex-direction: column; gap: 12px; width: 100%;
           }
@@ -990,12 +990,6 @@ export default function Education() {
           ))}
         </motion.div>
 
-        {/* Closing Summary */}
-        <div style={{ marginTop: 'auto', paddingTop: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <p className="section-subtitle" style={{ color: '#6b7280', fontSize: '13px', marginBottom: '8px', textAlign: 'center', fontWeight: 'normal' }}>Your journey at a glance</p>
-          <EducationArrowFlow activeIndex={activeIndex} />
-        </div>
-
         {/* ── MOBILE VERTICAL FEED ── */}
         {isMobile && (
           <div className="mobile-edu-feed">
@@ -1026,6 +1020,11 @@ export default function Education() {
           </div>
         )}
 
+        {/* Closing Summary */}
+        <div className="edu-closing-summary" style={{ marginTop: 'auto', paddingTop: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <p className="section-subtitle" style={{ color: '#6b7280', fontSize: '13px', marginBottom: '8px', textAlign: 'center', fontWeight: 'normal' }}>Your journey at a glance</p>
+          <EducationArrowFlow activeIndex={activeIndex} />
+        </div>
       </div>
 
       {/* ── DETAIL SHEET (Mobile) ── */}
