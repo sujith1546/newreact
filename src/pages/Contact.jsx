@@ -141,198 +141,163 @@ export default function Contact() {
         [data-theme="dark"] .fc-submit-btn:hover { opacity: 0.9; background: var(--primary-blue); }
         [data-theme="dark"] .fc-success-circle { background: #064e3b; }
 
-        /* ===== MOBILE ===== */
+        /* ===== MOBILE REDESIGN ===== */
         @media (max-width: 900px) {
-          .contact-plain-header { margin-bottom: 20px; }
-
-          /* Info strip — availability + direct links */
-          .mc-info-strip {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 4px;
-          }
-
-          /* Availability pill */
-          .mc-avail-pill {
-            display: inline-flex; align-items: center; gap: 7px;
-            background: rgba(22,163,74,0.08);
-            border: 1px solid rgba(22,163,74,0.2);
-            border-radius: 20px; padding: 6px 14px;
-            width: fit-content;
-          }
-          .mc-avail-dot {
-            width: 7px; height: 7px; border-radius: 50%; background: #22c55e;
-            flex-shrink: 0;
-            box-shadow: 0 0 0 0 rgba(34,197,94,0.5);
-            animation: rippleDot 2s ease-in-out infinite;
-          }
-          @keyframes rippleDot {
-            0%   { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
-            70%  { box-shadow: 0 0 0 7px rgba(34,197,94,0); }
-            100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
-          }
-          .mc-avail-text { font-size: 12px; font-weight: 700; color: #16a34a; }
-          
-          .mc-contact-card {
-            display: flex; flex-direction: column; gap: 12px;
-          }
-          .mc-contact-row {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 14px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            background: var(--bg-primary);
-            cursor: pointer;
-            text-align: left; font-family: inherit;
-            color: var(--text-primary);
-            transition: background 0.15s, transform 0.1s, border-color 0.15s;
-          }
-          .mc-contact-row:active { background: var(--bg-secondary); transform: scale(0.98); }
-          .mc-contact-row-left { display: flex; align-items: center; gap: 12px; }
-          .mc-contact-icon {
-            width: 34px; height: 34px; border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
-          }
-          .mc-contact-icon--mail { background: rgba(59,130,246,0.1); color: #3b82f6; }
-          .mc-contact-icon--phone { background: rgba(34,197,94,0.1); color: #16a34a; }
-          .mc-contact-text h4 { font-size: 13.5px; font-weight: 600; color: var(--text-primary); margin: 0 0 2px; }
-          .mc-contact-text p { font-size: 11px; color: var(--text-secondary); margin: 0; letter-spacing: -0.01em; }
-          .mc-contact-action {
-            display: flex; align-items: center; gap: 4px;
-            font-size: 11px; font-weight: 700;
-            color: var(--primary-blue); flex-shrink: 0;
-            background: rgba(0,123,255,0.07); border-radius: 20px;
-            padding: 3px 10px; border: 1px solid rgba(0,123,255,0.15);
-            transition: background 0.15s;
-          }
-          .mc-contact-action--success {
-            color: #16a34a !important;
-            background: rgba(22,163,74,0.08) !important;
-            border-color: rgba(22,163,74,0.2) !important;
-          }
-
-          /* ── outer container — fills the text-content box ── */
           .mc-outer-container {
             display: flex; flex-direction: column;
-            width: 100%; overflow-y: auto;
+            width: 100%; overflow-y: auto; overflow-x: hidden;
             -ms-overflow-style: none; scrollbar-width: none;
+            padding: 0 4px 20px 4px;
+            box-sizing: border-box;
+            gap: 20px;
           }
           .mc-outer-container::-webkit-scrollbar { display: none; }
-
-          /* ── section divider ── */
-          .mc-divider {
-            width: 100%; height: 1px;
-            background: var(--border-color); flex-shrink: 0;
+          
+          .mc-header-row {
+            display: flex; justify-content: space-between; align-items: flex-start;
           }
-
-          /* ── section label ── */
-          .mc-section-label {
-            font-size: 10.5px; font-weight: 800; letter-spacing: .08em;
-            text-transform: uppercase; color: var(--text-muted);
-            padding: 14px 18px 6px; margin: 0; flex-shrink: 0;
-          }
-
-          /* ── availability pill row ── */
-          .mc-avail-row {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 16px 18px;
-          }
+          .mc-page-title { font-size: 24px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px; letter-spacing: -0.02em; }
+          .mc-page-sub { font-size: 13px; color: var(--text-secondary); margin: 0; line-height: 1.4; }
+          
           .mc-avail-pill {
-            display: inline-flex; align-items: center; gap: 7px;
-            background: rgba(22,163,74,0.08); border: 1px solid rgba(22,163,74,0.2);
-            border-radius: 20px; padding: 6px 14px; width: fit-content;
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2);
+            border-radius: 20px; padding: 6px 12px;
           }
           .mc-avail-dot {
-            width: 7px; height: 7px; border-radius: 50%; background: #22c55e;
-            flex-shrink: 0; box-shadow: 0 0 0 0 rgba(34,197,94,0.5);
-            animation: rippleDot 2s ease-in-out infinite;
+            width: 8px; height: 8px; border-radius: 50%; background: #22c55e;
+            box-shadow: 0 0 10px rgba(34,197,94,0.5);
+            animation: pulseDot 2s infinite;
           }
-          @keyframes rippleDot {
-            0%   { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
-            70%  { box-shadow: 0 0 0 7px rgba(34,197,94,0); }
+          @keyframes pulseDot {
+            0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+            70% { box-shadow: 0 0 0 8px rgba(34,197,94,0); }
             100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
           }
-          .mc-avail-text { font-size: 12px; font-weight: 700; color: #16a34a; }
-          .mc-page-title { font-size: 19px; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: -.02em; }
-          .mc-page-sub { font-size: 12px; color: var(--text-secondary); margin: 3px 0 0; }
-
-          /* ── form fields ── */
-          .mc-form-card { display: flex; flex-direction: column; gap: 0; }
-          .mc-form-row {
-            display: flex; flex-direction: column;
-            border-bottom: 1px solid var(--border-color);
-            transition: background 0.15s;
+          .mc-avail-text { font-size: 11px; font-weight: 700; color: #16a34a; text-transform: uppercase; letter-spacing: 0.05em; }
+          
+          /* Contact Cards */
+          .mc-cards-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
           }
-          .mc-form-row:last-child { border-bottom: none; }
-          .mc-form-row:focus-within { background: var(--bg-primary); }
-          .mc-form-row.has-error { border-color: #ef4444; }
-          .mc-form-row-label {
-            font-size: 10px; font-weight: 700;
-            color: var(--text-muted); text-transform: uppercase;
-            letter-spacing: 0.07em; padding: 12px 18px 0;
-            pointer-events: none;
+          .mc-contact-card-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex; flex-direction: column; gap: 12px;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: transform 0.1s, background 0.2s;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
           }
-          .mc-form-input {
-            background: transparent; border: none; outline: none;
-            padding: 5px 18px 12px; font-size: 14.5px;
-            color: var(--text-primary); width: 100%;
-            box-sizing: border-box; font-family: inherit; resize: none;
+          [data-theme="dark"] .mc-contact-card-item {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
           }
-          .mc-form-input::placeholder { color: var(--text-muted); opacity: 0.7; }
-          .mc-form-error { font-size: 10.5px; color: #ef4444; padding: 0 18px 8px; margin: 0; }
-          .mc-char-hint {
-            font-size: 10px; font-weight: 600;
-            color: var(--text-muted); text-align: right;
-            padding: 0 18px 8px;
+          .mc-contact-card-item:active { transform: scale(0.96); }
+          .mc-card-icon-wrap {
+            width: 38px; height: 38px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
           }
-          .mc-char-hint.over { color: #ef4444; }
-
-          /* ── send button ── */
-          .mc-send-wrap { padding: 16px 18px 20px; }
-          .mc-send-btn {
-            position: relative; overflow: hidden;
-            width: 100%; height: 56px; border-radius: 16px;
-            background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #3b82f6 100%);
-            color: #fff; font-size: 16px; font-weight: 700; letter-spacing: -0.01em;
-            border: none; cursor: pointer; font-family: inherit;
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            box-shadow: 0 4px 24px rgba(37,99,235,0.35), 0 1px 0 rgba(255,255,255,0.15) inset;
-            transition: transform 0.15s, box-shadow 0.15s;
+          .mc-card-title { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin: 0; }
+          .mc-card-value { font-size: 14px; font-weight: 700; color: var(--text-primary); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          
+          /* Form Area */
+          .mc-form-container {
+            background: var(--bg-primary);
+            border-radius: 24px;
+            border: 1px solid var(--border-color);
+            padding: 24px 20px;
+            display: flex; flex-direction: column; gap: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.03);
           }
-          .mc-send-btn::after {
-            content: ''; position: absolute; inset: 0;
-            background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 60%);
-            pointer-events: none;
+          [data-theme="dark"] .mc-form-container {
+            background: rgba(20,20,20,0.5);
+            border-color: rgba(255,255,255,0.06);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
           }
-          .mc-send-btn:active { transform: scale(0.97); box-shadow: 0 2px 12px rgba(37,99,235,0.3); }
-          .mc-send-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
-          [data-theme="dark"] .mc-send-btn {
-            background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+          .mc-form-title { font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0 0 4px; display: flex; align-items: center; gap: 8px; }
+          
+          /* Floating Label Inputs */
+          .mc-input-group { position: relative; }
+          .mc-input {
+            width: 100%; box-sizing: border-box;
+            background: rgba(128,128,128,0.05);
+            border: 1px solid rgba(128,128,128,0.2);
+            border-radius: 14px;
+            padding: 24px 16px 10px;
+            font-size: 14px; font-family: inherit; font-weight: 500;
+            color: var(--text-primary);
+            outline: none; transition: all 0.2s;
+            -webkit-appearance: none;
           }
-          .mc-send-icon-wrap {
-            width: 28px; height: 28px; border-radius: 8px;
-            background: rgba(255,255,255,0.18);
-            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+          .mc-input:focus {
+            background: transparent;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 4px rgba(0,123,255,0.1);
           }
-
-          /* ── success state ── */
-          .mc-success-wrap {
-            display: flex; flex-direction: column; align-items: center;
-            gap: 16px; padding: 48px 20px; text-align: center;
+          .mc-input.has-error { border-color: #ef4444; }
+          .mc-label {
+            position: absolute; left: 16px; top: 18px;
+            font-size: 14px; font-weight: 500; color: var(--text-secondary);
+            pointer-events: none; transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+          }
+          .mc-input:focus ~ .mc-label,
+          .mc-input:not(:placeholder-shown) ~ .mc-label {
+            top: 8px; font-size: 10px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; letter-spacing: 0.05em;
+          }
+          .mc-input.has-error ~ .mc-label { color: #ef4444; }
+          .mc-error-msg { font-size: 11px; font-weight: 600; color: #ef4444; margin: 4px 0 0 4px; display: block; }
+          
+          /* 3D Send Button */
+          .mc-send-btn-3d {
+            width: 100%; height: 56px;
+            border-radius: 16px; border: none;
+            background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+            color: white; font-size: 16px; font-weight: 700; letter-spacing: -0.01em;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            box-shadow: 0 6px 0 #1d4ed8, 0 15px 20px rgba(37,99,235,0.3);
+            transition: all 0.1s; cursor: pointer;
+            margin-top: 12px;
+          }
+          .mc-send-btn-3d:active:not(:disabled) {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 #1d4ed8, 0 5px 10px rgba(37,99,235,0.4);
+          }
+          .mc-send-btn-3d:disabled {
+            background: #9ca3af; box-shadow: 0 6px 0 #6b7280; opacity: 0.7; transform: none; cursor: not-allowed;
+          }
+          [data-theme="dark"] .mc-send-btn-3d {
+            background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+            box-shadow: 0 6px 0 #1e3a8a, 0 15px 20px rgba(0,0,0,0.5);
+          }
+          [data-theme="dark"] .mc-send-btn-3d:active:not(:disabled) {
+            box-shadow: 0 0 0 #1e3a8a, 0 5px 10px rgba(0,0,0,0.5);
+          }
+          
+          /* Success */
+          .mc-success-view {
+            background: linear-gradient(135deg, rgba(34,197,94,0.1), rgba(22,163,74,0.03));
+            border: 1px solid rgba(34,197,94,0.2);
+            border-radius: 24px; padding: 48px 20px;
+            display: flex; flex-direction: column; align-items: center; text-align: center;
           }
           .mc-success-icon {
-            width: 76px; height: 76px; border-radius: 38px;
+            width: 72px; height: 72px; border-radius: 36px;
             background: linear-gradient(135deg, #d1fae5, #a7f3d0);
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 0 0 8px rgba(22,163,74,0.08);
+            box-shadow: 0 0 0 8px rgba(22,163,74,0.08); margin-bottom: 20px;
           }
           [data-theme="dark"] .mc-success-icon {
             background: linear-gradient(135deg, #064e3b, #065f46);
           }
-          .mc-success-title { font-size: 21px; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: -0.02em; }
-          .mc-success-sub { font-size: 14px; color: var(--text-secondary); margin: 0; line-height: 1.55; max-width: 260px; }
+          .mc-success-title { font-size: 22px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px; letter-spacing: -0.02em; }
+          .mc-success-sub { font-size: 14px; color: var(--text-secondary); margin: 0; line-height: 1.5; max-width: 260px; }
         }
       `}</style>
 
@@ -417,15 +382,15 @@ export default function Contact() {
             </div>
           </>
         ) : (
-          /* ── MOBILE — content sits neatly inside the outer .text-content box ── */
+          /* ── MOBILE — Redesigned Premium UI ── */
           <motion.div className="mc-outer-container"
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
           >
             {/* Header row */}
-            <div className="mc-avail-row">
+            <div className="mc-header-row">
               <div>
-                <p className="mc-page-title">Get in Touch</p>
+                <h1 className="mc-page-title">Get in Touch</h1>
                 <p className="mc-page-sub">Have a question or want to work together?</p>
               </div>
               <div className="mc-avail-pill">
@@ -434,14 +399,30 @@ export default function Contact() {
               </div>
             </div>
 
-            <div className="mc-divider" />
+            {/* Glass Cards */}
+            <div className="mc-cards-grid">
+              <a href={`mailto:${email}`} className="mc-contact-card-item" style={{ color: 'inherit' }}>
+                <div className="mc-card-icon-wrap" style={{ background: 'rgba(59,130,246,0.12)', color: '#3b82f6' }}><Mail size={18} strokeWidth={2.5} /></div>
+                <div>
+                  <p className="mc-card-title">Email</p>
+                  <p className="mc-card-value">sujithreddy1546...</p>
+                </div>
+              </a>
+              <a href={`tel:${phone}`} className="mc-contact-card-item" style={{ color: 'inherit' }}>
+                <div className="mc-card-icon-wrap" style={{ background: 'rgba(34,197,94,0.12)', color: '#22c55e' }}><Phone size={18} strokeWidth={2.5} /></div>
+                <div>
+                  <p className="mc-card-title">Phone</p>
+                  <p className="mc-card-value">{phone}</p>
+                </div>
+              </a>
+            </div>
 
-            {/* Form / success */}
+            {/* Form / Success */}
             <AnimatePresence mode="wait" initial={false}>
               {status === "sent" ? (
                 <motion.div key="success"
-                  className="mc-success-wrap"
-                  initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
+                  className="mc-success-view"
+                  initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
                   transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                 >
                   <motion.div className="mc-success-icon"
@@ -451,94 +432,33 @@ export default function Contact() {
                     <Check size={32} color="#16a34a" strokeWidth={2.5} />
                   </motion.div>
                   <p className="mc-success-title">Message sent!</p>
-                  <p className="mc-success-sub">Thanks! I'll get back to you within a day.</p>
+                  <p className="mc-success-sub">Thanks for reaching out! I'll get back to you within a day.</p>
                 </motion.div>
               ) : (
-                <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                <motion.div key="form" className="mc-form-container" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                  <h2 className="mc-form-title"><Send size={18} color="var(--primary-blue)" /> Send a Message</h2>
 
-                  {/* Your details */}
-                  <p className="mc-section-label">Your details</p>
-                  <div className="mc-form-card">
-                    <motion.div
-                      className={`mc-form-row${touched.name && errors.name ? ' has-error' : ''}`}
-                      animate={touched.name && errors.name ? 'shake' : 'idle'}
-                      variants={shakeVariants}
-                    >
-                      <span className="mc-form-row-label">Name</span>
-                      <input name="name" className="mc-form-input"
-                        placeholder="Thota Sujith Reddy"
-                        value={form.name} onChange={handleChange} onBlur={handleBlur} />
-                      {touched.name && errors.name && <p className="mc-form-error">{errors.name}</p>}
-                    </motion.div>
-                    <motion.div
-                      className={`mc-form-row${touched.email && errors.email ? ' has-error' : ''}`}
-                      animate={touched.email && errors.email ? 'shake' : 'idle'}
-                      variants={shakeVariants}
-                    >
-                      <span className="mc-form-row-label">Email</span>
-                      <input name="email" type="email" className="mc-form-input"
-                        placeholder="you@example.com"
-                        value={form.email} onChange={handleChange} onBlur={handleBlur} />
-                      {touched.email && errors.email && <p className="mc-form-error">{errors.email}</p>}
-                    </motion.div>
+                  <div className="mc-input-group">
+                    <input name="name" className={`mc-input ${touched.name && errors.name ? 'has-error' : ''}`} placeholder=" " value={form.name} onChange={handleChange} onBlur={handleBlur} />
+                    <label className="mc-label">Full Name</label>
+                    {touched.name && errors.name && <span className="mc-error-msg">{errors.name}</span>}
                   </div>
 
-                  <div className="mc-divider" />
-
-                  {/* Message */}
-                  <p className="mc-section-label">Message</p>
-                  <div className="mc-form-card">
-                    <motion.div
-                      className={`mc-form-row${touched.message && errors.message ? ' has-error' : ''}`}
-                      animate={touched.message && errors.message ? 'shake' : 'idle'}
-                      variants={shakeVariants}
-                    >
-                      <span className="mc-form-row-label">Your message</span>
-                      <textarea name="message" className="mc-form-input"
-                        rows={5} placeholder="Tell me what you'd like to discuss..."
-                        value={form.message} onChange={handleChange} onBlur={handleBlur}
-                        maxLength={500} />
-                      {touched.message && errors.message && <p className="mc-form-error">{errors.message}</p>}
-                      <p className={`mc-char-hint${form.message.length >= 480 ? ' over' : ''}`}>
-                        {form.message.length} / 500
-                      </p>
-                    </motion.div>
+                  <div className="mc-input-group">
+                    <input name="email" type="email" className={`mc-input ${touched.email && errors.email ? 'has-error' : ''}`} placeholder=" " value={form.email} onChange={handleChange} onBlur={handleBlur} />
+                    <label className="mc-label">Email Address</label>
+                    {touched.email && errors.email && <span className="mc-error-msg">{errors.email}</span>}
                   </div>
 
-                  <div className="mc-divider" />
-
-                  {/* Send button */}
-                  <div className="mc-send-wrap">
-                    <motion.button
-                      className="mc-send-btn"
-                      onClick={handleSubmit}
-                      disabled={status === "sending"}
-                      whileTap={{ scale: 0.97 }}
-                    >
-                      <AnimatePresence mode="wait" initial={false}>
-                        {status === "sending" ? (
-                          <motion.span key="s"
-                            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-                            style={{ display: 'flex', alignItems: 'center', gap: 10 }}
-                          >
-                            <span className="mc-send-icon-wrap">
-                              <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} />
-                            </span>
-                            Sending…
-                          </motion.span>
-                        ) : (
-                          <motion.span key="i"
-                            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-                            style={{ display: 'flex', alignItems: 'center', gap: 10 }}
-                          >
-                            <span className="mc-send-icon-wrap"><Send size={15} /></span>
-                            Send Message
-                          </motion.span>
-                        )}
-                      </AnimatePresence>
-                    </motion.button>
+                  <div className="mc-input-group">
+                    <textarea name="message" rows={4} className={`mc-input ${touched.message && errors.message ? 'has-error' : ''}`} placeholder=" " value={form.message} onChange={handleChange} onBlur={handleBlur} style={{ resize: 'none' }} />
+                    <label className="mc-label">Your Message</label>
+                    {touched.message && errors.message && <span className="mc-error-msg">{errors.message}</span>}
                   </div>
 
+                  <button className="mc-send-btn-3d" onClick={handleSubmit} disabled={status === "sending"}>
+                    {status === "sending" ? <Loader2 size={20} className="spin" style={{ animation: 'spin 1s linear infinite' }} /> : "Send Message"}
+                  </button>
                 </motion.div>
               )}
             </AnimatePresence>
