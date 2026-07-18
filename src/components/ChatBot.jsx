@@ -104,6 +104,27 @@ export default function ChatBot() {
       });
 
       if (!res.ok) {
+        // Fallback for local development if the serverless proxy is down
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+          setTimeout(() => {
+            setMessages(prev => {
+              const updated = [...prev];
+              const lastIdx = updated.length - 1;
+              if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
+                updated[lastIdx] = {
+                  ...updated[lastIdx],
+                  content: "Hi! I'm running in local development mode. The AI backend is currently unreachable, but this is a simulated response to verify the UI works perfectly! 🚀",
+                  steps: [...updated[lastIdx].steps, '✓ Local mock response generated'],
+                  isThinkingExpanded: false
+                };
+              }
+              return updated;
+            });
+            setIsLoading(false);
+          }, 1000);
+          return;
+        }
+
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.error || 'Request failed');
       }
