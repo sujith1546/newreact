@@ -9,7 +9,7 @@ const shakeVariants = {
   idle: { x: 0 }
 };
 
-const SwipeToSend = ({ onSend, status }) => {
+const SwipeToSend = ({ onSend, status, isFormValid, triggerValidation }) => {
   const containerRef = useRef(null);
   const x = useMotionValue(0);
   const controls = useAnimation();
@@ -17,13 +17,18 @@ const SwipeToSend = ({ onSend, status }) => {
   const handleDragEnd = (event, info) => {
     if (status === "sending") return;
     const containerWidth = containerRef.current?.offsetWidth || 300;
-    const knobWidth = 52;
+    const knobWidth = 44;
     const padding = 12; // 6px each side
     const maxDrag = containerWidth - knobWidth - padding;
     
     if (info.offset.x >= maxDrag * 0.75) {
-      controls.start({ x: maxDrag });
-      onSend();
+      if (!isFormValid) {
+        controls.start({ x: 0, transition: { type: 'spring', stiffness: 400, damping: 15 } });
+        triggerValidation();
+      } else {
+        controls.start({ x: maxDrag });
+        onSend();
+      }
     } else {
       controls.start({ x: 0 });
     }
@@ -33,7 +38,7 @@ const SwipeToSend = ({ onSend, status }) => {
     if (status === "idle") controls.start({ x: 0, transition: { type: 'spring', stiffness: 300, damping: 25 } });
     if (status === "sending") {
       const containerWidth = containerRef.current?.offsetWidth || 300;
-      controls.start({ x: containerWidth - 52 - 12 });
+      controls.start({ x: containerWidth - 44 - 12 });
     }
   }, [status, controls]);
 
@@ -57,9 +62,9 @@ const SwipeToSend = ({ onSend, status }) => {
         whileTap={{ scale: status === "sending" ? 1 : 0.95 }}
       >
         {status === "sending" ? (
-          <Loader2 size={20} className="spin" style={{ animation: 'spin 1s linear infinite' }} />
+          <Loader2 size={18} className="spin" style={{ animation: 'spin 1s linear infinite' }} />
         ) : (
-          <ChevronRight size={24} strokeWidth={2.5} style={{ marginLeft: '2px' }} />
+          <ChevronRight size={20} strokeWidth={2.5} style={{ marginLeft: '2px' }} />
         )}
       </motion.div>
     </div>
@@ -267,10 +272,10 @@ export default function Contact() {
           /* Form Area */
           .mc-form-container {
             background: var(--bg-primary);
-            border-radius: 24px;
+            border-radius: 20px;
             border: 1px solid var(--border-color);
-            padding: 24px 20px;
-            display: flex; flex-direction: column; gap: 16px;
+            padding: 16px;
+            display: flex; flex-direction: column; gap: 12px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.03);
           }
           [data-theme="dark"] .mc-form-container {
@@ -278,7 +283,7 @@ export default function Contact() {
             border-color: rgba(255,255,255,0.06);
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
           }
-          .mc-form-title { font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0 0 4px; display: flex; align-items: center; gap: 8px; }
+          .mc-form-title { font-size: 15px; font-weight: 700; color: var(--text-primary); margin: 0 0 2px; display: flex; align-items: center; gap: 6px; }
           
           /* Floating Label Inputs */
           .mc-input-group { position: relative; }
@@ -286,9 +291,9 @@ export default function Contact() {
             width: 100%; box-sizing: border-box;
             background: rgba(128,128,128,0.05);
             border: 1px solid rgba(128,128,128,0.2);
-            border-radius: 14px;
-            padding: 24px 16px 10px;
-            font-size: 14px; font-family: inherit; font-weight: 500;
+            border-radius: 12px;
+            padding: 20px 14px 8px;
+            font-size: 13.5px; font-family: inherit; font-weight: 500;
             color: var(--text-primary);
             outline: none; transition: all 0.2s;
             -webkit-appearance: none;
@@ -296,30 +301,30 @@ export default function Contact() {
           .mc-input:focus {
             background: transparent;
             border-color: var(--primary-blue);
-            box-shadow: 0 0 0 4px rgba(0,123,255,0.1);
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
           }
           .mc-input.has-error { border-color: #ef4444; }
           .mc-label {
-            position: absolute; left: 16px; top: 18px;
-            font-size: 14px; font-weight: 500; color: var(--text-secondary);
+            position: absolute; left: 14px; top: 14px;
+            font-size: 13px; font-weight: 500; color: var(--text-secondary);
             pointer-events: none; transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
           }
           .mc-input:focus ~ .mc-label,
           .mc-input:not(:placeholder-shown) ~ .mc-label {
-            top: 8px; font-size: 10px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; letter-spacing: 0.05em;
+            top: 6px; font-size: 9px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; letter-spacing: 0.05em;
           }
           .mc-input.has-error ~ .mc-label { color: #ef4444; }
-          .mc-error-msg { font-size: 11px; font-weight: 600; color: #ef4444; margin: 4px 0 0 4px; display: block; }
+          .mc-error-msg { font-size: 10px; font-weight: 600; color: #ef4444; margin: 3px 0 0 4px; display: block; }
           
           /* Swipe to Send Slider */
           .swipe-send-container {
             position: relative;
             width: 100%;
-            height: 64px;
+            height: 56px;
             background: rgba(128,128,128,0.06);
             border: 1px solid rgba(128,128,128,0.15);
-            border-radius: 32px;
-            margin-top: 16px;
+            border-radius: 28px;
+            margin-top: 4px;
             overflow: hidden;
             display: flex;
             align-items: center;
@@ -335,13 +340,13 @@ export default function Contact() {
             position: absolute;
             top: 0; left: 0; bottom: 0; right: 0;
             pointer-events: none;
-            border-radius: 32px;
+            border-radius: 28px;
           }
           .swipe-send-text {
             position: absolute;
             width: 100%;
             text-align: center;
-            font-size: 14.5px;
+            font-size: 13.5px;
             font-weight: 700;
             color: var(--text-secondary);
             pointer-events: none;
@@ -350,9 +355,9 @@ export default function Contact() {
           }
           .swipe-send-knob {
             position: relative;
-            width: 52px;
-            height: 52px;
-            border-radius: 26px;
+            width: 44px;
+            height: 44px;
+            border-radius: 22px;
             background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
             color: #fff;
             display: flex;
@@ -491,25 +496,7 @@ export default function Contact() {
               </div>
             </div>
 
-            {/* Glass Cards */}
-            <div className="mc-cards-grid">
-              <a href={`mailto:${email}`} className="mc-contact-card-item" style={{ color: 'inherit' }}>
-                <div className="mc-card-icon-wrap" style={{ background: 'rgba(59,130,246,0.12)', color: '#3b82f6' }}><Mail size={18} strokeWidth={2.5} /></div>
-                <div>
-                  <p className="mc-card-title">Email</p>
-                  <p className="mc-card-value">sujithreddy1546...</p>
-                </div>
-              </a>
-              <a href={`tel:${phone}`} className="mc-contact-card-item" style={{ color: 'inherit' }}>
-                <div className="mc-card-icon-wrap" style={{ background: 'rgba(34,197,94,0.12)', color: '#22c55e' }}><Phone size={18} strokeWidth={2.5} /></div>
-                <div>
-                  <p className="mc-card-title">Phone</p>
-                  <p className="mc-card-value">{phone}</p>
-                </div>
-              </a>
-            </div>
-
-            {/* Form / Success */}
+            {/* Form / Success - No Glass Cards to save vertical space */}
             <AnimatePresence mode="wait" initial={false}>
               {status === "sent" ? (
                 <motion.div key="success"
@@ -543,12 +530,25 @@ export default function Contact() {
                   </div>
 
                   <div className="mc-input-group">
-                    <textarea name="message" rows={4} className={`mc-input ${touched.message && errors.message ? 'has-error' : ''}`} placeholder=" " value={form.message} onChange={handleChange} onBlur={handleBlur} style={{ resize: 'none' }} />
+                    <textarea name="message" rows={3} className={`mc-input ${touched.message && errors.message ? 'has-error' : ''}`} placeholder=" " value={form.message} onChange={handleChange} onBlur={handleBlur} style={{ resize: 'none' }} />
                     <label className="mc-label">Your Message</label>
                     {touched.message && errors.message && <span className="mc-error-msg">{errors.message}</span>}
                   </div>
 
-                  <SwipeToSend onSend={handleSubmit} status={status} />
+                  <SwipeToSend 
+                    onSend={handleSubmit} 
+                    status={status} 
+                    isFormValid={form.name.trim() !== "" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email) && form.message.trim() !== ""} 
+                    triggerValidation={() => {
+                      const newErrors = {};
+                      if (!form.name.trim()) newErrors.name = "Name is required.";
+                      if (!form.email.trim()) newErrors.email = "Email is required.";
+                      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) newErrors.email = "Please enter a valid email.";
+                      if (!form.message.trim()) newErrors.message = "Message is required.";
+                      setTouched({ name: true, email: true, message: true });
+                      setErrors(prev => ({ ...prev, ...newErrors }));
+                    }} 
+                  />
                 </motion.div>
               )}
             </AnimatePresence>
