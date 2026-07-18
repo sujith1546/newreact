@@ -72,46 +72,7 @@ function TerminalBanner() {
   );
 }
 
-// 3. Dynamic Status Indicator
-function DynamicStatus() {
-  const statuses = [
-    "💻 Building React apps...",
-    "🧠 Training neural nets...",
-    "🚀 Deploying to Vercel...",
-    "☕ Drinking coffee..."
-  ];
-  const [idx, setIdx] = useState(0);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setIdx((prev) => (prev + 1) % statuses.length);
-    }, 4000);
-    return () => clearInterval(timer);
-  }, []);
-
-  return (
-    <div className="dynamic-status-row">
-      <span className="status-dot"></span>
-      <div style={{ position: 'relative', height: '16px', overflow: 'hidden', display: 'flex', alignItems: 'center' }}>
-        <AnimatePresence mode="popLayout">
-          <motion.span
-            key={idx}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.3 }}
-            className="label"
-            style={{ display: 'block', whiteSpace: 'nowrap' }}
-          >
-            {statuses[idx]}
-          </motion.span>
-        </AnimatePresence>
-      </div>
-    </div>
-  );
-}
-
-// 4. Activity Heatmap
+// 3. Activity Heatmap
 function ActivityHeatmap() {
   
   // Generate random heatmap data to look like GitHub contributions
@@ -193,12 +154,6 @@ function SkillRadar() {
 // Main AdvancedProfile component
 export default function AdvancedProfile({ isOpen, onClose, playSound, triggerEvent, handleExploreClick }) {
   const [copiedEmail, setCopiedEmail] = useState(false);
-  const cardRef = useRef(null);
-  
-  // Holographic 3D Tilt State
-  const [rotateX, setRotateX] = useState(0);
-  const [rotateY, setRotateY] = useState(0);
-  const [glarePosition, setGlarePosition] = useState({ x: 50, y: 50, opacity: 0 });
 
   const handleCopyEmail = () => {
     playSound();
@@ -209,34 +164,6 @@ export default function AdvancedProfile({ isOpen, onClose, playSound, triggerEve
 
   const nameText = useGlitchText("Sujith Thota", 200);
   const titleText = useGlitchText("Data Science & Full Stack", 400);
-
-  // 3D Tilt Logic
-  const handlePointerMove = (e) => {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    // Calculate rotation (-10 to 10 degrees)
-    const rX = -((y / rect.height) - 0.5) * 20;
-    const rY = ((x / rect.width) - 0.5) * 20;
-    
-    setRotateX(rX);
-    setRotateY(rY);
-    
-    // Calculate glare position
-    setGlarePosition({
-      x: (x / rect.width) * 100,
-      y: (y / rect.height) * 100,
-      opacity: 0.15
-    });
-  };
-
-  const handlePointerLeave = () => {
-    setRotateX(0);
-    setRotateY(0);
-    setGlarePosition(prev => ({ ...prev, opacity: 0 }));
-  };
 
   return (
     <AnimatePresence>
@@ -280,39 +207,20 @@ export default function AdvancedProfile({ isOpen, onClose, playSound, triggerEve
               <div style={{ perspective: '1000px', padding: '0 20px', marginTop: '-30px' }}>
                 <div 
                   className="profile-identity holographic-card"
-                  ref={cardRef}
-                  onPointerMove={handlePointerMove}
-                  onPointerLeave={handlePointerLeave}
                   style={{
-                    transform: `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
-                    transition: rotateX === 0 ? 'transform 0.5s ease-out' : 'none',
                     position: 'relative',
                     background: 'var(--bg-primary)',
                     border: '1px solid var(--border-color)',
                     borderRadius: '24px',
                     padding: '24px',
                     boxShadow: '0 12px 32px rgba(0,0,0,0.1)',
-                    overflow: 'hidden',
-                    transformStyle: 'preserve-3d'
+                    overflow: 'hidden'
                   }}
                 >
-                  {/* Glare Effect */}
-                  <div 
-                    className="holographic-glare"
-                    style={{
-                      position: 'absolute',
-                      inset: 0,
-                      background: `radial-gradient(circle at ${glarePosition.x}% ${glarePosition.y}%, rgba(255,255,255,${glarePosition.opacity}), transparent 50%)`,
-                      pointerEvents: 'none',
-                      zIndex: 10
-                    }}
-                  />
-
                   <div className="avatar-row" style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '20px' }}>
                     <div className="profile-avatar-square" style={{ width: '84px', height: '84px', borderRadius: '24px', overflow: 'hidden', border: '2px solid var(--primary-blue)', flexShrink: 0 }}>
                       <img id="profile-avatar-img" src="/profile_photo.png" alt="Sujith Thota" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
-                    <DynamicStatus />
                   </div>
 
                   <p className="profile-name" style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 4px 0' }}>{nameText}</p>
