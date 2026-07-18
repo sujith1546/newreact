@@ -1,7 +1,7 @@
 export const certificationsData = [
   {
     id: "google-tf",
-    title: "Google TensorFlow Developer Certificate",
+    title: "Google TensorFlow Certificate",
     issuer: "Google",
     date: "2023",
     description: "Demonstrates proficiency in building and training deep learning models using TensorFlow, covering computer vision, natural language processing, and time series forecasting.",
