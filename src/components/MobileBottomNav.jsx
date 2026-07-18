@@ -323,7 +323,6 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
         )}
       </AnimatePresence>
 
-      {/* Slide-up drawer sheet */}
       <AnimatePresence>
         {isMoreOpen && (
           <motion.div
@@ -338,8 +337,8 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
             transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
           >
             <div className="drawer-handle" />
-            
-            {/* Header info */}
+
+            {/* Header: avatar + name + close */}
             <div className="drawer-header-profile">
               <img src="/profile_photo.png" alt="Sujith Thota" className="drawer-avatar" />
               <div className="drawer-profile-info">
@@ -349,75 +348,58 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
                   <span>Available for opportunities</span>
                 </div>
               </div>
-              <button 
-                className="drawer-close-btn" 
-                onClick={() => {
-                  setIsMoreOpen(false);
-                  moreBtnRef.current?.focus();
-                }}
+              <button
+                className="drawer-close-btn"
+                style={{ position: 'static', transform: 'none', marginLeft: 'auto' }}
+                onClick={() => { setIsMoreOpen(false); moreBtnRef.current?.focus(); }}
                 aria-label="Close menu"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
-            
-            {/* Explore Section */}
-            <div className="drawer-section">
-              <div className="drawer-sections-label">Explore</div>
+
+            {/* Scrollable content */}
+            <div className="drawer-scroll-area">
+              {/* Explore */}
+              <p className="drawer-sections-label">Explore</p>
               <div className="drawer-explore-row">
                 <button onClick={() => handleTabClick('education')} className="drawer-explore-item">
-                  <div className="drawer-item-box">
-                    <GraduationCap size={20} />
-                  </div>
+                  <div className="drawer-item-box"><GraduationCap size={20} /></div>
                   <span>Education</span>
                 </button>
-
                 <button onClick={() => handleTabClick('experience')} className="drawer-explore-item">
-                  <div className="drawer-item-box">
-                    <Briefcase size={20} />
-                  </div>
+                  <div className="drawer-item-box"><Briefcase size={20} /></div>
                   <span>Experience</span>
                 </button>
-
                 <button onClick={() => handleTabClick('certifications')} className="drawer-explore-item">
-                  <div className="drawer-item-box">
-                    <Award size={20} />
-                  </div>
-                  <span>Certificates</span>
+                  <div className="drawer-item-box"><Award size={20} /></div>
+                  <span>Certs</span>
                 </button>
-
                 <button onClick={() => { playSound(); setIsGithubStatsOpen(true); setIsMoreOpen(false); }} className="drawer-explore-item">
-                  <div className="drawer-item-box">
-                    <FaGithub size={20} />
-                  </div>
+                  <div className="drawer-item-box"><FaGithub size={20} /></div>
                   <span>GitHub</span>
                 </button>
               </div>
-            </div>
 
-            {/* Actions Section */}
-            <div className="drawer-section">
-              <div className="drawer-sections-label">Actions</div>
+              <div className="drawer-divider" />
+
+              {/* Actions */}
+              <p className="drawer-sections-label">Actions</p>
               <div className="drawer-actions-list">
                 <button onClick={() => triggerEvent('open-resume')} className="drawer-action-row-btn">
-                  <FileDown size={18} />
-                  <span>View resume</span>
+                  <FileDown size={17} /><span>Resume</span>
                 </button>
                 <button onClick={handleShare} className="drawer-action-row-btn">
-                  <Share size={18} />
-                  <span>Share portfolio</span>
+                  <Share size={17} /><span>Share</span>
                 </button>
                 <button onClick={() => { playSound(); setIsProfileOpen(true); setIsMoreOpen(false); }} className="drawer-action-row-btn">
-                  <User size={18} />
-                  <span>Profile</span>
+                  <User size={17} /><span>Profile</span>
                 </button>
                 <button onClick={() => { playSound(); setIsSettingsOpen(true); setIsMoreOpen(false); }} className="drawer-action-row-btn">
-                  <Settings size={18} />
-                  <span>Settings</span>
+                  <Settings size={17} /><span>Settings</span>
                 </button>
                 <button onClick={() => { playSound(); setIsUpdatesOpen(true); setIsMoreOpen(false); }} className="drawer-action-row-btn">
-                  <Sparkles size={18} />
-                  <span>Updates</span>
+                  <Sparkles size={17} /><span>Updates</span>
                 </button>
               </div>
             </div>
@@ -888,7 +870,7 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
             />
             <motion.div
               className="more-overlay-sheet"
-              style={{ zIndex: 103, height: '75vh', display: 'flex', flexDirection: 'column' }}
+              style={{ zIndex: 103 }}
               role="dialog"
               aria-modal="true"
               aria-label="GitHub Stats"
@@ -897,17 +879,21 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
               exit={{ y: '100%' }}
               transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
             >
-              <div className="drawer-header" style={{ paddingBottom: '16px' }}>
+              <div className="drawer-handle" />
+              <div className="drawer-header">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <FaGithub size={22} style={{ color: 'var(--text-primary)' }} />
-                  <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>GitHub Stats</h3>
+                  <FaGithub size={20} style={{ color: 'var(--text-primary)' }} />
+                  <div>
+                    <p className="drawer-header-title">GitHub Stats</p>
+                    <p className="drawer-header-sub">sujith1546</p>
+                  </div>
                 </div>
                 <button className="drawer-close-btn" onClick={() => setIsGithubStatsOpen(false)}>
-                  <X size={20} />
+                  <X size={16} />
                 </button>
               </div>
-              
-              <div className="drawer-scroll-area" style={{ padding: '0 20px 20px', display: 'flex', flexDirection: 'column', gap: '16px', overflowY: 'auto' }}>
+
+              <div className="drawer-scroll-area" style={{ padding: '16px 20px 20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 
                 {/* Live Stats Card */}
                 <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '12px', display: 'flex', justifyContent: 'center' }}>
