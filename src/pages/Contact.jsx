@@ -215,23 +215,6 @@ export default function Contact() {
             border-color: rgba(22,163,74,0.2) !important;
           }
 
-          /* Social row */
-          .mc-social-row {
-            display: flex; gap: 10px;
-          }
-          .mc-social-chip {
-            flex: 1; height: 44px; border-radius: 13px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-            font-size: 12.5px; font-weight: 700; color: var(--text-primary);
-            text-decoration: none; cursor: pointer; font-family: inherit;
-            transition: background 0.15s, transform 0.1s;
-          }
-          .mc-social-chip:active { background: var(--bg-primary); transform: scale(0.97); }
-          .mc-social-chip--github { color: var(--text-primary); }
-          .mc-social-chip--linkedin { color: #0077b5; }
-
           /* Section label */
           .mc-section-label {
             font-size: 11px; font-weight: 700; color: var(--text-secondary);
@@ -278,14 +261,14 @@ export default function Contact() {
           /* Submit button — premium */
           .mc-send-btn {
             position: relative; overflow: hidden;
-            width: 100%; height: 54px; border-radius: 16px;
+            width: 100%; height: 56px; border-radius: 16px;
             background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #3b82f6 100%);
-            color: #fff; font-size: 15px; font-weight: 700; letter-spacing: -0.01em;
+            color: #fff; font-size: 16px; font-weight: 700; letter-spacing: -0.01em;
             border: none; cursor: pointer; font-family: inherit;
             display: flex; align-items: center; justify-content: center; gap: 10px;
             box-shadow: 0 4px 24px rgba(37,99,235,0.35), 0 1px 0 rgba(255,255,255,0.15) inset;
             transition: transform 0.15s, box-shadow 0.15s;
-            margin-top: 4px;
+            margin-top: 12px;
           }
           .mc-send-btn::after {
             content: '';
@@ -442,16 +425,6 @@ export default function Contact() {
                     </div>
                   </div>
                   <span className="mc-contact-action">Call</span>
-                </a>
-              </div>
-
-              {/* Social chips */}
-              <div className="mc-social-row">
-                <a href="https://github.com/sujith1546" target="_blank" rel="noreferrer" className="mc-social-chip mc-social-chip--github">
-                  <FaGithub size={16} /> GitHub
-                </a>
-                <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="mc-social-chip mc-social-chip--linkedin">
-                  <FaLinkedin size={16} /> LinkedIn
                 </a>
               </div>
             </div>
