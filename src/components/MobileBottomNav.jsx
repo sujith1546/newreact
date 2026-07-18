@@ -851,15 +851,16 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
         {isHelpOpen && (
           <>
             <motion.div 
-              className="drawer-overlay"
+              className="more-overlay-backdrop"
+              style={{ zIndex: 102 }}
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setIsHelpOpen(false)}
             />
             <motion.div 
-              className="drawer-content"
+              className="more-overlay-sheet"
               initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              style={{ zIndex: 1000000, height: '70vh', display: 'flex', flexDirection: 'column' }}
+              style={{ zIndex: 103, display: 'flex', flexDirection: 'column' }}
             >
               <div className="drawer-header" style={{ padding: '20px 20px 16px', borderBottom: '1px solid var(--border-color)', flexShrink: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
