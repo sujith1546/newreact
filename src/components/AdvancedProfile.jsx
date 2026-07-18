@@ -308,8 +308,8 @@ export default function AdvancedProfile({ isOpen, onClose, playSound, triggerEve
                     }}
                   />
 
-                  <div className="avatar-row" style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '16px' }}>
-                    <div className="profile-avatar-square" style={{ width: '64px', height: '64px', borderRadius: '18px', overflow: 'hidden', border: '2px solid var(--primary-blue)' }}>
+                  <div className="avatar-row" style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '20px' }}>
+                    <div className="profile-avatar-square" style={{ width: '84px', height: '84px', borderRadius: '24px', overflow: 'hidden', border: '2px solid var(--primary-blue)', flexShrink: 0 }}>
                       <img id="profile-avatar-img" src="/profile_photo.png" alt="Sujith Thota" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
                     <DynamicStatus />
@@ -337,16 +337,18 @@ export default function AdvancedProfile({ isOpen, onClose, playSound, triggerEve
 
               {/* Data Visualization Section */}
               <div style={{ padding: '0 20px', display: 'flex', flexDirection: 'column', gap: '24px', marginTop: '32px' }}>
-                <ActivityHeatmap />
+                <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '24px' }}>
+                  <ActivityHeatmap />
+                </div>
                 
-                <div>
+                <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '24px' }}>
                   <p className="section-label" style={{ paddingLeft: 0, marginBottom: '0' }}>Technical Proficiency</p>
                   <SkillRadar />
                 </div>
               </div>
 
               {/* Details & Contacts */}
-              <div className="profile-identity" style={{ marginTop: '24px', transform: 'none', background: 'transparent', borderTop: '1px solid var(--border-color)', borderRadius: 0, paddingBottom: '32px', paddingLeft: '20px', paddingRight: '20px' }}>
+              <div className="profile-identity" style={{ marginTop: '32px', transform: 'none', background: 'transparent', borderTop: '1px solid var(--border-color)', borderRadius: 0, paddingTop: '24px', paddingBottom: '32px', paddingLeft: '20px', paddingRight: '20px' }}>
                 <p className="section-label" style={{ padding: '0', marginBottom: '16px' }}>Details</p>
                 
                 <div className="detail-list" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -369,8 +371,8 @@ export default function AdvancedProfile({ isOpen, onClose, playSound, triggerEve
                   </div>
                 </div>
 
-                <div className="explore-section" style={{ marginTop: '32px' }}>
-                  <p className="section-label" style={{ padding: 0, marginBottom: '12px' }}>Explore</p>
+                <div className="explore-section" style={{ marginTop: '32px', borderTop: '1px solid var(--border-color)', paddingTop: '24px' }}>
+                  <p className="section-label" style={{ padding: 0, marginBottom: '16px' }}>Explore</p>
                   <div className="drawer-explore-row" style={{ padding: 0 }}>
                     <button className="drawer-explore-item" onClick={() => handleExploreClick('experience')}>
                       <div className="drawer-item-box"><Briefcase size={20} /></div>
