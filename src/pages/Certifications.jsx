@@ -2,7 +2,7 @@ import { useRef, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import ScrollReveal from '../components/ScrollReveal';
-import { Award, ExternalLink, ShieldCheck, X, ChevronDown } from 'lucide-react';
+import { Award, ExternalLink, ShieldCheck, X, ChevronDown, ChevronRight } from 'lucide-react';
 import { certificationsData } from '../data/certificationsData';
 
 export default function Certifications() {
@@ -115,28 +115,38 @@ export default function Certifications() {
             display: flex; flex-direction: column; gap: 12px; width: 100%;
           }
 
-          /* Compact horizontal mobile card */
+          /* Compact horizontal mobile card - matched to projects */
           .mcert-card {
-            background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 16px;
-            display: flex; align-items: center; padding: 12px; gap: 14px;
-            cursor: pointer; transition: background 0.15s; outline: none;
+            position: relative; overflow: hidden;
+            display: flex; align-items: flex-start; gap: 13px;
+            padding: 14px 14px 14px 18px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            width: 100%; text-align: left; cursor: pointer;
+            transition: background 0.15s; outline: none;
           }
-          .mcert-card:active { background: var(--bg-primary); transform: scale(0.98); }
+          .mcert-card:active { background: var(--bg-primary); }
           
+          .mcert-stripe {
+            position: absolute; left: 0; top: 0; bottom: 0;
+            width: 3px; border-radius: 18px 0 0 18px;
+          }
+
           .mcert-icon-wrap {
-            width: 48px; height: 48px; border-radius: 12px;
-            background: linear-gradient(135deg, #e0e7ff 0%, #fef08a 100%);
+            width: 42px; height: 42px; border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
             flex-shrink: 0; position: relative; overflow: hidden;
-            border: 1px solid rgba(0,0,0,0.05);
+            border: 1px solid;
           }
-          [data-theme="dark"] .mcert-icon-wrap { background: linear-gradient(135deg, #1e1b4b 0%, #713f12 100%); border-color: rgba(255,255,255,0.05); }
-          .mcert-icon { color: rgba(0,0,0,0.5); z-index: 1; }
-          [data-theme="dark"] .mcert-icon { color: rgba(255,255,255,0.8); }
+          .mcert-icon { z-index: 1; }
 
           .mcert-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
-          .mcert-title { font-size: 14.5px; font-weight: 700; color: var(--text-primary); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -0.01em; }
-          .mcert-issuer { font-size: 11px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; letter-spacing: 0.05em; margin: 0; }
+          .mcert-title-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; flex-wrap: wrap; }
+          .mcert-title { font-size: 14.5px; font-weight: 700; color: var(--text-primary); margin: 0; line-height: 1.2; }
+          .mcert-issuer { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; }
+          
+          .mcert-chevron { color: var(--text-muted); flex-shrink: 0; margin-top: 2px; }
           
           /* ============ ANIMATED DETAIL SHEET ============ */
           .dsheet-backdrop {
@@ -245,22 +255,29 @@ export default function Certifications() {
       {/* ── MOBILE VERTICAL FEED ── */}
       {isMobile && (
         <div className="mobile-certs-feed">
-          {certificationsData.map((cert) => (
-            <button 
-              key={cert.id} 
-              className="mcert-card"
-              onClick={() => setSelectedCert(cert)}
-            >
-              <div className="mcert-icon-wrap">
-                <div className="mesh-gradient" />
-                <Award size={20} className="mcert-icon" />
-              </div>
-              <div className="mcert-info">
-                <h3 className="mcert-title">{cert.title}</h3>
-                <p className="mcert-issuer">{cert.issuer}</p>
-              </div>
-            </button>
-          ))}
+          {certificationsData.map((cert, index) => {
+            const accents = ['#3b82f6', '#eab308', '#10b981', '#8b5cf6'];
+            const accent = accents[index % accents.length];
+            return (
+              <button 
+                key={cert.id} 
+                className="mcert-card"
+                onClick={() => setSelectedCert(cert)}
+              >
+                <div className="mcert-stripe" style={{ background: accent }} />
+                <div className="mcert-icon-wrap" style={{ background: accent + '18', color: accent, borderColor: accent + '30' }}>
+                  <Award size={20} className="mcert-icon" style={{ color: accent }} />
+                </div>
+                <div className="mcert-info">
+                  <div className="mcert-title-row">
+                    <h3 className="mcert-title">{cert.title}</h3>
+                  </div>
+                  <p className="mcert-issuer" style={{ color: accent }}>{cert.issuer}</p>
+                </div>
+                <ChevronRight size={15} className="mcert-chevron" />
+              </button>
+            );
+          })}
         </div>
       )}
 
