@@ -12,6 +12,7 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isUpdatesOpen, setIsUpdatesOpen] = useState(false);
+  const [isGithubStatsOpen, setIsGithubStatsOpen] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
   const [toast, setToast] = useState(null); // { label, prevValue, nextValue, undo }
@@ -385,12 +386,12 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
                   <span>Certificates</span>
                 </button>
 
-                <a href="https://github.com/sujith1546" target="_blank" rel="noopener noreferrer" className="drawer-explore-item">
+                <button onClick={() => { playSound(); setIsGithubStatsOpen(true); setIsMoreOpen(false); }} className="drawer-explore-item">
                   <div className="drawer-item-box">
                     <FaGithub size={20} />
                   </div>
                   <span>GitHub</span>
-                </a>
+                </button>
               </div>
             </div>
 
@@ -870,6 +871,80 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
 
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* GitHub Stats Slide-Up Drawer */}
+      <AnimatePresence>
+        {isGithubStatsOpen && (
+          <>
+            <motion.div
+              className="more-overlay-backdrop"
+              style={{ zIndex: 102 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsGithubStatsOpen(false)}
+            />
+            <motion.div
+              className="more-overlay-sheet"
+              style={{ zIndex: 103, height: '75vh', display: 'flex', flexDirection: 'column' }}
+              role="dialog"
+              aria-modal="true"
+              aria-label="GitHub Stats"
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
+            >
+              <div className="drawer-header" style={{ paddingBottom: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <FaGithub size={22} style={{ color: 'var(--text-primary)' }} />
+                  <h3 style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: 'var(--text-primary)' }}>GitHub Stats</h3>
+                </div>
+                <button className="drawer-close-btn" onClick={() => setIsGithubStatsOpen(false)}>
+                  <X size={20} />
+                </button>
+              </div>
+              
+              <div className="drawer-scroll-area" style={{ padding: '0 20px 20px', display: 'flex', flexDirection: 'column', gap: '16px', overflowY: 'auto' }}>
+                
+                {/* Live Stats Card */}
+                <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '12px', display: 'flex', justifyContent: 'center' }}>
+                  <img 
+                    src={`https://github-readme-stats.vercel.app/api?username=sujith1546&show_icons=true&theme=transparent&hide_border=true&title_color=${theme === 'dark' ? 'fff' : '000'}&text_color=${theme === 'dark' ? 'ccc' : '333'}&icon_color=${theme === 'dark' ? '60a5fa' : '3b82f6'}`} 
+                    alt="GitHub Stats"
+                    style={{ width: '100%', height: 'auto', objectFit: 'contain' }}
+                  />
+                </div>
+
+                {/* Top Languages Card */}
+                <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '12px', display: 'flex', justifyContent: 'center' }}>
+                  <img 
+                    src={`https://github-readme-stats.vercel.app/api/top-langs/?username=sujith1546&layout=compact&theme=transparent&hide_border=true&title_color=${theme === 'dark' ? 'fff' : '000'}&text_color=${theme === 'dark' ? 'ccc' : '333'}`} 
+                    alt="Top Languages"
+                    style={{ width: '100%', height: 'auto', objectFit: 'contain' }}
+                  />
+                </div>
+
+                <div style={{ flex: 1 }} />
+
+                <a 
+                  href="https://github.com/sujith1546" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  style={{ 
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                    width: '100%', padding: '14px', background: 'var(--primary-blue)', 
+                    color: '#fff', borderRadius: '14px', fontWeight: 600, fontSize: '14px',
+                    textDecoration: 'none', marginTop: '10px'
+                  }}
+                >
+                  View Full Profile <Share size={16} />
+                </a>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 
