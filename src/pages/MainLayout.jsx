@@ -1,5 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { FileText, Mail, Briefcase, Check } from 'lucide-react';
+import { FaGithub } from 'react-icons/fa';
 import Sidebar from '../components/Sidebar';
 import WelcomeModal from '../components/WelcomeModal';
 import MobileBottomNav from '../components/MobileBottomNav';
@@ -28,10 +30,25 @@ const SECTIONS = [
   { id: 'contact', Component: Contact },
 ];
 
+// Section display labels
+const SECTION_LABELS = {
+  home: null,
+  about: 'About Me',
+  skills: 'Skills & Expertise',
+  projects: 'Featured Projects',
+  education: 'Education',
+  experience: 'Experience',
+  certifications: 'Certifications',
+  contact: 'Contact',
+};
+
 export default function MainLayout() {
   const [activeSection, setActiveSection] = useState('home');
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
+  const [beaconOpen, setBeaconOpen] = useState(false);
+  const [emailCopied, setEmailCopied] = useState(false);
   const scrollRef = useRef(null);
+  const beaconRef = useRef(null);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 900);
@@ -42,34 +59,139 @@ export default function MainLayout() {
   useEffect(() => {
     const handleNavigate = (e) => {
       const section = e.detail?.section;
-      if (section) {
-        handleNavClick(section);
-      }
+      if (section) handleNavClick(section);
     };
     window.addEventListener('navigate-section', handleNavigate);
     return () => window.removeEventListener('navigate-section', handleNavigate);
   }, []);
 
+  // Close beacon popover when tapping outside
+  useEffect(() => {
+    if (!beaconOpen) return;
+    const handleOutside = (e) => {
+      if (beaconRef.current && !beaconRef.current.contains(e.target)) {
+        setBeaconOpen(false);
+      }
+    };
+    setTimeout(() => document.addEventListener('pointerdown', handleOutside), 0);
+    return () => document.removeEventListener('pointerdown', handleOutside);
+  }, [beaconOpen]);
+
   const handleNavClick = (id) => {
     setActiveSection(id);
-    if (scrollRef.current) {
-      scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    if (scrollRef.current) scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  const handleCopyEmail = () => {
+    navigator.clipboard.writeText('sujithreddy1546@gmail.com');
+    setEmailCopied(true);
+    setTimeout(() => setEmailCopied(false), 2000);
+  };
+
+  // Contextual CTA config per section
+  const ctaMap = {
+    home:           { label: 'Hire Me',    icon: Briefcase,  action: () => handleNavClick('contact'), style: 'accent' },
+    about:          { label: 'Resume',     icon: FileText,   action: () => window.dispatchEvent(new CustomEvent('open-resume')), style: 'ghost' },
+    skills:         { label: 'Resume',     icon: FileText,   action: () => window.dispatchEvent(new CustomEvent('open-resume')), style: 'ghost' },
+    projects:       { label: 'GitHub',     icon: FaGithub,   action: () => window.open('https://github.com/sujith1546', '_blank'), style: 'ghost' },
+    education:      { label: 'Resume',     icon: FileText,   action: () => window.dispatchEvent(new CustomEvent('open-resume')), style: 'ghost' },
+    experience:     { label: 'Resume',     icon: FileText,   action: () => window.dispatchEvent(new CustomEvent('open-resume')), style: 'ghost' },
+    certifications: { label: 'Resume',     icon: FileText,   action: () => window.dispatchEvent(new CustomEvent('open-resume')), style: 'ghost' },
+    contact:        { label: emailCopied ? 'Copied!' : 'Copy Email', icon: emailCopied ? Check : Mail, action: handleCopyEmail, style: emailCopied ? 'success' : 'ghost' },
+  };
+  const cta = ctaMap[activeSection] || ctaMap.home;
 
   const activeSectionData = SECTIONS.find(s => s.id === activeSection);
   const ActiveComponent = activeSectionData ? activeSectionData.Component : Home;
 
   return (
     <div className="layout">
-      {/* Mobile-only header bar */}
+      {/* ── Mobile top header — smart & animated ── */}
       <header className="mobile-top-header">
-        <div className="mobile-header-left" onDoubleClick={() => window.dispatchEvent(new CustomEvent('open-qr'))}>
-          <img src="/profile_photo.png" alt="Sujith Thota" />
-          <h2>Sujith Thota</h2>
+
+        {/* LEFT: avatar beacon + animated name/section title */}
+        <div className="mh-left">
+          {/* Availability beacon avatar */}
+          <div className="mh-beacon-wrap" ref={beaconRef}>
+            <button
+              className="mh-avatar-btn"
+              onClick={() => setBeaconOpen(v => !v)}
+              aria-label="Availability status"
+            >
+              <div className="mh-avatar-ring" />
+              <img src="/profile_photo.png" alt="Sujith Thota" className="mh-avatar-img" />
+            </button>
+
+            {/* Popover tooltip */}
+            <AnimatePresence>
+              {beaconOpen && (
+                <motion.div
+                  className="mh-beacon-popover"
+                  initial={{ opacity: 0, y: -6, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -6, scale: 0.95 }}
+                  transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <span className="mh-beacon-dot" />
+                  <div>
+                    <p className="mh-popover-title">Available for work</p>
+                    <p className="mh-popover-sub">Open to full-time &amp; internship roles</p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Animated section title */}
+          <div className="mh-title-wrap">
+            <AnimatePresence mode="wait">
+              {activeSection === 'home' ? (
+                <motion.div
+                  key="name"
+                  className="mh-name"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  <span className="mh-name-main">Sujith Thota</span>
+                  <span className="mh-name-sub">Portfolio</span>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key={activeSection}
+                  className="mh-section-label"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -6 }}
+                  transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                >
+                  {SECTION_LABELS[activeSection]}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
-        <div className="mobile-header-right">
-          <TimezoneStatus />
+
+        {/* RIGHT: contextual CTA + theme toggle */}
+        <div className="mh-right">
+          {/* Contextual CTA — cross-fades on section change */}
+          <AnimatePresence mode="wait">
+            <motion.button
+              key={activeSection + (emailCopied ? '-copied' : '')}
+              className={`mh-cta mh-cta--${cta.style}`}
+              onClick={cta.action}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              whileTap={{ scale: 0.93 }}
+            >
+              <cta.icon size={13} />
+              <span>{cta.label}</span>
+            </motion.button>
+          </AnimatePresence>
+
           <DarkModeToggle />
         </div>
       </header>
