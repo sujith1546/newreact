@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Award, FileText, Share, X, Moon, Sun, FileDown, Settings, ChevronLeft, ChevronDown, Monitor, Bell, Wand2, Globe, Trash2, User, Copy, Check, MapPin, School, Sparkles } from 'lucide-react';
+import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Award, FileText, Share, X, Moon, Sun, FileDown, Settings, ChevronLeft, ChevronDown, Monitor, Bell, Wand2, Globe, Trash2, User, Copy, Check, MapPin, School, Sparkles, Atom } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
 import { IconBolt, IconLayoutGrid } from '@tabler/icons-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -381,6 +381,10 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
                 <button onClick={() => { playSound(); setIsGithubStatsOpen(true); setIsMoreOpen(false); }} className="drawer-explore-item">
                   <div className="drawer-item-box"><FaGithub size={20} /></div>
                   <span>GitHub</span>
+                </button>
+                <button onClick={() => { playSound(); setIsMoreOpen(false); window.dispatchEvent(new CustomEvent('open-chatbot')); }} className="drawer-explore-item">
+                  <div className="drawer-item-box" style={{ color: '#06b6d4', background: 'rgba(6,182,212,0.1)', borderColor: 'rgba(6,182,212,0.2)' }}><Atom size={20} /></div>
+                  <span>Atom AI</span>
                 </button>
               </div>
 

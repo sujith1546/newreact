@@ -46,7 +46,11 @@ export default function ChatBot() {
     }
   }, [isOpen]);
 
-
+  useEffect(() => {
+    const handleOpen = () => setIsOpen(true);
+    window.addEventListener('open-chatbot', handleOpen);
+    return () => window.removeEventListener('open-chatbot', handleOpen);
+  }, []);
 
   const [copiedIndex, setCopiedIndex] = useState(null);
 
@@ -616,30 +620,31 @@ export default function ChatBot() {
         }
       `}</style>
 
-      {/* FAB Button */}
-      <motion.button
-        className="chatbot-fab"
-        drag={isMobile && !isOpen}
-        dragMomentum={false}
-        animate={isOpen ? { x: 0, y: 0 } : undefined}
-        onClick={() => setIsOpen(o => !o)}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
-        aria-label="Open AI Chat"
-      >
-        <AnimatePresence mode="wait">
-          {isOpen ? (
-            <motion.span key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
-              <X size={22} />
-            </motion.span>
-          ) : (
-            <motion.span key="open" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }}>
-              <Atom size={22} />
-            </motion.span>
-          )}
-        </AnimatePresence>
-        {!isOpen && <div className="chatbot-fab-ping" />}
-      </motion.button>
+      {/* FAB Button (Hidden on Mobile) */}
+      {!isMobile && (
+        <motion.button
+          className="chatbot-fab"
+          drag={false}
+          animate={isOpen ? { x: 0, y: 0 } : undefined}
+          onClick={() => setIsOpen(o => !o)}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+          aria-label="Open AI Chat"
+        >
+          <AnimatePresence mode="wait">
+            {isOpen ? (
+              <motion.span key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                <X size={22} />
+              </motion.span>
+            ) : (
+              <motion.span key="open" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }}>
+                <Atom size={22} />
+              </motion.span>
+            )}
+          </AnimatePresence>
+          {!isOpen && <div className="chatbot-fab-ping" />}
+        </motion.button>
+      )}
 
       {/* Chat Panel */}
       <AnimatePresence>
