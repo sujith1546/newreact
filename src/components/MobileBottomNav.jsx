@@ -406,24 +406,12 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
                 <button onClick={() => { playSound(); setIsSettingsOpen(true); setIsMoreOpen(false); }} className="drawer-action-row-btn">
                   <Settings size={17} /><span>Settings</span>
                 </button>
-                <div style={{ position: 'relative' }}>
-                  <button onClick={() => { playSound(); setIsUpdatesOpen(true); setIsMoreOpen(false); }} className="drawer-action-row-btn" style={{ width: '100%', paddingRight: '50px' }}>
-                    <Sparkles size={17} /><span>Updates</span>
-                  </button>
-                  <button 
-                    onClick={() => { playSound(); setIsHelpOpen(true); setIsMoreOpen(false); }} 
-                    style={{ 
-                      position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)',
-                      width: '36px', height: '36px', borderRadius: '10px',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      background: 'var(--bg-secondary)', border: '1px solid var(--border-color)',
-                      color: 'var(--text-secondary)', cursor: 'pointer', zIndex: 2
-                    }}
-                    aria-label="Help"
-                  >
-                    <HelpCircle size={17} />
-                  </button>
-                </div>
+                <button onClick={() => { playSound(); setIsHelpOpen(true); setIsMoreOpen(false); }} className="drawer-action-row-btn">
+                  <HelpCircle size={17} /><span>Help</span>
+                </button>
+                <button onClick={() => { playSound(); setIsUpdatesOpen(true); setIsMoreOpen(false); }} className="drawer-action-row-btn">
+                  <Sparkles size={17} /><span>Updates</span>
+                </button>
               </div>
             </div>
           </motion.div>
