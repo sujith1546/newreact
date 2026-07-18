@@ -406,47 +406,23 @@ export default function Contact() {
           </>
         ) : (
           /* ── MOBILE — clean, consistent redesign inside outer card ── */
-          <motion.div className="mc-outer-container"
-            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <div className="contact-plain-header" style={{ marginBottom: 0 }}>
+          <>
+            <div className="contact-plain-header">
               <h1>Get in Touch</h1>
               <p>Have a question or want to work together?</p>
             </div>
-            {/* Availability + contact info */}
-            <div className="mc-info-strip">
-              <div className="mc-avail-pill">
-                <span className="mc-avail-dot" />
-                <span className="mc-avail-text">Available for opportunities</span>
+            
+            <motion.div className="mc-outer-container"
+              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            >
+              {/* Availability + contact info */}
+              <div className="mc-info-strip">
+                <div className="mc-avail-pill">
+                  <span className="mc-avail-dot" />
+                  <span className="mc-avail-text">Available for opportunities</span>
+                </div>
               </div>
-
-              {/* Settings-style contact rows */}
-              <div className="mc-contact-card">
-                <button className="mc-contact-row" onClick={handleCopyEmail}>
-                  <div className="mc-contact-row-left">
-                    <div className="mc-contact-icon mc-contact-icon--mail"><Mail size={15} /></div>
-                    <div className="mc-contact-text">
-                      <h4>Email</h4>
-                      <p>{email}</p>
-                    </div>
-                  </div>
-                  <span className={`mc-contact-action${emailCopied ? ' mc-contact-action--success' : ''}`}>
-                    {emailCopied ? <><Check size={11} /> Copied</> : 'Copy'}
-                  </span>
-                </button>
-                <a href={`tel:${phone}`} className="mc-contact-row">
-                  <div className="mc-contact-row-left">
-                    <div className="mc-contact-icon mc-contact-icon--phone"><Phone size={15} /></div>
-                    <div className="mc-contact-text">
-                      <h4>Phone</h4>
-                      <p>{phone}</p>
-                    </div>
-                  </div>
-                  <span className="mc-contact-action">Call</span>
-                </a>
-              </div>
-            </div>
 
             {/* Form */}
             <AnimatePresence mode="wait" initial={false}>
@@ -547,6 +523,7 @@ export default function Contact() {
               )}
             </AnimatePresence>
           </motion.div>
+          </>
         )}
       </div>
     </ScrollReveal>
