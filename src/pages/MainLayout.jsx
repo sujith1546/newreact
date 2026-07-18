@@ -18,6 +18,7 @@ import Experience from '../pages/Experience';
 import Certifications from '../pages/Certifications';
 import Contact from '../pages/Contact';
 import ParticleCanvas from '../components/ParticleCanvas';
+import { useTheme } from '../context/ThemeContext';
 
 const SECTIONS = [
   { id: 'home', Component: Home },
