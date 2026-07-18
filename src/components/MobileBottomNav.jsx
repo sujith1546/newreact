@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Award, FileText, Share, X, Moon, Sun, FileDown, Settings, ChevronLeft, Monitor, Bell, Wand2, Globe, Trash2, User, Copy, Check, MapPin, School } from 'lucide-react';
+import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Award, FileText, Share, X, Moon, Sun, FileDown, Settings, ChevronLeft, ChevronDown, Monitor, Bell, Wand2, Globe, Trash2, User, Copy, Check, MapPin, School } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocalTime } from '../hooks/useLocalTime';
@@ -13,6 +13,8 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
   const [reduceMotion, setReduceMotion] = useState(false);
   const [toast, setToast] = useState(null); // { label, prevValue, nextValue, undo }
   const [tapCount, setTapCount] = useState(0);
+  const [hasSettingsScrolled, setHasSettingsScrolled] = useState(false);
+  const [isSettingsScrollable, setIsSettingsScrollable] = useState(false);
 
   // IntersectionObserver removed because we now render components dynamically instead of in a single scrolling feed.
   const localTime = useLocalTime();
@@ -33,6 +35,7 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
 
   const drawerRef = useRef(null);
   const settingsRef = useRef(null);
+  const settingsContentRef = useRef(null);
   const profileRef = useRef(null);
   const moreBtnRef = useRef(null);
 
@@ -148,6 +151,25 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
   const announce = (label, prevValue, nextValue, undo) => {
     setToast({ label, prevValue, nextValue, undo });
     setTimeout(() => setToast(null), 4000);
+  };
+
+  useEffect(() => {
+    if (isSettingsOpen) {
+      setHasSettingsScrolled(false);
+      setIsSettingsScrollable(false);
+      setTimeout(() => {
+        if (settingsContentRef.current) {
+          const { scrollHeight, clientHeight } = settingsContentRef.current;
+          setIsSettingsScrollable(scrollHeight > clientHeight + 5);
+        }
+      }, 150);
+    }
+  }, [isSettingsOpen]);
+
+  const handleSettingsScroll = (e) => {
+    if (e.target.scrollTop > 10 && !hasSettingsScrolled) {
+      setHasSettingsScrolled(true);
+    }
   };
 
   const handleDarkModeToggle = () => {
@@ -544,7 +566,7 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
               <h3>Settings</h3>
             </div>
             
-            <div className="settings-content" style={{ paddingBottom: '40px' }}>
+            <div className="settings-content" ref={settingsContentRef} onScroll={handleSettingsScroll} style={{ paddingBottom: '40px' }}>
               
               {/* Presets Profiles */}
               <div className="settings-group">
@@ -816,6 +838,28 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
                   <span style={{ opacity: 0.5 }}> ({5 - tapCount} more to unlock dev options)</span>
                 )}
               </div>
+
+              {/* Scroll Indicator */}
+              <AnimatePresence>
+                {isSettingsScrollable && !hasSettingsScrolled && (
+                  <motion.div 
+                    className="settings-drawer-scroll-indicator"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <motion.div
+                      animate={{ y: [0, 6, 0] }}
+                      transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+                    >
+                      <span style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '2px' }}>Scroll</span>
+                      <ChevronDown size={16} />
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
             </div>
           </motion.div>

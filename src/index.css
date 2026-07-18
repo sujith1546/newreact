@@ -3067,6 +3067,22 @@ html {
     padding: 24px 0 16px;
     font-weight: 500;
   }
+
+  .settings-drawer-scroll-indicator {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 70px;
+    background: linear-gradient(to top, var(--bg-secondary) 30%, transparent);
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    padding-bottom: 12px;
+    pointer-events: none;
+    color: var(--text-secondary);
+    z-index: 100;
+  }
 }
 
 /* Ensure Settings page custom preferences (accent colors, typography) only apply to mobile viewports */
