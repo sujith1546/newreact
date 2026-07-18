@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useLocalTime } from '../hooks/useLocalTime';
 import { useTheme } from '../context/ThemeContext';
 import WhatsNewPanel from './WhatsNewPanel';
+import AdvancedProfile from './AdvancedProfile';
 import { updates } from '../data/updates';
 
 export default function MobileBottomNav({ activeSection, onNavClick }) {
@@ -409,128 +410,13 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
       </AnimatePresence>
 
       {/* Profile Slide-In Drawer (Left) */}
-      <AnimatePresence>
-        {isProfileOpen && (
-          <>
-            <motion.div
-              className="more-overlay-backdrop"
-              style={{ zIndex: 102 }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsProfileOpen(false)}
-            />
-            <motion.div
-              ref={profileRef}
-              className="profile-overlay-sheet"
-              role="dialog"
-              aria-modal="true"
-              aria-labelledby="profileTitle"
-              initial={{ x: '-100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
-              transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
-            >
-              <div className="profile-header">
-                <h3 id="profileTitle">My Profile</h3>
-                <button 
-                  className="profile-close-btn" 
-                  onClick={() => setIsProfileOpen(false)}
-                  aria-label="Close profile"
-                >
-                  <X size={16} aria-hidden="true" />
-                </button>
-              </div>
-              
-              <div className="profile-content">
-                <div className="profile-banner"></div>
-                
-                <div className="profile-identity">
-                  <div className="avatar-row">
-                    <div className="profile-avatar-square">
-                      <img id="profile-avatar-img" src="/profile_photo.png" alt="Sujith Thota" />
-                    </div>
-                    <div className="status-row">
-                      <span className="status-dot"></span>
-                      <span className="label">Available for work</span>
-                    </div>
-                  </div>
-
-                  <p className="profile-name">Sujith Thota</p>
-                  <p className="profile-title">Data Science and Full Stack Developer</p>
-
-                  <div className="stats-row">
-                    <div className="stat-tile">
-                      <p className="value">8.7</p>
-                      <p className="label">VIT CGPA</p>
-                    </div>
-                    <div className="stat-tile">
-                      <p className="value">15+</p>
-                      <p className="label">Certifications</p>
-                    </div>
-                    <div className="stat-tile">
-                      <p className="value">5+</p>
-                      <p className="label">ML projects</p>
-                    </div>
-                  </div>
-
-                  <div className="detail-list">
-                    <div className="detail-row">
-                      <School size={15} aria-hidden="true" />
-                      <span>B.Tech CSE, VIT University, Vellore</span>
-                    </div>
-                    <div className="detail-row">
-                      <MapPin size={15} aria-hidden="true" />
-                      <span>Vellore, India</span>
-                    </div>
-                    <div className="detail-row">
-                      <Mail size={15} aria-hidden="true" />
-                      <span className="email-link">sujithreddy1546@gmail.com</span>
-                      {copiedEmail ? (
-                        <Check size={13} className="copy-icon" style={{ color: '#10b981' }} />
-                      ) : (
-                        <Copy size={13} className="copy-icon" onClick={handleCopyEmail} aria-label="Copy email" />
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="tag-row">
-                    <span className="tag">Machine learning</span>
-                    <span className="tag">Neural networks</span>
-                    <span className="tag">Web apps</span>
-                  </div>
-                </div>
-
-                <div className="explore-section">
-                  <p className="section-label">Explore</p>
-                  <div className="nav-list">
-                    <button className="nav-item" onClick={() => handleExploreClick('experience')}>
-                      <Briefcase size={15} aria-hidden="true" />
-                      <span>Experience</span>
-                    </button>
-                    <button className="nav-item" onClick={() => handleExploreClick('certifications')}>
-                      <Award size={15} aria-hidden="true" />
-                      <span>Certificates</span>
-                    </button>
-                    <button className="nav-item" onClick={() => handleExploreClick('github')}>
-                      <FaGithub size={15} aria-hidden="true" />
-                      <span>GitHub</span>
-                    </button>
-                  </div>
-                </div>
-
-              </div>
-
-              <div className="profile-footer">
-                <button className="profile-resume-btn" onClick={() => { playSound(); setIsProfileOpen(false); triggerEvent('open-resume'); }}>
-                  <FileText size={15} aria-hidden="true" />
-                  View Resume
-                </button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      <AdvancedProfile 
+        isOpen={isProfileOpen} 
+        onClose={() => setIsProfileOpen(false)} 
+        playSound={playSound}
+        triggerEvent={triggerEvent}
+        handleExploreClick={handleExploreClick}
+      />
 
       {/* Settings Slide-In Drawer */}
       <AnimatePresence>

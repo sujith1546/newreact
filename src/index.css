@@ -3272,3 +3272,67 @@ html {
     --primary-blue: #4da3ff !important;
   }
 }
+
+/* === ADVANCED PROFILE STYLES === */
+.profile-terminal-banner {
+  background: #1e1e1e;
+  border-bottom: 1px solid var(--border-color);
+  padding: 12px 20px;
+  font-family: 'Fira Code', monospace;
+  color: #a8cc8c;
+  font-size: 11px;
+  line-height: 1.4;
+  position: relative;
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.terminal-dots {
+  position: absolute;
+  top: 10px;
+  left: 20px;
+  display: flex;
+  gap: 6px;
+}
+.terminal-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: block;
+}
+.profile-terminal-banner pre {
+  margin: 0;
+  margin-top: 16px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+.terminal-cursor {
+  animation: blink 1s step-end infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.holographic-card-container {
+  perspective: 1000px;
+}
+.holographic-glare {
+  mix-blend-mode: overlay;
+  border-radius: inherit;
+  transition: opacity 0.3s ease;
+}
+
+.heatmap-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.heatmap-cell {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  transition: all 0.2s;
+}
+
