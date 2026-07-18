@@ -213,62 +213,84 @@ export default function Contact() {
             border-color: rgba(22,163,74,0.2) !important;
           }
 
+          /* ── outer container — fills the text-content box ── */
           .mc-outer-container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            width: 100%;
-            margin-bottom: 100px;
+            display: flex; flex-direction: column;
+            width: 100%; overflow-y: auto;
+            -ms-overflow-style: none; scrollbar-width: none;
+          }
+          .mc-outer-container::-webkit-scrollbar { display: none; }
+
+          /* ── section divider ── */
+          .mc-divider {
+            width: 100%; height: 1px;
+            background: var(--border-color); flex-shrink: 0;
           }
 
-          /* Section label */
+          /* ── section label ── */
           .mc-section-label {
-            font-size: 11px; font-weight: 700; color: var(--text-secondary);
-            text-transform: uppercase; letter-spacing: 0.06em;
-            padding-left: 4px; margin-bottom: 9px;
+            font-size: 10.5px; font-weight: 800; letter-spacing: .08em;
+            text-transform: uppercase; color: var(--text-muted);
+            padding: 14px 18px 6px; margin: 0; flex-shrink: 0;
           }
 
-          /* Form fields */
-          .mc-form-card {
-            display: flex; flex-direction: column; gap: 12px;
-            margin-bottom: 12px;
+          /* ── availability pill row ── */
+          .mc-avail-row {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 18px;
           }
+          .mc-avail-pill {
+            display: inline-flex; align-items: center; gap: 7px;
+            background: rgba(22,163,74,0.08); border: 1px solid rgba(22,163,74,0.2);
+            border-radius: 20px; padding: 6px 14px; width: fit-content;
+          }
+          .mc-avail-dot {
+            width: 7px; height: 7px; border-radius: 50%; background: #22c55e;
+            flex-shrink: 0; box-shadow: 0 0 0 0 rgba(34,197,94,0.5);
+            animation: rippleDot 2s ease-in-out infinite;
+          }
+          @keyframes rippleDot {
+            0%   { box-shadow: 0 0 0 0 rgba(34,197,94,0.4); }
+            70%  { box-shadow: 0 0 0 7px rgba(34,197,94,0); }
+            100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+          }
+          .mc-avail-text { font-size: 12px; font-weight: 700; color: #16a34a; }
+          .mc-page-title { font-size: 19px; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: -.02em; }
+          .mc-page-sub { font-size: 12px; color: var(--text-secondary); margin: 3px 0 0; }
+
+          /* ── form fields ── */
+          .mc-form-card { display: flex; flex-direction: column; gap: 0; }
           .mc-form-row {
             display: flex; flex-direction: column;
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            background: var(--bg-primary);
-            transition: border-color 0.2s, box-shadow 0.2s;
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.15s;
           }
-          .mc-form-row:focus-within {
-            border-color: var(--primary-blue);
-            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
-          }
+          .mc-form-row:last-child { border-bottom: none; }
+          .mc-form-row:focus-within { background: var(--bg-primary); }
           .mc-form-row.has-error { border-color: #ef4444; }
           .mc-form-row-label {
             font-size: 10px; font-weight: 700;
             color: var(--text-muted); text-transform: uppercase;
-            letter-spacing: 0.07em; padding: 11px 16px 0;
+            letter-spacing: 0.07em; padding: 12px 18px 0;
             pointer-events: none;
           }
           .mc-form-input {
             background: transparent; border: none; outline: none;
-            padding: 5px 16px 11px; font-size: 14px;
+            padding: 5px 18px 12px; font-size: 14.5px;
             color: var(--text-primary); width: 100%;
             box-sizing: border-box; font-family: inherit; resize: none;
           }
           .mc-form-input::placeholder { color: var(--text-muted); opacity: 0.7; }
-          .mc-form-error {
-            font-size: 10.5px; color: #ef4444; padding: 0 16px 8px; margin: 0;
-          }
+          .mc-form-error { font-size: 10.5px; color: #ef4444; padding: 0 18px 8px; margin: 0; }
           .mc-char-hint {
             font-size: 10px; font-weight: 600;
             color: var(--text-muted); text-align: right;
-            padding: 0 16px 8px;
+            padding: 0 18px 8px;
           }
           .mc-char-hint.over { color: #ef4444; }
 
-          /* Submit button — premium */
+          /* ── send button ── */
+          .mc-send-wrap { padding: 16px 18px 20px; }
           .mc-send-btn {
             position: relative; overflow: hidden;
             width: 100%; height: 56px; border-radius: 16px;
@@ -278,32 +300,27 @@ export default function Contact() {
             display: flex; align-items: center; justify-content: center; gap: 10px;
             box-shadow: 0 4px 24px rgba(37,99,235,0.35), 0 1px 0 rgba(255,255,255,0.15) inset;
             transition: transform 0.15s, box-shadow 0.15s;
-            margin-top: 12px;
           }
           .mc-send-btn::after {
-            content: '';
-            position: absolute; inset: 0;
+            content: ''; position: absolute; inset: 0;
             background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 60%);
             pointer-events: none;
           }
-          .mc-send-btn:hover { box-shadow: 0 6px 28px rgba(37,99,235,0.45); transform: translateY(-1px); }
-          .mc-send-btn:active { transform: scale(0.97) translateY(0); box-shadow: 0 2px 12px rgba(37,99,235,0.3); }
+          .mc-send-btn:active { transform: scale(0.97); box-shadow: 0 2px 12px rgba(37,99,235,0.3); }
           .mc-send-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
           [data-theme="dark"] .mc-send-btn {
             background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
-            box-shadow: 0 4px 24px rgba(37,99,235,0.4), 0 1px 0 rgba(255,255,255,0.08) inset;
           }
           .mc-send-icon-wrap {
             width: 28px; height: 28px; border-radius: 8px;
             background: rgba(255,255,255,0.18);
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
           }
 
-          /* Success */
+          /* ── success state ── */
           .mc-success-wrap {
             display: flex; flex-direction: column; align-items: center;
-            gap: 16px; padding: 40px 20px; text-align: center;
+            gap: 16px; padding: 48px 20px; text-align: center;
           }
           .mc-success-icon {
             width: 76px; height: 76px; border-radius: 38px;
@@ -313,7 +330,6 @@ export default function Contact() {
           }
           [data-theme="dark"] .mc-success-icon {
             background: linear-gradient(135deg, #064e3b, #065f46);
-            box-shadow: 0 0 0 8px rgba(22,163,74,0.1);
           }
           .mc-success-title { font-size: 21px; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: -0.02em; }
           .mc-success-sub { font-size: 14px; color: var(--text-secondary); margin: 0; line-height: 1.55; max-width: 260px; }
@@ -401,26 +417,26 @@ export default function Contact() {
             </div>
           </>
         ) : (
-          /* ── MOBILE — clean, consistent redesign inside outer card ── */
-          <>
-            <div className="contact-plain-header">
-              <h1>Get in Touch</h1>
-              <p>Have a question or want to work together?</p>
-            </div>
-            
-            <motion.div className="mc-outer-container"
-              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            >
-              {/* Availability + contact info */}
-              <div className="mc-info-strip">
-                <div className="mc-avail-pill">
-                  <span className="mc-avail-dot" />
-                  <span className="mc-avail-text">Available for opportunities</span>
-                </div>
+          /* ── MOBILE — content sits neatly inside the outer .text-content box ── */
+          <motion.div className="mc-outer-container"
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          >
+            {/* Header row */}
+            <div className="mc-avail-row">
+              <div>
+                <p className="mc-page-title">Get in Touch</p>
+                <p className="mc-page-sub">Have a question or want to work together?</p>
               </div>
+              <div className="mc-avail-pill">
+                <span className="mc-avail-dot" />
+                <span className="mc-avail-text">Open</span>
+              </div>
+            </div>
 
-            {/* Form */}
+            <div className="mc-divider" />
+
+            {/* Form / success */}
             <AnimatePresence mode="wait" initial={false}>
               {status === "sent" ? (
                 <motion.div key="success"
@@ -439,9 +455,10 @@ export default function Contact() {
                 </motion.div>
               ) : (
                 <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                  {/* Your details group */}
+
+                  {/* Your details */}
                   <p className="mc-section-label">Your details</p>
-                  <div className="mc-form-card" style={{ marginBottom: 16 }}>
+                  <div className="mc-form-card">
                     <motion.div
                       className={`mc-form-row${touched.name && errors.name ? ' has-error' : ''}`}
                       animate={touched.name && errors.name ? 'shake' : 'idle'}
@@ -466,9 +483,11 @@ export default function Contact() {
                     </motion.div>
                   </div>
 
-                  {/* Message group */}
+                  <div className="mc-divider" />
+
+                  {/* Message */}
                   <p className="mc-section-label">Message</p>
-                  <div className="mc-form-card" style={{ marginBottom: 16 }}>
+                  <div className="mc-form-card">
                     <motion.div
                       className={`mc-form-row${touched.message && errors.message ? ' has-error' : ''}`}
                       animate={touched.message && errors.message ? 'shake' : 'idle'}
@@ -486,35 +505,40 @@ export default function Contact() {
                     </motion.div>
                   </div>
 
+                  <div className="mc-divider" />
+
                   {/* Send button */}
-                  <motion.button
-                    className="mc-send-btn"
-                    onClick={handleSubmit}
-                    disabled={status === "sending"}
-                    whileTap={{ scale: 0.97 }}
-                  >
-                    <AnimatePresence mode="wait" initial={false}>
-                      {status === "sending" ? (
-                        <motion.span key="s"
-                          initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-                          style={{ display: 'flex', alignItems: 'center', gap: 10 }}
-                        >
-                          <span className="mc-send-icon-wrap">
-                            <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} />
-                          </span>
-                          Sending…
-                        </motion.span>
-                      ) : (
-                        <motion.span key="i"
-                          initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
-                          style={{ display: 'flex', alignItems: 'center', gap: 10 }}
-                        >
-                          <span className="mc-send-icon-wrap"><Send size={15} /></span>
-                          Send Message
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
-                  </motion.button>
+                  <div className="mc-send-wrap">
+                    <motion.button
+                      className="mc-send-btn"
+                      onClick={handleSubmit}
+                      disabled={status === "sending"}
+                      whileTap={{ scale: 0.97 }}
+                    >
+                      <AnimatePresence mode="wait" initial={false}>
+                        {status === "sending" ? (
+                          <motion.span key="s"
+                            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+                            style={{ display: 'flex', alignItems: 'center', gap: 10 }}
+                          >
+                            <span className="mc-send-icon-wrap">
+                              <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} />
+                            </span>
+                            Sending…
+                          </motion.span>
+                        ) : (
+                          <motion.span key="i"
+                            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+                            style={{ display: 'flex', alignItems: 'center', gap: 10 }}
+                          >
+                            <span className="mc-send-icon-wrap"><Send size={15} /></span>
+                            Send Message
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                    </motion.button>
+                  </div>
+
                 </motion.div>
               )}
             </AnimatePresence>
