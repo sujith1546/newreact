@@ -403,14 +403,14 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
                 <button onClick={() => { playSound(); setIsProfileOpen(true); setIsMoreOpen(false); }} className="drawer-action-row-btn">
                   <User size={17} /><span>Profile</span>
                 </button>
+                <button onClick={() => { playSound(); setIsUpdatesOpen(true); setIsMoreOpen(false); }} className="drawer-action-row-btn">
+                  <Sparkles size={17} /><span>Updates</span>
+                </button>
                 <button onClick={() => { playSound(); setIsSettingsOpen(true); setIsMoreOpen(false); }} className="drawer-action-row-btn">
                   <Settings size={17} /><span>Settings</span>
                 </button>
                 <button onClick={() => { playSound(); setIsHelpOpen(true); setIsMoreOpen(false); }} className="drawer-action-row-btn">
                   <HelpCircle size={17} /><span>Help</span>
-                </button>
-                <button onClick={() => { playSound(); setIsUpdatesOpen(true); setIsMoreOpen(false); }} className="drawer-action-row-btn">
-                  <Sparkles size={17} /><span>Updates</span>
                 </button>
               </div>
             </div>
