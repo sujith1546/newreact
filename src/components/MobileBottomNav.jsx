@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Award, FileText, Share, X, Moon, Sun, FileDown, Settings, ChevronLeft, Monitor, Bell, Wand2, Globe, Trash2, User } from 'lucide-react';
+import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Award, FileText, Share, X, Moon, Sun, FileDown, Settings, ChevronLeft, Monitor, Bell, Wand2, Globe, Trash2, User, Copy, Check, MapPin, School } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocalTime } from '../hooks/useLocalTime';
@@ -9,6 +9,7 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [copiedEmail, setCopiedEmail] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
   // IntersectionObserver removed because we now render components dynamically instead of in a single scrolling feed.
   const localTime = useLocalTime();
@@ -81,6 +82,32 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
     window.dispatchEvent(new CustomEvent(eventName));
     setIsMoreOpen(false);
     moreBtnRef.current?.focus();
+  };
+
+  const handleCopyEmail = () => {
+    navigator.clipboard.writeText('sujithreddy1546@gmail.com').then(() => {
+      setCopiedEmail(true);
+      playSound();
+      setTimeout(() => setCopiedEmail(false), 1500);
+    });
+  };
+
+  const handleExploreClick = (target) => {
+    playSound();
+    setIsProfileOpen(false);
+    
+    if (target === 'github') {
+      window.open('https://github.com/sujith1546', '_blank');
+      return;
+    }
+    
+    onNavClick(target);
+    setTimeout(() => {
+      const el = document.getElementById(target);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 150);
   };
 
   const handleShare = async () => {
@@ -242,53 +269,107 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
               className="profile-overlay-sheet"
               role="dialog"
               aria-modal="true"
-              aria-label="Profile details"
+              aria-labelledby="profileTitle"
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
               transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
             >
               <div className="profile-header">
-                <h3>My Profile</h3>
+                <h3 id="profileTitle">My Profile</h3>
                 <button 
                   className="profile-close-btn" 
                   onClick={() => setIsProfileOpen(false)}
-                  aria-label="Close"
+                  aria-label="Close profile"
                 >
-                  <X size={20} />
+                  <X size={16} aria-hidden="true" />
                 </button>
               </div>
               
               <div className="profile-content">
-                <img src="/profile_photo.png" alt="Sujith Thota" className="profile-square-img" />
+                <div className="profile-banner"></div>
                 
-                <div>
-                  <h4 className="profile-name">Sujith Thota</h4>
-                  <p className="profile-tagline">Data Science & Full Stack Developer</p>
+                <div className="profile-identity">
+                  <div className="avatar-row">
+                    <div className="profile-avatar-square">
+                      <img src="/profile_photo.png" alt="Sujith Thota" />
+                    </div>
+                    <div className="status-row">
+                      <span className="status-dot"></span>
+                      <span className="label">Available for work</span>
+                    </div>
+                  </div>
+
+                  <p className="profile-name">Sujith Thota</p>
+                  <p className="profile-title">Data Science and Full Stack Developer</p>
+
+                  <div className="stats-row">
+                    <div className="stat-tile">
+                      <p className="value">8.7</p>
+                      <p className="label">VIT CGPA</p>
+                    </div>
+                    <div className="stat-tile">
+                      <p className="value">15+</p>
+                      <p className="label">Certifications</p>
+                    </div>
+                    <div className="stat-tile">
+                      <p className="value">5+</p>
+                      <p className="label">ML projects</p>
+                    </div>
+                  </div>
+
+                  <div className="detail-list">
+                    <div className="detail-row">
+                      <School size={15} aria-hidden="true" />
+                      <span>B.Tech CSE, VIT University, Vellore</span>
+                    </div>
+                    <div className="detail-row">
+                      <MapPin size={15} aria-hidden="true" />
+                      <span>Vellore, India</span>
+                    </div>
+                    <div className="detail-row">
+                      <Mail size={15} aria-hidden="true" />
+                      <span className="email-link">sujithreddy1546@gmail.com</span>
+                      {copiedEmail ? (
+                        <Check size={13} className="copy-icon" style={{ color: '#10b981' }} />
+                      ) : (
+                        <Copy size={13} className="copy-icon" onClick={handleCopyEmail} aria-label="Copy email" />
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="tag-row">
+                    <span className="tag">Machine learning</span>
+                    <span className="tag">Neural networks</span>
+                    <span className="tag">Web apps</span>
+                  </div>
                 </div>
-                
-                <div className="profile-details-card">
-                  <div className="profile-detail-item">
-                    <label>Education</label>
-                    <span>B.Tech CSE (Data Science)</span>
-                    <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>VIT University, Vellore (8.7 CGPA)</span>
-                  </div>
-                  
-                  <div className="profile-detail-item">
-                    <label>Location</label>
-                    <span>Vellore, India</span>
-                  </div>
-                  
-                  <div className="profile-detail-item">
-                    <label>Email</label>
-                    <span>sujithreddy1546@gmail.com</span>
-                  </div>
-                  
-                  <div className="profile-detail-item">
-                    <label>Focus Areas</label>
-                    <span>Machine Learning, Neural Networks, Web Apps</span>
+
+                <div className="explore-section">
+                  <p className="section-label">Explore</p>
+                  <div className="nav-list">
+                    <button className="nav-item" onClick={() => handleExploreClick('experience')}>
+                      <Briefcase size={15} aria-hidden="true" />
+                      <span>Experience</span>
+                    </button>
+                    <button className="nav-item" onClick={() => handleExploreClick('certifications')}>
+                      <Award size={15} aria-hidden="true" />
+                      <span>Certificates</span>
+                    </button>
+                    <button className="nav-item" onClick={() => handleExploreClick('github')}>
+                      <FaGithub size={15} aria-hidden="true" />
+                      <span>GitHub</span>
+                    </button>
                   </div>
                 </div>
+
+              </div>
+
+              <div className="profile-footer">
+                <button className="profile-resume-btn" onClick={() => { playSound(); setIsProfileOpen(false); triggerEvent('open-resume'); }}>
+                  <FileText size={15} aria-hidden="true" />
+                  View Resume
+                </button>
               </div>
             </motion.div>
           </>
