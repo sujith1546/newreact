@@ -165,15 +165,18 @@ export default function MobileDashboard({ onNavClick }) {
         /* ════════ SWIPE HINT ════════ */
         .swipe-hint {
           display: flex; align-items: center; justify-content: center;
-          padding: 30px 0 20px; color: var(--text-muted); font-size: 10px;
+          padding: 14px 0 12px; color: var(--text-muted); font-size: 10px;
           font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
-          margin-top: auto; gap: 8px;
+          gap: 8px; flex-shrink: 0;
+          background: transparent;
         }
         .swipe-hint-icon { display: flex; align-items: center; color: var(--text-secondary); }
       `}</style>
 
-      <div 
-        className="hd-root"
+      <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+        <div 
+          className="hd-root"
+          style={{ flex: 1, minHeight: 0 }}
         ref={rootRef}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
@@ -249,28 +252,27 @@ export default function MobileDashboard({ onNavClick }) {
           A passionate <strong>B.Tech Graduate from VIT (8.7 CGPA)</strong>, actively exploring the boundaries between predictive machine learning systems and reactive web frameworks. I love building things that are both intelligent and elegant.
         </motion.p>
         
-        <div style={{ flexGrow: 1 }} />
-        
-        {/* ── Swipe Hint ───────────────────────────────────────────── */}
-        <motion.div
-          className="swipe-hint"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.4 }}
-        >
-          <div className="swipe-hint-icon">
-            <motion.div animate={{ x: [-3, 2, -3] }} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}>
-              <ChevronLeft size={16} />
-            </motion.div>
-            <motion.div animate={{ x: [3, -2, 3] }} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}>
-              <ChevronRight size={16} />
-            </motion.div>
-          </div>
-          <span>Swipe or use nav to explore</span>
-        </motion.div>
-        
         </motion.div>
       </div>
-    </>
-  );
+
+      {/* ── Swipe Hint Fixed at Bottom Middle ─────────────────────────────── */}
+      <motion.div
+        className="swipe-hint"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5, duration: 0.4 }}
+      >
+        <div className="swipe-hint-icon">
+          <motion.div animate={{ x: [-3, 2, -3] }} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}>
+            <ChevronLeft size={16} />
+          </motion.div>
+          <motion.div animate={{ x: [3, -2, 3] }} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}>
+            <ChevronRight size={16} />
+          </motion.div>
+        </div>
+        <span>Swipe or use nav to explore</span>
+      </motion.div>
+    </div>
+  </>
+);
 }
