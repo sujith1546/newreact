@@ -303,7 +303,7 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
   const navItems = [
     { id: 'home', label: 'Home', Icon: Home },
     { id: 'skills', label: 'Skills', Icon: Cpu },
-    { id: 'projects', label: 'Projects', Icon: Briefcase },
+    { id: 'projects', label: 'Projects', Icon: Monitor },
     { id: 'contact', label: 'Contact', Icon: Mail },
   ];
 
