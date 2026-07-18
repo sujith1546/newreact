@@ -1,6 +1,7 @@
-import { useState, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { MapPin, Trophy, Laptop, BookOpen, School, X, Hand } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { MapPin, Trophy, Laptop, BookOpen, School, X, Hand, ChevronRight, ChevronDown } from 'lucide-react';
 import ScrollReveal from '../components/ScrollReveal';
 import { EducationArrowFlow } from '../components/EducationArrowFlow';
 
@@ -206,6 +207,33 @@ function EducationCard({ item, index, activeIndex, flippedIndex, onCardClick, on
 export default function Education() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [flippedIndex, setFlippedIndex] = useState(null);
+  
+  // Mobile layout state
+  const [isMobile, setIsMobile] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [sheetScrolled, setSheetScrolled] = useState(false);
+  const [sheetScrollable, setSheetScrollable] = useState(false);
+  const sheetContentRef = useRef(null);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 900);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    if (selectedItem) {
+      setSheetScrolled(false);
+      setSheetScrollable(false);
+      setTimeout(() => {
+        if (sheetContentRef.current) {
+          const { scrollHeight, clientHeight } = sheetContentRef.current;
+          setSheetScrollable(scrollHeight > clientHeight + 5);
+        }
+      }, 200);
+    }
+  }, [selectedItem]);
 
   const handleCardClick = (idx) => {
     setActiveIndex(idx);
@@ -793,6 +821,107 @@ export default function Education() {
         [data-theme="dark"] .education-arrow-flow { 
           background: rgba(30,30,30,0.4);
           border-color: rgba(255,255,255,0.08); 
+        /* ============ MOBILE LAYOUT ============ */
+        .mobile-edu-feed { display: none; }
+        @media (max-width: 900px) {
+          .edu-rail, .edu-grid, .education-arrow-flow, .section-subtitle { display: none !important; }
+          .mobile-edu-feed {
+            display: flex; flex-direction: column; gap: 12px; width: 100%;
+          }
+
+          .medu-card {
+            position: relative; overflow: hidden;
+            display: flex; align-items: flex-start; gap: 13px;
+            padding: 14px 14px 14px 18px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            width: 100%; text-align: left; cursor: pointer;
+            transition: background 0.15s; outline: none;
+          }
+          .medu-card:active { background: var(--bg-primary); }
+          
+          .medu-stripe {
+            position: absolute; left: 0; top: 0; bottom: 0;
+            width: 3px; border-radius: 18px 0 0 18px;
+          }
+
+          .medu-icon-wrap {
+            width: 42px; height: 42px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; position: relative; overflow: hidden;
+            border: 1px solid;
+          }
+
+          .medu-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+          .medu-title-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; flex-wrap: wrap; }
+          .medu-title { font-size: 14.5px; font-weight: 700; color: var(--text-primary); margin: 0; line-height: 1.2; }
+          .medu-inst { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; }
+          
+          .medu-chevron { color: var(--text-muted); flex-shrink: 0; margin-top: 2px; }
+
+          /* ANIMATED DETAIL SHEET */
+          .dsheet-backdrop {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 10000;
+          }
+          [data-theme="dark"] .dsheet-backdrop { background: rgba(0,0,0,0.7); }
+          .dsheet {
+            position: fixed; left: 0; right: 0; bottom: 0; z-index: 10001;
+            background: var(--bg-primary); border-radius: 28px 28px 0 0;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.15); display: flex; flex-direction: column;
+            max-height: 85vh; max-height: 85dvh;
+          }
+          .dsheet-handle {
+            width: 40px; height: 4px; border-radius: 2px; background: var(--border-color);
+            margin: 14px auto 0 auto; flex-shrink: 0;
+          }
+          .dsheet-header {
+            display: flex; align-items: flex-start; justify-content: space-between;
+            padding: 16px 20px 14px; border-bottom: 1px solid var(--border-color); flex-shrink: 0;
+          }
+          .dsheet-title h3 { font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0 0 6px 0; line-height: 1.25; letter-spacing: -0.02em; }
+          .dsheet-title p { font-size: 11px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; letter-spacing: 0.06em; margin: 0; }
+          .dsheet-close {
+            width: 32px; height: 32px; border-radius: 16px; background: var(--bg-secondary);
+            border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center;
+            color: var(--text-secondary); cursor: pointer; flex-shrink: 0;
+          }
+          .dsheet-body {
+            flex: 1; overflow-y: auto; padding: 0; display: flex; flex-direction: column; position: relative;
+          }
+          .dsheet-body::-webkit-scrollbar { display: none; }
+          .dsheet-content { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+          
+          .dsheet-image {
+            width: 100%; height: 160px; border-radius: 16px; overflow: hidden; position: relative;
+            background: linear-gradient(135deg, #e0e7ff 0%, #fef08a 100%);
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid rgba(0,0,0,0.05);
+          }
+          [data-theme="dark"] .dsheet-image { background: linear-gradient(135deg, #1e1b4b 0%, #713f12 100%); border-color: rgba(255,255,255,0.05); }
+          .dsheet-image-icon { color: rgba(0,0,0,0.4); z-index: 1; }
+          [data-theme="dark"] .dsheet-image-icon { color: rgba(255,255,255,0.7); }
+          
+          .dsheet-desc { font-size: 14.5px; color: var(--text-secondary); line-height: 1.6; margin: 0; }
+          
+          .ps-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+          .ps-stat { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 14px; }
+          .ps-stat-label { font-size: 11px; color: var(--text-secondary); margin: 0; font-weight: 500; }
+          .ps-stat-value { font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 4px 0 0; line-height: 1.2; }
+
+          .mesh-gradient {
+            position: absolute; width: 200%; height: 200%;
+            background: radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.15), transparent 60%), radial-gradient(circle at 80% 20%, rgba(234, 179, 8, 0.15), transparent 50%);
+            animation: meshFlow 8s ease infinite alternate;
+          }
+          @keyframes meshFlow { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(-20%, -20%) scale(1.1); } }
+
+          .dsheet-scroll-hint {
+            position: absolute; bottom: 0; left: 0; right: 0; height: 70px;
+            background: linear-gradient(to top, var(--bg-secondary) 30%, transparent);
+            display: flex; justify-content: center; align-items: flex-end; padding-bottom: 12px;
+            pointer-events: none; color: var(--text-secondary); z-index: 100;
+          }
         }
       `}</style>
 
@@ -865,7 +994,110 @@ export default function Education() {
           <p className="section-subtitle" style={{ color: '#6b7280', fontSize: '13px', marginBottom: '8px', textAlign: 'center', fontWeight: 'normal' }}>Your journey at a glance</p>
           <EducationArrowFlow activeIndex={activeIndex} />
         </div>
+
+        {/* ── MOBILE VERTICAL FEED ── */}
+        {isMobile && (
+          <div className="mobile-edu-feed">
+            {TIMELINE.map((item, index) => {
+              const accents = ['#3b82f6', '#eab308', '#10b981', '#8b5cf6'];
+              const accent = accents[index % accents.length];
+              const { Icon } = item;
+              return (
+                <button 
+                  key={item.year} 
+                  className="medu-card"
+                  onClick={() => setSelectedItem(item)}
+                >
+                  <div className="medu-stripe" style={{ background: accent }} />
+                  <div className="medu-icon-wrap" style={{ background: accent + '18', color: accent, borderColor: accent + '30' }}>
+                    <Icon size={20} style={{ color: accent }} />
+                  </div>
+                  <div className="medu-info">
+                    <div className="medu-title-row">
+                      <h3 className="medu-title">{item.title}</h3>
+                    </div>
+                    <p className="medu-inst" style={{ color: accent }}>{item.institution}</p>
+                  </div>
+                  <ChevronRight size={15} className="medu-chevron" />
+                </button>
+              );
+            })}
+          </div>
+        )}
+
       </div>
+
+      {/* ── DETAIL SHEET (Mobile) ── */}
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {selectedItem && (
+            <div style={{ position: 'relative', zIndex: 9999 }}>
+              <motion.div
+                className="dsheet-backdrop"
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                onClick={() => setSelectedItem(null)}
+              />
+              <motion.div
+                className="dsheet"
+                initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+                transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
+                drag="y"
+                dragConstraints={{ top: 0, bottom: 0 }}
+                dragElastic={{ top: 0, bottom: 0.4 }}
+                onDragEnd={(_, info) => { if (info.offset.y > 120 || info.velocity.y > 600) setSelectedItem(null); }}
+              >
+                <div className="dsheet-handle" />
+
+                <div className="dsheet-header">
+                  <div className="dsheet-title">
+                    <h3>{selectedItem.title}</h3>
+                    <p>{selectedItem.institution}</p>
+                  </div>
+                  <button className="dsheet-close" onClick={() => setSelectedItem(null)}>
+                    <X size={16} />
+                  </button>
+                </div>
+
+                <div 
+                  className="dsheet-body" 
+                  ref={sheetContentRef}
+                  onScroll={(e) => { if (e.target.scrollTop > 10 && !sheetScrolled) setSheetScrolled(true); }}
+                >
+                  <div className="dsheet-content">
+                    <div className="dsheet-image">
+                      <div className="mesh-gradient" />
+                      <selectedItem.Icon size={56} className="dsheet-image-icon" />
+                    </div>
+                    
+                    <p className="dsheet-desc">{selectedItem.description}</p>
+                    
+                    <div className="ps-stats">
+                      {selectedItem.backStats.map(stat => (
+                        <div key={stat.label} className="ps-stat">
+                          <p className="ps-stat-label">{stat.label}</p>
+                          <p className="ps-stat-value">{stat.value}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <AnimatePresence>
+                    {sheetScrollable && !sheetScrolled && (
+                      <motion.div className="dsheet-scroll-hint" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+                        <motion.div animate={{ y: [0, 6, 0] }} transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                          <span style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '.05em', textTransform: 'uppercase', marginBottom: '2px' }}>Scroll</span>
+                          <ChevronDown size={16} />
+                        </motion.div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </ScrollReveal>
   );
 }
