@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import ScrollReveal from '../components/ScrollReveal';
 import { ExternalLink, Code2, X, ChevronRight, ChevronDown, Star } from 'lucide-react';
@@ -66,6 +66,18 @@ function ProjectCard({ project, onCardClick }) {
         <div className="project-tags">
           {project.tags.slice(0, 3).map(tag => <span key={tag} className="project-tag">{tag}</span>)}
           {project.tags.length > 3 && <span className="project-tag">+{project.tags.length - 3}</span>}
+        </div>
+        <div className="project-links" onClick={e => e.stopPropagation()}>
+          {project.githubUrl && (
+            <a href={project.githubUrl} target="_blank" rel="noreferrer" className="project-link">
+              <FaGithub size={14} /> Code
+            </a>
+          )}
+          {project.liveUrl && (
+            <a href={project.liveUrl} target="_blank" rel="noreferrer" className="project-link project-link--live">
+              <ExternalLink size={14} /> Live Demo
+            </a>
+          )}
         </div>
       </div>
     </div>
@@ -239,6 +251,21 @@ export default function Projects() {
         .project-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
         .project-tag { font-size: 11px; font-weight: 600; padding: 3px 8px; background: rgba(59,130,246,.06); color: var(--primary-blue); border-radius: 4px; border: 1px solid rgba(59,130,246,.12); }
         [data-theme="dark"] .project-tag { background: rgba(59,130,246,.1); border-color: rgba(59,130,246,.25); }
+        .project-links {
+          display: flex; gap: 16px;
+          border-top: 1px solid rgba(0,0,0,.06);
+          padding-top: 14px; margin-top: auto;
+        }
+        [data-theme="dark"] .project-links { border-top-color: rgba(255,255,255,.08); }
+        .project-link {
+          display: flex; align-items: center; gap: 6px;
+          font-size: 12.5px; font-weight: 600;
+          color: var(--text-secondary); text-decoration: none;
+          transition: color .2s ease;
+        }
+        .project-link:hover { color: var(--primary-blue); }
+        .project-link--live { color: var(--primary-blue); }
+        .project-link--live:hover { opacity: 0.8; }
 
         /* ========== MOBILE — project row cards ========== */
         @media (max-width: 900px) {
