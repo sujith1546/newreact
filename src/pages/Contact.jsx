@@ -543,7 +543,6 @@ export default function Contact() {
               )}
             </AnimatePresence>
           </motion.div>
-          </>
         )}
       </div>
     </ScrollReveal>
