@@ -821,6 +821,7 @@ export default function Education() {
         [data-theme="dark"] .education-arrow-flow { 
           background: rgba(30,30,30,0.4);
           border-color: rgba(255,255,255,0.08); 
+        }
         /* ============ MOBILE LAYOUT ============ */
         .mobile-edu-feed { display: none; }
         @media (max-width: 900px) {
