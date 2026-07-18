@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Award, FileText, Share, X, Moon, Sun, FileDown, Settings, ChevronLeft, Monitor, Bell, Wand2, Globe, Trash2 } from 'lucide-react';
+import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Award, FileText, Share, X, Moon, Sun, FileDown, Settings, ChevronLeft, Monitor, Bell, Wand2, Globe, Trash2, User } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocalTime } from '../hooks/useLocalTime';
@@ -8,6 +8,7 @@ import { useTheme } from '../context/ThemeContext';
 export default function MobileBottomNav({ activeSection, onNavClick }) {
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
   // IntersectionObserver removed because we now render components dynamically instead of in a single scrolling feed.
   const localTime = useLocalTime();
@@ -15,6 +16,7 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
 
   const drawerRef = useRef(null);
   const settingsRef = useRef(null);
+  const profileRef = useRef(null);
   const moreBtnRef = useRef(null);
 
   // Keyboard accessibility and Focus trapping in More Drawer
@@ -209,13 +211,87 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
                   <Share size={18} />
                   <span>Share portfolio</span>
                 </button>
-                <button onClick={() => setIsSettingsOpen(true)} className="drawer-action-row-btn">
+                <button onClick={() => { playSound(); setIsProfileOpen(true); setIsMoreOpen(false); }} className="drawer-action-row-btn">
+                  <User size={18} />
+                  <span>Profile</span>
+                </button>
+                <button onClick={() => { playSound(); setIsSettingsOpen(true); setIsMoreOpen(false); }} className="drawer-action-row-btn">
                   <Settings size={18} />
                   <span>Settings</span>
                 </button>
               </div>
             </div>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Profile Slide-In Drawer (Left) */}
+      <AnimatePresence>
+        {isProfileOpen && (
+          <>
+            <motion.div
+              className="more-overlay-backdrop"
+              style={{ zIndex: 102 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsProfileOpen(false)}
+            />
+            <motion.div
+              ref={profileRef}
+              className="profile-overlay-sheet"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Profile details"
+              initial={{ x: '-100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '-100%' }}
+              transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
+            >
+              <div className="profile-header">
+                <h3>My Profile</h3>
+                <button 
+                  className="profile-close-btn" 
+                  onClick={() => setIsProfileOpen(false)}
+                  aria-label="Close"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              
+              <div className="profile-content">
+                <img src="/profile_photo.png" alt="Sujith Thota" className="profile-square-img" />
+                
+                <div>
+                  <h4 className="profile-name">Sujith Thota</h4>
+                  <p className="profile-tagline">Data Science & Full Stack Developer</p>
+                </div>
+                
+                <div className="profile-details-card">
+                  <div className="profile-detail-item">
+                    <label>Education</label>
+                    <span>B.Tech CSE (Data Science)</span>
+                    <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>VIT University, Vellore (8.7 CGPA)</span>
+                  </div>
+                  
+                  <div className="profile-detail-item">
+                    <label>Location</label>
+                    <span>Vellore, India</span>
+                  </div>
+                  
+                  <div className="profile-detail-item">
+                    <label>Email</label>
+                    <span>sujithreddy1546@gmail.com</span>
+                  </div>
+                  
+                  <div className="profile-detail-item">
+                    <label>Focus Areas</label>
+                    <span>Machine Learning, Neural Networks, Web Apps</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 
