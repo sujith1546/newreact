@@ -1,5 +1,38 @@
 export const updates = [
   {
+    version: "v3.0",
+    label: "Advanced Mobile Experience",
+    date: "Just now",
+    unread: true,
+    items: [
+      {
+        type: "feature",
+        title: "Swipe-to-Navigate",
+        body: "Added incredibly fluid native swipe gestures to seamlessly switch between pages on mobile without jitter.",
+      },
+      {
+        type: "feature",
+        title: "Dynamic Island",
+        body: "Replaced standard toast notifications with a sleek, animated iOS-style Dynamic Island.",
+      },
+      {
+        type: "feature",
+        title: "Pull-to-Refresh & Haptics",
+        body: "Added pull-to-refresh gestures with device haptic vibration feedback for a premium native app feel.",
+      },
+      {
+        type: "feature",
+        title: "Long-Press Menus",
+        body: "Introduced blurred context menus triggered by long-pressing on project cards to quickly jump to live demos or code.",
+      },
+      {
+        type: "feature",
+        title: "Glassmorphism UI",
+        body: "Applied heavy acrylic glass blurs to navigation components, matching iOS design standards.",
+      }
+    ],
+  },
+  {
     version: "v2.0",
     label: "Intelligent Mobile Redesign",
     date: "Just now",
