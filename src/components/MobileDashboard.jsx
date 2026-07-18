@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Loader2, ArrowDown } from 'lucide-react';
+import { MapPin, Loader2, ArrowDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import useGlitchText from '../hooks/useGlitchText';
 
 /* ── Count-up hook ─────────────────────────────────────────── */
@@ -161,6 +161,15 @@ export default function MobileDashboard({ onNavClick }) {
           font-size: 12.5px; color: var(--text-secondary);
           line-height: 1.55; margin: 0;
         }
+        
+        /* ════════ SWIPE HINT ════════ */
+        .swipe-hint {
+          display: flex; align-items: center; justify-content: center;
+          padding: 30px 0 20px; color: var(--text-muted); font-size: 10px;
+          font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+          margin-top: auto; gap: 8px;
+        }
+        .swipe-hint-icon { display: flex; align-items: center; color: var(--text-secondary); }
       `}</style>
 
       <div 
@@ -239,6 +248,27 @@ export default function MobileDashboard({ onNavClick }) {
         >
           A passionate <strong>B.Tech Graduate from VIT (8.7 CGPA)</strong>, actively exploring the boundaries between predictive machine learning systems and reactive web frameworks. I love building things that are both intelligent and elegant.
         </motion.p>
+        
+        <div style={{ flexGrow: 1 }} />
+        
+        {/* ── Swipe Hint ───────────────────────────────────────────── */}
+        <motion.div
+          className="swipe-hint"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.4 }}
+        >
+          <div className="swipe-hint-icon">
+            <motion.div animate={{ x: [-3, 2, -3] }} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}>
+              <ChevronLeft size={16} />
+            </motion.div>
+            <motion.div animate={{ x: [3, -2, 3] }} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}>
+              <ChevronRight size={16} />
+            </motion.div>
+          </div>
+          <span>Swipe or use nav to explore</span>
+        </motion.div>
+        
         </motion.div>
       </div>
     </>
