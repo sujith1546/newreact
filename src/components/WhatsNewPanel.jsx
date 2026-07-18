@@ -1,6 +1,6 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Sparkles, Bug, Zap, X } from "lucide-react";
+import { Sparkles, Bug, Zap, X, ChevronDown } from "lucide-react";
 
 const TABS = [
   { key: "all", label: "All" },
@@ -35,12 +35,29 @@ export default function WhatsNewPanel({ open, onClose, releases = [] }) {
     return '';
   });
 
+  const [sheetScrolled, setSheetScrolled] = useState(false);
+  const [sheetScrollable, setSheetScrollable] = useState(false);
+  const sheetContentRef = useRef(null);
+
   useEffect(() => {
     if (open && releases.length > 0) {
        localStorage.setItem('lastReadUpdate', releases[0].version);
        setReadVersion(releases[0].version);
     }
   }, [open, releases]);
+
+  useEffect(() => {
+    if (open) {
+      setSheetScrolled(false);
+      setSheetScrollable(false);
+      setTimeout(() => {
+        if (sheetContentRef.current) {
+          const { scrollHeight, clientHeight } = sheetContentRef.current;
+          setSheetScrollable(scrollHeight > clientHeight + 5);
+        }
+      }, 200);
+    }
+  }, [open, activeTab, visibleCount]);
 
   const visibleReleases = useMemo(() => {
     return releases.slice(0, visibleCount).map((release) => {
@@ -120,7 +137,11 @@ export default function WhatsNewPanel({ open, onClose, releases = [] }) {
             </div>
 
             {/* Body */}
-            <div className="wn-body">
+            <div 
+              className="wn-body"
+              ref={sheetContentRef}
+              onScroll={(e) => { if (e.target.scrollTop > 10 && !sheetScrolled) setSheetScrolled(true); }}
+            >
               {visibleReleases.every((r) => r.items.length === 0) && (
                 <p className="wn-empty">
                   No {activeTab === "all" ? "" : TYPE_META[activeTab]?.label.toLowerCase()} updates in this range yet.
@@ -176,6 +197,17 @@ export default function WhatsNewPanel({ open, onClose, releases = [] }) {
                 </button>
               )}
             </div>
+            
+            <AnimatePresence>
+              {sheetScrollable && !sheetScrolled && (
+                <motion.div className="wn-scroll-hint" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
+                  <motion.div animate={{ y: [0, 6, 0] }} transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '.05em', textTransform: 'uppercase', marginBottom: '2px' }}>Scroll</span>
+                    <ChevronDown size={16} />
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             <style>{`
               .wn-backdrop {
@@ -245,7 +277,15 @@ export default function WhatsNewPanel({ open, onClose, releases = [] }) {
                 width: 100%; padding: 12px; font-size: 13px; font-weight: 600;
                 color: var(--text-secondary); background: var(--bg-primary);
                 border: 1px solid var(--border-color); border-radius: 14px;
-                margin-top: 10px; cursor: pointer;
+                margin-top: 10px; margin-bottom: 20px; cursor: pointer;
+              }
+
+              .wn-scroll-hint {
+                position: absolute; bottom: 0; left: 0; right: 0; height: 70px;
+                background: linear-gradient(to top, var(--bg-secondary) 30%, transparent);
+                display: flex; justify-content: center; align-items: flex-end; padding-bottom: 12px;
+                pointer-events: none; color: var(--text-secondary); z-index: 100;
+                border-bottom-left-radius: 0; border-bottom-right-radius: 0;
               }
             `}</style>
           </motion.div>
