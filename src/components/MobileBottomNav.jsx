@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Award, FileText, Share, X, Moon, Sun, FileDown, Settings, ChevronLeft, ChevronDown, Monitor, Bell, Wand2, Globe, Trash2, User, Copy, Check, MapPin, School, Sparkles, Atom } from 'lucide-react';
+import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Award, FileText, Share, X, Moon, Sun, FileDown, Settings, ChevronLeft, ChevronDown, Monitor, Bell, Wand2, Globe, Trash2, User, Copy, Check, MapPin, School, Sparkles, Atom, HelpCircle } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
 import { IconBolt, IconLayoutGrid } from '@tabler/icons-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -15,6 +15,7 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isUpdatesOpen, setIsUpdatesOpen] = useState(false);
   const [isGithubStatsOpen, setIsGithubStatsOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
   const [toast, setToast] = useState(null); // { label, prevValue, nextValue, undo }
@@ -405,9 +406,14 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
                 <button onClick={() => { playSound(); setIsSettingsOpen(true); setIsMoreOpen(false); }} className="drawer-action-row-btn">
                   <Settings size={17} /><span>Settings</span>
                 </button>
-                <button onClick={() => { playSound(); setIsUpdatesOpen(true); setIsMoreOpen(false); }} className="drawer-action-row-btn">
-                  <Sparkles size={17} /><span>Updates</span>
-                </button>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button onClick={() => { playSound(); setIsUpdatesOpen(true); setIsMoreOpen(false); }} className="drawer-action-row-btn" style={{ flex: 1, padding: '14px 10px' }}>
+                    <Sparkles size={17} /><span>Updates</span>
+                  </button>
+                  <button onClick={() => { playSound(); setIsHelpOpen(true); setIsMoreOpen(false); }} className="drawer-action-row-btn" style={{ flex: 1, padding: '14px 10px' }}>
+                    <HelpCircle size={17} /><span>Help</span>
+                  </button>
+                </div>
               </div>
             </div>
           </motion.div>
@@ -841,6 +847,82 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
         onClose={() => setIsUpdatesOpen(false)} 
         releases={updates} 
       />
+
+      {/* Help Slide-Up Drawer */}
+      <AnimatePresence>
+        {isHelpOpen && (
+          <>
+            <motion.div 
+              className="drawer-overlay"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setIsHelpOpen(false)}
+            />
+            <motion.div 
+              className="drawer-content"
+              initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              style={{ zIndex: 1000000, height: '70vh', display: 'flex', flexDirection: 'column' }}
+            >
+              <div className="drawer-header" style={{ padding: '20px 20px 16px', borderBottom: '1px solid var(--border-color)', flexShrink: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(59,130,246,0.1)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <HelpCircle size={22} />
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)' }}>Help & Info</h3>
+                    <p style={{ margin: '2px 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>About this portfolio</p>
+                  </div>
+                </div>
+                <button className="drawer-close-btn" onClick={() => setIsHelpOpen(false)}>
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div className="drawer-scroll-area" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '16px' }}>
+                  <h4 style={{ margin: '0 0 8px', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>Personal Use Notice</h4>
+                  <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                    This portfolio application was developed by Sujith Thota as a personal sandbox to explore advanced web technologies, beautiful UI paradigms, and AI integrations. It serves as a living representation of my skills and experiments.
+                  </p>
+                </div>
+                
+                <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '16px' }}>
+                  <h4 style={{ margin: '0 0 12px', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>Navigation Tips</h4>
+                  
+                  <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
+                    <div style={{ padding: '8px', background: 'var(--bg-primary)', borderRadius: '8px', border: '1px solid var(--border-color)', height: 'fit-content' }}><Sparkles size={16} color="var(--primary-blue)" /></div>
+                    <div>
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', display: 'block' }}>Updates</span>
+                      <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Check the Updates tab for my latest feature drops.</span>
+                    </div>
+                  </div>
+                  
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <div style={{ padding: '8px', background: 'var(--bg-primary)', borderRadius: '8px', border: '1px solid var(--border-color)', height: 'fit-content' }}><Atom size={16} color="#06b6d4" /></div>
+                    <div>
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', display: 'block' }}>Atom AI</span>
+                      <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Ask Atom AI anything about my work experience or skills!</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ flex: 1 }} />
+                
+                <button 
+                  onClick={() => setIsHelpOpen(false)}
+                  style={{ 
+                    width: '100%', padding: '14px', background: 'var(--primary-blue)', 
+                    color: '#fff', borderRadius: '14px', fontWeight: 600, fontSize: '14px',
+                    border: 'none', cursor: 'pointer', marginTop: '10px'
+                  }}
+                >
+                  Got it, thanks!
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Bottom Nav Capsule */}
       <nav className="mobile-nav-capsule" role="navigation" aria-label="Mobile navigation">
