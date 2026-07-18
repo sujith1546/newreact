@@ -214,15 +214,11 @@ export default function Contact() {
           }
 
           .mc-outer-container {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 22px;
-            padding: 22px 18px;
             display: flex;
             flex-direction: column;
             gap: 20px;
             margin-bottom: 100px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            width: 100%;
           }
 
           /* Section label */
