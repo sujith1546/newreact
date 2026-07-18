@@ -863,52 +863,50 @@ export default function Education() {
 
           /* ANIMATED DETAIL SHEET */
           .dsheet-backdrop {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 10000;
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 10000;
           }
-          [data-theme="dark"] .dsheet-backdrop { background: rgba(0,0,0,0.7); }
           .dsheet {
-            position: fixed; left: 0; right: 0; bottom: 0; z-index: 10001;
-            background: var(--bg-primary); border-radius: 28px 28px 0 0;
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.15); display: flex; flex-direction: column;
-            max-height: 85vh; max-height: 85dvh;
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 10001;
+            background: var(--bg-secondary); border-top-left-radius: 28px; border-top-right-radius: 28px;
+            box-shadow: 0 -10px 50px rgba(0,0,0,0.15); display: flex; flex-direction: column;
+            height: 86vh; height: 86dvh;
           }
           .dsheet-handle {
             width: 40px; height: 4px; border-radius: 2px; background: var(--border-color);
-            margin: 14px auto 0 auto; flex-shrink: 0;
+            margin: 14px auto 0; flex-shrink: 0;
           }
           .dsheet-header {
             display: flex; align-items: flex-start; justify-content: space-between;
-            padding: 16px 20px 14px; border-bottom: 1px solid var(--border-color); flex-shrink: 0;
+            padding: 14px 18px 12px; border-bottom: 1px solid var(--border-color); flex-shrink: 0;
           }
-          .dsheet-title h3 { font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0 0 6px 0; line-height: 1.25; letter-spacing: -0.02em; }
+          .dsheet-title h3 { font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0 0 5px; letter-spacing: -0.02em; }
           .dsheet-title p { font-size: 11px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; letter-spacing: 0.06em; margin: 0; }
           .dsheet-close {
-            width: 32px; height: 32px; border-radius: 16px; background: var(--bg-secondary);
+            width: 30px; height: 30px; border-radius: 15px; background: var(--bg-primary);
             border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center;
-            color: var(--text-secondary); cursor: pointer; flex-shrink: 0;
+            color: var(--text-secondary); cursor: pointer; flex-shrink: 0; margin-left: 10px;
           }
           .dsheet-body {
             flex: 1; overflow-y: auto; padding: 0; display: flex; flex-direction: column; position: relative;
           }
           .dsheet-body::-webkit-scrollbar { display: none; }
-          .dsheet-content { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+          .dsheet-content { padding: 18px; display: flex; flex-direction: column; gap: 16px; padding-bottom: 32px; }
           
           .dsheet-image {
             width: 100%; height: 160px; border-radius: 16px; overflow: hidden; position: relative;
-            background: linear-gradient(135deg, #e0e7ff 0%, #fef08a 100%);
+            background: linear-gradient(120deg, #e0e7ff 0%, #dcfce7 100%);
             display: flex; align-items: center; justify-content: center;
-            border: 1px solid rgba(0,0,0,0.05);
           }
-          [data-theme="dark"] .dsheet-image { background: linear-gradient(135deg, #1e1b4b 0%, #713f12 100%); border-color: rgba(255,255,255,0.05); }
-          .dsheet-image-icon { color: rgba(0,0,0,0.4); z-index: 1; }
-          [data-theme="dark"] .dsheet-image-icon { color: rgba(255,255,255,0.7); }
+          [data-theme="dark"] .dsheet-image { background: linear-gradient(120deg, #1e1b4b 0%, #064e3b 100%); }
+          .dsheet-image-icon { color: rgba(0,0,0,0.15); z-index: 1; }
+          [data-theme="dark"] .dsheet-image-icon { color: rgba(255,255,255,0.08); }
           
-          .dsheet-desc { font-size: 14.5px; color: var(--text-secondary); line-height: 1.6; margin: 0; }
+          .dsheet-desc { font-size: 13.5px; line-height: 1.6; color: var(--text-secondary); margin: 0; }
           
           .ps-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-          .ps-stat { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 14px; }
+          .ps-stat { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 14px; }
           .ps-stat-label { font-size: 11px; color: var(--text-secondary); margin: 0; font-weight: 500; }
-          .ps-stat-value { font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 4px 0 0; line-height: 1.2; }
+          .ps-stat-value { font-size: 22px; font-weight: 800; color: var(--text-primary); margin: 4px 0 0; line-height: 1.2; }
 
           .mesh-gradient {
             position: absolute; width: 200%; height: 200%;
