@@ -217,8 +217,8 @@ export default function Contact() {
             display: flex;
             flex-direction: column;
             gap: 20px;
-            margin-bottom: 100px;
             width: 100%;
+            margin-bottom: 100px;
           }
 
           /* Section label */
