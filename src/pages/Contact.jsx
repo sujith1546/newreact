@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Mail, Phone, ArrowRight, Check, Loader2, Send, Copy } from "lucide-react";
 import { FaGithub, FaLinkedin } from "react-icons/fa";
@@ -193,33 +193,44 @@ export default function Contact() {
           .mc-contact-row:active { background: var(--bg-primary); }
           .mc-contact-row-left { display: flex; align-items: center; gap: 12px; }
           .mc-contact-icon {
-            width: 32px; height: 32px; border-radius: 9px;
-            background: var(--bg-primary); border: 1px solid var(--border-color);
+            width: 34px; height: 34px; border-radius: 10px;
             display: flex; align-items: center; justify-content: center;
-            color: var(--text-secondary); flex-shrink: 0;
+            flex-shrink: 0;
           }
-          .mc-contact-text h4 { font-size: 13.5px; font-weight: 600; color: var(--text-primary); margin: 0 0 1px; }
-          .mc-contact-text p { font-size: 11px; color: var(--text-secondary); margin: 0; }
+          .mc-contact-icon--mail { background: rgba(59,130,246,0.1); color: #3b82f6; }
+          .mc-contact-icon--phone { background: rgba(34,197,94,0.1); color: #16a34a; }
+          .mc-contact-text h4 { font-size: 13.5px; font-weight: 600; color: var(--text-primary); margin: 0 0 2px; }
+          .mc-contact-text p { font-size: 11px; color: var(--text-secondary); margin: 0; letter-spacing: -0.01em; }
           .mc-contact-action {
+            display: flex; align-items: center; gap: 4px;
             font-size: 11px; font-weight: 700;
             color: var(--primary-blue); flex-shrink: 0;
+            background: rgba(0,123,255,0.07); border-radius: 20px;
+            padding: 3px 10px; border: 1px solid rgba(0,123,255,0.15);
+            transition: background 0.15s;
           }
-          .mc-contact-action--success { color: #16a34a !important; }
+          .mc-contact-action--success {
+            color: #16a34a !important;
+            background: rgba(22,163,74,0.08) !important;
+            border-color: rgba(22,163,74,0.2) !important;
+          }
 
           /* Social row */
           .mc-social-row {
-            display: flex; gap: 10px; margin-bottom: 4px;
+            display: flex; gap: 10px;
           }
           .mc-social-chip {
-            flex: 1; height: 42px; border-radius: 12px;
+            flex: 1; height: 44px; border-radius: 13px;
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
-            display: flex; align-items: center; justify-content: center; gap: 7px;
-            font-size: 12px; font-weight: 700; color: var(--text-primary);
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            font-size: 12.5px; font-weight: 700; color: var(--text-primary);
             text-decoration: none; cursor: pointer; font-family: inherit;
-            transition: background 0.15s;
+            transition: background 0.15s, transform 0.1s;
           }
-          .mc-social-chip:active { background: var(--bg-primary); }
+          .mc-social-chip:active { background: var(--bg-primary); transform: scale(0.97); }
+          .mc-social-chip--github { color: var(--text-primary); }
+          .mc-social-chip--linkedin { color: #0077b5; }
 
           /* Section label */
           .mc-section-label {
@@ -264,33 +275,55 @@ export default function Contact() {
           }
           .mc-char-hint.over { color: #ef4444; }
 
-          /* Submit */
+          /* Submit button — premium */
           .mc-send-btn {
-            width: 100%; height: 52px; border-radius: 16px;
-            background: var(--primary-blue);
-            color: #fff; font-size: 15px; font-weight: 700;
+            position: relative; overflow: hidden;
+            width: 100%; height: 54px; border-radius: 16px;
+            background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #3b82f6 100%);
+            color: #fff; font-size: 15px; font-weight: 700; letter-spacing: -0.01em;
             border: none; cursor: pointer; font-family: inherit;
-            display: flex; align-items: center; justify-content: center; gap: 9px;
-            box-shadow: 0 4px 18px rgba(0,123,255,0.28);
-            transition: opacity 0.2s, transform 0.1s;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            box-shadow: 0 4px 24px rgba(37,99,235,0.35), 0 1px 0 rgba(255,255,255,0.15) inset;
+            transition: transform 0.15s, box-shadow 0.15s;
             margin-top: 4px;
           }
-          .mc-send-btn:active { transform: scale(0.97); opacity: 0.9; }
-          .mc-send-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+          .mc-send-btn::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+            pointer-events: none;
+          }
+          .mc-send-btn:hover { box-shadow: 0 6px 28px rgba(37,99,235,0.45); transform: translateY(-1px); }
+          .mc-send-btn:active { transform: scale(0.97) translateY(0); box-shadow: 0 2px 12px rgba(37,99,235,0.3); }
+          .mc-send-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+          [data-theme="dark"] .mc-send-btn {
+            background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+            box-shadow: 0 4px 24px rgba(37,99,235,0.4), 0 1px 0 rgba(255,255,255,0.08) inset;
+          }
+          .mc-send-icon-wrap {
+            width: 28px; height: 28px; border-radius: 8px;
+            background: rgba(255,255,255,0.18);
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+          }
 
           /* Success */
           .mc-success-wrap {
             display: flex; flex-direction: column; align-items: center;
-            gap: 14px; padding: 36px 20px; text-align: center;
+            gap: 16px; padding: 40px 20px; text-align: center;
           }
           .mc-success-icon {
-            width: 70px; height: 70px; border-radius: 35px;
-            background: rgba(22,163,74,0.1);
-            border: 2px solid rgba(22,163,74,0.25);
+            width: 76px; height: 76px; border-radius: 38px;
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
             display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 0 8px rgba(22,163,74,0.08);
           }
-          .mc-success-title { font-size: 20px; font-weight: 800; color: var(--text-primary); margin: 0; }
-          .mc-success-sub { font-size: 13.5px; color: var(--text-secondary); margin: 0; line-height: 1.55; }
+          [data-theme="dark"] .mc-success-icon {
+            background: linear-gradient(135deg, #064e3b, #065f46);
+            box-shadow: 0 0 0 8px rgba(22,163,74,0.1);
+          }
+          .mc-success-title { font-size: 21px; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: -0.02em; }
+          .mc-success-sub { font-size: 14px; color: var(--text-secondary); margin: 0; line-height: 1.55; max-width: 260px; }
         }
       `}</style>
 
@@ -390,19 +423,19 @@ export default function Contact() {
               <div className="mc-contact-card">
                 <button className="mc-contact-row" onClick={handleCopyEmail}>
                   <div className="mc-contact-row-left">
-                    <div className="mc-contact-icon"><Mail size={15} /></div>
+                    <div className="mc-contact-icon mc-contact-icon--mail"><Mail size={15} /></div>
                     <div className="mc-contact-text">
                       <h4>Email</h4>
                       <p>{email}</p>
                     </div>
                   </div>
                   <span className={`mc-contact-action${emailCopied ? ' mc-contact-action--success' : ''}`}>
-                    {emailCopied ? '✓ Copied' : 'Copy'}
+                    {emailCopied ? <><Check size={11} /> Copied</> : 'Copy'}
                   </span>
                 </button>
                 <a href={`tel:${phone}`} className="mc-contact-row">
                   <div className="mc-contact-row-left">
-                    <div className="mc-contact-icon"><Phone size={15} /></div>
+                    <div className="mc-contact-icon mc-contact-icon--phone"><Phone size={15} /></div>
                     <div className="mc-contact-text">
                       <h4>Phone</h4>
                       <p>{phone}</p>
@@ -414,10 +447,10 @@ export default function Contact() {
 
               {/* Social chips */}
               <div className="mc-social-row">
-                <a href="https://github.com/sujith1546" target="_blank" rel="noreferrer" className="mc-social-chip">
+                <a href="https://github.com/sujith1546" target="_blank" rel="noreferrer" className="mc-social-chip mc-social-chip--github">
                   <FaGithub size={16} /> GitHub
                 </a>
-                <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="mc-social-chip">
+                <a href="https://linkedin.com" target="_blank" rel="noreferrer" className="mc-social-chip mc-social-chip--linkedin">
                   <FaLinkedin size={16} /> LinkedIn
                 </a>
               </div>
@@ -496,10 +529,26 @@ export default function Contact() {
                     disabled={status === "sending"}
                     whileTap={{ scale: 0.97 }}
                   >
-                    <AnimatePresence mode="wait">
-                      {status === "sending"
-                        ? <motion.span key="s" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Loader2 size={18} /> Sending…</motion.span>
-                        : <motion.span key="i" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Send size={16} /> Send Message</motion.span>}
+                    <AnimatePresence mode="wait" initial={false}>
+                      {status === "sending" ? (
+                        <motion.span key="s"
+                          initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+                          style={{ display: 'flex', alignItems: 'center', gap: 10 }}
+                        >
+                          <span className="mc-send-icon-wrap">
+                            <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} />
+                          </span>
+                          Sending…
+                        </motion.span>
+                      ) : (
+                        <motion.span key="i"
+                          initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}
+                          style={{ display: 'flex', alignItems: 'center', gap: 10 }}
+                        >
+                          <span className="mc-send-icon-wrap"><Send size={15} /></span>
+                          Send Message
+                        </motion.span>
+                      )}
                     </AnimatePresence>
                   </motion.button>
                 </motion.div>
