@@ -408,7 +408,7 @@ export default function Contact() {
           </div>
         ) : (
           /* ── MOBILE — clean, consistent redesign ── */
-          <motion.div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}
+          <motion.div style={{ display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '100px' }}
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           >
