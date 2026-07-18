@@ -34,9 +34,6 @@ export default function MobileDashboard({ onNavClick }) {
     return 'Good evening 🌆';
   };
 
-  const triggerResume = () => window.dispatchEvent(new CustomEvent('open-resume'));
-  const featured = projectsData.filter(p => p.featured).slice(0, 3);
-
   const cgpa  = useCountUp('8.7');
   const certs = useCountUp('15');
   const projs = useCountUp('5');
