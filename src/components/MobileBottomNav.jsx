@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Award, FileText, Share, X, Moon, Sun, FileDown, Settings, ChevronLeft, ChevronDown, Monitor, Bell, Wand2, Globe, Trash2, User, Copy, Check, MapPin, School, Sparkles } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
+import { IconBolt, IconLayoutGrid } from '@tabler/icons-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocalTime } from '../hooks/useLocalTime';
 import { useTheme } from '../context/ThemeContext';
@@ -302,8 +303,8 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
 
   const navItems = [
     { id: 'home', label: 'Home', Icon: Home },
-    { id: 'skills', label: 'Skills', Icon: Cpu },
-    { id: 'projects', label: 'Projects', Icon: Monitor },
+    { id: 'skills', label: 'Skills', Icon: IconBolt },
+    { id: 'projects', label: 'Projects', Icon: IconLayoutGrid },
     { id: 'contact', label: 'Contact', Icon: Mail },
   ];
 
