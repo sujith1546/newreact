@@ -1,12 +1,69 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Phone, ArrowRight, Check, Loader2, Send, Copy } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence, useAnimation, useMotionValue, useTransform } from "framer-motion";
+import { Mail, Phone, ArrowRight, Check, Loader2, Send, Copy, ChevronRight } from "lucide-react";
 import { FaGithub, FaLinkedin } from "react-icons/fa";
 import ScrollReveal from '../components/ScrollReveal';
 
 const shakeVariants = {
   shake: { x: [-4, 4, -4, 4, 0], transition: { duration: 0.35 } },
   idle: { x: 0 }
+};
+
+const SwipeToSend = ({ onSend, status }) => {
+  const containerRef = useRef(null);
+  const x = useMotionValue(0);
+  const controls = useAnimation();
+
+  const handleDragEnd = (event, info) => {
+    if (status === "sending") return;
+    const containerWidth = containerRef.current?.offsetWidth || 300;
+    const knobWidth = 52;
+    const padding = 12; // 6px each side
+    const maxDrag = containerWidth - knobWidth - padding;
+    
+    if (info.offset.x >= maxDrag * 0.75) {
+      controls.start({ x: maxDrag });
+      onSend();
+    } else {
+      controls.start({ x: 0 });
+    }
+  };
+
+  useEffect(() => {
+    if (status === "idle") controls.start({ x: 0, transition: { type: 'spring', stiffness: 300, damping: 25 } });
+    if (status === "sending") {
+      const containerWidth = containerRef.current?.offsetWidth || 300;
+      controls.start({ x: containerWidth - 52 - 12 });
+    }
+  }, [status, controls]);
+
+  const backgroundFill = useTransform(x, [0, 200], ["rgba(37,99,235,0)", "rgba(37,99,235,0.15)"]);
+  const textOpacity = useTransform(x, [0, 120], [1, 0]);
+
+  return (
+    <div className="swipe-send-container" ref={containerRef}>
+      <motion.div className="swipe-send-bg" style={{ background: backgroundFill }} />
+      <motion.div className="swipe-send-text" style={{ opacity: textOpacity }}>
+        Swipe to send
+      </motion.div>
+      <motion.div
+        className="swipe-send-knob"
+        drag={status === "sending" ? false : "x"}
+        dragConstraints={containerRef}
+        dragElastic={0.05}
+        onDragEnd={handleDragEnd}
+        animate={controls}
+        style={{ x }}
+        whileTap={{ scale: status === "sending" ? 1 : 0.95 }}
+      >
+        {status === "sending" ? (
+          <Loader2 size={20} className="spin" style={{ animation: 'spin 1s linear infinite' }} />
+        ) : (
+          <ChevronRight size={24} strokeWidth={2.5} style={{ marginLeft: '2px' }} />
+        )}
+      </motion.div>
+    </div>
+  );
 };
 
 export default function Contact() {
@@ -254,30 +311,65 @@ export default function Contact() {
           .mc-input.has-error ~ .mc-label { color: #ef4444; }
           .mc-error-msg { font-size: 11px; font-weight: 600; color: #ef4444; margin: 4px 0 0 4px; display: block; }
           
-          /* 3D Send Button */
-          .mc-send-btn-3d {
-            width: 100%; height: 56px;
-            border-radius: 16px; border: none;
-            background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
-            color: white; font-size: 16px; font-weight: 700; letter-spacing: -0.01em;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-            box-shadow: 0 6px 0 #1d4ed8, 0 15px 20px rgba(37,99,235,0.3);
-            transition: all 0.1s; cursor: pointer;
-            margin-top: 12px;
+          /* Swipe to Send Slider */
+          .swipe-send-container {
+            position: relative;
+            width: 100%;
+            height: 64px;
+            background: rgba(128,128,128,0.06);
+            border: 1px solid rgba(128,128,128,0.15);
+            border-radius: 32px;
+            margin-top: 16px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            box-sizing: border-box;
+            padding: 6px;
           }
-          .mc-send-btn-3d:active:not(:disabled) {
-            transform: translateY(6px);
-            box-shadow: 0 0 0 #1d4ed8, 0 5px 10px rgba(37,99,235,0.4);
+          [data-theme="dark"] .swipe-send-container {
+            background: rgba(0,0,0,0.3);
+            border-color: rgba(255,255,255,0.08);
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);
           }
-          .mc-send-btn-3d:disabled {
-            background: #9ca3af; box-shadow: 0 6px 0 #6b7280; opacity: 0.7; transform: none; cursor: not-allowed;
+          .swipe-send-bg {
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            pointer-events: none;
+            border-radius: 32px;
           }
-          [data-theme="dark"] .mc-send-btn-3d {
-            background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
-            box-shadow: 0 6px 0 #1e3a8a, 0 15px 20px rgba(0,0,0,0.5);
+          .swipe-send-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            font-size: 14.5px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            pointer-events: none;
+            letter-spacing: -0.01em;
+            z-index: 1;
           }
-          [data-theme="dark"] .mc-send-btn-3d:active:not(:disabled) {
-            box-shadow: 0 0 0 #1e3a8a, 0 5px 10px rgba(0,0,0,0.5);
+          .swipe-send-knob {
+            position: relative;
+            width: 52px;
+            height: 52px;
+            border-radius: 26px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(37,99,235,0.35);
+            cursor: grab;
+            z-index: 2;
+            touch-action: none;
+            flex-shrink: 0;
+          }
+          .swipe-send-knob:active {
+            cursor: grabbing;
+          }
+          [data-theme="dark"] .swipe-send-knob {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
           }
           
           /* Success */
@@ -456,9 +548,7 @@ export default function Contact() {
                     {touched.message && errors.message && <span className="mc-error-msg">{errors.message}</span>}
                   </div>
 
-                  <button className="mc-send-btn-3d" onClick={handleSubmit} disabled={status === "sending"}>
-                    {status === "sending" ? <Loader2 size={20} className="spin" style={{ animation: 'spin 1s linear infinite' }} /> : "Send Message"}
-                  </button>
+                  <SwipeToSend onSend={handleSubmit} status={status} />
                 </motion.div>
               )}
             </AnimatePresence>
