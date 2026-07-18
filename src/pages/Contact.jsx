@@ -174,14 +174,6 @@ export default function Contact() {
           }
           .mc-avail-text { font-size: 12px; font-weight: 700; color: #16a34a; }
 
-          /* Contact info rows — matching settings style */
-          .mc-contact-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 16px; overflow: hidden;
-            margin-bottom: 4px;
-          }
-          .mc-contact-row {
             display: flex; align-items: center; justify-content: space-between;
             padding: 13px 16px;
             border-bottom: 1px solid var(--border-color);
@@ -215,6 +207,18 @@ export default function Contact() {
             border-color: rgba(22,163,74,0.2) !important;
           }
 
+          .mc-outer-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 22px;
+            padding: 22px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 100px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+          }
+
           /* Section label */
           .mc-section-label {
             font-size: 11px; font-weight: 700; color: var(--text-secondary);
@@ -224,7 +228,7 @@ export default function Contact() {
 
           /* Form card — settings style */
           .mc-form-card {
-            background: var(--bg-secondary);
+            background: var(--bg-primary);
             border: 1px solid var(--border-color);
             border-radius: 16px; overflow: visible;
             margin-bottom: 4px;
@@ -311,90 +315,95 @@ export default function Contact() {
       `}</style>
 
       <div className="contact-page-wrap">
-        <div className="contact-plain-header">
-          <h1>Get in Touch</h1>
-          <p>Have a question or want to work together?</p>
-        </div>
-
         {!isMobile ? (
-          /* ── DESKTOP unchanged ── */
-          <div className="fc-wrapper">
-            <div className="fc-info-panel">
-              <div className="fc-dotgrid" />
-              <div className="fc-glow" />
-              <div>
-                <div className="fc-badge"><span className="fc-badge-dot" /> Available</div>
-                <h2 className="fc-title">Let's Connect</h2>
-                <p className="fc-subtitle">I'm currently seeking new graduate developer roles and project collaborations.</p>
-              </div>
-              <div>
-                <a href={`mailto:${email}`} className="fc-info-row" style={{ textDecoration: 'none' }}>
-                  <div className="fc-info-icon"><Mail size={16} /></div>
-                  <span className="fc-info-text">{email}</span>
-                </a>
-                <a href={`tel:${phone}`} className="fc-info-row" style={{ textDecoration: 'none' }}>
-                  <div className="fc-info-icon"><Phone size={16} /></div>
-                  <span className="fc-info-text">{phone}</span>
-                </a>
-              </div>
+          <>
+            <div className="contact-plain-header">
+              <h1>Get in Touch</h1>
+              <p>Have a question or want to work together?</p>
             </div>
-            <div className="fc-right-col">
-              <AnimatePresence mode="wait" initial={false}>
-                {status === "sent" ? (
-                  <motion.div key="success" className="fc-success"
-                    initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
-                    transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                  >
-                    <motion.div className="fc-success-circle"
-                      initial={{ scale: 0 }} animate={{ scale: 1 }}
-                      transition={{ delay: 0.1, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            /* ── DESKTOP unchanged ── */
+            <div className="fc-wrapper">
+              <div className="fc-info-panel">
+                <div className="fc-dotgrid" />
+                <div className="fc-glow" />
+                <div>
+                  <div className="fc-badge"><span className="fc-badge-dot" /> Available</div>
+                  <h2 className="fc-title">Let's Connect</h2>
+                  <p className="fc-subtitle">I'm currently seeking new graduate developer roles and project collaborations.</p>
+                </div>
+                <div>
+                  <a href={`mailto:${email}`} className="fc-info-row" style={{ textDecoration: 'none' }}>
+                    <div className="fc-info-icon"><Mail size={16} /></div>
+                    <span className="fc-info-text">{email}</span>
+                  </a>
+                  <a href={`tel:${phone}`} className="fc-info-row" style={{ textDecoration: 'none' }}>
+                    <div className="fc-info-icon"><Phone size={16} /></div>
+                    <span className="fc-info-text">{phone}</span>
+                  </a>
+                </div>
+              </div>
+              <div className="fc-right-col">
+                <AnimatePresence mode="wait" initial={false}>
+                  {status === "sent" ? (
+                    <motion.div key="success" className="fc-success"
+                      initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
+                      transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                     >
-                      <Check size={30} color="#16a34a" strokeWidth={2.5} />
+                      <motion.div className="fc-success-circle"
+                        initial={{ scale: 0 }} animate={{ scale: 1 }}
+                        transition={{ delay: 0.1, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                      >
+                        <Check size={30} color="#16a34a" strokeWidth={2.5} />
+                      </motion.div>
+                      <p className="fc-success-title">Message sent!</p>
+                      <p className="fc-success-sub">I'll get back to you within a day.</p>
                     </motion.div>
-                    <p className="fc-success-title">Message sent!</p>
-                    <p className="fc-success-sub">I'll get back to you within a day.</p>
-                  </motion.div>
-                ) : (
-                  <motion.form key="form" className="fc-form-panel" onSubmit={handleSubmit}
-                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                  >
-                    <div className="fc-field">
-                      <label htmlFor="fc-name">Your name</label>
-                      <input id="fc-name" name="name" className={`fc-input${touched.name && errors.name ? ' error' : ''}`}
-                        placeholder="Thota Sujith Reddy" value={form.name} onChange={handleChange} onBlur={handleBlur} />
-                      {touched.name && errors.name && <span className="fc-error-text">{errors.name}</span>}
-                    </div>
-                    <div className="fc-field">
-                      <label htmlFor="fc-email">Your email</label>
-                      <input id="fc-email" name="email" type="email" className={`fc-input${touched.email && errors.email ? ' error' : ''}`}
-                        placeholder="sujithreddy1546@gmail.com" value={form.email} onChange={handleChange} onBlur={handleBlur} />
-                      {touched.email && errors.email && <span className="fc-error-text">{errors.email}</span>}
-                    </div>
-                    <div className="fc-field">
-                      <label htmlFor="fc-message">Message</label>
-                      <textarea id="fc-message" name="message" className={`fc-input${touched.message && errors.message ? ' error' : ''}`}
-                        rows={4} placeholder="Tell me what you'd like to discuss..."
-                        value={form.message} onChange={handleChange} onBlur={handleBlur} />
-                      {touched.message && errors.message && <span className="fc-error-text">{errors.message}</span>}
-                    </div>
-                    <button type="submit" className="fc-submit-btn" disabled={status === "sending"}>
-                      <AnimatePresence mode="wait" initial={false}>
-                        {status === "sending"
-                          ? <motion.span key="l" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Loader2 size={16} /> Sending...</motion.span>
-                          : <motion.span key="i" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>Send message <ArrowRight size={15} /></motion.span>}
-                      </AnimatePresence>
-                    </button>
-                  </motion.form>
-                )}
-              </AnimatePresence>
+                  ) : (
+                    <motion.form key="form" className="fc-form-panel" onSubmit={handleSubmit}
+                      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    >
+                      <div className="fc-field">
+                        <label htmlFor="fc-name">Your name</label>
+                        <input id="fc-name" name="name" className={`fc-input${touched.name && errors.name ? ' error' : ''}`}
+                          placeholder="Thota Sujith Reddy" value={form.name} onChange={handleChange} onBlur={handleBlur} />
+                        {touched.name && errors.name && <span className="fc-error-text">{errors.name}</span>}
+                      </div>
+                      <div className="fc-field">
+                        <label htmlFor="fc-email">Your email</label>
+                        <input id="fc-email" name="email" type="email" className={`fc-input${touched.email && errors.email ? ' error' : ''}`}
+                          placeholder="sujithreddy1546@gmail.com" value={form.email} onChange={handleChange} onBlur={handleBlur} />
+                        {touched.email && errors.email && <span className="fc-error-text">{errors.email}</span>}
+                      </div>
+                      <div className="fc-field">
+                        <label htmlFor="fc-message">Message</label>
+                        <textarea id="fc-message" name="message" className={`fc-input${touched.message && errors.message ? ' error' : ''}`}
+                          rows={4} placeholder="Tell me what you'd like to discuss..."
+                          value={form.message} onChange={handleChange} onBlur={handleBlur} />
+                        {touched.message && errors.message && <span className="fc-error-text">{errors.message}</span>}
+                      </div>
+                      <button type="submit" className="fc-submit-btn" disabled={status === "sending"}>
+                        <AnimatePresence mode="wait" initial={false}>
+                          {status === "sending"
+                            ? <motion.span key="l" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Loader2 size={16} /> Sending...</motion.span>
+                            : <motion.span key="i" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>Send message <ArrowRight size={15} /></motion.span>}
+                        </AnimatePresence>
+                      </button>
+                    </motion.form>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
-          </div>
+          </>
         ) : (
-          /* ── MOBILE — clean, consistent redesign ── */
-          <motion.div style={{ display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '100px' }}
+          /* ── MOBILE — clean, consistent redesign inside outer card ── */
+          <motion.div className="mc-outer-container"
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           >
+            <div className="contact-plain-header" style={{ marginBottom: 0 }}>
+              <h1>Get in Touch</h1>
+              <p>Have a question or want to work together?</p>
+            </div>
             {/* Availability + contact info */}
             <div className="mc-info-strip">
               <div className="mc-avail-pill">
