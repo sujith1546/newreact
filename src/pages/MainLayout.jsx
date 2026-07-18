@@ -90,18 +90,39 @@ export default function MainLayout() {
     setTimeout(() => setEmailCopied(false), 2000);
   };
 
-  const handleDragEnd = (e, info) => {
-    if (!isMobile) return;
-    const SWIPE_PAGES = ['home', 'skills', 'projects', 'contact'];
-    const currentIndex = SWIPE_PAGES.indexOf(activeSection);
-    if (currentIndex === -1) return;
+  const touchStartRef = useRef(null);
 
-    const swipeThreshold = 50;
-    if (info.offset.x < -swipeThreshold && currentIndex < SWIPE_PAGES.length - 1) {
-      handleNavClick(SWIPE_PAGES[currentIndex + 1]);
-    } else if (info.offset.x > swipeThreshold && currentIndex > 0) {
-      handleNavClick(SWIPE_PAGES[currentIndex - 1]);
+  const handleTouchStart = (e) => {
+    if (!isMobile) return;
+    touchStartRef.current = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+      time: Date.now()
+    };
+  };
+
+  const handleTouchEnd = (e) => {
+    if (!isMobile || !touchStartRef.current) return;
+    
+    const touchEndX = e.changedTouches[0].clientX;
+    const touchEndY = e.changedTouches[0].clientY;
+    const dx = touchEndX - touchStartRef.current.x;
+    const dy = touchEndY - touchStartRef.current.y;
+    const dt = Date.now() - touchStartRef.current.time;
+
+    // Detect fast horizontal swipe (distance > 50px, predominantly horizontal, under 500ms)
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 2 && dt < 500) {
+      const SWIPE_PAGES = ['home', 'skills', 'projects', 'contact'];
+      const currentIndex = SWIPE_PAGES.indexOf(activeSection);
+      if (currentIndex !== -1) {
+        if (dx < 0 && currentIndex < SWIPE_PAGES.length - 1) { // Swipe Left -> Next Page
+          handleNavClick(SWIPE_PAGES[currentIndex + 1]);
+        } else if (dx > 0 && currentIndex > 0) { // Swipe Right -> Prev Page
+          handleNavClick(SWIPE_PAGES[currentIndex - 1]);
+        }
+      }
     }
+    touchStartRef.current = null;
   };
 
   // Contextual CTA config per section
@@ -214,7 +235,12 @@ export default function MainLayout() {
 
       <ParticleCanvas />
       <Sidebar activeSection={activeSection} onNavClick={handleNavClick} />
-      <main className="main-content" ref={scrollRef}>
+      <main 
+        className="main-content" 
+        ref={scrollRef}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         <div className="scroll-container">
           <AnimatePresence mode="wait">
             <motion.div
@@ -248,10 +274,6 @@ export default function MainLayout() {
                 width: '100%',
                 height: '100%'
               }}
-              drag={isMobile ? "x" : false}
-              dragConstraints={{ left: 0, right: 0 }}
-              dragElastic={0.15}
-              onDragEnd={handleDragEnd}
               className={`text-content${activeSection === 'home' ? ' home-content' : ''}${['contact','education','about','skills','experience','projects','certifications'].includes(activeSection) ? ' wide-content' : ''}`}
             >
               <ActiveComponent onNavClick={handleNavClick} />
