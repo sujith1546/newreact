@@ -626,13 +626,24 @@ export default function ChatBot() {
           opacity: 0.6;
         }
 
-        /* Mobile */
-        @media (max-width: 480px) {
+        /* Mobile Slide-Up Bar */
+        @media (max-width: 900px) {
           .chatbot-panel {
-            right: 12px;
-            left: 12px;
-            width: auto;
-            bottom: 88px;
+            right: 0;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            height: 88dvh;
+            max-height: 88dvh;
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+            border-top-left-radius: 28px;
+            border-top-right-radius: 28px;
+            z-index: 999999;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.3);
+            border-bottom: none;
+            border-left: none;
+            border-right: none;
           }
           .chatbot-fab {
             bottom: 20px;
@@ -670,14 +681,40 @@ export default function ChatBot() {
       {/* Chat Panel */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div
-            className="chatbot-panel"
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          >
-            {/* Header */}
+          <>
+            {/* Mobile Backdrop */}
+            {isMobile && (
+              <motion.div
+                className="chatbot-mobile-backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsOpen(false)}
+                style={{
+                  position: 'fixed', inset: 0,
+                  background: 'rgba(0,0,0,0.4)',
+                  backdropFilter: 'blur(4px)',
+                  zIndex: 999998
+                }}
+              />
+            )}
+            <motion.div
+              className="chatbot-panel"
+              initial={isMobile ? { opacity: 0, y: '100%' } : { opacity: 0, y: 20, scale: 0.95 }}
+              animate={isMobile ? { opacity: 1, y: 0 } : { opacity: 1, y: 0, scale: 1 }}
+              exit={isMobile ? { opacity: 0, y: '100%' } : { opacity: 0, y: 20, scale: 0.95 }}
+              transition={
+                isMobile 
+                  ? { type: 'spring', damping: 30, stiffness: 350 }
+                  : { type: 'spring', damping: 25, stiffness: 300 }
+              }
+            >
+              {isMobile && (
+                <div style={{ width: '100%', display: 'flex', justifyContent: 'center', paddingTop: '12px', paddingBottom: '4px', background: 'var(--text-primary)' }}>
+                  <div style={{ width: '40px', height: '5px', borderRadius: '4px', background: 'var(--bg-primary)', opacity: 0.4 }} />
+                </div>
+              )}
+              {/* Header */}
             <div className="chatbot-header">
               <div className="chatbot-header-avatar">
                 <Atom size={18} />
@@ -836,6 +873,7 @@ export default function ChatBot() {
 
             <div className="chatbot-footer">✨ Powered by Groq AI · RAG Technology</div>
           </motion.div>
+          </>
         )}
       </AnimatePresence>
     </>,
