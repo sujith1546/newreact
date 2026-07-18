@@ -559,30 +559,6 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
             
             <div className="settings-content" ref={settingsContentRef} onScroll={handleSettingsScroll} style={{ paddingBottom: '40px' }}>
               
-              {/* Presets Profiles */}
-              <div className="settings-group">
-                <span className="settings-group-label">Profiles</span>
-                <div className="settings-profile-list" style={{ padding: '0px' }}>
-                  {['Presentation mode', 'Night browsing', 'Retro Terminal'].map((name) => (
-                    <button
-                      key={name}
-                      className={`settings-profile-chip${name === activePreset ? ' settings-profile-chip--active' : ''}`}
-                      onClick={() => {
-                        playSound();
-                        const prev = activePreset;
-                        applyPreset(name);
-                        announce('Preset Profile', prev || 'Custom', name, () => {
-                          if (prev) applyPreset(prev);
-                          else setActivePreset(null);
-                        });
-                      }}
-                    >
-                      {name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               <div className="settings-group" style={{ marginTop: '16px' }}>
                 <span className="settings-group-label">Appearance</span>
                 <div className="settings-card">
