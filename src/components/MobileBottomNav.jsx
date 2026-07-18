@@ -875,30 +875,37 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
         </motion.button>
       </nav>
 
-      {/* Settings Action Toast (Tier 2.5: Diff/Undo) */}
-      <AnimatePresence>
-        {toast && (
-          <motion.div
-            className="settings-toast"
-            initial={{ opacity: 0, y: 50, x: '-50%' }}
-            animate={{ opacity: 1, y: 0, x: '-50%' }}
-            exit={{ opacity: 0, y: 50, x: '-50%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-          >
-            <span>
-              {toast.label}: {toast.prevValue} → {toast.nextValue}
-            </span>
-            <button
-              onClick={() => {
-                toast.undo();
-                setToast(null);
-              }}
+      {/* Dynamic Island Notifications */}
+      <div className="dynamic-island-wrapper">
+        <AnimatePresence>
+          {toast && (
+            <motion.div
+              className="dynamic-island"
+              initial={{ opacity: 0, y: -20, scale: 0.8 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.8 }}
+              transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+              layout
             >
-              Undo
-            </button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <div className="dynamic-island-icon">
+                <Bell size={14} />
+              </div>
+              <span className="dynamic-island-text">
+                {toast.label}: {toast.prevValue} → {toast.nextValue}
+              </span>
+              <button
+                className="dynamic-island-undo"
+                onClick={() => {
+                  toast.undo();
+                  setToast(null);
+                }}
+              >
+                Undo
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       <style>{`
         /* Style configurations are declared globally in index.css as requested */

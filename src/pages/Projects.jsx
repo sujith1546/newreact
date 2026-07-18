@@ -5,6 +5,7 @@ import { ExternalLink, Code2, X, ChevronRight, ChevronDown, Star } from 'lucide-
 import { FaGithub } from 'react-icons/fa';
 import { projectsData } from '../data/projectsData';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLongPress } from '../hooks/useLongPress';
 
 /* ─── Count-up hook ──────────────────────────────────────────── */
 function useCountUp(target, decimals = 0, active = false) {
@@ -87,13 +88,19 @@ function ProjectCard({ project, onCardClick }) {
 /* ─── Mobile Project Row card ────────────────────────────────── */
 const projectAccents = ['#007bff', '#8b5cf6', '#16a34a'];
 
-function MobileProjectRow({ project, index, onTap }) {
+function MobileProjectRow({ project, index, onTap, onLongPress }) {
   const accent = projectAccents[index % projectAccents.length];
   const initials = project.title.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
+  
+  const longPressProps = useLongPress({
+    onLongPress: () => onLongPress(project),
+    onClick: () => onTap(project)
+  });
+
   return (
     <motion.button
       className="mpj-row"
-      onClick={() => onTap(project)}
+      {...longPressProps}
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.07, duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
@@ -141,6 +148,7 @@ export default function Projects() {
   const [copied, setCopied] = useState(false);
   const [sheetScrolled, setSheetScrolled] = useState(false);
   const [sheetScrollable, setSheetScrollable] = useState(false);
+  const [contextMenuProject, setContextMenuProject] = useState(null);
   const detailsSheetRef = useRef(null);
   const sheetContentRef = useRef(null);
 
@@ -563,6 +571,67 @@ export default function Projects() {
         document.body
       )}
 
+      {/* Context Menu Overlay */}
+      <AnimatePresence>
+        {contextMenuProject && (
+          <motion.div 
+            className="context-menu-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setContextMenuProject(null)}
+          >
+            <motion.div 
+              className="context-menu-sheet"
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <button 
+                className="context-menu-btn" 
+                onClick={() => {
+                  setSelectedProject(contextMenuProject);
+                  setContextMenuProject(null);
+                }}
+              >
+                <FileText size={18} /> View Details
+              </button>
+              {contextMenuProject.liveUrl && (
+                <button 
+                  className="context-menu-btn" 
+                  onClick={() => {
+                    window.open(contextMenuProject.liveUrl, '_blank');
+                    setContextMenuProject(null);
+                  }}
+                >
+                  <ExternalLink size={18} /> Open Live Demo
+                </button>
+              )}
+              {contextMenuProject.githubUrl && (
+                <button 
+                  className="context-menu-btn" 
+                  onClick={() => {
+                    window.open(contextMenuProject.githubUrl, '_blank');
+                    setContextMenuProject(null);
+                  }}
+                >
+                  <FaGithub size={18} /> View Source Code
+                </button>
+              )}
+              <button 
+                className="context-menu-btn" 
+                onClick={() => setContextMenuProject(null)}
+                style={{ color: '#ef4444' }}
+              >
+                <X size={18} /> Cancel
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* ── PAGE CONTENT ─────────────────────────────────────────────── */}
       <div className="projects-header">
         <h1>Featured Projects</h1>
@@ -580,11 +649,17 @@ export default function Projects() {
           ))}
         </div>
       ) : (
-        <motion.div className="mpj-list" initial="hidden" animate="visible">
+        <div className="mpj-list">
           {projectsData.map((project, i) => (
-            <MobileProjectRow key={project.id} project={project} index={i} onTap={setSelectedProject} />
+            <MobileProjectRow 
+              key={project.id} 
+              project={project} 
+              index={i} 
+              onTap={setSelectedProject} 
+              onLongPress={setContextMenuProject}
+            />
           ))}
-        </motion.div>
+        </div>
       )}
     </ScrollReveal>
   );

@@ -90,6 +90,20 @@ export default function MainLayout() {
     setTimeout(() => setEmailCopied(false), 2000);
   };
 
+  const handleDragEnd = (e, info) => {
+    if (!isMobile) return;
+    const SWIPE_PAGES = ['home', 'skills', 'projects', 'contact'];
+    const currentIndex = SWIPE_PAGES.indexOf(activeSection);
+    if (currentIndex === -1) return;
+
+    const swipeThreshold = 50;
+    if (info.offset.x < -swipeThreshold && currentIndex < SWIPE_PAGES.length - 1) {
+      handleNavClick(SWIPE_PAGES[currentIndex + 1]);
+    } else if (info.offset.x > swipeThreshold && currentIndex > 0) {
+      handleNavClick(SWIPE_PAGES[currentIndex - 1]);
+    }
+  };
+
   // Contextual CTA config per section
   const ctaMap = {
     home:           { label: 'Hire Me',    icon: Briefcase,  action: () => handleNavClick('contact'), style: 'accent' },
@@ -230,8 +244,14 @@ export default function MainLayout() {
               }}
               style={{
                 perspective: pageTransition === 'flip' ? '1000px' : 'none',
-                transformStyle: pageTransition === 'flip' ? 'preserve-3d' : 'flat'
+                transformStyle: pageTransition === 'flip' ? 'preserve-3d' : 'flat',
+                width: '100%',
+                height: '100%'
               }}
+              drag={isMobile ? "x" : false}
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.15}
+              onDragEnd={handleDragEnd}
               className={`text-content${activeSection === 'home' ? ' home-content' : ''}${['contact','education','about','skills','experience','projects','certifications'].includes(activeSection) ? ' wide-content' : ''}`}
             >
               <ActiveComponent onNavClick={handleNavClick} />

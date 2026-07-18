@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin } from 'lucide-react';
+import { MapPin, Loader2, ArrowDown } from 'lucide-react';
 import useGlitchText from '../hooks/useGlitchText';
 
 /* ── Count-up hook ─────────────────────────────────────────── */
@@ -40,6 +40,39 @@ export default function MobileDashboard({ onNavClick }) {
   const projs = useCountUp('5');
   
   const nameText = useGlitchText("Sujith Thota", 100);
+
+  // Pull to refresh logic
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [pullDist, setPullDist] = useState(0);
+  const rootRef = useRef(null);
+
+  const handleTouchStart = (e) => {
+    if (rootRef.current && rootRef.current.scrollTop === 0) {
+      rootRef.current.startY = e.touches[0].clientY;
+    }
+  };
+  const handleTouchMove = (e) => {
+    if (rootRef.current && rootRef.current.startY !== undefined) {
+      const y = e.touches[0].clientY;
+      const dist = y - rootRef.current.startY;
+      if (dist > 0 && rootRef.current.scrollTop === 0) {
+        setPullDist(Math.min(dist * 0.4, 80)); // Resistance
+      }
+    }
+  };
+  const handleTouchEnd = () => {
+    if (pullDist > 60) {
+      if (navigator.vibrate) navigator.vibrate(40);
+      setIsRefreshing(true);
+      setTimeout(() => {
+        setIsRefreshing(false);
+        setPullDist(0);
+      }, 1500);
+    } else {
+      setPullDist(0);
+    }
+    if (rootRef.current) rootRef.current.startY = undefined;
+  };
 
   return (
     <>
@@ -130,7 +163,26 @@ export default function MobileDashboard({ onNavClick }) {
         }
       `}</style>
 
-      <div className="hd-root">
+      <div 
+        className="hd-root"
+        ref={rootRef}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        <motion.div
+          style={{ position: 'relative' }}
+          animate={{ y: isRefreshing ? 50 : pullDist }}
+          transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+        >
+          {/* Pull to Refresh Indicator */}
+          <div style={{ position: 'absolute', top: -40, left: 0, right: 0, display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'var(--text-muted)' }}>
+            {isRefreshing ? (
+              <Loader2 size={20} className="ptr-spinner" />
+            ) : (
+              <ArrowDown size={20} style={{ opacity: Math.min(pullDist / 60, 1), transform: `rotate(${Math.min(pullDist * 3, 180)}deg)` }} />
+            )}
+          </div>
 
         {/* ── Profile ───────────────────────────────────────────── */}
         <motion.div
@@ -187,7 +239,7 @@ export default function MobileDashboard({ onNavClick }) {
         >
           A passionate <strong>B.Tech Graduate from VIT (8.7 CGPA)</strong>, actively exploring the boundaries between predictive machine learning systems and reactive web frameworks. I love building things that are both intelligent and elegant.
         </motion.p>
-
+        </motion.div>
       </div>
     </>
   );

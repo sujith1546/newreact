@@ -3336,3 +3336,155 @@ html {
   transition: all 0.2s;
 }
 
+/* ============================================
+   ADVANCED MOBILE UI (GLASSMORPHISM, DYNAMIC ISLAND, PTR)
+   ============================================ */
+
+/* Glassmorphism utility */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="dark"] .glass-panel {
+  background: rgba(24, 24, 27, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Override bottom nav capsule with glassmorphism */
+@media (max-width: 900px) {
+  .mobile-nav-capsule {
+    background: rgba(255, 255, 255, 0.75) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    border: 1px solid rgba(200, 200, 200, 0.3) !important;
+  }
+  [data-theme="dark"] .mobile-nav-capsule {
+    background: rgba(20, 20, 20, 0.65) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+  
+  .more-overlay-sheet {
+    background: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(24px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  }
+  [data-theme="dark"] .more-overlay-sheet {
+    background: rgba(24, 24, 27, 0.75) !important;
+  }
+}
+
+/* Dynamic Island */
+.dynamic-island-wrapper {
+  position: fixed;
+  top: 16px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.dynamic-island {
+  background: #000;
+  color: #fff;
+  border-radius: 32px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  pointer-events: auto;
+  overflow: hidden;
+}
+
+.dynamic-island-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+}
+
+.dynamic-island-text {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.dynamic-island-undo {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  margin-left: 4px;
+}
+
+/* Pull to Refresh */
+.ptr-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60px;
+  margin-top: -60px; /* Hidden by default */
+  color: var(--text-secondary);
+}
+.ptr-spinner {
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}
+
+/* Long Press Context Menu */
+.context-menu-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(0,0,0,0.2);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.context-menu-sheet {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  width: 250px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+}
+[data-theme="dark"] .context-menu-sheet {
+  background: rgba(30, 30, 30, 0.75);
+}
+
+.context-menu-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  padding: 16px;
+  text-align: left;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.context-menu-btn:last-child {
+  border-bottom: none;
+}
+.context-menu-btn:active {
+  background: rgba(128,128,128,0.1);
+}
