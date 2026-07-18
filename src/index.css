@@ -2337,14 +2337,12 @@ html {
     border-color: rgba(255, 255, 255, 0.08);
   }
 
-  /* But Home page already has its own cards and doesn't need a double box */
+  /* Home page uses same outer box as Skills/Projects — just remove inner padding so MobileDashboard controls spacing */
   .text-content.home-content {
     width: 100%;
     min-height: auto;
     padding: 0;
-    background: transparent;
-    border: none;
-    box-shadow: none;
+    overflow: hidden;
   }
 
   .home-image-side {
