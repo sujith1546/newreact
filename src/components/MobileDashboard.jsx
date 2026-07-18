@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { MapPin } from 'lucide-react';
+import useGlitchText from '../hooks/useGlitchText';
 
 /* ── Count-up hook ─────────────────────────────────────────── */
 function useCountUp(target, duration = 900) {
@@ -37,6 +38,8 @@ export default function MobileDashboard({ onNavClick }) {
   const cgpa  = useCountUp('8.7');
   const certs = useCountUp('15');
   const projs = useCountUp('5');
+  
+  const nameText = useGlitchText("Sujith Thota", 100);
 
   return (
     <>
@@ -138,7 +141,7 @@ export default function MobileDashboard({ onNavClick }) {
         >
           <img src="/IMG_0322.jpg" alt="Sujith Thota" className="hd-avatar" id="profile-avatar-img" />
           <div className="hd-profile-info">
-            <h1 className="hd-name">Sujith Thota</h1>
+            <h1 className="hd-name">{nameText}</h1>
             <p className="hd-role">Data Science · Full Stack Dev</p>
             <p className="hd-location"><MapPin size={10} /> VIT University</p>
             <div className="hd-avail">

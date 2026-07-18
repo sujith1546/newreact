@@ -2,9 +2,11 @@ import { useState, useEffect } from 'react';
 import ScrollReveal from '../components/ScrollReveal';
 import { Code, Briefcase, Mail, FileText, Sparkles, ArrowRight } from 'lucide-react';
 import MobileDashboard from '../components/MobileDashboard';
+import useGlitchText from '../hooks/useGlitchText';
 
 export default function Home({ onNavClick }) {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
+  const nameText = useGlitchText("Sujith Thota", 100);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 900);
@@ -539,7 +541,7 @@ export default function Home({ onNavClick }) {
 
             <div>
               <div className="hero-greeting">{getGreeting()}</div>
-              <h1 className="hero-title-main">Sujith Thota</h1>
+              <h1 className="hero-title-main">{nameText}</h1>
               
               <div className="hero-typewriter-container">
                 <DesktopTypewriter />
