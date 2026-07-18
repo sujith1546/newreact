@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { FileText, Mail, Briefcase, Code, GraduationCap, Award, ChevronRight, MapPin, Zap } from 'lucide-react';
-import { projectsData } from '../data/projectsData';
+import { MapPin } from 'lucide-react';
 
 /* ── Count-up hook ─────────────────────────────────────────── */
 function useCountUp(target, duration = 900) {
@@ -25,17 +24,6 @@ function useCountUp(target, duration = 900) {
   }, []);
   return val;
 }
-
-const ACCENTS = ['#3b82f6', '#8b5cf6', '#10b981'];
-
-const ACTIONS = [
-  { id: 'skills',         Icon: Code,         label: 'Skills',    desc: 'Tech stack' },
-  { id: 'projects',       Icon: Briefcase,     label: 'Projects',  desc: 'Showcase' },
-  { id: 'education',      Icon: GraduationCap, label: 'Education', desc: 'VIT · 8.7' },
-  { id: 'certifications', Icon: Award,         label: 'Certs',     desc: '15+ earned' },
-  { id: 'resume',         Icon: FileText,      label: 'Resume',    desc: 'View / DL' },
-  { id: 'contact',        Icon: Mail,          label: 'Contact',   desc: 'Say hello' },
-];
 
 export default function MobileDashboard({ onNavClick }) {
   const getGreeting = () => {
@@ -134,76 +122,6 @@ export default function MobileDashboard({ onNavClick }) {
           text-transform: uppercase; letter-spacing: .06em; margin: 4px 0 0;
         }
 
-        /* ════════ FEATURED PROJECTS ════════ */
-        .hd-feat-row {
-          display: flex; align-items: center; gap: 12px;
-          padding: 13px 18px; width: 100%; text-align: left;
-          background: none; border: none; cursor: pointer;
-          border-bottom: 1px solid var(--border-color); outline: none;
-          transition: background .12s; position: relative;
-          -webkit-tap-highlight-color: transparent;
-        }
-        .hd-feat-row:last-child { border-bottom: none; }
-        .hd-feat-row:active { background: var(--bg-primary); }
-        .hd-feat-stripe {
-          position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
-        }
-        .hd-feat-icon {
-          width: 36px; height: 36px; border-radius: 10px;
-          display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-        }
-        .hd-feat-body { flex: 1; min-width: 0; }
-        .hd-feat-title {
-          font-size: 13px; font-weight: 700; color: var(--text-primary); margin: 0;
-          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .hd-feat-sub {
-          font-size: 10.5px; color: var(--text-muted); font-weight: 500; margin: 2px 0 0;
-          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .hd-feat-chip {
-          flex-shrink: 0; font-size: 11px; font-weight: 800;
-          padding: 3px 8px; border-radius: 8px;
-        }
-        .hd-feat-chevron { color: var(--text-muted); flex-shrink: 0; }
-
-        /* see-all row */
-        .hd-see-all-row {
-          display: flex; align-items: center; justify-content: center;
-          padding: 11px 18px; gap: 4px;
-          font-size: 12.5px; font-weight: 600; color: var(--primary-blue);
-          background: none; border: none; cursor: pointer; width: 100%;
-          -webkit-tap-highlight-color: transparent;
-        }
-
-        /* ════════ QUICK-ACCESS GRID ════════ */
-        .hd-actions-grid {
-          display: grid; grid-template-columns: repeat(3, 1fr);
-        }
-        .hd-action-btn {
-          display: flex; flex-direction: column; align-items: center; gap: 7px;
-          padding: 16px 8px; background: none; border: none; cursor: pointer;
-          border-right: 1px solid var(--border-color);
-          border-bottom: 1px solid var(--border-color);
-          outline: none; transition: background .12s;
-          -webkit-tap-highlight-color: transparent;
-        }
-        .hd-action-btn:nth-child(3n)   { border-right: none; }
-        .hd-action-btn:nth-child(n+4)  { border-bottom: none; }
-        .hd-action-btn:active { background: var(--bg-primary); }
-        .hd-action-icon {
-          width: 36px; height: 36px; border-radius: 10px;
-          background: var(--bg-primary); border: 1px solid var(--border-color);
-          display: flex; align-items: center; justify-content: center;
-          color: var(--primary-blue);
-        }
-        .hd-action-label {
-          font-size: 11.5px; font-weight: 700; color: var(--text-primary); margin: 0;
-        }
-        .hd-action-desc {
-          font-size: 9.5px; color: var(--text-muted); margin: 0; text-align: center;
-        }
-
         /* ════════ BIO ════════ */
         .hd-bio {
           padding: 14px 18px 18px;
@@ -259,75 +177,13 @@ export default function MobileDashboard({ onNavClick }) {
 
         <div className="hd-divider" />
 
-        {/* ── Featured Projects ─────────────────────────────────── */}
-        <p className="hd-section-label">Featured Projects</p>
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.14 }}
-        >
-          {featured.map((project, i) => {
-            const accent = ACCENTS[i % 3];
-            return (
-              <button
-                key={project.id}
-                className="hd-feat-row"
-                onClick={() => onNavClick?.('projects')}
-              >
-                <div className="hd-feat-stripe" style={{ background: accent }} />
-                <div className="hd-feat-icon" style={{ background: `${accent}18`, color: accent, border: `1px solid ${accent}28` }}>
-                  <Zap size={15} />
-                </div>
-                <div className="hd-feat-body">
-                  <p className="hd-feat-title">{project.title}</p>
-                  <p className="hd-feat-sub">{project.tags.slice(0, 3).join(' · ')}</p>
-                </div>
-                {project.stats?.[0] && (
-                  <div className="hd-feat-chip" style={{ color: accent, background: `${accent}12`, border: `1px solid ${accent}25` }}>
-                    {project.stats[0].prefix}{project.stats[0].value}{project.stats[0].suffix}
-                  </div>
-                )}
-                <ChevronRight size={14} className="hd-feat-chevron" />
-              </button>
-            );
-          })}
-          <button className="hd-see-all-row" onClick={() => onNavClick?.('projects')}>
-            See all projects <ChevronRight size={14} />
-          </button>
-        </motion.div>
-
-        <div className="hd-divider" />
-
-        {/* ── Quick Access ─────────────────────────────────────── */}
-        <p className="hd-section-label">Quick Access</p>
-        <motion.div
-          className="hd-actions-grid"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-        >
-          {ACTIONS.map(({ id, Icon, label, desc }) => (
-            <button
-              key={id}
-              className="hd-action-btn"
-              onClick={id === 'resume' ? triggerResume : () => onNavClick?.(id)}
-            >
-              <div className="hd-action-icon"><Icon size={17} /></div>
-              <p className="hd-action-label">{label}</p>
-              <p className="hd-action-desc">{desc}</p>
-            </button>
-          ))}
-        </motion.div>
-
-        <div className="hd-divider" />
-
-        {/* ── Bio ────────────────────────────────────────────────── */}
+        {/* ── About Me ───────────────────────────────────────────── */}
         <p className="hd-section-label">About Me</p>
         <motion.p
           className="hd-bio"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.25 }}
+          transition={{ delay: 0.14 }}
         >
           A passionate <strong>B.Tech Graduate from VIT (8.7 CGPA)</strong>, actively exploring the boundaries between predictive machine learning systems and reactive web frameworks. I love building things that are both intelligent and elegant.
         </motion.p>
