@@ -4,6 +4,8 @@ import { FaGithub } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocalTime } from '../hooks/useLocalTime';
 import { useTheme } from '../context/ThemeContext';
+import WhatsNewPanel from './WhatsNewPanel';
+import { updates } from '../data/updates';
 
 export default function MobileBottomNav({ activeSection, onNavClick }) {
   const [isMoreOpen, setIsMoreOpen] = useState(false);
@@ -872,66 +874,11 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
       </AnimatePresence>
 
       {/* Updates Slide-Up Drawer */}
-      <AnimatePresence>
-        {isUpdatesOpen && (
-          <>
-            <motion.div
-              className="more-overlay-backdrop"
-              style={{ zIndex: 102 }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsUpdatesOpen(false)}
-            />
-            <motion.div
-              className="more-overlay-sheet"
-              style={{ zIndex: 103, height: '70vh' }}
-              role="dialog"
-              aria-modal="true"
-              aria-label="App Updates"
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
-            >
-              <div className="drawer-header">
-                <h3>What's New</h3>
-                <button className="drawer-close-btn" onClick={() => setIsUpdatesOpen(false)}>
-                  <X size={20} />
-                </button>
-              </div>
-              
-              <div className="drawer-scroll-area" style={{ padding: '20px', gap: '20px', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
-                
-                {/* Update 1 */}
-                <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '16px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--primary-blue)', background: 'rgba(59,130,246,0.1)', padding: '4px 8px', borderRadius: '12px' }}>v2.0 Mobile Redesign</span>
-                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>Just now</span>
-                  </div>
-                  <h4 style={{ margin: '0 0 8px 0', fontSize: '15px', fontWeight: 800, color: 'var(--text-primary)' }}>Intelligent Mobile UI</h4>
-                  <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                    The mobile experience has been completely overhauled with smooth animated detail sheets, perfectly synchronized styling, and an intelligent vertical card feed for Projects, Certifications, and Education.
-                  </p>
-                </div>
-
-                {/* Update 2 */}
-                <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '16px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 800, color: '#10b981', background: 'rgba(16,185,129,0.1)', padding: '4px 8px', borderRadius: '12px' }}>Performance</span>
-                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>Recent</span>
-                  </div>
-                  <h4 style={{ margin: '0 0 8px 0', fontSize: '15px', fontWeight: 800, color: 'var(--text-primary)' }}>Smoother Animations</h4>
-                  <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                    Optimized Framer Motion spring physics and intersection observers for buttery smooth 60fps scrolling and interactions on all mobile devices.
-                  </p>
-                </div>
-                
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      <WhatsNewPanel 
+        open={isUpdatesOpen} 
+        onClose={() => setIsUpdatesOpen(false)} 
+        releases={updates} 
+      />
 
       {/* Bottom Nav Capsule */}
       <nav className="mobile-nav-capsule" role="navigation" aria-label="Mobile navigation">

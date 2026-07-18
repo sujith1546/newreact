@@ -1,0 +1,256 @@
+import React, { useMemo, useState, useEffect } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Sparkles, Bug, Zap, X } from "lucide-react";
+
+const TABS = [
+  { key: "all", label: "All" },
+  { key: "feature", label: "Features" },
+  { key: "fix", label: "Fixes" },
+  { key: "perf", label: "Performance" },
+];
+
+const TYPE_META = {
+  feature: {
+    label: "Feature",
+    Icon: Sparkles,
+    colorClass: "wn-feat-color",
+  },
+  fix: {
+    label: "Fix",
+    Icon: Bug,
+    colorClass: "wn-fix-color",
+  },
+  perf: {
+    label: "Performance",
+    Icon: Zap,
+    colorClass: "wn-perf-color",
+  },
+};
+
+export default function WhatsNewPanel({ open, onClose, releases = [] }) {
+  const [activeTab, setActiveTab] = useState("all");
+  const [visibleCount, setVisibleCount] = useState(2);
+  const [readVersion, setReadVersion] = useState(() => {
+    if (typeof window !== 'undefined') return localStorage.getItem('lastReadUpdate') || '';
+    return '';
+  });
+
+  useEffect(() => {
+    if (open && releases.length > 0) {
+       localStorage.setItem('lastReadUpdate', releases[0].version);
+       setReadVersion(releases[0].version);
+    }
+  }, [open, releases]);
+
+  const visibleReleases = useMemo(() => {
+    return releases.slice(0, visibleCount).map((release) => {
+      // Very basic unread logic - compare versions or fallback to flag
+      const isUnread = !readVersion || release.version > readVersion;
+      
+      return {
+        ...release,
+        unread: isUnread,
+        items:
+          activeTab === "all"
+            ? release.items
+            : release.items.filter((item) => item.type === activeTab),
+      }
+    });
+  }, [releases, activeTab, visibleCount, readVersion]);
+
+  const hasMore = visibleCount < releases.length;
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            className="wn-backdrop"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+          />
+
+          {/* Sheet */}
+          <motion.div
+            className="wn-sheet"
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 30, stiffness: 300 }}
+          >
+            {/* Drag handle */}
+            <div className="wn-handle-wrap">
+              <div className="wn-handle" />
+            </div>
+
+            {/* Header */}
+            <div className="wn-header">
+              <h2 className="wn-title">What's new</h2>
+              <button onClick={onClose} aria-label="Close" className="wn-close-btn">
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Tab bar */}
+            <div role="tablist" aria-label="Filter updates by type" className="wn-tabs">
+              {TABS.map((tab) => {
+                const isActive = tab.key === activeTab;
+                return (
+                  <button
+                    key={tab.key}
+                    role="tab"
+                    aria-selected={isActive}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={`wn-tab ${isActive ? "wn-tab-active" : ""}`}
+                  >
+                    {tab.label}
+                    {isActive && (
+                      <motion.div
+                        layoutId="whats-new-tab-underline"
+                        className="wn-tab-underline"
+                        transition={{ type: "spring", stiffness: 500, damping: 40 }}
+                      />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Body */}
+            <div className="wn-body">
+              {visibleReleases.every((r) => r.items.length === 0) && (
+                <p className="wn-empty">
+                  No {activeTab === "all" ? "" : TYPE_META[activeTab]?.label.toLowerCase()} updates in this range yet.
+                </p>
+              )}
+
+              {visibleReleases.map((release, i) => {
+                if (release.items.length === 0) return null;
+                const isLast = i === visibleReleases.length - 1;
+
+                return (
+                  <div key={release.version} className="wn-release-row">
+                    {/* Timeline rail */}
+                    <div className="wn-rail">
+                      <span className={`wn-rail-dot ${release.unread ? "wn-rail-dot-unread" : ""}`} />
+                      {!isLast && <span className="wn-rail-line" />}
+                    </div>
+
+                    {/* Release content */}
+                    <div className="wn-release-content">
+                      <div className="wn-release-header">
+                        <span className="wn-release-version">{release.version}</span>
+                        <span className="wn-release-label">{release.label}</span>
+                      </div>
+                      <div className="wn-release-date">{release.date}</div>
+
+                      <div className="wn-items-list">
+                        {release.items.map((item, idx) => {
+                          const meta = TYPE_META[item.type];
+                          const ItemIcon = meta.Icon;
+                          return (
+                            <div key={idx} className={`wn-item-card ${meta.colorClass}`}>
+                              <div className="wn-item-title-row">
+                                <ItemIcon size={14} />
+                                <span>{item.title}</span>
+                              </div>
+                              <p className="wn-item-body">{item.body}</p>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {hasMore && (
+                <button
+                  onClick={() => setVisibleCount(releases.length)}
+                  className="wn-show-more"
+                >
+                  Show earlier releases
+                </button>
+              )}
+            </div>
+
+            <style>{`
+              .wn-backdrop {
+                position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+                backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 10000;
+              }
+              .wn-sheet {
+                position: fixed; bottom: 0; left: 0; right: 0; z-index: 10001;
+                background: var(--bg-secondary); border-radius: 28px 28px 0 0;
+                box-shadow: 0 -10px 50px rgba(0,0,0,0.15); display: flex; flex-direction: column;
+                max-height: 86vh; max-height: 86dvh;
+              }
+              .wn-handle-wrap { padding-top: 14px; padding-bottom: 8px; display: flex; justify-content: center; flex-shrink: 0; }
+              .wn-handle { width: 40px; height: 4px; border-radius: 2px; background: var(--border-color); }
+              .wn-header {
+                padding: 12px 20px 10px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+              }
+              .wn-title { font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: -0.02em; }
+              .wn-close-btn {
+                width: 30px; height: 30px; border-radius: 15px; background: var(--bg-primary);
+                border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center;
+                color: var(--text-secondary); cursor: pointer;
+              }
+              .wn-tabs {
+                display: flex; border-bottom: 1px solid var(--border-color); padding: 0 10px; flex-shrink: 0;
+              }
+              .wn-tab {
+                position: relative; flex: 1; padding: 12px 0; font-size: 13px; font-weight: 600;
+                color: var(--text-secondary); background: none; border: none; outline: none; cursor: pointer; transition: color 0.2s;
+              }
+              .wn-tab-active { color: var(--text-primary); }
+              .wn-tab-underline {
+                position: absolute; bottom: -1px; left: 10px; right: 10px; height: 2px;
+                background: var(--primary-blue); border-radius: 2px;
+              }
+              .wn-body {
+                flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column;
+              }
+              .wn-body::-webkit-scrollbar { display: none; }
+              .wn-empty { font-size: 13px; color: var(--text-muted); text-align: center; padding: 30px 0; margin: 0; }
+              
+              .wn-release-row { display: flex; gap: 14px; }
+              .wn-rail { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+              .wn-rail-dot { width: 10px; height: 10px; border-radius: 5px; background: var(--border-color); margin-top: 6px; }
+              .wn-rail-dot-unread { background: var(--primary-blue); box-shadow: 0 0 0 4px rgba(59,130,246,0.15); }
+              .wn-rail-line { width: 2px; flex: 1; background: var(--border-color); margin-top: 8px; opacity: 0.5; }
+              
+              .wn-release-content { flex: 1; min-width: 0; padding-bottom: 28px; }
+              .wn-release-header { display: flex; align-items: baseline; gap: 8px; }
+              .wn-release-version { font-size: 14.5px; font-weight: 800; color: var(--text-primary); }
+              .wn-release-label { font-size: 13px; color: var(--text-secondary); font-weight: 500; }
+              .wn-release-date { font-size: 11px; color: var(--text-muted); margin-bottom: 14px; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
+              
+              .wn-items-list { display: flex; flex-direction: column; gap: 10px; }
+              .wn-item-card {
+                background: var(--bg-primary); border: 1px solid var(--border-color);
+                border-radius: 12px; padding: 14px;
+              }
+              .wn-item-title-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; font-size: 12.5px; font-weight: 700; }
+              .wn-item-body { font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin: 0; }
+              
+              .wn-feat-color .wn-item-title-row { color: #8b5cf6; }
+              .wn-fix-color .wn-item-title-row { color: #f59e0b; }
+              .wn-perf-color .wn-item-title-row { color: #10b981; }
+
+              .wn-show-more {
+                width: 100%; padding: 12px; font-size: 13px; font-weight: 600;
+                color: var(--text-secondary); background: var(--bg-primary);
+                border: 1px solid var(--border-color); border-radius: 14px;
+                margin-top: 10px; cursor: pointer;
+              }
+            `}</style>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
