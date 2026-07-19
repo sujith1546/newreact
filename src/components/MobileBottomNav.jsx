@@ -921,34 +921,35 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
                 {/* Section label */}
                 <p style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '4px 0 0' }}>Pages</p>
 
-                {/* Pages grid */}
-                {[
-                  { icon: Home, label: 'Home', desc: 'Hero, stats & quick overview', color: '#3b82f6' },
-                  { icon: Cpu, label: 'Skills', desc: 'Browse skills by category', color: '#8b5cf6' },
-                  { icon: Layers, label: 'Projects', desc: 'Featured work & code demos', color: '#10b981' },
-                  { icon: BookOpen, label: 'Education', desc: 'Academic journey & scores', color: '#f59e0b' },
-                  { icon: Award, label: 'Certifications', desc: 'Verified global credentials', color: '#ef4444' },
-                  { icon: Mail, label: 'Contact', desc: 'Swipe-to-send message form', color: '#06b6d4' },
-                ].map(({ icon: Icon, label, desc, color }) => (
-                  <div key={label} style={{
-                    display: 'flex', alignItems: 'center', gap: '13px',
-                    padding: '12px 14px', borderRadius: '14px',
-                    background: 'var(--bg-primary)', border: '1px solid var(--border-color)'
-                  }}>
-                    <div style={{
-                      width: '38px', height: '38px', borderRadius: '11px', flexShrink: 0,
-                      background: color + '18', color, border: `1px solid ${color}28`,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center'
+                {/* Pages 3-col grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+                  {[
+                    { icon: Home, label: 'Home', desc: 'Overview & hero', color: '#3b82f6' },
+                    { icon: Cpu, label: 'Skills', desc: 'By category', color: '#8b5cf6' },
+                    { icon: Layers, label: 'Projects', desc: 'Work & demos', color: '#10b981' },
+                    { icon: BookOpen, label: 'Education', desc: 'Journey & scores', color: '#f59e0b' },
+                    { icon: Award, label: 'Certs', desc: 'Credentials', color: '#ef4444' },
+                    { icon: Mail, label: 'Contact', desc: 'Send a message', color: '#06b6d4' },
+                  ].map(({ icon: Icon, label, desc, color }) => (
+                    <div key={label} style={{
+                      padding: '13px 10px', borderRadius: '14px',
+                      background: 'var(--bg-primary)', border: '1px solid var(--border-color)',
+                      display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start'
                     }}>
-                      <Icon size={18} />
+                      <div style={{
+                        width: '34px', height: '34px', borderRadius: '10px',
+                        background: color + '18', color, border: `1px solid ${color}25`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                      }}>
+                        <Icon size={17} />
+                      </div>
+                      <div>
+                        <span style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--text-primary)', display: 'block', lineHeight: 1.2 }}>{label}</span>
+                        <span style={{ fontSize: '10.5px', color: 'var(--text-secondary)', lineHeight: 1.35 }}>{desc}</span>
+                      </div>
                     </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <span style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary)', display: 'block' }}>{label}</span>
-                      <span style={{ fontSize: '11.5px', color: 'var(--text-secondary)' }}>{desc}</span>
-                    </div>
-                    <ChevronRight size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
-                  </div>
-                ))}
+                  ))}
+                </div>
 
                 {/* Section label */}
                 <p style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '4px 0 0' }}>Features</p>
