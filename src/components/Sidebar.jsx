@@ -1,12 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
-import { QrCode, Download, MapPin, Loader2, CheckCircle, FileText, Eye, X, Cpu, Layers, Wifi, RefreshCw, ExternalLink, ShieldCheck } from 'lucide-react';
+import { QrCode, Download, MapPin, Loader2, CheckCircle, FileText, Eye, X, Cpu, Layers, Wifi, RefreshCw, ExternalLink, ShieldCheck, FileDown, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ResumeQuickLook from './ResumeQuickLook';
 import { useLocalTime } from '../hooks/useLocalTime';
 import QRModal from './QRModal';
 import { useTheme } from '../context/ThemeContext';
+import { useIsland } from '../context/IslandContext';
 
 function GmailIcon({ size = 20 }) {
   return (
@@ -76,17 +77,23 @@ export default function Sidebar({ activeSection, onNavClick }) {
     };
   }, []);
 
+  const { triggerIsland } = useIsland();
+
   const handleDownloadClick = (e) => {
     if (e) e.preventDefault();
     setIsActionModalOpen(false);
-    if (toastStatus) return; // prevent spam clicking
 
-    setToastStatus('packaging');
+    // Initial Island state: Downloading
+    triggerIsland({
+      title: 'Downloading Resume',
+      subtitle: 'Packaging latest version...',
+      icon: <FileDown size={18} strokeWidth={2.5} />,
+      color: '#3b82f6',
+      duration: 0 // Keep open until finished
+    });
     
     // Simulate complex packaging process
     setTimeout(() => {
-      setToastStatus('ready');
-      
       // Trigger actual file download
       const link = document.createElement('a');
       link.href = '/resume.pdf';
@@ -95,8 +102,14 @@ export default function Sidebar({ activeSection, onNavClick }) {
       link.click();
       document.body.removeChild(link);
 
-      // Dismiss toast gracefully after a few seconds
-      setTimeout(() => setToastStatus(null), 3000);
+      // Final Island state: Success
+      triggerIsland({
+        title: 'Download Complete',
+        subtitle: 'Resume saved successfully',
+        icon: <Check size={18} strokeWidth={3} />,
+        color: '#10b981',
+        duration: 3500
+      });
     }, 1800);
   };
 

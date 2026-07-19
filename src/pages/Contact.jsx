@@ -3,6 +3,7 @@ import { motion, AnimatePresence, useAnimation, useMotionValue, useTransform } f
 import { Mail, Phone, ArrowRight, Check, Loader2, Send, Copy, ChevronRight } from "lucide-react";
 import { FaGithub, FaLinkedin } from "react-icons/fa";
 import ScrollReveal from '../components/ScrollReveal';
+import { useIsland } from '../context/IslandContext';
 
 const shakeVariants = {
   shake: { x: [-4, 4, -4, 4, 0], transition: { duration: 0.35 } },
@@ -74,6 +75,7 @@ const SwipeToSend = ({ onSend, status, isFormValid, triggerValidation }) => {
 export default function Contact() {
   const email = "sujithreddy1546@gmail.com";
   const phone = "+91 8501889996";
+  const { triggerIsland } = useIsland();
 
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [errors, setErrors] = useState({ name: "", email: "", message: "" });
@@ -163,6 +165,13 @@ export default function Contact() {
         setTimeout(() => {
           localStorage.setItem("lastContactSent", Date.now().toString());
           setStatus("sent");
+          triggerIsland({
+            title: 'Message Sent',
+            subtitle: "I'll get back to you shortly",
+            icon: <Check size={18} strokeWidth={3} />,
+            color: '#10b981',
+            duration: 4000
+          });
           setForm({ name: "", email: "", message: "" });
           setTouched({ name: false, email: false, message: false });
           setTimeout(() => setStatus("idle"), 5000);
@@ -181,6 +190,13 @@ export default function Contact() {
       if (response.ok && result.success) {
         localStorage.setItem("lastContactSent", Date.now().toString());
         setStatus("sent");
+        triggerIsland({
+          title: 'Message Sent',
+          subtitle: "I'll get back to you shortly",
+          icon: <Check size={18} strokeWidth={3} />,
+          color: '#10b981',
+          duration: 4000
+        });
         setForm({ name: "", email: "", message: "" });
         setTouched({ name: false, email: false, message: false });
         setTimeout(() => setStatus("idle"), 5000);

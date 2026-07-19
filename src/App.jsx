@@ -1,9 +1,11 @@
 import React, { Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
+import { IslandProvider } from './context/IslandContext';
 import { HelmetProvider } from 'react-helmet-async';
 import { AnimatePresence } from 'framer-motion';
 import MainLayout from './pages/MainLayout';
+import DynamicIsland from './components/DynamicIsland';
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 
 // Wrapper for AnimatePresence to access useLocation
@@ -41,11 +43,14 @@ export default function App() {
   return (
     <HelmetProvider>
       <ThemeProvider>
-        <BrowserRouter>
-          <Suspense fallback={<Loader />}>
-            <AnimatedRoutes />
-          </Suspense>
-        </BrowserRouter>
+        <IslandProvider>
+          <DynamicIsland />
+          <BrowserRouter>
+            <Suspense fallback={<Loader />}>
+              <AnimatedRoutes />
+            </Suspense>
+          </BrowserRouter>
+        </IslandProvider>
       </ThemeProvider>
     </HelmetProvider>
   );
