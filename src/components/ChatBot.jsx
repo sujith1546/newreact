@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Loader2, Bot, User, Atom, RotateCcw, Trash2, Copy, Check, ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { X, Send, Loader2, Bot, User, Atom, RotateCcw, Trash2, Copy, Check, ChevronDown, ChevronUp, Info, Mic, Cpu, Layers, Code, Zap } from 'lucide-react';
+import { useIsland } from '../context/IslandContext';
 
 const SUGGESTED_QUESTIONS = [
   "What projects have you built?",
@@ -24,6 +25,48 @@ export default function ChatBot() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(true);
+  const [isRecording, setIsRecording] = useState(false);
+  const { triggerIsland } = useIsland();
+
+  // Web Speech API
+  const recognitionRef = useRef(null);
+  useEffect(() => {
+    if (typeof window !== 'undefined' && ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
+      recognitionRef.current.lang = 'en-US';
+
+      recognitionRef.current.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setInput(transcript);
+        sendMessage(transcript);
+        setIsRecording(false);
+      };
+
+      recognitionRef.current.onerror = () => setIsRecording(false);
+      recognitionRef.current.onend = () => setIsRecording(false);
+    }
+  }, []);
+
+  const toggleRecording = () => {
+    if (!recognitionRef.current) return;
+    if (isRecording) {
+      recognitionRef.current.stop();
+      setIsRecording(false);
+    } else {
+      recognitionRef.current.start();
+      setIsRecording(true);
+      triggerIsland({
+        title: 'Listening...',
+        subtitle: 'Speak your question for Atom AI',
+        icon: <Mic size={18} strokeWidth={2.5} />,
+        color: '#ef4444',
+        duration: 4000
+      });
+    }
+  };
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 900);
@@ -650,9 +693,70 @@ export default function ChatBot() {
             right: 20px;
           }
         }
+        /* GenUI */
+        .genui-card {
+          margin-top: 10px;
+          background: var(--bg-primary);
+          border: 1px solid var(--border-color);
+          border-radius: 12px;
+          padding: 12px;
+          overflow: hidden;
+          position: relative;
+        }
+        .genui-glow {
+          position: absolute; top: -20px; right: -20px; width: 60px; height: 60px;
+          background: rgba(59,130,246,0.15); filter: blur(20px); border-radius: 50%;
+        }
+        
+        .mic-btn {
+          width: 32px; height: 32px; border-radius: 50%;
+          background: transparent; border: none; color: var(--text-secondary);
+          display: flex; align-items: center; justify-content: center;
+          cursor: pointer; transition: all 0.2s; margin-right: 4px;
+        }
+        .mic-btn:hover { color: var(--text-primary); background: rgba(128,128,128,0.1); }
+        .mic-btn.recording { color: #ef4444; background: rgba(239,68,68,0.1); animation: pulseRecord 1.5s infinite; }
+        @keyframes pulseRecord { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
       `}</style>
 
-      {/* FAB Button (Hidden on Mobile) */}
+      {/* Generative UI Inline Components */}
+      {(() => {
+        const GenUISkills = () => (
+          <div className="genui-card">
+            <div className="genui-glow" style={{ background: 'rgba(16,185,129,0.15)' }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+              <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(16,185,129,0.1)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Cpu size={14} /></div>
+              <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-primary)' }}>Interactive Skills</span>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+              {['Python (92%)', 'TensorFlow', 'Pandas', 'React', 'FastAPI'].map(s => (
+                <span key={s} style={{ fontSize: '11px', fontWeight: 600, padding: '4px 8px', borderRadius: '12px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>{s}</span>
+              ))}
+            </div>
+          </div>
+        );
+
+        const GenUIProjects = () => (
+          <div className="genui-card">
+            <div className="genui-glow" style={{ background: 'rgba(59,130,246,0.15)' }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+              <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(59,130,246,0.1)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Layers size={14} /></div>
+              <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-primary)' }}>Top Projects</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <div style={{ padding: '8px', borderRadius: '8px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', fontSize: '11px', color: 'var(--text-primary)' }}>
+                <strong>SMS Finance Analyzer</strong> • RAG Pipeline & Fraud Detection
+              </div>
+              <div style={{ padding: '8px', borderRadius: '8px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', fontSize: '11px', color: 'var(--text-primary)' }}>
+                <strong>Financial Sentiment</strong> • FinBERT LLM Fine-Tuning
+              </div>
+            </div>
+          </div>
+        );
+
+        // ... we assign these to the main component scope automatically via lexical scope
+        return null;
+      })()}
       {!isMobile && (
         <motion.button
           className="chatbot-fab"
@@ -784,7 +888,43 @@ export default function ChatBot() {
                       </div>
                     )}
                     
-                    <div className="chat-bubble-text">{msg.content}</div>
+                    <div className="chat-bubble-text">
+                      {msg.content.replace('[RENDER_SKILLS]', '').replace('[RENDER_PROJECTS]', '').trim()}
+                    </div>
+
+                    {/* Generative UI Rendering */}
+                    {msg.content.includes('[RENDER_SKILLS]') && (
+                      <div className="genui-card">
+                        <div className="genui-glow" style={{ background: 'rgba(16,185,129,0.15)' }} />
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                          <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(16,185,129,0.1)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Cpu size={14} /></div>
+                          <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-primary)' }}>My Top Skills</span>
+                        </div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                          {['Python', 'TensorFlow', 'Scikit-learn', 'React', 'FastAPI', 'Pandas'].map(s => (
+                            <span key={s} style={{ fontSize: '11px', fontWeight: 600, padding: '4px 8px', borderRadius: '12px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>{s}</span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {msg.content.includes('[RENDER_PROJECTS]') && (
+                      <div className="genui-card">
+                        <div className="genui-glow" style={{ background: 'rgba(59,130,246,0.15)' }} />
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                          <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(59,130,246,0.1)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Layers size={14} /></div>
+                          <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-primary)' }}>Featured Projects</span>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <div style={{ padding: '8px', borderRadius: '8px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', fontSize: '11px', color: 'var(--text-primary)' }}>
+                            <strong>SMS Finance Analyzer</strong> • Privacy-first RAG Pipeline
+                          </div>
+                          <div style={{ padding: '8px', borderRadius: '8px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', fontSize: '11px', color: 'var(--text-primary)' }}>
+                            <strong>Financial Sentiment</strong> • FinBERT Model Fine-Tuning
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
                     {msg.role === 'assistant' && msg.content && (
                       <div className="chat-bubble-actions">
@@ -851,14 +991,23 @@ export default function ChatBot() {
             {/* Input bar */}
             <div className="chatbot-input-bar">
               <div className="chatbot-input-wrapper">
+                <button
+                  className={`mic-btn ${isRecording ? 'recording' : ''}`}
+                  onClick={toggleRecording}
+                  title="Voice command (Siri mode)"
+                  type="button"
+                >
+                  <Mic size={16} />
+                </button>
                 <input
                   type="text"
                   ref={inputRef}
                   className="chatbot-input"
-                  placeholder="Ask anything about Sujith..."
+                  placeholder={isRecording ? "Listening..." : "Ask anything about Sujith..."}
                   value={input}
                   onChange={e => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
+                  disabled={isRecording}
                 />
                 <button
                   className="chatbot-send-btn"

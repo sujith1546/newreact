@@ -11,10 +11,15 @@ const SYSTEM_PROMPT = `You are Sujith Thota, speaking as yourself in the first p
 
 Rules you must always follow:
 - Answer ONLY using the context provided below. Never invent facts not in the context.
-- Stay strictly on topic: your background, projects, skills, education, experience, certifications, and availability. If the question is off-topic (general chit-chat, unrelated topics, requests unrelated to your portfolio), politely decline and steer the conversation back, e.g. "I'm just set up to talk about my background and work — feel free to ask me about my projects or experience!"
-- If the context doesn't contain the answer, say so honestly and suggest the visitor reach out to you directly by email, rather than guessing.
+- Stay strictly on topic: your background, projects, skills, education, experience, certifications, and availability. If the question is off-topic, politely decline and steer the conversation back.
+- If the context doesn't contain the answer, say so honestly and suggest the visitor reach out to you directly by email.
 - Keep answers concise and conversational, like you're chatting with a recruiter, not writing a report.
-- Cite sources inline using [1], [2] etc. matching the numbered context you're given.`;
+- Cite sources inline using [1], [2] etc. matching the numbered context you're given.
+
+*** GENERATIVE UI COMMANDS ***
+If the user asks about your SKILLS (e.g., "What are your skills?", "What tech stack do you use?"), you MUST include the exact text "[RENDER_SKILLS]" somewhere in your response.
+If the user asks about your PROJECTS (e.g., "What have you built?", "Show me your projects"), you MUST include the exact text "[RENDER_PROJECTS]" somewhere in your response.
+This will trigger the frontend to render a beautiful interactive component for them!`;
 
 // =============================================================================
 // STEP 4: YOUR KNOWLEDGE BASE — Sujith's portfolio content
@@ -37,11 +42,25 @@ const KNOWLEDGE = [
     ],
   },
   {
+    source: "code:sms-finance",
+    section: "code",
+    chunks: [
+      "Here is a semantic code snippet showing how I implemented the PII masking in my SMS Finance project:\n\n```python\nimport re\n\ndef mask_pii(text):\n    # Mask account numbers (last 4 digits visible)\n    text = re.sub(r'\\b\\d{6,12}(\\d{4})\\b', r'XXXX-XXXX-\\1', text)\n    # Mask phone numbers\n    text = re.sub(r'\\b\\+?\\d{10,12}\\b', r'[REDACTED PHONE]', text)\n    # Mask email addresses\n    text = re.sub(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+', r'[REDACTED EMAIL]', text)\n    return text\n```"
+    ],
+  },
+  {
     source: "project:finbert",
     section: "projects",
     chunks: [
       "My academic project is Financial Sentiment Analysis, where I custom fine-tuned a pre-trained FinBERT model on 26,961 Indian financial news articles and headlines, reaching a high sentiment classification test accuracy of 87.52%. It was trained on an NVIDIA Tesla T4 GPU.",
       "This project served as the predecessor to NewsTrader AI. I implemented a Market Mood Index, GNews API news ingestion, portfolio management features, and a signal generator (BUY/SELL/NEUTRAL). It was created in collaboration with Vaka Venkata Rahul Reddy and Vemulapati Bhanu Prakash Reddy under faculty advisor Kanagaraj R at VIT's School of CSE, resulting in a 75+ page VIT academic report, research paper, and poster presentation."
+    ],
+  },
+  {
+    source: "code:finbert",
+    section: "code",
+    chunks: [
+      "Here is a semantic code snippet showing how I set up the FinBERT fine-tuning arguments in PyTorch/HuggingFace:\n\n```python\nfrom transformers import TrainingArguments, Trainer\n\ntraining_args = TrainingArguments(\n    output_dir='./results',\n    num_train_epochs=3,\n    per_device_train_batch_size=16,\n    per_device_eval_batch_size=64,\n    warmup_steps=500,\n    weight_decay=0.01,\n    logging_dir='./logs',\n    logging_steps=10,\n    evaluation_strategy=\"epoch\"\n)\n\ntrainer = Trainer(\n    model=model,\n    args=training_args,\n    train_dataset=train_dataset,\n    eval_dataset=eval_dataset\n)\ntrainer.train()\n```"
     ],
   },
   {
