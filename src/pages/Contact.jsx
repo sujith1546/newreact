@@ -77,7 +77,7 @@ export default function Contact() {
   const phone = "+91 8501889996";
   const { triggerIsland } = useIsland();
 
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [form, setForm] = useState({ name: "", email: "", message: "", _catch: "" });
   const [errors, setErrors] = useState({ name: "", email: "", message: "" });
   const [touched, setTouched] = useState({ name: false, email: false, message: false });
   const [status, setStatus] = useState("idle");
@@ -132,10 +132,25 @@ export default function Contact() {
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
     
+    // HONEYPOT TRAP
+    if (form._catch) {
+      // Bot detected! Trick it into thinking it worked, but abort.
+      setStatus("sent");
+      triggerIsland({
+        title: 'Security Alert',
+        subtitle: 'Bot activity detected and blocked.',
+        color: '#ef4444',
+        duration: 4000
+      });
+      setTimeout(() => { setStatus("idle"); setForm({ name: "", email: "", message: "", _catch: "" }); }, 3000);
+      return;
+    }
+    
     // Validate all fields using the updated robust validator
     let hasErrors = false;
     const newErrors = {};
     Object.keys(form).forEach(key => {
+      if (key === "_catch") return; // Skip validation for honeypot
       const err = validateField(key, form[key]);
       if (err) {
         newErrors[key] = err;
@@ -584,6 +599,9 @@ export default function Contact() {
               ) : (
                 <motion.div key="form" className="mc-form-container" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                   <h2 className="mc-form-title"><Send size={18} color="var(--primary-blue)" /> Send a Message</h2>
+                  
+                  {/* Honeypot field - Invisible to humans, bots will fill it */}
+                  <input type="text" name="_catch" style={{ display: 'none' }} value={form._catch} onChange={handleChange} tabIndex="-1" autoComplete="off" />
 
                   <div className="mc-input-group">
                     <input name="name" className={`mc-input ${touched.name && errors.name ? 'has-error' : ''}`} placeholder=" " value={form.name} onChange={handleChange} onBlur={handleBlur} />

@@ -6,6 +6,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { AnimatePresence } from 'framer-motion';
 import MainLayout from './pages/MainLayout';
 import DynamicIsland from './components/DynamicIsland';
+import DevToolsDetector from './components/DevToolsDetector';
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 
 // Wrapper for AnimatePresence to access useLocation
@@ -45,6 +46,7 @@ export default function App() {
       <ThemeProvider>
         <IslandProvider>
           <DynamicIsland />
+          <DevToolsDetector />
           <BrowserRouter>
             <Suspense fallback={<Loader />}>
               <AnimatedRoutes />

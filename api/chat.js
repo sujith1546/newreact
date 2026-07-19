@@ -302,11 +302,54 @@ function buildUserPrompt(retrievedChunks, question) {
 }
 
 // =============================================================================
+// RATE LIMITING & SECURITY (In-Memory for Warm Lambdas)
+// =============================================================================
+const rateLimitMap = new Map();
+const RATE_LIMIT_WINDOW = 5 * 60 * 1000; // 5 minutes
+const MAX_REQUESTS = 15;
+
+function checkRateLimit(ip) {
+  const now = Date.now();
+  const record = rateLimitMap.get(ip);
+  if (!record) {
+    rateLimitMap.set(ip, { count: 1, firstRequest: now });
+    return true;
+  }
+  if (now - record.firstRequest > RATE_LIMIT_WINDOW) {
+    rateLimitMap.set(ip, { count: 1, firstRequest: now });
+    return true;
+  }
+  if (record.count >= MAX_REQUESTS) return false;
+  record.count += 1;
+  return true;
+}
+
+// Clean up map to prevent memory leaks in warm lambdas
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, record] of rateLimitMap.entries()) {
+    if (now - record.firstRequest > RATE_LIMIT_WINDOW) rateLimitMap.delete(ip);
+  }
+}, RATE_LIMIT_WINDOW).unref?.();
+
+// =============================================================================
 // VERCEL SERVERLESS HANDLER — POST /api/chat
 // =============================================================================
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
+  }
+
+  // Security 1: Rate Limiting
+  const clientIp = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown';
+  if (!checkRateLimit(clientIp)) {
+    return res.status(429).json({ error: "Too many requests. Please wait a few minutes." });
+  }
+
+  // Security 2: Session Leasing Check
+  const sessionToken = req.headers['x-portfolio-session'];
+  if (!sessionToken || sessionToken.length < 16) {
+    return res.status(403).json({ error: "Invalid or missing session token. Unauthorized." });
   }
 
   try {

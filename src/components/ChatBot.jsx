@@ -18,6 +18,19 @@ const WELCOME_MESSAGE = {
   content: "Hi! 👋 I'm Sujith's AI assistant. I can answer anything about my background, projects, skills, and availability. What would you like to know?"
 };
 
+// Generate crypto-random session token for API protection
+const getSessionToken = () => {
+  if (typeof window === 'undefined') return '';
+  let token = sessionStorage.getItem('x-portfolio-session');
+  if (!token) {
+    const array = new Uint8Array(16);
+    crypto.getRandomValues(array);
+    token = Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+    sessionStorage.setItem('x-portfolio-session', token);
+  }
+  return token;
+};
+
 export default function ChatBot() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
@@ -140,13 +153,33 @@ export default function ChatBot() {
       }]);
 
       // Call our secure backend API
+      const sessionToken = getSessionToken();
       const res = await fetch('/api/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'x-portfolio-session': sessionToken 
+        },
         body: JSON.stringify({ message: userText, history })
       });
 
       if (!res.ok) {
+        if (res.status === 429) {
+          triggerIsland({
+            title: 'Security Alert',
+            subtitle: 'Rate limit exceeded. Too many requests.',
+            color: '#ef4444',
+            duration: 4000
+          });
+        } else if (res.status === 403) {
+          triggerIsland({
+            title: 'Unauthorized',
+            subtitle: 'Invalid session. Please refresh.',
+            color: '#ef4444',
+            duration: 4000
+          });
+        }
+
         // Fallback for local development if the serverless proxy is down
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
           setTimeout(() => {
