@@ -898,21 +898,30 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
                   background: 'linear-gradient(135deg, #1e3a5f 0%, #1e1b4b 50%, #0f2027 100%)',
                   padding: '20px', border: '1px solid rgba(59,130,246,0.2)'
                 }}>
-                  {/* Animated glow blobs */}
+                  {/* Glow blobs */}
                   <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(59,130,246,0.15)', filter: 'blur(30px)', pointerEvents: 'none' }} />
                   <div style={{ position: 'absolute', bottom: '-10px', left: '20px', width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(139,92,246,0.12)', filter: 'blur(25px)', pointerEvents: 'none' }} />
                   <div style={{ position: 'relative', zIndex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
-                      <span style={{ fontSize: '11px', fontWeight: 700, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Personal Portfolio</span>
+                    {/* Attribution badge */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '20px', background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)' }}>
+                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 6px #10b981', flexShrink: 0 }} />
+                        <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#10b981', letterSpacing: '0.04em' }}>Developed by Sujith</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '20px', background: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.25)' }}>
+                        <User size={10} color="#a78bfa" />
+                        <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#a78bfa', letterSpacing: '0.04em' }}>Personal Use</span>
+                      </div>
                     </div>
-                    <h4 style={{ margin: '0 0 8px', fontSize: '18px', fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.2 }}>Sujith Thota</h4>
-                    <p style={{ margin: 0, fontSize: '12.5px', color: 'rgba(255,255,255,0.65)', lineHeight: 1.6 }}>
-                      A personal sandbox built to explore advanced web technologies, premium UI paradigms, and AI integrations. Every pixel is crafted by hand.
+                    <h4 style={{ margin: '0 0 8px', fontSize: '17px', fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.25 }}>
+                      Made for me, shared with you ✦
+                    </h4>
+                    <p style={{ margin: 0, fontSize: '12.5px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.65 }}>
+                      This app was built by Sujith Thota entirely for personal use — to experiment with cutting-edge UI, AI features, and modern web tech. Not a product, just a passion project.
                     </p>
                     <div style={{ display: 'flex', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
                       {['React', 'Vite', 'Framer Motion', 'Lucide'].map(t => (
-                        <span key={t} style={{ fontSize: '10px', fontWeight: 700, padding: '4px 10px', borderRadius: '20px', background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.1)' }}>{t}</span>
+                        <span key={t} style={{ fontSize: '10px', fontWeight: 700, padding: '4px 10px', borderRadius: '20px', background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.65)', border: '1px solid rgba(255,255,255,0.1)' }}>{t}</span>
                       ))}
                     </div>
                   </div>
