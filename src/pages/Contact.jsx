@@ -155,26 +155,27 @@ export default function Contact() {
     }
 
     setStatus("sending");
+    
     try {
+      // Mock the request for local development to avoid 502 Bad Gateway console errors
+      // since there is no local backend running on port 3001.
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        setTimeout(() => {
+          localStorage.setItem("lastContactSent", Date.now().toString());
+          setStatus("sent");
+          setForm({ name: "", email: "", message: "" });
+          setTouched({ name: false, email: false, message: false });
+          setTimeout(() => setStatus("idle"), 5000);
+        }, 1200);
+        return;
+      }
+
+      // Production / Live backend call
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify(form)
       });
-
-      if (!response.ok) {
-        // Fallback for local development if the serverless proxy is down
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-          setTimeout(() => {
-            localStorage.setItem("lastContactSent", Date.now().toString());
-            setStatus("sent");
-            setForm({ name: "", email: "", message: "" });
-            setTouched({ name: false, email: false, message: false });
-            setTimeout(() => setStatus("idle"), 5000);
-          }, 1000);
-          return;
-        }
-      }
 
       const result = await response.json().catch(() => ({}));
       if (response.ok && result.success) {
