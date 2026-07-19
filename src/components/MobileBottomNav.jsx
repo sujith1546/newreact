@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Award, FileText, Share, X, Moon, Sun, FileDown, Settings, ChevronLeft, ChevronDown, Monitor, Bell, Wand2, Globe, Trash2, User, Copy, Check, MapPin, School, Sparkles, Atom, HelpCircle } from 'lucide-react';
+import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Award, FileText, Share, X, Moon, Sun, FileDown, Settings, ChevronLeft, ChevronDown, ChevronRight, Monitor, Bell, Wand2, Globe, Trash2, User, Copy, Check, MapPin, School, Sparkles, Atom, HelpCircle, Zap, BookOpen, Code2, ExternalLink, Star, Info, Navigation, Layers, Shield, Clock } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
 import { IconBolt, IconLayoutGrid } from '@tabler/icons-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -859,17 +859,29 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
             <motion.div 
               className="more-overlay-sheet"
               initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              style={{ zIndex: 103, display: 'flex', flexDirection: 'column' }}
+              transition={{ type: 'spring', damping: 26, stiffness: 280 }}
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={{ top: 0, bottom: 0.35 }}
+              onDragEnd={(_, info) => { if (info.offset.y > 100 || info.velocity.y > 500) setIsHelpOpen(false); }}
+              style={{ zIndex: 103, display: 'flex', flexDirection: 'column', height: '88vh', maxHeight: '88dvh' }}
             >
-              <div className="drawer-header" style={{ padding: '20px 20px 16px', borderBottom: '1px solid var(--border-color)', flexShrink: 0 }}>
+              <div className="drawer-handle" />
+
+              {/* Header */}
+              <div style={{ padding: '16px 18px 14px', borderBottom: '1px solid var(--border-color)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(59,130,246,0.1)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{
+                    width: '44px', height: '44px', borderRadius: '14px',
+                    background: 'linear-gradient(135deg, rgba(59,130,246,0.15), rgba(139,92,246,0.15))',
+                    border: '1px solid rgba(59,130,246,0.2)',
+                    color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  }}>
                     <HelpCircle size={22} />
                   </div>
                   <div>
-                    <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)' }}>Help & Info</h3>
-                    <p style={{ margin: '2px 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>About this portfolio</p>
+                    <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>Help & Info</h3>
+                    <p style={{ margin: '1px 0 0', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Portfolio Guide</p>
                   </div>
                 </div>
                 <button className="drawer-close-btn" onClick={() => setIsHelpOpen(false)}>
@@ -877,46 +889,156 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
                 </button>
               </div>
 
-              <div className="drawer-scroll-area" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '16px' }}>
-                  <h4 style={{ margin: '0 0 8px', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>Personal Use Notice</h4>
-                  <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                    This portfolio application was developed by Sujith Thota as a personal sandbox to explore advanced web technologies, beautiful UI paradigms, and AI integrations. It serves as a living representation of my skills and experiments.
-                  </p>
-                </div>
-                
-                <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '16px' }}>
-                  <h4 style={{ margin: '0 0 12px', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>Navigation Tips</h4>
-                  
-                  <div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
-                    <div style={{ padding: '8px', background: 'var(--bg-primary)', borderRadius: '8px', border: '1px solid var(--border-color)', height: 'fit-content' }}><Sparkles size={16} color="var(--primary-blue)" /></div>
-                    <div>
-                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', display: 'block' }}>Updates</span>
-                      <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Check the Updates tab for my latest feature drops.</span>
+              {/* Scrollable Body */}
+              <div style={{ flex: 1, overflowY: 'auto', padding: '18px', display: 'flex', flexDirection: 'column', gap: '16px', paddingBottom: '28px' }}>
+
+                {/* About Banner */}
+                <div style={{
+                  borderRadius: '18px', overflow: 'hidden', position: 'relative',
+                  background: 'linear-gradient(135deg, #1e3a5f 0%, #1e1b4b 50%, #0f2027 100%)',
+                  padding: '20px', border: '1px solid rgba(59,130,246,0.2)'
+                }}>
+                  {/* Animated glow blobs */}
+                  <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(59,130,246,0.15)', filter: 'blur(30px)', pointerEvents: 'none' }} />
+                  <div style={{ position: 'absolute', bottom: '-10px', left: '20px', width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(139,92,246,0.12)', filter: 'blur(25px)', pointerEvents: 'none' }} />
+                  <div style={{ position: 'relative', zIndex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
+                      <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
+                      <span style={{ fontSize: '11px', fontWeight: 700, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Personal Portfolio</span>
                     </div>
-                  </div>
-                  
-                  <div style={{ display: 'flex', gap: '12px' }}>
-                    <div style={{ padding: '8px', background: 'var(--bg-primary)', borderRadius: '8px', border: '1px solid var(--border-color)', height: 'fit-content' }}><Atom size={16} color="#06b6d4" /></div>
-                    <div>
-                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', display: 'block' }}>Atom AI</span>
-                      <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Ask Atom AI anything about my work experience or skills!</span>
+                    <h4 style={{ margin: '0 0 8px', fontSize: '18px', fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.2 }}>Sujith Thota</h4>
+                    <p style={{ margin: 0, fontSize: '12.5px', color: 'rgba(255,255,255,0.65)', lineHeight: 1.6 }}>
+                      A personal sandbox built to explore advanced web technologies, premium UI paradigms, and AI integrations. Every pixel is crafted by hand.
+                    </p>
+                    <div style={{ display: 'flex', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
+                      {['React', 'Vite', 'Framer Motion', 'Lucide'].map(t => (
+                        <span key={t} style={{ fontSize: '10px', fontWeight: 700, padding: '4px 10px', borderRadius: '20px', background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.1)' }}>{t}</span>
+                      ))}
                     </div>
                   </div>
                 </div>
 
-                <div style={{ flex: 1 }} />
-                
-                <button 
+                {/* Section label */}
+                <p style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '4px 0 0' }}>Pages</p>
+
+                {/* Pages grid */}
+                {[
+                  { icon: Home, label: 'Home', desc: 'Hero, stats & quick overview', color: '#3b82f6' },
+                  { icon: Cpu, label: 'Skills', desc: 'Browse skills by category', color: '#8b5cf6' },
+                  { icon: Layers, label: 'Projects', desc: 'Featured work & code demos', color: '#10b981' },
+                  { icon: BookOpen, label: 'Education', desc: 'Academic journey & scores', color: '#f59e0b' },
+                  { icon: Award, label: 'Certifications', desc: 'Verified global credentials', color: '#ef4444' },
+                  { icon: Mail, label: 'Contact', desc: 'Swipe-to-send message form', color: '#06b6d4' },
+                ].map(({ icon: Icon, label, desc, color }) => (
+                  <div key={label} style={{
+                    display: 'flex', alignItems: 'center', gap: '13px',
+                    padding: '12px 14px', borderRadius: '14px',
+                    background: 'var(--bg-primary)', border: '1px solid var(--border-color)'
+                  }}>
+                    <div style={{
+                      width: '38px', height: '38px', borderRadius: '11px', flexShrink: 0,
+                      background: color + '18', color, border: `1px solid ${color}28`,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center'
+                    }}>
+                      <Icon size={18} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <span style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary)', display: 'block' }}>{label}</span>
+                      <span style={{ fontSize: '11.5px', color: 'var(--text-secondary)' }}>{desc}</span>
+                    </div>
+                    <ChevronRight size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+                  </div>
+                ))}
+
+                {/* Section label */}
+                <p style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '4px 0 0' }}>Features</p>
+
+                {/* Feature cards 2×2 grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  {[
+                    { icon: Atom, label: 'Atom AI', desc: 'Chat with my AI assistant', color: '#06b6d4' },
+                    { icon: Sparkles, label: 'Updates', desc: 'Latest feature drops', color: '#f59e0b' },
+                    { icon: Moon, label: 'Dark Mode', desc: 'Toggle in Settings', color: '#8b5cf6' },
+                    { icon: Navigation, label: 'Swipe Nav', desc: 'Swipe left/right pages', color: '#10b981' },
+                    { icon: FileDown, label: 'Resume', desc: 'Download my CV', color: '#3b82f6' },
+                    { icon: Shield, label: 'Privacy', desc: 'Data stays local only', color: '#ef4444' },
+                  ].map(({ icon: Icon, label, desc, color }) => (
+                    <div key={label} style={{
+                      padding: '14px', borderRadius: '14px',
+                      background: 'var(--bg-primary)', border: '1px solid var(--border-color)',
+                      display: 'flex', flexDirection: 'column', gap: '8px'
+                    }}>
+                      <div style={{
+                        width: '34px', height: '34px', borderRadius: '10px',
+                        background: color + '18', color, border: `1px solid ${color}25`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                      }}>
+                        <Icon size={17} />
+                      </div>
+                      <div>
+                        <span style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--text-primary)', display: 'block', lineHeight: 1.2 }}>{label}</span>
+                        <span style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>{desc}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Section label */}
+                <p style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '4px 0 0' }}>Gestures & Tips</p>
+
+                {/* Tips list */}
+                <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '16px', overflow: 'hidden' }}>
+                  {[
+                    { gesture: '← → Swipe', action: 'Navigate between pages' },
+                    { gesture: '↑ Swipe sheet', action: 'Pull up any detail sheet' },
+                    { gesture: '↓ Drag', action: 'Dismiss any slide-up bar' },
+                    { gesture: 'Long press', action: 'Context menu on projects' },
+                    { gesture: 'Tap version 5×', action: 'Unlock dev debug options' },
+                  ].map(({ gesture, action }, i, arr) => (
+                    <div key={gesture} style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '11px 14px',
+                      borderBottom: i < arr.length - 1 ? '1px solid var(--border-color)' : 'none'
+                    }}>
+                      <span style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--primary-blue)', fontFamily: 'monospace', background: 'rgba(59,130,246,0.08)', padding: '3px 8px', borderRadius: '6px', border: '1px solid rgba(59,130,246,0.15)' }}>{gesture}</span>
+                      <span style={{ fontSize: '11.5px', color: 'var(--text-secondary)', textAlign: 'right', flex: 1, marginLeft: '10px' }}>{action}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Version + Built with row */}
+                <div style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '14px 16px', borderRadius: '14px',
+                  background: 'var(--bg-primary)', border: '1px solid var(--border-color)'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ width: '32px', height: '32px', borderRadius: '9px', background: 'rgba(16,185,129,0.1)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(16,185,129,0.2)' }}>
+                      <Zap size={15} />
+                    </div>
+                    <div>
+                      <span style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--text-primary)', display: 'block' }}>v1.4.0</span>
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Vite + React + TypeScript</span>
+                    </div>
+                  </div>
+                  <span style={{ fontSize: '10px', fontWeight: 700, padding: '4px 10px', borderRadius: '20px', background: 'rgba(16,185,129,0.1)', color: '#10b981', border: '1px solid rgba(16,185,129,0.2)' }}>Stable</span>
+                </div>
+
+                {/* Close button */}
+                <motion.button
                   onClick={() => setIsHelpOpen(false)}
+                  whileTap={{ scale: 0.97 }}
                   style={{ 
-                    width: '100%', padding: '14px', background: 'var(--primary-blue)', 
-                    color: '#fff', borderRadius: '14px', fontWeight: 600, fontSize: '14px',
-                    border: 'none', cursor: 'pointer', marginTop: '10px'
+                    width: '100%', padding: '15px',
+                    background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                    color: '#fff', borderRadius: '16px', fontWeight: 700, fontSize: '14px',
+                    border: 'none', cursor: 'pointer', letterSpacing: '-0.01em',
+                    boxShadow: '0 4px 20px rgba(59,130,246,0.3)'
                   }}
                 >
-                  Got it, thanks!
-                </button>
+                  Got it, let's explore! 🚀
+                </motion.button>
+
               </div>
             </motion.div>
           </>
