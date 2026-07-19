@@ -890,160 +890,67 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
               </div>
 
               {/* Scrollable Body */}
-              <div style={{ flex: 1, overflowY: 'auto', padding: '18px', display: 'flex', flexDirection: 'column', gap: '16px', paddingBottom: '28px' }}>
+              <div style={{ flex: 1, overflowY: 'auto', padding: '18px', display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '32px' }}>
 
                 {/* About Banner */}
                 <div style={{
-                  borderRadius: '18px', overflow: 'hidden', position: 'relative',
-                  background: 'linear-gradient(135deg, #1e3a5f 0%, #1e1b4b 50%, #0f2027 100%)',
-                  padding: '20px', border: '1px solid rgba(59,130,246,0.2)'
+                  borderRadius: '24px', overflow: 'hidden', position: 'relative',
+                  background: 'linear-gradient(145deg, #1e3a5f 0%, #1e1b4b 50%, #0f2027 100%)',
+                  padding: '28px 24px', border: '1px solid rgba(59,130,246,0.3)',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)'
                 }}>
                   {/* Glow blobs */}
-                  <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(59,130,246,0.15)', filter: 'blur(30px)', pointerEvents: 'none' }} />
-                  <div style={{ position: 'absolute', bottom: '-10px', left: '20px', width: '80px', height: '80px', borderRadius: '50%', background: 'rgba(139,92,246,0.12)', filter: 'blur(25px)', pointerEvents: 'none' }} />
-                  <div style={{ position: 'relative', zIndex: 1 }}>
-                    {/* Attribution badge */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '7px', marginBottom: '12px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '20px', background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)' }}>
-                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 6px #10b981', flexShrink: 0 }} />
-                        <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#10b981', letterSpacing: '0.04em' }}>Developed by Sujith</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '4px 10px', borderRadius: '20px', background: 'rgba(139,92,246,0.12)', border: '1px solid rgba(139,92,246,0.25)' }}>
-                        <User size={10} color="#a78bfa" />
-                        <span style={{ fontSize: '10.5px', fontWeight: 700, color: '#a78bfa', letterSpacing: '0.04em' }}>Personal Use</span>
-                      </div>
+                  <div style={{ position: 'absolute', top: '-30px', right: '-30px', width: '150px', height: '150px', borderRadius: '50%', background: 'rgba(59,130,246,0.2)', filter: 'blur(40px)', pointerEvents: 'none' }} />
+                  <div style={{ position: 'absolute', bottom: '-20px', left: '-20px', width: '120px', height: '120px', borderRadius: '50%', background: 'rgba(139,92,246,0.15)', filter: 'blur(35px)', pointerEvents: 'none' }} />
+                  
+                  <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    
+                    <div style={{
+                      width: '64px', height: '64px', borderRadius: '20px',
+                      background: 'linear-gradient(135deg, rgba(59,130,246,0.2), rgba(139,92,246,0.2))',
+                      border: '1px solid rgba(59,130,246,0.3)',
+                      color: '#60a5fa', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      marginBottom: '20px', boxShadow: '0 8px 32px rgba(59,130,246,0.2)'
+                    }}>
+                      <Info size={32} strokeWidth={2} />
                     </div>
-                    <h4 style={{ margin: '0 0 8px', fontSize: '17px', fontWeight: 900, color: '#fff', letterSpacing: '-0.02em', lineHeight: 1.25 }}>
-                      Made for me, shared with you ✦
+
+                    <h4 style={{ margin: '0 0 12px', fontSize: '22px', fontWeight: 900, color: '#fff', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
+                      Made for me,<br/>shared with you ✦
                     </h4>
-                    <p style={{ margin: 0, fontSize: '12.5px', color: 'rgba(255,255,255,0.6)', lineHeight: 1.65 }}>
-                      This app was built by Sujith Thota entirely for personal use — to experiment with cutting-edge UI, AI features, and modern web tech. Not a product, just a passion project.
+                    
+                    <p style={{ margin: '0 0 24px', fontSize: '14px', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, maxWidth: '280px' }}>
+                      This website was built by Sujith Thota entirely for <strong style={{color:'#fff'}}>personal use</strong> — to experiment with cutting-edge UI, AI integration, and modern web technologies.
                     </p>
-                    <div style={{ display: 'flex', gap: '8px', marginTop: '14px', flexWrap: 'wrap' }}>
-                      {['React', 'Vite', 'Framer Motion', 'Lucide'].map(t => (
-                        <span key={t} style={{ fontSize: '10px', fontWeight: 700, padding: '4px 10px', borderRadius: '20px', background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.65)', border: '1px solid rgba(255,255,255,0.1)' }}>{t}</span>
-                      ))}
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '20px', background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)' }}>
+                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
+                        <span style={{ fontSize: '11px', fontWeight: 800, color: '#10b981', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Developed by Sujith</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '20px', background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.3)' }}>
+                        <User size={12} color="#a78bfa" />
+                        <span style={{ fontSize: '11px', fontWeight: 800, color: '#a78bfa', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Personal Use</span>
+                      </div>
                     </div>
+
                   </div>
                 </div>
 
-                {/* Section label */}
-                <p style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '4px 0 0' }}>Pages</p>
-
-                {/* Pages 3-col grid */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
-                  {[
-                    { icon: Home, label: 'Home', desc: 'Overview & hero', color: '#3b82f6' },
-                    { icon: Cpu, label: 'Skills', desc: 'By category', color: '#8b5cf6' },
-                    { icon: Layers, label: 'Projects', desc: 'Work & demos', color: '#10b981' },
-                    { icon: BookOpen, label: 'Education', desc: 'Journey & scores', color: '#f59e0b' },
-                    { icon: Award, label: 'Certs', desc: 'Credentials', color: '#ef4444' },
-                    { icon: Mail, label: 'Contact', desc: 'Send a message', color: '#06b6d4' },
-                  ].map(({ icon: Icon, label, desc, color }) => (
-                    <div key={label} style={{
-                      padding: '13px 10px', borderRadius: '14px',
-                      background: 'var(--bg-primary)', border: '1px solid var(--border-color)',
-                      display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start'
-                    }}>
-                      <div style={{
-                        width: '34px', height: '34px', borderRadius: '10px',
-                        background: color + '18', color, border: `1px solid ${color}25`,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
-                      }}>
-                        <Icon size={17} />
-                      </div>
-                      <div>
-                        <span style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--text-primary)', display: 'block', lineHeight: 1.2 }}>{label}</span>
-                        <span style={{ fontSize: '10.5px', color: 'var(--text-secondary)', lineHeight: 1.35 }}>{desc}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Section label */}
-                <p style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '4px 0 0' }}>Features</p>
-
-                {/* Feature cards 2×2 grid */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                  {[
-                    { icon: Atom, label: 'Atom AI', desc: 'Chat with my AI assistant', color: '#06b6d4' },
-                    { icon: Sparkles, label: 'Updates', desc: 'Latest feature drops', color: '#f59e0b' },
-                    { icon: Moon, label: 'Dark Mode', desc: 'Toggle in Settings', color: '#8b5cf6' },
-                    { icon: Navigation, label: 'Swipe Nav', desc: 'Swipe left/right pages', color: '#10b981' },
-                    { icon: FileDown, label: 'Resume', desc: 'Download my CV', color: '#3b82f6' },
-                    { icon: Shield, label: 'Privacy', desc: 'Data stays local only', color: '#ef4444' },
-                  ].map(({ icon: Icon, label, desc, color }) => (
-                    <div key={label} style={{
-                      padding: '14px', borderRadius: '14px',
-                      background: 'var(--bg-primary)', border: '1px solid var(--border-color)',
-                      display: 'flex', flexDirection: 'column', gap: '8px'
-                    }}>
-                      <div style={{
-                        width: '34px', height: '34px', borderRadius: '10px',
-                        background: color + '18', color, border: `1px solid ${color}25`,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center'
-                      }}>
-                        <Icon size={17} />
-                      </div>
-                      <div>
-                        <span style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--text-primary)', display: 'block', lineHeight: 1.2 }}>{label}</span>
-                        <span style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>{desc}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Section label */}
-                <p style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '4px 0 0' }}>Gestures & Tips</p>
-
-                {/* Tips list */}
-                <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '16px', overflow: 'hidden' }}>
-                  {[
-                    { gesture: '← → Swipe', action: 'Navigate between pages' },
-                    { gesture: '↑ Swipe sheet', action: 'Pull up any detail sheet' },
-                    { gesture: '↓ Drag', action: 'Dismiss any slide-up bar' },
-                    { gesture: 'Long press', action: 'Context menu on projects' },
-                    { gesture: 'Tap version 5×', action: 'Unlock dev debug options' },
-                  ].map(({ gesture, action }, i, arr) => (
-                    <div key={gesture} style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '11px 14px',
-                      borderBottom: i < arr.length - 1 ? '1px solid var(--border-color)' : 'none'
-                    }}>
-                      <span style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--primary-blue)', fontFamily: 'monospace', background: 'rgba(59,130,246,0.08)', padding: '3px 8px', borderRadius: '6px', border: '1px solid rgba(59,130,246,0.15)' }}>{gesture}</span>
-                      <span style={{ fontSize: '11.5px', color: 'var(--text-secondary)', textAlign: 'right', flex: 1, marginLeft: '10px' }}>{action}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Version + Built with row */}
-                <div style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '14px 16px', borderRadius: '14px',
-                  background: 'var(--bg-primary)', border: '1px solid var(--border-color)'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '9px', background: 'rgba(16,185,129,0.1)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(16,185,129,0.2)' }}>
-                      <Zap size={15} />
-                    </div>
-                    <div>
-                      <span style={{ fontSize: '12.5px', fontWeight: 700, color: 'var(--text-primary)', display: 'block' }}>v1.4.0</span>
-                      <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Vite + React + TypeScript</span>
-                    </div>
-                  </div>
-                  <span style={{ fontSize: '10px', fontWeight: 700, padding: '4px 10px', borderRadius: '20px', background: 'rgba(16,185,129,0.1)', color: '#10b981', border: '1px solid rgba(16,185,129,0.2)' }}>Stable</span>
-                </div>
+                <div style={{ flex: 1 }} />
 
                 {/* Close button */}
                 <motion.button
                   onClick={() => setIsHelpOpen(false)}
-                  whileTap={{ scale: 0.97 }}
+                  whileTap={{ scale: 0.96 }}
                   style={{ 
-                    width: '100%', padding: '15px',
+                    width: '100%', padding: '16px',
                     background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-                    color: '#fff', borderRadius: '16px', fontWeight: 700, fontSize: '14px',
+                    color: '#fff', borderRadius: '18px', fontWeight: 800, fontSize: '15px',
                     border: 'none', cursor: 'pointer', letterSpacing: '-0.01em',
-                    boxShadow: '0 4px 20px rgba(59,130,246,0.3)'
+                    boxShadow: '0 8px 24px rgba(59,130,246,0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
+                    marginTop: 'auto'
                   }}
                 >
                   Got it, let's explore! 🚀
