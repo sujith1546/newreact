@@ -90,12 +90,29 @@ export default function Contact() {
 
   const validateField = (name, value) => {
     let error = "";
+    
+    // 1. Basic empty check
     if (!value.trim()) {
       error = `${name.charAt(0).toUpperCase() + name.slice(1)} is required.`;
-    } else if (name === "email") {
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) error = "Please enter a valid email.";
+    } 
+    // 2. Length limits (anti-spam)
+    else if (name === "name" && value.length > 60) {
+      error = "Name is too long (max 60 chars).";
     }
+    else if (name === "message" && value.length > 2000) {
+      error = "Message is too long (max 2000 chars).";
+    }
+    // 3. Email validation
+    else if (name === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      error = "Please enter a valid email.";
+    }
+    // 4. XSS / Injection protection (deny basic HTML/Script tags)
+    else if (/<script>|<\/script>|<[^>]+>/i.test(value)) {
+      error = "Invalid characters detected. HTML is not allowed.";
+    }
+
     setErrors(prev => ({ ...prev, [name]: error }));
+    return error;
   };
 
   const handleChange = (e) => {
@@ -112,14 +129,31 @@ export default function Contact() {
 
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
-    const newErrors = {};
+    
+    // Validate all fields using the updated robust validator
     let hasErrors = false;
+    const newErrors = {};
     Object.keys(form).forEach(key => {
-      if (!form[key].trim()) { newErrors[key] = `${key.charAt(0).toUpperCase() + key.slice(1)} is required.`; hasErrors = true; }
-      else if (key === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form[key])) { newErrors[key] = "Please enter a valid email."; hasErrors = true; }
+      const err = validateField(key, form[key]);
+      if (err) {
+        newErrors[key] = err;
+        hasErrors = true;
+      }
     });
+
     setTouched({ name: true, email: true, message: true });
-    if (hasErrors) { setErrors(prev => ({ ...prev, ...newErrors })); return; }
+    if (hasErrors) { 
+      setErrors(prev => ({ ...prev, ...newErrors })); 
+      return; 
+    }
+
+    // Client-side Rate Limiting (prevent spamming API)
+    const lastSent = localStorage.getItem("lastContactSent");
+    if (lastSent && Date.now() - parseInt(lastSent) < 60000) {
+      setErrors(prev => ({ ...prev, message: "Please wait a minute before sending another message. (Anti-spam)" }));
+      return;
+    }
+
     setStatus("sending");
     try {
       const response = await fetch("/api/contact", {
@@ -132,6 +166,7 @@ export default function Contact() {
         // Fallback for local development if the serverless proxy is down
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
           setTimeout(() => {
+            localStorage.setItem("lastContactSent", Date.now().toString());
             setStatus("sent");
             setForm({ name: "", email: "", message: "" });
             setTouched({ name: false, email: false, message: false });
@@ -143,14 +178,16 @@ export default function Contact() {
 
       const result = await response.json().catch(() => ({}));
       if (response.ok && result.success) {
+        localStorage.setItem("lastContactSent", Date.now().toString());
         setStatus("sent");
         setForm({ name: "", email: "", message: "" });
         setTouched({ name: false, email: false, message: false });
         setTimeout(() => setStatus("idle"), 5000);
       } else throw new Error(result.error || "Failed");
     } catch (err) {
-      alert(`Oops! ${err.message || 'Please try again.'}`);
+      console.error(err);
       setStatus("idle");
+      setErrors(prev => ({ ...prev, message: "Network error. Please try connecting again or use direct email." }));
     }
   };
 
