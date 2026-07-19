@@ -890,48 +890,43 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
               </div>
 
               {/* Scrollable Body */}
-              <div style={{ flex: 1, overflowY: 'auto', padding: '18px', display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '32px' }}>
+              <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '32px' }}>
 
-                {/* About Banner */}
+                {/* About Banner - Standard UI Style */}
                 <div style={{
                   borderRadius: '24px', overflow: 'hidden', position: 'relative',
-                  background: 'linear-gradient(145deg, #1e3a5f 0%, #1e1b4b 50%, #0f2027 100%)',
-                  padding: '28px 24px', border: '1px solid rgba(59,130,246,0.3)',
+                  background: 'var(--bg-primary)',
+                  padding: '32px 24px', border: '1px solid var(--border-color)',
                   display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
-                  boxShadow: '0 20px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)'
                 }}>
-                  {/* Glow blobs */}
-                  <div style={{ position: 'absolute', top: '-30px', right: '-30px', width: '150px', height: '150px', borderRadius: '50%', background: 'rgba(59,130,246,0.2)', filter: 'blur(40px)', pointerEvents: 'none' }} />
-                  <div style={{ position: 'absolute', bottom: '-20px', left: '-20px', width: '120px', height: '120px', borderRadius: '50%', background: 'rgba(139,92,246,0.15)', filter: 'blur(35px)', pointerEvents: 'none' }} />
-                  
                   <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                     
                     <div style={{
-                      width: '64px', height: '64px', borderRadius: '20px',
-                      background: 'linear-gradient(135deg, rgba(59,130,246,0.2), rgba(139,92,246,0.2))',
-                      border: '1px solid rgba(59,130,246,0.3)',
-                      color: '#60a5fa', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      marginBottom: '20px', boxShadow: '0 8px 32px rgba(59,130,246,0.2)'
+                      width: '60px', height: '60px', borderRadius: '18px',
+                      background: 'rgba(59,130,246,0.1)',
+                      border: '1px solid rgba(59,130,246,0.2)',
+                      color: 'var(--primary-blue)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      marginBottom: '20px'
                     }}>
-                      <Info size={32} strokeWidth={2} />
+                      <Info size={28} strokeWidth={2.5} />
                     </div>
 
-                    <h4 style={{ margin: '0 0 12px', fontSize: '22px', fontWeight: 900, color: '#fff', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
+                    <h4 style={{ margin: '0 0 12px', fontSize: '20px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
                       Made for me,<br/>shared with you ✦
                     </h4>
                     
-                    <p style={{ margin: '0 0 24px', fontSize: '14px', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, maxWidth: '280px' }}>
-                      This website was built by Sujith Thota entirely for <strong style={{color:'#fff'}}>personal use</strong> — to experiment with cutting-edge UI, AI integration, and modern web technologies.
+                    <p style={{ margin: '0 0 24px', fontSize: '13.5px', color: 'var(--text-secondary)', lineHeight: 1.6, maxWidth: '280px' }}>
+                      This website was built by Sujith Thota entirely for <strong style={{color:'var(--text-primary)'}}>personal use</strong> — to experiment with cutting-edge UI, AI integration, and modern web technologies.
                     </p>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '20px', background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)' }}>
-                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
-                        <span style={{ fontSize: '11px', fontWeight: 800, color: '#10b981', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Developed by Sujith</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '20px', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}>
+                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 6px #10b981' }} />
+                        <span style={{ fontSize: '11px', fontWeight: 700, color: '#10b981', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Developed by Sujith</span>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '20px', background: 'rgba(139,92,246,0.15)', border: '1px solid rgba(139,92,246,0.3)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '20px', background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.2)' }}>
                         <User size={12} color="#a78bfa" />
-                        <span style={{ fontSize: '11px', fontWeight: 800, color: '#a78bfa', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Personal Use</span>
+                        <span style={{ fontSize: '11px', fontWeight: 700, color: '#a78bfa', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Personal Use</span>
                       </div>
                     </div>
 
@@ -946,16 +941,14 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
                   whileTap={{ scale: 0.96 }}
                   style={{ 
                     width: '100%', padding: '16px',
-                    background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
-                    color: '#fff', borderRadius: '18px', fontWeight: 800, fontSize: '15px',
-                    border: 'none', cursor: 'pointer', letterSpacing: '-0.01em',
-                    boxShadow: '0 8px 24px rgba(59,130,246,0.4), inset 0 1px 0 rgba(255,255,255,0.2)',
+                    background: 'var(--bg-primary)',
+                    color: 'var(--text-primary)', borderRadius: '18px', fontWeight: 700, fontSize: '14.5px',
+                    border: '1px solid var(--border-color)', cursor: 'pointer', letterSpacing: '-0.01em',
                     marginTop: 'auto'
                   }}
                 >
-                  Got it, let's explore! 🚀
+                  Got it, let's explore!
                 </motion.button>
-
               </div>
             </motion.div>
           </>
