@@ -330,11 +330,11 @@ export default function Projects() {
 
           .mpj-chevron { color: var(--text-muted); flex-shrink: 0; margin-top: 2px; }
 
-          /* ========== DETAIL BOTTOM SHEET ========== */
+          /* ========== PREMIUM DETAIL BOTTOM SHEET ========== */
           .dsheet-backdrop {
             position: fixed; inset: 0;
-            background: rgba(0,0,0,.6);
-            backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+            background: rgba(0,0,0,.65);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
             z-index: 1000;
           }
           .dsheet {
@@ -343,17 +343,26 @@ export default function Projects() {
             border-top-left-radius: 28px; border-top-right-radius: 28px;
             z-index: 1001; height: 86vh; height: 86dvh;
             display: flex; flex-direction: column;
-            box-shadow: 0 -10px 50px rgba(0,0,0,.15);
+            box-shadow: 0 -20px 60px rgba(0,0,0,.25), 0 -1px 0 rgba(255,255,255,.06);
           }
           .dsheet-handle {
-            width: 40px; height: 4px; background: var(--border-color);
-            border-radius: 2px; margin: 14px auto 0; flex-shrink: 0;
+            width: 36px; height: 4px;
+            background: var(--border-color);
+            border-radius: 2px; margin: 12px auto 0; flex-shrink: 0;
           }
           .dsheet-header {
             display: flex; align-items: flex-start; justify-content: space-between;
-            padding: 14px 18px 12px; border-bottom: 1px solid var(--border-color); flex-shrink: 0;
+            padding: 16px 18px 14px; border-bottom: 1px solid var(--border-color); flex-shrink: 0;
           }
-          .dsheet-title h3 { font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0 0 5px; letter-spacing: -.02em; }
+          .dsheet-header-left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+          .dsheet-header-icon {
+            width: 44px; height: 44px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; font-size: 14px; font-weight: 900; letter-spacing: -.5px;
+            font-family: inherit;
+          }
+          .dsheet-title h3 { font-size: 17px; font-weight: 800; color: var(--text-primary); margin: 0 0 3px; letter-spacing: -.02em; line-height: 1.2; }
+          .dsheet-title p { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .05em; margin: 0; }
           .dsheet-close {
             width: 30px; height: 30px; border-radius: 15px;
             background: var(--bg-primary); border: 1px solid var(--border-color);
@@ -361,7 +370,7 @@ export default function Projects() {
             color: var(--text-secondary); cursor: pointer; flex-shrink: 0; margin-left: 10px;
           }
           .dsheet-body {
-            flex: 1; overflow-y: auto; display: flex; flex-direction: column;
+            flex: 1; overflow-y: auto; display: flex; flex-direction: column; position: relative;
           }
           .dsheet-body::-webkit-scrollbar { display: none; }
           .dsheet-content {
@@ -369,48 +378,85 @@ export default function Projects() {
             padding-bottom: 32px;
           }
           .dsheet-image {
-            width: 100%; height: 160px; border-radius: 16px; overflow: hidden;
-            background: linear-gradient(120deg,#e0e7ff 0%,#dcfce7 100%);
+            width: 100%; height: 150px; border-radius: 18px; overflow: hidden;
+            background: linear-gradient(135deg, #1e1b4b 0%, #064e3b 50%, #1e3a5f 100%);
             position: relative; display: flex; align-items: center; justify-content: center;
+            border: 1px solid rgba(255,255,255,.06);
           }
-          [data-theme="dark"] .dsheet-image { background: linear-gradient(120deg,#1e1b4b 0%,#064e3b 100%); }
-          .dsheet-desc { font-size: 13.5px; line-height: 1.6; color: var(--text-secondary); margin: 0; }
+          [data-theme="light"] .dsheet-image { background: linear-gradient(135deg, #e0e7ff 0%, #dcfce7 50%, #dbeafe 100%); border-color: rgba(0,0,0,.04); }
+          .dsheet-desc { font-size: 13.5px; line-height: 1.65; color: var(--text-secondary); margin: 0; }
           .dsheet-section-label {
-            font-size: 11px; font-weight: 700; color: var(--text-secondary);
-            text-transform: uppercase; letter-spacing: .06em; margin: 0 0 8px;
+            font-size: 10px; font-weight: 800; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: .1em; margin: 0 0 8px;
           }
 
-          .ps-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-          .ps-stat { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 14px; }
-          .ps-stat-label { font-size: 11px; color: var(--text-secondary); margin: 0; font-weight: 500; }
-          .ps-stat-value { font-size: 22px; font-weight: 800; color: var(--text-primary); margin: 4px 0 0; }
+          .ps-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+          .ps-stat {
+            background: var(--bg-primary); border: 1px solid var(--border-color);
+            border-radius: 14px; padding: 12px 14px;
+            display: flex; flex-direction: column; gap: 3px;
+          }
+          .ps-stat-label { font-size: 10px; color: var(--text-muted); margin: 0; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+          .ps-stat-value { font-size: 22px; font-weight: 900; color: var(--text-primary); margin: 0; letter-spacing: -.03em; line-height: 1.1; }
 
-          .ps-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border-color); }
-          .ps-tab { border: none; background: none; font-size: 13px; font-weight: 600; padding: 8px 12px; color: var(--text-secondary); border-bottom: 2px solid transparent; cursor: pointer; transition: all .2s; }
-          .ps-tab-active { color: var(--text-primary); border-bottom-color: var(--primary-blue); }
+          .ps-tabs {
+            display: flex; gap: 0; border-bottom: 1px solid var(--border-color);
+            background: var(--bg-primary); border-radius: 12px 12px 0 0; overflow: hidden;
+          }
+          .ps-tab {
+            border: none; background: none; font-size: 12.5px; font-weight: 700;
+            padding: 10px 14px; color: var(--text-muted);
+            border-bottom: 2px solid transparent; cursor: pointer;
+            transition: all .2s; flex: 1; text-align: center;
+            letter-spacing: .02em;
+          }
+          .ps-tab-active { color: var(--text-primary); border-bottom-color: var(--primary-blue); background: var(--bg-secondary); }
 
-          .ps-tags { display: flex; flex-wrap: wrap; gap: 7px; }
-          .ps-tag { font-size: 11px; font-weight: 600; padding: 4px 10px; background: rgba(59,130,246,.06); color: var(--primary-blue); border-radius: 6px; border: 1px solid rgba(59,130,246,.12); }
-          [data-theme="dark"] .ps-tag { background: rgba(59,130,246,.1); border-color: rgba(59,130,246,.25); }
+          .ps-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+          .ps-tag {
+            font-size: 11px; font-weight: 700;
+            padding: 5px 11px; border-radius: 20px;
+            background: var(--bg-primary); border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+          }
 
-          .ps-arch { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 12.5px; color: var(--text-primary); }
-          .ps-arch-step { background: var(--bg-primary); border: 1px solid var(--border-color); padding: 6px 10px; border-radius: 8px; display: inline-flex; align-items: center; gap: 4px; font-weight: 500; }
-          .ps-arch-arrow { color: var(--text-secondary); opacity: .6; }
+          .ps-arch { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 12px; color: var(--text-primary); }
+          .ps-arch-step {
+            background: var(--bg-primary); border: 1px solid var(--border-color);
+            padding: 6px 10px; border-radius: 8px;
+            display: inline-flex; align-items: center; gap: 4px; font-weight: 600;
+          }
+          .ps-arch-arrow { color: var(--text-muted); opacity: .7; }
 
-          .ps-code-block { position: relative; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; overflow-x: auto; }
+          .ps-code-block {
+            position: relative; background: var(--bg-primary);
+            border: 1px solid var(--border-color); border-radius: 14px;
+            padding: 16px; overflow-x: auto;
+          }
           .ps-code-block pre { margin: 0; font-family: monospace; font-size: 12px; color: var(--text-primary); white-space: pre-wrap; }
-          .ps-copy { position: absolute; top: 10px; right: 10px; font-size: 11px; font-weight: 600; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-primary); border-radius: 6px; padding: 4px 10px; cursor: pointer; z-index: 2; }
+          .ps-copy {
+            position: absolute; top: 10px; right: 10px;
+            font-size: 11px; font-weight: 700;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary); color: var(--text-primary);
+            border-radius: 8px; padding: 4px 10px; cursor: pointer; z-index: 2;
+          }
 
           .dsheet-actions { display: flex; gap: 10px; margin-top: 4px; }
           .dsheet-action-pill {
-            flex: 1; height: 46px; border-radius: 14px;
+            flex: 1; height: 48px; border-radius: 16px;
             border: 1px solid var(--border-color);
             background: var(--bg-primary); color: var(--text-primary);
             display: flex; align-items: center; justify-content: center;
-            gap: 8px; font-size: 13.5px; font-weight: 600;
+            gap: 8px; font-size: 13px; font-weight: 700;
             text-decoration: none; transition: all .2s; outline: none;
           }
-          .dsheet-action-pill:hover, .dsheet-action-pill:focus { background: var(--bg-secondary); border-color: var(--primary-blue); }
+          .dsheet-action-pill:hover, .dsheet-action-pill:focus { border-color: var(--primary-blue); }
+          .dsheet-action-pill--primary {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, #0056b3 100%);
+            color: #fff; border-color: transparent;
+            box-shadow: 0 4px 15px rgba(0,123,255,.25);
+          }
 
           .dsheet-scroll-hint {
             position: absolute; bottom: 0; left: 0; right: 0; height: 70px;
@@ -446,20 +492,31 @@ export default function Projects() {
                 <div className="dsheet-handle" />
 
                 {/* Header */}
-                <div className="dsheet-header">
-                  <div className="dsheet-title">
-                    <h3>{selectedProject.title}</h3>
-                    {selectedProject.liveUrl && (
-                      <div className="live-badge" style={{ width: 'fit-content' }}>
-                        <span className="live-dot"><span className="live-ping" /><span className="live-dot-core" /></span>
-                        <span className="live-text">Live Demo</span>
+                {(() => {
+                  const accent = projectAccents[(projectsData.indexOf(selectedProject)) % projectAccents.length] || '#3b82f6';
+                  const initials = selectedProject.title.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+                  return (
+                    <div className="dsheet-header">
+                      <div className="dsheet-header-left">
+                        <div className="dsheet-header-icon" style={{ background: accent+'18', color: accent, border: `1px solid ${accent}30` }}>
+                          {initials}
+                        </div>
+                        <div className="dsheet-title">
+                          <h3>{selectedProject.title}</h3>
+                          {selectedProject.liveUrl ? (
+                            <div className="live-badge" style={{ width: 'fit-content', marginTop: 2 }}>
+                              <span className="live-dot"><span className="live-ping" /><span className="live-dot-core" /></span>
+                              <span className="live-text">Live</span>
+                            </div>
+                          ) : <p>Personal Project</p>}
+                        </div>
                       </div>
-                    )}
-                  </div>
-                  <button className="dsheet-close" onClick={() => setSelectedProject(null)} aria-label="Close">
-                    <X size={16} />
-                  </button>
-                </div>
+                      <button className="dsheet-close" onClick={() => setSelectedProject(null)} aria-label="Close">
+                        <X size={16} />
+                      </button>
+                    </div>
+                  );
+                })()}
 
                 {/* Scrollable body */}
                 <div
@@ -543,8 +600,7 @@ export default function Projects() {
                       )}
                       {selectedProject.liveUrl && (
                         <a href={selectedProject.liveUrl} target="_blank" rel="noreferrer"
-                          className="dsheet-action-pill"
-                          style={{ background: 'var(--primary-blue)', color: '#fff', borderColor: 'var(--primary-blue)' }}
+                          className="dsheet-action-pill dsheet-action-pill--primary"
                         >
                           <ExternalLink size={16} /> Live Demo
                         </a>

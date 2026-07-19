@@ -861,26 +861,35 @@ export default function Education() {
           
           .medu-chevron { color: var(--text-muted); flex-shrink: 0; margin-top: 2px; }
 
-          /* ANIMATED DETAIL SHEET */
+          /* PREMIUM ANIMATED DETAIL SHEET */
           .dsheet-backdrop {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 10000;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,.65);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            z-index: 10000;
           }
           .dsheet {
             position: fixed; bottom: 0; left: 0; right: 0; z-index: 10001;
             background: var(--bg-secondary); border-top-left-radius: 28px; border-top-right-radius: 28px;
-            box-shadow: 0 -10px 50px rgba(0,0,0,0.15); display: flex; flex-direction: column;
+            box-shadow: 0 -20px 60px rgba(0,0,0,.25), 0 -1px 0 rgba(255,255,255,.06);
+            display: flex; flex-direction: column;
             height: 86vh; height: 86dvh;
           }
           .dsheet-handle {
-            width: 40px; height: 4px; border-radius: 2px; background: var(--border-color);
-            margin: 14px auto 0; flex-shrink: 0;
+            width: 36px; height: 4px; border-radius: 2px; background: var(--border-color);
+            margin: 12px auto 0; flex-shrink: 0;
           }
           .dsheet-header {
-            display: flex; align-items: flex-start; justify-content: space-between;
-            padding: 14px 18px 12px; border-bottom: 1px solid var(--border-color); flex-shrink: 0;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 18px 14px; border-bottom: 1px solid var(--border-color); flex-shrink: 0;
           }
-          .dsheet-title h3 { font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0 0 5px; letter-spacing: -0.02em; }
-          .dsheet-title p { font-size: 11px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; letter-spacing: 0.06em; margin: 0; }
+          .dsheet-header-left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+          .dsheet-header-icon {
+            width: 44px; height: 44px; border-radius: 14px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+          }
+          .dsheet-title h3 { font-size: 16px; font-weight: 800; color: var(--text-primary); margin: 0 0 2px; letter-spacing: -.02em; line-height: 1.25; }
+          .dsheet-title p { font-size: 11px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; letter-spacing: .06em; margin: 0; }
           .dsheet-close {
             width: 30px; height: 30px; border-radius: 15px; background: var(--bg-primary);
             border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center;
@@ -892,21 +901,59 @@ export default function Education() {
           .dsheet-body::-webkit-scrollbar { display: none; }
           .dsheet-content { padding: 18px; display: flex; flex-direction: column; gap: 16px; padding-bottom: 32px; }
           
-          .dsheet-image {
-            width: 100%; height: 160px; border-radius: 16px; overflow: hidden; position: relative;
-            background: linear-gradient(120deg, #e0e7ff 0%, #dcfce7 100%);
-            display: flex; align-items: center; justify-content: center;
+          .dsheet-section-label {
+            font-size: 10px; font-weight: 800; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: .1em; margin: 0 0 8px;
           }
-          [data-theme="dark"] .dsheet-image { background: linear-gradient(120deg, #1e1b4b 0%, #064e3b 100%); }
-          .dsheet-image-icon { color: rgba(0,0,0,0.15); z-index: 1; }
-          [data-theme="dark"] .dsheet-image-icon { color: rgba(255,255,255,0.08); }
-          
-          .dsheet-desc { font-size: 13.5px; line-height: 1.6; color: var(--text-secondary); margin: 0; }
-          
-          .ps-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-          .ps-stat { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 14px; }
-          .ps-stat-label { font-size: 11px; color: var(--text-secondary); margin: 0; font-weight: 500; }
-          .ps-stat-value { font-size: 22px; font-weight: 800; color: var(--text-primary); margin: 4px 0 0; line-height: 1.2; }
+
+          /* Hero stat card */
+          .edu-hero-card {
+            display: flex; align-items: center; gap: 16px; padding: 16px;
+            background: var(--bg-primary); border: 1px solid var(--border-color);
+            border-radius: 16px;
+          }
+          .edu-hero-icon-wrap {
+            width: 68px; height: 68px; border-radius: 18px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
+          }
+          .edu-hero-icon-bg { position: absolute; inset: 0; }
+          .edu-hero-icon-wrap svg { position: relative; z-index: 1; }
+          .edu-hero-meta { flex: 1; display: flex; flex-direction: column; gap: 9px; }
+          .edu-hero-meta-row { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text-secondary); }
+          .edu-hero-meta-row svg { color: var(--text-muted); flex-shrink: 0; }
+          .edu-hero-meta-row strong { color: var(--text-primary); font-weight: 700; }
+
+          /* Progress bar in sheet */
+          .edu-sheet-prog-wrap { display: flex; flex-direction: column; gap: 6px; }
+          .edu-sheet-prog-label {
+            display: flex; justify-content: space-between;
+            font-size: 11px; font-weight: 700; color: var(--text-secondary);
+          }
+          .edu-sheet-prog-track {
+            height: 6px; background: var(--border-color); border-radius: 3px; overflow: hidden;
+          }
+          .edu-sheet-prog-fill {
+            height: 100%; border-radius: 3px;
+          }
+
+          .dsheet-desc { font-size: 13.5px; line-height: 1.65; color: var(--text-secondary); margin: 0; }
+
+          .edu-detail-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+          .edu-detail-tag {
+            font-size: 11px; font-weight: 700; padding: 5px 11px; border-radius: 20px;
+            background: var(--bg-primary); border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+          }
+
+          .ps-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+          .ps-stat {
+            background: var(--bg-primary); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 11px 10px;
+            display: flex; flex-direction: column; align-items: center; gap: 2px;
+          }
+          .ps-stat-label { font-size: 9.5px; color: var(--text-muted); margin: 0; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+          .ps-stat-value { font-size: 18px; font-weight: 900; color: var(--text-primary); margin: 0; line-height: 1.1; }
 
           .mesh-gradient {
             position: absolute; width: 200%; height: 200%;
@@ -1028,7 +1075,12 @@ export default function Education() {
       {/* ── DETAIL SHEET (Mobile) ── */}
       {typeof document !== 'undefined' && createPortal(
         <AnimatePresence>
-          {selectedItem && (
+          {selectedItem && (() => {
+            const itemIndex = TIMELINE.indexOf(selectedItem);
+            const accents = ['#3b82f6', '#eab308', '#10b981', '#8b5cf6'];
+            const accent = accents[itemIndex % accents.length];
+            const { Icon } = selectedItem;
+            return (
             <div style={{ position: 'relative', zIndex: 9999 }}>
               <motion.div
                 className="dsheet-backdrop"
@@ -1038,7 +1090,7 @@ export default function Education() {
               <motion.div
                 className="dsheet"
                 initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-                transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
+                transition={{ type: 'spring', damping: 26, stiffness: 280 }}
                 drag="y"
                 dragConstraints={{ top: 0, bottom: 0 }}
                 dragElastic={{ top: 0, bottom: 0.4 }}
@@ -1046,10 +1098,16 @@ export default function Education() {
               >
                 <div className="dsheet-handle" />
 
+                {/* Header with accent icon */}
                 <div className="dsheet-header">
-                  <div className="dsheet-title">
-                    <h3>{selectedItem.title}</h3>
-                    <p>{selectedItem.institution}</p>
+                  <div className="dsheet-header-left">
+                    <div className="dsheet-header-icon" style={{ background: accent + '18', color: accent, border: `1px solid ${accent}30` }}>
+                      <Icon size={22} />
+                    </div>
+                    <div className="dsheet-title">
+                      <h3>{selectedItem.title}</h3>
+                      <p>{selectedItem.institution}</p>
+                    </div>
                   </div>
                   <button className="dsheet-close" onClick={() => setSelectedItem(null)}>
                     <X size={16} />
@@ -1062,21 +1120,82 @@ export default function Education() {
                   onScroll={(e) => { if (e.target.scrollTop > 10 && !sheetScrolled) setSheetScrolled(true); }}
                 >
                   <div className="dsheet-content">
-                    <div className="dsheet-image">
-                      <div className="mesh-gradient" />
-                      <selectedItem.Icon size={56} className="dsheet-image-icon" />
-                    </div>
-                    
-                    <p className="dsheet-desc">{selectedItem.description}</p>
-                    
-                    <div className="ps-stats">
-                      {selectedItem.backStats.map(stat => (
-                        <div key={stat.label} className="ps-stat">
-                          <p className="ps-stat-label">{stat.label}</p>
-                          <p className="ps-stat-value">{stat.value}</p>
+
+                    {/* Hero card */}
+                    <div className="edu-hero-card">
+                      <div className="edu-hero-icon-wrap" style={{ border: `1px solid ${accent}30` }}>
+                        <div className="edu-hero-icon-bg" style={{ background: `linear-gradient(135deg, ${accent}20, ${accent}08)` }} />
+                        <Icon size={34} style={{ color: accent, position: 'relative', zIndex: 1 }} />
+                      </div>
+                      <div className="edu-hero-meta">
+                        <div className="edu-hero-meta-row">
+                          <MapPin size={13} />
+                          <span><strong>{selectedItem.location}</strong></span>
                         </div>
-                      ))}
+                        <div className="edu-hero-meta-row">
+                          <School size={13} />
+                          <span><strong>{selectedItem.year}</strong></span>
+                        </div>
+                        {selectedItem.score && (
+                          <div className="edu-hero-meta-row">
+                            <Trophy size={13} />
+                            <span><strong style={{ color: accent }}>{selectedItem.score}</strong></span>
+                          </div>
+                        )}
+                      </div>
                     </div>
+
+                    {/* Animated performance bar */}
+                    {selectedItem.progress && (
+                      <div>
+                        <p className="dsheet-section-label">Performance</p>
+                        <div className="edu-sheet-prog-wrap">
+                          <div className="edu-sheet-prog-label">
+                            <span>Score</span>
+                            <span style={{ color: accent, fontWeight: 800 }}>{selectedItem.progress}%</span>
+                          </div>
+                          <div className="edu-sheet-prog-track">
+                            <motion.div
+                              className="edu-sheet-prog-fill"
+                              style={{ background: `linear-gradient(90deg, ${accent}, ${accent}aa)` }}
+                              initial={{ width: 0 }}
+                              animate={{ width: `${selectedItem.progress}%` }}
+                              transition={{ duration: 1.2, delay: 0.15, ease: 'easeOut' }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Stats grid */}
+                    <div>
+                      <p className="dsheet-section-label">At a Glance</p>
+                      <div className="ps-stats">
+                        {selectedItem.backStats.map(stat => (
+                          <div key={stat.label} className="ps-stat">
+                            <p className="ps-stat-label">{stat.label}</p>
+                            <p className="ps-stat-value" style={{ color: accent }}>{stat.value}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Description */}
+                    <div>
+                      <p className="dsheet-section-label">About</p>
+                      <p className="dsheet-desc">{selectedItem.description}</p>
+                    </div>
+
+                    {/* Highlights */}
+                    <div>
+                      <p className="dsheet-section-label">Highlights</p>
+                      <div className="edu-detail-tags">
+                        {selectedItem.highlights.map(h => (
+                          <span key={h} className="edu-detail-tag" style={{ color: accent, borderColor: accent + '30', background: accent + '10' }}>{h}</span>
+                        ))}
+                      </div>
+                    </div>
+
                   </div>
 
                   <AnimatePresence>
@@ -1092,7 +1211,8 @@ export default function Education() {
                 </div>
               </motion.div>
             </div>
-          )}
+            );
+          })()}
         </AnimatePresence>,
         document.body
       )}

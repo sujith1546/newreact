@@ -148,29 +148,37 @@ export default function Certifications() {
           
           .mcert-chevron { color: var(--text-muted); flex-shrink: 0; margin-top: 2px; }
           
-          /* ============ ANIMATED DETAIL SHEET ============ */
+          /* ============ PREMIUM DETAIL SHEET ============ */
           .dsheet-backdrop {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 10000;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,.65);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            z-index: 10000;
           }
-          [data-theme="dark"] .dsheet-backdrop { background: rgba(0,0,0,0.7); }
           .dsheet {
             position: fixed; left: 0; right: 0; bottom: 0; z-index: 10001;
-            background: var(--bg-primary); border-radius: 28px 28px 0 0;
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.15); display: flex; flex-direction: column;
-            max-height: 85vh; max-height: 85dvh;
+            background: var(--bg-secondary); border-radius: 28px 28px 0 0;
+            box-shadow: 0 -20px 60px rgba(0,0,0,.25), 0 -1px 0 rgba(255,255,255,.06);
+            display: flex; flex-direction: column;
+            max-height: 86vh; max-height: 86dvh;
           }
           .dsheet-handle {
-            width: 40px; height: 4px; border-radius: 2px; background: var(--border-color);
-            margin: 14px auto 0 auto; flex-shrink: 0;
+            width: 36px; height: 4px; border-radius: 2px; background: var(--border-color);
+            margin: 12px auto 0 auto; flex-shrink: 0;
           }
           .dsheet-header {
-            display: flex; align-items: flex-start; justify-content: space-between;
-            padding: 16px 20px 14px; border-bottom: 1px solid var(--border-color); flex-shrink: 0;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 16px 18px 14px; border-bottom: 1px solid var(--border-color); flex-shrink: 0;
           }
-          .dsheet-title h3 { font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0 0 6px 0; line-height: 1.25; letter-spacing: -0.02em; }
-          .dsheet-title p { font-size: 11px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; letter-spacing: 0.06em; margin: 0; }
+          .dsheet-header-left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+          .dsheet-header-icon {
+            width: 44px; height: 44px; border-radius: 14px; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+          }
+          .dsheet-title h3 { font-size: 16px; font-weight: 800; color: var(--text-primary); margin: 0 0 2px; letter-spacing: -.02em; line-height: 1.25; }
+          .dsheet-title p { font-size: 11px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; letter-spacing: .06em; margin: 0; }
           .dsheet-close {
-            width: 32px; height: 32px; border-radius: 16px; background: var(--bg-secondary);
+            width: 30px; height: 30px; border-radius: 15px; background: var(--bg-primary);
             border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center;
             color: var(--text-secondary); cursor: pointer; flex-shrink: 0;
           }
@@ -178,28 +186,63 @@ export default function Certifications() {
             flex: 1; overflow-y: auto; padding: 0; display: flex; flex-direction: column; position: relative;
           }
           .dsheet-body::-webkit-scrollbar { display: none; }
-          .dsheet-content { padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+          .dsheet-content { padding: 18px; display: flex; flex-direction: column; gap: 16px; padding-bottom: 32px; }
           
-          .dsheet-image {
-            width: 100%; height: 160px; border-radius: 16px; overflow: hidden; position: relative;
-            background: linear-gradient(135deg, #e0e7ff 0%, #fef08a 100%);
+          .dsheet-section-label {
+            font-size: 10px; font-weight: 800; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: .1em; margin: 0 0 8px;
+          }
+
+          /* Hero credential card — 3-col stats like Skill Detail */
+          .cert-hero-card {
+            display: flex; align-items: center; gap: 16px; padding: 16px;
+            background: var(--bg-primary); border: 1px solid var(--border-color);
+            border-radius: 16px;
+          }
+          .cert-hero-badge {
+            width: 72px; height: 72px; border-radius: 20px; flex-shrink: 0;
             display: flex; align-items: center; justify-content: center;
-            border: 1px solid rgba(0,0,0,0.05);
+            position: relative; overflow: hidden;
           }
-          [data-theme="dark"] .dsheet-image { background: linear-gradient(135deg, #1e1b4b 0%, #713f12 100%); border-color: rgba(255,255,255,0.05); }
-          .dsheet-image-icon { color: rgba(0,0,0,0.4); z-index: 1; }
-          [data-theme="dark"] .dsheet-image-icon { color: rgba(255,255,255,0.7); }
+          .cert-hero-badge-bg {
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(59,130,246,.15), rgba(234,179,8,.1));
+          }
+          .cert-hero-badge svg { position: relative; z-index: 1; }
+          .cert-hero-meta { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+          .cert-hero-meta-row { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text-secondary); }
+          .cert-hero-meta-row svg { color: var(--text-muted); flex-shrink: 0; }
+          .cert-hero-meta-row strong { color: var(--text-primary); font-weight: 700; }
+
+          .dsheet-image {
+            width: 100%; height: 140px; border-radius: 16px; overflow: hidden; position: relative;
+            background: linear-gradient(135deg, #1e1b4b 0%, #713f12 100%);
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid rgba(255,255,255,.06);
+          }
+          [data-theme=\"light\"] .dsheet-image { background: linear-gradient(135deg, #e0e7ff 0%, #fef08a 100%); border-color: rgba(0,0,0,.04); }
+          .dsheet-image-icon { color: rgba(255,255,255,0.5); z-index: 1; }
+          [data-theme=\"light\"] .dsheet-image-icon { color: rgba(0,0,0,0.3); }
           
-          .dsheet-desc { font-size: 14.5px; color: var(--text-secondary); line-height: 1.6; margin: 0; }
+          .dsheet-desc { font-size: 13.5px; color: var(--text-secondary); line-height: 1.65; margin: 0; }
           
+          .cert-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+          .cert-detail-tag {
+            font-size: 11px; font-weight: 700; padding: 5px 11px; border-radius: 20px;
+            background: var(--bg-primary); border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+          }
+
           .dsheet-action {
-            width: 100%; height: 50px; border-radius: 14px;
-            background: var(--bg-secondary); border: 1px solid var(--border-color);
+            width: 100%; height: 50px; border-radius: 16px;
+            background: linear-gradient(135deg, var(--primary-blue) 0%, #0056b3 100%);
+            color: #fff; border: none;
             display: flex; align-items: center; justify-content: center; gap: 8px;
-            font-size: 14px; font-weight: 700; color: var(--text-primary); text-decoration: none;
-            transition: background 0.2s, border-color 0.2s;
+            font-size: 14px; font-weight: 700; text-decoration: none;
+            box-shadow: 0 4px 15px rgba(0,123,255,.25);
+            transition: opacity 0.2s;
           }
-          .dsheet-action:hover { background: var(--bg-primary); border-color: var(--primary-blue); }
+          .dsheet-action:hover { opacity: 0.9; }
 
           .dsheet-scroll-hint {
             position: absolute; bottom: 0; left: 0; right: 0; height: 70px;
@@ -208,6 +251,7 @@ export default function Certifications() {
             pointer-events: none; color: var(--text-secondary); z-index: 100;
           }
         }
+
       `}</style>
 
       <div className="certs-header">
@@ -284,7 +328,11 @@ export default function Certifications() {
       {/* ── DETAIL SHEET (Mobile) ── */}
       {typeof document !== 'undefined' && createPortal(
         <AnimatePresence>
-          {selectedCert && (
+          {selectedCert && (() => {
+            const certIndex = certificationsData.indexOf(selectedCert);
+            const accents = ['#3b82f6', '#eab308', '#10b981', '#8b5cf6'];
+            const accent = accents[certIndex % accents.length];
+            return (
             <div style={{ position: 'relative', zIndex: 9999 }}>
               <motion.div
                 className="dsheet-backdrop"
@@ -294,7 +342,7 @@ export default function Certifications() {
               <motion.div
                 className="dsheet"
                 initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-                transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
+                transition={{ type: 'spring', damping: 26, stiffness: 280 }}
                 drag="y"
                 dragConstraints={{ top: 0, bottom: 0 }}
                 dragElastic={{ top: 0, bottom: 0.4 }}
@@ -302,10 +350,16 @@ export default function Certifications() {
               >
                 <div className="dsheet-handle" />
 
+                {/* Header with accent icon */}
                 <div className="dsheet-header">
-                  <div className="dsheet-title">
-                    <h3>{selectedCert.title}</h3>
-                    <p>{selectedCert.issuer}</p>
+                  <div className="dsheet-header-left">
+                    <div className="dsheet-header-icon" style={{ background: accent + '18', color: accent, border: `1px solid ${accent}30` }}>
+                      <Award size={22} />
+                    </div>
+                    <div className="dsheet-title">
+                      <h3>{selectedCert.title}</h3>
+                      <p>{selectedCert.issuer}</p>
+                    </div>
                   </div>
                   <button className="dsheet-close" onClick={() => setSelectedCert(null)}>
                     <X size={16} />
@@ -318,15 +372,48 @@ export default function Certifications() {
                   onScroll={(e) => { if (e.target.scrollTop > 10 && !sheetScrolled) setSheetScrolled(true); }}
                 >
                   <div className="dsheet-content">
-                    <div className="dsheet-image">
-                      <div className="mesh-gradient" />
-                      <Award size={56} className="dsheet-image-icon" />
+
+                    {/* Hero Credential Card */}
+                    <div className="cert-hero-card">
+                      <div className="cert-hero-badge" style={{ border: `1px solid ${accent}30` }}>
+                        <div className="cert-hero-badge-bg" style={{ background: `linear-gradient(135deg, ${accent}20, ${accent}08)` }} />
+                        <Award size={36} style={{ color: accent, position: 'relative', zIndex: 1 }} />
+                      </div>
+                      <div className="cert-hero-meta">
+                        <div className="cert-hero-meta-row">
+                          <ShieldCheck size={13} />
+                          <span>Issued by <strong>{selectedCert.issuer}</strong></span>
+                        </div>
+                        <div className="cert-hero-meta-row">
+                          <Award size={13} />
+                          <span>Year <strong>{selectedCert.date}</strong></span>
+                        </div>
+                        <div className="cert-hero-meta-row">
+                          <ExternalLink size={13} />
+                          <span>Verified <strong style={{ color: '#10b981' }}>Credential</strong></span>
+                        </div>
+                      </div>
                     </div>
 
-                    <p className="dsheet-desc">{selectedCert.description}</p>
-                    
-                    <a href={selectedCert.credentialUrl} target="_blank" rel="noreferrer" className="dsheet-action">
-                      Verify Credential <ExternalLink size={16} />
+                    {/* Description */}
+                    <div>
+                      <p className="dsheet-section-label">About</p>
+                      <p className="dsheet-desc">{selectedCert.description}</p>
+                    </div>
+
+                    {/* Domain tags */}
+                    <div>
+                      <p className="dsheet-section-label">Domain</p>
+                      <div className="cert-tags">
+                        {['Machine Learning', 'Deep Learning', 'AI'].map(tag => (
+                          <span key={tag} className="cert-detail-tag" style={{ color: accent, borderColor: accent + '30', background: accent + '10' }}>{tag}</span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Verify button */}
+                    <a href={selectedCert.credentialUrl} target="_blank" rel="noreferrer" className="dsheet-action" style={{ background: `linear-gradient(135deg, ${accent} 0%, ${accent}cc 100%)` }}>
+                      <ShieldCheck size={18} /> Verify Credential
                     </a>
                   </div>
 
@@ -343,7 +430,8 @@ export default function Certifications() {
                 </div>
               </motion.div>
             </div>
-          )}
+            );
+          })()}
         </AnimatePresence>,
         document.body
       )}
