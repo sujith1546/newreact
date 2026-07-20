@@ -10,7 +10,14 @@ export const projectsData = [
     featured: true,
     stats: [
       { label: "Requests/hr", value: 600, suffix: "+" },
-      { label: "Latency", value: 2, prefix: "<", suffix: "s" }
+      { label: "Latency", value: 2, prefix: "<", suffix: "s" },
+      { label: "Term KB", value: 200, suffix: "+" }
+    ],
+    pipeline: [
+      { label: "sms input", iconName: "MessageSquare" },
+      { label: "RAG + Gemini", iconName: "Database" },
+      { label: "fraud check", iconName: "ShieldCheck" },
+      { label: "insights", iconName: "TrendingUp" }
     ],
     architecture: ["SMS", "PII mask", "ChromaDB", "Gemini"],
     code: `results = collection.query(\n    query_texts=[sms_text],\n    n_results=5\n)`
@@ -28,6 +35,12 @@ export const projectsData = [
       { label: "Accuracy", value: 87, suffix: "%" },
       { label: "Articles", value: 20, suffix: "k+" }
     ],
+    pipeline: [
+      { label: "news input", iconName: "Newspaper" },
+      { label: "FinBERT", iconName: "Brain" },
+      { label: "attention masking", iconName: "Eye" },
+      { label: "sentiment output", iconName: "Smile" }
+    ],
     architecture: ["News text", "Tokenize", "FinBERT", "Sentiment"],
     code: `inputs = tokenizer(text, return_tensors="pt")\noutputs = model(**inputs)`
   },
@@ -43,6 +56,12 @@ export const projectsData = [
     stats: [
       { label: "R2 score", value: 0.883, decimals: 3 },
       { label: "Transactions", value: 397, suffix: "k+" }
+    ],
+    pipeline: [
+      { label: "transactions", iconName: "Receipt" },
+      { label: "feature engineering", iconName: "Sliders" },
+      { label: "model ensemble", iconName: "Layers" },
+      { label: "30-day prediction", iconName: "TrendingUp" }
     ],
     architecture: ["Transactions", "RFM features", "XGBoost/LightGBM", "30-day spend"],
     code: `model = xgb.XGBRegressor()\nmodel.fit(X_train, y_train)`

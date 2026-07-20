@@ -1,11 +1,47 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import ScrollReveal from '../components/ScrollReveal';
-import { ExternalLink, Code2, X, ChevronRight, ChevronDown, Star } from 'lucide-react';
-import { FaGithub } from 'react-icons/fa';
+import { 
+  ExternalLink, Code2, X, ChevronRight, ChevronDown, Star,
+  MessageSquare, Database, ShieldCheck, TrendingUp,
+  Newspaper, Brain, Eye, Smile, Receipt, Sliders, Layers,
+  Sparkles, Layout, Cpu, Trees, ArrowRight
+} from 'lucide-react';
+import { FaGithub, FaPython, FaReact } from 'react-icons/fa';
 import { projectsData } from '../data/projectsData';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLongPress } from '../hooks/useLongPress';
+
+const pipelineIconMap = {
+  MessageSquare: MessageSquare,
+  Database: Database,
+  ShieldCheck: ShieldCheck,
+  TrendingUp: TrendingUp,
+  Newspaper: Newspaper,
+  Brain: Brain,
+  Eye: Eye,
+  Smile: Smile,
+  Receipt: Receipt,
+  Sliders: Sliders,
+  Layers: Layers
+};
+
+const tagIconMap = {
+  "Python": FaPython,
+  "TensorFlow": Cpu,
+  "Scikit-learn": Sliders,
+  "React": FaReact,
+  "FastAPI": Cpu,
+  "Streamlit": Layout,
+  "ChromaDB": Database,
+  "Gemini API": Sparkles,
+  "RAG": Database,
+  "NLP": Brain,
+  "Machine Learning": Brain,
+  "LightGBM": Sliders,
+  "XGBoost": Sliders,
+  "Random Forest": Trees
+};
 
 /* ─── Count-up hook ──────────────────────────────────────────── */
 function useCountUp(target, decimals = 0, active = false) {
@@ -466,6 +502,124 @@ export default function Projects() {
             display: flex; justify-content: center; align-items: flex-end; padding-bottom: 12px;
             pointer-events: none; color: var(--text-secondary); z-index: 100;
           }
+
+          /* Pipeline Visual Styles */
+          .ps-pipeline {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 16px 12px;
+            margin-bottom: 8px;
+          }
+          .ps-pipeline-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            text-align: center;
+            min-width: 0;
+          }
+          .ps-pipeline-icon-box {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+          }
+          .ps-pipeline-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: lowercase;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+          }
+          .ps-pipeline-arrow {
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: bold;
+            margin: 0 4px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            opacity: 0.7;
+          }
+
+          /* Hairline Stats Styles */
+          .ps-stats-new {
+            display: flex;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 16px;
+            margin-bottom: 8px;
+          }
+          .ps-stat-new {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 0 12px;
+          }
+          .ps-stat-new:not(:first-child) {
+            border-left: 1px solid var(--border-color);
+          }
+          .ps-stat-new-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            margin: 0;
+          }
+          .ps-stat-new-value {
+            font-size: 20px;
+            font-weight: 900;
+            color: var(--text-primary);
+            margin: 0;
+            letter-spacing: -.03em;
+            line-height: 1.1;
+          }
+
+          /* Segmented Tabs Styles */
+          .ps-tabs-segmented {
+            display: inline-flex;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 3px;
+            margin-bottom: 12px;
+            width: fit-content;
+          }
+          .ps-tab-segmented {
+            border: none;
+            background: transparent;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-secondary);
+          }
+          .ps-tab-segmented-active {
+            background: var(--bg-secondary);
+            box-shadow: 0 0 0 0.5px var(--border-color), 0 2px 4px rgba(0,0,0,0.04);
+            color: var(--text-primary);
+            font-weight: 700;
+          }
         }
       `}</style>
 
@@ -527,18 +681,41 @@ export default function Projects() {
                   onScroll={e => { if (e.target.scrollTop > 10 && !sheetScrolled) setSheetScrolled(true); }}
                 >
                   <div className="dsheet-content">
-                    {/* Cover image */}
-                    <div className="dsheet-image">
-                      <div className="mesh-gradient" />
-                      {selectedProject.image
-                        ? <img src={selectedProject.image} alt={selectedProject.title} style={{ width: '100%', height: '100%', objectFit: 'cover', zIndex: 1, position: 'relative' }} />
-                        : <Code2 size={48} className="project-image-icon" style={{ zIndex: 1, position: 'relative' }} />}
-                    </div>
+                    {/* Pipeline visual */}
+                    {selectedProject.pipeline && (
+                      <div className="ps-pipeline">
+                        {selectedProject.pipeline.map((step, i) => {
+                          const StepIcon = pipelineIconMap[step.iconName] || Code2;
+                          return (
+                            <React.Fragment key={step.label}>
+                              <div className="ps-pipeline-step">
+                                <div className="ps-pipeline-icon-box" style={{ borderColor: accent+'30', color: accent }}>
+                                  <StepIcon size={16} />
+                                </div>
+                                <div className="ps-pipeline-label">{step.label}</div>
+                              </div>
+                              {i < selectedProject.pipeline.length - 1 && (
+                                <span className="ps-pipeline-arrow">&rarr;</span>
+                              )}
+                            </React.Fragment>
+                          );
+                        })}
+                      </div>
+                    )}
 
                     {/* Stats */}
                     {selectedProject.stats && (
-                      <div className="ps-stats">
-                        {selectedProject.stats.map(s => <StatCard key={s.label} stat={s} active={!!selectedProject} />)}
+                      <div className="ps-stats-new">
+                        {selectedProject.stats.map(s => (
+                          <div key={s.label} className="ps-stat-new">
+                            <p className="ps-stat-new-value">
+                              {s.prefix}
+                              {s.value}
+                              {s.suffix}
+                            </p>
+                            <p className="ps-stat-new-label">{s.label}</p>
+                          </div>
+                        ))}
                       </div>
                     )}
 
@@ -548,9 +725,13 @@ export default function Projects() {
                       if (selectedProject.architecture) tabs.push('architecture');
                       if (selectedProject.code) tabs.push('code');
                       return tabs.length > 1 && (
-                        <div className="ps-tabs">
+                        <div className="ps-tabs-segmented">
                           {tabs.map(t => (
-                            <button key={t} className={`ps-tab${tab === t ? ' ps-tab-active' : ''}`} onClick={() => setTab(t)}>
+                            <button 
+                              key={t} 
+                              className={`ps-tab-segmented${tab === t ? ' ps-tab-segmented-active' : ''}`} 
+                              onClick={() => setTab(t)}
+                            >
                               {t[0].toUpperCase() + t.slice(1)}
                             </button>
                           ))}
@@ -565,7 +746,15 @@ export default function Projects() {
                         <div>
                           <p className="dsheet-section-label">Stack</p>
                           <div className="ps-tags">
-                            {selectedProject.tags.map(tag => <span key={tag} className="ps-tag">{tag}</span>)}
+                            {selectedProject.tags.map(tag => {
+                              const TagIcon = tagIconMap[tag];
+                              return (
+                                <span key={tag} className="ps-tag" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                                  {TagIcon && <TagIcon size={12} style={{ opacity: 0.8 }} />}
+                                  {tag}
+                                </span>
+                              );
+                            })}
                           </div>
                         </div>
                       </>
