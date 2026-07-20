@@ -972,11 +972,12 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
                   onClick={() => setIsHelpOpen(false)}
                   whileTap={{ scale: 0.96 }}
                   style={{ 
-                    width: '100%', padding: '14px',
-                    background: 'var(--primary-blue)',
-                    color: '#fff', borderRadius: '16px', fontWeight: 700, fontSize: '14px',
-                    border: 'none', cursor: 'pointer', letterSpacing: '-0.01em',
-                    marginTop: '20px'
+                    width: '100%', padding: '16px',
+                    background: 'var(--bg-primary)',
+                    color: 'var(--text-primary)', borderRadius: '18px', fontWeight: 700, fontSize: '14.5px',
+                    border: '1px solid var(--border-color)', cursor: 'pointer', letterSpacing: '-0.01em',
+                    marginTop: 'auto',
+                    boxShadow: '0 2px 10px rgba(0,0,0,0.03)'
                   }}
                 >
                   Got it, let's explore!
