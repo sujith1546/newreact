@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, MapPin, Mail, School, Check, Copy, FileText, Briefcase, Award } from 'lucide-react';
+import { X, MapPin, Mail, School, Check, Copy, FileText, Briefcase, Award, ChevronDown } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer } from 'recharts';
 import { useTheme } from '../context/ThemeContext';
@@ -117,6 +117,28 @@ function SkillRadar() {
 // Main AdvancedProfile component
 export default function AdvancedProfile({ isOpen, onClose, playSound, triggerEvent, handleExploreClick }) {
   const [copiedEmail, setCopiedEmail] = useState(false);
+  const [hasScrolled, setHasScrolled] = useState(false);
+  const [isScrollable, setIsScrollable] = useState(false);
+  const scrollAreaRef = useRef(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setHasScrolled(false);
+      setIsScrollable(false);
+      setTimeout(() => {
+        if (scrollAreaRef.current) {
+          const { scrollHeight, clientHeight } = scrollAreaRef.current;
+          setIsScrollable(scrollHeight > clientHeight + 5);
+        }
+      }, 300);
+    }
+  }, [isOpen]);
+
+  const handleScroll = (e) => {
+    if (e.target.scrollTop > 10 && !hasScrolled) {
+      setHasScrolled(true);
+    }
+  };
 
   const handleCopyEmail = () => {
     playSound();
@@ -162,7 +184,12 @@ export default function AdvancedProfile({ isOpen, onClose, playSound, triggerEve
               </button>
             </div>
             
-            <div className="drawer-scroll-area" style={{ padding: '0', display: 'flex', flexDirection: 'column' }}>
+            <div 
+              className="drawer-scroll-area" 
+              style={{ padding: '0', display: 'flex', flexDirection: 'column', position: 'relative' }}
+              ref={scrollAreaRef}
+              onScroll={handleScroll}
+            >
               
               <TerminalBanner />
               
@@ -266,6 +293,31 @@ export default function AdvancedProfile({ isOpen, onClose, playSound, triggerEve
               </div>
               
             </div>
+
+            <AnimatePresence>
+              {isScrollable && !hasScrolled && (
+                <div 
+                  className="profile-scroll-hint"
+                  style={{
+                    position: 'absolute', bottom: 0, left: 0, right: 0,
+                    height: '70px',
+                    background: 'linear-gradient(to top, var(--bg-secondary) 30%, transparent)',
+                    display: 'flex', justifyContent: 'center',
+                    alignItems: 'flex-end', paddingBottom: '12px',
+                    pointerEvents: 'none', color: 'var(--text-secondary)', zIndex: 100
+                  }}
+                >
+                  <motion.div 
+                    animate={{ y: [0, 6, 0] }} 
+                    transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }} 
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+                  >
+                    <span style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '.05em', textTransform: 'uppercase', marginBottom: '2px' }}>Scroll</span>
+                    <ChevronDown size={16} />
+                  </motion.div>
+                </div>
+              )}
+            </AnimatePresence>
           </motion.div>
         </>
       )}
