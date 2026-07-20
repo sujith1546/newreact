@@ -217,6 +217,7 @@ export default function WhatsNewPanel({ open, onClose, releases = [] }) {
               .wn-sheet {
                 position: fixed; bottom: 0; left: 0; right: 0; z-index: 10001;
                 background: var(--bg-secondary); border-radius: 28px 28px 0 0;
+                will-change: transform; transform: translateZ(0); backface-visibility: hidden;
                 box-shadow: 0 -10px 50px rgba(0,0,0,0.15); display: flex; flex-direction: column;
                 max-height: 86vh; max-height: 86dvh;
               }

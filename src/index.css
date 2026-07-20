@@ -2525,13 +2525,14 @@ html {
      UNIFIED SLIDE-UP DRAWER SYSTEM
      All panels share these base tokens for visual consistency
      ═══════════════════════════════════════════════════════ */
-
   /* ── Backdrop ── */
   .more-overlay-backdrop {
     position: fixed; inset: 0;
     background: rgba(0, 0, 0, 0.55);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
+    will-change: opacity, backdrop-filter;
+    transform: translateZ(0);
     z-index: 100;
   }
 
@@ -2545,6 +2546,9 @@ html {
     border-top-left-radius: 28px;
     border-top-right-radius: 28px;
     z-index: 101;
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
     box-shadow: 0 -12px 48px rgba(0, 0, 0, 0.18);
     box-sizing: border-box;
     display: flex; flex-direction: column;
