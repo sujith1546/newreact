@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import ScrollReveal from '../components/ScrollReveal';
 import { 
@@ -187,6 +187,10 @@ export default function Projects() {
   const [contextMenuProject, setContextMenuProject] = useState(null);
   const detailsSheetRef = useRef(null);
   const sheetContentRef = useRef(null);
+
+  const accent = selectedProject 
+    ? (projectAccents[projectsData.indexOf(selectedProject) % projectAccents.length] || '#3b82f6')
+    : '#3b82f6';
 
   useEffect(() => {
     if (selectedProject) {
@@ -649,7 +653,6 @@ export default function Projects() {
 
                 {/* Header */}
                 {(() => {
-                  const accent = projectAccents[(projectsData.indexOf(selectedProject)) % projectAccents.length] || '#3b82f6';
                   const initials = selectedProject.title.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
                   return (
                     <div className="dsheet-header">
