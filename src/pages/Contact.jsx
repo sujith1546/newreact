@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence, useAnimation, useMotionValue, useTransform } from "framer-motion";
-import { Mail, Phone, ArrowRight, Check, Loader2, Send, Copy, ChevronRight } from "lucide-react";
+import { Mail, Phone, ArrowRight, Check, Loader2, Send, Copy, ChevronRight, MapPin, Clock, FileText, X, Contact as ContactIcon } from "lucide-react";
 import { FaGithub, FaLinkedin } from "react-icons/fa";
 import ScrollReveal from '../components/ScrollReveal';
 import { useIsland } from '../context/IslandContext';
@@ -89,6 +90,37 @@ export default function Contact() {
   const [status, setStatus] = useState("idle");
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
   const [emailCopied, setEmailCopied] = useState(false);
+  const [isContactCardOpen, setIsContactCardOpen] = useState(false);
+
+  const handleSaveContact = () => {
+    const vCard = `BEGIN:VCARD
+VERSION:3.0
+N:Reddy;Thota Sujith;;;
+FN:Thota Sujith Reddy
+TITLE:Software Engineer
+EMAIL;TYPE=INTERNET:${email}
+TEL;TYPE=CELL:${phone}
+URL:https://github.com/sujith1546
+END:VCARD`;
+
+    const blob = new Blob([vCard], { type: "text/vcard" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "Thota_Sujith_Reddy.vcf";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    triggerIsland({
+      title: 'Contact Saved',
+      subtitle: 'vCard downloaded successfully',
+      icon: <Check size={18} strokeWidth={3} />,
+      color: '#10b981',
+      duration: 3000
+    });
+  };
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 900);
@@ -484,6 +516,82 @@ export default function Contact() {
           }
           .mc-success-title { font-size: 22px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px; letter-spacing: -0.02em; }
           .mc-success-sub { font-size: 14px; color: var(--text-secondary); margin: 0; line-height: 1.5; max-width: 260px; }
+
+          /* ========== DETAIL BOTTOM SHEET ========== */
+          .dsheet-backdrop {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,.65);
+            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            will-change: opacity, backdrop-filter; transform: translateZ(0);
+            z-index: 10000;
+          }
+          .dsheet {
+            position: fixed; left: 0; right: 0; bottom: 0; z-index: 10001;
+            background: var(--bg-secondary); border-radius: 28px 28px 0 0;
+            will-change: transform; transform: translateZ(0); backface-visibility: hidden;
+            box-shadow: 0 -20px 60px rgba(0,0,0,.25), 0 -1px 0 rgba(255,255,255,.06);
+            display: flex; flex-direction: column;
+            max-height: 86vh; max-height: 86dvh;
+          }
+          .dsheet-handle {
+            width: 36px; height: 4px; background: var(--border-color);
+            border-radius: 2px; margin: 12px auto 0; flex-shrink: 0;
+          }
+          .dsheet-header {
+            display: flex; align-items: flex-start; justify-content: space-between;
+            padding: 16px 18px 14px; border-bottom: 1px solid var(--border-color); flex-shrink: 0;
+          }
+          .dsheet-close {
+            width: 30px; height: 30px; border-radius: 15px;
+            background: var(--bg-primary); border: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-secondary); cursor: pointer; flex-shrink: 0;
+          }
+          .dsheet-body {
+            flex: 1; overflow-y: auto; display: flex; flex-direction: column; position: relative;
+          }
+          .dsheet-body::-webkit-scrollbar { display: none; }
+          .dsheet-content {
+            padding: 18px; display: flex; flex-direction: column; gap: 16px;
+            padding-bottom: 32px;
+          }
+          .dsheet-section-label {
+            font-size: 10px; font-weight: 800; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: .1em; margin: 0 0 8px;
+          }
+          .cc-header { display: flex; align-items: center; gap: 16px; margin-bottom: 8px; }
+          .cc-avatar { width: 60px; height: 60px; border-radius: 18px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; color: #fff; box-shadow: 0 4px 12px rgba(37,99,235,0.25); }
+          .cc-title h3 { font-size: 18px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px; line-height: 1.2; }
+          .cc-title p { font-size: 13px; color: var(--text-secondary); margin: 0; }
+          .cc-info-row { display: flex; align-items: center; gap: 12px; background: var(--bg-primary); padding: 12px 14px; border-radius: 14px; border: 1px solid var(--border-color); }
+          .cc-info-icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(59,130,246,0.1); color: #3b82f6; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+          [data-theme="dark"] .cc-info-icon { background: rgba(59,130,246,0.15); }
+          .cc-info-content { flex: 1; min-width: 0; }
+          .cc-info-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; margin: 0 0 2px; }
+          .cc-info-value { font-size: 14px; font-weight: 600; color: var(--text-primary); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          .cc-copy-btn { width: 32px; height: 32px; border-radius: 8px; background: var(--bg-secondary); border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; color: var(--text-secondary); cursor: pointer; flex-shrink: 0; }
+          .cc-social-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 8px; }
+          .cc-social-tile { display: flex; flex-direction: column; align-items: center; gap: 8px; background: var(--bg-primary); border: 1px solid var(--border-color); padding: 14px 10px; border-radius: 14px; text-decoration: none; color: var(--text-primary); }
+          .cc-social-tile:active { background: var(--bg-secondary); }
+          .cc-social-icon { font-size: 22px; color: var(--text-secondary); }
+          .cc-social-label { font-size: 11px; font-weight: 600; }
+          .cc-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+          .cc-btn { height: 46px; border-radius: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; font-weight: 700; outline: none; border: none; cursor: pointer; }
+          .cc-btn-sec { background: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border-color); }
+          .cc-btn-pri { background: var(--primary-blue); color: #fff; box-shadow: 0 4px 12px rgba(59,130,246,0.3); }
+
+          .mc-contact-card-btn {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            width: 100%; height: 50px; border-radius: 16px;
+            background: var(--bg-secondary); border: 1px solid var(--border-color);
+            color: var(--text-primary); font-size: 14.5px; font-weight: 600;
+            margin-bottom: 24px; outline: none; cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+          }
+          [data-theme="dark"] .mc-contact-card-btn {
+            background: var(--bg-primary);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+          }
         }
       `}</style>
 
@@ -585,6 +693,11 @@ export default function Contact() {
               </div>
             </div>
 
+            <button className="mc-contact-card-btn" onClick={() => setIsContactCardOpen(true)}>
+              <ContactIcon size={16} />
+              View contact card
+            </button>
+
             {/* Form / Success - No Glass Cards to save vertical space */}
             <AnimatePresence mode="wait" initial={false}>
               {status === "sent" ? (
@@ -647,6 +760,114 @@ export default function Contact() {
           </motion.div>
         )}
       </div>
+
+      {/* ── CONTACT CARD SHEET ── */}
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {isContactCardOpen && (
+            <div style={{ position: 'relative', zIndex: 9999 }}>
+              <motion.div
+                className="dsheet-backdrop"
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                onClick={() => setIsContactCardOpen(false)}
+              />
+              <motion.div
+                className="dsheet"
+                initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+                transition={{ type: 'spring', damping: 32, stiffness: 350, mass: 0.9 }}
+                drag="y"
+                dragConstraints={{ top: 0, bottom: 0 }}
+                dragElastic={{ top: 0, bottom: 0.4 }}
+                onDragEnd={(_, info) => { if (info.offset.y > 120 || info.velocity.y > 600) setIsContactCardOpen(false); }}
+              >
+                <div className="dsheet-handle" />
+                
+                <div className="dsheet-header">
+                  <div className="cc-header">
+                    <div className="cc-avatar">TS</div>
+                    <div className="cc-title">
+                      <h3>Thota Sujith Reddy</h3>
+                      <p>Software engineer · open to work</p>
+                    </div>
+                  </div>
+                  <button className="dsheet-close" onClick={() => setIsContactCardOpen(false)}>
+                    <X size={16} />
+                  </button>
+                </div>
+
+                <div className="dsheet-body">
+                  <div className="dsheet-content">
+                    
+                    {/* Quick Info */}
+                    <div>
+                      <div className="dsheet-section-label">contact info</div>
+                      
+                      <div className="cc-info-row" style={{ marginBottom: 8 }}>
+                        <div className="cc-info-icon"><Mail size={16} /></div>
+                        <div className="cc-info-content">
+                          <p className="cc-info-label">Email</p>
+                          <p className="cc-info-value">{email}</p>
+                        </div>
+                        <button className="cc-copy-btn" onClick={handleCopyEmail}>
+                          {emailCopied ? <Check size={14} color="#10b981" /> : <Copy size={14} />}
+                        </button>
+                      </div>
+
+                      <div className="cc-info-row" style={{ marginBottom: 8 }}>
+                        <div className="cc-info-icon"><MapPin size={16} /></div>
+                        <div className="cc-info-content">
+                          <p className="cc-info-label">Location</p>
+                          <p className="cc-info-value">India</p>
+                        </div>
+                      </div>
+
+                      <div className="cc-info-row">
+                        <div className="cc-info-icon"><Clock size={16} /></div>
+                        <div className="cc-info-content">
+                          <p className="cc-info-label">Typical response time</p>
+                          <p className="cc-info-value">Within a day</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Connect Section */}
+                    <div>
+                      <div className="dsheet-section-label">connect</div>
+                      <div className="cc-social-grid">
+                        <a href="https://github.com/sujith1546" target="_blank" rel="noreferrer" className="cc-social-tile">
+                          <FaGithub className="cc-social-icon" />
+                          <span className="cc-social-label">GitHub</span>
+                        </a>
+                        <a href="https://www.linkedin.com/in/sujith-reddy-thota/" target="_blank" rel="noreferrer" className="cc-social-tile">
+                          <FaLinkedin className="cc-social-icon" style={{ color: '#0a66c2' }} />
+                          <span className="cc-social-label">LinkedIn</span>
+                        </a>
+                        <button className="cc-social-tile" style={{ outline: 'none' }} onClick={() => { setIsContactCardOpen(false); window.dispatchEvent(new CustomEvent('open-resume')); }}>
+                          <FileText className="cc-social-icon" style={{ color: '#3b82f6' }} />
+                          <span className="cc-social-label">Resume</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="cc-actions">
+                      <button className="cc-btn cc-btn-sec" onClick={handleCopyEmail}>
+                        {emailCopied ? <Check size={16} color="#10b981" /> : <Copy size={16} />}
+                        {emailCopied ? 'Copied' : 'Copy email'}
+                      </button>
+                      <button className="cc-btn cc-btn-pri" onClick={handleSaveContact}>
+                        Save contact
+                      </button>
+                    </div>
+
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </ScrollReveal>
   );
 }
