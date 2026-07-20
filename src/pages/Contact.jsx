@@ -5,6 +5,17 @@ import { Mail, Phone, ArrowRight, Check, Loader2, Send, Copy, ChevronRight, MapP
 import { FaGithub, FaLinkedin } from "react-icons/fa";
 import ScrollReveal from '../components/ScrollReveal';
 import { useIsland } from '../context/IslandContext';
+const getSessionToken = () => {
+  if (typeof window === 'undefined') return '';
+  let token = sessionStorage.getItem('x-portfolio-session');
+  if (!token) {
+    const array = new Uint8Array(16);
+    crypto.getRandomValues(array);
+    token = Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+    sessionStorage.setItem('x-portfolio-session', token);
+  }
+  return token;
+};
 
 const shakeVariants = {
   shake: { x: [-4, 4, -4, 4, 0], transition: { duration: 0.35 } },
@@ -233,9 +244,14 @@ END:VCARD`;
       }
 
       // Production / Live backend call
+      const sessionToken = getSessionToken();
       const response = await fetch("/api/contact", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        headers: { 
+          "Content-Type": "application/json", 
+          "Accept": "application/json",
+          "x-portfolio-session": sessionToken
+        },
         body: JSON.stringify(form)
       });
 

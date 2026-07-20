@@ -1,13 +1,34 @@
 import nodemailer from "nodemailer";
 
+function escapeHTML(str) {
+  if (typeof str !== 'string') return '';
+  return str.replace(/[&<>"']/g, (m) => {
+    switch (m) {
+      case '&': return '&amp;';
+      case '<': return '&lt;';
+      case '>': return '&gt;';
+      case '"': return '&quot;';
+      case "'": return '&#039;';
+      default: return m;
+    }
+  });
+}
+
 export default async function handler(req, res) {
-  // Enable CORS
+  // Security 1: CORS Whitelist Constraints
+  const allowedOrigins = ["https://sujiththota.vercel.app", "http://localhost:5173", "http://localhost:3000", "http://localhost:3001"];
+  const origin = req.headers.origin;
+  const isAllowed = origin && (
+    allowedOrigins.includes(origin) || 
+    (origin.endsWith(".vercel.app") && origin.includes("sujith"))
+  );
+  
   res.setHeader("Access-Control-Allow-Credentials", true);
-  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Origin", isAllowed ? origin : "https://sujiththota.vercel.app");
   res.setHeader("Access-Control-Allow-Methods", "GET,OPTIONS,PATCH,DELETE,POST,PUT");
   res.setHeader(
     "Access-Control-Allow-Headers",
-    "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version"
+    "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, x-portfolio-session"
   );
 
   if (req.method === "OPTIONS") {
@@ -18,10 +39,22 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method Not Allowed" });
   }
 
+  // Security 2: Session Leasing Check
+  const sessionToken = req.headers['x-portfolio-session'];
+  if (!sessionToken || sessionToken.length < 16) {
+    return res.status(403).json({ error: "Invalid or missing session token. Unauthorized." });
+  }
+
   const { name, email, message } = req.body;
 
   if (!name || !email || !message) {
     return res.status(400).json({ error: "Missing required fields (name, email, message)" });
+  }
+
+  // Security 3: Validate Email Format Regex
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ error: "Invalid email address format" });
   }
 
   // Check if SMTP credentials exist
@@ -69,6 +102,11 @@ export default async function handler(req, res) {
         pass: smtpPass
       }
     });
+
+    // Escape HTML inputs for injection prevention
+    const safeName = escapeHTML(name);
+    const safeEmail = escapeHTML(email);
+    const safeMessage = escapeHTML(message).replace(/\n/g, "<br/>");
 
     // 3. Formulate the email body exactly like the user's template design
     const mailOptions = {
@@ -128,9 +166,9 @@ export default async function handler(req, res) {
                           </td>
                           <!-- Name / Email -->
                           <td style="padding-left: 10px; vertical-align: middle; text-align: left;">
-                            <div style="font-weight: 700; font-size: 14.5px; color: #0f172a; line-height: 1.2;">${name}</div>
+                            <div style="font-weight: 700; font-size: 14.5px; color: #0f172a; line-height: 1.2;">${safeName}</div>
                             <div style="font-size: 12.5px; color: #4f46e5; margin-top: 3px; word-break: break-all; -webkit-hyphens: auto; -ms-hyphens: auto; hyphens: auto;">
-                              <a href="mailto:${email}" style="color: #4f46e5; text-decoration: none; word-break: break-all;">${email}</a>
+                              <a href="mailto:${safeEmail}" style="color: #4f46e5; text-decoration: none; word-break: break-all;">${safeEmail}</a>
                             </div>
                           </td>
                           <!-- Date/Time (IST) -->
@@ -146,7 +184,7 @@ export default async function handler(req, res) {
                         <tr>
                           <td style="padding: 10px 14px; text-align: left;">
                             <div style="font-size: 9px; font-weight: bold; color: #9ca3af; letter-spacing: 0.08em; text-transform: uppercase;">Subject</div>
-                            <div style="font-size: 13.5px; font-weight: 700; color: #0f172a; margin-top: 3px;">${name} sent a message from your portfolio</div>
+                            <div style="font-size: 13.5px; font-weight: 700; color: #0f172a; margin-top: 3px;">${safeName} sent a message from your portfolio</div>
                           </td>
                         </tr>
                       </table>
@@ -166,7 +204,7 @@ export default async function handler(req, res) {
                             <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border: 1px solid #f3f4f6; border-radius: 12px; border-collapse: separate;">
                               <tr>
                                 <td style="padding: 14px 16px; font-size: 13px; line-height: 1.6; color: #374151; text-align: left;">
-                                  ${message.replace(/\n/g, "<br/>")}
+                                  ${safeMessage}
                                 </td>
                               </tr>
                             </table>
@@ -178,10 +216,10 @@ export default async function handler(req, res) {
                       <table border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 4px;">
                         <tr>
                           <td style="background-color: #0f172a; border-radius: 8px;">
-                            <a href="mailto:${email}?subject=Re:%20Portfolio%20contact" target="_blank" style="display: inline-block; padding: 10px 14px; color: #ffffff; font-size: 12.5px; font-weight: 600; text-decoration: none; font-family: inherit;">Reply to ${name.split(" ")[0]}</a>
+                            <a href="mailto:${safeEmail}?subject=Re:%20Portfolio%20contact" target="_blank" style="display: inline-block; padding: 10px 14px; color: #ffffff; font-size: 12.5px; font-weight: 600; text-decoration: none; font-family: inherit;">Reply to ${safeName.split(" ")[0]}</a>
                           </td>
                           <td style="padding-left: 10px;">
-                            <a href="mailto:${email}" style="display: inline-block; padding: 9px 14px; background-color: #ffffff; border: 1px solid #e5e7eb; color: #0f172a; font-size: 12.5px; font-weight: 600; text-decoration: none; border-radius: 8px; font-family: inherit;">Contact Direct</a>
+                            <a href="mailto:${safeEmail}" style="display: inline-block; padding: 9px 14px; background-color: #ffffff; border: 1px solid #e5e7eb; color: #0f172a; font-size: 12.5px; font-weight: 600; text-decoration: none; border-radius: 8px; font-family: inherit;">Contact Direct</a>
                           </td>
                         </tr>
                       </table>
