@@ -1,4 +1,6 @@
 import nodemailer from "nodemailer";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
 
 function escapeHTML(str) {
   if (typeof str !== 'string') return '';
@@ -12,6 +14,48 @@ function escapeHTML(str) {
       default: return m;
     }
   });
+}
+
+// Setup in-memory fallback rate limiter for contact form
+const contactLimitMap = new Map();
+const LIMIT_WINDOW = 5 * 60 * 1000; // 5 minutes
+const MAX_CONTACT_REQUESTS = 3; // Max 3 messages per 5 mins per IP
+
+function checkContactRateLimit(ip) {
+  const now = Date.now();
+  const record = contactLimitMap.get(ip);
+  if (!record) {
+    contactLimitMap.set(ip, { count: 1, firstRequest: now });
+    return true;
+  }
+  if (now - record.firstRequest > LIMIT_WINDOW) {
+    contactLimitMap.set(ip, { count: 1, firstRequest: now });
+    return true;
+  }
+  if (record.count >= MAX_CONTACT_REQUESTS) return false;
+  record.count += 1;
+  return true;
+}
+
+// Clean up memory
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, record] of contactLimitMap.entries()) {
+    if (now - record.firstRequest > LIMIT_WINDOW) contactLimitMap.delete(ip);
+  }
+}, LIMIT_WINDOW).unref?.();
+
+// Setup durable Upstash rate limiter
+let ratelimit = null;
+if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+  try {
+    ratelimit = new Ratelimit({
+      redis: Redis.fromEnv(),
+      limiter: Ratelimit.slidingWindow(3, "300 s"), // 3 messages per 5 minutes
+    });
+  } catch (err) {
+    console.warn("Could not construct Upstash Redis rate-limiter for contact, using memory fallback:", err);
+  }
 }
 
 export default async function handler(req, res) {
@@ -39,7 +83,20 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method Not Allowed" });
   }
 
-  // Security 2: Session Leasing Check
+  // Security 1.5: Rate Limiting check (Upstash or In-memory fallback)
+  const clientIp = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown';
+  if (ratelimit) {
+    const { success } = await ratelimit.limit(clientIp);
+    if (!success) {
+      return res.status(429).json({ error: "Too many requests. Please wait a few minutes." });
+    }
+  } else {
+    if (!checkContactRateLimit(clientIp)) {
+      return res.status(429).json({ error: "Too many contact attempts. Please wait a few minutes." });
+    }
+  }
+
+  // Security 2: Session Leasing Check (Note: client-side session tokens are bypassable by custom scripts)
   const sessionToken = req.headers['x-portfolio-session'];
   if (!sessionToken || sessionToken.length < 16) {
     return res.status(403).json({ error: "Invalid or missing session token. Unauthorized." });
@@ -51,7 +108,12 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Missing required fields (name, email, message)" });
   }
 
-  // Security 3: Validate Email Format Regex
+  // Security 3: Message length checks (Anti-abuse)
+  if (message.length > 2000) {
+    return res.status(400).json({ error: "Message too long. Keep it under 2000 characters." });
+  }
+
+  // Security 4: Validate Email Format Regex
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     return res.status(400).json({ error: "Invalid email address format" });

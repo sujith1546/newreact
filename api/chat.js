@@ -2,6 +2,8 @@ import "dotenv/config";
 import { readFile, writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
+import { Ratelimit } from "@upstash/ratelimit";
+import { Redis } from "@upstash/redis";
 
 const VOYAGE_MODEL = "voyage-3-lite"; // free-tier eligible, fast, good enough for a portfolio-sized knowledge base
 const GROQ_MODEL = "llama-3.3-70b-versatile";
@@ -302,7 +304,7 @@ function buildUserPrompt(retrievedChunks, question) {
 }
 
 // =============================================================================
-// RATE LIMITING & SECURITY (In-Memory for Warm Lambdas)
+// RATE LIMITING & SECURITY (Durable Upstash Redis + Stateful In-Memory Fallback)
 // =============================================================================
 const rateLimitMap = new Map();
 const RATE_LIMIT_WINDOW = 5 * 60 * 1000; // 5 minutes
@@ -332,6 +334,19 @@ setInterval(() => {
   }
 }, RATE_LIMIT_WINDOW).unref?.();
 
+// Setup durable Vercel-ready rate limiting
+let ratelimit = null;
+if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+  try {
+    ratelimit = new Ratelimit({
+      redis: Redis.fromEnv(),
+      limiter: Ratelimit.slidingWindow(10, "60 s"), // 10 requests per minute
+    });
+  } catch (err) {
+    console.warn("Could not construct Upstash Redis rate-limiter, using memory fallback:", err);
+  }
+}
+
 // =============================================================================
 // VERCEL SERVERLESS HANDLER — POST /api/chat
 // =============================================================================
@@ -340,13 +355,20 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  // Security 1: Rate Limiting
+  // Security 1: Rate Limiting (Upstash Redis or Stateful In-Memory Fallback)
   const clientIp = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown';
-  if (!checkRateLimit(clientIp)) {
-    return res.status(429).json({ error: "Too many requests. Please wait a few minutes." });
+  if (ratelimit) {
+    const { success } = await ratelimit.limit(clientIp);
+    if (!success) {
+      return res.status(429).json({ error: "Too many requests. Please wait a minute." });
+    }
+  } else {
+    if (!checkRateLimit(clientIp)) {
+      return res.status(429).json({ error: "Too many requests. Please wait a few minutes." });
+    }
   }
 
-  // Security 2: Session Leasing Check
+  // Security 2: Session Leasing Check (Note: client-side session tokens are bypassable by custom scripts)
   const sessionToken = req.headers['x-portfolio-session'];
   if (!sessionToken || sessionToken.length < 16) {
     return res.status(403).json({ error: "Invalid or missing session token. Unauthorized." });
@@ -356,6 +378,11 @@ export default async function handler(req, res) {
     const { message, history = [] } = req.body;
     if (!message || typeof message !== "string") {
       return res.status(400).json({ error: "Missing 'message' in request body" });
+    }
+
+    // Security 3: Input Length Cap to prevent prompt-injection / token inflation cost abuse
+    if (message.length > 2000) {
+      return res.status(400).json({ error: "Message too long. Keep it under 2000 characters." });
     }
 
     const standaloneQuestion = await rewriteQuery(history, message);
