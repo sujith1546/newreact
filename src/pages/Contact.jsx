@@ -47,7 +47,13 @@ const SwipeToSend = ({ onSend, status, isFormValid, triggerValidation }) => {
   const textOpacity = useTransform(x, [0, 120], [1, 0]);
 
   return (
-    <div className="swipe-send-container" ref={containerRef}>
+    <div 
+      className="swipe-send-container" 
+      ref={containerRef}
+      onTouchStart={(e) => e.stopPropagation()}
+      onTouchMove={(e) => e.stopPropagation()}
+      onTouchEnd={(e) => e.stopPropagation()}
+    >
       <motion.div className="swipe-send-bg" style={{ background: backgroundFill }} />
       <motion.div className="swipe-send-text" style={{ opacity: textOpacity }}>
         Swipe to send
