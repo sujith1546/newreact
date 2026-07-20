@@ -2317,6 +2317,9 @@ html {
   /* Make content layouts stack/adjust cleanly without zoom */
   .scroll-container {
     padding: 12px;
+    position: relative;
+    height: 100%;
+    box-sizing: border-box;
   }
 
   /* Make EVERY page look like a premium box just like the home page */

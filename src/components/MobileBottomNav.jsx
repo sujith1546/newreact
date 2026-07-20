@@ -9,6 +9,9 @@ import WhatsNewPanel from './WhatsNewPanel';
 import AdvancedProfile from './AdvancedProfile';
 import { updates } from '../data/updates';
 
+const sunPath = "M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z M12 2v2 M12 20v2 M4.93 4.93l1.41 1.41 M17.66 17.66l1.41 1.41 M2 12h2 M20 12h2 M6.34 17.66l-1.41 1.41 M19.07 4.93l-1.41 1.41";
+const moonPath = "M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z M12 2v0 M12 20v0 M4.93 4.93l0 0 M17.66 17.66l0 0 M2 12h0 M20 12h0 M6.34 17.66l0 0 M19.07 4.93l0 0";
+
 export default function MobileBottomNav({ activeSection, onNavClick }) {
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -205,11 +208,11 @@ END:VCARD`;
     }
   };
 
-  const handleDarkModeToggle = () => {
+  const handleDarkModeToggle = (e) => {
     playSound();
     const prev = theme;
     const next = theme === 'dark' ? 'light' : 'dark';
-    toggleTheme();
+    toggleTheme(e);
     announce('Dark Mode', prev === 'dark' ? 'On' : 'Off', next === 'dark' ? 'On' : 'Off', () => {
       toggleTheme();
     });
@@ -488,7 +491,13 @@ END:VCARD`;
                   <div className="settings-row" onClick={handleDarkModeToggle}>
                     <div className="settings-row-left">
                       <div className="settings-row-icon">
-                        {theme === 'dark' ? <Moon size={16} /> : <Sun size={16} />}
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transition: 'transform 0.4s ease', transform: theme === 'dark' ? 'rotate(360deg)' : 'rotate(0deg)' }}>
+                          <motion.path
+                            initial={{ d: sunPath }}
+                            animate={{ d: theme === 'dark' ? moonPath : sunPath }}
+                            transition={{ duration: 0.4, ease: 'easeInOut' }}
+                          />
+                        </svg>
                       </div>
                       <div className="settings-row-text">
                         <h4>Dark Mode</h4>
@@ -1029,6 +1038,9 @@ END:VCARD`;
               aria-current={isActive ? "page" : undefined}
               aria-label={label}
               whileTap={{ scale: 0.85 }}
+              drag
+              dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+              dragElastic={0.45}
               transition={{ type: "spring", stiffness: 400, damping: 32 }}
             >
               <Icon size={18} aria-hidden="true" />
@@ -1046,6 +1058,9 @@ END:VCARD`;
           aria-haspopup="dialog"
           aria-label="More options menu"
           whileTap={{ scale: 0.85 }}
+          drag
+          dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+          dragElastic={0.45}
           transition={{ type: "spring", stiffness: 400, damping: 32 }}
         >
           <MoreHorizontal size={18} aria-hidden="true" />

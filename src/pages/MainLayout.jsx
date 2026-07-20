@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
 import { FileText, Mail, Briefcase, Check } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
 import Sidebar from '../components/Sidebar';
@@ -53,6 +53,9 @@ export default function MainLayout() {
   const [emailCopied, setEmailCopied] = useState(false);
   const scrollRef = useRef(null);
 
+  const translateY = useMotionValue(0);
+  const springY = useSpring(translateY, { stiffness: 300, damping: 30 });
+
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 900);
     window.addEventListener('resize', handleResize);
@@ -102,7 +105,31 @@ export default function MainLayout() {
     };
   };
 
+  const handleTouchMove = (e) => {
+    if (!isMobile || !touchStartRef.current || !scrollRef.current) return;
+
+    const touchY = e.touches[0].clientY;
+    const dy = touchY - touchStartRef.current.y;
+    const scrollTop = scrollRef.current.scrollTop;
+    
+    const isAtTop = scrollTop === 0;
+    const isAtBottom = scrollRef.current.scrollHeight - scrollRef.current.scrollTop <= scrollRef.current.clientHeight + 2;
+
+    if (isAtTop && dy > 0) {
+      const dampenedY = Math.pow(dy, 0.75);
+      translateY.set(dampenedY);
+      if (e.cancelable) e.preventDefault();
+    } else if (isAtBottom && dy < 0) {
+      const dampenedY = -Math.pow(Math.abs(dy), 0.75);
+      translateY.set(dampenedY);
+      if (e.cancelable) e.preventDefault();
+    } else {
+      translateY.set(0);
+    }
+  };
+
   const handleTouchEnd = (e) => {
+    translateY.set(0);
     if (!isMobile || !touchStartRef.current) return;
     
     const touchEndX = e.changedTouches[0].clientX;
@@ -221,16 +248,22 @@ export default function MainLayout() {
         className="main-content" 
         ref={scrollRef}
         onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        <div className="scroll-container">
-          <AnimatePresence mode="wait">
+        <motion.div className="scroll-container" style={{ y: springY }}>
+          <AnimatePresence mode={isMobile ? "popLayout" : "wait"}>
             <motion.div
               key={activeSection}
               id={activeSection}
               initial={
                 isMobile 
-                  ? { opacity: 0, x: slideDirection > 0 ? '100dvw' : '-100dvw' } 
+                  ? { 
+                      opacity: slideDirection > 0 ? 1 : 0.6, 
+                      x: slideDirection > 0 ? '100%' : '-15%', 
+                      scale: slideDirection > 0 ? 1 : 0.92,
+                      zIndex: slideDirection > 0 ? 2 : 1
+                    } 
                   : (pageTransition === 'slide' ? { opacity: 0, x: 50 } :
                      pageTransition === 'scale' ? { opacity: 0, scale: 0.95 } :
                      pageTransition === 'flip'  ? { opacity: 0, rotateY: 90 } :
@@ -238,7 +271,12 @@ export default function MainLayout() {
               }
               animate={
                 isMobile 
-                  ? { opacity: 1, x: 0 }
+                  ? { 
+                      opacity: 1, 
+                      x: 0, 
+                      scale: 1,
+                      zIndex: 2
+                    }
                   : (pageTransition === 'slide' ? { opacity: 1, x: 0 } :
                      pageTransition === 'scale' ? { opacity: 1, scale: 1 } :
                      pageTransition === 'flip'  ? { opacity: 1, rotateY: 0 } :
@@ -246,28 +284,36 @@ export default function MainLayout() {
               }
               exit={
                 isMobile 
-                  ? { opacity: 0, x: slideDirection > 0 ? '-100dvw' : '100dvw' }
+                  ? { 
+                      opacity: slideDirection > 0 ? 0.6 : 1, 
+                      x: slideDirection > 0 ? '-15%' : '100%', 
+                      scale: slideDirection > 0 ? 0.92 : 1,
+                      zIndex: slideDirection > 0 ? 1 : 2
+                    }
                   : (pageTransition === 'slide' ? { opacity: 0, x: -50 } :
                      pageTransition === 'scale' ? { opacity: 1, scale: 1.05 } :
                      pageTransition === 'flip'  ? { opacity: 0, rotateY: -90 } :
                      { opacity: 0, y: -8 })
               }
               transition={{ 
-                duration: isMobile ? 0.35 : (pageTransition === 'flip' ? 0.4 : 0.25), 
+                duration: isMobile ? 0.4 : (pageTransition === 'flip' ? 0.4 : 0.25), 
                 ease: isMobile ? [0.16, 1, 0.3, 1] : "easeInOut" 
               }}
               style={{
                 perspective: pageTransition === 'flip' ? '1000px' : 'none',
                 transformStyle: pageTransition === 'flip' ? 'preserve-3d' : 'flat',
-                width: '100%',
-                height: '100%'
+                width: isMobile ? 'calc(100% - 24px)' : '100%',
+                height: isMobile ? 'calc(100% - 24px)' : '100%',
+                position: isMobile ? 'absolute' : 'relative',
+                top: isMobile ? '12px' : 0,
+                left: isMobile ? '12px' : 0,
               }}
               className={`text-content${activeSection === 'home' ? ' home-content' : ''}${['contact','education','about','skills','experience','projects','certifications'].includes(activeSection) ? ' wide-content' : ''}`}
             >
               <ActiveComponent onNavClick={handleNavClick} />
             </motion.div>
           </AnimatePresence>
-        </div>
+        </motion.div>
       </main>
 
       <WelcomeModal onNavClick={handleNavClick} />

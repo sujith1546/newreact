@@ -1,5 +1,9 @@
 import { useTheme } from '../context/ThemeContext';
 import { Sun, Moon } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+const sunPath = "M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z M12 2v2 M12 20v2 M4.93 4.93l1.41 1.41 M17.66 17.66l1.41 1.41 M2 12h2 M20 12h2 M6.34 17.66l-1.41 1.41 M19.07 4.93l-1.41 1.41";
+const moonPath = "M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z M12 2v0 M12 20v0 M4.93 4.93l0 0 M17.66 17.66l0 0 M2 12h0 M20 12h0 M6.34 17.66l0 0 M19.07 4.93l0 0";
 
 export default function DarkModeToggle() {
   const { theme, toggleTheme } = useTheme();
@@ -88,6 +92,19 @@ export default function DarkModeToggle() {
         @media (max-width: 900px) {
           .theme-toggle-pill { top: 16px; right: 16px; }
         }
+
+        .slider-icon-inner {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--primary-blue);
+          transition: color 0.4s ease;
+        }
+        [data-theme="dark"] .slider-icon-inner {
+          color: #eab308;
+        }
       `}</style>
       
       <div 
@@ -96,12 +113,22 @@ export default function DarkModeToggle() {
         title="Toggle Theme"
         id="darkModeToggle"
       >
-        <div className={`theme-toggle-slider ${theme === 'dark' ? 'slider-dark' : 'slider-light'}`}></div>
+        <div className={`theme-toggle-slider ${theme === 'dark' ? 'slider-dark' : 'slider-light'}`}>
+          <div className="slider-icon-inner">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transition: 'transform 0.4s ease', transform: theme === 'dark' ? 'rotate(360deg)' : 'rotate(0deg)' }}>
+              <motion.path
+                initial={{ d: sunPath }}
+                animate={{ d: theme === 'dark' ? moonPath : sunPath }}
+                transition={{ duration: 0.4, ease: 'easeInOut' }}
+              />
+            </svg>
+          </div>
+        </div>
         <div className={`theme-toggle-icon ${theme === 'light' ? 'active' : ''}`}>
-          <Sun size={15} strokeWidth={2.5} />
+          <Sun size={11} strokeWidth={2.5} />
         </div>
         <div className={`theme-toggle-icon ${theme === 'dark' ? 'active' : ''}`}>
-          <Moon size={15} strokeWidth={2.5} />
+          <Moon size={11} strokeWidth={2.5} />
         </div>
       </div>
     </>
