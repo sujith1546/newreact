@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Award, FileText, Share, X, Moon, Sun, FileDown, Settings, ChevronLeft, ChevronDown, ChevronRight, Monitor, Bell, Wand2, Globe, Trash2, User, Copy, Check, MapPin, School, Sparkles, Atom, HelpCircle, Zap, BookOpen, Code2, ExternalLink, Star, Info, Navigation, Layers, Shield, Clock } from 'lucide-react';
+import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Award, FileText, Share, X, Moon, Sun, FileDown, Settings, ChevronLeft, ChevronDown, ChevronRight, Monitor, Bell, Wand2, Globe, Trash2, User, UserPlus, Copy, Check, MapPin, School, Sparkles, Atom, HelpCircle, Zap, BookOpen, Code2, ExternalLink, Star, Info, Navigation, Layers, Shield, Clock } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
 import { IconBolt, IconLayoutGrid } from '@tabler/icons-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -155,6 +155,31 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
       alert('Link copied to clipboard!');
     }
   };
+
+  const handleDownloadVCard = () => {
+    playSound();
+    const vcard = `BEGIN:VCARD
+VERSION:3.0
+N:Thota;Sujith;;;
+FN:Sujith Thota
+TITLE:Data Science & Full Stack Developer
+EMAIL;TYPE=PREFER,INTERNET:sujithreddy1546@gmail.com
+URL:https://sujith-thota.vercel.app/
+X-SOCIALPROFILE;TYPE=github:https://github.com/sujith1546
+END:VCARD`;
+
+    const blob = new Blob([vcard], { type: 'text/vcard;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'sujith_thota.vcf');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    setIsMoreOpen(false);
+  };
+
 
   const announce = (label, prevValue, nextValue, undo) => {
     setToast({ label, prevValue, nextValue, undo });
@@ -396,6 +421,9 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
               <div className="drawer-actions-list">
                 <button onClick={() => triggerEvent('open-resume')} className="drawer-action-row-btn">
                   <FileDown size={17} /><span>Resume</span>
+                </button>
+                <button onClick={handleDownloadVCard} className="drawer-action-row-btn">
+                  <UserPlus size={17} /><span>Save Contact</span>
                 </button>
                 <button onClick={handleShare} className="drawer-action-row-btn">
                   <Share size={17} /><span>Share</span>

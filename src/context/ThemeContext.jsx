@@ -90,7 +90,61 @@ export function ThemeProvider({ children }) {
     localStorage.setItem('devFlags', JSON.stringify(flags));
   }, [theme, accentColor, fontFamily, uiAudio, pageTransition, notifyOnContact, photoAccent, activePreset, devMode, flags]);
 
-  const toggleTheme = () => setTheme(t => t === 'dark' ? 'light' : 'dark');
+  const toggleTheme = (e) => {
+    const isDark = theme === 'dark';
+    
+    if (!document.startViewTransition) {
+      setTheme(t => t === 'dark' ? 'light' : 'dark');
+      return;
+    }
+
+    // Determine coordinate of toggle click
+    let x = window.innerWidth / 2;
+    let y = window.innerHeight / 2;
+    
+    if (e && typeof e.clientX === 'number') {
+      x = e.clientX;
+      y = e.clientY;
+    } else {
+      const btn = document.getElementById('darkModeToggle') || document.querySelector('.theme-toggle-pill');
+      if (btn) {
+        const rect = btn.getBoundingClientRect();
+        x = rect.left + rect.width / 2;
+        y = rect.top + rect.height / 2;
+      }
+    }
+
+    const endRadius = Math.hypot(
+      Math.max(x, window.innerWidth - x),
+      Math.max(y, window.innerHeight - y)
+    );
+
+    const transition = document.startViewTransition(() => {
+      setTheme(isDark ? 'light' : 'dark');
+    });
+
+    transition.ready.then(() => {
+      const clipPath = [
+        `circle(0px at ${x}px ${y}px)`,
+        `circle(${endRadius}px at ${x}px ${y}px)`
+      ];
+      
+      document.documentElement.animate(
+        {
+          clipPath: isDark 
+            ? [`circle(${endRadius}px at ${x}px ${y}px)`, `circle(0px at ${x}px ${y}px)`]
+            : [`circle(0px at ${x}px ${y}px)`, `circle(${endRadius}px at ${x}px ${y}px)`]
+        },
+        {
+          duration: 500,
+          easing: 'ease-in-out',
+          pseudoElement: isDark 
+            ? '::view-transition-old(root)' 
+            : '::view-transition-new(root)'
+        }
+      );
+    });
+  };
 
   // Serialization helpers
   const getAllPrefs = () => ({

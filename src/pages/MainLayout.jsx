@@ -9,6 +9,7 @@ import DarkModeToggle from '../components/DarkModeToggle';
 import TimezoneStatus from '../components/TimezoneStatus';
 import ChatBot from '../components/ChatBot';
 import CommandPalette from '../components/CommandPalette';
+import MobileStatusPanel from '../components/MobileStatusPanel';
 import Home from '../pages/Home';
 import About from '../pages/About';
 import Skills from '../pages/Skills';
@@ -47,10 +48,10 @@ export default function MainLayout() {
   const { theme, pageTransition } = useTheme();
   const [activeSection, setActiveSection] = useState('home');
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
-  const [beaconOpen, setBeaconOpen] = useState(false);
+  const [isStatusOpen, setIsStatusOpen] = useState(false);
+  const [slideDirection, setSlideDirection] = useState(0);
   const [emailCopied, setEmailCopied] = useState(false);
   const scrollRef = useRef(null);
-  const beaconRef = useRef(null);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 900);
@@ -67,19 +68,19 @@ export default function MainLayout() {
     return () => window.removeEventListener('navigate-section', handleNavigate);
   }, []);
 
-  // Close beacon popover when tapping outside
-  useEffect(() => {
-    if (!beaconOpen) return;
-    const handleOutside = (e) => {
-      if (beaconRef.current && !beaconRef.current.contains(e.target)) {
-        setBeaconOpen(false);
-      }
-    };
-    setTimeout(() => document.addEventListener('pointerdown', handleOutside), 0);
-    return () => document.removeEventListener('pointerdown', handleOutside);
-  }, [beaconOpen]);
+
 
   const handleNavClick = (id) => {
+    const ALL_PAGES = ['home', 'skills', 'projects', 'education', 'experience', 'certifications', 'contact'];
+    const currentIndex = ALL_PAGES.indexOf(activeSection);
+    const nextIndex = ALL_PAGES.indexOf(id);
+    
+    if (currentIndex !== -1 && nextIndex !== -1) {
+      setSlideDirection(nextIndex > currentIndex ? 1 : -1);
+    } else {
+      setSlideDirection(0);
+    }
+
     setActiveSection(id);
     if (scrollRef.current) scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -149,34 +150,15 @@ export default function MainLayout() {
         {/* LEFT: avatar beacon + animated name/section title */}
         <div className="mh-left">
           {/* Availability beacon avatar */}
-          <div className="mh-beacon-wrap" ref={beaconRef}>
+          <div className="mh-beacon-wrap">
             <button
               className="mh-avatar-btn"
-              onClick={() => setBeaconOpen(v => !v)}
+              onClick={() => setIsStatusOpen(true)}
               aria-label="Availability status"
             >
               <div className="mh-avatar-ring" />
               <img src="/profile_photo.png" alt="Sujith Thota" className="mh-avatar-img" />
             </button>
-
-            {/* Popover tooltip */}
-            <AnimatePresence>
-              {beaconOpen && (
-                <motion.div
-                  className="mh-beacon-popover"
-                  initial={{ opacity: 0, y: -6, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -6, scale: 0.95 }}
-                  transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-                >
-                  <span className="mh-beacon-dot" />
-                  <div>
-                    <p className="mh-popover-title">Available for work</p>
-                    <p className="mh-popover-sub">Open to full-time &amp; internship roles</p>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
           </div>
 
           {/* Animated section title */}
@@ -247,26 +229,32 @@ export default function MainLayout() {
               key={activeSection}
               id={activeSection}
               initial={
-                pageTransition === 'slide' ? { opacity: 0, x: 50 } :
-                pageTransition === 'scale' ? { opacity: 0, scale: 0.95 } :
-                pageTransition === 'flip'  ? { opacity: 0, rotateY: 90 } :
-                { opacity: 0, y: 8 } // Default fade
+                isMobile 
+                  ? { opacity: 0, x: slideDirection > 0 ? '100dvw' : '-100dvw' } 
+                  : (pageTransition === 'slide' ? { opacity: 0, x: 50 } :
+                     pageTransition === 'scale' ? { opacity: 0, scale: 0.95 } :
+                     pageTransition === 'flip'  ? { opacity: 0, rotateY: 90 } :
+                     { opacity: 0, y: 8 })
               }
               animate={
-                pageTransition === 'slide' ? { opacity: 1, x: 0 } :
-                pageTransition === 'scale' ? { opacity: 1, scale: 1 } :
-                pageTransition === 'flip'  ? { opacity: 1, rotateY: 0 } :
-                { opacity: 1, y: 0 }
+                isMobile 
+                  ? { opacity: 1, x: 0 }
+                  : (pageTransition === 'slide' ? { opacity: 1, x: 0 } :
+                     pageTransition === 'scale' ? { opacity: 1, scale: 1 } :
+                     pageTransition === 'flip'  ? { opacity: 1, rotateY: 0 } :
+                     { opacity: 1, y: 0 })
               }
               exit={
-                pageTransition === 'slide' ? { opacity: 0, x: -50 } :
-                pageTransition === 'scale' ? { opacity: 0, scale: 1.05 } :
-                pageTransition === 'flip'  ? { opacity: 0, rotateY: -90 } :
-                { opacity: 0, y: -8 }
+                isMobile 
+                  ? { opacity: 0, x: slideDirection > 0 ? '-100dvw' : '100dvw' }
+                  : (pageTransition === 'slide' ? { opacity: 0, x: -50 } :
+                     pageTransition === 'scale' ? { opacity: 1, scale: 1.05 } :
+                     pageTransition === 'flip'  ? { opacity: 0, rotateY: -90 } :
+                     { opacity: 0, y: -8 })
               }
               transition={{ 
-                duration: pageTransition === 'flip' ? 0.4 : 0.25, 
-                ease: "easeInOut" 
+                duration: isMobile ? 0.35 : (pageTransition === 'flip' ? 0.4 : 0.25), 
+                ease: isMobile ? [0.16, 1, 0.3, 1] : "easeInOut" 
               }}
               style={{
                 perspective: pageTransition === 'flip' ? '1000px' : 'none',
@@ -292,6 +280,9 @@ export default function MainLayout() {
       )}
       <ChatBot />
       <CommandPalette />
+
+      {/* Mobile System Health / Status Dropdown */}
+      {isMobile && <MobileStatusPanel isOpen={isStatusOpen} onClose={() => setIsStatusOpen(false)} />}
 
       {/* Mobile-only floating bottom tab capsule */}
       {isMobile && <MobileBottomNav activeSection={activeSection} onNavClick={handleNavClick} />}
