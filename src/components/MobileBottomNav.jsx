@@ -889,47 +889,79 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
                 </button>
               </div>
 
-              {/* Scrollable Body */}
-              <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '24px', paddingBottom: '32px' }}>
+              {/* Scrollable Body - Matching the Apple-like mobile view */}
+              <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '32px' }}>
 
-                {/* About Banner - Standard UI Style */}
-                <div style={{
-                  borderRadius: '24px', overflow: 'hidden', position: 'relative',
-                  background: 'var(--bg-primary)',
-                  padding: '32px 24px', border: '1px solid var(--border-color)',
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center',
-                }}>
-                  <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                    
-                    <div style={{
-                      width: '60px', height: '60px', borderRadius: '18px',
-                      background: 'rgba(59,130,246,0.1)',
-                      border: '1px solid rgba(59,130,246,0.2)',
-                      color: 'var(--primary-blue)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      marginBottom: '20px'
-                    }}>
-                      <Info size={28} strokeWidth={2.5} />
-                    </div>
-
-                    <h4 style={{ margin: '0 0 12px', fontSize: '20px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
-                      Made for me,<br/>shared with you ✦
-                    </h4>
-                    
-                    <p style={{ margin: '0 0 24px', fontSize: '13.5px', color: 'var(--text-secondary)', lineHeight: 1.6, maxWidth: '280px' }}>
-                      This website was built by Sujith Thota entirely for <strong style={{color:'var(--text-primary)'}}>personal use</strong> — to experiment with cutting-edge UI, AI integration, and modern web technologies.
-                    </p>
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '20px', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}>
-                        <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 6px #10b981' }} />
-                        <span style={{ fontSize: '11px', fontWeight: 700, color: '#10b981', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Developed by Sujith</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '20px', background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.2)' }}>
-                        <User size={12} color="#a78bfa" />
-                        <span style={{ fontSize: '11px', fontWeight: 700, color: '#a78bfa', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Personal Use</span>
+                <div className="settings-group">
+                  <span className="settings-group-label">About This App</span>
+                  <div className="settings-card">
+                    <div className="settings-row">
+                      <div className="settings-row-left">
+                        <div className="settings-row-icon" style={{color: '#10b981', borderColor: 'rgba(16,185,129,0.2)', background: 'rgba(16,185,129,0.1)'}}>
+                          <Info size={16} />
+                        </div>
+                        <div className="settings-row-text">
+                          <h4>Purpose</h4>
+                          <p>Built for personal use and experimentation.</p>
+                        </div>
                       </div>
                     </div>
+                    <div className="settings-row">
+                      <div className="settings-row-left">
+                        <div className="settings-row-icon" style={{color: '#8b5cf6', borderColor: 'rgba(139,92,246,0.2)', background: 'rgba(139,92,246,0.1)'}}>
+                          <User size={16} />
+                        </div>
+                        <div className="settings-row-text">
+                          <h4>Developed By</h4>
+                          <p>Sujith Thota</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
+                <div className="settings-group">
+                  <span className="settings-group-label">Features & Integrations</span>
+                  <div className="settings-card">
+                    <div className="settings-row">
+                      <div className="settings-row-left">
+                        <div className="settings-row-icon" style={{color: '#3b82f6', borderColor: 'rgba(59,130,246,0.2)', background: 'rgba(59,130,246,0.1)'}}>
+                          <Atom size={16} />
+                        </div>
+                        <div className="settings-row-text">
+                          <h4>Atom AI</h4>
+                          <p>Real LLM integration via Groq & Voyage AI.</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="settings-row">
+                      <div className="settings-row-left">
+                        <div className="settings-row-icon" style={{color: '#f59e0b', borderColor: 'rgba(245,158,11,0.2)', background: 'rgba(245,158,11,0.1)'}}>
+                          <Shield size={16} />
+                        </div>
+                        <div className="settings-row-text">
+                          <h4>Security</h4>
+                          <p>Enterprise-grade Rate Limiting & Bot Traps.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="settings-group">
+                  <span className="settings-group-label">Navigation Tips</span>
+                  <div className="settings-card">
+                    <div className="settings-row">
+                      <div className="settings-row-left">
+                        <div className="settings-row-text">
+                          <p style={{ lineHeight: '1.5', fontSize: '13px' }}>
+                            • Swipe horizontally on some cards to reveal actions.<br/>
+                            • Use the <strong>More</strong> menu for deeper settings.<br/>
+                            • Tap the microphone in Chat to use Voice Commands.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -940,11 +972,11 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
                   onClick={() => setIsHelpOpen(false)}
                   whileTap={{ scale: 0.96 }}
                   style={{ 
-                    width: '100%', padding: '16px',
-                    background: 'var(--bg-primary)',
-                    color: 'var(--text-primary)', borderRadius: '18px', fontWeight: 700, fontSize: '14.5px',
-                    border: '1px solid var(--border-color)', cursor: 'pointer', letterSpacing: '-0.01em',
-                    marginTop: 'auto'
+                    width: '100%', padding: '14px',
+                    background: 'var(--primary-blue)',
+                    color: '#fff', borderRadius: '16px', fontWeight: 700, fontSize: '14px',
+                    border: 'none', cursor: 'pointer', letterSpacing: '-0.01em',
+                    marginTop: '20px'
                   }}
                 >
                   Got it, let's explore!
