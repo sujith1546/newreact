@@ -2010,6 +2010,13 @@ html {
     box-sizing: border-box;
   }
 
+  /* Disable ScrollReveal transitions on mobile for instant rendering */
+  .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
   /* ============================================
      SMART MOBILE TOP HEADER
      ============================================ */

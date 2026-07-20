@@ -575,11 +575,7 @@ export default function Home({ onNavClick }) {
           </div>
           
           <div className="home-image-side">
-            <picture>
-              <source srcSet="/IMG_0322.avif" type="image/avif" />
-              <source srcSet="/IMG_0322.webp" type="image/webp" />
-              <img src="/IMG_0322.jpg" alt="Sujith Thota" className="hero-img-new" />
-            </picture>
+            <img src="/IMG_0322.jpg" alt="Sujith Thota" className="hero-img-new" />
           </div>
         </div>
       ) : (

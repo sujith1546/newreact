@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback, lazy, Suspense } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileText, Mail, Briefcase, Check } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
@@ -7,21 +7,19 @@ import WelcomeModal from '../components/WelcomeModal';
 import MobileBottomNav from '../components/MobileBottomNav';
 import DarkModeToggle from '../components/DarkModeToggle';
 import TimezoneStatus from '../components/TimezoneStatus';
+import ChatBot from '../components/ChatBot';
 import CommandPalette from '../components/CommandPalette';
 import MobileStatusPanel from '../components/MobileStatusPanel';
-import ErrorBoundary from '../components/ErrorBoundary';
+import Home from '../pages/Home';
+import About from '../pages/About';
+import Skills from '../pages/Skills';
+import Projects from '../pages/Projects';
+import Education from '../pages/Education';
+import Experience from '../pages/Experience';
+import Certifications from '../pages/Certifications';
+import Contact from '../pages/Contact';
+import ParticleCanvas from '../components/ParticleCanvas';
 import { useTheme } from '../context/ThemeContext';
-
-const Home = lazy(() => import('../pages/Home'));
-const About = lazy(() => import('../pages/About'));
-const Skills = lazy(() => import('../pages/Skills'));
-const Projects = lazy(() => import('../pages/Projects'));
-const Education = lazy(() => import('../pages/Education'));
-const Experience = lazy(() => import('../pages/Experience'));
-const Certifications = lazy(() => import('../pages/Certifications'));
-const Contact = lazy(() => import('../pages/Contact'));
-const ChatBot = lazy(() => import('../components/ChatBot'));
-const ParticleCanvas = lazy(() => import('../components/ParticleCanvas'));
 
 const SECTIONS = [
   { id: 'home', Component: Home },
@@ -53,19 +51,7 @@ export default function MainLayout() {
   const [isStatusOpen, setIsStatusOpen] = useState(false);
   const [slideDirection, setSlideDirection] = useState(0);
   const [emailCopied, setEmailCopied] = useState(false);
-  const [isIdle, setIsIdle] = useState(false);
   const scrollRef = useRef(null);
-
-  useEffect(() => {
-    const fallbackTimeout = setTimeout(() => setIsIdle(true), 1500);
-    if ('requestIdleCallback' in window) {
-      window.requestIdleCallback(() => {
-        clearTimeout(fallbackTimeout);
-        setIsIdle(true);
-      });
-    }
-    return () => clearTimeout(fallbackTimeout);
-  }, []);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 900);
@@ -171,11 +157,7 @@ export default function MainLayout() {
               aria-label="Availability status"
             >
               <div className="mh-avatar-ring" />
-              <picture style={{ width: '100%', height: '100%', display: 'block' }}>
-                <source srcSet="/profile_photo.avif" type="image/avif" />
-                <source srcSet="/profile_photo.webp" type="image/webp" />
-                <img src="/profile_photo.png" alt="Sujith Thota" className="mh-avatar-img" />
-              </picture>
+              <img src="/profile_photo.png" alt="Sujith Thota" className="mh-avatar-img" />
             </button>
           </div>
 
@@ -233,11 +215,7 @@ export default function MainLayout() {
         </div>
       </header>
 
-      {isIdle && (
-        <Suspense fallback={null}>
-          <ParticleCanvas />
-        </Suspense>
-      )}
+      <ParticleCanvas />
       <Sidebar activeSection={activeSection} onNavClick={handleNavClick} />
       <main 
         className="main-content" 
@@ -304,15 +282,7 @@ export default function MainLayout() {
               }}
               className={`text-content${activeSection === 'home' ? ' home-content' : ''}${['contact','education','about','skills','experience','projects','certifications'].includes(activeSection) ? ' wide-content' : ''}`}
             >
-              <ErrorBoundary>
-                <Suspense fallback={
-                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: 'var(--text-secondary)' }}>
-                    <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }} style={{ width: '24px', height: '24px', border: '2px solid var(--border-color)', borderTopColor: 'var(--primary-blue)', borderRadius: '50%' }} />
-                  </div>
-                }>
-                  <ActiveComponent onNavClick={handleNavClick} />
-                </Suspense>
-              </ErrorBoundary>
+              <ActiveComponent onNavClick={handleNavClick} />
             </motion.div>
           </AnimatePresence>
         </div>
@@ -326,11 +296,7 @@ export default function MainLayout() {
           <DarkModeToggle />
         </>
       )}
-      {isIdle && (
-        <Suspense fallback={null}>
-          <ChatBot />
-        </Suspense>
-      )}
+      <ChatBot />
       <CommandPalette />
 
       {/* Mobile System Health / Status Dropdown */}
