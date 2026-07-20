@@ -1038,9 +1038,6 @@ END:VCARD`;
               aria-current={isActive ? "page" : undefined}
               aria-label={label}
               whileTap={{ scale: 0.85 }}
-              drag
-              dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
-              dragElastic={0.45}
               transition={{ type: "spring", stiffness: 400, damping: 32 }}
             >
               <Icon size={18} aria-hidden="true" />
@@ -1058,9 +1055,6 @@ END:VCARD`;
           aria-haspopup="dialog"
           aria-label="More options menu"
           whileTap={{ scale: 0.85 }}
-          drag
-          dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
-          dragElastic={0.45}
           transition={{ type: "spring", stiffness: 400, damping: 32 }}
         >
           <MoreHorizontal size={18} aria-hidden="true" />

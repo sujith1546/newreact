@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { FileText, Mail, Briefcase, Check } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
 import Sidebar from '../components/Sidebar';
@@ -53,9 +53,6 @@ export default function MainLayout() {
   const [emailCopied, setEmailCopied] = useState(false);
   const scrollRef = useRef(null);
 
-  const translateY = useMotionValue(0);
-  const springY = useSpring(translateY, { stiffness: 300, damping: 30 });
-
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 900);
     window.addEventListener('resize', handleResize);
@@ -105,31 +102,7 @@ export default function MainLayout() {
     };
   };
 
-  const handleTouchMove = (e) => {
-    if (!isMobile || !touchStartRef.current || !scrollRef.current) return;
-
-    const touchY = e.touches[0].clientY;
-    const dy = touchY - touchStartRef.current.y;
-    const scrollTop = scrollRef.current.scrollTop;
-    
-    const isAtTop = scrollTop === 0;
-    const isAtBottom = scrollRef.current.scrollHeight - scrollRef.current.scrollTop <= scrollRef.current.clientHeight + 2;
-
-    if (isAtTop && dy > 0) {
-      const dampenedY = Math.pow(dy, 0.75);
-      translateY.set(dampenedY);
-      if (e.cancelable) e.preventDefault();
-    } else if (isAtBottom && dy < 0) {
-      const dampenedY = -Math.pow(Math.abs(dy), 0.75);
-      translateY.set(dampenedY);
-      if (e.cancelable) e.preventDefault();
-    } else {
-      translateY.set(0);
-    }
-  };
-
   const handleTouchEnd = (e) => {
-    translateY.set(0);
     if (!isMobile || !touchStartRef.current) return;
     
     const touchEndX = e.changedTouches[0].clientX;
@@ -248,10 +221,9 @@ export default function MainLayout() {
         className="main-content" 
         ref={scrollRef}
         onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        <motion.div className="scroll-container" style={{ y: springY }}>
+        <div className="scroll-container">
           <AnimatePresence mode={isMobile ? "popLayout" : "wait"}>
             <motion.div
               key={activeSection}
@@ -313,7 +285,7 @@ export default function MainLayout() {
               <ActiveComponent onNavClick={handleNavClick} />
             </motion.div>
           </AnimatePresence>
-        </motion.div>
+        </div>
       </main>
 
       <WelcomeModal onNavClick={handleNavClick} />
