@@ -18,7 +18,6 @@ import Experience from '../pages/Experience';
 import Certifications from '../pages/Certifications';
 import Contact from '../pages/Contact';
 import ParticleCanvas from '../components/ParticleCanvas';
-import SwipeHint from '../components/SwipeHint';
 import { useTheme } from '../context/ThemeContext';
 
 const SECTIONS = [
@@ -293,13 +292,6 @@ export default function MainLayout() {
       )}
       <ChatBot />
       <CommandPalette />
-
-      {/* Global mobile swipe hint (Home, Skills, Projects, Contact) */}
-      <AnimatePresence mode="wait">
-        {isMobile && ['home', 'skills', 'projects', 'contact'].includes(activeSection) && (
-          <SwipeHint key={activeSection} />
-        )}
-      </AnimatePresence>
 
       {/* Mobile-only floating bottom tab capsule */}
       {isMobile && <MobileBottomNav activeSection={activeSection} onNavClick={handleNavClick} />}
