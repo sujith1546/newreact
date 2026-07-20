@@ -378,6 +378,13 @@ export default function Projects() {
             will-change: opacity, backdrop-filter; transform: translateZ(0);
             z-index: 1000;
           }
+          @media (max-width: 900px) {
+            .dsheet-backdrop {
+              backdrop-filter: none !important;
+              -webkit-backdrop-filter: none !important;
+              background: rgba(0,0,0,.75) !important;
+            }
+          }
           .dsheet {
             position: fixed; bottom: 0; left: 0; right: 0;
             background: var(--bg-secondary);
@@ -643,7 +650,7 @@ export default function Projects() {
                 role="dialog" aria-modal="true"
                 aria-label={`Project details: ${selectedProject.title}`}
                 initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-                transition={{ type: 'spring', damping: 32, stiffness: 350, mass: 0.9 }}
+                transition={isMobile ? { type: 'tween', ease: [0.16, 1, 0.3, 1], duration: 0.38 } : { type: 'spring', damping: 32, stiffness: 350, mass: 0.9 }}
                 drag="y"
                 dragConstraints={{ top: 0, bottom: 0 }}
                 dragElastic={{ top: 0, bottom: 0.4 }}
@@ -836,7 +843,7 @@ export default function Projects() {
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              transition={isMobile ? { type: 'tween', ease: [0.16, 1, 0.3, 1], duration: 0.25 } : { type: 'spring', damping: 25, stiffness: 300 }}
               onClick={e => e.stopPropagation()}
             >
               <button 

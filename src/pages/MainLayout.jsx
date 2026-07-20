@@ -82,7 +82,7 @@ export default function MainLayout() {
     }
 
     setActiveSection(id);
-    if (scrollRef.current) scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    if (scrollRef.current) scrollRef.current.scrollTo({ top: 0, behavior: 'auto' });
   };
 
   const handleCopyEmail = () => {
@@ -279,6 +279,7 @@ export default function MainLayout() {
                 position: isMobile ? 'absolute' : 'relative',
                 top: isMobile ? '12px' : 0,
                 left: isMobile ? '12px' : 0,
+                willChange: 'transform, opacity'
               }}
               className={`text-content${activeSection === 'home' ? ' home-content' : ''}${['contact','education','about','skills','experience','projects','certifications'].includes(activeSection) ? ' wide-content' : ''}`}
             >
