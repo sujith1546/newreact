@@ -1,4 +1,4 @@
-﻿// src/pages/Skills.jsx
+// src/pages/Skills.jsx
 // Mobile: 2-level drill-down — compact category grid (no scroll) → skill-list sheet → skill-detail sheet
 // Desktop: unchanged 2-col card grid
 
@@ -236,6 +236,7 @@ export default function Skills() {
             background: rgba(0,0,0,.55);
             backdrop-filter: blur(4px);
             -webkit-backdrop-filter: blur(4px);
+            will-change: opacity, backdrop-filter; transform: translateZ(0);
             z-index: 1000;
           }
           .sk-sheet {
@@ -245,6 +246,7 @@ export default function Skills() {
             border-top-right-radius: 28px;
             z-index: 1001;
             display: flex; flex-direction: column;
+            will-change: transform; transform: translateZ(0); backface-visibility: hidden;
             box-shadow: 0 -10px 50px rgba(0,0,0,.15);
           }
           .sk-sheet--cat   { height: 72vh; height: 72dvh; }
@@ -504,7 +506,7 @@ export default function Skills() {
                 <motion.div
                   className="sk-sheet sk-sheet--cat"
                   initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-                  transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
+                  transition={{ type: 'spring', damping: 32, stiffness: 350, mass: 0.9 }}
                 >
                   <div className="sk-sheet-handle" />
                   <div className="sk-sheet-header">
@@ -570,7 +572,7 @@ export default function Skills() {
                 <motion.div
                   className="sk-sheet sk-sheet--skill"
                   initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-                  transition={{ duration: 0.32, ease: [0.32, 0.72, 0, 1] }}
+                  transition={{ type: 'spring', damping: 32, stiffness: 350, mass: 0.9 }}
                 >
                   <div className="sk-sheet-handle" />
                   <div className="sk-sheet-header">

@@ -866,11 +866,13 @@ export default function Education() {
             position: fixed; inset: 0;
             background: rgba(0,0,0,.65);
             backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            will-change: opacity, backdrop-filter; transform: translateZ(0);
             z-index: 10000;
           }
           .dsheet {
             position: fixed; bottom: 0; left: 0; right: 0; z-index: 10001;
             background: var(--bg-secondary); border-top-left-radius: 28px; border-top-right-radius: 28px;
+            will-change: transform; transform: translateZ(0); backface-visibility: hidden;
             box-shadow: 0 -20px 60px rgba(0,0,0,.25), 0 -1px 0 rgba(255,255,255,.06);
             display: flex; flex-direction: column;
             height: 86vh; height: 86dvh;
@@ -1090,7 +1092,7 @@ export default function Education() {
               <motion.div
                 className="dsheet"
                 initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-                transition={{ type: 'spring', damping: 26, stiffness: 280 }}
+                transition={{ type: 'spring', damping: 32, stiffness: 350, mass: 0.9 }}
                 drag="y"
                 dragConstraints={{ top: 0, bottom: 0 }}
                 dragElastic={{ top: 0, bottom: 0.4 }}
