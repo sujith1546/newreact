@@ -495,6 +495,26 @@ export default function Skills() {
             })}
           </div>
         )}
+
+        {/* Swipe Hint */}
+        {isMobile && (
+          <motion.div
+            className="swipe-hint"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5, duration: 0.4 }}
+          >
+            <div className="swipe-hint-icon">
+              <motion.div animate={{ x: [-3, 2, -3] }} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}>
+                <ChevronLeft size={16} />
+              </motion.div>
+              <motion.div animate={{ x: [3, -2, 3] }} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}>
+                <ChevronRight size={16} />
+              </motion.div>
+            </div>
+            <span>Swipe or use nav to explore</span>
+          </motion.div>
+        )}
       </motion.div>
 
       {/* ── Portalled sheets (mobile only) ── */}

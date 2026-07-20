@@ -2022,6 +2022,29 @@ html {
     overflow-y: hidden !important;
   }
 
+  /* Swipe hint styling used across mobile pages */
+  .swipe-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 0 12px;
+    color: var(--text-muted);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    gap: 8px;
+    flex-shrink: 0;
+    background: transparent;
+    width: 100%;
+    margin-top: auto; /* pushes it to the bottom of flex container */
+  }
+  .swipe-hint-icon {
+    display: flex;
+    align-items: center;
+    color: var(--text-secondary);
+  }
+
   /* ============================================
      SMART MOBILE TOP HEADER
      ============================================ */

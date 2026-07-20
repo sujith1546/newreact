@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence, useAnimation, useMotionValue, useTransform } from "framer-motion";
-import { Mail, Phone, ArrowRight, Check, Loader2, Send, Copy, ChevronRight, MapPin, Clock, FileText, X, Contact as ContactIcon } from "lucide-react";
+import { Mail, Phone, ArrowRight, Check, Loader2, Send, Copy, ChevronRight, MapPin, Clock, FileText, X, Contact as ContactIcon, ChevronLeft } from "lucide-react";
 import { FaGithub, FaLinkedin } from "react-icons/fa";
 import ScrollReveal from '../components/ScrollReveal';
 import { useIsland } from '../context/IslandContext';
@@ -773,6 +773,25 @@ END:VCARD`;
                 </motion.div>
               )}
             </AnimatePresence>
+            {/* Swipe Hint */}
+            {isMobile && (
+              <motion.div
+                className="swipe-hint"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5, duration: 0.4 }}
+              >
+                <div className="swipe-hint-icon">
+                  <motion.div animate={{ x: [-3, 2, -3] }} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}>
+                    <ChevronLeft size={16} />
+                  </motion.div>
+                  <motion.div animate={{ x: [3, -2, 3] }} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}>
+                    <ChevronRight size={16} />
+                  </motion.div>
+                </div>
+                <span>Swipe or use nav to explore</span>
+              </motion.div>
+            )}
           </motion.div>
         )}
       </div>
