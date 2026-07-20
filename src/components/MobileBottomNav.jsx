@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Award, FileText, Share, X, Moon, Sun, FileDown, Settings, ChevronLeft, ChevronDown, ChevronRight, Monitor, Bell, Wand2, Globe, Trash2, User, Copy, Check, MapPin, School, Sparkles, Atom, HelpCircle, Zap, BookOpen, Code2, ExternalLink, Star, Info, Navigation, Layers, Shield, Clock, Activity } from 'lucide-react';
+import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Award, FileText, Share, X, Moon, Sun, FileDown, Settings, ChevronLeft, ChevronDown, ChevronRight, Monitor, Bell, Wand2, Globe, Trash2, User, Copy, Check, MapPin, School, Sparkles, Atom, HelpCircle, Zap, BookOpen, Code2, ExternalLink, Star, Info, Navigation, Layers, Shield, Clock } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
 import { IconBolt, IconLayoutGrid } from '@tabler/icons-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -7,7 +7,6 @@ import { useLocalTime } from '../hooks/useLocalTime';
 import { useTheme } from '../context/ThemeContext';
 import WhatsNewPanel from './WhatsNewPanel';
 import AdvancedProfile from './AdvancedProfile';
-import SystemDiagnostics from './SystemDiagnostics';
 import { updates } from '../data/updates';
 
 export default function MobileBottomNav({ activeSection, onNavClick }) {
@@ -17,7 +16,6 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
   const [isUpdatesOpen, setIsUpdatesOpen] = useState(false);
   const [isGithubStatsOpen, setIsGithubStatsOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
-  const [isDiagnosticsOpen, setIsDiagnosticsOpen] = useState(false);
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
   const [toast, setToast] = useState(null); // { label, prevValue, nextValue, undo }
@@ -407,9 +405,6 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
                 </button>
                 <button onClick={() => { playSound(); setIsUpdatesOpen(true); setIsMoreOpen(false); }} className="drawer-action-row-btn">
                   <Sparkles size={17} /><span>Updates</span>
-                </button>
-                <button onClick={() => { playSound(); setIsDiagnosticsOpen(true); setIsMoreOpen(false); }} className="drawer-action-row-btn">
-                  <Activity size={17} /><span>Analytics</span>
                 </button>
                 <button onClick={() => { playSound(); setIsSettingsOpen(true); setIsMoreOpen(false); }} className="drawer-action-row-btn">
                   <Settings size={17} /><span>Settings</span>
@@ -959,9 +954,6 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
           </>
         )}
       </AnimatePresence>
-
-      {/* System Diagnostics / Analytics Drawer */}
-      <SystemDiagnostics open={isDiagnosticsOpen} onClose={() => setIsDiagnosticsOpen(false)} />
 
       {/* Bottom Nav Capsule */}
       <nav className="mobile-nav-capsule" role="navigation" aria-label="Mobile navigation">
