@@ -148,7 +148,7 @@ export default function AdvancedProfile({ isOpen, onClose, playSound, triggerEve
             initial={{ x: '-100%' }}
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
-            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }} // Springier easing
+            transition={{ type: 'spring', damping: 32, stiffness: 350, mass: 0.9 }}
           >
             <div className="profile-header">
               <h3 id="profileTitle">My Profile</h3>

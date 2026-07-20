@@ -96,7 +96,7 @@ export default function WhatsNewPanel({ open, onClose, releases = [] }) {
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 30, stiffness: 300 }}
+            transition={{ type: 'spring', damping: 32, stiffness: 350, mass: 0.9 }}
           >
             {/* Drag handle */}
             <div className="wn-handle-wrap">

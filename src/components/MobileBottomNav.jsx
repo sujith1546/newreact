@@ -338,7 +338,7 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
-            transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
+            transition={{ type: 'spring', damping: 32, stiffness: 350, mass: 0.9 }}
           >
             <div className="drawer-handle" />
 
@@ -439,7 +439,7 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
-            transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
+            transition={{ type: 'spring', damping: 32, stiffness: 350, mass: 0.9 }}
           >
             <div className="settings-header">
               <button 
@@ -782,7 +782,7 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
-              transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
+              transition={{ type: 'spring', damping: 32, stiffness: 350, mass: 0.9 }}
             >
               <div className="drawer-handle" />
               <div className="drawer-header">
@@ -859,7 +859,7 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
             <motion.div 
               className="more-overlay-sheet"
               initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 26, stiffness: 280 }}
+              transition={{ type: 'spring', damping: 32, stiffness: 350, mass: 0.9 }}
               drag="y"
               dragConstraints={{ top: 0, bottom: 0 }}
               dragElastic={{ top: 0, bottom: 0.35 }}
