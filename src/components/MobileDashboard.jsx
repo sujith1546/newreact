@@ -197,12 +197,7 @@ export default function MobileDashboard({ onNavClick }) {
           </div>
 
         {/* ── Profile ───────────────────────────────────────────── */}
-        <motion.div
-          className="hd-profile"
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
+        <div className="hd-profile">
           <img src="/IMG_0322.jpg" alt="Sujith Thota" className="hd-avatar" id="profile-avatar-img" />
           <div className="hd-profile-info">
             <h1 className="hd-name">{nameText}</h1>
@@ -213,18 +208,13 @@ export default function MobileDashboard({ onNavClick }) {
               Available for opportunities
             </div>
           </div>
-        </motion.div>
+        </div>
 
         <div className="hd-divider" />
 
         {/* ── Stats ─────────────────────────────────────────────── */}
         <p className="hd-section-label">At a Glance</p>
-        <motion.div
-          className="hd-stats"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.08 }}
-        >
+        <div className="hd-stats">
           <div className="hd-stat">
             <span className="hd-stat-val" style={{ color: '#3b82f6' }}>{cgpa}</span>
             <span className="hd-stat-lbl">VIT CGPA</span>
@@ -237,20 +227,15 @@ export default function MobileDashboard({ onNavClick }) {
             <span className="hd-stat-val" style={{ color: '#10b981' }}>{projs}+</span>
             <span className="hd-stat-lbl">ML Projects</span>
           </div>
-        </motion.div>
+        </div>
 
         <div className="hd-divider" />
 
         {/* ── About Me ───────────────────────────────────────────── */}
         <p className="hd-section-label">About Me</p>
-        <motion.p
-          className="hd-bio"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.14 }}
-        >
+        <p className="hd-bio">
           A passionate <strong>B.Tech Graduate from VIT (8.7 CGPA)</strong>, actively exploring the boundaries between predictive machine learning systems and reactive web frameworks. I love building things that are both intelligent and elegant.
-        </motion.p>
+        </p>
         
         </motion.div>
       </div>

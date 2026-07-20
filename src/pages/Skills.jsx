@@ -239,6 +239,13 @@ export default function Skills() {
             will-change: opacity, backdrop-filter; transform: translateZ(0);
             z-index: 1000;
           }
+          @media (max-width: 900px) {
+            .sk-sheet-overlay {
+              backdrop-filter: none !important;
+              -webkit-backdrop-filter: none !important;
+              background: rgba(0,0,0,.7) !important;
+            }
+          }
           .sk-sheet {
             position: fixed; bottom: 0; left: 0; right: 0;
             background: var(--bg-secondary);
@@ -409,8 +416,8 @@ export default function Skills() {
         }
       `}</style>
 
-      <motion.div className="skills-page" variants={containerVariants} initial="hidden" animate="visible">
-        <motion.div className="skills-header" variants={itemVariants}>
+      <motion.div className="skills-page" variants={!isMobile ? containerVariants : undefined} initial={!isMobile ? "hidden" : undefined} animate={!isMobile ? "visible" : undefined}>
+        <motion.div className="skills-header" variants={!isMobile ? itemVariants : undefined}>
           <h1>Skills &amp; Expertise</h1>
           <p>Tap any category to explore</p>
         </motion.div>
@@ -447,7 +454,7 @@ export default function Skills() {
           </motion.div>
         ) : (
           /* ── MOBILE: compact category grid — NO page scroll ── */
-          <motion.div className="skills-mobile-grid" variants={containerVariants}>
+          <div className="skills-mobile-grid">
             {skillCategories.map((category, idx) => {
               const Icon = categoryIconMap[category.id] || categoryIconMap.languages;
               const isFull = category.id === 'exploring';
@@ -455,11 +462,10 @@ export default function Skills() {
               const stripes = ['#007bff','#8b5cf6','#16a34a','#f59e0b','#6366f1'];
               const stripe = stripes[idx % stripes.length];
               return (
-                <motion.button
+                <button
                   key={category.id}
                   className={`sk-cat-card${isFull ? ' sk-cat-card--full' : ''}`}
                   style={isFull ? { gridColumn: '1 / -1' } : {}}
-                  variants={itemVariants}
                   onClick={() => setActiveCategory(category)}
                 >
                   <div className="sk-cat-stripe" style={{ background: stripe }} />
@@ -484,10 +490,10 @@ export default function Skills() {
                   {!isFull && (
                     <ChevronRight size={14} style={{ color: 'var(--text-muted)', position: 'absolute', top: 14, right: 12 }} />
                   )}
-                </motion.button>
+                </button>
               );
             })}
-          </motion.div>
+          </div>
         )}
       </motion.div>
 
@@ -506,7 +512,7 @@ export default function Skills() {
                 <motion.div
                   className="sk-sheet sk-sheet--cat"
                   initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-                  transition={{ type: 'spring', damping: 32, stiffness: 350, mass: 0.9 }}
+                  transition={isMobile ? { type: 'tween', ease: [0.16, 1, 0.3, 1], duration: 0.38 } : { type: 'spring', damping: 32, stiffness: 350, mass: 0.9 }}
                 >
                   <div className="sk-sheet-handle" />
                   <div className="sk-sheet-header">
@@ -572,7 +578,7 @@ export default function Skills() {
                 <motion.div
                   className="sk-sheet sk-sheet--skill"
                   initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-                  transition={{ type: 'spring', damping: 32, stiffness: 350, mass: 0.9 }}
+                  transition={isMobile ? { type: 'tween', ease: [0.16, 1, 0.3, 1], duration: 0.38 } : { type: 'spring', damping: 32, stiffness: 350, mass: 0.9 }}
                 >
                   <div className="sk-sheet-handle" />
                   <div className="sk-sheet-header">
