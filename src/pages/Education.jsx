@@ -912,6 +912,11 @@ export default function Education() {
         /* ============ MOBILE LAYOUT ============ */
         .mobile-edu-feed { display: none; }
         @media (max-width: 900px) {
+          .edu-page {
+            min-height: auto !important;
+            height: 100% !important;
+            overflow: hidden !important;
+          }
           .edu-rail, .edu-grid, .education-arrow-flow, .section-subtitle, .edu-closing-summary { display: none !important; }
           .mobile-edu-feed {
             display: flex; flex-direction: column; gap: 12px; width: 100%;

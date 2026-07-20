@@ -2017,6 +2017,11 @@ html {
     transition: none !important;
   }
 
+  /* Disable vertical scrolling on the education page container on mobile */
+  #education {
+    overflow-y: hidden !important;
+  }
+
   /* ============================================
      SMART MOBILE TOP HEADER
      ============================================ */
