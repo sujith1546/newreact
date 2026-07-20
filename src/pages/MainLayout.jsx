@@ -295,7 +295,11 @@ export default function MainLayout() {
       <CommandPalette />
 
       {/* Global mobile swipe hint (Home, Skills, Projects, Contact) */}
-      {isMobile && ['home', 'skills', 'projects', 'contact'].includes(activeSection) && <SwipeHint />}
+      <AnimatePresence mode="wait">
+        {isMobile && ['home', 'skills', 'projects', 'contact'].includes(activeSection) && (
+          <SwipeHint key={activeSection} />
+        )}
+      </AnimatePresence>
 
       {/* Mobile-only floating bottom tab capsule */}
       {isMobile && <MobileBottomNav activeSection={activeSection} onNavClick={handleNavClick} />}
