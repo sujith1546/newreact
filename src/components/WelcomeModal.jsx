@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { X, Lightbulb } from "lucide-react";
+import { X } from "lucide-react";
 import { FaEnvelope, FaLinkedin, FaInstagram } from "react-icons/fa";
 
 const PRO_TIPS = [
@@ -57,14 +57,6 @@ export default function WelcomeModal({ onNavClick }) {
   const [tipsPaused, setTipsPaused] = useState(false);
   const cardRef = useRef(null);
   const { visitCount, isFirstVisit } = useVisitInfo();
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 900);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
   useEffect(() => {
     if (localStorage.getItem("welcome_dismissed_forever") === "true") return;
     setIsOpen(true);
@@ -157,114 +149,15 @@ export default function WelcomeModal({ onNavClick }) {
       role="presentation"
       className="welcome-overlay"
     >
-      {isMobile ? (
-        <div
-          ref={cardRef}
-          tabIndex={0}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="welcome-title"
-          onClick={(e) => e.stopPropagation()}
-          className="mc-welcome-card"
-        >
-          {/* Header */}
-          <div className="mc-welcome-header">
-            <div className="mc-welcome-top-row">
-              <div className="mc-welcome-avatar">TS</div>
-              <button className="mc-welcome-close" onClick={handleClose}><X size={16} /></button>
-            </div>
-            
-            <div className="mc-welcome-greeting">{getGreeting()}</div>
-            <h2 id="welcome-title" className="mc-welcome-name">Hey, I'm Sujith.</h2>
-            <p className="mc-welcome-intro">CS undergrad building ML pipelines and full-stack apps. Welcome to my portfolio.</p>
-
-            <div className="mc-welcome-status">
-              <span className="mc-welcome-status-dot" />
-              <span className="mc-welcome-status-text">available for opportunities</span>
-              {visitCount > 0 && (
-                <>
-                  <span className="mc-welcome-status-muted">·</span>
-                  <span className="mc-welcome-status-muted">visit #{visitCount}</span>
-                </>
-              )}
-            </div>
-          </div>
-
-          <div className="mc-welcome-divider" />
-
-          {/* Stats */}
-          <div className="mc-welcome-stats">
-            <div className="mc-welcome-stat-col">
-              <div className="mc-welcome-stat-val">6+</div>
-              <div className="mc-welcome-stat-lbl">projects</div>
-            </div>
-            <div className="mc-welcome-stat-col">
-              <div className="mc-welcome-stat-val">2y</div>
-              <div className="mc-welcome-stat-lbl">experience</div>
-            </div>
-            <div className="mc-welcome-stat-col">
-              <div className="mc-welcome-stat-val">5</div>
-              <div className="mc-welcome-stat-lbl">languages</div>
-            </div>
-          </div>
-
-          <div className="mc-welcome-divider" />
-
-          {/* Pro tip */}
-          <div className="mc-welcome-tip">
-            <Lightbulb size={16} className="mc-welcome-tip-icon" />
-            <div className="mc-welcome-tip-content">
-              <div className="mc-welcome-tip-text">Double-click my profile photo to view it large.</div>
-              <div className="mc-welcome-tip-bar-bg">
-                <div className="mc-welcome-tip-bar-fill" style={{ width: '38%' }} />
-              </div>
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="mc-welcome-actions">
-            <div className="mc-welcome-btn-row">
-              <button className="mc-welcome-btn-pri" onClick={() => { handleClose(); onNavClick?.("projects"); }}>
-                View projects
-              </button>
-              <button className="mc-welcome-btn-sec" onClick={handleClose}>
-                Explore freely
-              </button>
-            </div>
-
-            <div className="mc-welcome-footer-row">
-              <label className="mc-welcome-checkbox-lbl">
-                <input
-                  type="checkbox"
-                  checked={dontShowAgain}
-                  onChange={(e) => setDontShowAgain(e.target.checked)}
-                  style={{ width: 13, height: 13, accentColor: 'var(--text-primary)' }}
-                />
-                Don't show again
-              </label>
-              <div className="mc-welcome-socials">
-                {SOCIAL_LINKS.map(link => (
-                  <a key={link.label} href={link.href} target="_blank" rel="noreferrer" className="mc-welcome-social" aria-label={link.label}>
-                    {link.icon === "mail" ? <FaEnvelope size={14} /> : link.icon === "linkedin" ? <FaLinkedin size={14} /> : <FaInstagram size={14} />}
-                  </a>
-                ))}
-              </div>
-            </div>
-            <div className="mc-welcome-hint">
-              esc to close &nbsp;·&nbsp; enter to view projects
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div
-          ref={cardRef}
-          tabIndex={0}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="welcome-title"
-          onClick={(e) => e.stopPropagation()}
-          className="welcome-card"
-        >
+      <div
+        ref={cardRef}
+        tabIndex={0}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="welcome-title"
+        onClick={(e) => e.stopPropagation()}
+        className="welcome-card"
+      >
         {/* First-visit confetti dots */}
         {isFirstVisit && (
           <div className="welcome-confetti-container">
@@ -415,7 +308,6 @@ export default function WelcomeModal({ onNavClick }) {
         {/* Keyboard shortcut hint */}
         <p className="welcome-shortcut-hint">{SHORTCUTS_HINT}</p>
       </div>
-      )}
 
       <style>{`
         .welcome-overlay {
@@ -805,82 +697,6 @@ export default function WelcomeModal({ onNavClick }) {
 
         @keyframes blink {
           50% { opacity: 0; }
-        }
-
-        /* ── MOBILE EDITORIAL REDESIGN ── */
-        @media (max-width: 900px) {
-          .mc-welcome-card {
-            width: 100%; max-width: 380px;
-            background: var(--bg-secondary);
-            border-radius: 24px;
-            border: 0.5px solid var(--border-color);
-            overflow: hidden;
-            display: flex; flex-direction: column;
-            animation: scaleIn 0.3s ease-out forwards;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
-          }
-          [data-theme="dark"] .mc-welcome-card {
-            background: var(--bg-primary); /* surface-2 equivalent */
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
-          }
-          
-          .mc-welcome-header { padding: 22px 22px 0; }
-          .mc-welcome-top-row { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
-          .mc-welcome-avatar {
-            width: 56px; height: 56px; border-radius: 16px;
-            background: var(--bg-primary); /* surface-1 equivalent */
-            border: 1px solid var(--border-color);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 18px; font-weight: 600; color: var(--text-primary);
-          }
-          [data-theme="dark"] .mc-welcome-avatar { background: var(--bg-secondary); }
-          
-          .mc-welcome-close {
-            background: none; border: none; cursor: pointer; color: var(--text-muted);
-            padding: 4px; display: flex; align-items: center; justify-content: center;
-          }
-          .mc-welcome-greeting { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; text-transform: lowercase; }
-          .mc-welcome-name {
-            font-family: var(--font-voice, 'Playfair Display', serif);
-            font-size: 30px; font-weight: 400; line-height: 1.15; margin: 0 0 6px;
-            color: var(--text-primary);
-          }
-          .mc-welcome-intro { font-size: 13px; color: var(--text-secondary); line-height: 1.5; margin: 0 0 18px; }
-          .mc-welcome-status { display: flex; align-items: center; gap: 6px; margin-bottom: 18px; }
-          .mc-welcome-status-dot { width: 6px; height: 6px; border-radius: 50%; background: #1D9E75; }
-          .mc-welcome-status-text { font-size: 12px; color: var(--text-secondary); }
-          .mc-welcome-status-muted { font-size: 12px; color: var(--text-muted); }
-
-          .mc-welcome-divider { height: 0.5px; background: var(--border-color); margin: 0 22px; }
-          
-          .mc-welcome-stats { padding: 16px 22px; display: flex; }
-          .mc-welcome-stat-col { flex: 1; text-align: left; }
-          .mc-welcome-stat-col:not(:first-child) { border-left: 0.5px solid var(--border-color); padding-left: 16px; }
-          .mc-welcome-stat-val { font-size: 18px; font-weight: 600; color: var(--text-primary); line-height: 1.2; }
-          .mc-welcome-stat-lbl { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
-
-          .mc-welcome-tip { padding: 16px 22px; display: flex; gap: 10px; align-items: flex-start; }
-          .mc-welcome-tip-icon { color: var(--text-muted); margin-top: 2px; }
-          .mc-welcome-tip-content { flex: 1; }
-          .mc-welcome-tip-text { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
-          .mc-welcome-tip-bar-bg { height: 2px; background: var(--border-color); border-radius: 2px; margin-top: 8px; overflow: hidden; }
-          .mc-welcome-tip-bar-fill { height: 100%; background: var(--text-primary); border-radius: 2px; transition: width 0.3s ease; }
-
-          .mc-welcome-actions { padding: 4px 22px 22px; }
-          .mc-welcome-btn-row { display: flex; gap: 8px; margin-bottom: 16px; }
-          .mc-welcome-btn-pri {
-            flex: 1; background: var(--primary-blue, #3b82f6); color: #fff; border: none;
-            font-size: 13.5px; font-weight: 600; padding: 12px; border-radius: 12px; cursor: pointer; outline: none;
-          }
-          .mc-welcome-btn-sec {
-            flex: 1; background: transparent; color: var(--text-primary); border: 0.5px solid var(--border-color);
-            font-size: 13.5px; font-weight: 600; padding: 12px; border-radius: 12px; cursor: pointer; outline: none;
-          }
-          .mc-welcome-footer-row { display: flex; align-items: center; justify-content: space-between; }
-          .mc-welcome-checkbox-lbl { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted); cursor: pointer; }
-          .mc-welcome-socials { display: flex; gap: 14px; }
-          .mc-welcome-social { color: var(--text-secondary); }
-          .mc-welcome-hint { text-align: center; font-size: 10px; color: var(--text-muted); margin-top: 14px; }
         }
       `}</style>
     </div>
