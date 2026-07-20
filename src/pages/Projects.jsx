@@ -335,6 +335,7 @@ export default function Projects() {
             position: fixed; inset: 0;
             background: rgba(0,0,0,.65);
             backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            will-change: opacity, backdrop-filter; transform: translateZ(0);
             z-index: 1000;
           }
           .dsheet {
@@ -343,6 +344,7 @@ export default function Projects() {
             border-top-left-radius: 28px; border-top-right-radius: 28px;
             z-index: 1001; height: 86vh; height: 86dvh;
             display: flex; flex-direction: column;
+            will-change: transform; transform: translateZ(0); backface-visibility: hidden;
             box-shadow: 0 -20px 60px rgba(0,0,0,.25), 0 -1px 0 rgba(255,255,255,.06);
           }
           .dsheet-handle {
@@ -483,7 +485,7 @@ export default function Projects() {
                 role="dialog" aria-modal="true"
                 aria-label={`Project details: ${selectedProject.title}`}
                 initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-                transition={{ duration: 0.35, ease: [0.32, 0.72, 0, 1] }}
+                transition={{ type: 'spring', damping: 32, stiffness: 350, mass: 0.9 }}
                 drag="y"
                 dragConstraints={{ top: 0, bottom: 0 }}
                 dragElastic={{ top: 0, bottom: 0.4 }}
