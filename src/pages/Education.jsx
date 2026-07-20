@@ -7,6 +7,8 @@ import { EducationArrowFlow } from '../components/EducationArrowFlow';
 
 const TIMELINE = [
   {
+    id: "primary",
+    shortLabel: "primary",
     year: '2009 – 2015',
     title: 'Primary Education',
     institution: 'Aditya Birla Public School',
@@ -15,6 +17,9 @@ const TIMELINE = [
     score: null,
     progress: null,
     Icon: School,
+    color: "#378ADD",
+    bg: "#E6F1FB",
+    textColor: "#0C447C",
     highlights: ['Foundation Skills', 'Early Learning', 'School Activities'],
     backStats: [
       { value: "5th", label: "Grade" },
@@ -24,6 +29,8 @@ const TIMELINE = [
     highlight: "Built foundational skills and early academic curiosity."
   },
   {
+    id: "secondary",
+    shortLabel: "secondary",
     year: '2015 – 2019',
     title: 'Secondary Education',
     institution: 'Viswabharathi High School',
@@ -32,6 +39,9 @@ const TIMELINE = [
     score: '10/10 GPA — 100%',
     progress: 100,
     Icon: Trophy,
+    color: "#EF9F27",
+    bg: "#FAEEDA",
+    textColor: "#633806",
     highlights: ['Perfect GPA', 'Math & Science', 'Extracurriculars'],
     backStats: [
       { value: "10/10", label: "GPA" },
@@ -41,6 +51,8 @@ const TIMELINE = [
     highlight: "Achieved a perfect GPA in 10th grade board examinations."
   },
   {
+    id: "intermediate",
+    shortLabel: "intermediate",
     year: '2019 – 2022',
     title: 'Intermediate (11th & 12th)',
     institution: 'Narayana Junior College',
@@ -49,6 +61,9 @@ const TIMELINE = [
     score: '92.7% — 927/1000',
     progress: 92.7,
     Icon: BookOpen,
+    color: "#1D9E75",
+    bg: "#E1F5EE",
+    textColor: "#085041",
     highlights: ['MPC Stream', 'JEE / EAMCET', 'Math & Physics'],
     backStats: [
       { value: "92.7%", label: "Marks" },
@@ -58,6 +73,8 @@ const TIMELINE = [
     highlight: "Maintained excellent academics while preparing for JEE and EAMCET."
   },
   {
+    id: "btech",
+    shortLabel: "b.tech",
     year: '2022 – 2026',
     title: 'Bachelor of Technology',
     institution: 'VIT University',
@@ -66,6 +83,9 @@ const TIMELINE = [
     score: 'CGPA: 8.7 / 10',
     progress: 87,
     Icon: Laptop,
+    color: "#7F77DD",
+    bg: "#EEEDFE",
+    textColor: "#26215C",
     highlights: ['CS & Engineering', 'DSA & Dev', 'Coding'],
     backStats: [
       { value: "8.7", label: "CGPA" },
@@ -75,6 +95,73 @@ const TIMELINE = [
     highlight: "Actively involved in coding competitions and technical projects."
   }
 ];
+
+const RING_RADIUS = 27;
+const RING_CIRC = 2 * Math.PI * RING_RADIUS;
+
+function ScoreRing({ percent, color }) {
+  const offset = RING_CIRC - (percent / 100) * RING_CIRC;
+  return (
+    <div style={{ position: "relative", width: 64, height: 64, flexShrink: 0 }}>
+      <svg width="64" height="64" viewBox="0 0 64 64">
+        <circle
+          cx="32" cy="32" r={RING_RADIUS}
+          fill="none" stroke="var(--border-color, #e5e5e5)" strokeWidth="6"
+        />
+        <circle
+          cx="32" cy="32" r={RING_RADIUS}
+          fill="none" stroke={color} strokeWidth="6"
+          strokeDasharray={RING_CIRC}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+          transform="rotate(-90 32 32)"
+          style={{ transition: "stroke-dashoffset 0.6s ease" }}
+        />
+      </svg>
+      <div style={{
+        position: "absolute", inset: 0, display: "flex",
+        flexDirection: "column", alignItems: "center", justifyContent: "center"
+      }}>
+        <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>{percent}%</span>
+        <span style={{ fontSize: 9, color: "var(--text-muted)", fontWeight: 600 }}>score</span>
+      </div>
+    </div>
+  );
+}
+
+function TimelineStrip({ stages, activeId }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", marginTop: 10 }}>
+      {stages.map((s, i) => (
+        <div key={s.id} style={{ display: "flex", alignItems: "center", flex: i === stages.length - 1 ? "none" : 1 }}>
+          <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center" }}>
+            <div style={{
+              width: s.id === activeId ? 10 : 8,
+              height: s.id === activeId ? 10 : 8,
+              borderRadius: "50%",
+              background: s.id === activeId ? s.color : "var(--border-color)",
+              marginBottom: 6,
+              transition: "all 0.3s ease"
+            }} />
+            <div style={{
+              fontSize: 10,
+              fontWeight: s.id === activeId ? 700 : 500,
+              color: s.id === activeId ? "var(--text-primary)" : "var(--text-muted)",
+              letterSpacing: "-0.01em"
+            }}>{s.shortLabel}</div>
+          </div>
+          {i < stages.length - 1 && (
+            <div style={{ flex: 1, height: 2, background: "var(--border-color)", margin: "0 8px", alignSelf: "flex-start", marginTop: 4 }} />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SectionLabel({ children }) {
+  return <div className="dsheet-section-label" style={{ marginBottom: 8, marginTop: 12 }}>{children}</div>;
+}
 
 const containerVariants = {
   hidden: {},
@@ -1123,60 +1210,34 @@ export default function Education() {
                 >
                   <div className="dsheet-content">
 
-                    {/* Hero card */}
-                    <div className="edu-hero-card">
-                      <div className="edu-hero-icon-wrap" style={{ border: `1px solid ${accent}30` }}>
-                        <div className="edu-hero-icon-bg" style={{ background: `linear-gradient(135deg, ${accent}20, ${accent}08)` }} />
-                        <Icon size={34} style={{ color: accent, position: 'relative', zIndex: 1 }} />
-                      </div>
-                      <div className="edu-hero-meta">
-                        <div className="edu-hero-meta-row">
-                          <MapPin size={13} />
-                          <span><strong>{selectedItem.location}</strong></span>
+                    {/* Ring + Meta Box */}
+                    <div style={{ background: "var(--bg-primary)", border: "1px solid var(--border-color)", borderRadius: 16, padding: 16, display: "flex", gap: 16, alignItems: "center", marginBottom: 6 }}>
+                      {selectedItem.progress != null ? (
+                        <ScoreRing percent={selectedItem.progress} color={selectedItem.color} />
+                      ) : (
+                        <div style={{ width: 64, height: 64, borderRadius: 16, background: selectedItem.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: `1px solid ${selectedItem.color}30` }}>
+                          <Icon size={28} style={{ color: selectedItem.color }} />
                         </div>
-                        <div className="edu-hero-meta-row">
-                          <School size={13} />
-                          <span><strong>{selectedItem.year}</strong></span>
+                      )}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.3 }}>{selectedItem.institution}</div>
+                        <div style={{ fontSize: 11, color: "var(--text-secondary)", marginTop: 5, display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <MapPin size={10} /> {selectedItem.location}
                         </div>
-                        {selectedItem.score && (
-                          <div className="edu-hero-meta-row">
-                            <Trophy size={13} />
-                            <span><strong style={{ color: accent }}>{selectedItem.score}</strong></span>
-                          </div>
-                        )}
+                        <div style={{ fontSize: 11, color: "var(--text-secondary)", marginTop: 3, display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <School size={10} /> {selectedItem.year}
+                        </div>
                       </div>
                     </div>
 
-                    {/* Animated performance bar */}
-                    {selectedItem.progress && (
-                      <div>
-                        <p className="dsheet-section-label">Performance</p>
-                        <div className="edu-sheet-prog-wrap">
-                          <div className="edu-sheet-prog-label">
-                            <span>Score</span>
-                            <span style={{ color: accent, fontWeight: 800 }}>{selectedItem.progress}%</span>
-                          </div>
-                          <div className="edu-sheet-prog-track">
-                            <motion.div
-                              className="edu-sheet-prog-fill"
-                              style={{ background: `linear-gradient(90deg, ${accent}, ${accent}aa)` }}
-                              initial={{ width: 0 }}
-                              animate={{ width: `${selectedItem.progress}%` }}
-                              transition={{ duration: 1.2, delay: 0.15, ease: 'easeOut' }}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
                     {/* Stats grid */}
                     <div>
-                      <p className="dsheet-section-label">At a Glance</p>
-                      <div className="ps-stats">
+                      <SectionLabel>at a glance</SectionLabel>
+                      <div className="ps-stats" style={{ gridTemplateColumns: `repeat(${selectedItem.backStats.length}, 1fr)`, gap: 8 }}>
                         {selectedItem.backStats.map(stat => (
-                          <div key={stat.label} className="ps-stat">
-                            <p className="ps-stat-label">{stat.label}</p>
-                            <p className="ps-stat-value" style={{ color: accent }}>{stat.value}</p>
+                          <div key={stat.label} className="ps-stat" style={{ padding: '10px 8px', alignItems: 'center' }}>
+                            <p className="ps-stat-label" style={{ fontSize: 9, textTransform: 'lowercase' }}>{stat.label}</p>
+                            <p className="ps-stat-value" style={{ color: selectedItem.color, fontSize: 16, marginTop: 2 }}>{stat.value}</p>
                           </div>
                         ))}
                       </div>
@@ -1184,18 +1245,24 @@ export default function Education() {
 
                     {/* Description */}
                     <div>
-                      <p className="dsheet-section-label">About</p>
-                      <p className="dsheet-desc">{selectedItem.description}</p>
+                      <SectionLabel>about</SectionLabel>
+                      <p className="dsheet-desc" style={{ fontSize: 12.5 }}>{selectedItem.description}</p>
                     </div>
 
                     {/* Highlights */}
                     <div>
-                      <p className="dsheet-section-label">Highlights</p>
+                      <SectionLabel>highlights</SectionLabel>
                       <div className="edu-detail-tags">
                         {selectedItem.highlights.map(h => (
-                          <span key={h} className="edu-detail-tag" style={{ color: accent, borderColor: accent + '30', background: accent + '10' }}>{h}</span>
+                          <span key={h} className="edu-detail-tag" style={{ color: selectedItem.textColor, background: selectedItem.bg, border: `1px solid ${selectedItem.color}20`, fontWeight: 600 }}>{h}</span>
                         ))}
                       </div>
+                    </div>
+
+                    {/* Timeline Strip */}
+                    <div>
+                      <SectionLabel>timeline context</SectionLabel>
+                      <TimelineStrip stages={TIMELINE} activeId={selectedItem.id} />
                     </div>
 
                   </div>
