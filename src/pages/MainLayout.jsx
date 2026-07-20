@@ -71,7 +71,7 @@ export default function MainLayout() {
 
 
   const handleNavClick = (id) => {
-    const ALL_PAGES = ['home', 'skills', 'projects', 'education', 'experience', 'certifications', 'contact'];
+    const ALL_PAGES = ['home', 'about', 'skills', 'projects', 'education', 'experience', 'certifications', 'contact'];
     const currentIndex = ALL_PAGES.indexOf(activeSection);
     const nextIndex = ALL_PAGES.indexOf(id);
     

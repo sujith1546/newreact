@@ -2343,7 +2343,7 @@ html {
   }
 
   [data-theme="dark"] .text-content {
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--bg-secondary) !important;
     border-color: rgba(255, 255, 255, 0.08);
   }
 
