@@ -533,24 +533,26 @@ END:VCARD`;
           .mc-success-title { font-size: 22px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px; letter-spacing: -0.02em; }
           .mc-success-sub { font-size: 14px; color: var(--text-secondary); margin: 0; line-height: 1.5; max-width: 260px; }
 
-          /* Contact card chip button — slim inline pill, not a full-width bar */
+          /* Contact card button — sharp rectangle, black bg, white text */
           .mc-card-chip {
             display: inline-flex; align-items: center; gap: 6px;
-            padding: 7px 14px 7px 10px;
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            border-radius: 99px;
-            color: var(--text-secondary);
-            font-size: 12.5px; font-weight: 600;
+            padding: 8px 14px 8px 11px;
+            background: #0f0f0f;
+            border: none;
+            border-radius: 10px;
+            color: #ffffff;
+            font-size: 12px; font-weight: 700;
             cursor: pointer; outline: none;
-            transition: all 0.18s ease;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            letter-spacing: 0.01em;
             white-space: nowrap;
           }
-          .mc-card-chip:active { transform: scale(0.95); background: var(--bg-secondary); }
-          [data-theme="dark"] .mc-card-chip { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.1); color: var(--text-secondary); }
-          [data-theme="dark"] .mc-card-chip:active { background: rgba(255,255,255,0.1); }
-          .mc-card-chip-dot { width: 6px; height: 6px; border-radius: 50%; background: #3b82f6; box-shadow: 0 0 6px rgba(59,130,246,0.6); flex-shrink: 0; }
+          .mc-card-chip:active { transform: scale(0.94); box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+          [data-theme="dark"] .mc-card-chip { background: #1a1a1a; border: 1px solid rgba(255,255,255,0.12); color: #fff; box-shadow: 0 2px 12px rgba(0,0,0,0.5); }
+          [data-theme="dark"] .mc-card-chip:active { background: #111; }
+          .mc-card-chip-dot { width: 6px; height: 6px; border-radius: 50%; background: #3b82f6; box-shadow: 0 0 6px rgba(59,130,246,0.8); flex-shrink: 0; }
+
 
           /* ========== CONTACT CARD SHEET — Premium redesign ========== */
           .dsheet-backdrop {
