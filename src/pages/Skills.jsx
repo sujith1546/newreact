@@ -535,66 +535,17 @@ export default function Skills() {
                   transition={isMobile ? { type: 'tween', ease: [0.16, 1, 0.3, 1], duration: 0.38 } : { type: 'spring', damping: 32, stiffness: 350, mass: 0.9 }}
                 >
                   <div className="sk-sheet-handle" />
-                  {/* Premium Category Header */}
-                  {(() => {
-                    const CatIcon = categoryIconMap[activeCategory.iconName] || Layers;
-                    const accent = '#3b82f6';
-                    return (
-                      <div style={{
-                        position: 'relative',
-                        background: `linear-gradient(145deg, rgba(59,130,246,0.15) 0%, transparent 100%)`,
-                        padding: '36px 24px 24px',
-                        borderBottom: '1px solid var(--border-color)',
-                        flexShrink: 0,
-                        overflow: 'hidden'
-                      }}>
-                        {/* Ambient glow orbs */}
-                        <div style={{
-                          position: 'absolute', top: -40, right: -20, width: 140, height: 140,
-                          borderRadius: '50%', background: `rgba(59,130,246,0.2)`,
-                          filter: 'blur(45px)', pointerEvents: 'none'
-                        }} />
-                        <div style={{
-                          position: 'absolute', bottom: -20, left: 10, width: 80, height: 80,
-                          borderRadius: '50%', background: `rgba(59,130,246,0.15)`,
-                          filter: 'blur(30px)', pointerEvents: 'none'
-                        }} />
-                        
-                        {/* Close button */}
-                        <button className="sk-sheet-close" onClick={() => setActiveCategory(null)} aria-label="Close" style={{
-                          position: 'absolute', top: 16, right: 16, zIndex: 10,
-                          width: 32, height: 32, borderRadius: 16, background: 'var(--bg-primary)',
-                          border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          color: 'var(--text-secondary)', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
-                        }}>
-                          <X size={16} />
-                        </button>
-
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, position: 'relative', zIndex: 1 }}>
-                          <div style={{
-                            width: 56, height: 56, borderRadius: 16,
-                            background: `linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%)`, 
-                            border: `1.5px solid rgba(59,130,246,0.4)`,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: accent, boxShadow: `0 8px 20px rgba(59,130,246,0.15)`
-                          }}>
-                            <CatIcon size={26} strokeWidth={2.5} />
-                          </div>
-                          <div>
-                            <h3 style={{ margin: '0', fontSize: 24, fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
-                              {activeCategory.title}
-                            </h3>
-                            <p style={{ margin: '6px 0 0', fontSize: 13, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
-                              {activeCategory.skills.length} Skills
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })()}
+                  <div className="sk-sheet-header">
+                    <div className="sk-sheet-header-left">
+                      <h2>{activeCategory.title}</h2>
+                    </div>
+                    <button className="sk-sheet-close" onClick={() => setActiveCategory(null)}>
+                      <X size={16} />
+                    </button>
+                  </div>
 
                   <div className="sk-sheet-body" ref={catSheetRef} onScroll={e => { if(e.target.scrollTop > 10 && !hasCatScrolled) setHasCatScrolled(true); }}>
-
+                    <div className="sk-skill-group-label">{activeCategory.skills.length} skills in this category</div>
                     <div className="sk-skills-card">
                       {activeCategory.skills.map(skill => {
                         const lc = levelColor[skill.level] || levelColor.Intermediate;

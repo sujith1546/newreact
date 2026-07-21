@@ -289,7 +289,7 @@ export default function MainLayout() {
         onTouchEnd={handleTouchEnd}
       >
         <div className="scroll-container">
-          <AnimatePresence mode="sync" initial={false} custom={slideDirection}>
+          <AnimatePresence mode={isMobile ? "sync" : "wait"} initial={false} custom={slideDirection}>
             <motion.div
               key={activeSection}
               id={activeSection}
