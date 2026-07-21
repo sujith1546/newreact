@@ -502,18 +502,24 @@ export default function Projects() {
 
           .dsheet-actions { display: flex; gap: 10px; margin-top: 4px; }
           .dsheet-action-pill {
-            flex: 1; height: 48px; border-radius: 16px;
-            border: 1px solid var(--border-color);
+            flex: 1; height: 48px; border-radius: 14px;
             background: var(--bg-primary); color: var(--text-primary);
+            border: 1px solid var(--border-color);
             display: flex; align-items: center; justify-content: center;
-            gap: 8px; font-size: 13px; font-weight: 700;
-            text-decoration: none; transition: all .2s; outline: none;
+            gap: 8px; font-size: 13.5px; font-weight: 700;
+            text-decoration: none; transition: transform 0.15s, box-shadow 0.15s; outline: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
           }
-          .dsheet-action-pill:hover, .dsheet-action-pill:focus { border-color: var(--primary-blue); }
+          .dsheet-action-pill:active { transform: scale(0.97); }
           .dsheet-action-pill--primary {
-            background: linear-gradient(135deg, var(--primary-blue) 0%, #0056b3 100%);
-            color: #fff; border-color: transparent;
-            box-shadow: 0 4px 15px rgba(0,123,255,.25);
+            flex: 1.3;
+            background: var(--text-primary);
+            color: var(--bg-primary);
+            border: none; font-weight: 800;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+          }
+          [data-theme="dark"] .dsheet-action-pill--primary {
+            box-shadow: 0 4px 16px rgba(255,255,255,0.15);
           }
 
           .dsheet-scroll-hint {
@@ -818,7 +824,10 @@ export default function Projects() {
                     <div className="dsheet-actions">
                       {selectedProject.githubUrl && (
                         <a href={selectedProject.githubUrl} target="_blank" rel="noreferrer" className="dsheet-action-pill">
-                          <FaGithub size={16} /> Code
+                          <div style={{ width: 28, height: 28, borderRadius: 8, background: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <FaGithub size={14} color="var(--text-secondary)" />
+                          </div>
+                          Code
                         </a>
                       )}
                       {selectedProject.liveUrl && (
