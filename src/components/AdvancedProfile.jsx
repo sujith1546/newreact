@@ -343,14 +343,25 @@ export default function AdvancedProfile({ isOpen, onClose, playSound, triggerEve
               <div style={{ height: 1, background: 'var(--border-color)', margin: '20px 0 0' }} />
 
               {/* Explore */}
-              <div style={{ padding: '16px 20px 0' }}>
+              <div style={{ padding: '16px 20px 0', position: 'relative' }}>
                 <p style={{
                   margin: '0 0 10px', fontSize: 10.5, fontWeight: 800,
                   textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-secondary)'
                 }}>Explore</p>
-                <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 16, scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                <div 
+                  style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 16, scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                  onScroll={(e) => {
+                    if (e.target.scrollLeft > 5 && !e.target.dataset.scrolled) {
+                      e.target.dataset.scrolled = "true";
+                      // Find and hide the hint inside this specific container context
+                      const hint = e.target.parentElement.querySelector('.swipe-hint');
+                      if (hint) hint.style.opacity = '0';
+                    }
+                  }}
+                >
                   <style>{`
                     .explore-carousel::-webkit-scrollbar { display: none; }
+                    .swipe-hint { transition: opacity 0.3s ease; }
                   `}</style>
                   <div className="explore-carousel" style={{ display: 'flex', gap: 12, paddingRight: 20 }}>
                     {explores.map(({ label, Icon, action }, index) => {
@@ -384,6 +395,23 @@ export default function AdvancedProfile({ isOpen, onClose, playSound, triggerEve
                       );
                     })}
                   </div>
+                </div>
+                
+                {/* Swipe Hint overlay */}
+                <div className="swipe-hint" style={{
+                  position: 'absolute', right: 20, top: '50%', transform: 'translateY(-50%)',
+                  pointerEvents: 'none', display: 'flex', alignItems: 'center', gap: 4,
+                  background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)',
+                  padding: '6px 10px', borderRadius: 20, color: '#fff'
+                }}>
+                  <motion.div
+                    animate={{ x: [0, -5, 0] }}
+                    transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+                  >
+                    <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Swipe</span>
+                    <ChevronRight size={12} />
+                  </motion.div>
                 </div>
               </div>
 
