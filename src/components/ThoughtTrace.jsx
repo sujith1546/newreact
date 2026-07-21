@@ -53,10 +53,10 @@ export default function ThoughtTrace({ steps = [] }) {
       </div>
 
       <div className="trace-pipeline-svg">
-        <svg viewBox="0 0 400 60" style={{ width: '100%', height: '60px' }}>
+        <svg viewBox="0 0 300 80" style={{ width: '100%', height: 'auto', minHeight: '80px', overflow: 'visible' }}>
           {nodes.map((n, i) => {
-            const x = 50 + (i * (300 / (nodes.length - 1)));
-            const y = 30;
+            const x = 30 + (i * (240 / (nodes.length - 1)));
+            const y = 35;
             const state = getNodeState(n.id);
             const color = state === 'done' ? '#10b981' : state === 'active' ? '#3b82f6' : '#64748b';
             
@@ -64,35 +64,35 @@ export default function ThoughtTrace({ steps = [] }) {
               <g key={n.id}>
                 {i < nodes.length - 1 && (
                   <line 
-                    x1={x + 20} y1={y} 
-                    x2={50 + ((i + 1) * (300 / (nodes.length - 1))) - 20} y2={y}
+                    x1={x + 24} y1={y} 
+                    x2={30 + ((i + 1) * (240 / (nodes.length - 1))) - 24} y2={y}
                     stroke={getNodeState(nodes[i+1].id) !== 'pending' ? '#3b82f6' : '#334155'}
-                    strokeWidth="2"
-                    strokeDasharray={getNodeState(nodes[i+1].id) === 'active' ? "4 4" : "none"}
+                    strokeWidth="3"
+                    strokeDasharray={getNodeState(nodes[i+1].id) === 'active' ? "6 6" : "none"}
                   >
                     {getNodeState(nodes[i+1].id) === 'active' && (
-                      <animate attributeName="stroke-dashoffset" values="8;0" dur="0.5s" repeatCount="indefinite" />
+                      <animate attributeName="stroke-dashoffset" values="12;0" dur="0.5s" repeatCount="indefinite" />
                     )}
                   </line>
                 )}
                 
                 <circle 
-                  cx={x} cy={y} r="14" 
+                  cx={x} cy={y} r="18" 
                   fill={state === 'pending' ? 'transparent' : `${color}20`}
                   stroke={color} strokeWidth="2"
                 />
                 
                 {state === 'active' && (
-                  <circle cx={x} cy={y} r="18" fill="none" stroke={color} strokeWidth="1" opacity="0.5">
-                    <animate attributeName="r" values="14; 22" dur="1s" repeatCount="indefinite" />
+                  <circle cx={x} cy={y} r="22" fill="none" stroke={color} strokeWidth="1" opacity="0.5">
+                    <animate attributeName="r" values="18; 28" dur="1s" repeatCount="indefinite" />
                     <animate attributeName="opacity" values="0.8; 0" dur="1s" repeatCount="indefinite" />
                   </circle>
                 )}
                 
-                <text x={x} y={y + 4} fontSize="10" textAnchor="middle" fill={color} fontFamily="monospace">
+                <text x={x} y={y + 5} fontSize="12" textAnchor="middle" fill={color} fontFamily="monospace" fontWeight="700">
                   {n.id.substring(0,2).toUpperCase()}
                 </text>
-                <text x={x} y={y + 24} fontSize="9" textAnchor="middle" fill="var(--text-secondary)" fontWeight="600">
+                <text x={x} y={y + 32} fontSize="11" textAnchor="middle" fill="var(--text-secondary)" fontWeight="600">
                   {n.label}
                 </text>
               </g>
@@ -121,9 +121,9 @@ export default function ThoughtTrace({ steps = [] }) {
 
       <style>{`
         .thought-trace-body {
-          padding: 12px;
-          background: rgba(0, 0, 0, 0.2);
-          border-radius: 8px;
+          padding: 16px;
+          background: var(--bg-secondary);
+          border-radius: 12px;
           margin-top: 8px;
           border: 1px solid var(--border-color);
         }
@@ -131,7 +131,7 @@ export default function ThoughtTrace({ steps = [] }) {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 12px;
+          margin-bottom: 16px;
           font-size: 11px;
           font-weight: 700;
           text-transform: uppercase;
@@ -154,11 +154,12 @@ export default function ThoughtTrace({ steps = [] }) {
           border-radius: 4px;
         }
         .trace-pipeline-svg {
-          margin-bottom: 16px;
+          margin-bottom: 20px;
           background: var(--bg-primary);
-          border-radius: 6px;
-          padding: 8px;
+          border-radius: 8px;
+          padding: 12px 8px;
           border: 1px solid var(--border-color);
+          overflow: visible;
         }
         .trace-log-container {
           display: flex;
