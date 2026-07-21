@@ -132,6 +132,7 @@ export default function AdvancedProfile({ isOpen, onClose, playSound, triggerEve
               display: 'flex', flexDirection: 'column',
               background: 'var(--bg-secondary)',
               boxShadow: '12px 0 60px rgba(0,0,0,0.18), 1px 0 0 var(--border-color)',
+              overflowY: 'auto',
             }}
             initial={{ x: '-100%' }}
             animate={{ x: 0 }}
@@ -342,35 +343,12 @@ export default function AdvancedProfile({ isOpen, onClose, playSound, triggerEve
               <div style={{ height: 1, background: 'var(--border-color)', margin: '20px 0 0' }} />
 
               {/* Explore */}
-              <div style={{ padding: '16px 0 0', position: 'relative' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', marginBottom: 10 }}>
-                  <p style={{
-                    margin: 0, fontSize: 10.5, fontWeight: 800,
-                    textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-secondary)'
-                  }}>Explore</p>
-                  
-                  {/* Swipe Hint inline */}
-                  <motion.div
-                    className="swipe-hint"
-                    animate={{ x: [0, -4, 0] }}
-                    transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
-                    style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--primary-blue)', pointerEvents: 'none', transition: 'opacity 0.3s ease' }}
-                  >
-                    <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Swipe</span>
-                    <ChevronRight size={12} />
-                  </motion.div>
-                </div>
-                
-                <div 
-                  style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 16, paddingLeft: 20, scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                  onScroll={(e) => {
-                    if (e.target.scrollLeft > 5 && !e.target.dataset.scrolled) {
-                      e.target.dataset.scrolled = "true";
-                      const hint = e.target.parentElement.querySelector('.swipe-hint');
-                      if (hint) hint.style.opacity = '0';
-                    }
-                  }}
-                >
+              <div style={{ padding: '16px 20px 0' }}>
+                <p style={{
+                  margin: '0 0 10px', fontSize: 10.5, fontWeight: 800,
+                  textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-secondary)'
+                }}>Explore</p>
+                <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 16, scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                   <style>{`
                     .explore-carousel::-webkit-scrollbar { display: none; }
                   `}</style>
