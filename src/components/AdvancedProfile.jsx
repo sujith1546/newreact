@@ -132,7 +132,8 @@ export default function AdvancedProfile({ isOpen, onClose, playSound, triggerEve
               display: 'flex', flexDirection: 'column',
               background: 'var(--bg-secondary)',
               boxShadow: '12px 0 60px rgba(0,0,0,0.18), 1px 0 0 var(--border-color)',
-              overflowY: 'auto',
+              overflow: 'hidden',
+              willChange: 'transform'
             }}
             initial={{ x: '-100%' }}
             animate={{ x: 0 }}
