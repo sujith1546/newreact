@@ -963,80 +963,81 @@ END:VCARD`;
                 </button>
               </div>
 
-              {/* Scrollable Body - Matching the Apple-like mobile view */}
+              {/* Scrollable Body - Advanced Bento Layout */}
               <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '32px' }}>
-
-                <div className="settings-group">
-                  <span className="settings-group-label">About This App</span>
-                  <div className="settings-card">
-                    <div className="settings-row">
-                      <div className="settings-row-left">
-                        <div className="settings-row-icon" style={{color: '#10b981', borderColor: 'rgba(16,185,129,0.2)', background: 'rgba(16,185,129,0.1)'}}>
-                          <Info size={16} />
-                        </div>
-                        <div className="settings-row-text">
-                          <h4>Purpose</h4>
-                          <p>Built for personal use and experimentation.</p>
-                        </div>
-                      </div>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                  {/* Purpose */}
+                  <div style={{
+                    background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '20px', padding: '16px',
+                    display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.02)'
+                  }}>
+                    <div style={{ width: 36, height: 36, borderRadius: '12px', background: 'rgba(16,185,129,0.1)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Info size={18} />
                     </div>
-                    <div className="settings-row">
-                      <div className="settings-row-left">
-                        <div className="settings-row-icon" style={{color: '#8b5cf6', borderColor: 'rgba(139,92,246,0.2)', background: 'rgba(139,92,246,0.1)'}}>
-                          <User size={16} />
-                        </div>
-                        <div className="settings-row-text">
-                          <h4>Developed By</h4>
-                          <p>Sujith Thota</p>
-                        </div>
-                      </div>
+                    <div>
+                      <h4 style={{ margin: '0 0 4px', fontSize: '13.5px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>Purpose</h4>
+                      <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>Built for personal use & experimentation.</p>
+                    </div>
+                  </div>
+
+                  {/* Developer */}
+                  <div style={{
+                    background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '20px', padding: '16px',
+                    display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.02)'
+                  }}>
+                    <div style={{ width: 36, height: 36, borderRadius: '12px', background: 'rgba(139,92,246,0.1)', color: '#8b5cf6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <User size={18} />
+                    </div>
+                    <div>
+                      <h4 style={{ margin: '0 0 4px', fontSize: '13.5px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>Developed By</h4>
+                      <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>Sujith Thota</p>
+                    </div>
+                  </div>
+
+                  {/* Atom AI */}
+                  <div style={{
+                    background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '20px', padding: '16px',
+                    display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.02)'
+                  }}>
+                    <div style={{ width: 36, height: 36, borderRadius: '12px', background: 'rgba(59,130,246,0.1)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Atom size={18} />
+                    </div>
+                    <div>
+                      <h4 style={{ margin: '0 0 4px', fontSize: '13.5px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>Atom AI</h4>
+                      <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>Real LLM integration via Groq.</p>
+                    </div>
+                  </div>
+
+                  {/* Security */}
+                  <div style={{
+                    background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '20px', padding: '16px',
+                    display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.02)'
+                  }}>
+                    <div style={{ width: 36, height: 36, borderRadius: '12px', background: 'rgba(245,158,11,0.1)', color: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Shield size={18} />
+                    </div>
+                    <div>
+                      <h4 style={{ margin: '0 0 4px', fontSize: '13.5px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>Security</h4>
+                      <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>Enterprise-grade rate limiting.</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="settings-group">
-                  <span className="settings-group-label">Features & Integrations</span>
-                  <div className="settings-card">
-                    <div className="settings-row">
-                      <div className="settings-row-left">
-                        <div className="settings-row-icon" style={{color: '#3b82f6', borderColor: 'rgba(59,130,246,0.2)', background: 'rgba(59,130,246,0.1)'}}>
-                          <Atom size={16} />
-                        </div>
-                        <div className="settings-row-text">
-                          <h4>Atom AI</h4>
-                          <p>Real LLM integration via Groq & Voyage AI.</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="settings-row">
-                      <div className="settings-row-left">
-                        <div className="settings-row-icon" style={{color: '#f59e0b', borderColor: 'rgba(245,158,11,0.2)', background: 'rgba(245,158,11,0.1)'}}>
-                          <Shield size={16} />
-                        </div>
-                        <div className="settings-row-text">
-                          <h4>Security</h4>
-                          <p>Enterprise-grade Rate Limiting & Bot Traps.</p>
-                        </div>
-                      </div>
-                    </div>
+                <div style={{
+                  background: 'linear-gradient(135deg, rgba(59,130,246,0.05), rgba(139,92,246,0.05))',
+                  border: '1px solid rgba(59,130,246,0.15)', borderRadius: '20px', padding: '20px',
+                  display: 'flex', flexDirection: 'column', gap: '12px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <Navigation size={18} color="#3b82f6" />
+                    <h4 style={{ margin: 0, fontSize: '14.5px', fontWeight: 800, color: 'var(--text-primary)' }}>Navigation Tips</h4>
                   </div>
-                </div>
-
-                <div className="settings-group">
-                  <span className="settings-group-label">Navigation Tips</span>
-                  <div className="settings-card">
-                    <div className="settings-row">
-                      <div className="settings-row-left">
-                        <div className="settings-row-text">
-                          <p style={{ lineHeight: '1.5', fontSize: '13px' }}>
-                            • Swipe horizontally on some cards to reveal actions.<br/>
-                            • Use the <strong>More</strong> menu for deeper settings.<br/>
-                            • Tap the microphone in Chat to use Voice Commands.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                    <li>Swipe horizontally on cards to reveal hidden actions.</li>
+                    <li>Use the <strong>More</strong> menu for deeper settings.</li>
+                    <li>Tap the microphone in Chat to use Voice Commands.</li>
+                  </ul>
                 </div>
 
                 <div style={{ flex: 1 }} />
@@ -1047,11 +1048,12 @@ END:VCARD`;
                   whileTap={{ scale: 0.96 }}
                   style={{ 
                     width: '100%', padding: '16px',
-                    background: 'var(--bg-primary)',
-                    color: 'var(--text-primary)', borderRadius: '18px', fontWeight: 700, fontSize: '14.5px',
-                    border: '1px solid var(--border-color)', cursor: 'pointer', letterSpacing: '-0.01em',
+                    background: theme === 'dark' ? '#fff' : '#000',
+                    color: theme === 'dark' ? '#000' : '#fff',
+                    borderRadius: '16px', fontWeight: 800, fontSize: '15px',
+                    border: 'none', cursor: 'pointer', letterSpacing: '-0.01em',
                     marginTop: 'auto',
-                    boxShadow: '0 2px 10px rgba(0,0,0,0.03)'
+                    boxShadow: theme === 'dark' ? '0 8px 24px rgba(255,255,255,0.15)' : '0 8px 24px rgba(0,0,0,0.2)'
                   }}
                 >
                   Got it, let's explore!
