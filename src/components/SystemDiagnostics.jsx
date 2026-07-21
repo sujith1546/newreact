@@ -177,24 +177,24 @@ const cardAnim = {
 // 4. SMALL PRESENTATIONAL PIECES
 // ----------------------------------------------------------------------------
 
-function StatChip({ label, value }) {
+function StatChip({ label, value, styles }) {
   return (
-    <div style={S.stat}>
-      <span style={S.statLabel}>{label}</span>
-      <span style={S.statValue}>{value}</span>
+    <div style={styles.stat}>
+      <span style={styles.statLabel}>{label}</span>
+      <span style={styles.statValue}>{value}</span>
     </div>
   );
 }
 
-function InfoCard({ icon, iconBg, label, wide, children }) {
+function InfoCard({ icon, iconBg, label, wide, children, styles }) {
   return (
     <motion.div
       variants={cardAnim}
-      style={{ ...S.card, ...(wide ? S.cardWide : {}) }}
+      style={{ ...styles.card, ...(wide ? styles.cardWide : {}) }}
     >
-      <div style={S.cardHead}>
-        <span style={{ ...S.cardIcon, background: iconBg }}>{icon}</span>
-        <span style={S.cardLabel}>{label}</span>
+      <div style={styles.cardHead}>
+        <span style={{ ...styles.cardIcon, background: iconBg }}>{icon}</span>
+        <span style={styles.cardLabel}>{label}</span>
       </div>
       {children}
     </motion.div>
@@ -207,7 +207,9 @@ function InfoCard({ icon, iconBg, label, wide, children }) {
 
 export default function SystemDiagnostics({ open, onClose }) {
   const { theme } = useTheme();
-  const { latencyMs, fps, memoryStr, uptimeStr, requests, pulsing } = useLiveStats(open);
+  const isDark = theme === "dark";
+  const styles = getStyles(isDark);
+  const { latencyMs, fps, memoryStr, uptimeStr, requests } = useLiveStats(open);
   const latencyBarPct = latencyMs !== null ? Math.min(100, Math.round((latencyMs / 120) * 100)) : 0;
 
   // Close on Escape key
@@ -222,7 +224,7 @@ export default function SystemDiagnostics({ open, onClose }) {
     <AnimatePresence>
       {open && (
         <motion.div
-          style={S.backdrop}
+          style={styles.backdrop}
           variants={backdropAnim}
           initial="hidden"
           animate="visible"
@@ -234,24 +236,22 @@ export default function SystemDiagnostics({ open, onClose }) {
               animation: sdPulse 1.8s ease-in-out infinite;
             }
             @keyframes sdPulse {
-              0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); }
-              50% { box-shadow: 0 0 0 4px rgba(34, 197, 94, 0); }
+              0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.55); }
+              50%       { box-shadow: 0 0 0 5px rgba(16, 185, 129, 0); }
             }
             .sd-close-btn:hover {
-              background: rgba(128, 128, 128, 0.12) !important;
-              color: var(--text-primary) !important;
+              background: ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)'} !important;
+              color: ${isDark ? '#f1f0f5' : '#0f172a'} !important;
             }
             .sd-cta-btn:hover {
-              opacity: 0.88;
+              opacity: 0.92;
               transform: translateY(-1px);
-              box-shadow: 0 8px 24px rgba(59, 130, 246, 0.45) !important;
+              box-shadow: ${isDark ? '0 10px 28px rgba(139,92,246,0.5)' : '0 10px 28px rgba(59,130,246,0.4)'} !important;
             }
-            .sd-cta-btn:active {
-              transform: translateY(0);
-            }
+            .sd-cta-btn:active { transform: translateY(0); }
           `}</style>
           <motion.div
-            style={S.modal}
+            style={styles.modal}
             variants={modalAnim}
             initial="hidden"
             animate="visible"
@@ -262,21 +262,21 @@ export default function SystemDiagnostics({ open, onClose }) {
             onClick={(e) => e.stopPropagation()} // don't close when clicking inside
           >
             {/* ---------- Header ---------- */}
-            <div style={S.header}>
-              <div style={S.headerLeft}>
-                <div style={{ ...S.iconBadge, background: "rgba(79, 70, 229, 0.08)" }}>
-                  <IconCpu2 size={18} stroke={1.75} color="#4f46e5" />
+            <div style={styles.header}>
+              <div style={styles.headerLeft}>
+                <div style={styles.iconBadge}>
+                  <IconCpu2 size={18} stroke={1.75} color={isDark ? "#a78bfa" : "#4f46e5"} />
                 </div>
                 <div>
-                  <p id="sd-title" style={S.title}>
+                  <p id="sd-title" style={styles.title}>
                     System diagnostics
                   </p>
-                  <div style={S.statusRow}>
+                  <div style={styles.statusRow}>
                     <span
                       className="sd-dot-pulse"
-                      style={S.dot}
+                      style={styles.dot}
                     />
-                    <span style={S.statusText}>All systems nominal</span>
+                    <span style={styles.statusText}>All systems nominal</span>
                   </div>
                 </div>
               </div>
@@ -284,7 +284,7 @@ export default function SystemDiagnostics({ open, onClose }) {
                 onClick={onClose}
                 aria-label="Close diagnostics"
                 className="sd-close-btn"
-                style={S.closeBtn}
+                style={styles.closeBtn}
               >
                 <IconX size={15} stroke={1.75} />
               </button>
@@ -292,25 +292,26 @@ export default function SystemDiagnostics({ open, onClose }) {
 
             <motion.div variants={staggerGroup} initial="hidden" animate="visible" exit="exit">
               {/* ---------- Status bar ---------- */}
-              <motion.div variants={cardAnim} style={S.statusBar}>
-                <StatChip label="Uptime" value={uptimeStr} />
-                <StatChip label="FPS" value={fps !== null ? fps : "…"} />
-                <StatChip label="Memory" value={memoryStr ?? "—"} />
-                <StatChip label="Requests" value={requests} />
+              <motion.div variants={cardAnim} style={styles.statusBar}>
+                <StatChip label="Uptime" value={uptimeStr} styles={styles} />
+                <StatChip label="FPS" value={fps !== null ? fps : "…"} styles={styles} />
+                <StatChip label="Memory" value={memoryStr ?? "—"} styles={styles} />
+                <StatChip label="Requests" value={requests} styles={styles} />
               </motion.div>
 
               {/* ---------- Body ---------- */}
-              <div style={S.body}>
-                <div style={S.grid}>
+              <div style={styles.body}>
+                <div style={styles.grid}>
                   <InfoCard
-                    icon={<IconWifi size={12} stroke={2} color="#2563eb" />}
-                    iconBg="rgba(37, 99, 235, 0.08)"
+                    icon={<IconWifi size={12} stroke={2} color={isDark ? "#60a5fa" : "#2563eb"} />}
+                    iconBg={isDark ? "rgba(59, 130, 246, 0.15)" : "rgba(37, 99, 235, 0.08)"}
                     label="CONNECTION"
+                    styles={styles}
                   >
-                    <p style={S.valueMono}>{latencyMs !== null ? `${latencyMs}ms` : "pinging…"}</p>
-                    <div style={S.barTrack}>
+                    <p style={styles.valueMono}>{latencyMs !== null ? `${latencyMs}ms` : "pinging…"}</p>
+                    <div style={styles.barTrack}>
                       <motion.div
-                        style={S.barFill}
+                        style={styles.barFill}
                         animate={{ width: `${latencyBarPct}%` }}
                         transition={{ duration: 0.4, ease: "easeOut" }}
                       />
@@ -318,35 +319,38 @@ export default function SystemDiagnostics({ open, onClose }) {
                   </InfoCard>
 
                   <InfoCard
-                    icon={<IconShieldCheck size={12} stroke={2} color="#16a34a" />}
-                    iconBg="rgba(22, 163, 74, 0.08)"
+                    icon={<IconShieldCheck size={12} stroke={2} color={isDark ? "#34d399" : "#16a34a"} />}
+                    iconBg={isDark ? "rgba(16, 185, 129, 0.15)" : "rgba(22, 163, 74, 0.08)"}
                     label="BUILD VERSION"
+                    styles={styles}
                   >
-                    <div style={S.valueRow}>
-                      <p style={S.valueMono}>{BUILD_INFO.buildVersion}</p>
-                      <span style={S.badgePass}>PASS</span>
+                    <div style={styles.valueRow}>
+                      <p style={styles.valueMono}>{BUILD_INFO.buildVersion}</p>
+                      <span style={styles.badgePass}>PASS</span>
                     </div>
                   </InfoCard>
 
                   <InfoCard
-                    icon={<IconStack2 size={12} stroke={2} color="#7c3aed" />}
-                    iconBg="rgba(124, 58, 237, 0.08)"
+                    icon={<IconStack2 size={12} stroke={2} color={isDark ? "#c084fc" : "#7c3aed"} />}
+                    iconBg={isDark ? "rgba(139, 92, 246, 0.15)" : "rgba(124, 58, 237, 0.08)"}
                     label="CORE STACK"
                     wide
+                    styles={styles}
                   >
                     <TechStackTicker />
                   </InfoCard>
 
                   <InfoCard
-                    icon={<IconAdjustments size={12} stroke={2} color="#ea580c" />}
-                    iconBg="rgba(234, 88, 12, 0.08)"
+                    icon={<IconAdjustments size={12} stroke={2} color={isDark ? "#fb923c" : "#ea580c"} />}
+                    iconBg={isDark ? "rgba(249, 115, 22, 0.15)" : "rgba(234, 88, 12, 0.08)"}
                     label="ENVIRONMENT"
                     wide
+                    styles={styles}
                   >
-                    <p style={S.valueMonoSm}>
-                      Theme: <span style={{ color: theme === 'dark' ? '#818cf8' : '#f59e0b', fontWeight: 700 }}>{theme === 'dark' ? '🌙 Dark' : '☀️ Light'}</span>
+                    <p style={styles.valueMonoSm}>
+                      Theme: <span style={{ color: isDark ? '#a78bfa' : '#4f46e5', fontWeight: 700 }}>{isDark ? '🌙 Dark Mode' : '☀️ Light Mode'}</span>
                     </p>
-                    <p style={{ ...S.valueMonoSm, marginTop: 4, color: 'var(--text-secondary)', fontSize: 11 }}>
+                    <p style={{ ...styles.valueMonoSm, marginTop: 4, color: styles.statLabel.color, fontSize: 11 }}>
                       FPS {fps !== null ? fps : '…'} · {memoryStr ?? '—'} heap · {uptimeStr} session
                     </p>
                   </InfoCard>
@@ -355,7 +359,7 @@ export default function SystemDiagnostics({ open, onClose }) {
                 <motion.button
                   variants={cardAnim}
                   className="sd-cta-btn"
-                  style={S.cta}
+                  style={styles.cta}
                   onClick={() => window.open(REPO_URL, "_blank")}
                 >
                   Inspect source code
@@ -371,166 +375,210 @@ export default function SystemDiagnostics({ open, onClose }) {
 }
 
 // ----------------------------------------------------------------------------
-// 6. STYLES — theme-aware values pulling from index.css tokens
+// 6. STYLES — Dynamic Theme-Aware Glassmorphic Styles
 // ----------------------------------------------------------------------------
 
-const MONO = '"SF Mono", "JetBrains Mono", monospace';
+const MONO = '"SF Mono", "JetBrains Mono", "Fira Code", monospace';
 
-const S = {
-  backdrop: {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(0, 0, 0, 0.65)",
-    backdropFilter: "blur(12px)",
-    WebkitBackdropFilter: "blur(12px)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 9999999,
-    padding: "1rem",
-  },
-  modal: {
-    width: 430,
-    maxWidth: "100%",
-    background: "var(--bg-secondary)",
-    borderRadius: 16,
-    border: "1px solid var(--border-color)",
-    overflow: "hidden",
-    boxShadow: "0 0 0 1px rgba(59,130,246,0.06), 0 24px 64px rgba(0,0,0,0.2)",
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif',
-  },
+function getStyles(isDark) {
+  const PALETTE = isDark ? {
+    bg:          'rgba(10, 6, 24, 0.96)',
+    backdrop:    'rgba(0, 0, 0, 0.7)',
+    bgCard:      'rgba(18, 12, 38, 0.85)',
+    border:      'rgba(139, 92, 246, 0.22)',
+    borderSub:   'rgba(255, 255, 255, 0.07)',
+    textPri:     '#f1f0f5',
+    textSec:     'rgba(200, 190, 230, 0.6)',
+    shadow:      '0 0 0 1px rgba(139,92,246,0.15), 0 32px 80px rgba(0,0,0,0.8), 0 0 60px rgba(139,92,246,0.1)',
+    ctaBg:       'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)',
+    ctaShadow:   '0 4px 20px rgba(139,92,246,0.4)',
+    headerBg:    'rgba(139,92,246,0.06)',
+    statusBarBg: 'rgba(0,0,0,0.3)',
+    badgeBg:     'linear-gradient(135deg, rgba(139,92,246,0.2), rgba(99,102,241,0.12))',
+    badgeBorder: 'rgba(139,92,246,0.25)',
+  } : {
+    bg:          'rgba(255, 255, 255, 0.88)',
+    backdrop:    'rgba(15, 23, 42, 0.35)',
+    bgCard:      'rgba(248, 250, 252, 0.85)',
+    border:      'rgba(99, 102, 241, 0.2)',
+    borderSub:   'rgba(0, 0, 0, 0.06)',
+    textPri:     '#0f172a',
+    textSec:     '#64748b',
+    shadow:      '0 0 0 1px rgba(99,102,241,0.12), 0 24px 64px rgba(15,23,42,0.15), 0 8px 24px rgba(0,0,0,0.06)',
+    ctaBg:       'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+    ctaShadow:   '0 4px 20px rgba(37,99,235,0.35)',
+    headerBg:    'rgba(99,102,241,0.03)',
+    statusBarBg: 'rgba(241,245,249,0.7)',
+    badgeBg:     'linear-gradient(135deg, rgba(99,102,241,0.1), rgba(59,130,246,0.08))',
+    badgeBorder: 'rgba(99,102,241,0.18)',
+  };
 
-  header: {
-    padding: "16px 18px 14px",
-    borderBottom: "1px solid var(--border-color)",
-    display: "flex",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-  },
-  headerLeft: { display: "flex", gap: 10, alignItems: "flex-start" },
-  iconBadge: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  title: { margin: 0, color: "var(--text-primary)", fontSize: 15, fontWeight: 700, letterSpacing: "-0.2px" },
-  statusRow: { display: "flex", alignItems: "center", gap: 5, marginTop: 3 },
-  dot: {
-    width: 7,
-    height: 7,
-    borderRadius: "50%",
-    background: "#10b981",
-    display: "inline-block",
-    flexShrink: 0,
-  },
-  statusText: { margin: 0, color: "var(--text-secondary)", fontSize: 11.5 },
-  closeBtn: {
-    width: 28,
-    height: 28,
-    borderRadius: "50%",
-    background: "rgba(128,128,128,0.07)",
-    border: "none",
-    color: "var(--text-secondary)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    cursor: "pointer",
-    transition: "background 0.18s ease, color 0.18s ease",
-    flexShrink: 0,
-  },
+  return {
+    backdrop: {
+      position: 'fixed',
+      inset: 0,
+      background: PALETTE.backdrop,
+      backdropFilter: 'blur(16px)',
+      WebkitBackdropFilter: 'blur(16px)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 9999999,
+      padding: '1rem',
+    },
+    modal: {
+      width: 440,
+      maxWidth: '96vw',
+      background: PALETTE.bg,
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      borderRadius: 20,
+      border: `1px solid ${PALETTE.border}`,
+      overflow: 'hidden',
+      boxShadow: PALETTE.shadow,
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif',
+    },
 
-  statusBar: {
-    padding: "10px 18px",
-    display: "grid",
-    gridTemplateColumns: "repeat(4, 1fr)",
-    gap: 6,
-    background: "var(--bg-primary)",
-    borderBottom: "1px solid var(--border-color)",
-  },
-  stat: { textAlign: "center", display: "flex", flexDirection: "column", gap: 3 },
-  statLabel: { fontSize: 9, color: "var(--text-secondary)", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" },
-  statValue: { fontSize: 13, color: "var(--text-primary)", fontFamily: MONO, fontWeight: 600 },
+    header: {
+      padding: '16px 18px 14px',
+      borderBottom: `1px solid ${PALETTE.borderSub}`,
+      display: 'flex',
+      alignItems: 'flex-start',
+      justifyContent: 'space-between',
+      background: PALETTE.headerBg,
+    },
+    headerLeft: { display: 'flex', gap: 10, alignItems: 'flex-start' },
+    iconBadge: {
+      width: 38,
+      height: 38,
+      borderRadius: 11,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexShrink: 0,
+      background: PALETTE.badgeBg,
+      border: `1px solid ${PALETTE.badgeBorder}`,
+    },
+    title: { margin: 0, color: PALETTE.textPri, fontSize: 15, fontWeight: 700, letterSpacing: '-0.2px' },
+    statusRow: { display: 'flex', alignItems: 'center', gap: 5, marginTop: 3 },
+    dot: {
+      width: 7,
+      height: 7,
+      borderRadius: '50%',
+      background: '#10b981',
+      display: 'inline-block',
+      flexShrink: 0,
+    },
+    statusText: { margin: 0, color: PALETTE.textSec, fontSize: 11.5 },
+    closeBtn: {
+      width: 28,
+      height: 28,
+      borderRadius: '50%',
+      background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+      border: `1px solid ${PALETTE.borderSub}`,
+      color: PALETTE.textSec,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      cursor: 'pointer',
+      transition: 'all 0.18s ease',
+      flexShrink: 0,
+    },
 
-  body: { padding: "14px 18px 16px" },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: 8,
-    marginBottom: 10,
-  },
+    statusBar: {
+      padding: '10px 18px',
+      display: 'grid',
+      gridTemplateColumns: 'repeat(4, 1fr)',
+      gap: 6,
+      background: PALETTE.statusBarBg,
+      borderBottom: `1px solid ${PALETTE.borderSub}`,
+    },
+    stat: { textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 3 },
+    statLabel: { fontSize: 9, color: PALETTE.textSec, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' },
+    statValue: { fontSize: 13, color: PALETTE.textPri, fontFamily: MONO, fontWeight: 700 },
 
-  card: {
-    border: "1px solid var(--border-color)",
-    borderRadius: 11,
-    padding: 12,
-    background: "var(--bg-primary)",
-  },
-  cardWide: { gridColumn: "1 / -1" },
-  cardHead: { display: "flex", alignItems: "center", gap: 6, marginBottom: 8 },
-  cardIcon: {
-    width: 22,
-    height: 22,
-    borderRadius: 6,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  cardLabel: {
-    fontSize: 10,
-    color: "var(--text-secondary)",
-    letterSpacing: "0.05em",
-    fontWeight: 600,
-    textTransform: "uppercase",
-  },
+    body: { padding: '14px 18px 16px' },
+    grid: {
+      display: 'grid',
+      gridTemplateColumns: '1fr 1fr',
+      gap: 8,
+      marginBottom: 10,
+    },
 
-  valueMono: { margin: 0, fontFamily: MONO, fontSize: 17, color: "var(--text-primary)", fontWeight: 600 },
-  valueMonoSm: { margin: 0, fontFamily: MONO, fontSize: 13, color: "var(--text-primary)", lineHeight: 1.5 },
-  valueRow: { display: "flex", alignItems: "center", justifyContent: "space-between" },
-  badgePass: {
-    fontSize: 10,
-    color: "#10b981",
-    background: "rgba(16, 185, 129, 0.1)",
-    border: "1px solid rgba(16, 185, 129, 0.2)",
-    padding: "2px 8px",
-    borderRadius: 20,
-    fontWeight: 600,
-    letterSpacing: "0.03em",
-  },
+    card: {
+      border: `1px solid ${PALETTE.borderSub}`,
+      borderRadius: 13,
+      padding: 12,
+      background: PALETTE.bgCard,
+      backdropFilter: 'blur(10px)',
+      boxShadow: isDark ? 'none' : '0 2px 8px rgba(0,0,0,0.02)',
+      transition: 'border-color 0.2s',
+    },
+    cardWide: { gridColumn: '1 / -1' },
+    cardHead: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 },
+    cardIcon: {
+      width: 22,
+      height: 22,
+      borderRadius: 6,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexShrink: 0,
+    },
+    cardLabel: {
+      fontSize: 10,
+      color: PALETTE.textSec,
+      letterSpacing: '0.06em',
+      fontWeight: 700,
+      textTransform: 'uppercase',
+    },
 
-  barTrack: {
-    height: 3,
-    background: "var(--border-color)",
-    borderRadius: 3,
-    marginTop: 8,
-    overflow: "hidden",
-  },
-  barFill: {
-    height: "100%",
-    background: "linear-gradient(90deg, #3b82f6, #10b981)",
-    borderRadius: 3,
-  },
+    valueMono: { margin: 0, fontFamily: MONO, fontSize: 18, color: PALETTE.textPri, fontWeight: 700 },
+    valueMonoSm: { margin: 0, fontFamily: MONO, fontSize: 13, color: PALETTE.textPri, lineHeight: 1.5 },
+    valueRow: { display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
+    badgePass: {
+      fontSize: 10,
+      color: '#10b981',
+      background: 'rgba(16,185,129,0.12)',
+      border: '1px solid rgba(16,185,129,0.25)',
+      padding: '2px 8px',
+      borderRadius: 20,
+      fontWeight: 700,
+      letterSpacing: '0.04em',
+    },
 
-  cta: {
-    width: "100%",
-    padding: "11px 16px",
-    borderRadius: 10,
-    border: "none",
-    background: "linear-gradient(135deg, var(--primary-blue) 0%, #60a5fa 100%)",
-    color: "#ffffff",
-    fontSize: 13.5,
-    fontWeight: 600,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 7,
-    cursor: "pointer",
-    transition: "opacity 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease",
-    boxShadow: "0 4px 16px rgba(59, 130, 246, 0.3)",
-    letterSpacing: "-0.1px",
-  },
-};
+    barTrack: {
+      height: 3,
+      background: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.08)',
+      borderRadius: 3,
+      marginTop: 8,
+      overflow: 'hidden',
+    },
+    barFill: {
+      height: '100%',
+      background: isDark ? 'linear-gradient(90deg, #8b5cf6, #3b82f6)' : 'linear-gradient(90deg, #3b82f6, #10b981)',
+      borderRadius: 3,
+    },
+
+    cta: {
+      width: '100%',
+      padding: '11px 16px',
+      borderRadius: 12,
+      border: 'none',
+      background: PALETTE.ctaBg,
+      color: '#ffffff',
+      fontSize: 13.5,
+      fontWeight: 700,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 7,
+      cursor: 'pointer',
+      transition: 'opacity 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease',
+      boxShadow: PALETTE.ctaShadow,
+      letterSpacing: '-0.1px',
+    },
+  };
+}
+
+
