@@ -34,10 +34,25 @@ const getSessionToken = () => {
 export default function ChatBot() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
-  const [messages, setMessages] = useState([WELCOME_MESSAGE]);
+  const [messages, setMessages] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('atom-ai-memory');
+      if (saved) {
+        try { return JSON.parse(saved); } catch (e) { console.error('Failed to parse AI memory'); }
+      }
+    }
+    return [WELCOME_MESSAGE];
+  });
+  
+  useEffect(() => {
+    // Only save complete, non-error messages to prevent corrupted state
+    const toSave = messages.filter(m => !m.isError && (m.role === 'user' || (m.role === 'assistant' && m.content)));
+    localStorage.setItem('atom-ai-memory', JSON.stringify(toSave));
+  }, [messages]);
+
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(true);
+  const [showSuggestions, setShowSuggestions] = useState(() => messages.length <= 1);
   const [isRecording, setIsRecording] = useState(false);
   const { triggerIsland } = useIsland();
 
@@ -319,6 +334,7 @@ export default function ChatBot() {
     setShowSuggestions(true);
     setHasError(false);
     setInput('');
+    localStorage.removeItem('atom-ai-memory');
   };
 
   return createPortal(
@@ -745,6 +761,20 @@ export default function ChatBot() {
         .mic-btn:hover { color: var(--text-primary); background: rgba(128,128,128,0.1); }
         .mic-btn.recording { color: #ef4444; background: rgba(239,68,68,0.1); animation: pulseRecord 1.5s infinite; }
         @keyframes pulseRecord { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        
+        .voice-visualizer {
+          flex: 1; display: flex; align-items: center; gap: 12px; padding: 0 8px;
+        }
+        .voice-waves {
+          display: flex; align-items: center; gap: 3px; height: 28px;
+        }
+        .voice-bar {
+          width: 4px; background: #ef4444; border-radius: 4px;
+        }
+        .voice-text {
+          font-size: 13px; font-weight: 500; color: #ef4444; animation: fadePulse 1.5s infinite;
+        }
+        @keyframes fadePulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
       `}</style>
 
       {/* Generative UI Inline Components */}
@@ -1043,16 +1073,32 @@ export default function ChatBot() {
                 >
                   <Mic size={16} />
                 </button>
-                <input
-                  type="text"
-                  ref={inputRef}
-                  className="chatbot-input"
-                  placeholder={isRecording ? "Listening..." : "Ask anything about Sujith..."}
-                  value={input}
-                  onChange={e => setInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  disabled={isRecording}
-                />
+                {isRecording ? (
+                  <div className="voice-visualizer">
+                    <div className="voice-waves">
+                      {[...Array(6)].map((_, i) => (
+                        <motion.div
+                          key={i}
+                          className="voice-bar"
+                          animate={{ height: ['4px', `${12 + Math.random() * 16}px`, '4px'] }}
+                          transition={{ duration: 0.5 + Math.random() * 0.5, repeat: Infinity, ease: 'easeInOut', delay: i * 0.1 }}
+                        />
+                      ))}
+                    </div>
+                    <span className="voice-text">Listening...</span>
+                  </div>
+                ) : (
+                  <input
+                    type="text"
+                    ref={inputRef}
+                    className="chatbot-input"
+                    placeholder="Ask anything about Sujith..."
+                    value={input}
+                    onChange={e => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    disabled={isRecording}
+                  />
+                )}
                 <button
                   className="chatbot-send-btn"
                   onClick={() => sendMessage()}
