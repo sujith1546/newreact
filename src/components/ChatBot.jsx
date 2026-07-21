@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Loader2, Bot, User, Atom, RotateCcw, Trash2, Copy, Check, ChevronDown, ChevronUp, Info, Mic, Cpu, Layers, Code, Zap } from 'lucide-react';
+import { X, Send, Loader2, Bot, User, Atom, RotateCcw, Trash2, Copy, Check, ChevronDown, ChevronUp, Info, Mic, Cpu, Layers, Code, Zap, Paperclip } from 'lucide-react';
 import { useIsland } from '../context/IslandContext';
 
 const SUGGESTED_QUESTIONS = [
@@ -54,7 +54,21 @@ export default function ChatBot() {
   const [isLoading, setIsLoading] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(() => messages.length <= 1);
   const [isRecording, setIsRecording] = useState(false);
+  const [attachment, setAttachment] = useState(null); // { file, base64 }
+  const fileInputRef = useRef(null);
   const { triggerIsland } = useIsland();
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 4 * 1024 * 1024) {
+      triggerIsland({ title: 'File too large', subtitle: 'Please use an image under 4MB', color: '#ef4444', duration: 3000 });
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => setAttachment({ file, base64: e.target.result });
+    reader.readAsDataURL(file);
+  };
 
   // Web Speech API
   const recognitionRef = useRef(null);
@@ -137,12 +151,16 @@ export default function ChatBot() {
 
   const sendMessage = async (text) => {
     const userText = (text || input).trim();
-    if (!userText || isLoading) return;
+    if ((!userText && !attachment) || isLoading) return;
 
     setInput('');
+    const currentAttachment = attachment;
+    setAttachment(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    
     setShowSuggestions(false);
     setHasError(false);
-    setMessages(prev => [...prev, { role: 'user', content: userText }]);
+    setMessages(prev => [...prev, { role: 'user', content: userText, image: currentAttachment?.base64 }]);
     setIsLoading(true);
 
     try {
@@ -160,10 +178,7 @@ export default function ChatBot() {
         role: 'assistant', 
         content: '', 
         sources: [], 
-        steps: [
-          '🔍 Contextualizing user query...',
-          '🧠 Querying vector database for similarity matches...'
-        ],
+        steps: [],
         isThinkingExpanded: true
       }]);
 
@@ -175,7 +190,7 @@ export default function ChatBot() {
           'Content-Type': 'application/json',
           'x-portfolio-session': sessionToken 
         },
-        body: JSON.stringify({ message: userText, history })
+        body: JSON.stringify({ message: userText, image: currentAttachment?.base64, history })
       });
 
       if (!res.ok) {
@@ -221,19 +236,27 @@ export default function ChatBot() {
 
           try {
             const data = JSON.parse(payload);
-            if (data.type === 'sources') {
+            
+            if (data.type === 'step') {
               setMessages(prev => {
                 const updated = [...prev];
                 const lastIdx = updated.length - 1;
                 if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
                   updated[lastIdx] = {
                     ...updated[lastIdx],
-                    sources: data.sources,
-                    steps: [
-                      '✓ Contextualized query successfully',
-                      `✓ Retrieved vector matches: [${data.sources.map(s => s.source).join(', ') || 'none'}]`,
-                      '✨ Generating response with Llama-3.3-70B...'
-                    ]
+                    steps: [...(updated[lastIdx].steps || []), data.step]
+                  };
+                }
+                return updated;
+              });
+            } else if (data.type === 'sources') {
+              setMessages(prev => {
+                const updated = [...prev];
+                const lastIdx = updated.length - 1;
+                if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
+                  updated[lastIdx] = {
+                    ...updated[lastIdx],
+                    sources: data.sources
                   };
                 }
                 return updated;
@@ -775,6 +798,19 @@ export default function ChatBot() {
           font-size: 13px; font-weight: 500; color: #ef4444; animation: fadePulse 1.5s infinite;
         }
         @keyframes fadePulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+        
+        .attachment-preview {
+          position: relative; height: 36px; padding: 2px; border-radius: 6px; border: 1px solid var(--border-color);
+          display: flex; align-items: center; justify-content: center; background: var(--bg-primary); margin-right: 8px;
+        }
+        .attachment-img {
+          height: 100%; border-radius: 4px; object-fit: cover;
+        }
+        .attachment-remove {
+          position: absolute; top: -6px; right: -6px; width: 16px; height: 16px; border-radius: 50%;
+          background: #ef4444; color: #fff; border: none; cursor: pointer;
+          display: flex; align-items: center; justify-content: center;
+        }
       `}</style>
 
       {/* Generative UI Inline Components */}
@@ -946,6 +982,12 @@ export default function ChatBot() {
                       </div>
                     )}
                     
+                    {msg.image && (
+                      <div style={{ marginBottom: '8px' }}>
+                        <img src={msg.image} alt="User attachment" style={{ maxWidth: '100%', borderRadius: '8px' }} />
+                      </div>
+                    )}
+                    
                     <div className="chat-bubble-text">
                       {msg.content.replace('[RENDER_SKILLS]', '').replace('[RENDER_PROJECTS]', '').trim()}
                     </div>
@@ -1088,21 +1130,46 @@ export default function ChatBot() {
                     <span className="voice-text">Listening...</span>
                   </div>
                 ) : (
-                  <input
-                    type="text"
-                    ref={inputRef}
-                    className="chatbot-input"
-                    placeholder="Ask anything about Sujith..."
-                    value={input}
-                    onChange={e => setInput(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    disabled={isRecording}
-                  />
+                  <>
+                    <button
+                      className="mic-btn"
+                      onClick={() => fileInputRef.current?.click()}
+                      title="Attach image for Vision AI"
+                      type="button"
+                    >
+                      <Paperclip size={16} />
+                    </button>
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      ref={fileInputRef} 
+                      style={{ display: 'none' }} 
+                      onChange={handleFileChange} 
+                    />
+                    
+                    {attachment ? (
+                      <div className="attachment-preview">
+                        <img src={attachment.base64} alt="Attachment" className="attachment-img" />
+                        <button className="attachment-remove" onClick={() => setAttachment(null)}><X size={12} /></button>
+                      </div>
+                    ) : (
+                      <input
+                        type="text"
+                        ref={inputRef}
+                        className="chatbot-input"
+                        placeholder="Ask anything about Sujith..."
+                        value={input}
+                        onChange={e => setInput(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        disabled={isRecording}
+                      />
+                    )}
+                  </>
                 )}
                 <button
                   className="chatbot-send-btn"
                   onClick={() => sendMessage()}
-                  disabled={!input.trim() || isLoading}
+                  disabled={(!input.trim() && !attachment) || isLoading}
                   aria-label="Send message"
                 >
                   {isLoading ? <Loader2 size={16} className="spin" style={{ animation: 'spin 1s linear infinite' }} /> : <Send size={14} style={{ marginLeft: '1px' }} />}

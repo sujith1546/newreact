@@ -374,26 +374,69 @@ export default async function handler(req, res) {
     return res.status(403).json({ error: "Invalid or missing session token. Unauthorized." });
   }
 
-  try {
-    const { message, history = [] } = req.body;
-    if (!message || typeof message !== "string") {
-      return res.status(400).json({ error: "Missing 'message' in request body" });
+    try {
+    const { message, image, history = [] } = req.body;
+    if (!message && !image) {
+      return res.status(400).json({ error: "Missing 'message' or 'image' in request body" });
     }
 
     // Security 3: Input Length Cap to prevent prompt-injection / token inflation cost abuse
-    if (message.length > 2000) {
+    if (message && message.length > 2000) {
       return res.status(400).json({ error: "Message too long. Keep it under 2000 characters." });
     }
 
-    const standaloneQuestion = await rewriteQuery(history, message);
-    const queryEmbedding = await embedQuery(standaloneQuestion);
-    const chunks = await retrieve(queryEmbedding, standaloneQuestion, 5);
-    const userPrompt = buildUserPrompt(chunks, standaloneQuestion);
+    let groqPayload;
+    let chunks = [];
 
-    const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.GROQ_API_KEY}` },
-      body: JSON.stringify({
+    // Open stream early for Multi-Agent Orchestration feedback
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+
+    const sendStep = (msg) => {
+      res.write(`data: ${JSON.stringify({ type: "step", step: msg })}\n\n`);
+    };
+
+    if (image) {
+      sendStep("👁️ Invoking Vision Agent...");
+      sendStep("🔍 Analyzing multimodal input...");
+      // Vision Route: Use Groq Vision model
+      groqPayload = {
+        model: "llama-3.2-11b-vision-preview",
+        temperature: 0.4,
+        stream: true,
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { 
+            role: "user", 
+            content: [
+              { type: "text", text: message || "What's in this image?" },
+              { type: "image_url", image_url: { url: image } }
+            ]
+          }
+        ],
+      };
+    } else {
+      sendStep("🧠 Invoking Router Agent...");
+      
+      const standaloneQuestion = await rewriteQuery(history, message);
+      if (standaloneQuestion !== message) {
+        sendStep("🔄 Router Agent: Rewrote query with historical context...");
+      }
+
+      sendStep("📚 Invoking RAG Agent (Voyage AI)...");
+      const queryEmbedding = await embedQuery(standaloneQuestion);
+      chunks = await retrieve(queryEmbedding, standaloneQuestion, 5);
+      
+      if (chunks.length > 0) {
+        sendStep(`🎯 RAG Agent: Retrieved ${chunks.length} high-fidelity portfolio context chunks.`);
+      } else {
+        sendStep(`⚠️ RAG Agent: No exact portfolio context found, proceeding to General Agent.`);
+      }
+
+      const userPrompt = buildUserPrompt(chunks, standaloneQuestion);
+
+      groqPayload = {
         model: GROQ_MODEL,
         temperature: 0.4,
         stream: true,
@@ -401,16 +444,21 @@ export default async function handler(req, res) {
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: userPrompt },
         ],
-      }),
+      };
+    }
+
+    sendStep("⚡ Streaming Llama 3 generation via Groq...");
+
+    const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.GROQ_API_KEY}` },
+      body: JSON.stringify(groqPayload),
     });
 
     if (!groqRes.ok || !groqRes.body) {
-      return res.status(502).json({ error: "Groq request failed" });
+      res.write(`data: ${JSON.stringify({ type: "error", error: "Groq request failed" })}\n\n`);
+      return res.end();
     }
-
-    res.setHeader("Content-Type", "text/event-stream");
-    res.setHeader("Cache-Control", "no-cache");
-    res.setHeader("Connection", "keep-alive");
 
     // Send sources first so the frontend can render citation chips immediately
     res.write(
