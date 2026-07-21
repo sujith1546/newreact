@@ -5,8 +5,6 @@ import { X, Send, Loader2, Bot, User, Atom, RotateCcw, Trash2, Copy, Check, Chev
 import { useIsland } from '../context/IslandContext';
 import ThoughtTrace from './ThoughtTrace';
 import ReactMarkdown from 'react-markdown';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const SUGGESTED_QUESTIONS = [
   "What projects have you built?",
@@ -652,6 +650,20 @@ export default function ChatBot() {
           background: rgba(255,255,255,0.1);
           color: #fff;
         }
+        
+        .native-code-pre {
+          margin: 0;
+          padding: 12px;
+          overflow-x: auto;
+          background: #1e1e1e;
+        }
+        
+        .native-code {
+          font-family: 'JetBrains Mono', 'Fira Code', monospace;
+          font-size: 12.5px;
+          color: #e5e7eb;
+          white-space: pre;
+        }
 
         /* Sentient Indicator */
         .sentient-indicator {
@@ -1049,14 +1061,11 @@ export default function ChatBot() {
                                         <Copy size={12} />
                                       </button>
                                     </div>
-                                    <SyntaxHighlighter
-                                      children={String(children).replace(/\n$/, '')}
-                                      style={atomDark}
-                                      language={match ? match[1] : 'text'}
-                                      PreTag="div"
-                                      customStyle={{ margin: 0, borderTopLeftRadius: 0, borderTopRightRadius: 0, fontSize: '12px' }}
-                                      {...props}
-                                    />
+                                    <pre className="native-code-pre">
+                                      <code className="native-code" {...props}>
+                                        {String(children).replace(/\n$/, '')}
+                                      </code>
+                                    </pre>
                                   </div>
                                 ) : (
                                   <code className="inline-code" {...props}>
