@@ -49,13 +49,27 @@ const ALL_PAGES = [
 ];
 
 // ─── Navigation timing ────────────────────────────────────────────────────────
-// Apple UIKit NavigationController decelerate curve — the exact easing used in
-// iOS push/pop transitions. Creates the characteristic "snap and settle" feel.
+// Apple UIKit NavigationController decelerate curve.
 const NAV_DURATION = 0.34;
 const NAV_EASE     = [0.32, 0.72, 0, 1];
-
-// Progress bar sweep duration matches the nav (slightly faster so it "completes")
 const PROGRESS_DURATION = 0.3;
+
+// ─── Page transition variants ─────────────────────────────────────────────────
+// Using framer-motion's `custom` prop pattern so AnimatePresence can pass the
+// CURRENT slideDirection to the exiting component's `exit` variant — even after
+// the component has been removed from the React tree. Without this, the exit
+// direction is stale from the previous render, causing the wrong-direction bug.
+const mobilePageVariants = {
+  initial: (dir) => ({
+    x:       dir > 0 ? '100%' : dir < 0 ? '-100%' : 0,
+    opacity: dir === 0 ? 0 : 1,
+  }),
+  animate: { x: 0, opacity: 1 },
+  exit: (dir) => ({
+    x:       dir > 0 ? '-100%' : dir < 0 ? '100%' : 0,
+    opacity: dir === 0 ? 0 : 1,
+  }),
+};
 
 export default function MainLayout() {
   const { theme, pageTransition } = useTheme();
@@ -166,18 +180,6 @@ export default function MainLayout() {
   //
   //   Initial direction=0 (page load): simple cross-fade, no slide.
   //
-  const getMobileInitial = () => {
-    if (slideDirection > 0)  return { x: '100%', opacity: 1 };
-    if (slideDirection < 0)  return { x: '-100%', opacity: 1 };
-    return { opacity: 0, x: 0 };
-  };
-
-  const getMobileExit = () => {
-    if (slideDirection > 0)  return { x: '-100%', opacity: 1 };
-    if (slideDirection < 0)  return { x: '100%', opacity: 1 };
-    return { opacity: 0, x: 0 };
-  };
-
   const mobileTransition = {
     type:     'tween',
     ease:     NAV_EASE,
@@ -287,17 +289,16 @@ export default function MainLayout() {
         onTouchEnd={handleTouchEnd}
       >
         <div className="scroll-container">
-          <AnimatePresence mode="sync" initial={false}>
+          <AnimatePresence mode="sync" initial={false} custom={slideDirection}>
             <motion.div
               key={activeSection}
               id={activeSection}
+              custom={slideDirection}
 
-              initial={isMobile ? getMobileInitial() : getDesktopInitial()}
-              animate={isMobile
-                ? { x: 0, opacity: 1 }
-                : getDesktopAnimate()
-              }
-              exit={isMobile ? getMobileExit() : getDesktopExit()}
+              variants={isMobile ? mobilePageVariants : undefined}
+              initial={isMobile ? 'initial' : getDesktopInitial()}
+              animate={isMobile ? 'animate' : getDesktopAnimate()}
+              exit={isMobile ? 'exit' : getDesktopExit()}
 
               transition={isMobile
                 ? mobileTransition
@@ -305,14 +306,14 @@ export default function MainLayout() {
               }
 
               style={{
-                perspective:      pageTransition === 'flip' ? '1000px' : 'none',
-                transformStyle:   pageTransition === 'flip' ? 'preserve-3d' : 'flat',
-                width:            isMobile ? 'calc(100% - 24px)' : '100%',
-                height:           isMobile ? 'calc(100% - 24px)' : '100%',
-                position:         isMobile ? 'absolute' : 'relative',
-                top:              isMobile ? '12px' : 0,
-                left:             isMobile ? '12px' : 0,
-                willChange:       'transform',
+                perspective:               pageTransition === 'flip' ? '1000px' : 'none',
+                transformStyle:            pageTransition === 'flip' ? 'preserve-3d' : 'flat',
+                width:                     isMobile ? 'calc(100% - 24px)' : '100%',
+                height:                    isMobile ? 'calc(100% - 24px)' : '100%',
+                position:                  isMobile ? 'absolute' : 'relative',
+                top:                       isMobile ? '12px' : 0,
+                left:                      isMobile ? '12px' : 0,
+                willChange:                'transform',
                 backfaceVisibility:        'hidden',
                 WebkitBackfaceVisibility:  'hidden',
               }}
