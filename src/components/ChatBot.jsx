@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, Loader2, Bot, User, Atom, RotateCcw, Trash2, Copy, Check, ChevronDown, ChevronUp, Info, Mic, Cpu, Layers, Code, Zap, Paperclip } from 'lucide-react';
 import { useIsland } from '../context/IslandContext';
+import ThoughtTrace from './ThoughtTrace';
 
 const SUGGESTED_QUESTIONS = [
   "What projects have you built?",
@@ -297,10 +298,6 @@ export default function ChatBot() {
         if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
           updated[lastIdx] = {
             ...updated[lastIdx],
-            steps: [
-              ...updated[lastIdx].steps.slice(0, 2),
-              '✓ Generated complete reply using Llama-3.3-70B'
-            ],
             isThinkingExpanded: false
           };
         }
@@ -959,36 +956,7 @@ export default function ChatBot() {
                   </div>
                   <div className={`chat-bubble ${msg.role === 'user' ? 'user' : 'bot'} ${msg.isError ? 'error' : ''}`}>
                     {msg.steps && msg.steps.length > 0 && (
-                      <div className="thought-trace-container">
-                        <button 
-                          className="thought-trace-header"
-                          onClick={() => toggleThinking(i)}
-                          type="button"
-                        >
-                          <span className="thought-header-title">
-                            <Info size={11} style={{ marginRight: 4, display: 'inline-block', verticalAlign: 'middle' }} />
-                            {msg.isThinkingExpanded ? 'Collapsing Trace' : '✦ Thought Process Trace'}
-                          </span>
-                          {msg.isThinkingExpanded ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
-                        </button>
-                        
-                        <AnimatePresence>
-                          {msg.isThinkingExpanded && (
-                            <motion.div 
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: 'auto', opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              className="thought-trace-steps"
-                            >
-                              {msg.steps.map((step, sIdx) => (
-                                <div key={sIdx} className="thought-step-row">
-                                  {step}
-                                </div>
-                              ))}
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
+                      <ThoughtTrace steps={msg.steps} />
                     )}
                     
                     {msg.image && (

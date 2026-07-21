@@ -393,8 +393,8 @@ export default async function handler(req, res) {
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
 
-    const sendStep = (msg) => {
-      res.write(`data: ${JSON.stringify({ type: "step", step: msg })}\n\n`);
+    const sendStep = (node, status, text, ms = 0) => {
+      res.write(`data: ${JSON.stringify({ type: "step", step: { node, status, text, ms, timestamp: Date.now() } })}\n\n`);
     };
     const setAgentName = (name) => {
       res.write(`data: ${JSON.stringify({ type: "agent", name })}\n\n`);
@@ -402,8 +402,9 @@ export default async function handler(req, res) {
 
     if (image) {
       setAgentName("Vision Agent (Llama 3.2)");
-      sendStep("👁️ Invoking Vision Agent...");
-      sendStep("🔍 Analyzing multimodal input...");
+      let t0 = Date.now();
+      sendStep('vision', 'active', "Analyzing multimodal input...");
+      
       // Vision Route: Use Groq Vision model
       groqPayload = {
         model: "llama-3.2-11b-vision-preview",
@@ -420,23 +421,30 @@ export default async function handler(req, res) {
           }
         ],
       };
+      sendStep('vision', 'done', "Processed base64 vision payload", Date.now() - t0);
     } else {
       setAgentName("RAG Router (Llama 3.3)");
-      sendStep("🧠 Invoking Router Agent...");
       
+      let t0 = Date.now();
+      sendStep('router', 'active', "Rewriting query with historical context...");
       const standaloneQuestion = await rewriteQuery(history, message);
+      let routerMs = Date.now() - t0;
       if (standaloneQuestion !== message) {
-        sendStep("🔄 Router Agent: Rewrote query with historical context...");
+        sendStep('router', 'done', `Context extracted (${standaloneQuestion})`, routerMs);
+      } else {
+        sendStep('router', 'done', "No historical context needed", routerMs);
       }
 
-      sendStep("📚 Invoking RAG Agent (Voyage AI)...");
+      t0 = Date.now();
+      sendStep('rag', 'active', "Querying Voyage AI Vector Database...");
       const queryEmbedding = await embedQuery(standaloneQuestion);
       chunks = await retrieve(queryEmbedding, standaloneQuestion, 5);
+      let ragMs = Date.now() - t0;
       
       if (chunks.length > 0) {
-        sendStep(`🎯 RAG Agent: Retrieved ${chunks.length} high-fidelity portfolio context chunks.`);
+        sendStep('rag', 'done', `Retrieved ${chunks.length} high-fidelity semantic chunks`, ragMs);
       } else {
-        sendStep(`⚠️ RAG Agent: No exact portfolio context found, proceeding to General Agent.`);
+        sendStep('rag', 'done', `No exact semantic match found in DB`, ragMs);
       }
 
       const userPrompt = buildUserPrompt(chunks, standaloneQuestion);
@@ -452,7 +460,8 @@ export default async function handler(req, res) {
       };
     }
 
-    sendStep("⚡ Streaming Llama 3 generation via Groq...");
+    let genT0 = Date.now();
+    sendStep('gen', 'active', "Streaming generation via Groq Llama 3...");
 
     const groqRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
@@ -464,6 +473,9 @@ export default async function handler(req, res) {
       res.write(`data: ${JSON.stringify({ type: "error", error: "Groq request failed" })}\n\n`);
       return res.end();
     }
+    
+    // We can emit the done event for 'gen' with latency tracking its TTFB (time to first byte)
+    sendStep('gen', 'done', "Connection established (TTFB)", Date.now() - genT0);
 
     // Send sources first so the frontend can render citation chips immediately
     res.write(
