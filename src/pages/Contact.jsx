@@ -775,10 +775,6 @@ END:VCARD`;
                 <p className="mc-page-sub">Have a question or want to work together?</p>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
-                <div className="mc-avail-pill">
-                  <span className="mc-avail-dot" />
-                  <span className="mc-avail-text">Open</span>
-                </div>
                 {/* Compact chip — no longer a full-width button */}
                 <button className="mc-card-chip" onClick={() => setIsContactCardOpen(true)}>
                   <ContactIcon size={12} />
