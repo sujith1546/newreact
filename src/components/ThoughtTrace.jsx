@@ -49,10 +49,10 @@ export default function ThoughtTrace({ steps = [] }) {
         type="button"
       >
         <span className="trace-status-text">
-          <Activity size={12} style={{ marginRight: 6 }} className={steps.length && !steps[steps.length - 1].status?.includes('done') ? 'spinning' : ''} />
-          Multi-Agent Orchestration
+          <Activity size={12} className={steps.length && !steps[steps.length - 1].status?.includes('done') ? 'spinning' : ''} />
+          <span>Multi-Agent Orchestration</span>
         </span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <span className="trace-header-right">
           <span className="trace-latency">
             {totalMs > 0 ? `${totalMs}ms` : 'calculating...'}
           </span>
@@ -151,7 +151,7 @@ export default function ThoughtTrace({ steps = [] }) {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 12px 16px;
+          padding: 10px 12px;
           width: 100%;
           border: none;
           background: transparent;
@@ -173,6 +173,12 @@ export default function ThoughtTrace({ steps = [] }) {
         .trace-status-text {
           display: flex;
           align-items: center;
+          gap: 6px;
+        }
+        .trace-header-right {
+          display: flex;
+          align-items: center;
+          gap: 8px;
         }
         .spinning {
           animation: spin 2s linear infinite;
@@ -182,8 +188,10 @@ export default function ThoughtTrace({ steps = [] }) {
           color: #10b981;
           font-family: monospace;
           background: rgba(16, 185, 129, 0.1);
-          padding: 2px 6px;
-          border-radius: 4px;
+          padding: 2px 8px;
+          border-radius: 6px;
+          display: flex;
+          align-items: center;
         }
         .trace-expanded-content {
           padding: 16px;

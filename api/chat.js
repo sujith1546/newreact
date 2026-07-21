@@ -375,7 +375,7 @@ export default async function handler(req, res) {
   }
 
     try {
-    const { message, image, history = [] } = req.body;
+    const { message, image, history = [], contextPath = 'homepage' } = req.body;
     if (!message && !image) {
       return res.status(400).json({ error: "Missing 'message' or 'image' in request body" });
     }
@@ -400,6 +400,8 @@ export default async function handler(req, res) {
       res.write(`data: ${JSON.stringify({ type: "agent", name })}\n\n`);
     }
 
+    const DYNAMIC_SYSTEM_PROMPT = SYSTEM_PROMPT + `\n\n*** CURRENT USER CONTEXT ***\nThe user is currently viewing the '${contextPath}' section of your portfolio. If appropriate, tailor your response to be contextually aware of what they are looking at (e.g. 'I see you are looking at my Experience section...').`;
+
     if (image) {
       setAgentName("Vision Agent (Llama 3.2)");
       let t0 = Date.now();
@@ -411,7 +413,7 @@ export default async function handler(req, res) {
         temperature: 0.4,
         stream: true,
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
+          { role: "system", content: DYNAMIC_SYSTEM_PROMPT },
           { 
             role: "user", 
             content: [
@@ -454,7 +456,7 @@ export default async function handler(req, res) {
         temperature: 0.4,
         stream: true,
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
+          { role: "system", content: DYNAMIC_SYSTEM_PROMPT },
           { role: "user", content: userPrompt },
         ],
       };

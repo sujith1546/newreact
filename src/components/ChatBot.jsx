@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, Loader2, Bot, User, Atom, RotateCcw, Trash2, Copy, Check, ChevronDown, ChevronUp, Info, Mic, Cpu, Layers, Code, Zap, Paperclip } from 'lucide-react';
 import { useIsland } from '../context/IslandContext';
 import ThoughtTrace from './ThoughtTrace';
+import SkillChart from './GenerativeUI/SkillChart';
+import ProjectCarousel from './GenerativeUI/ProjectCarousel';
 import ReactMarkdown from 'react-markdown';
 
 const SUGGESTED_QUESTIONS = [
@@ -184,13 +186,15 @@ export default function ChatBot() {
 
       // Call our secure backend API
       const sessionToken = getSessionToken();
+      const currentContext = window.location.hash || window.location.pathname || 'homepage';
+      
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           'x-portfolio-session': sessionToken 
         },
-        body: JSON.stringify({ message: userText, image: currentAttachment?.base64, history })
+        body: JSON.stringify({ message: userText, image: currentAttachment?.base64, history, contextPath: currentContext })
       });
 
       if (!res.ok) {
@@ -1049,34 +1053,40 @@ export default function ChatBot() {
                     ) : (
                       <div className="chat-bubble-text markdown-body">
                         {msg.role === 'assistant' ? (
-                          <ReactMarkdown
-                            components={{
-                              code({node, inline, className, children, ...props}) {
-                                const match = /language-(\w+)/.exec(className || '')
-                                return !inline ? (
-                                  <div className="code-block-wrapper">
-                                    <div className="code-block-header">
-                                      <span className="code-lang">{match ? match[1] : 'code'}</span>
-                                      <button className="code-copy-btn" onClick={() => navigator.clipboard.writeText(String(children))} title="Copy Code">
-                                        <Copy size={12} />
-                                      </button>
+                          <>
+                            <ReactMarkdown
+                              components={{
+                                code({node, inline, className, children, ...props}) {
+                                  const match = /language-(\w+)/.exec(className || '')
+                                  return !inline ? (
+                                    <div className="code-block-wrapper">
+                                      <div className="code-block-header">
+                                        <span className="code-lang">{match ? match[1] : 'code'}</span>
+                                        <button className="code-copy-btn" onClick={() => navigator.clipboard.writeText(String(children))} title="Copy Code">
+                                          <Copy size={12} />
+                                        </button>
+                                      </div>
+                                      <pre className="native-code-pre">
+                                        <code className="native-code" {...props}>
+                                          {String(children).replace(/\n$/, '')}
+                                        </code>
+                                      </pre>
                                     </div>
-                                    <pre className="native-code-pre">
-                                      <code className="native-code" {...props}>
-                                        {String(children).replace(/\n$/, '')}
-                                      </code>
-                                    </pre>
-                                  </div>
-                                ) : (
-                                  <code className="inline-code" {...props}>
-                                    {children}
-                                  </code>
-                                )
-                              }
-                            }}
-                          >
-                            {msg.content.replace('[RENDER_SKILLS]', '').replace('[RENDER_PROJECTS]', '').trim()}
-                          </ReactMarkdown>
+                                  ) : (
+                                    <code className="inline-code" {...props}>
+                                      {children}
+                                    </code>
+                                  )
+                                }
+                              }}
+                            >
+                              {msg.content.replace(/\[RENDER_SKILLS\]|\[RENDER_PROJECTS\]/g, '').trim()}
+                            </ReactMarkdown>
+                            
+                            {/* Generative UI Components */}
+                            {msg.content.includes('[RENDER_SKILLS]') && <SkillChart />}
+                            {msg.content.includes('[RENDER_PROJECTS]') && <ProjectCarousel />}
+                          </>
                         ) : (
                           msg.content
                         )}
