@@ -759,55 +759,47 @@ export default function Projects() {
                     })()}
 
                     {/* Tab content */}
-                    <AnimatePresence mode="wait">
-                      {tab === 'overview' && (
-                        <motion.div key="overview" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.15, ease: 'easeOut' }} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                          <p className="dsheet-desc">{selectedProject.description}</p>
-                          <div>
-                            <p className="dsheet-section-label">Stack</p>
-                            <div className="ps-tags">
-                              {selectedProject.tags.map(tag => {
-                                const TagIcon = tagIconMap[tag];
-                                return (
-                                  <span key={tag} className="ps-tag" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                                    {TagIcon && <TagIcon size={12} style={{ opacity: 0.8 }} />}
-                                    {tag}
-                                  </span>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        </motion.div>
-                      )}
-                      
-                      {tab === 'architecture' && selectedProject.architecture && (
-                        <motion.div key="architecture" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.15, ease: 'easeOut' }} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                          <div>
-                            <p className="dsheet-section-label">Pipeline</p>
-                            <div className="ps-arch">
-                              {selectedProject.architecture.map((step, i) => (
-                                <span key={step} className="ps-arch-step">
-                                  {step}
-                                  {i < selectedProject.architecture.length - 1 && <span className="ps-arch-arrow">&rarr;</span>}
+                    {tab === 'overview' && (
+                      <>
+                        <p className="dsheet-desc">{selectedProject.description}</p>
+                        <div>
+                          <p className="dsheet-section-label">Stack</p>
+                          <div className="ps-tags">
+                            {selectedProject.tags.map(tag => {
+                              const TagIcon = tagIconMap[tag];
+                              return (
+                                <span key={tag} className="ps-tag" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                                  {TagIcon && <TagIcon size={12} style={{ opacity: 0.8 }} />}
+                                  {tag}
                                 </span>
-                              ))}
-                            </div>
+                              );
+                            })}
                           </div>
-                        </motion.div>
-                      )}
-                      
-                      {tab === 'code' && selectedProject.code && (
-                        <motion.div key="code" initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -4 }} transition={{ duration: 0.15, ease: 'easeOut' }} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                          <div>
-                            <p className="dsheet-section-label">Code Snippet</p>
-                            <div className="ps-code-block">
-                              <button className="ps-copy" onClick={copyCode}>{copied ? 'Copied!' : 'Copy'}</button>
-                              <pre>{selectedProject.code}</pre>
-                            </div>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                        </div>
+                      </>
+                    )}
+                    {tab === 'architecture' && selectedProject.architecture && (
+                      <div>
+                        <p className="dsheet-section-label">Pipeline</p>
+                        <div className="ps-arch">
+                          {selectedProject.architecture.map((step, i) => (
+                            <span key={step} className="ps-arch-step">
+                              {step}
+                              {i < selectedProject.architecture.length - 1 && <span className="ps-arch-arrow">&rarr;</span>}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {tab === 'code' && selectedProject.code && (
+                      <div>
+                        <p className="dsheet-section-label">Code Snippet</p>
+                        <div className="ps-code-block">
+                          <button className="ps-copy" onClick={copyCode}>{copied ? 'Copied!' : 'Copy'}</button>
+                          <pre>{selectedProject.code}</pre>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Action buttons */}
                     <div className="dsheet-actions">
