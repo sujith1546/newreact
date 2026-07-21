@@ -963,90 +963,77 @@ END:VCARD`;
                 </button>
               </div>
 
-              {/* Scrollable Body - Enhanced List View */}
+              {/* Scrollable Body - Matching the Apple-like mobile view */}
               <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '32px' }}>
 
                 <div className="settings-group">
-                  <span className="settings-group-label" style={{ fontSize: '11.5px', fontWeight: 700, letterSpacing: '0.06em' }}>About This App</span>
-                  <div className="settings-card" style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.02)' }}>
-                    <div className="settings-row" style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '14px' }}>
-                      <div className="settings-row-icon" style={{
-                        width: 32, height: 32, borderRadius: 10, color: '#10b981', 
-                        borderColor: 'rgba(16,185,129,0.2)', background: 'rgba(16,185,129,0.1)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center'
-                      }}>
-                        <Info size={16} />
-                      </div>
-                      <div className="settings-row-text">
-                        <h4 style={{ margin: '0 0 2px', fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>Purpose</h4>
-                        <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)' }}>Built for personal use and experimentation.</p>
+                  <span className="settings-group-label">About This App</span>
+                  <div className="settings-card">
+                    <div className="settings-row">
+                      <div className="settings-row-left">
+                        <div className="settings-row-icon" style={{color: '#10b981', borderColor: 'rgba(16,185,129,0.2)', background: 'rgba(16,185,129,0.1)'}}>
+                          <Info size={16} />
+                        </div>
+                        <div className="settings-row-text">
+                          <h4>Purpose</h4>
+                          <p>Built for personal use and experimentation.</p>
+                        </div>
                       </div>
                     </div>
-                    <div className="settings-row" style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '14px', borderTop: '1px solid var(--border-color)', borderBottom: 'none' }}>
-                      <div className="settings-row-icon" style={{
-                        width: 32, height: 32, borderRadius: 10, color: '#8b5cf6', 
-                        borderColor: 'rgba(139,92,246,0.2)', background: 'rgba(139,92,246,0.1)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center'
-                      }}>
-                        <User size={16} />
-                      </div>
-                      <div className="settings-row-text">
-                        <h4 style={{ margin: '0 0 2px', fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>Developed By</h4>
-                        <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)' }}>Sujith Thota</p>
+                    <div className="settings-row">
+                      <div className="settings-row-left">
+                        <div className="settings-row-icon" style={{color: '#8b5cf6', borderColor: 'rgba(139,92,246,0.2)', background: 'rgba(139,92,246,0.1)'}}>
+                          <User size={16} />
+                        </div>
+                        <div className="settings-row-text">
+                          <h4>Developed By</h4>
+                          <p>Sujith Thota</p>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 <div className="settings-group">
-                  <span className="settings-group-label" style={{ fontSize: '11.5px', fontWeight: 700, letterSpacing: '0.06em' }}>Features & Integrations</span>
-                  <div className="settings-card" style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.02)' }}>
-                    <div className="settings-row" style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '14px' }}>
-                      <div className="settings-row-icon" style={{
-                        width: 32, height: 32, borderRadius: 10, color: '#3b82f6', 
-                        borderColor: 'rgba(59,130,246,0.2)', background: 'rgba(59,130,246,0.1)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center'
-                      }}>
-                        <Atom size={16} />
-                      </div>
-                      <div className="settings-row-text">
-                        <h4 style={{ margin: '0 0 2px', fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>Atom AI</h4>
-                        <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)' }}>Real LLM integration via Groq & Voyage AI.</p>
+                  <span className="settings-group-label">Features & Integrations</span>
+                  <div className="settings-card">
+                    <div className="settings-row">
+                      <div className="settings-row-left">
+                        <div className="settings-row-icon" style={{color: '#3b82f6', borderColor: 'rgba(59,130,246,0.2)', background: 'rgba(59,130,246,0.1)'}}>
+                          <Atom size={16} />
+                        </div>
+                        <div className="settings-row-text">
+                          <h4>Atom AI</h4>
+                          <p>Real LLM integration via Groq & Voyage AI.</p>
+                        </div>
                       </div>
                     </div>
-                    <div className="settings-row" style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '14px', borderTop: '1px solid var(--border-color)', borderBottom: 'none' }}>
-                      <div className="settings-row-icon" style={{
-                        width: 32, height: 32, borderRadius: 10, color: '#f59e0b', 
-                        borderColor: 'rgba(245,158,11,0.2)', background: 'rgba(245,158,11,0.1)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center'
-                      }}>
-                        <Shield size={16} />
-                      </div>
-                      <div className="settings-row-text">
-                        <h4 style={{ margin: '0 0 2px', fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>Security</h4>
-                        <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)' }}>Enterprise-grade Rate Limiting & Bot Traps.</p>
+                    <div className="settings-row">
+                      <div className="settings-row-left">
+                        <div className="settings-row-icon" style={{color: '#f59e0b', borderColor: 'rgba(245,158,11,0.2)', background: 'rgba(245,158,11,0.1)'}}>
+                          <Shield size={16} />
+                        </div>
+                        <div className="settings-row-text">
+                          <h4>Security</h4>
+                          <p>Enterprise-grade Rate Limiting & Bot Traps.</p>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 <div className="settings-group">
-                  <span className="settings-group-label" style={{ fontSize: '11.5px', fontWeight: 700, letterSpacing: '0.06em' }}>Navigation Tips</span>
-                  <div className="settings-card" style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.02)' }}>
-                    <div className="settings-row" style={{ padding: '16px', display: 'flex', alignItems: 'flex-start', gap: '14px', borderBottom: 'none' }}>
-                      <div className="settings-row-icon" style={{
-                        width: 32, height: 32, borderRadius: 10, color: '#3b82f6', flexShrink: 0,
-                        borderColor: 'rgba(59,130,246,0.2)', background: 'linear-gradient(135deg, rgba(59,130,246,0.1), rgba(139,92,246,0.1))',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center'
-                      }}>
-                        <Navigation size={16} />
-                      </div>
-                      <div className="settings-row-text">
-                        <ul style={{ margin: 0, paddingLeft: '16px', fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                          <li>Swipe horizontally on some cards to reveal actions.</li>
-                          <li>Use the <strong>More</strong> menu for deeper settings.</li>
-                          <li>Tap the microphone in Chat to use Voice Commands.</li>
-                        </ul>
+                  <span className="settings-group-label">Navigation Tips</span>
+                  <div className="settings-card">
+                    <div className="settings-row">
+                      <div className="settings-row-left">
+                        <div className="settings-row-text">
+                          <p style={{ lineHeight: '1.5', fontSize: '13px' }}>
+                            • Swipe horizontally on some cards to reveal actions.<br/>
+                            • Use the <strong>More</strong> menu for deeper settings.<br/>
+                            • Tap the microphone in Chat to use Voice Commands.
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1054,18 +1041,17 @@ END:VCARD`;
 
                 <div style={{ flex: 1 }} />
 
-                {/* Close button - Premium Style */}
+                {/* Close button */}
                 <motion.button
                   onClick={() => setIsHelpOpen(false)}
                   whileTap={{ scale: 0.96 }}
                   style={{ 
                     width: '100%', padding: '16px',
-                    background: theme === 'dark' ? '#fff' : '#000',
-                    color: theme === 'dark' ? '#000' : '#fff',
-                    borderRadius: '16px', fontWeight: 800, fontSize: '15px',
-                    border: 'none', cursor: 'pointer', letterSpacing: '-0.01em',
+                    background: 'var(--bg-primary)',
+                    color: 'var(--text-primary)', borderRadius: '18px', fontWeight: 700, fontSize: '14.5px',
+                    border: '1px solid var(--border-color)', cursor: 'pointer', letterSpacing: '-0.01em',
                     marginTop: 'auto',
-                    boxShadow: theme === 'dark' ? '0 8px 24px rgba(255,255,255,0.15)' : '0 8px 24px rgba(0,0,0,0.2)'
+                    boxShadow: '0 2px 10px rgba(0,0,0,0.03)'
                   }}
                 >
                   Got it, let's explore!
