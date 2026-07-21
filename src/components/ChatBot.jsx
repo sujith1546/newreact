@@ -72,7 +72,7 @@ export default function ChatBot() {
     const cleanText = text
       .replace(/\[RENDER_SKILLS\]|\[RENDER_PROJECTS\]/g, '')
       .replace(/\[BENTO_START\][\s\S]*?\[BENTO_END\]/g, '')
-      .replace(/\[NAVIGATE:[a-z]+\]/g, '')
+      .replace(/\[NAVIGATE:[a-z]+:[^\]]*\]/gi, '')
       .replace(/\*\*/g, '')
       .replace(/#/g, '');
 
@@ -341,16 +341,16 @@ export default function ChatBot() {
       // Finish generation step
       speakText(finalText);
 
-      // ── Screen Director: detect [NAVIGATE:sectionId] ─────────────────────
-      const navMatch = finalText.match(/\[NAVIGATE:([a-z]+)\]/);
+      // ── Screen Director: detect [NAVIGATE:sectionId:keyword] ─────────────
+      const navMatch = finalText.match(/\[NAVIGATE:([a-z]+):([^\]]+)\]/i);
       if (navMatch) {
-        const targetSection = navMatch[1];
+        const targetSection = navMatch[1].toLowerCase();
+        const keyword = navMatch[2].trim();
         const validSections = ['home','about','skills','projects','education','experience','certifications','contact'];
         if (validSections.includes(targetSection)) {
-          // Small delay so the AI message renders first before navigation
           setTimeout(() => {
             window.dispatchEvent(new CustomEvent('navigate-section', {
-              detail: { section: targetSection, highlight: true }
+              detail: { section: targetSection, highlight: true, keyword }
             }));
           }, 600);
         }
@@ -1138,7 +1138,7 @@ export default function ChatBot() {
                             }
                             displayContent = displayContent
                               .replace(/\[RENDER_SKILLS\]|\[RENDER_PROJECTS\]/g, '')
-                              .replace(/\[NAVIGATE:[a-z]+\]/g, '')
+                              .replace(/\[NAVIGATE:[a-z]+:[^\]]*\]/gi, '')
                               .trim();
 
                             return (

@@ -81,6 +81,7 @@ export default function MainLayout() {
   const [isNavActive,      setIsNavActive]      = useState(false); // drives progress bar
   const [emailCopied,      setEmailCopied]      = useState(false);
   const [spotlightSection, setSpotlightSection] = useState(null); // AI Screen Director
+  const [spotlightKeyword, setSpotlightKeyword] = useState('');   // keyword sub-target
   const scrollRef   = useRef(null);
   const navTimerRef = useRef(null);
 
@@ -96,8 +97,11 @@ export default function MainLayout() {
       if (section) {
         handleNavClick(section);
         if (highlight) {
-          // Small extra delay so the page transition starts before spotlight fires
-          setTimeout(() => setSpotlightSection(section), 200);
+          const kw = e.detail?.keyword || '';
+          setTimeout(() => {
+            setSpotlightSection(section);
+            setSpotlightKeyword(kw);
+          }, 200);
         }
       }
     };
@@ -341,7 +345,8 @@ export default function MainLayout() {
       {/* ── AI Screen Director Spotlight ─────────────────────────────── */}
       <SectionSpotlight
         section={spotlightSection}
-        onDismiss={() => setSpotlightSection(null)}
+        keyword={spotlightKeyword}
+        onDismiss={() => { setSpotlightSection(null); setSpotlightKeyword(''); }}
       />
 
       {!isMobile && (

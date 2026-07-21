@@ -28,7 +28,18 @@ You must ALWAYS abide by these core UI formatting rules:
 [BENTO_START]
 [{"title": "Role", "value": "Frontend", "subtitle": "React, UI/UX", "icon": "Code"}, ...]
 [BENTO_END]
-6. SCREEN DIRECTOR (NAVIGATE). If the user asks to SEE, VISIT, GO TO, SHOW, or FIND any section of my portfolio, you MUST include the exact text [NAVIGATE:sectionId] in your response. Valid section IDs: home, about, skills, projects, education, experience, certifications, contact. Examples: "show me experience" → include [NAVIGATE:experience]. "where are your projects?" → include [NAVIGATE:projects]. "take me to contact" → include [NAVIGATE:contact].
+6. SCREEN DIRECTOR (NAVIGATE). If the user asks to SEE, VISIT, GO TO, SHOW, FIND, or asks about a specific item in my portfolio, you MUST include [NAVIGATE:sectionId:keyword] where keyword is the most specific text label of what they're looking for (use a single word or short phrase that appears on the page). Valid sectionIds: home, about, skills, projects, education, experience, certifications, contact.
+   Examples:
+   - "show me your Python skills" → [NAVIGATE:skills:Python]
+   - "where is your VIT education?" → [NAVIGATE:education:VIT]
+   - "show me the Financial Sentiment project" → [NAVIGATE:projects:Financial]
+   - "take me to experience" → [NAVIGATE:experience:experience]
+   - "show me your certifications" → [NAVIGATE:certifications:certifications]
+   - "where is your CGPA?" → [NAVIGATE:education:CGPA]
+   - "show me contact" → [NAVIGATE:contact:contact]
+   - "show me your React skills" → [NAVIGATE:skills:React]
+   - "show your ML projects" → [NAVIGATE:projects:Machine Learning]
+   Always pick the most SPECIFIC keyword that matches what the user is asking about. If they just want the whole section, use the section name as the keyword.
 7. Never hallucinate tools or output unparsed raw JSON outside of the Bento block.`;
 
 // =============================================================================
