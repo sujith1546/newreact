@@ -180,27 +180,7 @@ export default function ChatBot() {
           });
         }
 
-        // Fallback for local development if the serverless proxy is down
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-          setTimeout(() => {
-            setMessages(prev => {
-              const updated = [...prev];
-              const lastIdx = updated.length - 1;
-              if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
-                updated[lastIdx] = {
-                  ...updated[lastIdx],
-                  content: "Hi! I'm running in local development mode. The AI backend is currently unreachable, but this is a simulated response to verify the UI works perfectly! 🚀",
-                  steps: [...updated[lastIdx].steps, '✓ Local mock response generated'],
-                  isThinkingExpanded: false
-                };
-              }
-              return updated;
-            });
-            setIsLoading(false);
-          }, 1000);
-          return;
-        }
-
+        // Fallback removed: Always strictly use the real Groq + Voyage API
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.error || 'Request failed');
       }
@@ -577,25 +557,40 @@ export default function ChatBot() {
           color: #fca5a5;
         }
 
-        /* Typing indicator */
-        .typing-indicator {
+        /* Sentient Indicator */
+        .sentient-indicator {
+          position: relative;
+          width: 32px;
+          height: 32px;
           display: flex;
-          gap: 4px;
           align-items: center;
-          padding: 12px 14px;
+          justify-content: center;
+          margin: 4px;
         }
-        .typing-dot {
-          width: 7px;
-          height: 7px;
+        .sentient-core {
+          width: 12px;
+          height: 12px;
+          background: var(--primary-blue, #3b82f6);
           border-radius: 50%;
-          background: #9ca3af;
-          animation: typingBounce 1.2s infinite;
+          box-shadow: 0 0 15px rgba(59,130,246,0.8);
+          z-index: 2;
         }
-        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
-        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes typingBounce {
-          0%, 60%, 100% { transform: translateY(0); }
-          30% { transform: translateY(-6px); }
+        .sentient-ring {
+          position: absolute;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          border: 1px solid rgba(59,130,246,0.4);
+          border-top-color: transparent;
+          border-bottom-color: transparent;
+          z-index: 1;
+        }
+        .sentient-ring-2 {
+          width: 32px;
+          height: 32px;
+          border: 1px solid rgba(16,185,129,0.3);
+          border-left-color: transparent;
+          border-right-color: transparent;
         }
 
         /* Suggestions */
@@ -992,10 +987,26 @@ export default function ChatBot() {
                 <motion.div className="chat-message-row" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                   <div className="chat-avatar bot"><Atom size={14} /></div>
                   <div className="chat-bubble bot">
-                    <div className="typing-indicator">
-                      <div className="typing-dot" />
-                      <div className="typing-dot" />
-                      <div className="typing-dot" />
+                    <div className="sentient-indicator">
+                      <motion.div 
+                        className="sentient-core"
+                        animate={{ 
+                          scale: [1, 1.2, 1],
+                          rotate: [0, 180, 360],
+                          filter: ['blur(2px)', 'blur(4px)', 'blur(2px)']
+                        }}
+                        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                      />
+                      <motion.div 
+                        className="sentient-ring"
+                        animate={{ rotate: [360, 0] }}
+                        transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+                      />
+                      <motion.div 
+                        className="sentient-ring sentient-ring-2"
+                        animate={{ rotate: [0, 360], scale: [1, 1.1, 1] }}
+                        transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+                      />
                     </div>
                   </div>
                 </motion.div>
