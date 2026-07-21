@@ -567,36 +567,20 @@ END:VCARD`;
                     </div>
                   </div>
 
-                  <div className="settings-row" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '12px' }}>
-                    <div className="settings-row-text">
-                      <h4>Page Transitions</h4>
-                      <p>Advanced navigation animations</p>
+                  <div className="settings-row">
+                    <div className="settings-row-left">
+                      <div className="settings-row-text">
+                        <h4>Page Transitions</h4>
+                        <p>Seamless synchronized push</p>
+                      </div>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', width: '100%' }}>
-                      {[
-                        { id: 'fade', label: 'Classic Fade' },
-                        { id: 'slide', label: 'iOS Slide' },
-                        { id: 'scale', label: 'Liquid Scale' },
-                        { id: 'flip', label: '3D Flip' }
-                      ].map(t => (
-                        <button
-                          key={t.id}
-                          onClick={() => { playSound(); setPageTransition(t.id); }}
-                          style={{
-                            padding: '10px',
-                            border: `1px solid ${pageTransition === t.id ? 'var(--primary-blue)' : 'var(--border-color)'}`,
-                            background: pageTransition === t.id ? 'rgba(0, 123, 255, 0.08)' : 'var(--bg-primary)',
-                            borderRadius: '10px',
-                            color: pageTransition === t.id ? 'var(--primary-blue)' : 'var(--text-primary)',
-                            fontWeight: 600,
-                            fontSize: '12.5px',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s'
-                          }}
-                        >
-                          {t.label}
-                        </button>
-                      ))}
+                    <div style={{
+                      fontSize: '11px', fontWeight: 700, letterSpacing: '0.05em',
+                      textTransform: 'uppercase', color: 'var(--primary-blue)',
+                      background: 'rgba(0,123,255,0.08)', border: '1px solid rgba(0,123,255,0.2)',
+                      borderRadius: '8px', padding: '4px 10px', whiteSpace: 'nowrap', flexShrink: 0
+                    }}>
+                      iOS Push
                     </div>
                   </div>
 
