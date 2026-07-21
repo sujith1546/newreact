@@ -309,7 +309,7 @@ export default function MainLayout() {
                 perspective:               pageTransition === 'flip' ? '1000px' : 'none',
                 transformStyle:            pageTransition === 'flip' ? 'preserve-3d' : 'flat',
                 width:                     isMobile ? 'calc(100% - 24px)' : '100%',
-                height:                    isMobile ? 'calc(100% - 24px)' : '100%',
+                height:                    isMobile ? 'calc(100% - 24px)' : 'auto',
                 position:                  isMobile ? 'absolute' : 'relative',
                 top:                       isMobile ? '12px' : 0,
                 left:                      isMobile ? '12px' : 0,
