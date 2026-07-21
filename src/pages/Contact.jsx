@@ -551,7 +551,6 @@ END:VCARD`;
           .mc-card-chip:active { transform: scale(0.94); box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
           [data-theme="dark"] .mc-card-chip { background: #1a1a1a; border: 1px solid rgba(255,255,255,0.12); color: #fff; box-shadow: 0 2px 12px rgba(0,0,0,0.5); }
           [data-theme="dark"] .mc-card-chip:active { background: #111; }
-          .mc-card-chip-dot { width: 6px; height: 6px; border-radius: 50%; background: #3b82f6; box-shadow: 0 0 6px rgba(59,130,246,0.8); flex-shrink: 0; }
 
 
           /* ========== CONTACT CARD SHEET — Premium redesign ========== */
@@ -782,7 +781,6 @@ END:VCARD`;
                 </div>
                 {/* Compact chip — no longer a full-width button */}
                 <button className="mc-card-chip" onClick={() => setIsContactCardOpen(true)}>
-                  <span className="mc-card-chip-dot" />
                   <ContactIcon size={12} />
                   Contact card
                 </button>
