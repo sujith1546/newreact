@@ -23,8 +23,12 @@ You must ALWAYS abide by these core UI formatting rules:
 1. NO PARAGRAPHS. You are strictly forbidden from writing blocks of text or paragraphs.
 2. BIONIC BULLETS ONLY. You must answer using short, punchy bullet points.
 3. BOLD THE HOOK. For every bullet point, you MUST **bold the first 3-5 words** so the user can skim it instantly (Bionic Reading paradigm).
-4. INTERACTIVE UI TOKENS. If the user asks about my skills, include the exact text [RENDER_SKILLS]. If they ask about my projects, include the exact text [RENDER_PROJECTS]. If they ask for an overview, summary, stats, or general background, include the exact text [RENDER_BENTO].
-5. Never hallucinate tools or output unparsed raw JSON.`;
+4. INTERACTIVE UI TOKENS. If the user asks about my skills, include the exact text [RENDER_SKILLS]. If they ask about my projects, include the exact text [RENDER_PROJECTS].
+5. DYNAMIC BENTO BOX. If the user asks for a summary, overview, stats, or specific metrics (e.g. "What are your ML skills?"), you MUST output a JSON array of 4 items wrapped exactly in [BENTO_START] and [BENTO_END]. Each item must have: "title", "value", "subtitle", and "icon" (choose from: Code, Briefcase, GraduationCap, BrainCircuit, Activity, Database, Server, Cpu). Example:
+[BENTO_START]
+[{"title": "Role", "value": "Frontend", "subtitle": "React, UI/UX", "icon": "Code"}, ...]
+[BENTO_END]
+6. Never hallucinate tools or output unparsed raw JSON outside of the Bento block.`;
 
 // =============================================================================
 // STEP 4: YOUR KNOWLEDGE BASE — Sujith's portfolio content

@@ -70,7 +70,8 @@ export default function ChatBot() {
     
     // Clean markdown and GenUI tags
     const cleanText = text
-      .replace(/\[RENDER_SKILLS\]|\[RENDER_PROJECTS\]|\[RENDER_BENTO\]/g, '')
+      .replace(/\[RENDER_SKILLS\]|\[RENDER_PROJECTS\]/g, '')
+      .replace(/\[BENTO_START\][\s\S]*?\[BENTO_END\]/g, '')
       .replace(/\*\*/g, '')
       .replace(/#/g, '');
 
@@ -1111,41 +1112,54 @@ export default function ChatBot() {
                     ) : (
                       <div className="chat-bubble-text markdown-body">
                         {msg.role === 'assistant' ? (
-                          <>
-                            <ReactMarkdown
-                              components={{
-                                code({node, inline, className, children, ...props}) {
-                                  const match = /language-(\w+)/.exec(className || '')
-                                  return !inline ? (
-                                    <div className="code-block-wrapper">
-                                      <div className="code-block-header">
-                                        <span className="code-lang">{match ? match[1] : 'code'}</span>
-                                        <button className="code-copy-btn" onClick={() => navigator.clipboard.writeText(String(children))} title="Copy Code">
-                                          <Copy size={12} />
-                                        </button>
-                                      </div>
-                                      <pre className="native-code-pre">
-                                        <code className="native-code" {...props}>
-                                          {String(children).replace(/\n$/, '')}
+                          (() => {
+                            let displayContent = msg.content || '';
+                            let bentoData = null;
+                            const bentoMatch = displayContent.match(/\[BENTO_START\]([\s\S]*?)\[BENTO_END\]/);
+                            if (bentoMatch) {
+                              try { bentoData = JSON.parse(bentoMatch[1]); } catch (e) {}
+                              displayContent = displayContent.replace(/\[BENTO_START\][\s\S]*?\[BENTO_END\]/, '');
+                            }
+                            displayContent = displayContent.replace(/\[RENDER_SKILLS\]|\[RENDER_PROJECTS\]/g, '').trim();
+
+                            return (
+                              <>
+                                <ReactMarkdown
+                                  components={{
+                                    code({node, inline, className, children, ...props}) {
+                                      const match = /language-(\w+)/.exec(className || '');
+                                      return !inline ? (
+                                        <div className="code-block-wrapper">
+                                          <div className="code-block-header">
+                                            <span className="code-lang">{match ? match[1] : 'code'}</span>
+                                            <button className="code-copy-btn" onClick={() => navigator.clipboard.writeText(String(children))} title="Copy Code">
+                                              <Copy size={12} />
+                                            </button>
+                                          </div>
+                                          <pre className="native-code-pre">
+                                            <code className="native-code" {...props}>
+                                              {String(children).replace(/\n$/, '')}
+                                            </code>
+                                          </pre>
+                                        </div>
+                                      ) : (
+                                        <code className="inline-code" {...props}>
+                                          {children}
                                         </code>
-                                      </pre>
-                                    </div>
-                                  ) : (
-                                    <code className="inline-code" {...props}>
-                                      {children}
-                                    </code>
-                                  )
-                                }
-                              }}
-                            >
-                              {msg.content.replace(/\[RENDER_SKILLS\]|\[RENDER_PROJECTS\]|\[RENDER_BENTO\]/g, '').trim()}
-                            </ReactMarkdown>
-                            
-                            {/* Generative UI Components */}
-                            {msg.content.includes('[RENDER_SKILLS]') && <SkillChart />}
-                            {msg.content.includes('[RENDER_PROJECTS]') && <ProjectCarousel />}
-                            {msg.content.includes('[RENDER_BENTO]') && <BentoBox />}
-                          </>
+                                      );
+                                    }
+                                  }}
+                                >
+                                  {displayContent}
+                                </ReactMarkdown>
+                                
+                                {/* Generative UI Components */}
+                                {msg.content.includes('[RENDER_SKILLS]') && <SkillChart />}
+                                {msg.content.includes('[RENDER_PROJECTS]') && <ProjectCarousel />}
+                                {bentoData && <BentoBox data={bentoData} />}
+                              </>
+                            );
+                          })()
                         ) : (
                           msg.content
                         )}

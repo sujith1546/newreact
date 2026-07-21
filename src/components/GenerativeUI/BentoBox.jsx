@@ -1,41 +1,21 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { GraduationCap, Briefcase, Code, BrainCircuit } from 'lucide-react';
+import { GraduationCap, Briefcase, Code, BrainCircuit, Activity, Database, Server, Cpu, Star, Zap } from 'lucide-react';
 
-const bentoItems = [
-  {
-    id: 1,
-    title: 'Academics',
-    value: '8.7 CGPA',
-    subtitle: 'B.Tech @ VIT Vellore',
-    icon: <GraduationCap size={18} />,
-    color: '#3b82f6', // Blue
-  },
-  {
-    id: 2,
-    title: 'Experience',
-    value: '4+ Projects',
-    subtitle: 'Full-stack & AI',
-    icon: <Briefcase size={18} />,
-    color: '#8b5cf6', // Purple
-  },
-  {
-    id: 3,
-    title: 'Core Stack',
-    value: 'Python, React',
-    subtitle: 'Modern web & backend',
-    icon: <Code size={18} />,
-    color: '#10b981', // Green
-  },
-  {
-    id: 4,
-    title: 'Specialty',
-    value: 'Data & GenAI',
-    subtitle: 'RAG, NLP, ML',
-    icon: <BrainCircuit size={18} />,
-    color: '#f59e0b', // Amber
-  },
-];
+const ICON_MAP = {
+  GraduationCap: <GraduationCap size={18} />,
+  Briefcase: <Briefcase size={18} />,
+  Code: <Code size={18} />,
+  BrainCircuit: <BrainCircuit size={18} />,
+  Activity: <Activity size={18} />,
+  Database: <Database size={18} />,
+  Server: <Server size={18} />,
+  Cpu: <Cpu size={18} />,
+  Star: <Star size={18} />,
+  Zap: <Zap size={18} />
+};
+
+const COLORS = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899', '#06b6d4'];
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -50,7 +30,9 @@ const itemVariants = {
   show: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 300, damping: 24 } },
 };
 
-export default function BentoBox() {
+export default function BentoBox({ data = [] }) {
+  if (!data || data.length === 0) return null;
+  
   return (
     <motion.div
       className="bento-container"
@@ -123,19 +105,24 @@ export default function BentoBox() {
         }
       `}</style>
       
-      {bentoItems.map((item) => (
-        <motion.div key={item.id} variants={itemVariants} className="bento-card">
-          <div className="bento-glow" style={{ background: item.color }} />
-          <div className="bento-icon-wrapper" style={{ background: `${item.color}15`, color: item.color }}>
-            {item.icon}
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-            <span className="bento-title">{item.title}</span>
-            <span className="bento-value">{item.value}</span>
-            <span className="bento-subtitle">{item.subtitle}</span>
-          </div>
-        </motion.div>
-      ))}
+      {data.map((item, idx) => {
+        const color = COLORS[idx % COLORS.length];
+        const icon = ICON_MAP[item.icon] || <Star size={18} />;
+        
+        return (
+          <motion.div key={idx} variants={itemVariants} className="bento-card">
+            <div className="bento-glow" style={{ background: color }} />
+            <div className="bento-icon-wrapper" style={{ background: `${color}15`, color: color }}>
+              {icon}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+              <span className="bento-title">{item.title}</span>
+              <span className="bento-value">{item.value}</span>
+              <span className="bento-subtitle">{item.subtitle}</span>
+            </div>
+          </motion.div>
+        );
+      })}
     </motion.div>
   );
 }
