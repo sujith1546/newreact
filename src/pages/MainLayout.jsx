@@ -19,6 +19,7 @@ import Experience from '../pages/Experience';
 import Certifications from '../pages/Certifications';
 import Contact from '../pages/Contact';
 import ParticleCanvas from '../components/ParticleCanvas';
+import SectionSpotlight from '../components/SectionSpotlight';
 import { useTheme } from '../context/ThemeContext';
 
 const SECTIONS = [
@@ -73,12 +74,13 @@ const mobilePageVariants = {
 
 export default function MainLayout() {
   const { theme, pageTransition } = useTheme();
-  const [activeSection,  setActiveSection]  = useState('home');
-  const [isMobile,       setIsMobile]       = useState(window.innerWidth <= 900);
-  const [isStatusOpen,   setIsStatusOpen]   = useState(false);
-  const [slideDirection, setSlideDirection] = useState(0); // 1=fwd, -1=back, 0=replace
-  const [isNavActive,    setIsNavActive]    = useState(false); // drives progress bar
-  const [emailCopied,    setEmailCopied]    = useState(false);
+  const [activeSection,    setActiveSection]    = useState('home');
+  const [isMobile,         setIsMobile]         = useState(window.innerWidth <= 900);
+  const [isStatusOpen,     setIsStatusOpen]      = useState(false);
+  const [slideDirection,   setSlideDirection]   = useState(0); // 1=fwd, -1=back, 0=replace
+  const [isNavActive,      setIsNavActive]      = useState(false); // drives progress bar
+  const [emailCopied,      setEmailCopied]      = useState(false);
+  const [spotlightSection, setSpotlightSection] = useState(null); // AI Screen Director
   const scrollRef   = useRef(null);
   const navTimerRef = useRef(null);
 
@@ -90,8 +92,14 @@ export default function MainLayout() {
 
   useEffect(() => {
     const onNavigate = (e) => {
-      const section = e.detail?.section;
-      if (section) handleNavClick(section);
+      const { section, highlight } = e.detail || {};
+      if (section) {
+        handleNavClick(section);
+        if (highlight) {
+          // Small extra delay so the page transition starts before spotlight fires
+          setTimeout(() => setSpotlightSection(section), 200);
+        }
+      }
     };
     window.addEventListener('navigate-section', onNavigate);
     return () => window.removeEventListener('navigate-section', onNavigate);
@@ -329,6 +337,12 @@ export default function MainLayout() {
       </main>
 
       <WelcomeModal onNavClick={handleNavClick} />
+
+      {/* ── AI Screen Director Spotlight ─────────────────────────────── */}
+      <SectionSpotlight
+        section={spotlightSection}
+        onDismiss={() => setSpotlightSection(null)}
+      />
 
       {!isMobile && (
         <>

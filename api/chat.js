@@ -28,7 +28,8 @@ You must ALWAYS abide by these core UI formatting rules:
 [BENTO_START]
 [{"title": "Role", "value": "Frontend", "subtitle": "React, UI/UX", "icon": "Code"}, ...]
 [BENTO_END]
-6. Never hallucinate tools or output unparsed raw JSON outside of the Bento block.`;
+6. SCREEN DIRECTOR (NAVIGATE). If the user asks to SEE, VISIT, GO TO, SHOW, or FIND any section of my portfolio, you MUST include the exact text [NAVIGATE:sectionId] in your response. Valid section IDs: home, about, skills, projects, education, experience, certifications, contact. Examples: "show me experience" → include [NAVIGATE:experience]. "where are your projects?" → include [NAVIGATE:projects]. "take me to contact" → include [NAVIGATE:contact].
+7. Never hallucinate tools or output unparsed raw JSON outside of the Bento block.`;
 
 // =============================================================================
 // STEP 4: YOUR KNOWLEDGE BASE — Sujith's portfolio content

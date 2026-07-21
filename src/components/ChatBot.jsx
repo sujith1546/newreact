@@ -72,6 +72,7 @@ export default function ChatBot() {
     const cleanText = text
       .replace(/\[RENDER_SKILLS\]|\[RENDER_PROJECTS\]/g, '')
       .replace(/\[BENTO_START\][\s\S]*?\[BENTO_END\]/g, '')
+      .replace(/\[NAVIGATE:[a-z]+\]/g, '')
       .replace(/\*\*/g, '')
       .replace(/#/g, '');
 
@@ -339,9 +340,24 @@ export default function ChatBot() {
 
       // Finish generation step
       speakText(finalText);
+
+      // ── Screen Director: detect [NAVIGATE:sectionId] ─────────────────────
+      const navMatch = finalText.match(/\[NAVIGATE:([a-z]+)\]/);
+      if (navMatch) {
+        const targetSection = navMatch[1];
+        const validSections = ['home','about','skills','projects','education','experience','certifications','contact'];
+        if (validSections.includes(targetSection)) {
+          // Small delay so the AI message renders first before navigation
+          setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('navigate-section', {
+              detail: { section: targetSection, highlight: true }
+            }));
+          }, 600);
+        }
+      }
+
       setMessages(prev => {
         const updated = [...prev];
-        const lastIdx = updated.length - 1;
         // Keep it expanded so the user sees the trace for every message
         return updated;
       });
@@ -1120,7 +1136,10 @@ export default function ChatBot() {
                               try { bentoData = JSON.parse(bentoMatch[1]); } catch (e) {}
                               displayContent = displayContent.replace(/\[BENTO_START\][\s\S]*?\[BENTO_END\]/, '');
                             }
-                            displayContent = displayContent.replace(/\[RENDER_SKILLS\]|\[RENDER_PROJECTS\]/g, '').trim();
+                            displayContent = displayContent
+                              .replace(/\[RENDER_SKILLS\]|\[RENDER_PROJECTS\]/g, '')
+                              .replace(/\[NAVIGATE:[a-z]+\]/g, '')
+                              .trim();
 
                             return (
                               <>
