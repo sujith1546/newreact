@@ -92,6 +92,7 @@ export default function WhatsNewPanel({ open, onClose, releases = [] }) {
 
           {/* Sheet */}
           <motion.div
+            layout
             className="wn-sheet"
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
@@ -143,50 +144,60 @@ export default function WhatsNewPanel({ open, onClose, releases = [] }) {
               onScroll={(e) => { if (e.target.scrollTop > 10 && !sheetScrolled) setSheetScrolled(true); }}
             >
               {visibleReleases.every((r) => r.items.length === 0) && (
-                <p className="wn-empty">
+                <motion.p layout className="wn-empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                   No {activeTab === "all" ? "" : TYPE_META[activeTab]?.label.toLowerCase()} updates in this range yet.
-                </p>
+                </motion.p>
               )}
 
-              {visibleReleases.map((release, i) => {
-                if (release.items.length === 0) return null;
-                const isLast = i === visibleReleases.length - 1;
+              <AnimatePresence mode="popLayout">
+                {visibleReleases.map((release, i) => {
+                  if (release.items.length === 0) return null;
+                  const isLast = i === visibleReleases.length - 1;
 
-                return (
-                  <div key={release.version} className="wn-release-row">
-                    {/* Timeline rail */}
-                    <div className="wn-rail">
-                      <span className={`wn-rail-dot ${release.unread ? "wn-rail-dot-unread" : ""}`} />
-                      {!isLast && <span className="wn-rail-line" />}
-                    </div>
-
-                    {/* Release content */}
-                    <div className="wn-release-content">
-                      <div className="wn-release-header">
-                        <span className="wn-release-version">{release.version}</span>
-                        <span className="wn-release-label">{release.label}</span>
+                  return (
+                    <motion.div 
+                      key={release.version} 
+                      layout 
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                      className="wn-release-row"
+                    >
+                      {/* Timeline rail */}
+                      <div className="wn-rail">
+                        <span className={`wn-rail-dot ${release.unread ? "wn-rail-dot-unread" : ""}`} />
+                        {!isLast && <span className="wn-rail-line" />}
                       </div>
-                      <div className="wn-release-date">{release.date}</div>
 
-                      <div className="wn-items-list">
-                        {release.items.map((item, idx) => {
-                          const meta = TYPE_META[item.type];
-                          const ItemIcon = meta.Icon;
-                          return (
-                            <div key={idx} className={`wn-item-card ${meta.colorClass}`}>
-                              <div className="wn-item-title-row">
-                                <ItemIcon size={14} />
-                                <span>{item.title}</span>
+                      {/* Release content */}
+                      <div className="wn-release-content">
+                        <div className="wn-release-header">
+                          <span className="wn-release-version">{release.version}</span>
+                          <span className="wn-release-label">{release.label}</span>
+                        </div>
+                        <div className="wn-release-date">{release.date}</div>
+
+                        <div className="wn-items-list">
+                          {release.items.map((item, idx) => {
+                            const meta = TYPE_META[item.type];
+                            const ItemIcon = meta.Icon;
+                            return (
+                              <div key={idx} className={`wn-item-card ${meta.colorClass}`}>
+                                <div className="wn-item-title-row">
+                                  <ItemIcon size={14} />
+                                  <span>{item.title}</span>
+                                </div>
+                                <p className="wn-item-body">{item.body}</p>
                               </div>
-                              <p className="wn-item-body">{item.body}</p>
-                            </div>
-                          );
-                        })}
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                );
-              })}
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
 
               {hasMore && (
                 <button
