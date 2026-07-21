@@ -1,8 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Route, Database, Eye, Zap, CheckCircle2, Info, Activity } from 'lucide-react';
+import { Route, Database, Eye, Zap, CheckCircle2, Info, Activity, ChevronDown, ChevronUp } from 'lucide-react';
 
 export default function ThoughtTrace({ steps = [] }) {
+  const [isExpanded, setIsExpanded] = useState(false);
   const totalMs = useMemo(() => steps.reduce((acc, step) => acc + (step.ms || 0), 0), [steps]);
 
   // Determine flow type based on steps
@@ -42,101 +43,132 @@ export default function ThoughtTrace({ steps = [] }) {
 
   return (
     <div className="thought-trace-body">
-      <div className="trace-header-info">
+      <button 
+        className={`trace-header-info ${isExpanded ? 'expanded' : ''}`}
+        onClick={() => setIsExpanded(!isExpanded)}
+        type="button"
+      >
         <span className="trace-status-text">
           <Activity size={12} style={{ marginRight: 6 }} className={steps.length && !steps[steps.length - 1].status?.includes('done') ? 'spinning' : ''} />
           Multi-Agent Orchestration
         </span>
-        <span className="trace-latency">
-          {totalMs > 0 ? `${totalMs}ms` : 'calculating...'}
+        <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span className="trace-latency">
+            {totalMs > 0 ? `${totalMs}ms` : 'calculating...'}
+          </span>
+          {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
         </span>
-      </div>
+      </button>
 
-      <div className="trace-pipeline-svg">
-        <svg viewBox="0 0 300 80" style={{ width: '100%', height: 'auto', minHeight: '80px', overflow: 'visible' }}>
-          {nodes.map((n, i) => {
-            const x = 30 + (i * (240 / (nodes.length - 1)));
-            const y = 35;
-            const state = getNodeState(n.id);
-            const color = state === 'done' ? '#10b981' : state === 'active' ? '#3b82f6' : '#64748b';
-            
-            return (
-              <g key={n.id}>
-                {i < nodes.length - 1 && (
-                  <line 
-                    x1={x + 24} y1={y} 
-                    x2={30 + ((i + 1) * (240 / (nodes.length - 1))) - 24} y2={y}
-                    stroke={getNodeState(nodes[i+1].id) !== 'pending' ? '#3b82f6' : '#334155'}
-                    strokeWidth="3"
-                    strokeDasharray={getNodeState(nodes[i+1].id) === 'active' ? "6 6" : "none"}
+      <AnimatePresence>
+        {isExpanded && (
+          <motion.div 
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            style={{ overflow: 'hidden' }}
+          >
+            <div className="trace-pipeline-svg">
+              <svg viewBox="0 0 300 80" style={{ width: '100%', height: 'auto', minHeight: '80px', overflow: 'visible' }}>
+                {nodes.map((n, i) => {
+                  const x = 30 + (i * (240 / (nodes.length - 1)));
+                  const y = 35;
+                  const state = getNodeState(n.id);
+                  const color = state === 'done' ? '#10b981' : state === 'active' ? '#3b82f6' : '#64748b';
+                  
+                  return (
+                    <g key={n.id}>
+                      {i < nodes.length - 1 && (
+                        <line 
+                          x1={x + 24} y1={y} 
+                          x2={30 + ((i + 1) * (240 / (nodes.length - 1))) - 24} y2={y}
+                          stroke={getNodeState(nodes[i+1].id) !== 'pending' ? '#3b82f6' : '#334155'}
+                          strokeWidth="3"
+                          strokeDasharray={getNodeState(nodes[i+1].id) === 'active' ? "6 6" : "none"}
+                        >
+                          {getNodeState(nodes[i+1].id) === 'active' && (
+                            <animate attributeName="stroke-dashoffset" values="12;0" dur="0.5s" repeatCount="indefinite" />
+                          )}
+                        </line>
+                      )}
+                      
+                      <circle 
+                        cx={x} cy={y} r="18" 
+                        fill={state === 'pending' ? 'transparent' : `${color}20`}
+                        stroke={color} strokeWidth="2"
+                      />
+                      
+                      {state === 'active' && (
+                        <circle cx={x} cy={y} r="22" fill="none" stroke={color} strokeWidth="1" opacity="0.5">
+                          <animate attributeName="r" values="18; 28" dur="1s" repeatCount="indefinite" />
+                          <animate attributeName="opacity" values="0.8; 0" dur="1s" repeatCount="indefinite" />
+                        </circle>
+                      )}
+                      
+                      <text x={x} y={y + 5} fontSize="12" textAnchor="middle" fill={color} fontFamily="monospace" fontWeight="700">
+                        {n.id.substring(0,2).toUpperCase()}
+                      </text>
+                      <text x={x} y={y + 32} fontSize="11" textAnchor="middle" fill="var(--text-secondary)" fontWeight="600">
+                        {n.label}
+                      </text>
+                    </g>
+                  );
+                })}
+              </svg>
+            </div>
+
+            <div className="trace-log-container">
+              <AnimatePresence>
+                {steps.map((step, idx) => (
+                  <motion.div 
+                    key={idx}
+                    className={`trace-log-row ${step.status === 'done' ? 'done' : 'active'}`}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.2 }}
                   >
-                    {getNodeState(nodes[i+1].id) === 'active' && (
-                      <animate attributeName="stroke-dashoffset" values="12;0" dur="0.5s" repeatCount="indefinite" />
-                    )}
-                  </line>
-                )}
-                
-                <circle 
-                  cx={x} cy={y} r="18" 
-                  fill={state === 'pending' ? 'transparent' : `${color}20`}
-                  stroke={color} strokeWidth="2"
-                />
-                
-                {state === 'active' && (
-                  <circle cx={x} cy={y} r="22" fill="none" stroke={color} strokeWidth="1" opacity="0.5">
-                    <animate attributeName="r" values="18; 28" dur="1s" repeatCount="indefinite" />
-                    <animate attributeName="opacity" values="0.8; 0" dur="1s" repeatCount="indefinite" />
-                  </circle>
-                )}
-                
-                <text x={x} y={y + 5} fontSize="12" textAnchor="middle" fill={color} fontFamily="monospace" fontWeight="700">
-                  {n.id.substring(0,2).toUpperCase()}
-                </text>
-                <text x={x} y={y + 32} fontSize="11" textAnchor="middle" fill="var(--text-secondary)" fontWeight="600">
-                  {n.label}
-                </text>
-              </g>
-            );
-          })}
-        </svg>
-      </div>
-
-      <div className="trace-log-container">
-        <AnimatePresence>
-          {steps.map((step, idx) => (
-            <motion.div 
-              key={idx}
-              className={`trace-log-row ${step.status === 'done' ? 'done' : 'active'}`}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <span className="log-icon">{step.status === 'done' ? <CheckCircle2 size={11} color="#10b981" /> : getIconForNode(step.node)}</span>
-              <span className="log-text">{step.text}</span>
-              {step.ms > 0 && <span className="log-ms">{step.ms}ms</span>}
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
+                    <span className="log-icon">{step.status === 'done' ? <CheckCircle2 size={11} color="#10b981" /> : getIconForNode(step.node)}</span>
+                    <span className="log-text">{step.text}</span>
+                    {step.ms > 0 && <span className="log-ms">{step.ms}ms</span>}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <style>{`
         .thought-trace-body {
-          padding: 16px;
+          padding: 0;
           background: var(--bg-secondary);
           border-radius: 12px;
           margin-top: 8px;
           border: 1px solid var(--border-color);
+          overflow: hidden;
         }
         .trace-header-info {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 16px;
+          padding: 12px 16px;
+          width: 100%;
+          border: none;
+          background: transparent;
+          cursor: pointer;
           font-size: 11px;
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.5px;
           color: var(--text-secondary);
+          transition: background 0.2s;
+        }
+        .trace-header-info:hover {
+          background: rgba(0,0,0,0.05);
+        }
+        .trace-header-info.expanded {
+          border-bottom: 1px solid var(--border-color);
+          background: rgba(0,0,0,0.02);
         }
         .trace-status-text {
           display: flex;
@@ -152,6 +184,9 @@ export default function ThoughtTrace({ steps = [] }) {
           background: rgba(16, 185, 129, 0.1);
           padding: 2px 6px;
           border-radius: 4px;
+        }
+        .trace-expanded-content {
+          padding: 16px;
         }
         .trace-pipeline-svg {
           margin-bottom: 20px;
