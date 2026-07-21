@@ -388,19 +388,19 @@ export default function AdvancedProfile({ isOpen, onClose, playSound, triggerEve
               </div>
 
               {/* Bottom CTAs */}
-              <div style={{ padding: '24px 20px 36px', display: 'flex', gap: 12 }}>
+              <div style={{ padding: '24px 20px 36px', display: 'flex', gap: 10 }}>
                 <button
                   onClick={() => { if (playSound) playSound(); onClose(); triggerEvent('open-resume'); }}
                   style={{
-                    flex: 1, height: 52, borderRadius: 16, display: 'flex', alignItems: 'center',
-                    justifyContent: 'center', gap: 8, fontSize: 13.5, fontWeight: 700,
+                    flex: 1, height: 42, borderRadius: 12, display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', gap: 6, fontSize: 13, fontWeight: 700,
                     cursor: 'pointer', outline: 'none', letterSpacing: '-0.01em',
                     background: 'var(--bg-primary)', color: 'var(--text-primary)',
                     border: '1px solid var(--border-color)',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.03)', transition: 'transform 0.1s'
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.02)', transition: 'transform 0.1s'
                   }}>
-                  <div style={{ width: 28, height: 28, borderRadius: 8, background: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <FileText size={14} color="var(--text-secondary)" />
+                  <div style={{ width: 24, height: 24, borderRadius: 6, background: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <FileText size={12} color="var(--text-secondary)" />
                   </div>
                   Resume
                 </button>
@@ -411,15 +411,15 @@ export default function AdvancedProfile({ isOpen, onClose, playSound, triggerEve
                     window.dispatchEvent(new CustomEvent('navigate-section', { detail: { section: 'contact' } }));
                   }}
                   style={{
-                    flex: 1.3, height: 52, borderRadius: 16, display: 'flex', alignItems: 'center',
-                    justifyContent: 'center', gap: 8, fontSize: 14, fontWeight: 800,
+                    flex: 1.2, height: 42, borderRadius: 12, display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', gap: 6, fontSize: 13, fontWeight: 800,
                     cursor: 'pointer', outline: 'none', letterSpacing: '-0.01em',
                     background: theme === 'dark' ? '#fff' : '#000',
                     color: theme === 'dark' ? '#000' : '#fff', border: 'none',
-                    boxShadow: theme === 'dark' ? '0 8px 24px rgba(255,255,255,0.15)' : '0 8px 24px rgba(0,0,0,0.2)',
+                    boxShadow: theme === 'dark' ? '0 4px 16px rgba(255,255,255,0.1)' : '0 4px 16px rgba(0,0,0,0.15)',
                     transition: 'transform 0.1s'
                   }}>
-                  <Mail size={16} /> Hire Me
+                  <Mail size={14} /> Hire Me
                 </button>
               </div>
 
