@@ -348,25 +348,42 @@ export default function AdvancedProfile({ isOpen, onClose, playSound, triggerEve
                   margin: '0 0 10px', fontSize: 10.5, fontWeight: 800,
                   textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-secondary)'
                 }}>Explore</p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                  {explores.map(({ label, Icon, action }) => (
-                    <button key={label} onClick={action} style={{
-                      display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 12, padding: '16px 14px',
-                      background: 'var(--bg-primary)', border: '1px solid var(--border-color)',
-                      borderRadius: 16, cursor: 'pointer', outline: 'none', textAlign: 'left',
-                      boxShadow: '0 2px 10px rgba(0,0,0,0.02)', transition: 'transform 0.1s ease-in-out'
-                    }}>
-                      <div style={{
-                        width: 36, height: 36, borderRadius: 12,
-                        background: theme === 'dark' ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.1)', 
-                        border: theme === 'dark' ? '1px solid rgba(59,130,246,0.2)' : 'none',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center'
-                      }}>
-                        <Icon size={18} color="#3b82f6" />
-                      </div>
-                      <span style={{ fontSize: 13.5, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>{label}</span>
-                    </button>
-                  ))}
+                <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 16, scrollSnapType: 'x mandatory', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                  <style>{`
+                    .explore-carousel::-webkit-scrollbar { display: none; }
+                  `}</style>
+                  <div className="explore-carousel" style={{ display: 'flex', gap: 12, paddingRight: 20 }}>
+                    {explores.map(({ label, Icon, action }, index) => {
+                      const gradients = [
+                        'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                        'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+                        'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                        'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                      ];
+                      return (
+                        <button key={label} onClick={action} style={{
+                          display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+                          width: 105, height: 115, padding: 14, flexShrink: 0, scrollSnapAlign: 'start',
+                          background: gradients[index % gradients.length],
+                          borderRadius: 20, cursor: 'pointer', outline: 'none', textAlign: 'left',
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.1)', position: 'relative', overflow: 'hidden'
+                        }}>
+                          <div style={{ position: 'absolute', top: -10, right: -10, opacity: 0.1 }}>
+                            <Icon size={70} color="#fff" />
+                          </div>
+                          <div style={{
+                            width: 32, height: 32, borderRadius: 10,
+                            background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                          }}>
+                            <Icon size={16} color="#fff" />
+                          </div>
+                          <span style={{ fontSize: 13, fontWeight: 800, color: '#fff', letterSpacing: '-0.01em', zIndex: 1 }}>{label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
 
