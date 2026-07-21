@@ -126,7 +126,7 @@ export default function BentoBox() {
       {bentoItems.map((item) => (
         <motion.div key={item.id} variants={itemVariants} className="bento-card">
           <div className="bento-glow" style={{ background: item.color }} />
-          <div className="bento-icon-wrapper" style={{ background: \`\${item.color}15\`, color: item.color }}>
+          <div className="bento-icon-wrapper" style={{ background: `${item.color}15`, color: item.color }}>
             {item.icon}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
