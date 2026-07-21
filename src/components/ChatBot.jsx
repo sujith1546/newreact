@@ -178,7 +178,7 @@ export default function ChatBot() {
         content: '', 
         sources: [], 
         steps: [],
-        isThinkingExpanded: true
+        isThinkingExpanded: false
       }]);
 
       // Call our secure backend API
