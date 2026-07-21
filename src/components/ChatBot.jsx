@@ -6,6 +6,7 @@ import { useIsland } from '../context/IslandContext';
 import ThoughtTrace from './ThoughtTrace';
 import SkillChart from './GenerativeUI/SkillChart';
 import ProjectCarousel from './GenerativeUI/ProjectCarousel';
+import BentoBox from './GenerativeUI/BentoBox';
 import ReactMarkdown from 'react-markdown';
 
 const SUGGESTED_QUESTIONS = [
@@ -69,7 +70,7 @@ export default function ChatBot() {
     
     // Clean markdown and GenUI tags
     const cleanText = text
-      .replace(/\[RENDER_SKILLS\]|\[RENDER_PROJECTS\]/g, '')
+      .replace(/\[RENDER_SKILLS\]|\[RENDER_PROJECTS\]|\[RENDER_BENTO\]/g, '')
       .replace(/\*\*/g, '')
       .replace(/#/g, '');
 
@@ -1137,12 +1138,13 @@ export default function ChatBot() {
                                 }
                               }}
                             >
-                              {msg.content.replace(/\[RENDER_SKILLS\]|\[RENDER_PROJECTS\]/g, '').trim()}
+                              {msg.content.replace(/\[RENDER_SKILLS\]|\[RENDER_PROJECTS\]|\[RENDER_BENTO\]/g, '').trim()}
                             </ReactMarkdown>
                             
                             {/* Generative UI Components */}
                             {msg.content.includes('[RENDER_SKILLS]') && <SkillChart />}
                             {msg.content.includes('[RENDER_PROJECTS]') && <ProjectCarousel />}
+                            {msg.content.includes('[RENDER_BENTO]') && <BentoBox />}
                           </>
                         ) : (
                           msg.content
