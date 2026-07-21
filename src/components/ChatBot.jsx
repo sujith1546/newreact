@@ -741,8 +741,14 @@ export default function ChatBot() {
         .chatbot-suggestions {
           padding: 0 16px 12px;
           display: flex;
-          flex-wrap: wrap;
-          gap: 6px;
+          flex-wrap: nowrap;
+          overflow-x: auto;
+          gap: 8px;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: none; /* Firefox */
+        }
+        .chatbot-suggestions::-webkit-scrollbar {
+          display: none; /* Chrome, Safari */
         }
         .suggestion-chip {
           padding: 5px 11px;
