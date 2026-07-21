@@ -388,17 +388,21 @@ export default function AdvancedProfile({ isOpen, onClose, playSound, triggerEve
               </div>
 
               {/* Bottom CTAs */}
-              <div style={{ padding: '16px 20px 36px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <div style={{ padding: '24px 20px 36px', display: 'flex', gap: 12 }}>
                 <button
                   onClick={() => { if (playSound) playSound(); onClose(); triggerEvent('open-resume'); }}
                   style={{
-                    height: 46, borderRadius: 13, display: 'flex', alignItems: 'center',
-                    justifyContent: 'center', gap: 6, fontSize: 13, fontWeight: 700,
+                    flex: 1, height: 52, borderRadius: 16, display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', gap: 8, fontSize: 13.5, fontWeight: 700,
                     cursor: 'pointer', outline: 'none', letterSpacing: '-0.01em',
                     background: 'var(--bg-primary)', color: 'var(--text-primary)',
-                    border: '1px solid var(--border-color)'
+                    border: '1px solid var(--border-color)',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.03)', transition: 'transform 0.1s'
                   }}>
-                  <FileText size={14} /> Resume
+                  <div style={{ width: 28, height: 28, borderRadius: 8, background: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <FileText size={14} color="var(--text-secondary)" />
+                  </div>
+                  Resume
                 </button>
                 <button
                   onClick={() => {
@@ -407,14 +411,15 @@ export default function AdvancedProfile({ isOpen, onClose, playSound, triggerEve
                     window.dispatchEvent(new CustomEvent('navigate-section', { detail: { section: 'contact' } }));
                   }}
                   style={{
-                    height: 46, borderRadius: 13, display: 'flex', alignItems: 'center',
-                    justifyContent: 'center', gap: 6, fontSize: 13, fontWeight: 700,
+                    flex: 1.3, height: 52, borderRadius: 16, display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', gap: 8, fontSize: 14, fontWeight: 800,
                     cursor: 'pointer', outline: 'none', letterSpacing: '-0.01em',
-                    background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-                    color: '#fff', border: 'none',
-                    boxShadow: '0 4px 16px rgba(37,99,235,0.35)'
+                    background: theme === 'dark' ? '#fff' : '#000',
+                    color: theme === 'dark' ? '#000' : '#fff', border: 'none',
+                    boxShadow: theme === 'dark' ? '0 8px 24px rgba(255,255,255,0.15)' : '0 8px 24px rgba(0,0,0,0.2)',
+                    transition: 'transform 0.1s'
                   }}>
-                  <Mail size={14} /> Hire Me
+                  <Mail size={16} /> Hire Me
                 </button>
               </div>
 
