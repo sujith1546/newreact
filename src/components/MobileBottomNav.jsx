@@ -804,14 +804,24 @@ END:VCARD`;
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 32, stiffness: 350, mass: 0.9 }}
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={{ top: 0, bottom: 0.35 }}
+              onDragEnd={(_, info) => { if (info.offset.y > 100 || info.velocity.y > 500) setIsGithubStatsOpen(false); }}
             >
               <div className="drawer-handle" />
               <div className="drawer-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <FaGithub size={20} style={{ color: 'var(--text-primary)' }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{
+                    width: 36, height: 36, borderRadius: 10,
+                    background: theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  }}>
+                    <FaGithub size={18} style={{ color: 'var(--text-primary)' }} />
+                  </div>
                   <div>
-                    <p className="drawer-header-title">GitHub Stats</p>
-                    <p className="drawer-header-sub">sujith1546</p>
+                    <p className="drawer-header-title">GitHub</p>
+                    <p className="drawer-header-sub">@sujith1546</p>
                   </div>
                 </div>
                 <button className="drawer-close-btn" onClick={() => setIsGithubStatsOpen(false)}>
@@ -819,46 +829,89 @@ END:VCARD`;
                 </button>
               </div>
 
-              <div className="drawer-scroll-area" style={{ padding: '16px 20px 20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                
-                {/* Live Stats Card */}
-                <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '12px', display: 'flex', justifyContent: 'center' }}>
-                  <img 
-                    src={`https://github-readme-stats.vercel.app/api?username=sujith1546&show_icons=true&theme=transparent&hide_border=true&title_color=${theme === 'dark' ? 'fff' : '000'}&text_color=${theme === 'dark' ? 'ccc' : '333'}&icon_color=${theme === 'dark' ? '60a5fa' : '3b82f6'}`} 
-                    alt="GitHub Stats"
-                    style={{ width: '100%', height: 'auto', objectFit: 'contain' }}
-                  />
+              <div className="drawer-scroll-area" style={{ padding: '16px 18px 28px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+
+                {/* Quick stats row */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+                  {[
+                    { label: 'Repos', value: '15+' },
+                    { label: 'Commits', value: '200+' },
+                    { label: 'Stars', value: '10+' },
+                  ].map(s => (
+                    <div key={s.label} style={{
+                      background: 'var(--bg-primary)', border: '1px solid var(--border-color)',
+                      borderRadius: 14, padding: '12px 10px', textAlign: 'center'
+                    }}>
+                      <p style={{ margin: 0, fontSize: 18, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>{s.value}</p>
+                      <p style={{ margin: '2px 0 0', fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s.label}</p>
+                    </div>
+                  ))}
                 </div>
 
-                {/* Top Languages Card */}
-                <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '12px', display: 'flex', justifyContent: 'center' }}>
-                  <img 
-                    src={`https://github-readme-stats.vercel.app/api/top-langs/?username=sujith1546&layout=compact&theme=transparent&hide_border=true&title_color=${theme === 'dark' ? 'fff' : '000'}&text_color=${theme === 'dark' ? 'ccc' : '333'}`} 
-                    alt="Top Languages"
-                    style={{ width: '100%', height: 'auto', objectFit: 'contain' }}
-                  />
-                </div>
+                {/* Stats image — with loading + error states */}
+                {(() => {
+                  const themeParam = theme === 'dark' ? 'dark' : 'default';
+                  const statsUrl = `https://github-readme-stats.vercel.app/api?username=sujith1546&show_icons=true&theme=${themeParam}&hide_border=true&rank_icon=github&include_all_commits=true`;
+                  const langsUrl = `https://github-readme-stats.vercel.app/api/top-langs/?username=sujith1546&layout=compact&theme=${themeParam}&hide_border=true&langs_count=6`;
+                  return (
+                    <>
+                      <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 16, overflow: 'hidden', minHeight: 180, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <img
+                          src={statsUrl}
+                          alt="GitHub Stats"
+                          style={{ width: '100%', height: 'auto', display: 'block' }}
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.nextSibling.style.display = 'flex';
+                          }}
+                        />
+                        <div style={{ display: 'none', flexDirection: 'column', alignItems: 'center', gap: 8, padding: 24, color: 'var(--text-secondary)' }}>
+                          <FaGithub size={28} style={{ opacity: 0.3 }} />
+                          <p style={{ margin: 0, fontSize: 13, fontWeight: 500 }}>Stats unavailable right now</p>
+                        </div>
+                      </div>
 
-                <div style={{ flex: 1 }} />
+                      <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 16, overflow: 'hidden', minHeight: 140, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <img
+                          src={langsUrl}
+                          alt="Top Languages"
+                          style={{ width: '100%', height: 'auto', display: 'block' }}
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                            e.currentTarget.nextSibling.style.display = 'flex';
+                          }}
+                        />
+                        <div style={{ display: 'none', flexDirection: 'column', alignItems: 'center', gap: 8, padding: 24, color: 'var(--text-secondary)' }}>
+                          <p style={{ margin: 0, fontSize: 13, fontWeight: 500 }}>Languages unavailable</p>
+                        </div>
+                      </div>
+                    </>
+                  );
+                })()}
 
-                <a 
-                  href="https://github.com/sujith1546" 
-                  target="_blank" 
+                {/* Open profile button */}
+                <a
+                  href="https://github.com/sujith1546"
+                  target="_blank"
                   rel="noopener noreferrer"
-                  style={{ 
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                    width: '100%', padding: '14px', background: 'var(--primary-blue)', 
-                    color: '#fff', borderRadius: '14px', fontWeight: 600, fontSize: '14px',
-                    textDecoration: 'none', marginTop: '10px'
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    padding: '14px', background: '#0f0f0f',
+                    color: '#fff', borderRadius: 14, fontWeight: 700, fontSize: 14,
+                    textDecoration: 'none', letterSpacing: '-0.01em',
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.25)'
                   }}
                 >
-                  View Full Profile <Share size={16} />
+                  <FaGithub size={16} />
+                  Open GitHub Profile
                 </a>
+
               </div>
             </motion.div>
           </>
         )}
       </AnimatePresence>
+
 
       {/* Updates Slide-Up Drawer */}
       <WhatsNewPanel 
