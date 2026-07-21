@@ -963,86 +963,98 @@ END:VCARD`;
                 </button>
               </div>
 
-              {/* Scrollable Body - Advanced Bento Layout */}
+              {/* Scrollable Body - Enhanced List View */}
               <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: '20px', paddingBottom: '32px' }}>
-                
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                  {/* Purpose */}
-                  <div style={{
-                    background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '20px', padding: '16px',
-                    display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.02)'
-                  }}>
-                    <div style={{ width: 36, height: 36, borderRadius: '12px', background: 'rgba(16,185,129,0.1)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Info size={18} />
-                    </div>
-                    <div>
-                      <h4 style={{ margin: '0 0 4px', fontSize: '13.5px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>Purpose</h4>
-                      <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>Built for personal use & experimentation.</p>
-                    </div>
-                  </div>
 
-                  {/* Developer */}
-                  <div style={{
-                    background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '20px', padding: '16px',
-                    display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.02)'
-                  }}>
-                    <div style={{ width: 36, height: 36, borderRadius: '12px', background: 'rgba(139,92,246,0.1)', color: '#8b5cf6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <User size={18} />
+                <div className="settings-group">
+                  <span className="settings-group-label" style={{ fontSize: '11.5px', fontWeight: 700, letterSpacing: '0.06em' }}>About This App</span>
+                  <div className="settings-card" style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.02)' }}>
+                    <div className="settings-row" style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '14px' }}>
+                      <div className="settings-row-icon" style={{
+                        width: 32, height: 32, borderRadius: 10, color: '#10b981', 
+                        borderColor: 'rgba(16,185,129,0.2)', background: 'rgba(16,185,129,0.1)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                      }}>
+                        <Info size={16} />
+                      </div>
+                      <div className="settings-row-text">
+                        <h4 style={{ margin: '0 0 2px', fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>Purpose</h4>
+                        <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)' }}>Built for personal use and experimentation.</p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 style={{ margin: '0 0 4px', fontSize: '13.5px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>Developed By</h4>
-                      <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>Sujith Thota</p>
-                    </div>
-                  </div>
-
-                  {/* Atom AI */}
-                  <div style={{
-                    background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '20px', padding: '16px',
-                    display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.02)'
-                  }}>
-                    <div style={{ width: 36, height: 36, borderRadius: '12px', background: 'rgba(59,130,246,0.1)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Atom size={18} />
-                    </div>
-                    <div>
-                      <h4 style={{ margin: '0 0 4px', fontSize: '13.5px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>Atom AI</h4>
-                      <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>Real LLM integration via Groq.</p>
-                    </div>
-                  </div>
-
-                  {/* Security */}
-                  <div style={{
-                    background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '20px', padding: '16px',
-                    display: 'flex', flexDirection: 'column', gap: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.02)'
-                  }}>
-                    <div style={{ width: 36, height: 36, borderRadius: '12px', background: 'rgba(245,158,11,0.1)', color: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Shield size={18} />
-                    </div>
-                    <div>
-                      <h4 style={{ margin: '0 0 4px', fontSize: '13.5px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>Security</h4>
-                      <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.4 }}>Enterprise-grade rate limiting.</p>
+                    <div className="settings-row" style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '14px', borderTop: '1px solid var(--border-color)', borderBottom: 'none' }}>
+                      <div className="settings-row-icon" style={{
+                        width: 32, height: 32, borderRadius: 10, color: '#8b5cf6', 
+                        borderColor: 'rgba(139,92,246,0.2)', background: 'rgba(139,92,246,0.1)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                      }}>
+                        <User size={16} />
+                      </div>
+                      <div className="settings-row-text">
+                        <h4 style={{ margin: '0 0 2px', fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>Developed By</h4>
+                        <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)' }}>Sujith Thota</p>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div style={{
-                  background: 'linear-gradient(135deg, rgba(59,130,246,0.05), rgba(139,92,246,0.05))',
-                  border: '1px solid rgba(59,130,246,0.15)', borderRadius: '20px', padding: '20px',
-                  display: 'flex', flexDirection: 'column', gap: '12px'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <Navigation size={18} color="#3b82f6" />
-                    <h4 style={{ margin: 0, fontSize: '14.5px', fontWeight: 800, color: 'var(--text-primary)' }}>Navigation Tips</h4>
+                <div className="settings-group">
+                  <span className="settings-group-label" style={{ fontSize: '11.5px', fontWeight: 700, letterSpacing: '0.06em' }}>Features & Integrations</span>
+                  <div className="settings-card" style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.02)' }}>
+                    <div className="settings-row" style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '14px' }}>
+                      <div className="settings-row-icon" style={{
+                        width: 32, height: 32, borderRadius: 10, color: '#3b82f6', 
+                        borderColor: 'rgba(59,130,246,0.2)', background: 'rgba(59,130,246,0.1)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                      }}>
+                        <Atom size={16} />
+                      </div>
+                      <div className="settings-row-text">
+                        <h4 style={{ margin: '0 0 2px', fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>Atom AI</h4>
+                        <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)' }}>Real LLM integration via Groq & Voyage AI.</p>
+                      </div>
+                    </div>
+                    <div className="settings-row" style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '14px', borderTop: '1px solid var(--border-color)', borderBottom: 'none' }}>
+                      <div className="settings-row-icon" style={{
+                        width: 32, height: 32, borderRadius: 10, color: '#f59e0b', 
+                        borderColor: 'rgba(245,158,11,0.2)', background: 'rgba(245,158,11,0.1)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                      }}>
+                        <Shield size={16} />
+                      </div>
+                      <div className="settings-row-text">
+                        <h4 style={{ margin: '0 0 2px', fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>Security</h4>
+                        <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)' }}>Enterprise-grade Rate Limiting & Bot Traps.</p>
+                      </div>
+                    </div>
                   </div>
-                  <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
-                    <li>Swipe horizontally on cards to reveal hidden actions.</li>
-                    <li>Use the <strong>More</strong> menu for deeper settings.</li>
-                    <li>Tap the microphone in Chat to use Voice Commands.</li>
-                  </ul>
+                </div>
+
+                <div className="settings-group">
+                  <span className="settings-group-label" style={{ fontSize: '11.5px', fontWeight: 700, letterSpacing: '0.06em' }}>Navigation Tips</span>
+                  <div className="settings-card" style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.02)' }}>
+                    <div className="settings-row" style={{ padding: '16px', display: 'flex', alignItems: 'flex-start', gap: '14px', borderBottom: 'none' }}>
+                      <div className="settings-row-icon" style={{
+                        width: 32, height: 32, borderRadius: 10, color: '#3b82f6', flexShrink: 0,
+                        borderColor: 'rgba(59,130,246,0.2)', background: 'linear-gradient(135deg, rgba(59,130,246,0.1), rgba(139,92,246,0.1))',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center'
+                      }}>
+                        <Navigation size={16} />
+                      </div>
+                      <div className="settings-row-text">
+                        <ul style={{ margin: 0, paddingLeft: '16px', fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                          <li>Swipe horizontally on some cards to reveal actions.</li>
+                          <li>Use the <strong>More</strong> menu for deeper settings.</li>
+                          <li>Tap the microphone in Chat to use Voice Commands.</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <div style={{ flex: 1 }} />
 
-                {/* Close button */}
+                {/* Close button - Premium Style */}
                 <motion.button
                   onClick={() => setIsHelpOpen(false)}
                   whileTap={{ scale: 0.96 }}
