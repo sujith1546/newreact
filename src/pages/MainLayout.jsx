@@ -328,6 +328,7 @@ export default function MainLayout() {
               className={`text-content
                 ${activeSection === 'home' ? ' home-content' : ''}
                 ${['contact','education','about','skills','experience','projects','certifications'].includes(activeSection) ? ' wide-content' : ''}
+                ${spotlightSection && spotlightSection === activeSection ? ' ai-highlighted' : ''}
               `}
             >
               <ActiveComponent onNavClick={handleNavClick} />
