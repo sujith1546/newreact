@@ -658,28 +658,65 @@ export default function Projects() {
               >
                 <div className="dsheet-handle" />
 
-                {/* Header */}
+                {/* Premium Header */}
                 {(() => {
                   const initials = selectedProject.title.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
                   return (
-                    <div className="dsheet-header">
-                      <div className="dsheet-header-left">
-                        <div className="dsheet-header-icon" style={{ background: accent+'18', color: accent, border: `1px solid ${accent}30` }}>
-                          {initials}
-                        </div>
-                        <div className="dsheet-title">
-                          <h3>{selectedProject.title}</h3>
-                          {selectedProject.liveUrl ? (
-                            <div className="live-badge" style={{ width: 'fit-content', marginTop: 2 }}>
-                              <span className="live-dot"><span className="live-ping" /><span className="live-dot-core" /></span>
-                              <span className="live-text">Live</span>
-                            </div>
-                          ) : <p>Personal Project</p>}
-                        </div>
-                      </div>
-                      <button className="dsheet-close" onClick={() => setSelectedProject(null)} aria-label="Close">
+                    <div style={{
+                      position: 'relative',
+                      background: `linear-gradient(145deg, ${accent}15 0%, transparent 100%)`,
+                      padding: '36px 24px 24px',
+                      borderBottom: '1px solid var(--border-color)',
+                      flexShrink: 0,
+                      overflow: 'hidden'
+                    }}>
+                      {/* Ambient glow orbs */}
+                      <div style={{
+                        position: 'absolute', top: -40, right: -20, width: 140, height: 140,
+                        borderRadius: '50%', background: `${accent}20`,
+                        filter: 'blur(45px)', pointerEvents: 'none'
+                      }} />
+                      <div style={{
+                        position: 'absolute', bottom: -20, left: 10, width: 80, height: 80,
+                        borderRadius: '50%', background: `${accent}15`,
+                        filter: 'blur(30px)', pointerEvents: 'none'
+                      }} />
+                      
+                      {/* Close button */}
+                      <button className="dsheet-close" onClick={() => setSelectedProject(null)} aria-label="Close" style={{
+                        position: 'absolute', top: 16, right: 16, zIndex: 10,
+                        width: 32, height: 32, borderRadius: 16, background: 'var(--bg-primary)',
+                        border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: 'var(--text-secondary)', cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+                      }}>
                         <X size={16} />
                       </button>
+
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 16, position: 'relative', zIndex: 1 }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                          <div style={{
+                            width: 56, height: 56, borderRadius: 16,
+                            background: `linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%)`, 
+                            border: `1.5px solid ${accent}40`,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 18, fontWeight: 900, color: accent, boxShadow: `0 8px 20px ${accent}15`
+                          }}>
+                            {initials}
+                          </div>
+                          {selectedProject.liveUrl && (
+                            <div className="live-badge" style={{ background: 'rgba(16,185,129,0.1)', borderColor: 'rgba(16,185,129,0.25)', boxShadow: '0 2px 10px rgba(16,185,129,0.1)' }}>
+                              <span className="live-dot"><span className="live-ping" /><span className="live-dot-core" /></span>
+                              <span className="live-text">Live Project</span>
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <h3 style={{ margin: '0', fontSize: 24, fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
+                            {selectedProject.title}
+                          </h3>
+                          {!selectedProject.liveUrl && <p style={{ margin: '6px 0 0', fontSize: 13, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: '0.02em', textTransform: 'uppercase' }}>Personal Project</p>}
+                        </div>
+                      </div>
                     </div>
                   );
                 })()}
