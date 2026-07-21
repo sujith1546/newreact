@@ -233,17 +233,18 @@ export default function Projects() {
       <style>{`
         /* ========== LIVE BADGE ========== */
         .live-badge {
-          display: flex; align-items: center; gap: 6px;
-          padding: 4px 8px;
-          background: rgba(16,185,129,.08);
-          border: 1px solid rgba(16,185,129,.2);
-          border-radius: 20px; font-size: 9.5px; font-weight: 800;
-          letter-spacing: .08em; text-transform: uppercase; color: #10b981;
+          display: inline-flex; align-items: center; gap: 5px;
+          padding: 3.5px 8px 3.5px 6px;
+          background: rgba(16,185,129,.1);
+          border: 1px solid rgba(16,185,129,.15);
+          border-radius: 12px; font-size: 9px; font-weight: 800;
+          letter-spacing: .06em; text-transform: uppercase; color: #10b981;
+          box-shadow: 0 2px 6px rgba(16,185,129,.05);
           flex-shrink: 0;
         }
-        [data-theme="dark"] .live-badge { background: rgba(16,185,129,.15); }
-        .live-dot { position: relative; display: flex; width: 5px; height: 5px; }
-        .live-dot-core { position: relative; display: inline-flex; border-radius: 50%; height: 5px; width: 5px; background: #10b981; z-index: 2; }
+        [data-theme="dark"] .live-badge { background: rgba(16,185,129,.15); border-color: rgba(16,185,129,.2); }
+        .live-dot { position: relative; display: flex; width: 6px; height: 6px; }
+        .live-dot-core { position: relative; display: inline-flex; border-radius: 50%; height: 6px; width: 6px; background: #10b981; z-index: 2; box-shadow: 0 0 4px rgba(16,185,129,.6); }
         .live-ping { position: absolute; display: inline-flex; height: 100%; width: 100%; border-radius: 50%; background: #10b981; opacity: .8; animation: radarPing 2s cubic-bezier(0,0,.2,1) infinite; z-index: 1; }
         @keyframes radarPing { 75%, 100% { transform: scale(2.8); opacity: 0; } }
 
@@ -405,10 +406,18 @@ export default function Projects() {
           }
           .dsheet-header-left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
           .dsheet-header-icon {
-            width: 44px; height: 44px; border-radius: 14px;
+            width: 44px; height: 44px; border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0; font-size: 14px; font-weight: 900; letter-spacing: -.5px;
-            font-family: inherit;
+            flex-shrink: 0; font-size: 15px; font-weight: 800; letter-spacing: -.5px;
+            font-family: inherit; color: var(--primary-blue);
+            background: linear-gradient(135deg, rgba(59,130,246,0.15) 0%, rgba(59,130,246,0.05) 100%);
+            border: 1px solid rgba(59,130,246,0.2);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02), inset 0 2px 4px rgba(255,255,255,0.05);
+          }
+          [data-theme="light"] .dsheet-header-icon {
+            background: linear-gradient(135deg, rgba(59,130,246,0.1) 0%, rgba(59,130,246,0.02) 100%);
+            border: 1px solid rgba(59,130,246,0.15);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02), inset 0 2px 4px rgba(255,255,255,0.5);
           }
           .dsheet-title h3 { font-size: 17px; font-weight: 800; color: var(--text-primary); margin: 0 0 3px; letter-spacing: -.02em; line-height: 1.2; }
           .dsheet-title p { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .05em; margin: 0; }
@@ -664,13 +673,13 @@ export default function Projects() {
                   return (
                     <div className="dsheet-header">
                       <div className="dsheet-header-left">
-                        <div className="dsheet-header-icon" style={{ background: accent+'18', color: accent, border: `1px solid ${accent}30` }}>
+                        <div className="dsheet-header-icon">
                           {initials}
                         </div>
                         <div className="dsheet-title">
                           <h3>{selectedProject.title}</h3>
                           {selectedProject.liveUrl ? (
-                            <div className="live-badge" style={{ width: 'fit-content', marginTop: 2 }}>
+                            <div className="live-badge" style={{ marginTop: 4 }}>
                               <span className="live-dot"><span className="live-ping" /><span className="live-dot-core" /></span>
                               <span className="live-text">Live</span>
                             </div>
