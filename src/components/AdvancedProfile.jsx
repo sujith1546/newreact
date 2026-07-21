@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, MapPin, Mail, School, Check, Copy, FileText,
-  Briefcase, Award, Brain, Code2, Star, Zap, ChevronRight
+  Briefcase, Award, Brain, Code2, Star, Zap, ChevronRight, ChevronDown
 } from 'lucide-react';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { useTheme } from '../context/ThemeContext';
@@ -55,16 +55,33 @@ function Stat({ value, label, color }) {
 export default function AdvancedProfile({ isOpen, onClose, playSound, triggerEvent, handleExploreClick }) {
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [skillsActive, setSkillsActive] = useState(false);
+  const [hasScrolled, setHasScrolled] = useState(false);
+  const [isScrollable, setIsScrollable] = useState(false);
+  const scrollAreaRef = React.useRef(null);
   const { theme } = useTheme();
 
   useEffect(() => {
     if (isOpen) {
-      const t = setTimeout(() => setSkillsActive(true), 500);
+      setHasScrolled(false);
+      setIsScrollable(false);
+      const t = setTimeout(() => {
+        setSkillsActive(true);
+        if (scrollAreaRef.current) {
+          const { scrollHeight, clientHeight } = scrollAreaRef.current;
+          setIsScrollable(scrollHeight > clientHeight + 5);
+        }
+      }, 500);
       return () => clearTimeout(t);
     } else {
       setSkillsActive(false);
     }
   }, [isOpen]);
+
+  const handleScroll = (e) => {
+    if (e.target.scrollTop > 10 && !hasScrolled) {
+      setHasScrolled(true);
+    }
+  };
 
   const handleCopyEmail = () => {
     if (playSound) playSound();
@@ -213,7 +230,11 @@ export default function AdvancedProfile({ isOpen, onClose, playSound, triggerEve
             </div>
 
             {/* ── Scrollable body ──────────────────────────────────────────── */}
-            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 0 }}>
+            <div 
+              ref={scrollAreaRef}
+              onScroll={handleScroll}
+              style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 0 }}
+            >
 
               {/* Skills */}
               <div style={{ padding: '20px 20px 0' }}>
@@ -381,6 +402,33 @@ export default function AdvancedProfile({ isOpen, onClose, playSound, triggerEve
               </div>
 
             </div>
+
+            {/* Scroll Hint */}
+            <AnimatePresence>
+              {isScrollable && !hasScrolled && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  style={{
+                    position: 'absolute', bottom: 0, left: 0, right: 0,
+                    height: '80px',
+                    background: 'linear-gradient(to top, var(--bg-secondary) 30%, transparent)',
+                    display: 'flex', justifyContent: 'center', alignItems: 'flex-end',
+                    paddingBottom: '16px', pointerEvents: 'none', zIndex: 10
+                  }}
+                >
+                  <motion.div
+                    animate={{ y: [0, 5, 0] }}
+                    transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }}
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'var(--text-secondary)' }}
+                  >
+                    <span style={{ fontSize: '9px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '2px' }}>Scroll</span>
+                    <ChevronDown size={14} />
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.aside>
         </>
       )}
