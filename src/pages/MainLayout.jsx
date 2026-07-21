@@ -44,12 +44,58 @@ const SECTION_LABELS = {
   contact: 'Contact',
 };
 
+const ALL_PAGES = ['home', 'about', 'skills', 'projects', 'education', 'experience', 'certifications', 'contact'];
+
+// ─── iOS-style transition variants ──────────────────────────────────────────
+// Direction: 1 = forward (slide in from right), -1 = backward (slide in from left)
+// The exiting page does a subtle scale+fade (depth recede) — native iOS push feel
+const mobileVariants = {
+  // Entering from the right (forward navigation)
+  enterFromRight: {
+    x: '100%',
+    opacity: 1,
+    scale: 1,
+    zIndex: 20,
+  },
+  // Entering from the left (back navigation)
+  enterFromLeft: {
+    x: '-30%',
+    opacity: 0.6,
+    scale: 0.94,
+    zIndex: 10,
+  },
+  // Active (fully visible) page
+  center: {
+    x: 0,
+    opacity: 1,
+    scale: 1,
+    zIndex: 20,
+  },
+  // Exiting to the left (forward navigation — old page recedes)
+  exitToLeft: {
+    x: '-30%',
+    opacity: 0.5,
+    scale: 0.92,
+    zIndex: 10,
+  },
+  // Exiting to the right (back navigation — old page slides out right)
+  exitToRight: {
+    x: '100%',
+    opacity: 1,
+    scale: 1,
+    zIndex: 20,
+  },
+};
+
+// Buttery smooth iOS decelerate curve
+const iosCurve = { type: 'tween', ease: [0.25, 0.46, 0.45, 0.94], duration: 0.38 };
+
 export default function MainLayout() {
   const { theme, pageTransition } = useTheme();
   const [activeSection, setActiveSection] = useState('home');
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
   const [isStatusOpen, setIsStatusOpen] = useState(false);
-  const [slideDirection, setSlideDirection] = useState(0);
+  const [slideDirection, setSlideDirection] = useState(0); // 1=forward, -1=back, 0=replace
   const [emailCopied, setEmailCopied] = useState(false);
   const scrollRef = useRef(null);
 
@@ -68,13 +114,11 @@ export default function MainLayout() {
     return () => window.removeEventListener('navigate-section', handleNavigate);
   }, []);
 
-
-
   const handleNavClick = (id) => {
-    const ALL_PAGES = ['home', 'about', 'skills', 'projects', 'education', 'experience', 'certifications', 'contact'];
     const currentIndex = ALL_PAGES.indexOf(activeSection);
     const nextIndex = ALL_PAGES.indexOf(id);
-    
+    if (id === activeSection) return;
+
     if (currentIndex !== -1 && nextIndex !== -1) {
       setSlideDirection(nextIndex > currentIndex ? 1 : -1);
     } else {
@@ -141,6 +185,17 @@ export default function MainLayout() {
 
   const activeSectionData = SECTIONS.find(s => s.id === activeSection);
   const ActiveComponent = activeSectionData ? activeSectionData.Component : Home;
+
+  // ─── Determine animation variants for mobile ───────────────────────────────
+  const getMobileInitial = () => {
+    if (slideDirection === 0) return { opacity: 0, x: 0, scale: 1, zIndex: 20 };
+    return slideDirection > 0 ? mobileVariants.enterFromRight : mobileVariants.enterFromLeft;
+  };
+
+  const getMobileExit = () => {
+    if (slideDirection === 0) return { opacity: 0, x: 0, scale: 1, zIndex: 10 };
+    return slideDirection > 0 ? mobileVariants.exitToLeft : mobileVariants.exitToRight;
+  };
 
   return (
     <div className="layout">
@@ -224,52 +279,32 @@ export default function MainLayout() {
         onTouchEnd={handleTouchEnd}
       >
         <div className="scroll-container">
-          <AnimatePresence mode={isMobile ? "popLayout" : "wait"}>
+          <AnimatePresence mode="sync" initial={false}>
             <motion.div
               key={activeSection}
               id={activeSection}
-              initial={
-                isMobile 
-                  ? { 
-                      opacity: slideDirection > 0 ? 1 : 0.6, 
-                      x: slideDirection > 0 ? '100%' : '-15%', 
-                      scale: slideDirection > 0 ? 1 : 0.92,
-                      zIndex: slideDirection > 0 ? 2 : 1
-                    } 
-                  : (pageTransition === 'slide' ? { opacity: 0, x: 50 } :
-                     pageTransition === 'scale' ? { opacity: 0, scale: 0.95 } :
-                     pageTransition === 'flip'  ? { opacity: 0, rotateY: 90 } :
-                     { opacity: 0, y: 8 })
-              }
-              animate={
-                isMobile 
-                  ? { 
-                      opacity: 1, 
-                      x: 0, 
-                      scale: 1,
-                      zIndex: 2
-                    }
-                  : (pageTransition === 'slide' ? { opacity: 1, x: 0 } :
-                     pageTransition === 'scale' ? { opacity: 1, scale: 1 } :
-                     pageTransition === 'flip'  ? { opacity: 1, rotateY: 0 } :
-                     { opacity: 1, y: 0 })
-              }
-              exit={
-                isMobile 
-                  ? { 
-                      opacity: slideDirection > 0 ? 0.6 : 1, 
-                      x: slideDirection > 0 ? '-15%' : '100%', 
-                      scale: slideDirection > 0 ? 0.92 : 1,
-                      zIndex: slideDirection > 0 ? 1 : 2
-                    }
-                  : (pageTransition === 'slide' ? { opacity: 0, x: -50 } :
-                     pageTransition === 'scale' ? { opacity: 1, scale: 1.05 } :
-                     pageTransition === 'flip'  ? { opacity: 0, rotateY: -90 } :
-                     { opacity: 0, y: -8 })
-              }
-              transition={{ 
-                duration: isMobile ? 0.4 : (pageTransition === 'flip' ? 0.4 : 0.25), 
-                ease: isMobile ? [0.16, 1, 0.3, 1] : "easeInOut" 
+              // ── Mobile: iOS-style card push ──────────────────────────
+              initial={isMobile ? getMobileInitial() : (
+                pageTransition === 'slide' ? { opacity: 0, x: 50 } :
+                pageTransition === 'scale' ? { opacity: 0, scale: 0.95 } :
+                pageTransition === 'flip'  ? { opacity: 0, rotateY: 90 } :
+                { opacity: 0, y: 8 }
+              )}
+              animate={isMobile ? mobileVariants.center : (
+                pageTransition === 'slide' ? { opacity: 1, x: 0 } :
+                pageTransition === 'scale' ? { opacity: 1, scale: 1 } :
+                pageTransition === 'flip'  ? { opacity: 1, rotateY: 0 } :
+                { opacity: 1, y: 0 }
+              )}
+              exit={isMobile ? getMobileExit() : (
+                pageTransition === 'slide' ? { opacity: 0, x: -50 } :
+                pageTransition === 'scale' ? { opacity: 1, scale: 1.05 } :
+                pageTransition === 'flip'  ? { opacity: 0, rotateY: -90 } :
+                { opacity: 0, y: -8 }
+              )}
+              transition={isMobile ? iosCurve : { 
+                duration: pageTransition === 'flip' ? 0.4 : 0.25, 
+                ease: 'easeInOut'
               }}
               style={{
                 perspective: pageTransition === 'flip' ? '1000px' : 'none',
@@ -279,7 +314,9 @@ export default function MainLayout() {
                 position: isMobile ? 'absolute' : 'relative',
                 top: isMobile ? '12px' : 0,
                 left: isMobile ? '12px' : 0,
-                willChange: 'transform, opacity'
+                willChange: 'transform, opacity',
+                backfaceVisibility: 'hidden',
+                WebkitBackfaceVisibility: 'hidden',
               }}
               className={`text-content${activeSection === 'home' ? ' home-content' : ''}${['contact','education','about','skills','experience','projects','certifications'].includes(activeSection) ? ' wide-content' : ''}`}
             >

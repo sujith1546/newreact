@@ -2349,12 +2349,14 @@ html {
     transform: none !important;
   }
 
-  /* Make content layouts stack/adjust cleanly without zoom */
+  /* Page stacking context — clips the iOS slide-in/out transitions */
   .scroll-container {
     padding: 12px;
     position: relative;
     height: 100%;
     box-sizing: border-box;
+    overflow: hidden;      /* CRITICAL: clips pages during slide transition */
+    isolation: isolate;    /* Creates a stacking context for z-index layering */
   }
 
   /* Make EVERY page look like a premium box just like the home page */
@@ -2368,6 +2370,9 @@ html {
     border: 1px solid var(--border-color);
     border-radius: 24px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+    /* GPU-composited layer — no paint cost during transitions */
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
   }
 
   [data-theme="dark"] .text-content {
