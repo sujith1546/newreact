@@ -348,23 +348,23 @@ export default function AdvancedProfile({ isOpen, onClose, playSound, triggerEve
                   margin: '0 0 10px', fontSize: 10.5, fontWeight: 800,
                   textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-secondary)'
                 }}>Explore</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                   {explores.map(({ label, Icon, action }) => (
                     <button key={label} onClick={action} style={{
-                      display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px',
+                      display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 12, padding: '16px 14px',
                       background: 'var(--bg-primary)', border: '1px solid var(--border-color)',
-                      borderRadius: 13, cursor: 'pointer', outline: 'none', textAlign: 'left',
-                      width: '100%'
+                      borderRadius: 16, cursor: 'pointer', outline: 'none', textAlign: 'left',
+                      boxShadow: '0 2px 10px rgba(0,0,0,0.02)', transition: 'transform 0.1s ease-in-out'
                     }}>
                       <div style={{
-                        width: 32, height: 32, borderRadius: 10,
-                        background: 'var(--bg-secondary)', border: '1px solid var(--border-color)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+                        width: 36, height: 36, borderRadius: 12,
+                        background: theme === 'dark' ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.1)', 
+                        border: theme === 'dark' ? '1px solid rgba(59,130,246,0.2)' : 'none',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center'
                       }}>
-                        <Icon size={16} color="var(--text-secondary)" />
+                        <Icon size={18} color="#3b82f6" />
                       </div>
-                      <span style={{ flex: 1, fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{label}</span>
-                      <ChevronRight size={14} color="var(--text-muted)" />
+                      <span style={{ fontSize: 13.5, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>{label}</span>
                     </button>
                   ))}
                 </div>
