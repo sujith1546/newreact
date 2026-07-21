@@ -251,77 +251,86 @@ export default function ChatBot() {
       const decoder = new TextDecoder();
       let isFirstChunk = true;
       let finalText = '';
+      let buffer = '';
 
       while (true) {
         const { value, done } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split('\n').filter(line => line.trim() !== '');
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop(); // Keep partial line in buffer
         
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const dataStr = line.slice(6).trim();
-            if (dataStr === '[DONE]') continue;
-            try {
-              const data = JSON.parse(dataStr);
-              if (data.type === 'step') {
-                if (isFirstChunk) {
-                  setIsLoading(false);
-                  isFirstChunk = false;
-                }
-                setMessages(prev => {
-                  const updated = [...prev];
-                  const lastIdx = updated.length - 1;
-                  if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
-                    updated[lastIdx] = {
-                      ...updated[lastIdx],
-                      steps: [...(updated[lastIdx].steps || []), data.step]
-                    };
-                  }
-                  return updated;
-                });
-              } else if (data.type === 'agent') {
-                setMessages(prev => {
-                  const updated = [...prev];
-                  const lastIdx = updated.length - 1;
-                  if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
-                    updated[lastIdx] = {
-                      ...updated[lastIdx],
-                      agentName: data.name
-                    };
-                  }
-                  return updated;
-                });
-              } else if (data.type === 'sources') {
-                setMessages(prev => {
-                  const updated = [...prev];
-                  const lastIdx = updated.length - 1;
-                  if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
-                    updated[lastIdx] = {
-                      ...updated[lastIdx],
-                      sources: data.sources
-                    };
-                  }
-                  return updated;
-                });
-              } else if (data.type === 'token') {
-                finalText += data.token;
-                setMessages(prev => {
-                  const updated = [...prev];
-                  const lastIdx = updated.length - 1;
-                  if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
-                    updated[lastIdx] = {
-                      ...updated[lastIdx],
-                      content: updated[lastIdx].content + data.token
-                    };
-                  }
-                  return updated;
-                });
+          if (!line.startsWith('data: ')) continue;
+          
+          const dataStr = line.slice(6).trim();
+          if (dataStr === '[DONE]') continue;
+          
+          try {
+            const data = JSON.parse(dataStr);
+            if (data.type === 'step') {
+              if (isFirstChunk) {
+                setIsLoading(false);
+                isFirstChunk = false;
               }
-            } catch (e) {
-              // Ignore malformed JSON chunks
+              setMessages(prev => {
+                const updated = [...prev];
+                const lastIdx = updated.length - 1;
+                if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
+                  updated[lastIdx] = {
+                    ...updated[lastIdx],
+                    steps: [...(updated[lastIdx].steps || []), data.step]
+                  };
+                }
+                return updated;
+              });
+            } else if (data.type === 'agent') {
+              setMessages(prev => {
+                const updated = [...prev];
+                const lastIdx = updated.length - 1;
+                if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
+                  updated[lastIdx] = {
+                    ...updated[lastIdx],
+                    agentName: data.name
+                  };
+                }
+                return updated;
+              });
+            } else if (data.type === 'sources') {
+              setMessages(prev => {
+                const updated = [...prev];
+                const lastIdx = updated.length - 1;
+                if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
+                  updated[lastIdx] = {
+                    ...updated[lastIdx],
+                    sources: data.sources
+                  };
+                }
+                return updated;
+              });
+            } else if (data.type === 'token') {
+              finalText += data.token;
+              
+              if (isFirstChunk) {
+                setIsLoading(false);
+                isFirstChunk = false;
+              }
+              
+              setMessages(prev => {
+                const updated = [...prev];
+                const lastIdx = updated.length - 1;
+                if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
+                  updated[lastIdx] = {
+                    ...updated[lastIdx],
+                    content: updated[lastIdx].content + data.token
+                  };
+                }
+                return updated;
+              });
             }
+          } catch (e) {
+            // Ignore malformed JSON chunks
           }
         }
       }
