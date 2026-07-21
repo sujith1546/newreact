@@ -295,12 +295,7 @@ export default function ChatBot() {
       setMessages(prev => {
         const updated = [...prev];
         const lastIdx = updated.length - 1;
-        if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
-          updated[lastIdx] = {
-            ...updated[lastIdx],
-            isThinkingExpanded: false
-          };
-        }
+        // Keep it expanded so the user sees the trace for every message
         return updated;
       });
 
@@ -315,8 +310,7 @@ export default function ChatBot() {
             ...updated[lastIdx],
             content: "Sorry, I ran into an issue retrieving information. Please try again! 🙏",
             isError: true,
-            steps: ['✗ Connection failed'],
-            isThinkingExpanded: false
+            steps: ['✗ Connection failed']
           };
         } else {
           updated.push({
