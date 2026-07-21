@@ -4,6 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, Loader2, Bot, User, Atom, RotateCcw, Trash2, Copy, Check, ChevronDown, ChevronUp, Info, Mic, Cpu, Layers, Code, Zap, Paperclip } from 'lucide-react';
 import { useIsland } from '../context/IslandContext';
 import ThoughtTrace from './ThoughtTrace';
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { atomDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const SUGGESTED_QUESTIONS = [
   "What projects have you built?",
@@ -564,27 +567,32 @@ export default function ChatBot() {
         }
 
         .chat-bubble {
-          max-width: 78%;
-          padding: 10px 14px;
-          border-radius: 16px;
-          font-size: 13.5px;
-          line-height: 1.55;
+          max-width: 82%;
+          padding: 12px 16px;
+          border-radius: 18px;
+          font-size: 14px;
+          line-height: 1.6;
           word-break: break-word;
+          position: relative;
         }
         .chat-bubble.bot {
-          background: var(--bg-primary, #f3f4f6);
+          background: rgba(243, 244, 246, 0.8);
           color: var(--text-primary);
-          border-bottom-left-radius: 4px;
-          border: 1px solid rgba(128,128,128,0.1);
+          border-bottom-left-radius: 6px;
+          border: 1px solid rgba(0,0,0,0.05);
+          box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
         }
         [data-theme="dark"] .chat-bubble.bot {
-          background: rgba(255,255,255,0.06);
-          border-color: rgba(255,255,255,0.08);
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          box-shadow: 0 8px 32px rgba(0,0,0,0.3);
         }
         .chat-bubble.user {
           background: var(--text-primary);
           color: var(--bg-primary);
-          border-bottom-right-radius: 4px;
+          border-bottom-right-radius: 6px;
         }
         .chat-bubble.error {
           background: #fef2f2;
@@ -594,6 +602,55 @@ export default function ChatBot() {
         [data-theme="dark"] .chat-bubble.error {
           background: rgba(220,38,38,0.1);
           color: #fca5a5;
+        }
+
+        /* Markdown Styling */
+        .markdown-body p { margin-bottom: 0.75em; }
+        .markdown-body p:last-child { margin-bottom: 0; }
+        .markdown-body ul, .markdown-body ol { margin-bottom: 0.75em; padding-left: 1.5em; }
+        .markdown-body li { margin-bottom: 0.25em; }
+        .markdown-body strong { font-weight: 700; color: #3b82f6; }
+        [data-theme="dark"] .markdown-body strong { color: #60a5fa; }
+        .inline-code {
+          background: rgba(128,128,128,0.15);
+          padding: 0.15em 0.3em;
+          border-radius: 4px;
+          font-family: monospace;
+          font-size: 0.9em;
+          color: #e83e8c;
+        }
+        [data-theme="dark"] .inline-code { color: #f472b6; }
+        
+        .code-block-wrapper {
+          margin: 12px 0;
+          border-radius: 8px;
+          overflow: hidden;
+          background: #1e1e1e;
+          border: 1px solid rgba(255,255,255,0.1);
+        }
+        .code-block-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          background: #2d2d2d;
+          padding: 4px 12px;
+          font-size: 11px;
+          color: #a0a0a0;
+          font-family: monospace;
+          text-transform: uppercase;
+        }
+        .code-copy-btn {
+          background: transparent;
+          border: none;
+          color: #a0a0a0;
+          cursor: pointer;
+          padding: 4px;
+          border-radius: 4px;
+          transition: 0.2s;
+        }
+        .code-copy-btn:hover {
+          background: rgba(255,255,255,0.1);
+          color: #fff;
         }
 
         /* Sentient Indicator */
@@ -978,8 +1035,42 @@ export default function ChatBot() {
                         />
                       </div>
                     ) : (
-                      <div className="chat-bubble-text">
-                        {msg.content.replace('[RENDER_SKILLS]', '').replace('[RENDER_PROJECTS]', '').trim()}
+                      <div className="chat-bubble-text markdown-body">
+                        {msg.role === 'assistant' ? (
+                          <ReactMarkdown
+                            components={{
+                              code({node, inline, className, children, ...props}) {
+                                const match = /language-(\w+)/.exec(className || '')
+                                return !inline ? (
+                                  <div className="code-block-wrapper">
+                                    <div className="code-block-header">
+                                      <span className="code-lang">{match ? match[1] : 'code'}</span>
+                                      <button className="code-copy-btn" onClick={() => navigator.clipboard.writeText(String(children))} title="Copy Code">
+                                        <Copy size={12} />
+                                      </button>
+                                    </div>
+                                    <SyntaxHighlighter
+                                      children={String(children).replace(/\n$/, '')}
+                                      style={atomDark}
+                                      language={match ? match[1] : 'text'}
+                                      PreTag="div"
+                                      customStyle={{ margin: 0, borderTopLeftRadius: 0, borderTopRightRadius: 0, fontSize: '12px' }}
+                                      {...props}
+                                    />
+                                  </div>
+                                ) : (
+                                  <code className="inline-code" {...props}>
+                                    {children}
+                                  </code>
+                                )
+                              }
+                            }}
+                          >
+                            {msg.content.replace('[RENDER_SKILLS]', '').replace('[RENDER_PROJECTS]', '').trim()}
+                          </ReactMarkdown>
+                        ) : (
+                          msg.content
+                        )}
                       </div>
                     )}
 
