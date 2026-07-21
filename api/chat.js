@@ -396,8 +396,12 @@ export default async function handler(req, res) {
     const sendStep = (msg) => {
       res.write(`data: ${JSON.stringify({ type: "step", step: msg })}\n\n`);
     };
+    const setAgentName = (name) => {
+      res.write(`data: ${JSON.stringify({ type: "agent", name })}\n\n`);
+    }
 
     if (image) {
+      setAgentName("Vision Agent (Llama 3.2)");
       sendStep("👁️ Invoking Vision Agent...");
       sendStep("🔍 Analyzing multimodal input...");
       // Vision Route: Use Groq Vision model
@@ -417,6 +421,7 @@ export default async function handler(req, res) {
         ],
       };
     } else {
+      setAgentName("RAG Router (Llama 3.3)");
       sendStep("🧠 Invoking Router Agent...");
       
       const standaloneQuestion = await rewriteQuery(history, message);

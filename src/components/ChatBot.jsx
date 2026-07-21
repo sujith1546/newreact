@@ -52,7 +52,6 @@ export default function ChatBot() {
 
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(() => messages.length <= 1);
   const [isRecording, setIsRecording] = useState(false);
   const [attachment, setAttachment] = useState(null); // { file, base64 }
   const fileInputRef = useRef(null);
@@ -158,7 +157,6 @@ export default function ChatBot() {
     setAttachment(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
     
-    setShowSuggestions(false);
     setHasError(false);
     setMessages(prev => [...prev, { role: 'user', content: userText, image: currentAttachment?.base64 }]);
     setIsLoading(true);
@@ -245,6 +243,18 @@ export default function ChatBot() {
                   updated[lastIdx] = {
                     ...updated[lastIdx],
                     steps: [...(updated[lastIdx].steps || []), data.step]
+                  };
+                }
+                return updated;
+              });
+            } else if (data.type === 'agent') {
+              setMessages(prev => {
+                const updated = [...prev];
+                const lastIdx = updated.length - 1;
+                if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
+                  updated[lastIdx] = {
+                    ...updated[lastIdx],
+                    agentName: data.name
                   };
                 }
                 return updated;
@@ -354,7 +364,6 @@ export default function ChatBot() {
 
   const resetChat = () => {
     setMessages([WELCOME_MESSAGE]);
-    setShowSuggestions(true);
     setHasError(false);
     setInput('');
     localStorage.removeItem('atom-ai-memory');
@@ -988,9 +997,29 @@ export default function ChatBot() {
                       </div>
                     )}
                     
-                    <div className="chat-bubble-text">
-                      {msg.content.replace('[RENDER_SKILLS]', '').replace('[RENDER_PROJECTS]', '').trim()}
-                    </div>
+                    {msg.role === 'assistant' && !msg.content && i === messages.length - 1 && isLoading ? (
+                      <div className="sentient-indicator">
+                        <motion.div 
+                          className="sentient-core"
+                          animate={{ scale: [1, 1.2, 1], rotate: [0, 180, 360], filter: ['blur(2px)', 'blur(4px)', 'blur(2px)'] }}
+                          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+                        />
+                        <motion.div 
+                          className="sentient-ring"
+                          animate={{ rotate: [360, 0] }}
+                          transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
+                        />
+                        <motion.div 
+                          className="sentient-ring sentient-ring-2"
+                          animate={{ rotate: [0, 360], scale: [1, 1.1, 1] }}
+                          transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+                        />
+                      </div>
+                    ) : (
+                      <div className="chat-bubble-text">
+                        {msg.content.replace('[RENDER_SKILLS]', '').replace('[RENDER_PROJECTS]', '').trim()}
+                      </div>
+                    )}
 
                     {/* Generative UI Rendering */}
                     {msg.content.includes('[RENDER_SKILLS]') && (
@@ -1026,17 +1055,19 @@ export default function ChatBot() {
                       </div>
                     )}
 
-                    {msg.role === 'assistant' && msg.content && (
+                    {msg.role === 'assistant' && (
                       <div className="chat-bubble-actions">
-                        <span className="actions-model-tag">Llama 3.3 (RAG)</span>
-                        <button 
-                          className="action-btn copy-btn"
-                          onClick={() => handleCopy(msg.content, i)}
-                          title="Copy reply"
-                          type="button"
-                        >
-                          {copiedIndex === i ? <Check size={11} className="copied-check" /> : <Copy size={11} />}
-                        </button>
+                        <span className="actions-model-tag">{msg.agentName || 'Llama 3.3 (RAG)'}</span>
+                        {msg.content && (
+                          <button 
+                            className="action-btn copy-btn"
+                            onClick={() => handleCopy(msg.content, i)}
+                            title="Copy reply"
+                            type="button"
+                          >
+                            {copiedIndex === i ? <Check size={11} className="copied-check" /> : <Copy size={11} />}
+                          </button>
+                        )}
                       </div>
                     )}
 
@@ -1054,55 +1085,18 @@ export default function ChatBot() {
                 </motion.div>
               ))}
 
-              {/* Typing indicator */}
-              {isLoading && (!messages.length || messages[messages.length - 1]?.role !== 'assistant' || !messages[messages.length - 1]?.content) && (
-                <motion.div className="chat-message-row" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                  <div className="chat-avatar bot"><Atom size={14} /></div>
-                  <div className="chat-bubble bot">
-                    <div className="sentient-indicator">
-                      <motion.div 
-                        className="sentient-core"
-                        animate={{ 
-                          scale: [1, 1.2, 1],
-                          rotate: [0, 180, 360],
-                          filter: ['blur(2px)', 'blur(4px)', 'blur(2px)']
-                        }}
-                        transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-                      />
-                      <motion.div 
-                        className="sentient-ring"
-                        animate={{ rotate: [360, 0] }}
-                        transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-                      />
-                      <motion.div 
-                        className="sentient-ring sentient-ring-2"
-                        animate={{ rotate: [0, 360], scale: [1, 1.1, 1] }}
-                        transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
-                      />
-                    </div>
-                  </div>
-                </motion.div>
-              )}
+
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Suggestions */}
-            <AnimatePresence>
-              {showSuggestions && !isLoading && (
-                <motion.div
-                  className="chatbot-suggestions"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                >
-                  {SUGGESTED_QUESTIONS.map(q => (
-                    <button key={q} className="suggestion-chip" onClick={() => sendMessage(q)}>
-                      {q}
-                    </button>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
+            {/* Suggestions - Always visible now */}
+            <div className="chatbot-suggestions">
+              {SUGGESTED_QUESTIONS.map(q => (
+                <button key={q} className="suggestion-chip" onClick={() => sendMessage(q)} disabled={isLoading}>
+                  {q}
+                </button>
+              ))}
+            </div>
 
             {/* Input bar */}
             <div className="chatbot-input-bar">
@@ -1147,23 +1141,22 @@ export default function ChatBot() {
                       onChange={handleFileChange} 
                     />
                     
-                    {attachment ? (
+                    {attachment && (
                       <div className="attachment-preview">
                         <img src={attachment.base64} alt="Attachment" className="attachment-img" />
                         <button className="attachment-remove" onClick={() => setAttachment(null)}><X size={12} /></button>
                       </div>
-                    ) : (
-                      <input
-                        type="text"
-                        ref={inputRef}
-                        className="chatbot-input"
-                        placeholder="Ask anything about Sujith..."
-                        value={input}
-                        onChange={e => setInput(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        disabled={isRecording}
-                      />
                     )}
+                    <input
+                      type="text"
+                      ref={inputRef}
+                      className="chatbot-input"
+                      placeholder="Ask anything about Sujith..."
+                      value={input}
+                      onChange={e => setInput(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      disabled={isRecording}
+                    />
                   </>
                 )}
                 <button
