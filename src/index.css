@@ -2010,6 +2010,26 @@ html {
     box-sizing: border-box;
   }
 
+  /* ── Navigation progress bar ─────────────────────────────────────────────
+     Thin accent line that sweeps left-to-right below the header on every
+     page navigation. transform-origin: left so scaleX grows from left. */
+  .nav-progress-bar {
+    position: fixed;
+    top: 60px;  /* flush under the header */
+    left: 0;
+    right: 0;
+    height: 2px;
+    transform-origin: left center;
+    background: linear-gradient(
+      90deg,
+      var(--primary-blue) 0%,
+      color-mix(in srgb, var(--primary-blue) 60%, transparent) 100%
+    );
+    box-shadow: 0 0 8px var(--primary-blue), 0 0 2px var(--primary-blue);
+    z-index: 200;
+    pointer-events: none;
+  }
+
   /* Disable ScrollReveal transitions on mobile for instant rendering */
   .reveal {
     opacity: 1 !important;
@@ -2357,6 +2377,10 @@ html {
     box-sizing: border-box;
     overflow: hidden;      /* CRITICAL: clips pages during slide transition */
     isolation: isolate;    /* Creates a stacking context for z-index layering */
+    /* Match the card colour so the 12px gaps don't flash a different shade
+       during the synchronized push transition */
+    background: var(--bg-secondary);
+    border-radius: 24px;
   }
 
   /* Make EVERY page look like a premium box just like the home page */

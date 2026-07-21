@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileText, Mail, Briefcase, Check } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
@@ -22,17 +22,16 @@ import ParticleCanvas from '../components/ParticleCanvas';
 import { useTheme } from '../context/ThemeContext';
 
 const SECTIONS = [
-  { id: 'home', Component: Home },
-  { id: 'about', Component: About },
-  { id: 'skills', Component: Skills },
-  { id: 'projects', Component: Projects },
-  { id: 'education', Component: Education },
-  { id: 'experience', Component: Experience },
+  { id: 'home',           Component: Home           },
+  { id: 'about',          Component: About          },
+  { id: 'skills',         Component: Skills         },
+  { id: 'projects',       Component: Projects       },
+  { id: 'education',      Component: Education      },
+  { id: 'experience',     Component: Experience     },
   { id: 'certifications', Component: Certifications },
-  { id: 'contact', Component: Contact },
+  { id: 'contact',        Component: Contact        },
 ];
 
-// Section display labels
 const SECTION_LABELS = {
   home: null,
   about: 'About Me',
@@ -44,89 +43,63 @@ const SECTION_LABELS = {
   contact: 'Contact',
 };
 
-const ALL_PAGES = ['home', 'about', 'skills', 'projects', 'education', 'experience', 'certifications', 'contact'];
+const ALL_PAGES = [
+  'home', 'about', 'skills', 'projects',
+  'education', 'experience', 'certifications', 'contact'
+];
 
-// ─── iOS-style transition variants ──────────────────────────────────────────
-// Direction: 1 = forward (slide in from right), -1 = backward (slide in from left)
-// The exiting page does a subtle scale+fade (depth recede) — native iOS push feel
-const mobileVariants = {
-  // Entering from the right (forward navigation)
-  enterFromRight: {
-    x: '100%',
-    opacity: 1,
-    scale: 1,
-    zIndex: 20,
-  },
-  // Entering from the left (back navigation)
-  enterFromLeft: {
-    x: '-30%',
-    opacity: 0.6,
-    scale: 0.94,
-    zIndex: 10,
-  },
-  // Active (fully visible) page
-  center: {
-    x: 0,
-    opacity: 1,
-    scale: 1,
-    zIndex: 20,
-  },
-  // Exiting to the left (forward navigation — old page recedes)
-  exitToLeft: {
-    x: '-30%',
-    opacity: 0.5,
-    scale: 0.92,
-    zIndex: 10,
-  },
-  // Exiting to the right (back navigation — old page slides out right)
-  exitToRight: {
-    x: '100%',
-    opacity: 1,
-    scale: 1,
-    zIndex: 20,
-  },
-};
+// ─── Navigation timing ────────────────────────────────────────────────────────
+// Apple UIKit NavigationController decelerate curve — the exact easing used in
+// iOS push/pop transitions. Creates the characteristic "snap and settle" feel.
+const NAV_DURATION = 0.34;
+const NAV_EASE     = [0.32, 0.72, 0, 1];
 
-// Buttery smooth iOS decelerate curve
-const iosCurve = { type: 'tween', ease: [0.25, 0.46, 0.45, 0.94], duration: 0.38 };
+// Progress bar sweep duration matches the nav (slightly faster so it "completes")
+const PROGRESS_DURATION = 0.3;
 
 export default function MainLayout() {
   const { theme, pageTransition } = useTheme();
-  const [activeSection, setActiveSection] = useState('home');
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
-  const [isStatusOpen, setIsStatusOpen] = useState(false);
-  const [slideDirection, setSlideDirection] = useState(0); // 1=forward, -1=back, 0=replace
-  const [emailCopied, setEmailCopied] = useState(false);
-  const scrollRef = useRef(null);
+  const [activeSection,  setActiveSection]  = useState('home');
+  const [isMobile,       setIsMobile]       = useState(window.innerWidth <= 900);
+  const [isStatusOpen,   setIsStatusOpen]   = useState(false);
+  const [slideDirection, setSlideDirection] = useState(0); // 1=fwd, -1=back, 0=replace
+  const [isNavActive,    setIsNavActive]    = useState(false); // drives progress bar
+  const [emailCopied,    setEmailCopied]    = useState(false);
+  const scrollRef   = useRef(null);
+  const navTimerRef = useRef(null);
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 900);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    const onResize = () => setIsMobile(window.innerWidth <= 900);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
   }, []);
 
   useEffect(() => {
-    const handleNavigate = (e) => {
+    const onNavigate = (e) => {
       const section = e.detail?.section;
       if (section) handleNavClick(section);
     };
-    window.addEventListener('navigate-section', handleNavigate);
-    return () => window.removeEventListener('navigate-section', handleNavigate);
+    window.addEventListener('navigate-section', onNavigate);
+    return () => window.removeEventListener('navigate-section', onNavigate);
   }, []);
 
   const handleNavClick = (id) => {
-    const currentIndex = ALL_PAGES.indexOf(activeSection);
-    const nextIndex = ALL_PAGES.indexOf(id);
     if (id === activeSection) return;
 
-    if (currentIndex !== -1 && nextIndex !== -1) {
-      setSlideDirection(nextIndex > currentIndex ? 1 : -1);
-    } else {
-      setSlideDirection(0);
-    }
+    const curIdx  = ALL_PAGES.indexOf(activeSection);
+    const nextIdx = ALL_PAGES.indexOf(id);
+    const dir = (curIdx !== -1 && nextIdx !== -1)
+      ? (nextIdx > curIdx ? 1 : -1)
+      : 0;
 
+    setSlideDirection(dir);
+    setIsNavActive(true);
     setActiveSection(id);
     if (scrollRef.current) scrollRef.current.scrollTo({ top: 0, behavior: 'auto' });
+
+    // Auto-dismiss progress bar after animation completes
+    clearTimeout(navTimerRef.current);
+    navTimerRef.current = setTimeout(() => setIsNavActive(false), 500);
   };
 
   const handleCopyEmail = () => {
@@ -135,42 +108,36 @@ export default function MainLayout() {
     setTimeout(() => setEmailCopied(false), 2000);
   };
 
+  // ─── Swipe gesture ──────────────────────────────────────────────────────────
   const touchStartRef = useRef(null);
 
   const handleTouchStart = (e) => {
     if (!isMobile) return;
     touchStartRef.current = {
-      x: e.touches[0].clientX,
-      y: e.touches[0].clientY,
-      time: Date.now()
+      x:    e.touches[0].clientX,
+      y:    e.touches[0].clientY,
+      time: Date.now(),
     };
   };
 
   const handleTouchEnd = (e) => {
     if (!isMobile || !touchStartRef.current) return;
-    
-    const touchEndX = e.changedTouches[0].clientX;
-    const touchEndY = e.changedTouches[0].clientY;
-    const dx = touchEndX - touchStartRef.current.x;
-    const dy = touchEndY - touchStartRef.current.y;
+    const dx = e.changedTouches[0].clientX - touchStartRef.current.x;
+    const dy = e.changedTouches[0].clientY - touchStartRef.current.y;
     const dt = Date.now() - touchStartRef.current.time;
 
-    // Detect fast horizontal swipe (distance > 50px, predominantly horizontal, under 500ms)
     if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 2 && dt < 500) {
       const SWIPE_PAGES = ['home', 'skills', 'projects', 'contact'];
-      const currentIndex = SWIPE_PAGES.indexOf(activeSection);
-      if (currentIndex !== -1) {
-        if (dx < 0 && currentIndex < SWIPE_PAGES.length - 1) { // Swipe Left -> Next Page
-          handleNavClick(SWIPE_PAGES[currentIndex + 1]);
-        } else if (dx > 0 && currentIndex > 0) { // Swipe Right -> Prev Page
-          handleNavClick(SWIPE_PAGES[currentIndex - 1]);
-        }
+      const idx = SWIPE_PAGES.indexOf(activeSection);
+      if (idx !== -1) {
+        if (dx < 0 && idx < SWIPE_PAGES.length - 1) handleNavClick(SWIPE_PAGES[idx + 1]);
+        else if (dx > 0 && idx > 0)                  handleNavClick(SWIPE_PAGES[idx - 1]);
       }
     }
     touchStartRef.current = null;
   };
 
-  // Contextual CTA config per section
+  // ─── Contextual CTA ─────────────────────────────────────────────────────────
   const ctaMap = {
     home:           { label: 'Hire Me',    icon: Briefcase,  action: () => handleNavClick('contact'), style: 'accent' },
     about:          { label: 'Resume',     icon: FileText,   action: () => window.dispatchEvent(new CustomEvent('open-resume')), style: 'ghost' },
@@ -183,61 +150,104 @@ export default function MainLayout() {
   };
   const cta = ctaMap[activeSection] || ctaMap.home;
 
-  const activeSectionData = SECTIONS.find(s => s.id === activeSection);
-  const ActiveComponent = activeSectionData ? activeSectionData.Component : Home;
+  const ActiveComponent = SECTIONS.find(s => s.id === activeSection)?.Component ?? Home;
 
-  // ─── Determine animation variants for mobile ───────────────────────────────
+  // ─── Mobile page transition variants ────────────────────────────────────────
+  // The "seamless synchronized push" pattern:
+  //   Both entering and exiting pages move at the exact same speed + easing.
+  //   This makes them feel like a SINGLE physical surface sliding laterally —
+  //   the same mechanic used in iOS UINavigationController.
+  //
+  //   Forward (dir=1):  entering slides in from right (+100%) → 0
+  //                     exiting  slides out to the left  (0 → -100%)
+  //
+  //   Backward (dir=-1): entering slides in from left  (-100%) → 0
+  //                      exiting  slides out to the right (0 → +100%)
+  //
+  //   Initial direction=0 (page load): simple cross-fade, no slide.
+  //
   const getMobileInitial = () => {
-    if (slideDirection === 0) return { opacity: 0, x: 0, scale: 1, zIndex: 20 };
-    return slideDirection > 0 ? mobileVariants.enterFromRight : mobileVariants.enterFromLeft;
+    if (slideDirection > 0)  return { x: '100%', opacity: 1 };
+    if (slideDirection < 0)  return { x: '-100%', opacity: 1 };
+    return { opacity: 0, x: 0 };
   };
 
   const getMobileExit = () => {
-    if (slideDirection === 0) return { opacity: 0, x: 0, scale: 1, zIndex: 10 };
-    return slideDirection > 0 ? mobileVariants.exitToLeft : mobileVariants.exitToRight;
+    if (slideDirection > 0)  return { x: '-100%', opacity: 1 };
+    if (slideDirection < 0)  return { x: '100%', opacity: 1 };
+    return { opacity: 0, x: 0 };
+  };
+
+  const mobileTransition = {
+    type:     'tween',
+    ease:     NAV_EASE,
+    duration: NAV_DURATION,
+  };
+
+  // Desktop: honour the user-selected pageTransition from settings
+  const getDesktopInitial = () => {
+    if (pageTransition === 'slide') return { opacity: 0, x: 50 };
+    if (pageTransition === 'scale') return { opacity: 0, scale: 0.96 };
+    if (pageTransition === 'flip')  return { opacity: 0, rotateY: 90 };
+    return { opacity: 0, y: 8 };
+  };
+  const getDesktopAnimate = () => {
+    if (pageTransition === 'slide') return { opacity: 1, x: 0 };
+    if (pageTransition === 'scale') return { opacity: 1, scale: 1 };
+    if (pageTransition === 'flip')  return { opacity: 1, rotateY: 0 };
+    return { opacity: 1, y: 0 };
+  };
+  const getDesktopExit = () => {
+    if (pageTransition === 'slide') return { opacity: 0, x: -50 };
+    if (pageTransition === 'scale') return { opacity: 1, scale: 1.04 };
+    if (pageTransition === 'flip')  return { opacity: 0, rotateY: -90 };
+    return { opacity: 0, y: -8 };
   };
 
   return (
     <div className="layout">
-      {/* ── Mobile top header — smart & animated ── */}
-      <header className="mobile-top-header">
 
-        {/* LEFT: avatar beacon + animated name/section title */}
+      {/* ── Navigation progress bar ──────────────────────────────────────────
+          A thin accent-colored line that sweeps across below the header
+          during every page navigation. Signature of premium apps. */}
+      <AnimatePresence>
+        {isMobile && isNavActive && (
+          <motion.div
+            className="nav-progress-bar"
+            key="nav-progress"
+            initial={{ scaleX: 0, opacity: 1 }}
+            animate={{ scaleX: 1, opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{
+              scaleX: { duration: PROGRESS_DURATION, ease: NAV_EASE },
+              opacity: { duration: 0.2 },
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* ── Mobile top header ────────────────────────────────────────────── */}
+      <header className="mobile-top-header">
         <div className="mh-left">
-          {/* Availability beacon avatar */}
           <div className="mh-beacon-wrap">
-            <button
-              className="mh-avatar-btn"
-              onClick={() => setIsStatusOpen(true)}
-              aria-label="Availability status"
-            >
+            <button className="mh-avatar-btn" onClick={() => setIsStatusOpen(true)} aria-label="Availability status">
               <div className="mh-avatar-ring" />
               <img src="/profile_photo.png" alt="Sujith Thota" className="mh-avatar-img" />
             </button>
           </div>
-
-          {/* Animated section title */}
           <div className="mh-title-wrap">
             <AnimatePresence mode="wait">
               {activeSection === 'home' ? (
-                <motion.div
-                  key="name"
-                  className="mh-name"
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
+                <motion.div key="name" className="mh-name"
+                  initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
                 >
                   <span className="mh-name-main">Sujith Thota</span>
                   <span className="mh-name-sub">Portfolio</span>
                 </motion.div>
               ) : (
-                <motion.div
-                  key={activeSection}
-                  className="mh-section-label"
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -6 }}
+                <motion.div key={activeSection} className="mh-section-label"
+                  initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }}
                   transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
                 >
                   {SECTION_LABELS[activeSection]}
@@ -247,9 +257,7 @@ export default function MainLayout() {
           </div>
         </div>
 
-        {/* RIGHT: contextual CTA + theme toggle */}
         <div className="mh-right">
-          {/* Contextual CTA — cross-fades on section change */}
           <AnimatePresence mode="wait">
             <motion.button
               key={activeSection + (emailCopied ? '-copied' : '')}
@@ -265,15 +273,15 @@ export default function MainLayout() {
               <span>{cta.label}</span>
             </motion.button>
           </AnimatePresence>
-
           <DarkModeToggle />
         </div>
       </header>
 
       <ParticleCanvas />
       <Sidebar activeSection={activeSection} onNavClick={handleNavClick} />
-      <main 
-        className="main-content" 
+
+      <main
+        className="main-content"
         ref={scrollRef}
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
@@ -283,42 +291,35 @@ export default function MainLayout() {
             <motion.div
               key={activeSection}
               id={activeSection}
-              // ── Mobile: iOS-style card push ──────────────────────────
-              initial={isMobile ? getMobileInitial() : (
-                pageTransition === 'slide' ? { opacity: 0, x: 50 } :
-                pageTransition === 'scale' ? { opacity: 0, scale: 0.95 } :
-                pageTransition === 'flip'  ? { opacity: 0, rotateY: 90 } :
-                { opacity: 0, y: 8 }
-              )}
-              animate={isMobile ? mobileVariants.center : (
-                pageTransition === 'slide' ? { opacity: 1, x: 0 } :
-                pageTransition === 'scale' ? { opacity: 1, scale: 1 } :
-                pageTransition === 'flip'  ? { opacity: 1, rotateY: 0 } :
-                { opacity: 1, y: 0 }
-              )}
-              exit={isMobile ? getMobileExit() : (
-                pageTransition === 'slide' ? { opacity: 0, x: -50 } :
-                pageTransition === 'scale' ? { opacity: 1, scale: 1.05 } :
-                pageTransition === 'flip'  ? { opacity: 0, rotateY: -90 } :
-                { opacity: 0, y: -8 }
-              )}
-              transition={isMobile ? iosCurve : { 
-                duration: pageTransition === 'flip' ? 0.4 : 0.25, 
-                ease: 'easeInOut'
-              }}
+
+              initial={isMobile ? getMobileInitial() : getDesktopInitial()}
+              animate={isMobile
+                ? { x: 0, opacity: 1 }
+                : getDesktopAnimate()
+              }
+              exit={isMobile ? getMobileExit() : getDesktopExit()}
+
+              transition={isMobile
+                ? mobileTransition
+                : { duration: pageTransition === 'flip' ? 0.4 : 0.25, ease: 'easeInOut' }
+              }
+
               style={{
-                perspective: pageTransition === 'flip' ? '1000px' : 'none',
-                transformStyle: pageTransition === 'flip' ? 'preserve-3d' : 'flat',
-                width: isMobile ? 'calc(100% - 24px)' : '100%',
-                height: isMobile ? 'calc(100% - 24px)' : '100%',
-                position: isMobile ? 'absolute' : 'relative',
-                top: isMobile ? '12px' : 0,
-                left: isMobile ? '12px' : 0,
-                willChange: 'transform, opacity',
-                backfaceVisibility: 'hidden',
-                WebkitBackfaceVisibility: 'hidden',
+                perspective:      pageTransition === 'flip' ? '1000px' : 'none',
+                transformStyle:   pageTransition === 'flip' ? 'preserve-3d' : 'flat',
+                width:            isMobile ? 'calc(100% - 24px)' : '100%',
+                height:           isMobile ? 'calc(100% - 24px)' : '100%',
+                position:         isMobile ? 'absolute' : 'relative',
+                top:              isMobile ? '12px' : 0,
+                left:             isMobile ? '12px' : 0,
+                willChange:       'transform',
+                backfaceVisibility:        'hidden',
+                WebkitBackfaceVisibility:  'hidden',
               }}
-              className={`text-content${activeSection === 'home' ? ' home-content' : ''}${['contact','education','about','skills','experience','projects','certifications'].includes(activeSection) ? ' wide-content' : ''}`}
+              className={`text-content
+                ${activeSection === 'home' ? ' home-content' : ''}
+                ${['contact','education','about','skills','experience','projects','certifications'].includes(activeSection) ? ' wide-content' : ''}
+              `}
             >
               <ActiveComponent onNavClick={handleNavClick} />
             </motion.div>
@@ -327,7 +328,7 @@ export default function MainLayout() {
       </main>
 
       <WelcomeModal onNavClick={handleNavClick} />
-      
+
       {!isMobile && (
         <>
           <TimezoneStatus />
@@ -337,10 +338,7 @@ export default function MainLayout() {
       <ChatBot />
       <CommandPalette />
 
-      {/* Mobile System Health / Status Dropdown */}
       {isMobile && <MobileStatusPanel isOpen={isStatusOpen} onClose={() => setIsStatusOpen(false)} />}
-
-      {/* Mobile-only floating bottom tab capsule */}
       {isMobile && <MobileBottomNav activeSection={activeSection} onNavClick={handleNavClick} />}
     </div>
   );
