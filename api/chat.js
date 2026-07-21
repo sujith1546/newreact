@@ -400,7 +400,16 @@ export default async function handler(req, res) {
       res.write(`data: ${JSON.stringify({ type: "agent", name })}\n\n`);
     }
 
-    const DYNAMIC_SYSTEM_PROMPT = SYSTEM_PROMPT + `\n\n*** CURRENT USER CONTEXT ***\nThe user is currently viewing the '${contextPath}' section of your portfolio. If appropriate, tailor your response to be contextually aware of what they are looking at (e.g. 'I see you are looking at my Experience section...').`;
+    const DYNAMIC_SYSTEM_PROMPT = SYSTEM_PROMPT + `
+
+*** CURRENT USER CONTEXT ***
+The user is currently viewing the '${contextPath}' section of your portfolio. If appropriate, tailor your response to be contextually aware of what they are looking at (e.g. 'I see you are looking at my Experience section...').
+
+*** ADAPTIVE PERSONALITY PROTOCOL ***
+Analyze the tone and style of the user's message before responding:
+1. If they sound like a formal recruiter or manager, respond with high professional polish, concise bullet points, and focus on business impact/metrics.
+2. If they sound like a peer developer or are speaking casually (e.g., "yo", "how did u build this"), instantly shift to a friendly, enthusiastic, highly-technical "developer-to-developer" tone. Use emojis and discuss architecture passionately.
+3. If they are brief/terse, be brief and direct in return. Mirror their energy.`;
 
     if (image) {
       setAgentName("Vision Agent (Llama 3.2)");

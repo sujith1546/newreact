@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Loader2, Bot, User, Atom, RotateCcw, Trash2, Copy, Check, ChevronDown, ChevronUp, Info, Mic, Cpu, Layers, Code, Zap, Paperclip } from 'lucide-react';
+import { X, Send, Loader2, Bot, User, Atom, RotateCcw, Trash2, Copy, Check, ChevronDown, ChevronUp, Info, Mic, Cpu, Layers, Code, Zap, Paperclip, Volume2, VolumeX } from 'lucide-react';
 import { useIsland } from '../context/IslandContext';
 import ThoughtTrace from './ThoughtTrace';
 import SkillChart from './GenerativeUI/SkillChart';
@@ -57,9 +57,36 @@ export default function ChatBot() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [isVoiceEnabled, setIsVoiceEnabled] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const [attachment, setAttachment] = useState(null); // { file, base64 }
   const fileInputRef = useRef(null);
   const { triggerIsland } = useIsland();
+
+  const speakText = (text) => {
+    if (!isVoiceEnabled || !('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    
+    // Clean markdown and GenUI tags
+    const cleanText = text
+      .replace(/\[RENDER_SKILLS\]|\[RENDER_PROJECTS\]/g, '')
+      .replace(/\*\*/g, '')
+      .replace(/#/g, '');
+
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.rate = 1.05;
+    utterance.pitch = 1.0;
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+    
+    // Attempt to pick a good voice if available
+    const voices = window.speechSynthesis.getVoices();
+    const premiumVoice = voices.find(v => v.name.includes('Google') || v.name.includes('Premium') || v.name.includes('Samantha'));
+    if (premiumVoice) utterance.voice = premiumVoice;
+    
+    window.speechSynthesis.speak(utterance);
+  };
 
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
@@ -220,83 +247,87 @@ export default function ChatBot() {
       }
 
       if (!res.body) throw new Error('Response body is null');
-
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
-      let buffer = '';
+      let isFirstChunk = true;
+      let finalText = '';
 
       while (true) {
-        const { done, value } = await reader.read();
+        const { value, done } = await reader.read();
         if (done) break;
 
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop(); // keep partial line in buffer
-
+        const chunk = decoder.decode(value, { stream: true });
+        const lines = chunk.split('\n').filter(line => line.trim() !== '');
+        
         for (const line of lines) {
-          if (!line.startsWith('data: ')) continue;
-          const payload = line.slice(6);
-          if (payload === '[DONE]') continue;
-
-          try {
-            const data = JSON.parse(payload);
-            
-            if (data.type === 'step') {
-              setMessages(prev => {
-                const updated = [...prev];
-                const lastIdx = updated.length - 1;
-                if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
-                  updated[lastIdx] = {
-                    ...updated[lastIdx],
-                    steps: [...(updated[lastIdx].steps || []), data.step]
-                  };
+          if (line.startsWith('data: ')) {
+            const dataStr = line.slice(6).trim();
+            if (dataStr === '[DONE]') continue;
+            try {
+              const data = JSON.parse(dataStr);
+              if (data.type === 'step') {
+                if (isFirstChunk) {
+                  setIsLoading(false);
+                  isFirstChunk = false;
                 }
-                return updated;
-              });
-            } else if (data.type === 'agent') {
-              setMessages(prev => {
-                const updated = [...prev];
-                const lastIdx = updated.length - 1;
-                if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
-                  updated[lastIdx] = {
-                    ...updated[lastIdx],
-                    agentName: data.name
-                  };
-                }
-                return updated;
-              });
-            } else if (data.type === 'sources') {
-              setMessages(prev => {
-                const updated = [...prev];
-                const lastIdx = updated.length - 1;
-                if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
-                  updated[lastIdx] = {
-                    ...updated[lastIdx],
-                    sources: data.sources
-                  };
-                }
-                return updated;
-              });
-            } else if (data.type === 'token') {
-              setMessages(prev => {
-                const updated = [...prev];
-                const lastIdx = updated.length - 1;
-                if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
-                  updated[lastIdx] = {
-                    ...updated[lastIdx],
-                    content: updated[lastIdx].content + data.token
-                  };
-                }
-                return updated;
-              });
+                setMessages(prev => {
+                  const updated = [...prev];
+                  const lastIdx = updated.length - 1;
+                  if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
+                    updated[lastIdx] = {
+                      ...updated[lastIdx],
+                      steps: [...(updated[lastIdx].steps || []), data.step]
+                    };
+                  }
+                  return updated;
+                });
+              } else if (data.type === 'agent') {
+                setMessages(prev => {
+                  const updated = [...prev];
+                  const lastIdx = updated.length - 1;
+                  if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
+                    updated[lastIdx] = {
+                      ...updated[lastIdx],
+                      agentName: data.name
+                    };
+                  }
+                  return updated;
+                });
+              } else if (data.type === 'sources') {
+                setMessages(prev => {
+                  const updated = [...prev];
+                  const lastIdx = updated.length - 1;
+                  if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
+                    updated[lastIdx] = {
+                      ...updated[lastIdx],
+                      sources: data.sources
+                    };
+                  }
+                  return updated;
+                });
+              } else if (data.type === 'token') {
+                finalText += data.token;
+                setMessages(prev => {
+                  const updated = [...prev];
+                  const lastIdx = updated.length - 1;
+                  if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
+                    updated[lastIdx] = {
+                      ...updated[lastIdx],
+                      content: updated[lastIdx].content + data.token
+                    };
+                  }
+                  return updated;
+                });
+              }
+            } catch (e) {
+              // Ignore malformed JSON chunks
             }
-          } catch (e) {
-            // Ignore malformed JSON chunks
           }
         }
       }
 
       // Finish generation step
+      speakText(finalText);
       setMessages(prev => {
         const updated = [...prev];
         const lastIdx = updated.length - 1;
@@ -552,11 +583,12 @@ export default function ChatBot() {
           display: flex;
           align-items: center;
           justify-content: center;
+          background: rgba(255, 255, 255, 0.1);
+          color: var(--text-primary);
           flex-shrink: 0;
-          font-size: 13px;
+          position: relative;
         }
         .chat-avatar.bot {
-          background: var(--text-primary);
           color: var(--bg-primary);
         }
         .chat-avatar.user {
@@ -987,9 +1019,6 @@ export default function ChatBot() {
               )}
               {/* Header */}
             <div className="chatbot-header">
-              <div className="chatbot-header-avatar">
-                <Atom size={18} />
-              </div>
               <div className="chatbot-header-info">
                 <p className="chatbot-header-name">Ask Sujith AI</p>
                 <div className="chatbot-header-status">
@@ -998,9 +1027,15 @@ export default function ChatBot() {
                 </div>
               </div>
               <div className="chatbot-header-actions">
-                <button onClick={resetChat} className="chatbot-clear-btn" aria-label="Reset Chat">
-                  <RotateCcw size={12} />
-                  <span>Clear</span>
+                <button 
+                  onClick={() => setIsVoiceEnabled(!isVoiceEnabled)} 
+                  className={`chatbot-header-btn ${isVoiceEnabled ? 'active' : ''}`} 
+                  title={isVoiceEnabled ? "Mute Voice" : "Enable Voice"}
+                >
+                  {isVoiceEnabled ? <Volume2 size={16} color="#10b981" /> : <VolumeX size={16} />}
+                </button>
+                <button onClick={() => { setMessages([WELCOME_MESSAGE]); setHasError(false); }} className="chatbot-header-btn" title="Clear Chat">
+                  <RotateCcw size={16} />
                 </button>
                 <button onClick={() => setIsOpen(false)} className="chatbot-header-btn" aria-label="Close Chat">
                   <X size={16} />
@@ -1020,6 +1055,13 @@ export default function ChatBot() {
                 >
                   <div className={`chat-avatar ${msg.role === 'user' ? 'user' : 'bot'}`}>
                     {msg.role === 'user' ? <User size={14} /> : <Atom size={14} />}
+                    {msg.role === 'assistant' && isSpeaking && i === messages.length - 1 && (
+                      <div className="speaking-wave">
+                        <span style={{ animationDelay: '0s' }}></span>
+                        <span style={{ animationDelay: '0.2s' }}></span>
+                        <span style={{ animationDelay: '0.4s' }}></span>
+                      </div>
+                    )}
                   </div>
                   <div className={`chat-bubble ${msg.role === 'user' ? 'user' : 'bot'} ${msg.isError ? 'error' : ''}`}>
                     {msg.steps && msg.steps.length > 0 && (

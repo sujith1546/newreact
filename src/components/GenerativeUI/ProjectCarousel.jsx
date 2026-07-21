@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, ExternalLink, Github } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
+import { FaGithub } from 'react-icons/fa';
 
 const projects = [
   {
@@ -67,7 +68,7 @@ export default function ProjectCarousel() {
               ))}
             </div>
             <div className="carousel-actions">
-              <button><Github size={14} /> Source</button>
+              <button><FaGithub size={14} /> Source</button>
               <button><ExternalLink size={14} /> Live Demo</button>
             </div>
           </motion.div>
