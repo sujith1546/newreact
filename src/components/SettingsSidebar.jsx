@@ -62,20 +62,20 @@ export default function SettingsSidebar() {
           {/* Sidebar */}
           <motion.div
             className="settings-sidebar"
-            initial={{ x: '-100%', opacity: 0 }}
+            initial={{ x: '100%', opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            exit={{ x: '-100%', opacity: 0 }}
+            exit={{ x: '100%', opacity: 0 }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             style={{
               position: 'fixed',
               top: 0,
-              left: 0,
+              right: 0,
               bottom: 0,
               width: '100%',
               maxWidth: '380px',
               backgroundColor: isDark ? 'rgba(18, 12, 38, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-              borderRight: `1px solid ${isDark ? 'rgba(139, 92, 246, 0.22)' : 'rgba(128, 128, 128, 0.18)'}`,
-              boxShadow: isDark ? '20px 0 48px rgba(0, 0, 0, 0.6)' : '16px 0 38px rgba(0, 0, 0, 0.16)',
+              borderLeft: `1px solid ${isDark ? 'rgba(139, 92, 246, 0.22)' : 'rgba(128, 128, 128, 0.18)'}`,
+              boxShadow: isDark ? '-20px 0 48px rgba(0, 0, 0, 0.6)' : '-16px 0 38px rgba(0, 0, 0, 0.16)',
               backdropFilter: 'blur(20px)',
               WebkitBackdropFilter: 'blur(20px)',
               zIndex: 99999,
