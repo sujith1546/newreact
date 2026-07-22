@@ -3601,3 +3601,9 @@ html[data-density="relaxed"] { font-size: 18px; }
 [data-hud="true"] *:focus-visible { outline: 3px solid var(--primary-blue, #3b82f6) !important; outline-offset: 4px !important; box-shadow: 0 0 16px var(--primary-blue, #3b82f6) !important; border-radius: inherit; }
 
 
+
+/* === ACCESSIBILITY MODIFIERS === */
+.reduce-motion * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+.high-contrast { --text-primary: #ffffff !important; --text-secondary: #e2e8f0 !important; --border-color: rgba(255, 255, 255, 0.4) !important; }
+[data-theme="light"].high-contrast { --text-primary: #000000 !important; --text-secondary: #1a202c !important; --border-color: rgba(0, 0, 0, 0.4) !important; }
+

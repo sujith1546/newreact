@@ -104,6 +104,12 @@ export function ThemeProvider({ children }) {
     } else {
       root.classList.remove('high-contrast');
     }
+
+    if (reduceMotion) {
+      root.classList.add('reduce-motion');
+    } else {
+      root.classList.remove('reduce-motion');
+    }
     
     // Apply CSS variables for layout density
     root.setAttribute('data-density', layoutDensity);
