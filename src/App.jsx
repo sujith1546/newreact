@@ -3,7 +3,8 @@ import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { IslandProvider } from './context/IslandContext';
 import { HelmetProvider } from 'react-helmet-async';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, MotionConfig } from 'framer-motion';
+import { useTheme } from './context/ThemeContext';
 import MainLayout from './pages/MainLayout';
 import DynamicIsland from './components/DynamicIsland';
 import DevToolsDetector from './components/DevToolsDetector';
@@ -40,19 +41,28 @@ const Loader = () => (
   </div>
 );
 
+function AppContent() {
+  const { reduceMotion } = useTheme();
+  return (
+    <MotionConfig reducedMotion={reduceMotion ? "always" : "never"}>
+      <IslandProvider>
+        <DynamicIsland />
+        <DevToolsDetector />
+        <BrowserRouter>
+          <Suspense fallback={<Loader />}>
+            <AnimatedRoutes />
+          </Suspense>
+        </BrowserRouter>
+      </IslandProvider>
+    </MotionConfig>
+  );
+}
+
 export default function App() {
   return (
     <HelmetProvider>
       <ThemeProvider>
-        <IslandProvider>
-          <DynamicIsland />
-          <DevToolsDetector />
-          <BrowserRouter>
-            <Suspense fallback={<Loader />}>
-              <AnimatedRoutes />
-            </Suspense>
-          </BrowserRouter>
-        </IslandProvider>
+        <AppContent />
       </ThemeProvider>
     </HelmetProvider>
   );

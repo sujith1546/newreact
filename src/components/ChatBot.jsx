@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, Loader2, Bot, User, Atom, RotateCcw, Trash2, Copy, Check, ChevronDown, ChevronUp, Info, Mic, Cpu, Layers, Code, Zap, Paperclip, Volume2, VolumeX } from 'lucide-react';
 import { useIsland } from '../context/IslandContext';
+import { useTheme } from '../context/ThemeContext';
 import ThoughtTrace from './ThoughtTrace';
 import SkillChart from './GenerativeUI/SkillChart';
 import ProjectCarousel from './GenerativeUI/ProjectCarousel';
@@ -77,7 +78,7 @@ export default function ChatBot() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [isVoiceEnabled, setIsVoiceEnabled] = useState(false);
+  const { aiVoice, setAiVoice, aiAutoNav } = useTheme();
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [attachment, setAttachment] = useState(null); // { file, base64 }
   const fileInputRef = useRef(null);
@@ -112,8 +113,14 @@ export default function ChatBot() {
     }
   };
 
+  useEffect(() => {
+    const handleClear = () => handleClearChat();
+    window.addEventListener('clear-chat', handleClear);
+    return () => window.removeEventListener('clear-chat', handleClear);
+  }, []);
+
   const speakText = (text) => {
-    if (!isVoiceEnabled || !('speechSynthesis' in window)) return;
+    if (!aiVoice || !('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
     
     // Clean markdown and GenUI tags
@@ -401,11 +408,14 @@ export default function ChatBot() {
         return updated;
       });
 
-      speakText(finalText);
+      if (aiVoice) {
+        speakText(finalText);
+      }
 
-      // ── Screen Director: detect [NAVIGATE:sectionId] or [NAVIGATE:sectionId:keyword] ─────────────
+      // 🎬 Screen Director: detect [NAVIGATE:sectionId] or [NAVIGATE:sectionId:keyword] 🎬
       const navMatch = finalText.match(/\[NAVIGATE:\s*([a-zA-Z]+)(?::\s*([^\]]+))?\]/i);
-      if (navMatch) {
+      
+      if (navMatch && aiAutoNav) {
         const targetSection = navMatch[1].toLowerCase();
         const keyword = navMatch[2] ? navMatch[2].trim() : targetSection;
         const validSections = ['home','about','skills','projects','education','experience','certifications','contact'];
@@ -1237,11 +1247,11 @@ export default function ChatBot() {
               </div>
               <div className="chatbot-header-actions">
                 <button 
-                  onClick={() => setIsVoiceEnabled(!isVoiceEnabled)} 
-                  className={`chatbot-header-btn ${isVoiceEnabled ? 'active' : ''}`} 
-                  title={isVoiceEnabled ? "Mute Voice" : "Enable Voice"}
+                  onClick={() => setAiVoice(!aiVoice)} 
+                  className={`chatbot-header-btn ${aiVoice ? 'active' : ''}`} 
+                  title={aiVoice ? "Mute Voice" : "Enable Voice"}
                 >
-                  {isVoiceEnabled ? <Volume2 size={16} color="#10b981" /> : <VolumeX size={16} />}
+                  {aiVoice ? <Volume2 size={16} color="#10b981" /> : <VolumeX size={16} />}
                 </button>
                 <button onClick={handleClearChat} className="chatbot-header-btn" title="Clear Chat">
                   <RotateCcw size={16} />
