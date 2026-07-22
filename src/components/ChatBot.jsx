@@ -59,6 +59,7 @@ export default function ChatBot() {
   const [isLoading, setIsLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isVoiceEnabled, setIsVoiceEnabled] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const [attachment, setAttachment] = useState(null); // { file, base64 }
   const fileInputRef = useRef(null);
   const { triggerIsland } = useIsland();
