@@ -45,20 +45,7 @@ export default function AdminDashboard() {
 
   return (
     <div style={styles.shell}>
-      <style>{`
-        body { 
-          background-color: #1e1e1e !important; 
-          margin: 0; 
-          padding: 0; 
-          zoom: 1 !important;
-          min-height: 100vh;
-        }
-        #root {
-          min-height: 100vh;
-          display: flex;
-          flex-direction: column;
-        }
-      `}</style>
+      <style>{`body { background-color: #1e1e1e !important; margin: 0; padding: 0; }`}</style>
       {/* Sidebar */}
       <div style={styles.sidebar}>
         <p style={styles.sidebarLabel}>Admin</p>
@@ -512,20 +499,16 @@ function parseUserAgent(ua) {
 
 const styles = {
   shell: {
-    display: "flex",
-    alignItems: "stretch",
+    display: "grid",
+    gridTemplateColumns: "220px 1fr",
     minHeight: "100vh",
-    flexGrow: 1,
     background: "#1e1e1e",
     fontFamily: "system-ui, -apple-system, sans-serif"
   },
   sidebar: {
-    width: 220,
     background: "#2a2a2a",
     borderRight: "1px solid #3f3f46",
     padding: "24px 12px",
-    flexShrink: 0,
-    minHeight: "100vh",
     boxSizing: "border-box"
   },
   sidebarLabel: {
@@ -558,10 +541,10 @@ const styles = {
     padding: "1px 7px",
   },
   main: {
-    flex: 1,
+    padding: "24px",
     display: "flex",
     flexDirection: "column",
-    minWidth: 0,
+    overflowY: "auto",
   },
   header: {
     display: "flex",
