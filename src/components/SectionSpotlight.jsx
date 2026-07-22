@@ -15,136 +15,139 @@ const SECTION_LABELS = {
 };
 
 // ═══════════════════════════════════════════════════════════════
-// SECTION SCOPE — search containers per page (waterfall: first found wins)
+// SECTION SCOPE — Search containers for both Desktop & Mobile
 // ═══════════════════════════════════════════════════════════════
 const SECTION_SCOPE = {
   home: [
-    '.home-grid',            // desktop 2-col hero
-    '.mobile-dashboard',     // mobile full dashboard
-    '.hero-info',            // desktop hero text column
+    '.home-grid',            // Desktop hero 2-col
+    '.mobile-dashboard',     // Mobile full dashboard
+    '.hero-info',
     '.home-content',
   ],
   about: [
-    '.about-page',           // full about container
+    '.about-page',           // Full about container
+    '.about-container',
   ],
   skills: [
-    '.skills-grid',          // desktop 2-col card grid
-    '.skills-mobile-grid',   // mobile category grid
+    '.skills-grid',          // Desktop grid
+    '.skills-mobile-grid',   // Mobile category grid
+    '.sk-category-grid',
     '.skills-page',
   ],
   projects: [
-    '.projects-grid',        // desktop auto-fit grid
-    '.mpj-list',             // mobile project list
+    '.projects-grid',        // Desktop grid
+    '.mpj-list',             // Mobile project list
+    '.projects-page',
   ],
   education: [
-    '.edu-grid',             // desktop 4-col flip grid
-    '.mobile-edu-feed',      // mobile feed
+    '.edu-grid',             // Desktop 3D flip grid
+    '.mobile-edu-feed',      // Mobile feed
     '.edu-page',
   ],
   experience: [
     '.exp-page',
+    '.experience-page',
   ],
   certifications: [
-    '.certs-grid',           // desktop cert cards
-    '.mobile-certs-feed',    // mobile cert feed
+    '.certs-grid',           // Desktop cert grid
+    '.mobile-certs-feed',    // Mobile cert feed
+    '.certs-page',
   ],
   contact: [
-    '.fc-wrapper',           // desktop 2-col layout
-    '.mc-outer-container',   // mobile layout
+    '.fc-wrapper',           // Desktop layout
+    '.mc-outer-container',   // Mobile layout
     '.contact-page-wrap',
   ],
 };
 
 // ═══════════════════════════════════════════════════════════════
-// FALLBACK — when keyword search yields nothing, highlight this
-// ═══════════════════════════════════════════════════════════════
-const SECTION_FALLBACK = {
-  home:           '.home-grid',
-  about:          '.about-page',
-  skills:         '.skills-grid',
-  projects:       '.projects-grid',
-  education:      '.edu-grid',
-  experience:     '.exp-page',
-  certifications: '.certs-grid',
-  contact:        '.fc-info-panel',
-};
-
-// ═══════════════════════════════════════════════════════════════
-// MINIMUM ELEMENT SIZE — avoid highlighting tiny labels / spans
-// ═══════════════════════════════════════════════════════════════
-const MIN_W = 60;
-const MIN_H = 36;
-
-// ═══════════════════════════════════════════════════════════════
-// CLASS → BORDER-RADIUS MAP (covers every known card on every page)
+// CLASS → BORDER-RADIUS MAP (Desktop + Mobile)
 // ═══════════════════════════════════════════════════════════════
 const CLASS_RADIUS_MAP = {
-  // ── Home ──────────────────────────────────────────────────────
-  'qa-card':               '14px',  // Quick action cards
-  'dashboard-profile-card':'20px',  // Mobile profile card
-  'dashboard-bio-card':    '16px',  // Mobile bio card
-  'dashboard-link-card':   '14px',  // Mobile nav link cards
-  'stat-card':             '12px',  // Stats cards (home + about)
-  // ── About ─────────────────────────────────────────────────────
-  'hobby-card':            '14px',  // Hobby cards
-  'contact-pill':          '100px', // Contact pills (gmail/linkedin/github)
-  'micro-timeline':        '12px',  // Career timeline strip
-  'cta-btn-primary':       '10px',  // CTA primary button
-  'cta-btn-secondary':     '10px',  // CTA secondary button
-  // ── Skills ────────────────────────────────────────────────────
-  'skill-category-card':   '14px',  // Desktop skill category cards
-  'sk-cat-card':           '14px',  // Mobile skill category cards
-  'sk-skills-card':        '12px',  // Mobile skill group card
-  // ── Projects ──────────────────────────────────────────────────
-  'project-card':          '16px',  // Desktop project cards
-  'mpj-row':               '12px',  // Mobile project rows
-  // ── Education ─────────────────────────────────────────────────
-  'edu-flip-card':         '18px',  // Desktop 3D flip cards
-  'medu-card':             '14px',  // Mobile education cards
-  'edu-closing-summary':   '14px',  // Education closing summary
-  // ── Certifications ────────────────────────────────────────────
-  'cert-card':             '16px',  // Desktop cert cards
-  'mcert-card':            '14px',  // Mobile cert rows
-  'cert-hero-card':        '14px',  // Detail hero credential card
-  // ── Experience ────────────────────────────────────────────────
-  'empty-state-card':      '18px',  // Opportunity card
-  // ── Contact ───────────────────────────────────────────────────
-  'fc-info-panel':         '16px',  // Desktop left dark panel
-  'fc-form-panel':         '16px',  // Desktop right form panel
-  'mc-contact-card-item':  '12px',  // Mobile contact card items
-  'swipe-send-container':  '14px',  // Mobile swipe-to-send
-  'mc-form-container':     '14px',  // Mobile form
+  // Home
+  'qa-card':               '14px',
+  'dashboard-profile-card':'20px',
+  'dashboard-bio-card':    '16px',
+  'dashboard-link-card':   '14px',
+  'stat-card':             '12px',
+  // About
+  'hobby-card':            '14px',
+  'contact-pill':          '100px',
+  'micro-timeline':        '12px',
+  'cta-btn-primary':       '10px',
+  'cta-btn-secondary':     '10px',
+  // Skills
+  'skill-category-card':   '14px',
+  'sk-cat-card':           '14px',
+  'sk-skills-card':        '12px',
+  'skill-pill':            '20px',
+  // Projects
+  'project-card':          '16px',
+  'mpj-row':               '12px',
+  // Education
+  'edu-flip-card':         '18px',
+  'medu-card':             '14px',
+  'edu-closing-summary':   '14px',
+  // Certifications
+  'cert-card':             '16px',
+  'mcert-card':            '14px',
+  'cert-hero-card':        '14px',
+  // Experience
+  'empty-state-card':      '18px',
+  // Contact
+  'fc-info-panel':         '16px',
+  'fc-form-panel':         '16px',
+  'mc-contact-card-item':  '12px',
+  'swipe-send-container':  '14px',
+  'mc-form-container':     '14px',
 };
 
-// ═══════════════════════════════════════════════════════════════
-// HIGH-PRIORITY CARD CLASSES (get +200 bonus over generic divs)
-// The full exhaustive list from every page's DOM inventory
-// ═══════════════════════════════════════════════════════════════
-const PRIORITY_CARD_CLASSES = new Set([
-  // Home
-  'qa-card', 'dashboard-profile-card', 'dashboard-bio-card',
-  'dashboard-link-card', 'stat-card',
-  // About
-  'hobby-card', 'contact-pill', 'micro-timeline',
-  'cta-btn-primary', 'cta-btn-secondary', 'about-bio', 'about-header',
-  // Skills
+// Recognized card classes for exact element card climbing
+const CARD_CLASSES = new Set([
   'skill-category-card', 'sk-cat-card', 'sk-skills-card', 'skill-pill',
-  // Projects
   'project-card', 'mpj-row',
-  // Education
-  'edu-flip-card', 'medu-card', 'edu-closing-summary', 'edu-rail',
-  // Certifications
+  'edu-flip-card', 'medu-card', 'edu-closing-summary',
   'cert-card', 'mcert-card', 'cert-hero-card',
-  // Experience
+  'hobby-card', 'contact-pill', 'micro-timeline', 'stat-card', 'qa-card',
+  'dashboard-profile-card', 'dashboard-bio-card', 'dashboard-link-card',
   'empty-state-card',
-  // Contact
-  'fc-info-panel', 'fc-form-panel', 'mc-contact-card-item',
-  'swipe-send-container', 'mc-form-container',
+  'fc-info-panel', 'fc-form-panel', 'mc-contact-card-item', 'swipe-send-container'
 ]);
 
+// Minimum element dimensions
+const MIN_W = 40;
+const MIN_H = 24;
+
 // ═══════════════════════════════════════════════════════════════
-// HELPERS
+// KEYWORD SANITIZER
+// Strips noise words so "show Python skills" -> "python"
 // ═══════════════════════════════════════════════════════════════
+function sanitizeKeyword(rawKw, sectionId) {
+  if (!rawKw) return '';
+  let kw = rawKw.toLowerCase().trim();
+
+  // Strip leading action phrases
+  kw = kw.replace(/^(show|view|find|display|see|go to|take me to|where is|tell me about|what is|get|open)\s+/i, '');
+  // Strip possessives / articles
+  kw = kw.replace(/^(my|your|the|a|an|sujith's)\s+/i, '');
+
+  const secLow = (sectionId || '').toLowerCase();
+  const labLow = (SECTION_LABELS[sectionId] || '').toLowerCase();
+
+  // If keyword ends with section noun (e.g. "python skills" -> "python"), strip section noun if more remains
+  const trailingSecRegex = new RegExp(`\\s+(${secLow}|skills|projects|education|certs|certifications|experience|contact)$`, 'i');
+  if (trailingSecRegex.test(kw) && kw.replace(trailingSecRegex, '').trim().length > 0) {
+    kw = kw.replace(trailingSecRegex, '').trim();
+  }
+
+  // Generic check: if what remains is empty or matches section name
+  if (!kw || kw === secLow || kw === labLow || kw === 'download' || kw === 'resume') {
+    return ''; // empty means generic section highlight
+  }
+
+  return kw;
+}
+
 function getRadius(el) {
   if (!el) return '14px';
   for (const [cls, radius] of Object.entries(CLASS_RADIUS_MAP)) {
@@ -157,140 +160,180 @@ function getRadius(el) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// INTELLIGENT ELEMENT SCORER
-// 3 Factors: text-ratio, inverse-area, card-class bonus
+// SCORER — Ranks elements by text match precision & card priority
 // ═══════════════════════════════════════════════════════════════
-function scoreElement(el, kw) {
-  const elText = (el.textContent || '').toLowerCase();
-  if (!elText.includes(kw)) return 0;
+function scoreElement(el, cleanKw) {
+  // Must be visible
+  const style = window.getComputedStyle(el);
+  if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') return 0;
 
   const rect = el.getBoundingClientRect();
   if (rect.width < MIN_W || rect.height < MIN_H) return 0;
-  // Off-screen? skip
-  if (rect.bottom < 0 || rect.top > window.innerHeight + 2000) return 0;
 
-  const area      = rect.width * rect.height;
-  const areaScore = 1_500_000 / (area + 1);              // smaller = higher score
+  const elText = (el.textContent || '').toLowerCase();
+  if (!elText.includes(cleanKw)) return 0;
 
-  const ratio      = kw.length / (elText.length + 1);
-  const ratioScore = ratio * 300;                         // tighter text match = better
+  // 1. Text Ratio Score (higher if element text is mostly just the keyword)
+  const ratio = cleanKw.length / (elText.length + 1);
+  const ratioScore = ratio * 400;
 
-  const cardBonus = PRIORITY_CARD_CLASSES.has([...el.classList].find(c => PRIORITY_CARD_CLASSES.has(c)) || '') ? 200 : 0;
+  // 2. Inverse Area Score (prefer compact sub-cards over entire page grids)
+  const area = rect.width * rect.height;
+  const areaScore = 2_000_000 / (area + 1);
 
-  return areaScore + ratioScore + cardBonus;
-}
-
-// ═══════════════════════════════════════════════════════════════
-// DOM WALKER — find the single best-matching element inside a container
-// ═══════════════════════════════════════════════════════════════
-function findBestElement(container, keyword) {
-  if (!container || !keyword) return null;
-  const kw = keyword.toLowerCase();
-
-  const allEls = Array.from(container.querySelectorAll('*'));
-  let bestEl = null, bestScore = 0;
-
-  for (const el of allEls) {
-    const score = scoreElement(el, kw);
-    if (score > bestScore) { bestScore = score; bestEl = el; }
-  }
-
-  // If winner is still very wide (> 85% viewport), try to walk up to a better parent
-  if (bestEl) {
-    let node = bestEl;
-    while (node && node !== container) {
-      if (node.getBoundingClientRect().width > window.innerWidth * 0.85) {
-        node = node.parentElement;
-        continue;
-      }
+  // 3. Card Class Bonus
+  let cardBonus = 0;
+  for (const cls of el.classList) {
+    if (CARD_CLASSES.has(cls)) {
+      cardBonus = 300;
       break;
     }
-    if (node && node !== container) bestEl = node;
   }
 
-  return bestEl || null;
+  return ratioScore + areaScore + cardBonus;
 }
 
 // ═══════════════════════════════════════════════════════════════
-// MAIN RESOLVER
+// DOM CRAWLER & CARD CLIMBER
 // ═══════════════════════════════════════════════════════════════
-function resolveTargetElement(sectionId, keyword) {
-  const scopes   = SECTION_SCOPE[sectionId] || [];
-  const fallback = SECTION_FALLBACK[sectionId];
+function findBestElement(container, cleanKw) {
+  if (!container || !cleanKw) return null;
 
-  const kwLow  = (keyword || '').toLowerCase().trim();
-  const secLow = (sectionId || '').toLowerCase();
-  const labLow = (SECTION_LABELS[sectionId] || '').toLowerCase();
+  const allEls = Array.from(container.querySelectorAll('*'));
+  let bestEl = null;
+  let bestScore = 0;
 
-  // "generic" keyword = just navigating to the whole section
-  const isGeneric = !kwLow || kwLow === secLow || kwLow === labLow
-    || kwLow === 'download' || kwLow === 'show' || kwLow === 'resume';
+  for (const el of allEls) {
+    const score = scoreElement(el, cleanKw);
+    if (score > bestScore) {
+      bestScore = score;
+      bestEl = el;
+    }
+  }
 
-  // 1. Find scope container (first one actually in DOM)
+  if (!bestEl) return null;
+
+  // ── Climb UP from inner text node to the surrounding card ──────
+  let curr = bestEl;
+  while (curr && curr !== container && curr !== document.body) {
+    // If curr is a recognized card element, pick it immediately!
+    const hasCardClass = Array.from(curr.classList || []).some(cls => CARD_CLASSES.has(cls));
+    if (hasCardClass) return curr;
+
+    const rect = curr.getBoundingClientRect();
+    // Stop if parent gets too large (> 92% screen width or > 750px tall)
+    if (rect.width > window.innerWidth * 0.92 || rect.height > 750) {
+      break;
+    }
+
+    // If parent is a good card-like block
+    if (rect.width >= 120 && rect.height >= 40) {
+      const parentStyle = window.getComputedStyle(curr);
+      if (parentStyle.borderRadius !== '0px' || parentStyle.borderWidth !== '0px' || parentStyle.boxShadow !== 'none') {
+        bestEl = curr;
+      }
+    }
+
+    curr = curr.parentElement;
+  }
+
+  return bestEl;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// MAIN TARGET RESOLVER
+// ═══════════════════════════════════════════════════════════════
+function resolveTargetElement(sectionId, rawKeyword) {
+  const cleanKw = sanitizeKeyword(rawKeyword, sectionId);
+  const scopes  = SECTION_SCOPE[sectionId] || [];
+
+  // Find active scope container (desktop or mobile)
   let scopeEl = null;
   for (const sel of scopes) {
-    const el = document.querySelector(sel);
-    if (el) { scopeEl = el; break; }
+    const els = document.querySelectorAll(sel);
+    for (const el of Array.from(els)) {
+      const st = window.getComputedStyle(el);
+      if (st.display !== 'none' && st.visibility !== 'hidden') {
+        scopeEl = el;
+        break;
+      }
+    }
+    if (scopeEl) break;
   }
 
-  // 2. Generic → just highlight the whole section
-  if (isGeneric) {
-    return scopeEl || (fallback ? document.querySelector(fallback) : null);
+  // Fallback scope to page container or body
+  if (!scopeEl) {
+    scopeEl = document.querySelector('.main-content') || document.querySelector('main') || document.body;
   }
 
-  // 3. Keyword search inside scope
-  if (scopeEl) {
-    const best = findBestElement(scopeEl, kwLow);
-    if (best) return best;
+  // If keyword is generic (e.g. user just said "show skills"), highlight scopeEl
+  if (!cleanKw) {
+    return scopeEl;
   }
 
-  // 4. Fallback: scope container or known selector
-  return scopeEl || (fallback ? document.querySelector(fallback) : null);
+  // Intelligent DOM search
+  const bestEl = findBestElement(scopeEl, cleanKw);
+  if (bestEl) return bestEl;
+
+  // Fallback: search whole document body if scope container search missed it
+  const globalBest = findBestElement(document.body, cleanKw);
+  if (globalBest) return globalBest;
+
+  return scopeEl;
 }
 
 // ═══════════════════════════════════════════════════════════════
 // CSS INJECTION
 // ═══════════════════════════════════════════════════════════════
 const STYLE_ID = 'ai-spotlight-ring-style';
-let   TARGET_EL = null;
+let TARGET_EL  = null;
 
 function buildCSS(uid, radius) {
   return `
     @keyframes ai-spotlight-pulse-${uid} {
-      0%   { box-shadow: 0 0 0 0    rgba(139,92,246,0.70), 0 0 32px 8px rgba(139,92,246,0.30); outline-color: rgba(139,92,246,1);    }
-      50%  { box-shadow: 0 0 0 12px rgba(139,92,246,0.07), 0 0 60px 24px rgba(139,92,246,0.12); outline-color: rgba(99,102,241,0.65); }
-      100% { box-shadow: 0 0 0 0    rgba(139,92,246,0.70), 0 0 32px 8px rgba(139,92,246,0.30); outline-color: rgba(139,92,246,1);    }
+      0%   { box-shadow: 0 0 0 0    rgba(139,92,246,0.75), 0 0 36px 10px rgba(139,92,246,0.35); outline-color: rgba(139,92,246,1);    }
+      50%  { box-shadow: 0 0 0 14px rgba(139,92,246,0.08), 0 0 64px 26px rgba(139,92,246,0.15); outline-color: rgba(99,102,241,0.70); }
+      100% { box-shadow: 0 0 0 0    rgba(139,92,246,0.75), 0 0 36px 10px rgba(139,92,246,0.35); outline-color: rgba(139,92,246,1);    }
     }
     .ai-spotlight-target {
-      outline:        2.5px solid rgba(139,92,246,0.92) !important;
-      outline-offset: 8px !important;
+      outline:        3px solid rgba(139,92,246,0.95) !important;
+      outline-offset: 6px !important;
       border-radius:  ${radius} !important;
       animation:      ai-spotlight-pulse-${uid} 2.2s ease-in-out infinite !important;
       position:       relative !important;
-      z-index:        10 !important;
-      scroll-margin-top:    90px;
-      scroll-margin-bottom: 30px;
+      z-index:        100 !important;
+      scroll-margin-top:    100px;
+      scroll-margin-bottom: 50px;
     }
   `;
 }
 
 function injectHighlight(sectionId, keyword) {
   removeHighlight();
-  // Resume is handled by event dispatch — no DOM highlight needed
   if (sectionId === 'resume') return;
 
-  const uid = Date.now();
-  const el  = resolveTargetElement(sectionId, keyword);
+  const el = resolveTargetElement(sectionId, keyword);
   if (!el) return;
 
   TARGET_EL = el;
-  const styleEl       = document.createElement('style');
-  styleEl.id          = STYLE_ID;
-  styleEl.textContent = buildCSS(uid, getRadius(el));
+  const uid = Date.now();
+  const radius = getRadius(el);
+
+  const styleEl = document.createElement('style');
+  styleEl.id = STYLE_ID;
+  styleEl.textContent = buildCSS(uid, radius);
   document.head.appendChild(styleEl);
+
   el.classList.add('ai-spotlight-target');
 
-  setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 350);
+  // Scroll into view smoothly on Desktop & Mobile
+  setTimeout(() => {
+    try {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+    } catch {
+      el.scrollIntoView(true);
+    }
+  }, 350);
 }
 
 function removeHighlight() {
@@ -309,12 +352,13 @@ export default function SectionSpotlight({ section, keyword, onDismiss }) {
   const isResume = section === 'resume';
   const label    = SECTION_LABELS[section] || section || '';
 
-  // Inject on section/keyword change
   useEffect(() => {
     if (section) {
       setCountdown(5);
-      const t = setTimeout(() => injectHighlight(section, keyword), 480);
-      return () => clearTimeout(t);
+      // Wait for page transition & DOM layout settling
+      const t1 = setTimeout(() => injectHighlight(section, keyword), 450);
+      const t2 = setTimeout(() => injectHighlight(section, keyword), 850); // double-check retry for slow mobile renders
+      return () => { clearTimeout(t1); clearTimeout(t2); };
     } else {
       removeHighlight();
     }
@@ -322,7 +366,6 @@ export default function SectionSpotlight({ section, keyword, onDismiss }) {
 
   useEffect(() => () => removeHighlight(), []);
 
-  // Auto-dismiss countdown
   useEffect(() => {
     if (!section) return;
     const iv = setInterval(() => {
@@ -336,14 +379,9 @@ export default function SectionSpotlight({ section, keyword, onDismiss }) {
 
   const handleDismiss = () => { removeHighlight(); onDismiss?.(); };
 
-  // Badge label: breadcrumb when keyword is specific
-  const kwLow  = (keyword || '').toLowerCase().trim();
-  const secLow = (section || '').toLowerCase();
-  const labLow = label.toLowerCase();
-  const isSpecific = keyword && kwLow !== secLow && kwLow !== labLow
-    && kwLow !== 'download' && kwLow !== 'show' && kwLow !== 'resume';
-
-  const badgeLabel  = isSpecific ? `${label} › ${keyword}` : label;
+  const cleanKw = sanitizeKeyword(keyword, section);
+  const isSpecific = cleanKw.length > 0;
+  const badgeLabel = isSpecific ? `${label} › ${cleanKw}` : label;
   const badgeAction = isResume ? 'AI Downloading' : 'AI Highlighting';
   const accentColor = isResume ? '#10b981' : '#8b5cf6';
   const accentGrad  = isResume
@@ -399,7 +437,8 @@ export default function SectionSpotlight({ section, keyword, onDismiss }) {
               </span>
               <span style={{
                 fontSize:13, fontWeight:700, color:'#fff',
-                whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', maxWidth:230,
+                whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', maxWidth:220,
+                textTransform: 'capitalize',
               }}>
                 {badgeLabel}
               </span>
