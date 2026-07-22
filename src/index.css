@@ -89,7 +89,7 @@ body {
 .sidebar {
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(var(--glass-blur, 12px));
-  -webkit-backdrop-filter: blur(var(--glass-blur, 12px)));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 12px));
   border-right: 1px solid rgba(255, 255, 255, 0.2);
   padding: 30px;
   text-align: center;
@@ -278,7 +278,7 @@ body {
   border-radius: 50%;
   background: rgba(255,255,255,0.8);
   backdrop-filter: blur(var(--glass-blur, 12px));
-  -webkit-backdrop-filter: blur(var(--glass-blur, 12px)));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 12px));
   border: 1px solid var(--border-color);
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
   display: flex;
@@ -1208,7 +1208,7 @@ body {
 .contact-section {
   background: rgba(255,255,255,0.85);
   backdrop-filter: blur(var(--glass-blur, 12px));
-  -webkit-backdrop-filter: blur(var(--glass-blur, 12px)));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 12px));
   padding: 40px;
   border-radius: 24px;
   box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255,255,255,0.5) inset;
@@ -1309,7 +1309,7 @@ button.btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
   inset: 0;
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(var(--glass-blur, 12px));
-  -webkit-backdrop-filter: blur(var(--glass-blur, 12px)));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 12px));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1637,7 +1637,7 @@ button.btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
   z-index: 9999999;
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(var(--glass-blur, 12px));
-  -webkit-backdrop-filter: blur(var(--glass-blur, 12px)));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 12px));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1703,7 +1703,7 @@ button.btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
   z-index: 10000000;
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(var(--glass-blur, 12px));
-  -webkit-backdrop-filter: blur(var(--glass-blur, 12px)));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 12px));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2080,7 +2080,7 @@ html {
     padding: 0 14px;
     background: var(--mobile-nav-bg-light);
     backdrop-filter: blur(var(--glass-blur, 12px));
-    -webkit-backdrop-filter: blur(var(--glass-blur, 12px)));
+    -webkit-backdrop-filter: blur(var(--glass-blur, 12px));
     border-bottom: 0.5px solid var(--border-color, rgba(0,0,0,0.08));
     box-sizing: border-box;
   }
@@ -2525,7 +2525,7 @@ html {
     border-top: 1px solid rgba(0, 0, 0, 0.08);
     background: rgba(255, 255, 255, 0.85);
     backdrop-filter: blur(var(--glass-blur, 12px));
-    -webkit-backdrop-filter: blur(var(--glass-blur, 12px)));
+    -webkit-backdrop-filter: blur(var(--glass-blur, 12px));
     box-sizing: border-box;
     max-width: 100%;
     margin: 0;
@@ -2597,7 +2597,7 @@ html {
     position: fixed; inset: 0;
     background: rgba(0, 0, 0, 0.55);
     backdrop-filter: blur(var(--glass-blur, 12px));
-    -webkit-backdrop-filter: blur(var(--glass-blur, 12px)));
+    -webkit-backdrop-filter: blur(var(--glass-blur, 12px));
     will-change: opacity, backdrop-filter;
     transform: translateZ(0);
     z-index: 100;
@@ -3415,7 +3415,7 @@ html {
 .glass-panel {
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(var(--glass-blur, 12px)) saturate(180%);
-  -webkit-backdrop-filter: blur(var(--glass-blur, 12px))) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--glass-blur, 12px)) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
@@ -3429,7 +3429,7 @@ html {
   .mobile-nav-capsule {
     background: rgba(255, 255, 255, 0.75) !important;
     backdrop-filter: blur(var(--glass-blur, 12px)) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(var(--glass-blur, 12px))) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(var(--glass-blur, 12px)) saturate(180%) !important;
     border: 1px solid rgba(200, 200, 200, 0.3) !important;
   }
   [data-theme="dark"] .mobile-nav-capsule {
@@ -3440,7 +3440,7 @@ html {
   .more-overlay-sheet {
     background: rgba(255, 255, 255, 0.85) !important;
     backdrop-filter: blur(var(--glass-blur, 12px)) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(var(--glass-blur, 12px))) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(var(--glass-blur, 12px)) saturate(180%) !important;
   }
   [data-theme="dark"] .more-overlay-sheet {
     background: rgba(24, 24, 27, 0.75) !important;
@@ -3520,7 +3520,7 @@ html {
   z-index: 10000;
   background: rgba(0,0,0,0.2);
   backdrop-filter: blur(var(--glass-blur, 12px));
-  -webkit-backdrop-filter: blur(var(--glass-blur, 12px)));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 12px));
   display: flex;
   align-items: center;
   justify-content: center;
