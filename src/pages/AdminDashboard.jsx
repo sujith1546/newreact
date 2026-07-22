@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { Loader2, Trash2, Check, ChevronRight, X, MessageSquare, MessageCircle, Briefcase, Zap, LogOut, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -15,6 +16,7 @@ const NAV_ITEMS = [
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [activeTab, setActiveTab] = useState("messages");
   const [lastLogin, setLastLogin] = useState(null);
   const stats = useDashboardStats();
@@ -88,10 +90,15 @@ export default function AdminDashboard() {
               </p>
             )}
           </div>
-          <button onClick={handleLogout} style={styles.logoutBtn}>
-            <LogOut size={14} />
-            Log out
-          </button>
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <button onClick={toggleTheme} style={styles.themeToggleBtn} title="Toggle Theme">
+              <i className={theme === 'dark' ? 'ti ti-sun' : 'ti ti-moon'} style={{ fontSize: 16 }} aria-hidden="true" />
+            </button>
+            <button onClick={handleLogout} style={styles.logoutBtn}>
+              <LogOut size={14} />
+              Log out
+            </button>
+          </div>
         </div>
 
         {/* Stats row */}
@@ -588,11 +595,25 @@ const styles = {
     border: "1px solid var(--border-color)",
     color: "#ef4444",
     padding: "6px 12px",
+    height: "32px",
     borderRadius: "6px",
     fontSize: 12,
     fontWeight: 500,
     cursor: "pointer",
     transition: "background 0.15s"
+  },
+  themeToggleBtn: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "transparent",
+    border: "1px solid var(--border-color)",
+    color: "var(--text-primary)",
+    width: "32px",
+    height: "32px",
+    borderRadius: "6px",
+    cursor: "pointer",
+    transition: "all 0.15s",
   },
   statsRow: {
     display: "grid",
