@@ -5,7 +5,7 @@ import {
   X, Settings2, Palette, Bot, Volume2, VolumeX, Eye, EyeOff,
   Zap, ZapOff, MonitorPlay, Code2, Paintbrush, Activity,
   Moon, Sun, Layers, Trash2, RotateCcw, Sparkles, Check,
-  ChevronRight, Info, Shield, ExternalLink
+  ChevronRight, Info, Shield, ExternalLink, Layout
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
