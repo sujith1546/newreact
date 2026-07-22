@@ -386,39 +386,45 @@ export default function ChatBot() {
         }
       }
 
-      // Finish generation step
+      // Clean raw NAVIGATE tokens from final displayed message content
+      const cleanDisplayContent = finalText.replace(/\[NAVIGATE:\s*[a-zA-Z]+(?::\s*[^\]]+)?\]/gi, '').trim();
+
+      setMessages(prev => {
+        const updated = [...prev];
+        const lastIdx = updated.length - 1;
+        if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
+          updated[lastIdx] = {
+            ...updated[lastIdx],
+            content: cleanDisplayContent
+          };
+        }
+        return updated;
+      });
+
       speakText(finalText);
 
-      // ── Screen Director: detect [NAVIGATE:sectionId:keyword] ─────────────
-      const navMatch = finalText.match(/\[NAVIGATE:([a-zA-Z]+):([^\]]+)\]/i);
+      // ── Screen Director: detect [NAVIGATE:sectionId] or [NAVIGATE:sectionId:keyword] ─────────────
+      const navMatch = finalText.match(/\[NAVIGATE:\s*([a-zA-Z]+)(?::\s*([^\]]+))?\]/i);
       if (navMatch) {
         const targetSection = navMatch[1].toLowerCase();
-        const keyword = navMatch[2].trim();
+        const keyword = navMatch[2] ? navMatch[2].trim() : targetSection;
         const validSections = ['home','about','skills','projects','education','experience','certifications','contact'];
 
         if (targetSection === 'resume') {
-          // ── Resume: open the resume viewer + show green Download toast ──
           setTimeout(() => {
             window.dispatchEvent(new CustomEvent('open-resume'));
             window.dispatchEvent(new CustomEvent('navigate-section', {
               detail: { section: 'resume', highlight: true, keyword: 'download' }
             }));
-          }, 600);
+          }, 350);
         } else if (validSections.includes(targetSection)) {
-          // ── Standard section navigate + precision highlight ──
           setTimeout(() => {
             window.dispatchEvent(new CustomEvent('navigate-section', {
               detail: { section: targetSection, highlight: true, keyword }
             }));
-          }, 600);
+          }, 350);
         }
       }
-
-      setMessages(prev => {
-        const updated = [...prev];
-        // Keep it expanded so the user sees the trace for every message
-        return updated;
-      });
 
     } catch (err) {
       console.error('Chat error:', err);

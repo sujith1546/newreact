@@ -100,10 +100,12 @@ export default function MainLayout() {
         if (section !== 'resume') handleNavClick(section);
         if (highlight) {
           const kw = e.detail?.keyword || '';
+          setSpotlightSection(null);
+          setSpotlightKeyword('');
           setTimeout(() => {
             setSpotlightSection(section);
             setSpotlightKeyword(kw);
-          }, 200);
+          }, 150);
         }
       }
     };
