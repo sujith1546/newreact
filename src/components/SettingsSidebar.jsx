@@ -46,7 +46,6 @@ export default function SettingsSidebar() {
     aiShowThoughts, setAiShowThoughts,
     aiAutoScroll, setAiAutoScroll,
     keyboardHud, setKeyboardHud,
-    dyslexicMode, setDyslexicMode,
     uiAudio, setUiAudio,
     devMode, setDevMode,
   } = useTheme();
@@ -390,11 +389,6 @@ export default function SettingsSidebar() {
 
     if (activeTab === 'access') return (
       <div>
-        <Section title="Cognitive & Reading" />
-        <Row icon={Info} iconColor="#ec4899" label="Dyslexia-Friendly Mode" sublabel="Atkinson Hyperlegible font & spaced layout">
-          <Toggle checked={dyslexicMode} onChange={v => { setDyslexicMode(v); showToast(v ? 'Dyslexic mode ON' : 'Dyslexic mode OFF'); }} accent="#ec4899" />
-        </Row>
-        
         <Section title="Keyboard Navigation" />
         <Row icon={MonitorPlay} iconColor="#10b981" label="Focus HUD" sublabel="High-visibility neon focus outlines">
           <Toggle checked={keyboardHud} onChange={v => { setKeyboardHud(v); showToast(v ? 'Focus HUD ON' : 'Focus HUD OFF'); }} accent="#10b981" />
