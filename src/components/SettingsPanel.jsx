@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Settings, Moon, Sun, Volume2, VolumeX, Bot, MessageSquareOff, Sliders, Cpu, Sparkles, RotateCcw, Check } from 'lucide-react';
+import { X, Settings, Moon, Sun, Volume2, VolumeX, Bot, MessageSquareOff, Sliders, Sparkles, RotateCcw, Check, Monitor, Layout, ShieldCheck } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
 export default function SettingsPanel({ isOpen, onClose, triggerRef }) {
@@ -122,14 +122,14 @@ export default function SettingsPanel({ isOpen, onClose, triggerRef }) {
             style={{
               position: 'fixed',
               inset: 0,
-              background: 'rgba(0, 0, 0, 0.52)',
-              backdropFilter: 'blur(4px)',
-              WebkitBackdropFilter: 'blur(4px)',
+              background: 'rgba(0, 0, 0, 0.48)',
+              backdropFilter: 'blur(5px)',
+              WebkitBackdropFilter: 'blur(5px)',
               zIndex: 99998,
             }}
           />
 
-          {/* Settings Slide-in Panel (Desktop Only) */}
+          {/* Full Height Settings Slide-in Panel (Desktop Only) */}
           <motion.div
             key="settings-panel-slide"
             ref={panelRef}
@@ -140,29 +140,42 @@ export default function SettingsPanel({ isOpen, onClose, triggerRef }) {
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
-            transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             style={{
               position: 'fixed',
               top: 0,
               right: 0,
-              width: 360,
-              maxWidth: '90vw',
+              width: 380,
+              maxWidth: '92vw',
               height: '100vh',
-              background: 'var(--bg-secondary, #ffffff)',
+              background: 'var(--bg-secondary, #f8fafc)',
               borderLeft: '1px solid var(--border-color, rgba(128,128,128,0.2))',
-              boxShadow: '-12px 0 40px rgba(0, 0, 0, 0.28)',
+              borderTopLeftRadius: 24,
+              borderBottomLeftRadius: 24,
+              boxShadow: isDark
+                ? '-16px 0 50px rgba(0, 0, 0, 0.65)'
+                : '-16px 0 50px rgba(139, 92, 246, 0.12)',
               zIndex: 99999,
               display: 'flex',
               flexDirection: 'column',
               outline: 'none',
-              backdropFilter: 'blur(24px)',
-              WebkitBackdropFilter: 'blur(24px)',
+              backdropFilter: 'blur(28px)',
+              WebkitBackdropFilter: 'blur(28px)',
+              overflow: 'hidden',
             }}
           >
             <style>{`
+              /* Accent Bar */
+              .sp-accent-bar {
+                height: 3px;
+                width: 100%;
+                background: linear-gradient(90deg, #8b5cf6 0%, #3b82f6 50%, #10b981 100%);
+              }
+
+              /* Header */
               .sp-header {
-                padding: 20px 22px 16px;
-                border-bottom: 1px solid rgba(128, 128, 128, 0.12);
+                padding: 22px 24px 18px;
+                border-bottom: 1px solid var(--border-color, rgba(128, 128, 128, 0.15));
                 display: flex;
                 align-items: flex-start;
                 justify-content: space-between;
@@ -171,79 +184,113 @@ export default function SettingsPanel({ isOpen, onClose, triggerRef }) {
               .sp-title-group {
                 display: flex;
                 flex-direction: column;
-                gap: 3px;
+                gap: 4px;
               }
               .sp-title {
-                font-size: 16px;
+                font-size: 17px;
                 font-weight: 700;
                 color: var(--text-primary, #0f172a);
                 display: flex;
                 align-items: center;
-                gap: 8px;
+                gap: 10px;
                 margin: 0;
+                letter-spacing: -0.01em;
+              }
+              .sp-title-icon {
+                width: 32px;
+                height: 32px;
+                border-radius: 10px;
+                background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(99,102,241,0.12));
+                border: 1px solid rgba(139,92,246,0.3);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #8b5cf6;
+                box-shadow: 0 4px 12px rgba(139,92,246,0.15);
               }
               .sp-subtitle {
                 font-size: 12px;
                 color: var(--text-secondary, #64748b);
                 margin: 0;
                 line-height: 1.4;
+                font-weight: 500;
               }
               .sp-close-btn {
-                background: rgba(128,128,128,0.08);
-                border: 1px solid rgba(128,128,128,0.12);
+                background: var(--bg-primary, rgba(128,128,128,0.08));
+                border: 1px solid var(--border-color, rgba(128,128,128,0.15));
                 border-radius: 50%;
-                width: 30px;
-                height: 30px;
+                width: 32px;
+                height: 32px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 color: var(--text-primary);
                 cursor: pointer;
-                transition: all 0.18s ease;
+                transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
                 flex-shrink: 0;
                 padding: 0;
               }
               .sp-close-btn:hover {
                 background: rgba(239, 68, 68, 0.15);
                 color: #ef4444;
-                border-color: rgba(239, 68, 68, 0.3);
+                border-color: rgba(239, 68, 68, 0.35);
+                transform: scale(1.05);
               }
 
+              /* Scrollable Body */
               .sp-body {
                 flex: 1;
                 overflow-y: auto;
-                padding: 18px 22px;
+                padding: 20px 24px;
                 display: flex;
                 flex-direction: column;
-                gap: 22px;
+                gap: 24px;
+                scrollbar-width: thin;
+                scrollbar-color: rgba(139,92,246,0.3) transparent;
               }
+              .sp-body::-webkit-scrollbar {
+                width: 5px;
+              }
+              .sp-body::-webkit-scrollbar-thumb {
+                background: rgba(139,92,246,0.25);
+                border-radius: 10px;
+              }
+              .sp-body::-webkit-scrollbar-track {
+                background: transparent;
+              }
+
               .sp-section {
                 display: flex;
                 flex-direction: column;
-                gap: 8px;
+                gap: 10px;
               }
               .sp-section-label {
                 font-size: 10.5px;
-                font-weight: 700;
-                letter-spacing: 0.08em;
+                font-weight: 800;
+                letter-spacing: 0.09em;
                 text-transform: uppercase;
-                color: rgba(139, 92, 246, 0.8);
-                margin-bottom: 2px;
+                color: #8b5cf6;
+                display: flex;
+                align-items: center;
+                gap: 6px;
               }
 
+              /* Card Rows */
               .sp-row {
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                padding: 10px 12px;
-                border-radius: 12px;
-                background: rgba(128,128,128,0.04);
-                border: 1px solid rgba(128,128,128,0.08);
-                transition: all 0.18s ease;
+                padding: 12px 14px;
+                border-radius: 14px;
+                background: var(--bg-primary, rgba(255,255,255,0.7));
+                border: 1px solid var(--border-color, rgba(128,128,128,0.12));
+                box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+                transition: all 0.2s ease;
               }
               .sp-row:hover {
-                background: rgba(139, 92, 246, 0.06);
-                border-color: rgba(139, 92, 246, 0.2);
+                border-color: rgba(139, 92, 246, 0.35);
+                box-shadow: 0 4px 16px rgba(139, 92, 246, 0.1);
+                transform: translateY(-1px);
               }
               .sp-row-left {
                 display: flex;
@@ -251,39 +298,40 @@ export default function SettingsPanel({ isOpen, onClose, triggerRef }) {
                 gap: 12px;
               }
               .sp-row-icon {
-                width: 32px;
-                height: 32px;
+                width: 34px;
+                height: 34px;
                 border-radius: 10px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                background: rgba(139, 92, 246, 0.1);
+                background: rgba(139, 92, 246, 0.09);
                 color: #8b5cf6;
                 flex-shrink: 0;
               }
               .sp-row-text {
                 display: flex;
                 flex-direction: column;
-                gap: 1px;
+                gap: 2px;
               }
               .sp-row-title {
                 font-size: 13px;
-                font-weight: 600;
+                font-weight: 700;
                 color: var(--text-primary);
               }
               .sp-row-desc {
                 font-size: 11px;
                 color: var(--text-secondary);
+                font-weight: 500;
               }
 
               /* Toggle Switch */
               .sp-switch {
-                width: 40px;
-                height: 23px;
+                width: 42px;
+                height: 24px;
                 border-radius: 100px;
                 background: rgba(128, 128, 128, 0.25);
                 border: none;
-                padding: 2px;
+                padding: 2.5px;
                 cursor: pointer;
                 display: flex;
                 align-items: center;
@@ -294,35 +342,37 @@ export default function SettingsPanel({ isOpen, onClose, triggerRef }) {
               }
               .sp-switch.on {
                 background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-                box-shadow: 0 0 10px rgba(16, 185, 129, 0.35);
+                box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
               }
               .sp-switch-knob {
                 width: 19px;
                 height: 19px;
                 border-radius: 50%;
                 background: #ffffff;
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.22);
                 transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
               }
               .sp-switch.on .sp-switch-knob {
-                transform: translateX(17px);
+                transform: translateX(18px);
               }
 
+              /* Footer */
               .sp-footer {
-                padding: 16px 22px;
-                border-top: 1px solid rgba(128, 128, 128, 0.12);
+                padding: 18px 24px;
+                border-top: 1px solid var(--border-color, rgba(128, 128, 128, 0.15));
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                gap: 10px;
-                background: transparent;
+                gap: 12px;
+                background: var(--bg-secondary, rgba(255,255,255,0.9));
+                backdrop-filter: blur(12px);
               }
               .sp-btn-reset {
-                background: rgba(128, 128, 128, 0.08);
-                border: 1px solid rgba(128, 128, 128, 0.15);
+                background: var(--bg-primary, rgba(128, 128, 128, 0.08));
+                border: 1px solid var(--border-color, rgba(128, 128, 128, 0.15));
                 color: var(--text-secondary);
                 border-radius: 10px;
-                padding: 8px 14px;
+                padding: 9px 15px;
                 font-size: 12px;
                 font-weight: 600;
                 cursor: pointer;
@@ -334,34 +384,39 @@ export default function SettingsPanel({ isOpen, onClose, triggerRef }) {
               .sp-btn-reset:hover {
                 background: rgba(239, 68, 68, 0.12);
                 color: #ef4444;
-                border-color: rgba(239, 68, 68, 0.25);
+                border-color: rgba(239, 68, 68, 0.3);
               }
               .sp-btn-done {
                 background: linear-gradient(135deg, #8b5cf6, #6366f1);
                 border: none;
                 color: #ffffff;
                 border-radius: 10px;
-                padding: 8px 18px;
+                padding: 9px 22px;
                 font-size: 12px;
                 font-weight: 700;
                 cursor: pointer;
                 display: flex;
                 align-items: center;
                 gap: 6px;
-                box-shadow: 0 4px 14px rgba(139, 92, 246, 0.3);
+                box-shadow: 0 4px 16px rgba(139, 92, 246, 0.35);
                 transition: all 0.18s ease;
               }
               .sp-btn-done:hover {
                 transform: translateY(-1px);
-                box-shadow: 0 6px 18px rgba(139, 92, 246, 0.4);
+                box-shadow: 0 6px 20px rgba(139, 92, 246, 0.45);
               }
             `}</style>
+
+            {/* Accent Line */}
+            <div className="sp-accent-bar" />
 
             {/* Header */}
             <div className="sp-header">
               <div className="sp-title-group">
                 <h3 className="sp-title">
-                  <Settings size={17} color="#8b5cf6" />
+                  <div className="sp-title-icon">
+                    <Settings size={17} />
+                  </div>
                   <span>Settings</span>
                 </h3>
                 <p className="sp-subtitle">Manage your portfolio preferences and site controls.</p>
@@ -372,7 +427,7 @@ export default function SettingsPanel({ isOpen, onClose, triggerRef }) {
                 aria-label="Close settings panel"
                 type="button"
               >
-                <X size={15} />
+                <X size={16} />
               </button>
             </div>
 
@@ -380,7 +435,10 @@ export default function SettingsPanel({ isOpen, onClose, triggerRef }) {
             <div className="sp-body">
               {/* SECTION 1: GENERAL PREFERENCES */}
               <div className="sp-section">
-                <span className="sp-section-label">General Preferences</span>
+                <span className="sp-section-label">
+                  <Sliders size={12} />
+                  <span>General Preferences</span>
+                </span>
 
                 {/* Dark Mode */}
                 <div className="sp-row">
@@ -452,9 +510,12 @@ export default function SettingsPanel({ isOpen, onClose, triggerRef }) {
                 </div>
               </div>
 
-              {/* SECTION 2: DISPLAY & PERFORMANCE */}
+              {/* SECTION 2: DISPLAY & GRAPHICS */}
               <div className="sp-section">
-                <span className="sp-section-label">Display & Graphics</span>
+                <span className="sp-section-label">
+                  <Sparkles size={12} />
+                  <span>Display & Graphics</span>
+                </span>
 
                 {/* Particle Canvas */}
                 <div className="sp-row">
@@ -480,9 +541,12 @@ export default function SettingsPanel({ isOpen, onClose, triggerRef }) {
                 </div>
               </div>
 
-              {/* SECTION 3: SYSTEM SHORTCUTS */}
+              {/* SECTION 3: SHORTCUTS & SYSTEM */}
               <div className="sp-section">
-                <span className="sp-section-label">Shortcuts & Navigation</span>
+                <span className="sp-section-label">
+                  <Layout size={12} />
+                  <span>Shortcuts & Navigation</span>
+                </span>
                 <div className="sp-row" style={{ cursor: 'pointer' }} onClick={() => { onClose(); window.dispatchEvent(new CustomEvent('toggle-command-palette')); }}>
                   <div className="sp-row-left">
                     <div className="sp-row-icon">
@@ -493,7 +557,7 @@ export default function SettingsPanel({ isOpen, onClose, triggerRef }) {
                       <span className="sp-row-desc">Press Ctrl+K anytime</span>
                     </div>
                   </div>
-                  <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 8px', borderRadius: 6, background: 'rgba(128,128,128,0.12)', color: 'var(--text-primary)' }}>Ctrl+K</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 9px', borderRadius: 8, background: 'rgba(128,128,128,0.12)', color: 'var(--text-primary)' }}>Ctrl+K</span>
                 </div>
               </div>
             </div>
