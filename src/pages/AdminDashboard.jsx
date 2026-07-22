@@ -511,6 +511,8 @@ const styles = {
     borderRight: "1px solid #3f3f46",
     padding: "24px 12px",
     flexShrink: 0,
+    minHeight: "100vh",
+    boxSizing: "border-box"
   },
   sidebarLabel: {
     fontSize: 11,
