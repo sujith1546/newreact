@@ -1277,8 +1277,8 @@ export default function ChatBot() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Suggestions — only shown when conversation is empty */}
-            {messages.length === 0 && (
+            {/* Suggestions — shown until the user sends their first message */}
+            {!messages.some(m => m.role === 'user') && (
               <div className="chatbot-suggestions">
                 {SUGGESTED_QUESTIONS.map(q => (
                   <button
