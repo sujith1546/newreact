@@ -8,23 +8,45 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { logAuditEvent } from '../lib/auditLogger';
 import { trackRecruiterEvent } from '../lib/analyticsTracker';
 
-const NAV_ITEMS = [
-  { key: "messages", label: "Messages", icon: "ti-message-circle" },
-  { key: "projects", label: "Projects", icon: "ti-briefcase" },
-  { key: "updates", label: "Updates", icon: "ti-bolt" },
-  { key: "chats", label: "AI chats", icon: "ti-messages" },
-  { key: "settings", label: "Settings", icon: "ti-settings" },
-  { key: "skills", label: "Skills", icon: "ti-star" },
-  { key: "experience", label: "Experience", icon: "ti-id-badge" },
-  { key: "certifications", label: "Certifications", icon: "ti-certificate" },
-  { key: "education", label: "Education", icon: "ti-book" },
-  { key: "analytics", label: "Analytics Hub", icon: "ti-chart-bar" },
-  { key: "copilot", label: "AI Copilot & ATS", icon: "ti-sparkles" },
-  { key: "assets", label: "Asset Storage", icon: "ti-folder" },
-  { key: "theme", label: "Theme Studio", icon: "ti-palette" },
-  { key: "backup", label: "Backup & Restore", icon: "ti-database" },
-  { key: "audit", label: "Audit & Health", icon: "ti-activity" },
+const NAV_GROUPS = [
+  {
+    label: "Inbox",
+    items: [
+      { key: "messages", label: "Messages", icon: "ti-message-circle", color: "#3b82f6" },
+      { key: "chats", label: "AI Chats", icon: "ti-messages", color: "#8b5cf6" },
+    ]
+  },
+  {
+    label: "Content",
+    items: [
+      { key: "projects", label: "Projects", icon: "ti-briefcase", color: "#10b981" },
+      { key: "updates", label: "Updates", icon: "ti-bolt", color: "#f59e0b" },
+      { key: "skills", label: "Skills", icon: "ti-star", color: "#06b6d4" },
+      { key: "experience", label: "Experience", icon: "ti-id-badge", color: "#6366f1" },
+      { key: "education", label: "Education", icon: "ti-book", color: "#ec4899" },
+      { key: "certifications", label: "Certifications", icon: "ti-certificate", color: "#f97316" },
+    ]
+  },
+  {
+    label: "Intelligence",
+    items: [
+      { key: "analytics", label: "Analytics Hub", icon: "ti-chart-bar", color: "#3b82f6" },
+      { key: "copilot", label: "AI Copilot & ATS", icon: "ti-sparkles", color: "#8b5cf6" },
+      { key: "assets", label: "Asset Storage", icon: "ti-folder", color: "#10b981" },
+    ]
+  },
+  {
+    label: "System",
+    items: [
+      { key: "theme", label: "Theme Studio", icon: "ti-palette", color: "#ec4899" },
+      { key: "settings", label: "Settings", icon: "ti-settings", color: "#6b7280" },
+      { key: "backup", label: "Backup & Restore", icon: "ti-database", color: "#f59e0b" },
+      { key: "audit", label: "Audit & Health", icon: "ti-activity", color: "#ef4444" },
+    ]
+  },
 ];
+
+const ALL_NAV_ITEMS = NAV_GROUPS.flatMap(g => g.items);
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -58,87 +80,137 @@ export default function AdminDashboard() {
     navigate("/admin/login");
   }
 
+  const activeNavItem = ALL_NAV_ITEMS.find(n => n.key === activeTab);
+
   return (
     <div style={styles.shell}>
-      {/* Sidebar */}
-      <div style={styles.sidebar}>
-        <p style={styles.sidebarLabel}>Admin</p>
-        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          {NAV_ITEMS.map((item) => {
-            const isActive = activeTab === item.key;
-            return (
-              <button
-                key={item.key}
-                onClick={() => setActiveTab(item.key)}
-                style={{
-                  ...styles.navItem,
-                  background: isActive ? "rgba(59, 130, 246, 0.2)" : "transparent",
-                  color: isActive ? "var(--primary-blue)" : "var(--text-muted)",
-                  fontWeight: isActive ? 600 : 500,
-                  borderRadius: "8px"
-                }}
-              >
-                <i className={`ti ${item.icon}`} style={{ fontSize: 16 }} aria-hidden="true" />
-                {item.label}
-                {item.key === "messages" && stats.unreadMessages > 0 && (
-                  <span style={styles.navBadge}>{stats.unreadMessages}</span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Main content */}
-      <div style={styles.main}>
-        {/* Header */}
-        <div style={styles.header}>
+      {/* ─── Sidebar ─── */}
+      <aside style={styles.sidebar}>
+        {/* Logo area */}
+        <div style={styles.sidebarLogo}>
+          <div style={styles.logoIcon}>
+            <i className="ti ti-command" style={{ fontSize: 18, color: '#fff' }} />
+          </div>
           <div>
-            <p style={styles.headerLabel}>Signed in as</p>
-            <p style={styles.headerEmail}>{user?.email || "—"}</p>
-            {lastLogin && (
-              <p style={styles.lastLoginText}>
-                Last login: {new Date(lastLogin.logged_in_at).toLocaleString()} 
-                {lastLogin.user_agent ? ` from ${parseUserAgent(lastLogin.user_agent)}` : ''}
-              </p>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.2px' }}>Portfolio CMS</p>
+            <p style={{ margin: 0, fontSize: 11, color: 'var(--text-muted)' }}>Admin Console</p>
+          </div>
+        </div>
+
+        {/* Nav groups */}
+        <nav style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
+          {NAV_GROUPS.map(group => (
+            <div key={group.label} style={{ marginBottom: 20 }}>
+              <p style={styles.navGroupLabel}>{group.label}</p>
+              {group.items.map(item => {
+                const isActive = activeTab === item.key;
+                return (
+                  <button
+                    key={item.key}
+                    onClick={() => setActiveTab(item.key)}
+                    style={{
+                      ...styles.navItem,
+                      background: isActive ? `${item.color}18` : 'transparent',
+                      color: isActive ? item.color : 'var(--text-muted)',
+                      fontWeight: isActive ? 600 : 400,
+                      borderLeft: isActive ? `2px solid ${item.color}` : '2px solid transparent',
+                    }}
+                  >
+                    <div style={{
+                      width: 28, height: 28, borderRadius: 8, flexShrink: 0,
+                      background: isActive ? `${item.color}22` : 'transparent',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'background 0.2s'
+                    }}>
+                      <i className={`ti ${item.icon}`} style={{ fontSize: 15, color: isActive ? item.color : 'var(--text-muted)' }} />
+                    </div>
+                    <span style={{ flex: 1 }}>{item.label}</span>
+                    {item.key === 'messages' && stats.unreadMessages > 0 && (
+                      <span style={styles.navBadge}>{stats.unreadMessages}</span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
+        </nav>
+
+        {/* User footer */}
+        <div style={styles.sidebarFooter}>
+          <div style={styles.userAvatar}>
+            {(user?.email || 'A').charAt(0).toUpperCase()}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {user?.email || 'Admin'}
+            </p>
+            <p style={{ margin: 0, fontSize: 11, color: '#10b981' }}>● Online</p>
+          </div>
+          <button onClick={handleLogout} title="Log out" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ef4444', padding: 4, borderRadius: 6, display: 'flex', alignItems: 'center' }}>
+            <LogOut size={15} />
+          </button>
+        </div>
+      </aside>
+
+      {/* ─── Main content ─── */}
+      <div style={styles.main}>
+        {/* Top bar */}
+        <header style={styles.topBar}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {activeNavItem && (
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: `${activeNavItem.color}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <i className={`ti ${activeNavItem.icon}`} style={{ fontSize: 16, color: activeNavItem.color }} />
+              </div>
             )}
+            <div>
+              <h1 style={styles.topBarTitle}>{activeNavItem?.label || 'Dashboard'}</h1>
+              <p style={styles.topBarSub}>Portfolio CMS &rsaquo; {activeNavItem?.label}</p>
+            </div>
           </div>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <button onClick={toggleTheme} style={styles.themeToggleBtn} title="Toggle Theme">
-              <i className={theme === 'dark' ? 'ti ti-sun' : 'ti ti-moon'} style={{ fontSize: 16 }} aria-hidden="true" />
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            {lastLogin && (
+              <span style={{ fontSize: 11, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <ShieldCheck size={12} color="#10b981" />
+                Last login: {new Date(lastLogin.logged_in_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            )}
+            <button onClick={toggleTheme} style={styles.iconAction} title="Toggle Theme">
+              <i className={theme === 'dark' ? 'ti ti-sun' : 'ti ti-moon'} style={{ fontSize: 15 }} />
             </button>
-            <button onClick={handleLogout} style={styles.logoutBtn}>
-              <LogOut size={14} />
-              Log out
-            </button>
+            <a href="/" target="_blank" style={{ ...styles.iconAction, textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="View live site">
+              <Eye size={15} color="var(--text-primary)" />
+            </a>
           </div>
-        </div>
+        </header>
 
-        {/* Stats row */}
-        <div style={styles.statsRow}>
-          <StatCard label="Legit Messages" value={stats.unreadMessages} loading={stats.loading} />
-          <StatCard label="Projects" value={stats.projectCount} loading={stats.loading} />
-          <StatCard label="Changelog entries" value={stats.updateCount} loading={stats.loading} />
-          <StatCard label="AI sessions" value={stats.sessionCount} loading={stats.loading} />
-        </div>
+        {/* Scrollable body */}
+        <div style={styles.body}>
+          {/* Stats row */}
+          <div style={styles.statsRow}>
+            <StatCard label="Messages" value={stats.unreadMessages} loading={stats.loading} icon="ti-message-circle" color="#3b82f6" />
+            <StatCard label="Projects" value={stats.projectCount} loading={stats.loading} icon="ti-briefcase" color="#10b981" />
+            <StatCard label="Changelog" value={stats.updateCount} loading={stats.loading} icon="ti-bolt" color="#f59e0b" />
+            <StatCard label="AI Sessions" value={stats.sessionCount} loading={stats.loading} icon="ti-messages" color="#8b5cf6" />
+          </div>
 
-        {/* Panel content */}
-        <div style={styles.panelContainer}>
-          {activeTab === "messages" && <MessagesPanel />}
-          {activeTab === "projects" && <ProjectsPanel />}
-          {activeTab === "updates" && <UpdatesPanel />}
-          {activeTab === "chats" && <AiChatsPanel />}
-          {activeTab === "settings" && <SettingsPanel />}
-          {activeTab === "skills" && <SkillsPanel />}
-          {activeTab === "experience" && <ExperiencePanel />}
-          {activeTab === "certifications" && <CertificationsPanel />}
-          {activeTab === "education" && <EducationPanel />}
-          {activeTab === "analytics" && <AnalyticsPanel />}
-          {activeTab === "copilot" && <CopilotPanel />}
-          {activeTab === "assets" && <AssetsPanel />}
-          {activeTab === "theme" && <ThemeStudioPanel />}
-          {activeTab === "backup" && <BackupRestorePanel />}
-          {activeTab === "audit" && <AuditHealthPanel />}
+          {/* Panel content */}
+          <div style={styles.panelContainer}>
+            {activeTab === "messages" && <MessagesPanel />}
+            {activeTab === "projects" && <ProjectsPanel />}
+            {activeTab === "updates" && <UpdatesPanel />}
+            {activeTab === "chats" && <AiChatsPanel />}
+            {activeTab === "settings" && <SettingsPanel />}
+            {activeTab === "skills" && <SkillsPanel />}
+            {activeTab === "experience" && <ExperiencePanel />}
+            {activeTab === "certifications" && <CertificationsPanel />}
+            {activeTab === "education" && <EducationPanel />}
+            {activeTab === "analytics" && <AnalyticsPanel />}
+            {activeTab === "copilot" && <CopilotPanel />}
+            {activeTab === "assets" && <AssetsPanel />}
+            {activeTab === "theme" && <ThemeStudioPanel />}
+            {activeTab === "backup" && <BackupRestorePanel />}
+            {activeTab === "audit" && <AuditHealthPanel />}
+          </div>
         </div>
       </div>
     </div>
@@ -192,11 +264,16 @@ function useDashboardStats() {
 /* -------------------------------------------------------------------- */
 /* Stat card                                                             */
 /* -------------------------------------------------------------------- */
-function StatCard({ label, value, loading }) {
+function StatCard({ label, value, loading, icon, color = '#3b82f6' }) {
   return (
-    <div style={styles.statCard}>
-      <p style={styles.statLabel}>{label}</p>
-      <p style={styles.statValue}>{loading ? "—" : value}</p>
+    <div style={{ ...styles.statCard, borderTop: `3px solid ${color}` }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <p style={styles.statLabel}>{label}</p>
+        <div style={{ width: 34, height: 34, borderRadius: 10, background: `${color}1a`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <i className={`ti ${icon}`} style={{ fontSize: 16, color }} />
+        </div>
+      </div>
+      <p style={{ ...styles.statValue, color }}>{loading ? <Loader2 className="spin" size={18} color={color} /> : value}</p>
     </div>
   );
 }
@@ -219,17 +296,17 @@ function PanelCard({ title, action, headerElement, children }) {
     <div style={styles.panelCard}>
       <div style={styles.panelHeader}>
         <h3 style={styles.panelTitle}>{title}</h3>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
           {headerElement}
           {action && (
             <button style={styles.panelAction} onClick={action.onClick}>
-              <i className={`ti ${action.icon}`} style={{ fontSize: 14 }} aria-hidden="true" />
+              <i className={`ti ${action.icon}`} style={{ fontSize: 13 }} aria-hidden="true" />
               {action.label}
             </button>
           )}
         </div>
       </div>
-      <div style={{ overflowX: 'auto' }}>
+      <div style={{ overflowX: 'auto', padding: '20px' }}>
         {children}
       </div>
     </div>
@@ -1914,97 +1991,124 @@ const styles = {
   headerEmail: {
     fontSize: 14,
     color: "var(--text-primary)",
-    fontWeight: 600,
-    margin: 0
+    display: "flex",
+    flexDirection: "column",
+    overflow: "hidden",
+    background: "var(--bg-primary)",
   },
-  lastLoginText: {
+  topBar: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "14px 28px",
+    borderBottom: "1px solid var(--border-color)",
+    background: "var(--sidebar-bg)",
+    flexShrink: 0,
+    gap: 16,
+  },
+  topBarTitle: {
+    fontSize: 16,
+    fontWeight: 700,
+    color: "var(--text-primary)",
+    margin: 0,
+    letterSpacing: "-0.3px",
+  },
+  topBarSub: {
     fontSize: 11,
     color: "var(--text-muted)",
-    margin: "4px 0 0 0",
+    margin: "2px 0 0",
   },
-  logoutBtn: {
-    display: "flex",
-    alignItems: "center",
-    gap: 6,
-    background: "transparent",
+  iconAction: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    background: "var(--bg-primary)",
     border: "1px solid var(--border-color)",
-    color: "#ef4444",
-    padding: "6px 12px",
-    height: "32px",
-    borderRadius: "6px",
-    fontSize: 12,
-    fontWeight: 500,
-    cursor: "pointer",
-    transition: "background 0.15s"
-  },
-  themeToggleBtn: {
+    color: "var(--text-primary)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    background: "transparent",
-    border: "1px solid var(--border-color)",
-    color: "var(--text-primary)",
-    width: "32px",
-    height: "32px",
-    borderRadius: "6px",
     cursor: "pointer",
     transition: "all 0.15s",
+    flexShrink: 0,
+  },
+  body: {
+    flex: 1,
+    overflowY: "auto",
+    padding: "24px 28px",
   },
   statsRow: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
     gap: "16px",
-    marginBottom: "24px"
+    marginBottom: "24px",
   },
   statCard: {
-    background: "var(--bg-light)",
+    background: "var(--bg-secondary, var(--bg-light))",
     border: "1px solid var(--border-color)",
-    borderRadius: "12px",
-    padding: "16px"
+    borderRadius: "14px",
+    padding: "18px 20px",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+    transition: "box-shadow 0.2s",
   },
   statLabel: {
-    fontSize: 12,
+    fontSize: 11,
+    fontWeight: 600,
+    textTransform: "uppercase",
+    letterSpacing: "0.5px",
     color: "var(--text-muted)",
-    margin: "0 0 8px"
+    margin: "0",
   },
   statValue: {
-    fontSize: 24,
-    fontWeight: 700,
-    color: "var(--text-primary)",
-    margin: 0
+    fontSize: 28,
+    fontWeight: 800,
+    margin: "4px 0 0",
+    letterSpacing: "-1px",
+    lineHeight: 1.1,
+    display: "flex",
+    alignItems: "center",
   },
   panelContainer: {
-    flex: 1
+    flex: 1,
   },
   panelCard: {
-    background: "var(--bg-light)",
+    background: "var(--bg-secondary, var(--bg-light))",
     border: "1px solid var(--border-color)",
-    borderRadius: "12px",
-    overflow: "hidden"
+    borderRadius: "16px",
+    overflow: "hidden",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
   },
   panelHeader: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: "16px 20px",
-    borderBottom: "1px solid var(--border-color)"
+    padding: "16px 22px",
+    borderBottom: "1px solid var(--border-color)",
+    background: "var(--sidebar-bg)",
+    gap: 12,
+    flexWrap: "wrap",
   },
   panelTitle: {
-    fontSize: 15,
-    fontWeight: 600,
+    fontSize: 14,
+    fontWeight: 700,
     color: "var(--text-primary)",
-    margin: 0
+    margin: 0,
+    letterSpacing: "-0.2px",
   },
   panelAction: {
-    background: "transparent",
+    background: "var(--primary-blue)",
+    color: "#fff",
     border: "none",
-    color: "var(--primary-blue)",
-    fontSize: 13,
-    fontWeight: 500,
+    fontSize: 12,
+    fontWeight: 600,
     display: "flex",
     alignItems: "center",
     gap: 6,
-    cursor: "pointer"
+    cursor: "pointer",
+    padding: "6px 14px",
+    borderRadius: "8px",
+    whiteSpace: "nowrap",
+    transition: "opacity 0.15s",
   },
   emptyState: {
     padding: "60px 20px",
@@ -2012,55 +2116,88 @@ const styles = {
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    textAlign: "center"
+    textAlign: "center",
   },
   emptyTitle: {
     fontSize: 15,
     fontWeight: 600,
     color: "var(--text-primary)",
-    margin: "16px 0 4px"
+    margin: "16px 0 4px",
   },
   emptyDescription: {
     fontSize: 13,
     color: "var(--text-muted)",
     margin: 0,
-    maxWidth: 300
+    maxWidth: 300,
   },
   table: {
     width: "100%",
     borderCollapse: "collapse",
-    textAlign: "left"
+    textAlign: "left",
   },
   th: {
     fontSize: 11,
     textTransform: "uppercase",
-    letterSpacing: 0.5,
+    letterSpacing: 0.8,
     color: "var(--text-muted)",
-    fontWeight: 600,
-    padding: "12px 20px",
+    fontWeight: 700,
+    padding: "11px 20px",
     borderBottom: "1px solid var(--border-color)",
-    background: "var(--sidebar-bg)"
+    background: "var(--sidebar-bg)",
+    whiteSpace: "nowrap",
   },
   td: {
     fontSize: 13,
     color: "var(--text-primary)",
-    padding: "16px 20px",
-    borderBottom: "1px solid var(--border-color)"
+    padding: "14px 20px",
+    borderBottom: "1px solid var(--border-color)",
+    verticalAlign: "middle",
   },
   badge: {
-    padding: "4px 8px",
-    borderRadius: "12px",
+    padding: "3px 9px",
+    borderRadius: "99px",
     fontSize: 11,
-    fontWeight: 600
+    fontWeight: 700,
+    letterSpacing: "0.2px",
   },
   iconBtn: {
     background: "transparent",
     border: "none",
     cursor: "pointer",
-    padding: 4,
+    padding: 5,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: "4px"
-  }
+    borderRadius: "6px",
+    transition: "background 0.15s",
+  },
+  input: {
+    width: "100%",
+    padding: "9px 12px",
+    borderRadius: "8px",
+    border: "1px solid var(--border-color)",
+    background: "var(--bg-primary)",
+    color: "var(--text-primary)",
+    fontSize: 13,
+    boxSizing: "border-box",
+    outline: "none",
+    transition: "border-color 0.15s",
+  },
+  settingsGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+    gap: 16,
+  },
+  settingGroup: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 6,
+  },
+  settingLabel: {
+    fontSize: 11,
+    fontWeight: 700,
+    color: "var(--text-muted)",
+    textTransform: "uppercase",
+    letterSpacing: "0.6px",
+  },
 };
