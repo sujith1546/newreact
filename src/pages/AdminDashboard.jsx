@@ -509,8 +509,8 @@ const styles = {
     display: "grid",
     gridTemplateColumns: "220px 1fr",
     gridTemplateRows: "1fr",
-    height: "100vh",
-    overflow: "hidden",
+    position: "fixed",
+    inset: 0,
     background: "var(--bg-primary)",
     fontFamily: "system-ui, -apple-system, sans-serif"
   },
