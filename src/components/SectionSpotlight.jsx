@@ -286,6 +286,7 @@ function resolveTargetElement(sectionId, rawKeyword) {
 // CSS INJECTION
 // ═══════════════════════════════════════════════════════════════
 const STYLE_ID = 'ai-spotlight-ring-style';
+let TARGET_EL  = null;
 function buildCSS(uid, radius) {
   return `
     @keyframes ai-spotlight-pulse-${uid} {
