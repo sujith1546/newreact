@@ -37,6 +37,25 @@ const getSessionToken = () => {
 };
 
 export default function ChatBot() {
+  const [isWidgetEnabled, setIsWidgetEnabled] = useState(() => {
+    try {
+      const saved = localStorage.getItem('portfolio_chatbot_enabled');
+      return saved === null ? true : saved === 'true';
+    } catch {
+      return true;
+    }
+  });
+
+  useEffect(() => {
+    const handleToggle = (e) => {
+      const enabled = e.detail?.enabled ?? true;
+      setIsWidgetEnabled(enabled);
+      if (!enabled) setIsOpen(false);
+    };
+    window.addEventListener('toggle-chatbot-visibility', handleToggle);
+    return () => window.removeEventListener('toggle-chatbot-visibility', handleToggle);
+  }, []);
+
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
   const [messages, setMessages] = useState(() => {
@@ -461,6 +480,8 @@ export default function ChatBot() {
     setInput('');
     localStorage.removeItem('atom-ai-memory');
   };
+
+  if (!isWidgetEnabled) return null;
 
   return createPortal(
     <>

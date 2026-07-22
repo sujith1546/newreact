@@ -6,6 +6,7 @@ import Sidebar from '../components/Sidebar';
 import WelcomeModal from '../components/WelcomeModal';
 import MobileBottomNav from '../components/MobileBottomNav';
 import DarkModeToggle from '../components/DarkModeToggle';
+import SettingsDropdown from '../components/SettingsDropdown';
 import TimezoneStatus from '../components/TimezoneStatus';
 import ChatBot from '../components/ChatBot';
 import CommandPalette from '../components/CommandPalette';
@@ -289,6 +290,7 @@ export default function MainLayout() {
             </motion.button>
           </AnimatePresence>
           <DarkModeToggle />
+          <SettingsDropdown />
         </div>
       </header>
 
@@ -354,6 +356,7 @@ export default function MainLayout() {
         <>
           <TimezoneStatus />
           <DarkModeToggle />
+          <SettingsDropdown />
         </>
       )}
       <ChatBot />

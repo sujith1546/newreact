@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Globe } from 'lucide-react';
 import DiagnosticsToggle from './DiagnosticsToggle';
+import SettingsDropdown from './SettingsDropdown';
 
 export default function TimezoneStatus() {
   const [visitorCity, setVisitorCity] = useState('');
@@ -291,6 +292,7 @@ export default function TimezoneStatus() {
 
       <div className="timezone-status-wrapper">
         <DiagnosticsToggle />
+        <SettingsDropdown />
         
         <button 
           className="cmdk-hint-pill"
