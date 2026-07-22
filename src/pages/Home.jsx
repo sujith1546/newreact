@@ -150,14 +150,13 @@ export default function Home({ onNavClick }) {
           margin-bottom: 12px;
           position: relative;
           overflow: hidden;
-          transition: all 0.3s ease;
+          transition: all 0.35s cubic-bezier(0.16,1,0.3,1);
           box-shadow: 0 2px 10px rgba(0,0,0,0.02);
           cursor: default;
         }
-        
         .home-content .fc-badge:hover {
-          border-color: #10b981;
-          box-shadow: 0 4px 15px rgba(16, 185, 129, 0.12);
+          border-color: rgba(16,185,129,0.5);
+          box-shadow: 0 4px 20px rgba(16,185,129,0.15), 0 0 0 1px rgba(16,185,129,0.1);
           transform: translateY(-1px);
         }
 
@@ -184,32 +183,54 @@ export default function Home({ onNavClick }) {
         
         .home-content .fc-badge-dot-wrap {
           position: relative;
-          width: 8px;
-          height: 8px;
+          width: 12px;
+          height: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
+          flex-shrink: 0;
         }
+
+        /* Glowing core dot */
         .home-content .fc-badge-dot {
           width: 8px;
           height: 8px;
           border-radius: 50%;
-          background: #10b981; 
+          background: #10b981;
+          box-shadow: 0 0 6px 2px rgba(16,185,129,0.6), 0 0 12px 4px rgba(16,185,129,0.25);
+          position: relative;
+          z-index: 3;
+          animation: dotGlow 2.4s ease-in-out infinite;
+        }
+        @keyframes dotGlow {
+          0%, 100% { box-shadow: 0 0 6px 2px rgba(16,185,129,0.6), 0 0 12px 4px rgba(16,185,129,0.25); }
+          50%       { box-shadow: 0 0 8px 3px rgba(16,185,129,0.9), 0 0 20px 6px rgba(16,185,129,0.4); }
+        }
+
+        /* Ring 1 — fastest */
+        .home-content .fc-badge-dot-wrap::before {
+          content: '';
+          position: absolute;
+          width: 100%; height: 100%;
+          border-radius: 50%;
+          border: 1.5px solid rgba(16,185,129,0.7);
+          animation: sonarRing 2.4s cubic-bezier(0,0,0.2,1) infinite;
           z-index: 2;
         }
+        /* Ring 2 — slower, delayed */
         .home-content .fc-badge-dot-wrap::after {
           content: '';
           position: absolute;
-          width: 100%;
-          height: 100%;
+          width: 100%; height: 100%;
           border-radius: 50%;
-          background: #10b981;
-          animation: ripple 2s infinite cubic-bezier(0.19, 1, 0.22, 1);
+          border: 1px solid rgba(16,185,129,0.45);
+          animation: sonarRing 2.4s cubic-bezier(0,0,0.2,1) 0.8s infinite;
           z-index: 1;
         }
-        @keyframes ripple {
-          0% { transform: scale(1); opacity: 0.8; }
-          100% { transform: scale(3.5); opacity: 0; }
+        @keyframes sonarRing {
+          0%   { transform: scale(1);   opacity: 0.85; }
+          70%  { transform: scale(3.8); opacity: 0; }
+          100% { transform: scale(3.8); opacity: 0; }
         }
 
         .home-content .home-quick-actions {
