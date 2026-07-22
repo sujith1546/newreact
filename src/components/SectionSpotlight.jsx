@@ -489,6 +489,7 @@ export default function SectionSpotlight({ section, keyword, duration = 6, onDis
               }}>
                 {badgeLabel}
               </span>
+            </div>
             {/* Vertical Divider */}
             <div style={{ width: 1, height: 18, background: 'rgba(255,255,255,0.12)', margin: '0 2px' }} />
 
