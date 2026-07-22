@@ -3333,16 +3333,7 @@ html {
   }
 }
 
-/* Ensure Settings page custom preferences (accent colors, typography) only apply to mobile viewports */
-@media (min-width: 901px) {
-  :root {
-    --primary-blue: #007bff !important;
-    --app-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
-  }
-  [data-theme="dark"] {
-    --primary-blue: #4da3ff !important;
-  }
-}
+/* Settings preferences are applied dynamically via JavaScript variables on :root */
 
 /* === ADVANCED PROFILE STYLES === */
 .profile-terminal-banner {
