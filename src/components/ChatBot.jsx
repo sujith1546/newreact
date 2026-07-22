@@ -1277,22 +1277,20 @@ export default function ChatBot() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Suggestions — shown until the user sends their first message */}
-            {!messages.some(m => m.role === 'user') && (
-              <div className="chatbot-suggestions">
-                {SUGGESTED_QUESTIONS.map(q => (
-                  <button
-                    key={q}
-                    className="suggestion-chip"
-                    onClick={() => sendMessage(q)}
-                    disabled={isLoading}
-                    title={q}
-                  >
-                    {q}
-                  </button>
-                ))}
-              </div>
-            )}
+            {/* Suggestions — always visible for quick access */}
+            <div className="chatbot-suggestions">
+              {SUGGESTED_QUESTIONS.map(q => (
+                <button
+                  key={q}
+                  className="suggestion-chip"
+                  onClick={() => sendMessage(q)}
+                  disabled={isLoading}
+                  title={q}
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
 
             {/* Input bar */}
             <div className="chatbot-input-bar">
