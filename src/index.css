@@ -3596,3 +3596,8 @@ html {
 html[data-density="compact"] { font-size: 14px; }
 html[data-density="relaxed"] { font-size: 18px; }
 
+
+/* === ACCESSIBILITY MODES === */
+[data-hud="true"] *:focus-visible { outline: 3px solid var(--primary-blue, #3b82f6) !important; outline-offset: 4px !important; box-shadow: 0 0 16px var(--primary-blue, #3b82f6) !important; border-radius: inherit; }
+[data-dyslexic="true"] p, [data-dyslexic="true"] span, [data-dyslexic="true"] div, [data-dyslexic="true"] li { letter-spacing: 0.035em !important; word-spacing: 0.1em !important; line-height: 1.7 !important; }
+

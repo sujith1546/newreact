@@ -23,6 +23,10 @@ export function ThemeProvider({ children }) {
   const [aiShowThoughts, setAiShowThoughts] = useState(localStorage.getItem('aiShowThoughts') !== 'false');
   const [aiAutoScroll, setAiAutoScroll] = useState(localStorage.getItem('aiAutoScroll') !== 'false');
   
+  // Advanced Accessibility
+  const [keyboardHud, setKeyboardHud] = useState(localStorage.getItem('keyboardHud') === 'true');
+  const [dyslexicMode, setDyslexicMode] = useState(localStorage.getItem('dyslexicMode') === 'true');
+  
   // Tier 1 & 3 Advanced settings
   const [notifyOnContact, setNotifyOnContact] = useState(
     () => JSON.parse(localStorage.getItem('notifyOnContact') ?? 'true')
@@ -100,6 +104,18 @@ export function ThemeProvider({ children }) {
     // Apply CSS variables for layout density
     root.setAttribute('data-density', layoutDensity);
     
+    // Apply accessibility flags
+    if (keyboardHud) root.setAttribute('data-hud', 'true');
+    else root.removeAttribute('data-hud');
+    
+    if (dyslexicMode) {
+      root.setAttribute('data-dyslexic', 'true');
+      root.style.setProperty('--app-font', "'Atkinson Hyperlegible', sans-serif");
+    } else {
+      root.removeAttribute('data-dyslexic');
+      root.style.setProperty('--app-font', fonts[fontFamily]);
+    }
+    
     // Save preferences
     localStorage.setItem('theme', theme);
     localStorage.setItem('accentColor', accentColor);
@@ -114,12 +130,14 @@ export function ThemeProvider({ children }) {
     localStorage.setItem('aiResponseStyle', aiResponseStyle);
     localStorage.setItem('aiShowThoughts', String(aiShowThoughts));
     localStorage.setItem('aiAutoScroll', String(aiAutoScroll));
+    localStorage.setItem('keyboardHud', String(keyboardHud));
+    localStorage.setItem('dyslexicMode', String(dyslexicMode));
     localStorage.setItem('notifyOnContact', JSON.stringify(notifyOnContact));
     if (photoAccent) localStorage.setItem('photoAccent', photoAccent);
     localStorage.setItem('activePreset', activePreset || '');
     localStorage.setItem('devMode', String(devMode));
     localStorage.setItem('devFlags', JSON.stringify(flags));
-  }, [theme, accentColor, fontFamily, layoutDensity, uiAudio, glassIntensity, reduceMotion, highContrast, aiVoice, aiAutoNav, aiResponseStyle, aiShowThoughts, aiAutoScroll, notifyOnContact, photoAccent, activePreset, devMode, flags]);
+  }, [theme, accentColor, fontFamily, layoutDensity, uiAudio, glassIntensity, reduceMotion, highContrast, aiVoice, aiAutoNav, aiResponseStyle, aiShowThoughts, aiAutoScroll, keyboardHud, dyslexicMode, notifyOnContact, photoAccent, activePreset, devMode, flags]);
 
   const toggleTheme = (e) => {
     const isDark = theme === 'dark';
@@ -197,6 +215,8 @@ export function ThemeProvider({ children }) {
     if ('fontFamily' in obj) setFontFamily(obj.fontFamily);
     if ('layoutDensity' in obj) setLayoutDensity(obj.layoutDensity);
     if ('uiAudio' in obj) setUiAudio(obj.uiAudio);
+    if ('keyboardHud' in obj) setKeyboardHud(obj.keyboardHud);
+    if ('dyslexicMode' in obj) setDyslexicMode(obj.dyslexicMode);
     if ('notifyOnContact' in obj) setNotifyOnContact(obj.notifyOnContact);
     if ('photoAccent' in obj) setPhotoAccent(obj.photoAccent);
     if ('devMode' in obj) setDevMode(obj.devMode);
@@ -228,6 +248,8 @@ export function ThemeProvider({ children }) {
       aiResponseStyle, setAiResponseStyle,
       aiShowThoughts, setAiShowThoughts,
       aiAutoScroll, setAiAutoScroll,
+      keyboardHud, setKeyboardHud,
+      dyslexicMode, setDyslexicMode,
       playSound,
       notifyOnContact, setNotifyOnContact,
       photoAccent, setPhotoAccent,
