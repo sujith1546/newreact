@@ -14,8 +14,7 @@ const moonPath = "M 12 3 C 16.97 3 21 7.03 21 12 C 21 16.97 16.97 21 12 21 C 14.
 
 export default function MobileBottomNav({ activeSection, onNavClick }) {
   const [isMoreOpen, setIsMoreOpen] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isUpdatesOpen, setIsUpdatesOpen] = useState(false);
   const [isGithubStatsOpen, setIsGithubStatsOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
@@ -23,9 +22,7 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
   const [reduceMotion, setReduceMotion] = useState(false);
   const [toast, setToast] = useState(null); // { label, prevValue, nextValue, undo }
   const [tapCount, setTapCount] = useState(0);
-  const [hasSettingsScrolled, setHasSettingsScrolled] = useState(false);
-  const [isSettingsScrollable, setIsSettingsScrollable] = useState(false);
-
+    
   // IntersectionObserver removed because we now render components dynamically instead of in a single scrolling feed.
   const localTime = useLocalTime();
   const { 
@@ -187,25 +184,6 @@ END:VCARD`;
   const announce = (label, prevValue, nextValue, undo) => {
     setToast({ label, prevValue, nextValue, undo });
     setTimeout(() => setToast(null), 4000);
-  };
-
-  useEffect(() => {
-    if (isSettingsOpen) {
-      setHasSettingsScrolled(false);
-      setIsSettingsScrollable(false);
-      setTimeout(() => {
-        if (settingsContentRef.current) {
-          const { scrollHeight, clientHeight } = settingsContentRef.current;
-          setIsSettingsScrollable(scrollHeight > clientHeight + 5);
-        }
-      }, 150);
-    }
-  }, [isSettingsOpen]);
-
-  const handleSettingsScroll = (e) => {
-    if (e.target.scrollTop > 10 && !hasSettingsScrolled) {
-      setHasSettingsScrolled(true);
-    }
   };
 
   const handleDarkModeToggle = (e) => {
@@ -437,7 +415,7 @@ END:VCARD`;
                 <button onClick={() => { playSound(); setIsUpdatesOpen(true); setIsMoreOpen(false); }} className="drawer-action-row-btn">
                   <Sparkles size={17} /><span>Updates</span>
                 </button>
-                <button onClick={() => { playSound(); setIsSettingsOpen(true); setIsMoreOpen(false); }} className="drawer-action-row-btn">
+                <button onClick={() => { playSound(); window.dispatchEvent(new CustomEvent('open-all-settings')); setIsMoreOpen(false); }} className="drawer-action-row-btn">
                   <Settings size={17} /><span>Settings</span>
                 </button>
                 <button onClick={() => { playSound(); setIsHelpOpen(true); setIsMoreOpen(false); }} className="drawer-action-row-btn">
@@ -457,330 +435,6 @@ END:VCARD`;
         triggerEvent={triggerEvent}
         handleExploreClick={handleExploreClick}
       />
-
-      {/* Settings Slide-In Drawer */}
-      <AnimatePresence>
-        {isSettingsOpen && (
-          <motion.div
-            ref={settingsRef}
-            className="settings-overlay-sheet"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Settings menu"
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 32, stiffness: 350, mass: 0.9 }}
-          >
-            <div className="settings-header">
-              <button 
-                className="settings-back-btn" 
-                onClick={() => setIsSettingsOpen(false)}
-                aria-label="Go back"
-              >
-                <ChevronLeft size={24} />
-              </button>
-              <h3>Settings</h3>
-            </div>
-            
-            <div className="settings-content" ref={settingsContentRef} onScroll={handleSettingsScroll} style={{ paddingBottom: '40px' }}>
-              
-              <div className="settings-group" style={{ marginTop: '16px' }}>
-                <span className="settings-group-label">Appearance</span>
-                <div className="settings-card">
-                  <div className="settings-row" onClick={handleDarkModeToggle}>
-                    <div className="settings-row-left">
-                      <div className="settings-row-icon">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transition: 'transform 0.4s ease', transform: theme === 'dark' ? 'rotate(360deg)' : 'rotate(0deg)' }}>
-                          <motion.path
-                            initial={{ d: sunPath }}
-                            animate={{ d: theme === 'dark' ? moonPath : sunPath }}
-                            transition={{ duration: 0.4, ease: 'easeInOut' }}
-                          />
-                        </svg>
-                      </div>
-                      <div className="settings-row-text">
-                        <h4>Dark Mode</h4>
-                        <p>Toggle dark or light theme</p>
-                      </div>
-                    </div>
-                    <div className={`settings-toggle ${theme === 'dark' ? 'active' : ''}`}>
-                      <div className="settings-toggle-knob" />
-                    </div>
-                  </div>
-                  
-                  <div className="settings-row" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '12px' }}>
-                    <div className="settings-row-text">
-                      <h4>Accent Color</h4>
-                      <p>Personalize the app color scheme</p>
-                    </div>
-                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                      {['blue', 'purple', 'emerald', 'rose'].map(color => (
-                        <div 
-                          key={color}
-                          onClick={() => handleAccentColorSelect(color)}
-                          style={{
-                            width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer',
-                            background: color === 'blue' ? '#007bff' : color === 'purple' ? '#8b5cf6' : color === 'emerald' ? '#10b981' : '#f43f5e',
-                            border: accentColor === color ? '3px solid var(--text-primary)' : '2px solid transparent',
-                            transform: accentColor === color ? 'scale(1.1)' : 'scale(1)',
-                            transition: 'all 0.2s'
-                          }}
-                        />
-                      ))}
-                      
-                      {/* 5th swatch: dynamic color extraction */}
-                      <button
-                        className="accent-swatch accent-swatch--photo"
-                        style={{
-                          width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer',
-                          background: photoAccent ?? 'conic-gradient(red, purple, blue, green, red)',
-                          border: accentColor === photoAccent ? '3px solid var(--text-primary)' : '2px solid transparent',
-                          transform: accentColor === photoAccent ? 'scale(1.1)' : 'scale(1)',
-                          transition: 'all 0.2s',
-                          padding: 0
-                        }}
-                        onClick={handlePhotoAccentClick}
-                        aria-label="Use color from your photo"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="settings-row" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '12px' }}>
-                    <div className="settings-row-text">
-                      <h4>Typography</h4>
-                      <p>Change the app font style</p>
-                    </div>
-                    <div style={{ display: 'flex', width: '100%', background: 'var(--bg-secondary)', borderRadius: '10px', padding: '4px', border: '1px solid var(--border-color)' }}>
-                      <button 
-                        onClick={() => { playSound(); setFontFamily('modern'); }}
-                        style={{ flex: 1, padding: '8px', border: 'none', background: fontFamily === 'modern' ? 'var(--bg-primary)' : 'transparent', borderRadius: '8px', color: 'var(--text-primary)', fontWeight: 600, fontSize: '13px', fontFamily: "'Inter', sans-serif" }}
-                      >
-                        Modern Sans
-                      </button>
-                      <button 
-                        onClick={() => { playSound(); setFontFamily('developer'); }}
-                        style={{ flex: 1, padding: '8px', border: 'none', background: fontFamily === 'developer' ? 'var(--bg-primary)' : 'transparent', borderRadius: '8px', color: 'var(--text-primary)', fontWeight: 600, fontSize: '13px', fontFamily: "'Fira Code', monospace" }}
-                      >
-                        Dev Mono
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="settings-row">
-                    <div className="settings-row-left">
-                      <div className="settings-row-text">
-                        <h4>Page Transitions</h4>
-                        <p>Seamless synchronized push</p>
-                      </div>
-                    </div>
-                    <div style={{
-                      fontSize: '11px', fontWeight: 700, letterSpacing: '0.05em',
-                      textTransform: 'uppercase', color: 'var(--primary-blue)',
-                      background: 'rgba(0,123,255,0.08)', border: '1px solid rgba(0,123,255,0.2)',
-                      borderRadius: '8px', padding: '4px 10px', whiteSpace: 'nowrap', flexShrink: 0
-                    }}>
-                      iOS Push
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-
-              {/* Notifications Preferences Section (Tier 1.1) */}
-              <div className="settings-group">
-                <span className="settings-group-label">Notifications</span>
-                <div className="settings-card">
-                  <div className="settings-row" onClick={handleNotifyToggle}>
-                    <div className="settings-row-left">
-                      <div className="settings-row-text">
-                        <h4>Confirmation Emails</h4>
-                        <p>Send visitors a confirmation email on contact</p>
-                      </div>
-                    </div>
-                    <div className={`settings-toggle ${notifyOnContact ? 'active' : ''}`}>
-                      <div className="settings-toggle-knob" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="settings-group">
-                <span className="settings-group-label">Accessibility</span>
-                <div className="settings-card">
-                  <div className="settings-row" onClick={handleReduceMotionToggle}>
-                    <div className="settings-row-left">
-                      <div className="settings-row-icon">
-                        <Wand2 size={16} />
-                      </div>
-                      <div className="settings-row-text">
-                        <h4>Reduce Motion</h4>
-                        <p>Disable heavy animations</p>
-                      </div>
-                    </div>
-                    <div className={`settings-toggle ${reduceMotion ? 'active' : ''}`}>
-                      <div className="settings-toggle-knob" />
-                    </div>
-                  </div>
-                  
-                  <div className="settings-row" onClick={handleUiAudioToggle}>
-                    <div className="settings-row-left">
-                      <div className="settings-row-icon">
-                        <Bell size={16} />
-                      </div>
-                      <div className="settings-row-text">
-                        <h4>UI Audio</h4>
-                        <p>Sound effects on interactions</p>
-                      </div>
-                    </div>
-                    <div className={`settings-toggle ${uiAudio ? 'active' : ''}`}>
-                      <div className="settings-toggle-knob" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Developer Panel (Tier 3.6) */}
-              {devMode && (
-                <div className="settings-group">
-                  <span className="settings-group-label">Developer Mode</span>
-                  <div className="settings-card">
-                    {Object.entries(flags).map(([key, value]) => (
-                      <div className="settings-row" key={key} onClick={() => handleFlagToggle(key, value)}>
-                        <div className="settings-row-left">
-                          <div className="settings-row-text">
-                            <h4>{key.replace(/([A-Z])/g, ' $1').trim()}</h4>
-                            <p>Toggle developer flag</p>
-                          </div>
-                        </div>
-                        <div className={`settings-toggle ${value ? 'active' : ''}`}>
-                          <div className="settings-toggle-knob" />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="settings-group">
-                <span className="settings-group-label">System</span>
-                <div className="settings-card">
-                  <div className="settings-row">
-                    <div className="settings-row-left">
-                      <div className="settings-row-icon">
-                        <Globe size={16} />
-                      </div>
-                      <div className="settings-row-text">
-                        <h4>Language</h4>
-                        <p>English (US)</p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* JSON Export/Import Rows (Tier 3.8) */}
-                  <div className="settings-row" onClick={handleExportPrefs}>
-                    <div className="settings-row-left">
-                      <div className="settings-row-icon">
-                        <FileText size={16} />
-                      </div>
-                      <div className="settings-row-text">
-                        <h4>Export Settings</h4>
-                        <p>Copy preferences as JSON to clipboard</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="settings-row" onClick={handleImportPrefs}>
-                    <div className="settings-row-left">
-                      <div className="settings-row-icon">
-                        <Globe size={16} />
-                      </div>
-                      <div className="settings-row-text">
-                        <h4>Import Settings</h4>
-                        <p>Paste JSON string to restore preferences</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="settings-row" onClick={() => {
-                    if(confirm("Are you sure you want to clear local data?")) {
-                      localStorage.clear();
-                      alert("Cache cleared successfully.");
-                    }
-                  }}>
-                    <div className="settings-row-left">
-                      <div className="settings-row-icon" style={{color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.2)', background: 'rgba(239, 68, 68, 0.05)'}}>
-                        <Trash2 size={16} />
-                      </div>
-                      <div className="settings-row-text">
-                        <h4 style={{color: '#ef4444'}}>Clear App Cache</h4>
-                        <p>Free up local storage</p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="settings-row" onClick={() => {
-                    alert("To install: Tap the Share icon in Safari, then 'Add to Home Screen'.");
-                  }}>
-                    <div className="settings-row-left">
-                      <div className="settings-row-icon" style={{color: '#0ea5e9', borderColor: 'rgba(14, 165, 233, 0.2)', background: 'rgba(14, 165, 233, 0.05)'}}>
-                        <FileDown size={16} />
-                      </div>
-                      <div className="settings-row-text">
-                        <h4 style={{color: '#0ea5e9'}}>Install App</h4>
-                        <p>Add to Home Screen</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Privacy Disclosure Row (Tier 1.2) */}
-                  <div className="settings-row settings-row--info">
-                    <div className="settings-row-left" style={{ gap: '10px' }}>
-                      <div className="settings-row-text">
-                        <h4 style={{ fontSize: '13.5px' }}>Privacy Disclosure</h4>
-                        <p style={{ lineHeight: '1.4', fontSize: '11px', marginTop: '2px' }}>
-                          Your preferences are stored only in this browser's local storage. Nothing is sent to a server.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-
-              {/* Version Footer (Tier 1.3) */}
-              <div className="settings-version-footer" onClick={handleVersionTap} style={{ cursor: 'default', userSelect: 'none' }}>
-                v1.4.0 · built with Vite + React
-                {tapCount > 0 && tapCount < 5 && (
-                  <span style={{ opacity: 0.5 }}> ({5 - tapCount} more to unlock dev options)</span>
-                )}
-              </div>
-
-              {/* Scroll Indicator */}
-              <AnimatePresence>
-                {isSettingsScrollable && !hasSettingsScrolled && (
-                  <motion.div 
-                    className="settings-drawer-scroll-indicator"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <motion.div
-                      animate={{ y: [0, 6, 0] }}
-                      transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-                      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}
-                    >
-                      <span style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '2px' }}>Scroll</span>
-                      <ChevronDown size={16} />
-                    </motion.div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* GitHub Stats Slide-Up Drawer */}
       <AnimatePresence>
@@ -1170,3 +824,4 @@ function extractDominantColor(imgElement) {
     return '#007bff'; // fallback to standard blue
   }
 }
+
