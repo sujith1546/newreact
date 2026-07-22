@@ -45,7 +45,20 @@ export default function AdminDashboard() {
 
   return (
     <div style={styles.shell}>
-      <style>{`body { background-color: #1e1e1e !important; margin: 0; padding: 0; }`}</style>
+      <style>{`
+        body { 
+          background-color: #1e1e1e !important; 
+          margin: 0; 
+          padding: 0; 
+          zoom: 1 !important;
+          min-height: 100vh;
+        }
+        #root {
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+        }
+      `}</style>
       {/* Sidebar */}
       <div style={styles.sidebar}>
         <p style={styles.sidebarLabel}>Admin</p>
@@ -502,6 +515,7 @@ const styles = {
     display: "flex",
     alignItems: "stretch",
     minHeight: "100vh",
+    flexGrow: 1,
     background: "#1e1e1e",
     fontFamily: "system-ui, -apple-system, sans-serif"
   },
