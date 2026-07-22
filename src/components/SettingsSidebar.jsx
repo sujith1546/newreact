@@ -40,6 +40,9 @@ export default function SettingsSidebar() {
     highContrast, setHighContrast,
     aiVoice, setAiVoice,
     aiAutoNav, setAiAutoNav,
+    aiResponseStyle, setAiResponseStyle,
+    aiShowThoughts, setAiShowThoughts,
+    aiAutoScroll, setAiAutoScroll,
     uiAudio, setUiAudio,
     devMode, setDevMode,
   } = useTheme();
@@ -280,12 +283,37 @@ export default function SettingsSidebar() {
 
     if (activeTab === 'ai') return (
       <div>
-        <Section title="Capabilities" />
-        <Row icon={Volume2} iconColor="#8b5cf6" label="AI Voice Responses" sublabel="Read replies aloud via speech synth">
+        <Section title="AI Behavior" />
+        <Row icon={Bot} iconColor="#8b5cf6" label="Response Style" sublabel="Adjust AI verbosity">
+          <div style={{ display: 'flex', gap: '4px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', padding: '3px', borderRadius: '6px' }}>
+            {['concise', 'balanced', 'detailed'].map(style => (
+              <button
+                key={style} onClick={() => { setAiResponseStyle(style); showToast(`Style → ${style}`); }}
+                style={{
+                  background: aiResponseStyle === style ? (isDark ? '#334155' : '#fff') : 'transparent',
+                  color: aiResponseStyle === style ? (isDark ? '#fff' : '#000') : (isDark ? '#94a3b8' : '#64748b'),
+                  border: 'none', borderRadius: '4px', padding: '2px 6px', fontSize: '10px', fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize',
+                  boxShadow: aiResponseStyle === style ? `inset 0 0 0 1px ${accent}55` : 'none',
+                }}
+              >
+                {style}
+              </button>
+            ))}
+          </div>
+        </Row>
+        <Row icon={Volume2} iconColor="#8b5cf6" label="Voice Responses" sublabel="Read replies aloud via speech synth">
           <Toggle checked={aiVoice} onChange={v => { setAiVoice(v); showToast(v ? 'Voice ON' : 'Voice OFF'); }} />
         </Row>
         <Row icon={Sparkles} iconColor="#10b981" label="Screen Director" sublabel="AI auto-navigates to relevant sections">
           <Toggle checked={aiAutoNav} onChange={v => { setAiAutoNav(v); showToast(v ? 'Auto-nav ON' : 'Auto-nav OFF'); }} />
+        </Row>
+        
+        <Section title="Chat Interface" />
+        <Row icon={Code2} iconColor="#f59e0b" label="Show Thought Traces" sublabel="Display internal RAG steps">
+          <Toggle checked={aiShowThoughts} onChange={v => { setAiShowThoughts(v); showToast(v ? 'Thoughts visible' : 'Thoughts hidden'); }} accent="#f59e0b" />
+        </Row>
+        <Row icon={Activity} iconColor="#06b6d4" label="Auto-Scroll" sublabel="Scroll to newest messages automatically">
+          <Toggle checked={aiAutoScroll} onChange={v => { setAiAutoScroll(v); showToast(v ? 'Auto-scroll ON' : 'Auto-scroll OFF'); }} accent="#06b6d4" />
         </Row>
 
         <Section title="Memory & History" />

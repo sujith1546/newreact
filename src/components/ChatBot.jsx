@@ -78,7 +78,7 @@ export default function ChatBot() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const { aiVoice, setAiVoice, aiAutoNav } = useTheme();
+  const { aiVoice, setAiVoice, aiAutoNav, aiResponseStyle, aiShowThoughts, aiAutoScroll } = useTheme();
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [attachment, setAttachment] = useState(null); // { file, base64 }
   const fileInputRef = useRef(null);
@@ -208,10 +208,10 @@ export default function ChatBot() {
   const inputRef = useRef(null);
 
   useEffect(() => {
-    if (isOpen && messagesEndRef.current) {
+    if (isOpen && messagesEndRef.current && aiAutoScroll) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, isOpen]);
+  }, [messages, isOpen, aiAutoScroll]);
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -279,7 +279,14 @@ export default function ChatBot() {
           'Content-Type': 'application/json',
           'x-portfolio-session': sessionToken 
         },
-        body: JSON.stringify({ message: userText, image: currentAttachment?.base64, history, contextPath: currentContext })
+        body: JSON.stringify({ 
+          message: userText, 
+          image: currentAttachment?.base64, 
+          history, 
+          contextPath: currentContext,
+          style: aiResponseStyle,
+          showThoughts: aiShowThoughts
+        })
       });
 
       if (!res.ok) {
@@ -723,7 +730,7 @@ export default function ChatBot() {
         }
         [data-theme="dark"] .chat-bubble.bot {
           background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          border: 1px solid rgba(255,255,255,0.1);
           box-shadow: 0 8px 32px rgba(0,0,0,0.3);
         }
         .chat-bubble.user {
@@ -1312,7 +1319,9 @@ export default function ChatBot() {
                     )}
                   </div>
                   <div className={`chat-bubble ${msg.role === 'user' ? 'user' : 'bot'} ${msg.isError ? 'error' : ''}`}>
-                    {msg.steps && msg.steps.length > 0 && (
+                    
+                    {/* RAG Thinking Steps */}
+                    {aiShowThoughts && msg.steps && msg.steps.length > 0 && (
                       <ThoughtTrace steps={msg.steps} />
                     )}
                     

@@ -18,6 +18,9 @@ export function ThemeProvider({ children }) {
   const [highContrast, setHighContrast] = useState(localStorage.getItem('highContrast') === 'true');
   const [aiVoice, setAiVoice] = useState(localStorage.getItem('aiVoice') !== 'false');
   const [aiAutoNav, setAiAutoNav] = useState(localStorage.getItem('aiAutoNav') !== 'false');
+  const [aiResponseStyle, setAiResponseStyle] = useState(localStorage.getItem('aiResponseStyle') || 'balanced');
+  const [aiShowThoughts, setAiShowThoughts] = useState(localStorage.getItem('aiShowThoughts') !== 'false');
+  const [aiAutoScroll, setAiAutoScroll] = useState(localStorage.getItem('aiAutoScroll') !== 'false');
   
   // Tier 1 & 3 Advanced settings
   const [notifyOnContact, setNotifyOnContact] = useState(
@@ -102,12 +105,15 @@ export function ThemeProvider({ children }) {
     localStorage.setItem('highContrast', String(highContrast));
     localStorage.setItem('aiVoice', String(aiVoice));
     localStorage.setItem('aiAutoNav', String(aiAutoNav));
+    localStorage.setItem('aiResponseStyle', aiResponseStyle);
+    localStorage.setItem('aiShowThoughts', String(aiShowThoughts));
+    localStorage.setItem('aiAutoScroll', String(aiAutoScroll));
     localStorage.setItem('notifyOnContact', JSON.stringify(notifyOnContact));
     if (photoAccent) localStorage.setItem('photoAccent', photoAccent);
     localStorage.setItem('activePreset', activePreset || '');
     localStorage.setItem('devMode', String(devMode));
     localStorage.setItem('devFlags', JSON.stringify(flags));
-  }, [theme, accentColor, fontFamily, uiAudio, glassIntensity, reduceMotion, highContrast, aiVoice, aiAutoNav, notifyOnContact, photoAccent, activePreset, devMode, flags]);
+  }, [theme, accentColor, fontFamily, uiAudio, glassIntensity, reduceMotion, highContrast, aiVoice, aiAutoNav, aiResponseStyle, aiShowThoughts, aiAutoScroll, notifyOnContact, photoAccent, activePreset, devMode, flags]);
 
   const toggleTheme = (e) => {
     const isDark = theme === 'dark';
@@ -211,6 +217,9 @@ export function ThemeProvider({ children }) {
       highContrast, setHighContrast,
       aiVoice, setAiVoice,
       aiAutoNav, setAiAutoNav,
+      aiResponseStyle, setAiResponseStyle,
+      aiShowThoughts, setAiShowThoughts,
+      aiAutoScroll, setAiAutoScroll,
       playSound,
       notifyOnContact, setNotifyOnContact,
       photoAccent, setPhotoAccent,
