@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, X } from 'lucide-react';
+import { Eye, X, Download } from 'lucide-react';
 
 const SECTION_LABELS = {
   home:           'Home',
@@ -11,23 +11,53 @@ const SECTION_LABELS = {
   experience:     'Experience',
   certifications: 'Certifications',
   contact:        'Contact',
+  resume:         'Resume',
 };
 
-// ── Per-section: the container elements to SEARCH WITHIN ─────────────────────
-// These are the "search scope" containers. We will do a keyword text search
-// inside them to find the most precise element to highlight.
+// ═══════════════════════════════════════════════════════════════
+// SECTION SCOPE — search containers per page (waterfall: first found wins)
+// ═══════════════════════════════════════════════════════════════
 const SECTION_SCOPE = {
-  home:           ['.home-grid', '.mobile-dashboard', '.hero-info'],
-  about:          ['.about-page'],
-  skills:         ['.skills-grid', '.skills-mobile-grid', '.skills-page'],
-  projects:       ['.projects-grid', '.mpj-list'],
-  education:      ['.edu-grid', '.mobile-edu-feed', '.edu-page'],
-  experience:     ['.exp-page'],
-  certifications: ['.certs-grid', '.mobile-certs-feed'],
-  contact:        ['.fc-wrapper', '.mc-outer-container', '.contact-page-wrap'],
+  home: [
+    '.home-grid',            // desktop 2-col hero
+    '.mobile-dashboard',     // mobile full dashboard
+    '.hero-info',            // desktop hero text column
+    '.home-content',
+  ],
+  about: [
+    '.about-page',           // full about container
+  ],
+  skills: [
+    '.skills-grid',          // desktop 2-col card grid
+    '.skills-mobile-grid',   // mobile category grid
+    '.skills-page',
+  ],
+  projects: [
+    '.projects-grid',        // desktop auto-fit grid
+    '.mpj-list',             // mobile project list
+  ],
+  education: [
+    '.edu-grid',             // desktop 4-col flip grid
+    '.mobile-edu-feed',      // mobile feed
+    '.edu-page',
+  ],
+  experience: [
+    '.exp-page',
+  ],
+  certifications: [
+    '.certs-grid',           // desktop cert cards
+    '.mobile-certs-feed',    // mobile cert feed
+  ],
+  contact: [
+    '.fc-wrapper',           // desktop 2-col layout
+    '.mc-outer-container',   // mobile layout
+    '.contact-page-wrap',
+  ],
 };
 
-// ── Per-section fallback selectors (used when keyword search fails) ────────
+// ═══════════════════════════════════════════════════════════════
+// FALLBACK — when keyword search yields nothing, highlight this
+// ═══════════════════════════════════════════════════════════════
 const SECTION_FALLBACK = {
   home:           '.home-grid',
   about:          '.about-page',
@@ -39,98 +69,137 @@ const SECTION_FALLBACK = {
   contact:        '.fc-info-panel',
 };
 
-// ── Minimum element sizes to avoid highlighting tiny spans/labels ─────────
-const MIN_HIGHLIGHT_WIDTH  = 60;
-const MIN_HIGHLIGHT_HEIGHT = 40;
+// ═══════════════════════════════════════════════════════════════
+// MINIMUM ELEMENT SIZE — avoid highlighting tiny labels / spans
+// ═══════════════════════════════════════════════════════════════
+const MIN_W = 60;
+const MIN_H = 36;
 
-// ── CSS class-to-border-radius map for beautiful rounded rings ───────────
+// ═══════════════════════════════════════════════════════════════
+// CLASS → BORDER-RADIUS MAP (covers every known card on every page)
+// ═══════════════════════════════════════════════════════════════
 const CLASS_RADIUS_MAP = {
-  'skill-category-card': '14px',
-  'project-card':        '16px',
-  'edu-flip-card':       '18px',
-  'cert-card':           '16px',
-  'medu-card':           '14px',
-  'mcert-card':          '14px',
-  'mpj-row':             '12px',
-  'hobby-card':          '14px',
-  'stat-card':           '12px',
-  'qa-card':             '14px',
-  'empty-state-card':    '18px',
-  'fc-info-panel':       '16px',
-  'fc-form-panel':       '16px',
-  'mc-contact-card-item':'12px',
-  'dashboard-profile-card':'20px',
+  // ── Home ──────────────────────────────────────────────────────
+  'qa-card':               '14px',  // Quick action cards
+  'dashboard-profile-card':'20px',  // Mobile profile card
+  'dashboard-bio-card':    '16px',  // Mobile bio card
+  'dashboard-link-card':   '14px',  // Mobile nav link cards
+  'stat-card':             '12px',  // Stats cards (home + about)
+  // ── About ─────────────────────────────────────────────────────
+  'hobby-card':            '14px',  // Hobby cards
+  'contact-pill':          '100px', // Contact pills (gmail/linkedin/github)
+  'micro-timeline':        '12px',  // Career timeline strip
+  'cta-btn-primary':       '10px',  // CTA primary button
+  'cta-btn-secondary':     '10px',  // CTA secondary button
+  // ── Skills ────────────────────────────────────────────────────
+  'skill-category-card':   '14px',  // Desktop skill category cards
+  'sk-cat-card':           '14px',  // Mobile skill category cards
+  'sk-skills-card':        '12px',  // Mobile skill group card
+  // ── Projects ──────────────────────────────────────────────────
+  'project-card':          '16px',  // Desktop project cards
+  'mpj-row':               '12px',  // Mobile project rows
+  // ── Education ─────────────────────────────────────────────────
+  'edu-flip-card':         '18px',  // Desktop 3D flip cards
+  'medu-card':             '14px',  // Mobile education cards
+  'edu-closing-summary':   '14px',  // Education closing summary
+  // ── Certifications ────────────────────────────────────────────
+  'cert-card':             '16px',  // Desktop cert cards
+  'mcert-card':            '14px',  // Mobile cert rows
+  'cert-hero-card':        '14px',  // Detail hero credential card
+  // ── Experience ────────────────────────────────────────────────
+  'empty-state-card':      '18px',  // Opportunity card
+  // ── Contact ───────────────────────────────────────────────────
+  'fc-info-panel':         '16px',  // Desktop left dark panel
+  'fc-form-panel':         '16px',  // Desktop right form panel
+  'mc-contact-card-item':  '12px',  // Mobile contact card items
+  'swipe-send-container':  '14px',  // Mobile swipe-to-send
+  'mc-form-container':     '14px',  // Mobile form
 };
 
+// ═══════════════════════════════════════════════════════════════
+// HIGH-PRIORITY CARD CLASSES (get +200 bonus over generic divs)
+// The full exhaustive list from every page's DOM inventory
+// ═══════════════════════════════════════════════════════════════
+const PRIORITY_CARD_CLASSES = new Set([
+  // Home
+  'qa-card', 'dashboard-profile-card', 'dashboard-bio-card',
+  'dashboard-link-card', 'stat-card',
+  // About
+  'hobby-card', 'contact-pill', 'micro-timeline',
+  'cta-btn-primary', 'cta-btn-secondary', 'about-bio', 'about-header',
+  // Skills
+  'skill-category-card', 'sk-cat-card', 'sk-skills-card', 'skill-pill',
+  // Projects
+  'project-card', 'mpj-row',
+  // Education
+  'edu-flip-card', 'medu-card', 'edu-closing-summary', 'edu-rail',
+  // Certifications
+  'cert-card', 'mcert-card', 'cert-hero-card',
+  // Experience
+  'empty-state-card',
+  // Contact
+  'fc-info-panel', 'fc-form-panel', 'mc-contact-card-item',
+  'swipe-send-container', 'mc-form-container',
+]);
+
+// ═══════════════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════════════
 function getRadius(el) {
   if (!el) return '14px';
   for (const [cls, radius] of Object.entries(CLASS_RADIUS_MAP)) {
     if (el.classList.contains(cls)) return radius;
   }
+  const cs = window.getComputedStyle(el);
+  const cr = parseFloat(cs.borderRadius);
+  if (cr > 0) return cs.borderRadius;
   return '14px';
 }
 
-// ── Intelligent element scorer ────────────────────────────────────────────
-// Given a keyword, walk the DOM within the scope container and score each
-// candidate element. The one with the highest score wins.
-function scoreElement(el, keyword) {
-  const text = el.textContent || '';
-  const kw   = keyword.toLowerCase();
-  const elText = text.toLowerCase();
-
+// ═══════════════════════════════════════════════════════════════
+// INTELLIGENT ELEMENT SCORER
+// 3 Factors: text-ratio, inverse-area, card-class bonus
+// ═══════════════════════════════════════════════════════════════
+function scoreElement(el, kw) {
+  const elText = (el.textContent || '').toLowerCase();
   if (!elText.includes(kw)) return 0;
 
   const rect = el.getBoundingClientRect();
-  if (rect.width < MIN_HIGHLIGHT_WIDTH || rect.height < MIN_HIGHLIGHT_HEIGHT) return 0;
+  if (rect.width < MIN_W || rect.height < MIN_H) return 0;
+  // Off-screen? skip
+  if (rect.bottom < 0 || rect.top > window.innerHeight + 2000) return 0;
 
-  // Prefer smaller, more precise elements (inversely proportional to area)
-  const area = rect.width * rect.height;
-  const areaScore = 1_000_000 / (area + 1);
+  const area      = rect.width * rect.height;
+  const areaScore = 1_500_000 / (area + 1);              // smaller = higher score
 
-  // Prefer elements whose text ratio is closer to keyword (precise match)
-  const ratio = kw.length / (elText.length + 1);
-  const ratioScore = ratio * 200;
+  const ratio      = kw.length / (elText.length + 1);
+  const ratioScore = ratio * 300;                         // tighter text match = better
 
-  // Bonus for known "card" class names
-  const cardClasses = ['skill-category-card','project-card','edu-flip-card','cert-card',
-    'medu-card','mcert-card','mpj-row','hobby-card','stat-card','qa-card',
-    'empty-state-card','dashboard-profile-card','fc-info-panel','fc-form-panel',
-    'mc-contact-card-item','about-header','micro-timeline'];
-  let cardBonus = 0;
-  for (const cls of cardClasses) {
-    if (el.classList.contains(cls)) { cardBonus = 150; break; }
-  }
+  const cardBonus = PRIORITY_CARD_CLASSES.has([...el.classList].find(c => PRIORITY_CARD_CLASSES.has(c)) || '') ? 200 : 0;
 
   return areaScore + ratioScore + cardBonus;
 }
 
-// ── Walk all descendants of a container to find the best keyword match ────
+// ═══════════════════════════════════════════════════════════════
+// DOM WALKER — find the single best-matching element inside a container
+// ═══════════════════════════════════════════════════════════════
 function findBestElement(container, keyword) {
   if (!container || !keyword) return null;
   const kw = keyword.toLowerCase();
 
-  // Get all descendant elements (not text nodes)
   const allEls = Array.from(container.querySelectorAll('*'));
-
-  let bestEl    = null;
-  let bestScore = 0;
+  let bestEl = null, bestScore = 0;
 
   for (const el of allEls) {
     const score = scoreElement(el, kw);
-    if (score > bestScore) {
-      bestScore = score;
-      bestEl    = el;
-    }
+    if (score > bestScore) { bestScore = score; bestEl = el; }
   }
 
-  // If the best element found is very large (the whole container essentially),
-  // climb up to a better card-level parent
+  // If winner is still very wide (> 85% viewport), try to walk up to a better parent
   if (bestEl) {
     let node = bestEl;
     while (node && node !== container) {
-      const rect = node.getBoundingClientRect();
-      if (rect.width > window.innerWidth * 0.85) {
-        // Too wide — go to parent
+      if (node.getBoundingClientRect().width > window.innerWidth * 0.85) {
         node = node.parentElement;
         continue;
       }
@@ -142,54 +211,64 @@ function findBestElement(container, keyword) {
   return bestEl || null;
 }
 
-// ── Main resolver: find scope container, then keyword-search inside it ────
+// ═══════════════════════════════════════════════════════════════
+// MAIN RESOLVER
+// ═══════════════════════════════════════════════════════════════
 function resolveTargetElement(sectionId, keyword) {
-  const scopeSelectors = SECTION_SCOPE[sectionId] || [];
-  const fallback       = SECTION_FALLBACK[sectionId];
-  const isGenericKw    = !keyword || keyword.toLowerCase() === sectionId.toLowerCase()
-    || keyword.toLowerCase() === (SECTION_LABELS[sectionId] || '').toLowerCase();
+  const scopes   = SECTION_SCOPE[sectionId] || [];
+  const fallback = SECTION_FALLBACK[sectionId];
 
-  // 1. Find the scope container
+  const kwLow  = (keyword || '').toLowerCase().trim();
+  const secLow = (sectionId || '').toLowerCase();
+  const labLow = (SECTION_LABELS[sectionId] || '').toLowerCase();
+
+  // "generic" keyword = just navigating to the whole section
+  const isGeneric = !kwLow || kwLow === secLow || kwLow === labLow
+    || kwLow === 'download' || kwLow === 'show' || kwLow === 'resume';
+
+  // 1. Find scope container (first one actually in DOM)
   let scopeEl = null;
-  for (const sel of scopeSelectors) {
+  for (const sel of scopes) {
     const el = document.querySelector(sel);
     if (el) { scopeEl = el; break; }
   }
 
-  // 2. If keyword is generic (user asked for the whole section), just return scope
-  if (isGenericKw) {
+  // 2. Generic → just highlight the whole section
+  if (isGeneric) {
     return scopeEl || (fallback ? document.querySelector(fallback) : null);
   }
 
-  // 3. Do intelligent keyword search inside scope
-  if (scopeEl && keyword) {
-    const bestEl = findBestElement(scopeEl, keyword);
-    if (bestEl) return bestEl;
+  // 3. Keyword search inside scope
+  if (scopeEl) {
+    const best = findBestElement(scopeEl, kwLow);
+    if (best) return best;
   }
 
-  // 4. Fallback to scope container itself
+  // 4. Fallback: scope container or known selector
   return scopeEl || (fallback ? document.querySelector(fallback) : null);
 }
 
-// ── Unique ID for injected <style> ────────────────────────────────────────
-const STYLE_ID  = 'ai-spotlight-ring-style';
-let   TARGET_EL = null; // keep ref so we can remove inline styles
+// ═══════════════════════════════════════════════════════════════
+// CSS INJECTION
+// ═══════════════════════════════════════════════════════════════
+const STYLE_ID = 'ai-spotlight-ring-style';
+let   TARGET_EL = null;
 
 function buildCSS(uid, radius) {
   return `
     @keyframes ai-spotlight-pulse-${uid} {
-      0%   { box-shadow: 0 0 0 0   rgba(139,92,246,0.65), 0 0 28px 7px rgba(139,92,246,0.28); outline-color: rgba(139,92,246,1);    }
-      50%  { box-shadow: 0 0 0 11px rgba(139,92,246,0.07), 0 0 55px 22px rgba(139,92,246,0.13); outline-color: rgba(99,102,241,0.65); }
-      100% { box-shadow: 0 0 0 0   rgba(139,92,246,0.65), 0 0 28px 7px rgba(139,92,246,0.28); outline-color: rgba(139,92,246,1);    }
+      0%   { box-shadow: 0 0 0 0    rgba(139,92,246,0.70), 0 0 32px 8px rgba(139,92,246,0.30); outline-color: rgba(139,92,246,1);    }
+      50%  { box-shadow: 0 0 0 12px rgba(139,92,246,0.07), 0 0 60px 24px rgba(139,92,246,0.12); outline-color: rgba(99,102,241,0.65); }
+      100% { box-shadow: 0 0 0 0    rgba(139,92,246,0.70), 0 0 32px 8px rgba(139,92,246,0.30); outline-color: rgba(139,92,246,1);    }
     }
     .ai-spotlight-target {
       outline:        2.5px solid rgba(139,92,246,0.92) !important;
-      outline-offset: 7px !important;
+      outline-offset: 8px !important;
       border-radius:  ${radius} !important;
       animation:      ai-spotlight-pulse-${uid} 2.2s ease-in-out infinite !important;
       position:       relative !important;
       z-index:        10 !important;
-      scroll-margin-top:    80px;
+      scroll-margin-top:    90px;
       scroll-margin-bottom: 30px;
     }
   `;
@@ -197,25 +276,21 @@ function buildCSS(uid, radius) {
 
 function injectHighlight(sectionId, keyword) {
   removeHighlight();
+  // Resume is handled by event dispatch — no DOM highlight needed
+  if (sectionId === 'resume') return;
 
   const uid = Date.now();
   const el  = resolveTargetElement(sectionId, keyword);
   if (!el) return;
 
   TARGET_EL = el;
-  const radius = getRadius(el);
-
-  const styleEl   = document.createElement('style');
-  styleEl.id      = STYLE_ID;
-  styleEl.textContent = buildCSS(uid, radius);
+  const styleEl       = document.createElement('style');
+  styleEl.id          = STYLE_ID;
+  styleEl.textContent = buildCSS(uid, getRadius(el));
   document.head.appendChild(styleEl);
-
   el.classList.add('ai-spotlight-target');
 
-  // Smoothly scroll into center
-  setTimeout(() => {
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, 350);
+  setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 350);
 }
 
 function removeHighlight() {
@@ -226,17 +301,19 @@ function removeHighlight() {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-
+// ═══════════════════════════════════════════════════════════════
+// COMPONENT
+// ═══════════════════════════════════════════════════════════════
 export default function SectionSpotlight({ section, keyword, onDismiss }) {
   const [countdown, setCountdown] = useState(5);
-  const label = SECTION_LABELS[section] || section;
+  const isResume = section === 'resume';
+  const label    = SECTION_LABELS[section] || section || '';
 
+  // Inject on section/keyword change
   useEffect(() => {
     if (section) {
       setCountdown(5);
-      // Wait for page slide transition to finish
-      const t = setTimeout(() => injectHighlight(section, keyword), 500);
+      const t = setTimeout(() => injectHighlight(section, keyword), 480);
       return () => clearTimeout(t);
     } else {
       removeHighlight();
@@ -245,32 +322,40 @@ export default function SectionSpotlight({ section, keyword, onDismiss }) {
 
   useEffect(() => () => removeHighlight(), []);
 
+  // Auto-dismiss countdown
   useEffect(() => {
     if (!section) return;
-    const interval = setInterval(() => {
+    const iv = setInterval(() => {
       setCountdown(prev => {
-        if (prev <= 1) { clearInterval(interval); handleDismiss(); return 0; }
+        if (prev <= 1) { clearInterval(iv); handleDismiss(); return 0; }
         return prev - 1;
       });
     }, 1000);
-    return () => clearInterval(interval);
+    return () => clearInterval(iv);
   }, [section, keyword]);
 
   const handleDismiss = () => { removeHighlight(); onDismiss?.(); };
 
-  // What to show in the badge: if keyword is specific, show it alongside section
-  const isSpecific = keyword && keyword.toLowerCase() !== (section || '') &&
-    keyword.toLowerCase() !== (SECTION_LABELS[section] || '').toLowerCase();
-  const badgeLabel = isSpecific
-    ? `${label} › ${keyword}`
-    : label;
+  // Badge label: breadcrumb when keyword is specific
+  const kwLow  = (keyword || '').toLowerCase().trim();
+  const secLow = (section || '').toLowerCase();
+  const labLow = label.toLowerCase();
+  const isSpecific = keyword && kwLow !== secLow && kwLow !== labLow
+    && kwLow !== 'download' && kwLow !== 'show' && kwLow !== 'resume';
+
+  const badgeLabel  = isSpecific ? `${label} › ${keyword}` : label;
+  const badgeAction = isResume ? 'AI Downloading' : 'AI Highlighting';
+  const accentColor = isResume ? '#10b981' : '#8b5cf6';
+  const accentGrad  = isResume
+    ? 'linear-gradient(135deg,#10b981,#059669)'
+    : 'linear-gradient(135deg,#8b5cf6,#6366f1)';
 
   return (
     <AnimatePresence>
       {section && (
         <motion.div
           key={`spotlight-toast-${section}-${keyword}`}
-          initial={{ opacity: 0, y: -55, scale: 0.84 }}
+          initial={{ opacity: 0, y: -56, scale: 0.84 }}
           animate={{ opacity: 1,  y: 0,   scale: 1    }}
           exit={{    opacity: 0,  y: -44,  scale: 0.9  }}
           transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
@@ -282,38 +367,39 @@ export default function SectionSpotlight({ section, keyword, onDismiss }) {
         >
           <div style={{
             display: 'flex', alignItems: 'center', gap: 10,
-            background: 'linear-gradient(135deg, rgba(10,6,24,0.97) 0%, rgba(26,14,50,0.97) 100%)',
-            border: '1px solid rgba(139,92,246,0.4)', borderRadius: 100,
+            background: 'linear-gradient(135deg, rgba(10,6,24,0.97) 0%, rgba(22,14,44,0.97) 100%)',
+            border: `1px solid ${accentColor}55`,
+            borderRadius: 100,
             padding: '8px 14px 8px 10px',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.55), 0 0 0 1px rgba(139,92,246,0.08)',
+            boxShadow: `0 8px 32px rgba(0,0,0,0.55), 0 0 0 1px ${accentColor}18`,
             backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
             userSelect: 'none', maxWidth: '92vw',
           }}>
-            {/* Pulsing AI eye */}
+            {/* Pulsing icon */}
             <motion.div
               animate={{ scale:[1,1.22,1], opacity:[0.82,1,0.82] }}
               transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
               style={{
                 width:32, height:32, borderRadius:'50%',
-                background:'linear-gradient(135deg,#8b5cf6,#6366f1)',
+                background: accentGrad,
                 display:'flex', alignItems:'center', justifyContent:'center',
-                boxShadow:'0 0 16px rgba(139,92,246,0.65)', flexShrink:0,
+                boxShadow:`0 0 16px ${accentColor}99`, flexShrink:0,
               }}
             >
-              <Eye size={14} color="#fff" />
+              {isResume ? <Download size={14} color="#fff" /> : <Eye size={14} color="#fff" />}
             </motion.div>
 
-            {/* Label */}
+            {/* Badge label */}
             <div style={{ display:'flex', flexDirection:'column', gap:1, minWidth:0 }}>
               <span style={{
-                fontSize:9.5, fontWeight:700, color:'rgba(139,92,246,0.82)',
+                fontSize:9.5, fontWeight:700, color:`${accentColor}cc`,
                 textTransform:'uppercase', letterSpacing:'0.8px', whiteSpace:'nowrap',
               }}>
-                AI Highlighting
+                {badgeAction}
               </span>
               <span style={{
                 fontSize:13, fontWeight:700, color:'#fff',
-                whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', maxWidth:220,
+                whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', maxWidth:230,
               }}>
                 {badgeLabel}
               </span>
@@ -325,9 +411,9 @@ export default function SectionSpotlight({ section, keyword, onDismiss }) {
                 <circle cx="14" cy="14" r="11" fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="2.5"/>
                 <motion.circle
                   cx="14" cy="14" r="11" fill="none"
-                  stroke="rgba(139,92,246,0.85)" strokeWidth="2.5" strokeLinecap="round"
+                  stroke={`${accentColor}cc`} strokeWidth="2.5" strokeLinecap="round"
                   strokeDasharray={2*Math.PI*11}
-                  initial={{ strokeDashoffset:0 }}
+                  initial={{ strokeDashoffset: 0 }}
                   animate={{ strokeDashoffset: 2*Math.PI*11 }}
                   transition={{ duration:5, ease:'linear' }}
                 />
@@ -342,7 +428,7 @@ export default function SectionSpotlight({ section, keyword, onDismiss }) {
             {/* Dismiss */}
             <button
               onClick={handleDismiss}
-              title="Remove highlight"
+              title="Dismiss"
               style={{
                 background:'rgba(255,255,255,0.07)', border:'1px solid rgba(255,255,255,0.1)',
                 borderRadius:'50%', width:26, height:26, cursor:'pointer',

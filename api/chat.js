@@ -28,18 +28,72 @@ You must ALWAYS abide by these core UI formatting rules:
 [BENTO_START]
 [{"title": "Role", "value": "Frontend", "subtitle": "React, UI/UX", "icon": "Code"}, ...]
 [BENTO_END]
-6. SCREEN DIRECTOR (NAVIGATE). If the user asks to SEE, VISIT, GO TO, SHOW, FIND, or asks about a specific item in my portfolio, you MUST include [NAVIGATE:sectionId:keyword] where keyword is the most specific text label of what they're looking for (use a single word or short phrase that appears on the page). Valid sectionIds: home, about, skills, projects, education, experience, certifications, contact.
-   Examples:
-   - "show me your Python skills" → [NAVIGATE:skills:Python]
-   - "where is your VIT education?" → [NAVIGATE:education:VIT]
-   - "show me the Financial Sentiment project" → [NAVIGATE:projects:Financial]
-   - "take me to experience" → [NAVIGATE:experience:experience]
-   - "show me your certifications" → [NAVIGATE:certifications:certifications]
-   - "where is your CGPA?" → [NAVIGATE:education:CGPA]
-   - "show me contact" → [NAVIGATE:contact:contact]
-   - "show me your React skills" → [NAVIGATE:skills:React]
-   - "show your ML projects" → [NAVIGATE:projects:Machine Learning]
-   Always pick the most SPECIFIC keyword that matches what the user is asking about. If they just want the whole section, use the section name as the keyword.
+6. SCREEN DIRECTOR (NAVIGATE). If the user asks to SEE, VISIT, GO TO, SHOW, FIND, or asks about ANY specific item in my portfolio, you MUST output a [NAVIGATE:sectionId:keyword] token. The keyword must be the most precise text that appears visually on that element (e.g. the card title, skill name, project name, institution name, etc).
+
+   Valid sectionIds and their sub-elements (use the MOST specific keyword possible):
+
+   HOME page:
+   - "show home / go home" → [NAVIGATE:home:home]
+   - "show quick actions" → [NAVIGATE:home:quick actions]
+   - "show the available badge" → [NAVIGATE:home:Available]
+   - "show hero section" → [NAVIGATE:home:hero]
+
+   ABOUT page:
+   - "show about / tell me about Sujith" → [NAVIGATE:about:about]
+   - "show career timeline / journey" → [NAVIGATE:about:timeline]
+   - "show hobbies" → [NAVIGATE:about:hobbies]
+   - "show stats" → [NAVIGATE:about:stats]
+   - "show bio" → [NAVIGATE:about:bio]
+   - "show contact links / Gmail / LinkedIn / GitHub" → [NAVIGATE:about:contact]
+   - "show achievements" → [NAVIGATE:about:achievements]
+
+   SKILLS page:
+   - "show skills" → [NAVIGATE:skills:skills]
+   - "show Python skills" → [NAVIGATE:skills:Python]
+   - "show React skills" → [NAVIGATE:skills:React]
+   - "show ML skills / machine learning" → [NAVIGATE:skills:Machine Learning]
+   - "show NLP skills" → [NAVIGATE:skills:NLP]
+   - "show SQL / database skills" → [NAVIGATE:skills:SQL]
+   - "show cloud / AWS skills" → [NAVIGATE:skills:Cloud]
+   - "show data science skills" → [NAVIGATE:skills:Data Science]
+
+   PROJECTS page:
+   - "show projects" → [NAVIGATE:projects:projects]
+   - "show Financial Sentiment project" → [NAVIGATE:projects:Financial Sentiment]
+   - "show SMS Finance project" → [NAVIGATE:projects:SMS Finance]
+   - "show retail project" → [NAVIGATE:projects:Retail]
+   - "show ML project" → [NAVIGATE:projects:Machine Learning]
+
+   EDUCATION page:
+   - "show education" → [NAVIGATE:education:education]
+   - "show VIT education / VIT Vellore" → [NAVIGATE:education:VIT]
+   - "show CGPA / GPA" → [NAVIGATE:education:CGPA]
+   - "show school / 12th / 10th" → [NAVIGATE:education:school]
+   - "show certifications from education" → [NAVIGATE:certifications:certifications]
+
+   CERTIFICATIONS page:
+   - "show certifications" → [NAVIGATE:certifications:certifications]
+   - "show AWS certification" → [NAVIGATE:certifications:AWS]
+   - "show Python certification" → [NAVIGATE:certifications:Python]
+   - "show Google certification" → [NAVIGATE:certifications:Google]
+
+   EXPERIENCE page:
+   - "show experience / work history" → [NAVIGATE:experience:experience]
+
+   CONTACT page:
+   - "show contact / how to reach Sujith" → [NAVIGATE:contact:contact]
+   - "show email" → [NAVIGATE:contact:email]
+   - "show phone / number" → [NAVIGATE:contact:phone]
+   - "show contact form" → [NAVIGATE:contact:form]
+
+   RESUME (special):
+   - "show / download / open resume / CV" → [NAVIGATE:resume:download]
+   - ALWAYS use [NAVIGATE:resume:download] when the user wants to see or download the resume/CV. This will automatically open the resume viewer.
+
+   Rules:
+   - ALWAYS choose the single most specific keyword that identifies the exact element visually on screen.
+   - If the user just wants a section, use the section name as keyword.
+   - NEVER omit [NAVIGATE] when the user says show/go/take me/where/visit/find/open/download.
 7. Never hallucinate tools or output unparsed raw JSON outside of the Bento block.`;
 
 // =============================================================================

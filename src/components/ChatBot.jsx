@@ -342,12 +342,22 @@ export default function ChatBot() {
       speakText(finalText);
 
       // ── Screen Director: detect [NAVIGATE:sectionId:keyword] ─────────────
-      const navMatch = finalText.match(/\[NAVIGATE:([a-z]+):([^\]]+)\]/i);
+      const navMatch = finalText.match(/\[NAVIGATE:([a-zA-Z]+):([^\]]+)\]/i);
       if (navMatch) {
         const targetSection = navMatch[1].toLowerCase();
         const keyword = navMatch[2].trim();
         const validSections = ['home','about','skills','projects','education','experience','certifications','contact'];
-        if (validSections.includes(targetSection)) {
+
+        if (targetSection === 'resume') {
+          // ── Resume: open the resume viewer + show green Download toast ──
+          setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('open-resume'));
+            window.dispatchEvent(new CustomEvent('navigate-section', {
+              detail: { section: 'resume', highlight: true, keyword: 'download' }
+            }));
+          }, 600);
+        } else if (validSections.includes(targetSection)) {
+          // ── Standard section navigate + precision highlight ──
           setTimeout(() => {
             window.dispatchEvent(new CustomEvent('navigate-section', {
               detail: { section: targetSection, highlight: true, keyword }

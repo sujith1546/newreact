@@ -95,7 +95,8 @@ export default function MainLayout() {
     const onNavigate = (e) => {
       const { section, highlight } = e.detail || {};
       if (section) {
-        handleNavClick(section);
+        // Resume → don't navigate pages (open-resume event already handles the modal)
+        if (section !== 'resume') handleNavClick(section);
         if (highlight) {
           const kw = e.detail?.keyword || '';
           setTimeout(() => {
