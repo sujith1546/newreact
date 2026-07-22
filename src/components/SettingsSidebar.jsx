@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Settings2 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
@@ -37,7 +38,7 @@ export default function SettingsSidebar() {
 
   const isDark = theme === 'dark';
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <>
@@ -169,6 +170,7 @@ export default function SettingsSidebar() {
           </motion.div>
         </>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
