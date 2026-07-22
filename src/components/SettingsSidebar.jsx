@@ -35,6 +35,8 @@ export default function SettingsSidebar() {
   const {
     theme, toggleTheme,
     accentColor, setAccentColor,
+    fontFamily, setFontFamily,
+    layoutDensity, setLayoutDensity,
     glassIntensity, setGlassIntensity,
     reduceMotion, setReduceMotion,
     highContrast, setHighContrast,
@@ -235,6 +237,43 @@ export default function SettingsSidebar() {
             </button>
           ))}
         </div>
+
+        <Section title="Typography & Spacing" />
+        <Row icon={Code2} iconColor="#06b6d4" label="App Font" sublabel="Typeface style across the site">
+          <div style={{ display: 'flex', gap: '4px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', padding: '3px', borderRadius: '6px' }}>
+            {['modern', 'developer', 'classic'].map(font => (
+              <button
+                key={font} onClick={() => { setFontFamily(font); showToast(`Font → ${font}`); }}
+                style={{
+                  background: fontFamily === font ? (isDark ? '#334155' : '#fff') : 'transparent',
+                  color: fontFamily === font ? (isDark ? '#fff' : '#000') : (isDark ? '#94a3b8' : '#64748b'),
+                  border: 'none', borderRadius: '4px', padding: '2px 8px', fontSize: '10px', fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize',
+                  boxShadow: fontFamily === font ? `inset 0 0 0 1px ${accent}55` : 'none',
+                }}
+              >
+                {font}
+              </button>
+            ))}
+          </div>
+        </Row>
+
+        <Row icon={Layout} iconColor="#8b5cf6" label="Layout Density" sublabel="Adjust spacing and scale">
+          <div style={{ display: 'flex', gap: '4px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', padding: '3px', borderRadius: '6px' }}>
+            {['compact', 'comfortable', 'relaxed'].map(density => (
+              <button
+                key={density} onClick={() => { setLayoutDensity(density); showToast(`Density → ${density}`); }}
+                style={{
+                  background: layoutDensity === density ? (isDark ? '#334155' : '#fff') : 'transparent',
+                  color: layoutDensity === density ? (isDark ? '#fff' : '#000') : (isDark ? '#94a3b8' : '#64748b'),
+                  border: 'none', borderRadius: '4px', padding: '2px 8px', fontSize: '10px', fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize',
+                  boxShadow: layoutDensity === density ? `inset 0 0 0 1px ${accent}55` : 'none',
+                }}
+              >
+                {density}
+              </button>
+            ))}
+          </div>
+        </Row>
 
         <Section title="Glassmorphism" />
         <div style={{

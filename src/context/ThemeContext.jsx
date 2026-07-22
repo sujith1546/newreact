@@ -12,6 +12,7 @@ export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
   const [accentColor, setAccentColor] = useState(localStorage.getItem('accentColor') || 'blue');
   const [fontFamily, setFontFamily] = useState(localStorage.getItem('fontFamily') || 'modern');
+  const [layoutDensity, setLayoutDensity] = useState(localStorage.getItem('layoutDensity') || 'comfortable');
   const [uiAudio, setUiAudio] = useState(localStorage.getItem('uiAudio') !== 'false');
   const [glassIntensity, setGlassIntensity] = useState(localStorage.getItem('glassIntensity') || 'medium');
   const [reduceMotion, setReduceMotion] = useState(localStorage.getItem('reduceMotion') === 'true');
@@ -64,7 +65,8 @@ export function ThemeProvider({ children }) {
   // Fonts dictionary
   const fonts = {
     modern: "'Inter', -apple-system, BlinkMacSystemFont, sans-serif",
-    developer: "'Fira Code', 'SFMono-Regular', Consolas, monospace"
+    developer: "'Fira Code', 'SFMono-Regular', Consolas, monospace",
+    classic: "'Playfair Display', 'Merriweather', Georgia, serif"
   };
 
   // Sound Engine
@@ -95,10 +97,14 @@ export function ThemeProvider({ children }) {
       root.classList.remove('high-contrast');
     }
     
+    // Apply CSS variables for layout density
+    root.setAttribute('data-density', layoutDensity);
+    
     // Save preferences
     localStorage.setItem('theme', theme);
     localStorage.setItem('accentColor', accentColor);
     localStorage.setItem('fontFamily', fontFamily);
+    localStorage.setItem('layoutDensity', layoutDensity);
     localStorage.setItem('uiAudio', uiAudio);
     localStorage.setItem('glassIntensity', glassIntensity);
     localStorage.setItem('reduceMotion', String(reduceMotion));
@@ -113,7 +119,7 @@ export function ThemeProvider({ children }) {
     localStorage.setItem('activePreset', activePreset || '');
     localStorage.setItem('devMode', String(devMode));
     localStorage.setItem('devFlags', JSON.stringify(flags));
-  }, [theme, accentColor, fontFamily, uiAudio, glassIntensity, reduceMotion, highContrast, aiVoice, aiAutoNav, aiResponseStyle, aiShowThoughts, aiAutoScroll, notifyOnContact, photoAccent, activePreset, devMode, flags]);
+  }, [theme, accentColor, fontFamily, layoutDensity, uiAudio, glassIntensity, reduceMotion, highContrast, aiVoice, aiAutoNav, aiResponseStyle, aiShowThoughts, aiAutoScroll, notifyOnContact, photoAccent, activePreset, devMode, flags]);
 
   const toggleTheme = (e) => {
     const isDark = theme === 'dark';
@@ -189,6 +195,7 @@ export function ThemeProvider({ children }) {
     if ('theme' in obj) setTheme(obj.theme);
     if ('accentColor' in obj) setAccentColor(obj.accentColor);
     if ('fontFamily' in obj) setFontFamily(obj.fontFamily);
+    if ('layoutDensity' in obj) setLayoutDensity(obj.layoutDensity);
     if ('uiAudio' in obj) setUiAudio(obj.uiAudio);
     if ('notifyOnContact' in obj) setNotifyOnContact(obj.notifyOnContact);
     if ('photoAccent' in obj) setPhotoAccent(obj.photoAccent);
@@ -211,6 +218,7 @@ export function ThemeProvider({ children }) {
       theme, toggleTheme, 
       accentColor, setAccentColor,
       fontFamily, setFontFamily,
+      layoutDensity, setLayoutDensity,
       uiAudio, setUiAudio,
       glassIntensity, setGlassIntensity,
       reduceMotion, setReduceMotion,
