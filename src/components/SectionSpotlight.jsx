@@ -286,8 +286,6 @@ function resolveTargetElement(sectionId, rawKeyword) {
 // CSS INJECTION
 // ═══════════════════════════════════════════════════════════════
 const STYLE_ID = 'ai-spotlight-ring-style';
-let TARGET_EL  = null;
-
 function buildCSS(uid, radius) {
   return `
     @keyframes ai-spotlight-pulse-${uid} {
@@ -347,46 +345,64 @@ function removeHighlight() {
 // ═══════════════════════════════════════════════════════════════
 // COMPONENT
 // ═══════════════════════════════════════════════════════════════
-export default function SectionSpotlight({ section, keyword, onDismiss }) {
-  const [countdown, setCountdown] = useState(5);
+export default function SectionSpotlight({ section, keyword, duration = 6, onDismiss }) {
+  const [countdown, setCountdown] = useState(duration);
+  const [paused, setPaused] = useState(false);
   const isResume = section === 'resume';
-  const label    = SECTION_LABELS[section] || section || '';
+  const label = SECTION_LABELS[section] || section || '';
 
   useEffect(() => {
     if (section) {
-      setCountdown(5);
+      setCountdown(duration);
+      setPaused(false);
       // Wait for page transition & DOM layout settling
       const t1 = setTimeout(() => injectHighlight(section, keyword), 450);
-      const t2 = setTimeout(() => injectHighlight(section, keyword), 850); // double-check retry for slow mobile renders
+      const t2 = setTimeout(() => injectHighlight(section, keyword), 850);
       return () => { clearTimeout(t1); clearTimeout(t2); };
     } else {
       removeHighlight();
     }
-  }, [section, keyword]);
+  }, [section, keyword, duration]);
 
   useEffect(() => () => removeHighlight(), []);
 
+  // Auto-dismiss countdown (pauses on hover or focus)
   useEffect(() => {
-    if (!section) return;
+    if (!section || paused) return;
+
     const iv = setInterval(() => {
       setCountdown(prev => {
-        if (prev <= 1) { clearInterval(iv); handleDismiss(); return 0; }
+        if (prev <= 1) {
+          clearInterval(iv);
+          handleDismiss();
+          return 0;
+        }
         return prev - 1;
       });
     }, 1000);
-    return () => clearInterval(iv);
-  }, [section, keyword]);
 
-  const handleDismiss = () => { removeHighlight(); onDismiss?.(); };
+    return () => clearInterval(iv);
+  }, [section, keyword, paused]);
+
+  const handleDismiss = () => {
+    removeHighlight();
+    onDismiss?.();
+  };
 
   const cleanKw = sanitizeKeyword(keyword, section);
   const isSpecific = cleanKw.length > 0;
   const badgeLabel = isSpecific ? `${label} › ${cleanKw}` : label;
-  const badgeAction = isResume ? 'AI Downloading' : 'AI Highlighting';
+  const eyebrow = isResume ? 'AI Downloading' : (isSpecific ? 'AI is showing you' : 'AI Highlighting');
   const accentColor = isResume ? '#10b981' : '#8b5cf6';
   const accentGrad  = isResume
     ? 'linear-gradient(135deg,#10b981,#059669)'
     : 'linear-gradient(135deg,#8b5cf6,#6366f1)';
+
+  // SVG Progress Ring calculations
+  const r = 11;
+  const circumference = 2 * Math.PI * r;
+  const progress = countdown / duration;
+  const dashOffset = circumference * (1 - progress);
 
   return (
     <AnimatePresence>
@@ -397,6 +413,12 @@ export default function SectionSpotlight({ section, keyword, onDismiss }) {
           animate={{ opacity: 1,  y: 0,   scale: 1    }}
           exit={{    opacity: 0,  y: -44,  scale: 0.9  }}
           transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
+          role="status"
+          aria-live="polite"
+          onMouseEnter={() => setPaused(true)}
+          onMouseLeave={() => setPaused(false)}
+          onFocus={() => setPaused(true)}
+          onBlur={() => setPaused(false)}
           style={{
             position: 'fixed', top: 14, left: '50%',
             transform: 'translateX(-50%)',
@@ -413,46 +435,62 @@ export default function SectionSpotlight({ section, keyword, onDismiss }) {
             backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
             userSelect: 'none', maxWidth: '92vw',
           }}>
-            {/* Pulsing icon */}
-            <motion.div
-              animate={{ scale:[1,1.22,1], opacity:[0.82,1,0.82] }}
-              transition={{ repeat: Infinity, duration: 1.8, ease: 'easeInOut' }}
-              style={{
-                width:32, height:32, borderRadius:'50%',
-                background: accentGrad,
-                display:'flex', alignItems:'center', justifyContent:'center',
-                boxShadow:`0 0 16px ${accentColor}99`, flexShrink:0,
-              }}
-            >
-              {isResume ? <Download size={14} color="#fff" /> : <Eye size={14} color="#fff" />}
-            </motion.div>
+            {/* SVG Countdown Ring */}
+            <div style={{ position: 'relative', width: 28, height: 28, flexShrink: 0 }}>
+              <svg width="28" height="28" viewBox="0 0 28 28">
+                <defs>
+                  <linearGradient id="ai-ring-gradient" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor={isResume ? '#10b981' : '#8b5cf6'} />
+                    <stop offset="100%" stopColor={isResume ? '#34d399' : '#d4537e'} />
+                  </linearGradient>
+                </defs>
+                <circle
+                  cx="14" cy="14" r={r}
+                  fill="none"
+                  stroke="rgba(255,255,255,0.1)"
+                  strokeWidth="2.5"
+                />
+                <circle
+                  cx="14" cy="14" r={r}
+                  fill="none"
+                  stroke="url(#ai-ring-gradient)"
+                  strokeWidth="2.5"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={dashOffset}
+                  strokeLinecap="round"
+                  transform="rotate(-90 14 14)"
+                  style={{ transition: 'stroke-dashoffset 0.8s linear' }}
+                />
+                <text
+                  x="14" y="14"
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  fontSize="9.5"
+                  fill="#ffffff"
+                  fontWeight="700"
+                >
+                  {countdown}
+                </text>
+              </svg>
+            </div>
 
-            {/* Badge label */}
-            <div style={{ display:'flex', flexDirection:'column', gap:1, minWidth:0 }}>
+            {/* Label Block */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}>
               <span style={{
-                fontSize:9.5, fontWeight:700, color:`${accentColor}cc`,
-                textTransform:'uppercase', letterSpacing:'0.8px', whiteSpace:'nowrap',
+                fontSize: 9.5, fontWeight: 700, color: `${accentColor}cc`,
+                textTransform: 'uppercase', letterSpacing: '0.8px', whiteSpace: 'nowrap',
               }}>
-                {badgeAction}
+                {eyebrow} {paused && '(Paused)'}
               </span>
               <span style={{
-                fontSize:13, fontWeight:700, color:'#fff',
-                whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis', maxWidth:220,
+                fontSize: 13, fontWeight: 700, color: '#fff',
+                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 220,
                 textTransform: 'capitalize',
               }}>
                 {badgeLabel}
               </span>
             </div>
 
-            {/* SVG countdown ring */}
-            <div style={{ position:'relative', width:28, height:28, flexShrink:0 }}>
-              <svg width="28" height="28" style={{ position:'absolute', top:0, left:0, transform:'rotate(-90deg)' }}>
-                <circle cx="14" cy="14" r="11" fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="2.5"/>
-                <motion.circle
-                  cx="14" cy="14" r="11" fill="none"
-                  stroke={`${accentColor}cc`} strokeWidth="2.5" strokeLinecap="round"
-                  strokeDasharray={2*Math.PI*11}
-                  initial={{ strokeDashoffset: 0 }}
                   animate={{ strokeDashoffset: 2*Math.PI*11 }}
                   transition={{ duration:5, ease:'linear' }}
                 />
