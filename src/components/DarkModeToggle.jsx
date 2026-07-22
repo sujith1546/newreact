@@ -13,8 +13,8 @@ export default function DarkModeToggle() {
       <style>{`
         .theme-toggle-pill {
           position: fixed;
-          top: 24px;
-          right: 32px;
+          top: 22px;
+          right: 76px;
           width: 68px;
           height: 34px;
           border-radius: 17px;

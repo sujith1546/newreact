@@ -82,25 +82,44 @@ export default function SettingsDropdown() {
   return (
     <div className="settings-dropdown-container" ref={dropdownRef} style={{ position: 'relative', display: 'inline-block' }}>
       <style>{`
+        .settings-dropdown-container {
+          position: fixed;
+          top: 22px;
+          right: 28px;
+          z-index: 2001;
+        }
+        @media (max-width: 900px) {
+          .settings-dropdown-container {
+            top: 16px;
+            right: 90px;
+          }
+        }
+
         .settings-trigger-btn {
-          width: 38px;
-          height: 38px;
-          border-radius: 12px;
+          width: 34px;
+          height: 34px;
+          border-radius: 50%;
           display: flex;
           align-items: center;
           justify-content: center;
           border: 1px solid var(--border-color, rgba(128,128,128,0.2));
-          background: var(--bg-secondary, rgba(255,255,255,0.8));
+          background: var(--bg-secondary, rgba(255,255,255,0.85));
           color: var(--text-primary, #0f172a);
           cursor: pointer;
-          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
+          box-shadow: 0 4px 15px rgba(0,0,0,0.08);
           outline: none;
+        }
+        [data-theme="dark"] .settings-trigger-btn {
+          background: rgba(30, 30, 30, 0.5);
+          border-color: rgba(255,255,255,0.08);
+          box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
         .settings-trigger-btn:hover {
           border-color: rgba(139, 92, 246, 0.4);
-          box-shadow: 0 4px 14px rgba(139, 92, 246, 0.15);
+          box-shadow: 0 6px 20px rgba(139, 92, 246, 0.2);
           transform: translateY(-1px);
           color: #8b5cf6;
         }
@@ -108,7 +127,7 @@ export default function SettingsDropdown() {
           transform: translateY(0);
         }
         .settings-trigger-btn.active {
-          background: rgba(139, 92, 246, 0.12);
+          background: rgba(139, 92, 246, 0.15);
           border-color: rgba(139, 92, 246, 0.5);
           color: #8b5cf6;
         }
