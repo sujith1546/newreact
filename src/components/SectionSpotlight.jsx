@@ -489,42 +489,33 @@ export default function SectionSpotlight({ section, keyword, duration = 6, onDis
               }}>
                 {badgeLabel}
               </span>
-            </div>
+            {/* Vertical Divider */}
+            <div style={{ width: 1, height: 18, background: 'rgba(255,255,255,0.12)', margin: '0 2px' }} />
 
-                  animate={{ strokeDashoffset: 2*Math.PI*11 }}
-                  transition={{ duration:5, ease:'linear' }}
-                />
-              </svg>
-              <span style={{
-                position:'absolute', inset:0,
-                display:'flex', alignItems:'center', justifyContent:'center',
-                fontSize:10, fontWeight:800, color:'rgba(255,255,255,0.7)',
-              }}>{countdown}</span>
-            </div>
-
-            {/* Dismiss */}
+            {/* Dismiss Close Button */}
             <button
               onClick={handleDismiss}
-              title="Dismiss"
+              aria-label="Dismiss AI highlight"
+              title="Dismiss AI highlight"
               style={{
-                background:'rgba(255,255,255,0.07)', border:'1px solid rgba(255,255,255,0.1)',
-                borderRadius:'50%', width:26, height:26, cursor:'pointer',
-                display:'flex', alignItems:'center', justifyContent:'center',
-                color:'rgba(255,255,255,0.5)', flexShrink:0,
-                transition:'all 0.18s ease', padding:0,
+                background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: '50%', width: 26, height: 26, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'rgba(255,255,255,0.6)', flexShrink: 0,
+                transition: 'all 0.18s ease', padding: 0,
               }}
-              onMouseEnter={e=>{
-                e.currentTarget.style.background='rgba(239,68,68,0.22)';
-                e.currentTarget.style.color='#f87171';
-                e.currentTarget.style.borderColor='rgba(239,68,68,0.35)';
+              onMouseEnter={e => {
+                e.currentTarget.style.background = 'rgba(239,68,68,0.22)';
+                e.currentTarget.style.color = '#f87171';
+                e.currentTarget.style.borderColor = 'rgba(239,68,68,0.35)';
               }}
-              onMouseLeave={e=>{
-                e.currentTarget.style.background='rgba(255,255,255,0.07)';
-                e.currentTarget.style.color='rgba(255,255,255,0.5)';
-                e.currentTarget.style.borderColor='rgba(255,255,255,0.1)';
+              onMouseLeave={e => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.07)';
+                e.currentTarget.style.color = 'rgba(255,255,255,0.6)';
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
               }}
             >
-              <X size={12}/>
+              <X size={12} />
             </button>
           </div>
         </motion.div>
