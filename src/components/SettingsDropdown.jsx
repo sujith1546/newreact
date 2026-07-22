@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, Moon, Sun, Volume2, VolumeX, Bot, MessageSquareOff } from 'lucide-react';
+import { Settings, Moon, Sun, Volume2, VolumeX, Bot, MessageSquareOff, ChevronRight, Sliders } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import SettingsPanel from './SettingsPanel';
 
 export default function SettingsDropdown() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const dropdownRef = useRef(null);
+  const triggerBtnRef = useRef(null);
 
   // ── 1. Sound Effects Preference Persistence ────────────────────────────────
   const [soundEnabled, setSoundEnabled] = useState(() => {
@@ -222,13 +225,33 @@ export default function SettingsDropdown() {
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
           transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .toggle-switch-btn.on .toggle-switch-knob {
-          transform: translateX(16px);
+        .all-settings-btn {
+          width: 100%;
+          margin-top: 6px;
+          padding: 8px 10px;
+          border-radius: 9px;
+          border: 1px solid rgba(139, 92, 246, 0.15);
+          background: rgba(139, 92, 246, 0.06);
+          color: #8b5cf6;
+          font-size: 12px;
+          font-weight: 700;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          transition: all 0.18s ease;
+          outline: none;
+        }
+        .all-settings-btn:hover {
+          background: rgba(139, 92, 246, 0.12);
+          border-color: rgba(139, 92, 246, 0.35);
+          transform: translateY(-1px);
         }
       `}</style>
 
       {/* Trigger Button */}
       <button
+        ref={triggerBtnRef}
         onClick={() => setIsOpen(o => !o)}
         className={`settings-trigger-btn ${isOpen ? 'active' : ''}`}
         aria-label="Settings"
@@ -319,9 +342,31 @@ export default function SettingsDropdown() {
                 <div className="toggle-switch-knob" />
               </button>
             </div>
+
+            {/* 4. All Settings Drawer Trigger */}
+            <div style={{ borderTop: '1px solid rgba(128,128,128,0.12)', marginTop: 8, paddingTop: 4 }}>
+              <button
+                type="button"
+                className="all-settings-btn"
+                onClick={() => {
+                  setIsOpen(false);
+                  setIsPanelOpen(true);
+                }}
+              >
+                <span>All settings</span>
+                <ChevronRight size={14} />
+              </button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Settings Slide-in Panel (Desktop Only) */}
+      <SettingsPanel
+        isOpen={isPanelOpen}
+        onClose={() => setIsPanelOpen(false)}
+        triggerRef={triggerBtnRef}
+      />
     </div>
   );
 }
