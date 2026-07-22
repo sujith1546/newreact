@@ -21,8 +21,13 @@ export function ThemeProvider({ children }) {
   const [aiAutoNav, setAiAutoNav] = useState(localStorage.getItem('aiAutoNav') !== 'false');
   const [aiResponseStyle, setAiResponseStyle] = useState(localStorage.getItem('aiResponseStyle') || 'balanced');
   const [aiShowThoughts, setAiShowThoughts] = useState(localStorage.getItem('aiShowThoughts') !== 'false');
-  const [aiAutoScroll, setAiAutoScroll] = useState(localStorage.getItem('aiAutoScroll') !== 'false');
   
+  // Advanced AI Features
+  const [aiContextRange, setAiContextRange] = useState(localStorage.getItem('aiContextRange') || 'global');
+  const [aiReasoningDepth, setAiReasoningDepth] = useState(localStorage.getItem('aiReasoningDepth') || 'lightning');
+  const [aiPersona, setAiPersona] = useState(localStorage.getItem('aiPersona') || 'professional');
+  const [aiTerminalMode, setAiTerminalMode] = useState(localStorage.getItem('aiTerminalMode') === 'true');
+
   // Advanced Accessibility
   const [keyboardHud, setKeyboardHud] = useState(localStorage.getItem('keyboardHud') === 'true');
   
@@ -122,14 +127,17 @@ export function ThemeProvider({ children }) {
     localStorage.setItem('aiAutoNav', String(aiAutoNav));
     localStorage.setItem('aiResponseStyle', aiResponseStyle);
     localStorage.setItem('aiShowThoughts', String(aiShowThoughts));
-    localStorage.setItem('aiAutoScroll', String(aiAutoScroll));
+    localStorage.setItem('aiContextRange', aiContextRange);
+    localStorage.setItem('aiReasoningDepth', aiReasoningDepth);
+    localStorage.setItem('aiPersona', aiPersona);
+    localStorage.setItem('aiTerminalMode', String(aiTerminalMode));
     localStorage.setItem('keyboardHud', String(keyboardHud));
     localStorage.setItem('notifyOnContact', JSON.stringify(notifyOnContact));
     if (photoAccent) localStorage.setItem('photoAccent', photoAccent);
     localStorage.setItem('activePreset', activePreset || '');
     localStorage.setItem('devMode', String(devMode));
     localStorage.setItem('devFlags', JSON.stringify(flags));
-  }, [theme, accentColor, fontFamily, layoutDensity, uiAudio, glassIntensity, reduceMotion, highContrast, aiVoice, aiAutoNav, aiResponseStyle, aiShowThoughts, aiAutoScroll, keyboardHud, notifyOnContact, photoAccent, activePreset, devMode, flags]);
+  }, [theme, accentColor, fontFamily, layoutDensity, uiAudio, glassIntensity, reduceMotion, highContrast, aiVoice, aiAutoNav, aiResponseStyle, aiShowThoughts, aiContextRange, aiReasoningDepth, aiPersona, aiTerminalMode, keyboardHud, notifyOnContact, photoAccent, activePreset, devMode, flags]);
 
   const toggleTheme = (e) => {
     const isDark = theme === 'dark';
@@ -238,7 +246,10 @@ export function ThemeProvider({ children }) {
       aiAutoNav, setAiAutoNav,
       aiResponseStyle, setAiResponseStyle,
       aiShowThoughts, setAiShowThoughts,
-      aiAutoScroll, setAiAutoScroll,
+      aiContextRange, setAiContextRange,
+      aiReasoningDepth, setAiReasoningDepth,
+      aiPersona, setAiPersona,
+      aiTerminalMode, setAiTerminalMode,
       keyboardHud, setKeyboardHud,
       playSound,
       notifyOnContact, setNotifyOnContact,

@@ -44,7 +44,10 @@ export default function SettingsSidebar() {
     aiAutoNav, setAiAutoNav,
     aiResponseStyle, setAiResponseStyle,
     aiShowThoughts, setAiShowThoughts,
-    aiAutoScroll, setAiAutoScroll,
+    aiContextRange, setAiContextRange,
+    aiReasoningDepth, setAiReasoningDepth,
+    aiPersona, setAiPersona,
+    aiTerminalMode, setAiTerminalMode,
     keyboardHud, setKeyboardHud,
     uiAudio, setUiAudio,
     devMode, setDevMode,
@@ -341,19 +344,74 @@ export default function SettingsSidebar() {
             ))}
           </div>
         </Row>
-        <Row icon={Volume2} iconColor="#8b5cf6" label="Voice Responses" sublabel="Read replies aloud via speech synth">
+        <Row icon={Volume2} iconColor="#8b5cf6" label="Voice Replies (beta)" sublabel="Read replies aloud via speech synth">
           <Toggle checked={aiVoice} onChange={v => { setAiVoice(v); showToast(v ? 'Voice ON' : 'Voice OFF'); }} />
         </Row>
         <Row icon={Sparkles} iconColor="#10b981" label="Screen Director" sublabel="AI auto-navigates to relevant sections">
           <Toggle checked={aiAutoNav} onChange={v => { setAiAutoNav(v); showToast(v ? 'Auto-nav ON' : 'Auto-nav OFF'); }} />
         </Row>
         
-        <Section title="Chat Interface" />
+        <Section title="Intelligence & Context" />
+        <Row icon={Info} iconColor="#3b82f6" label="Context Range" sublabel="How much data AI analyzes">
+          <div style={{ display: 'flex', gap: '4px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', padding: '3px', borderRadius: '6px' }}>
+            {['local', 'global'].map(range => (
+              <button
+                key={range} onClick={() => { setAiContextRange(range); showToast(`Context → ${range}`); }}
+                style={{
+                  background: aiContextRange === range ? (isDark ? '#334155' : '#fff') : 'transparent',
+                  color: aiContextRange === range ? (isDark ? '#fff' : '#000') : (isDark ? '#94a3b8' : '#64748b'),
+                  border: 'none', borderRadius: '4px', padding: '2px 8px', fontSize: '10px', fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize',
+                  boxShadow: aiContextRange === range ? `inset 0 0 0 1px ${accent}55` : 'none',
+                }}
+              >
+                {range}
+              </button>
+            ))}
+          </div>
+        </Row>
+        
+        <Row icon={Zap} iconColor="#eab308" label="Reasoning Depth" sublabel="Speed vs. Accuracy">
+          <div style={{ display: 'flex', gap: '4px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', padding: '3px', borderRadius: '6px' }}>
+            {['lightning', 'deep search'].map(depth => (
+              <button
+                key={depth} onClick={() => { setAiReasoningDepth(depth); showToast(`Depth → ${depth}`); }}
+                style={{
+                  background: aiReasoningDepth === depth ? (isDark ? '#334155' : '#fff') : 'transparent',
+                  color: aiReasoningDepth === depth ? (isDark ? '#fff' : '#000') : (isDark ? '#94a3b8' : '#64748b'),
+                  border: 'none', borderRadius: '4px', padding: '2px 8px', fontSize: '10px', fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize',
+                  boxShadow: aiReasoningDepth === depth ? `inset 0 0 0 1px ${accent}55` : 'none',
+                }}
+              >
+                {depth}
+              </button>
+            ))}
+          </div>
+        </Row>
+
+        <Row icon={Bot} iconColor="#ec4899" label="Persona Override" sublabel="AI personality style">
+          <div style={{ display: 'flex', gap: '4px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', padding: '3px', borderRadius: '6px' }}>
+            {['professional', 'technical', 'clone'].map(persona => (
+              <button
+                key={persona} onClick={() => { setAiPersona(persona); showToast(`Persona → ${persona}`); }}
+                style={{
+                  background: aiPersona === persona ? (isDark ? '#334155' : '#fff') : 'transparent',
+                  color: aiPersona === persona ? (isDark ? '#fff' : '#000') : (isDark ? '#94a3b8' : '#64748b'),
+                  border: 'none', borderRadius: '4px', padding: '2px 8px', fontSize: '10px', fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize',
+                  boxShadow: aiPersona === persona ? `inset 0 0 0 1px ${accent}55` : 'none',
+                }}
+              >
+                {persona}
+              </button>
+            ))}
+          </div>
+        </Row>
+        
+        <Section title="Interface & Logs" />
         <Row icon={Code2} iconColor="#f59e0b" label="Show Thought Traces" sublabel="Display internal RAG steps">
           <Toggle checked={aiShowThoughts} onChange={v => { setAiShowThoughts(v); showToast(v ? 'Thoughts visible' : 'Thoughts hidden'); }} accent="#f59e0b" />
         </Row>
-        <Row icon={Activity} iconColor="#06b6d4" label="Auto-Scroll" sublabel="Scroll to newest messages automatically">
-          <Toggle checked={aiAutoScroll} onChange={v => { setAiAutoScroll(v); showToast(v ? 'Auto-scroll ON' : 'Auto-scroll OFF'); }} accent="#06b6d4" />
+        <Row icon={MonitorPlay} iconColor="#14b8a6" label="Terminal Output Mode" sublabel="Hacker-style pure text UI">
+          <Toggle checked={aiTerminalMode} onChange={v => { setAiTerminalMode(v); showToast(v ? 'Terminal Mode ON' : 'Terminal Mode OFF'); }} accent="#14b8a6" />
         </Row>
 
         <Section title="Memory & History" />
@@ -362,12 +420,6 @@ export default function SettingsSidebar() {
           sublabel="Wipes chat history, keeps settings"
           icon={Trash2}
           onClick={handleClearChat}
-        />
-        <ActionBtn
-          label="Restore AI Disclaimer"
-          sublabel="Re-shows the AI accuracy notice"
-          icon={RotateCcw}
-          onClick={handleRestoreDisclaimer}
         />
 
         <Section title="About Atom AI" />

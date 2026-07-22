@@ -78,7 +78,7 @@ export default function ChatBot() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const { aiVoice, setAiVoice, aiAutoNav, aiResponseStyle, aiShowThoughts, aiAutoScroll } = useTheme();
+  const { aiVoice, setAiVoice, aiAutoNav, aiResponseStyle, aiShowThoughts, aiContextRange, aiReasoningDepth, aiPersona, aiTerminalMode } = useTheme();
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [attachment, setAttachment] = useState(null); // { file, base64 }
   const fileInputRef = useRef(null);
@@ -208,10 +208,10 @@ export default function ChatBot() {
   const inputRef = useRef(null);
 
   useEffect(() => {
-    if (isOpen && messagesEndRef.current && aiAutoScroll) {
+    if (isOpen && messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, isOpen, aiAutoScroll]);
+  }, [messages, isOpen]);
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -285,7 +285,10 @@ export default function ChatBot() {
           history, 
           contextPath: currentContext,
           style: aiResponseStyle,
-          showThoughts: aiShowThoughts
+          showThoughts: aiShowThoughts,
+          contextRange: aiContextRange,
+          reasoningDepth: aiReasoningDepth,
+          persona: aiPersona
         })
       });
 
@@ -720,13 +723,29 @@ export default function ChatBot() {
           position: relative;
         }
         .chat-bubble.bot {
-          background: rgba(243, 244, 246, 0.8);
-          color: var(--text-primary);
-          border-bottom-left-radius: 6px;
-          border: 1px solid rgba(0,0,0,0.05);
-          box-shadow: 0 4px 15px rgba(0,0,0,0.03);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
+          background: rgba(255, 255, 255, 0.7);
+          color: #1e293b;
+          backdrop-filter: blur(var(--glass-blur, 12px)) saturate(180%);
+          -webkit-backdrop-filter: blur(var(--glass-blur, 12px)) saturate(180%);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          border-bottom-left-radius: 4px;
+        }
+        
+        /* Terminal Mode Styling */
+        .chat-bubble.bot.terminal-mode {
+          background: rgba(15, 23, 42, 0.95) !important;
+          border: 1px solid rgba(20, 184, 166, 0.3) !important;
+          color: #14b8a6 !important;
+          font-family: 'Fira Code', 'SFMono-Regular', Consolas, monospace !important;
+          box-shadow: inset 0 0 12px rgba(20, 184, 166, 0.05) !important;
+        }
+        .chat-bubble.bot.terminal-mode p, 
+        .chat-bubble.bot.terminal-mode li {
+          color: #14b8a6 !important;
+        }
+        .chat-bubble.bot.terminal-mode code {
+          background: rgba(20, 184, 166, 0.1) !important;
+          color: #5eead4 !important;
         }
         [data-theme="dark"] .chat-bubble.bot {
           background: rgba(255, 255, 255, 0.05);
@@ -1318,7 +1337,7 @@ export default function ChatBot() {
                       </div>
                     )}
                   </div>
-                  <div className={`chat-bubble ${msg.role === 'user' ? 'user' : 'bot'} ${msg.isError ? 'error' : ''}`}>
+                  <div className={`chat-bubble ${msg.role === 'user' ? 'user' : 'bot'} ${msg.isError ? 'error' : ''} ${aiTerminalMode ? 'terminal-mode' : ''}`}>
                     
                     {/* RAG Thinking Steps */}
                     {aiShowThoughts && msg.steps && msg.steps.length > 0 && (
