@@ -53,9 +53,9 @@ export default function SettingsSidebar() {
               position: 'fixed',
               inset: 0,
               backgroundColor: isDark ? 'rgba(0, 0, 0, 0.4)' : 'rgba(255, 255, 255, 0.2)',
-              backdropFilter: 'blur(4px)',
-              WebkitBackdropFilter: 'blur(4px)',
-              zIndex: 99998,
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              zIndex: 2000000,
             }}
           />
 
@@ -78,7 +78,7 @@ export default function SettingsSidebar() {
               boxShadow: isDark ? '-20px 0 48px rgba(0, 0, 0, 0.6)' : '-16px 0 38px rgba(0, 0, 0, 0.16)',
               backdropFilter: 'blur(20px)',
               WebkitBackdropFilter: 'blur(20px)',
-              zIndex: 99999,
+              zIndex: 2000001,
               display: 'flex',
               flexDirection: 'column',
               fontFamily: 'inherit',
