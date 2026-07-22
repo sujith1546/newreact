@@ -82,6 +82,17 @@ export default function ChatBot() {
     }
   };
 
+  const handleClearChat = () => {
+    setMessages([WELCOME_MESSAGE]);
+    setHasError(false);
+    setIsDisclaimerDismissed(false);
+    try {
+      localStorage.removeItem(DISCLAIMER_KEY);
+    } catch (err) {
+      console.error('Failed to reset disclaimer state:', err);
+    }
+  };
+
   const speakText = (text) => {
     if (!isVoiceEnabled || !('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
@@ -1205,7 +1216,7 @@ export default function ChatBot() {
                 >
                   {isVoiceEnabled ? <Volume2 size={16} color="#10b981" /> : <VolumeX size={16} />}
                 </button>
-                <button onClick={() => { setMessages([WELCOME_MESSAGE]); setHasError(false); }} className="chatbot-header-btn" title="Clear Chat">
+                <button onClick={handleClearChat} className="chatbot-header-btn" title="Clear Chat">
                   <RotateCcw size={16} />
                 </button>
                 <button onClick={() => setIsOpen(false)} className="chatbot-header-btn" aria-label="Close Chat">
