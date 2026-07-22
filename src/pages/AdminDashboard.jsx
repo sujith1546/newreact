@@ -45,7 +45,6 @@ export default function AdminDashboard() {
 
   return (
     <div style={styles.shell}>
-      <style>{`body { background-color: #1e1e1e !important; margin: 0; padding: 0; }`}</style>
       {/* Sidebar */}
       <div style={styles.sidebar}>
         <p style={styles.sidebarLabel}>Admin</p>
@@ -59,7 +58,7 @@ export default function AdminDashboard() {
                 style={{
                   ...styles.navItem,
                   background: isActive ? "rgba(59, 130, 246, 0.2)" : "transparent",
-                  color: isActive ? "#3b82f6" : "#d4d4d8",
+                  color: isActive ? "var(--primary-blue)" : "var(--text-muted)",
                   fontWeight: isActive ? 600 : 500,
                   borderRadius: "8px"
                 }}
@@ -89,7 +88,7 @@ export default function AdminDashboard() {
               </p>
             )}
           </div>
-          <button onClick={handleLogout} style={styles.logoutButton}>
+          <button onClick={handleLogout} style={styles.logoutBtn}>
             <LogOut size={14} />
             Log out
           </button>
@@ -104,7 +103,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Panel content */}
-        <div style={styles.panelWrap}>
+        <div style={styles.panelContainer}>
           {activeTab === "messages" && <MessagesPanel />}
           {activeTab === "projects" && <ProjectsPanel />}
           {activeTab === "updates" && <UpdatesPanel />}
@@ -129,18 +128,27 @@ function useDashboardStats() {
 
   useEffect(() => {
     async function loadStats() {
-      const [messages, projects, updates, sessions] = await Promise.all([
+      let aiCount = 0;
+      try {
+        const { count } = await supabase
+          .from('chat_sessions')
+          .select('*', { count: 'exact', head: true });
+        aiCount = count || 0;
+      } catch (e) {
+        aiCount = 0;
+      }
+
+      const [messages, projects, updates] = await Promise.all([
         supabase.from("contact_messages").select("id", { count: "exact", head: true }).eq('is_bot', false),
         supabase.from("projects").select("id", { count: "exact", head: true }),
         supabase.from("updates").select("id", { count: "exact", head: true }),
-        supabase.from("chat_sessions").select("id", { count: "exact", head: true }),
       ]);
 
       setStats({
         unreadMessages: messages.count ?? 0,
         projectCount: projects.count ?? 0,
         updateCount: updates.count ?? 0,
-        sessionCount: sessions.count ?? 0,
+        sessionCount: aiCount,
         loading: false,
       });
     }
@@ -168,7 +176,7 @@ function StatCard({ label, value, loading }) {
 function EmptyState({ icon, title, description }) {
   return (
     <div style={styles.emptyState}>
-      <i className={`ti ${icon}`} style={{ fontSize: 28, color: "#a1a1aa" }} aria-hidden="true" />
+      <i className={`ti ${icon}`} style={{ fontSize: 28, color: "var(--text-muted)" }} aria-hidden="true" />
       <p style={styles.emptyTitle}>{title}</p>
       <p style={styles.emptyDescription}>{description}</p>
     </div>
@@ -248,7 +256,7 @@ function MessagesPanel() {
                 <td style={styles.td}>{msg.email}</td>
                 <td style={{ ...styles.td, maxWidth: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{msg.message}</td>
                 <td style={styles.td}>
-                  <button onClick={() => deleteMessage(msg.id)} style={styles.deleteBtn} title="Delete"><Trash2 size={16} /></button>
+                  <button onClick={() => deleteMessage(msg.id)} style={styles.iconBtn} title="Delete"><Trash2 size={16} color="#ef4444" /></button>
                 </td>
               </tr>
             ))}
@@ -303,9 +311,9 @@ function ProjectsPanel() {
                 <td style={styles.td}>{proj.id}</td>
                 <td style={{ ...styles.td, fontWeight: 500 }}>{proj.title}</td>
                 <td style={styles.td}>{proj.tags?.length || 0} tags</td>
-                <td style={styles.td}>{proj.featured ? <Check size={16} color="var(--fill-success, #10b981)" /> : ''}</td>
+                <td style={styles.td}>{proj.featured ? <Check size={16} color="var(--success-green, #10b981)" /> : ''}</td>
                 <td style={styles.td}>
-                  <button onClick={() => deleteProject(proj.id)} style={styles.deleteBtn} title="Delete"><Trash2 size={16} /></button>
+                  <button onClick={() => deleteProject(proj.id)} style={styles.iconBtn} title="Delete"><Trash2 size={16} color="#ef4444" /></button>
                 </td>
               </tr>
             ))}
@@ -362,7 +370,7 @@ function UpdatesPanel() {
                 <td style={styles.td}>{update.date}</td>
                 <td style={styles.td}>{update.items?.length || 0} items</td>
                 <td style={styles.td}>
-                  <button onClick={() => deleteUpdate(update.id)} style={styles.deleteBtn} title="Delete"><Trash2 size={16} /></button>
+                  <button onClick={() => deleteUpdate(update.id)} style={styles.iconBtn} title="Delete"><Trash2 size={16} color="#ef4444" /></button>
                 </td>
               </tr>
             ))}
@@ -426,17 +434,16 @@ function AiChatsPanel() {
         {loadingMessages ? (
           <div style={styles.emptyState}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', background: 'var(--surface-0)', padding: '1.5rem', borderRadius: '12px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', background: 'var(--bg-light)', padding: '1.5rem', borderRadius: '12px' }}>
             {messages.map((msg, i) => (
               <div key={msg.id || i} style={{ 
                 alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
-                background: msg.role === 'user' ? 'var(--bg-accent)' : 'var(--surface-1)',
-                border: `1px solid ${msg.role === 'user' ? 'var(--border-accent)' : 'var(--border)'}`,
+                background: msg.role === 'user' ? 'var(--bg-accent)' : 'var(--border-color)',
                 padding: '1rem',
                 borderRadius: '12px',
                 maxWidth: '80%'
               }}>
-                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: msg.role === 'user' ? 'var(--text-accent)' : 'var(--text-muted)', marginBottom: '0.5rem', fontWeight: 600 }}>
+                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem', fontWeight: 600 }}>
                   {msg.role}
                 </div>
                 <div style={{ fontSize: '0.95rem', lineHeight: 1.5, whiteSpace: 'pre-wrap', color: 'var(--text-primary)' }}>
@@ -466,11 +473,11 @@ function AiChatsPanel() {
           <tbody>
             {sessions.map(session => (
               <tr key={session.id}>
-                <td style={{ ...styles.td, fontFamily: 'monospace', color: 'var(--text-accent)' }}>{session.id}</td>
+                <td style={{ ...styles.td, fontFamily: 'monospace', color: 'var(--primary-blue)' }}>{session.id}</td>
                 <td style={styles.td}>{new Date(session.created_at).toLocaleString()}</td>
                 <td style={{ ...styles.td, display: 'flex', gap: 8 }}>
-                  <button onClick={() => loadMessages(session.id)} style={styles.viewBtn} title="View Chat"><ChevronRight size={16} /></button>
-                  <button onClick={() => deleteSession(session.id)} style={styles.deleteBtn} title="Delete"><Trash2 size={16} /></button>
+                  <button onClick={() => loadMessages(session.id)} style={styles.iconBtn} title="View Chat"><ChevronRight size={16} color="var(--primary-blue)" /></button>
+                  <button onClick={() => deleteSession(session.id)} style={styles.iconBtn} title="Delete"><Trash2 size={16} color="#ef4444" /></button>
                 </td>
               </tr>
             ))}
@@ -502,18 +509,18 @@ const styles = {
     display: "grid",
     gridTemplateColumns: "220px 1fr",
     minHeight: "100vh",
-    background: "#1e1e1e",
+    background: "var(--bg-primary)",
     fontFamily: "system-ui, -apple-system, sans-serif"
   },
   sidebar: {
-    background: "#2a2a2a",
-    borderRight: "1px solid #3f3f46",
+    background: "var(--sidebar-bg)",
+    borderRight: "1px solid var(--border-color)",
     padding: "24px 12px",
     boxSizing: "border-box"
   },
   sidebarLabel: {
     fontSize: 11,
-    color: "#a1a1aa",
+    color: "var(--text-muted)",
     letterSpacing: 0.5,
     fontWeight: 500,
     margin: "0 0 12px",
@@ -527,17 +534,18 @@ const styles = {
     borderRadius: "8px",
     fontSize: 13,
     border: "none",
-    width: "100%",
-    textAlign: "left",
     cursor: "pointer",
+    textAlign: "left",
+    transition: "all 0.15s ease",
+    position: "relative"
   },
   navBadge: {
     marginLeft: "auto",
     background: "#ef4444",
-    color: "#ffffff",
-    fontSize: 11,
-    fontWeight: 500,
-    borderRadius: 999,
+    color: "white",
+    fontSize: 10,
+    fontWeight: 700,
+    borderRadius: "10px",
     padding: "1px 7px",
   },
   main: {
@@ -548,155 +556,153 @@ const styles = {
   },
   header: {
     display: "flex",
-    alignItems: "center",
     justifyContent: "space-between",
-    padding: "18px 24px",
-    borderBottom: "1px solid #3f3f46",
+    alignItems: "flex-start",
+    borderBottom: "1px solid var(--border-color)",
+    paddingBottom: "16px",
+    marginBottom: "24px"
   },
   headerLabel: {
     fontSize: 12,
-    color: "#a1a1aa",
-    margin: 0,
+    color: "var(--text-muted)",
+    margin: "0 0 4px"
   },
   headerEmail: {
-    fontSize: 13,
-    color: "#ffffff",
-    margin: 0,
-    fontWeight: 500
+    fontSize: 14,
+    color: "var(--text-primary)",
+    fontWeight: 600,
+    margin: 0
   },
   lastLoginText: {
     fontSize: 11,
-    color: "#71717a",
+    color: "var(--text-muted)",
     margin: "4px 0 0 0",
   },
-  logoutButton: {
-    height: 32,
-    padding: "0 12px",
-    borderRadius: "8px",
-    background: "rgba(239, 68, 68, 0.1)",
-    border: "1px solid rgba(239, 68, 68, 0.2)",
-    color: "#ef4444",
-    fontSize: 12,
-    fontWeight: 500,
+  logoutBtn: {
     display: "flex",
     alignItems: "center",
     gap: 6,
+    background: "transparent",
+    border: "1px solid var(--border-color)",
+    color: "#ef4444",
+    padding: "6px 12px",
+    borderRadius: "6px",
+    fontSize: 12,
+    fontWeight: 500,
     cursor: "pointer",
+    transition: "background 0.15s"
   },
   statsRow: {
-    padding: 24,
     display: "grid",
-    gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-    gap: 12,
+    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+    gap: "16px",
+    marginBottom: "24px"
   },
   statCard: {
-    background: "#2a2a2a",
-    border: "1px solid #3f3f46",
-    borderRadius: "8px",
-    padding: "1rem",
+    background: "var(--bg-light)",
+    border: "1px solid var(--border-color)",
+    borderRadius: "12px",
+    padding: "16px"
   },
   statLabel: {
     fontSize: 12,
-    color: "#a1a1aa",
-    margin: "0 0 4px",
+    color: "var(--text-muted)",
+    margin: "0 0 8px"
   },
   statValue: {
-    fontSize: 22,
-    fontWeight: 500,
-    margin: 0,
-    color: "#ffffff",
+    fontSize: 24,
+    fontWeight: 700,
+    color: "var(--text-primary)",
+    margin: 0
   },
-  panelWrap: {
-    padding: "0 24px 24px",
-    flex: 1,
+  panelContainer: {
+    flex: 1
   },
   panelCard: {
-    background: "#2a2a2a",
-    border: "1px solid #3f3f46",
-    borderRadius: 12,
-    padding: "1.25rem",
+    background: "var(--bg-light)",
+    border: "1px solid var(--border-color)",
+    borderRadius: "12px",
+    overflow: "hidden"
   },
   panelHeader: {
     display: "flex",
-    alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 16,
+    alignItems: "center",
+    padding: "16px 20px",
+    borderBottom: "1px solid var(--border-color)"
   },
   panelTitle: {
-    fontSize: 16,
-    fontWeight: 500,
-    margin: 0,
-    color: "#ffffff",
+    fontSize: 15,
+    fontWeight: 600,
+    color: "var(--text-primary)",
+    margin: 0
   },
   panelAction: {
-    height: 32,
-    padding: "0 12px",
-    borderRadius: "8px",
     background: "transparent",
-    border: "1px solid #52525b",
-    color: "#ffffff",
-    fontSize: 12,
+    border: "none",
+    color: "var(--primary-blue)",
+    fontSize: 13,
     fontWeight: 500,
     display: "flex",
     alignItems: "center",
     gap: 6,
-    cursor: "pointer",
+    cursor: "pointer"
   },
   emptyState: {
+    padding: "60px 20px",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
     justifyContent: "center",
-    padding: "48px 0",
-    gap: 8,
-    textAlign: "center",
+    textAlign: "center"
   },
   emptyTitle: {
-    fontSize: 14,
-    color: "#ffffff",
-    margin: 0,
-    fontWeight: 500,
+    fontSize: 15,
+    fontWeight: 600,
+    color: "var(--text-primary)",
+    margin: "16px 0 4px"
   },
   emptyDescription: {
-    fontSize: 12,
-    color: "#a1a1aa",
+    fontSize: 13,
+    color: "var(--text-muted)",
     margin: 0,
-    maxWidth: 280,
+    maxWidth: 300
   },
   table: {
     width: "100%",
     borderCollapse: "collapse",
-    textAlign: "left",
+    textAlign: "left"
   },
   th: {
-    padding: "12px 16px",
-    borderBottom: "1px solid #3f3f46",
-    color: "#a1a1aa",
     fontSize: 11,
-    fontWeight: 600,
     textTransform: "uppercase",
     letterSpacing: 0.5,
+    color: "var(--text-muted)",
+    fontWeight: 600,
+    padding: "12px 20px",
+    borderBottom: "1px solid var(--border-color)",
+    background: "var(--sidebar-bg)"
   },
   td: {
-    padding: "16px",
-    borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
-    color: "#ffffff",
     fontSize: 13,
+    color: "var(--text-primary)",
+    padding: "16px 20px",
+    borderBottom: "1px solid var(--border-color)"
   },
-  deleteBtn: {
+  badge: {
+    padding: "4px 8px",
+    borderRadius: "12px",
+    fontSize: 11,
+    fontWeight: 600
+  },
+  iconBtn: {
     background: "transparent",
     border: "none",
-    color: "#ef4444",
     cursor: "pointer",
-    padding: 6,
-    borderRadius: 6,
-  },
-  viewBtn: {
-    background: "transparent",
-    border: "none",
-    color: "#10b981",
-    cursor: "pointer",
-    padding: 6,
-    borderRadius: 6,
+    padding: 4,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: "4px"
   }
 };
