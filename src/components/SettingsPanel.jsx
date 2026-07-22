@@ -163,7 +163,6 @@ export default function SettingsPanel({ isOpen, onClose, triggerRef }) {
               zIndex: 999999,
               display: 'flex',
               flexDirection: 'column',
-              justifyContent: 'space-between',
               outline: 'none',
               backdropFilter: 'blur(28px)',
               WebkitBackdropFilter: 'blur(28px)',
@@ -175,6 +174,7 @@ export default function SettingsPanel({ isOpen, onClose, triggerRef }) {
               .sp-accent-bar {
                 height: 3px;
                 width: 100%;
+                flex-shrink: 0;
                 background: linear-gradient(90deg, #8b5cf6 0%, #3b82f6 50%, #10b981 100%);
               }
 
@@ -186,6 +186,7 @@ export default function SettingsPanel({ isOpen, onClose, triggerRef }) {
                 align-items: flex-start;
                 justify-content: space-between;
                 background: transparent;
+                flex-shrink: 0;
               }
               .sp-title-group {
                 display: flex;
@@ -372,6 +373,7 @@ export default function SettingsPanel({ isOpen, onClose, triggerRef }) {
                 gap: 12px;
                 background: var(--bg-secondary, rgba(255,255,255,0.9));
                 backdrop-filter: blur(12px);
+                flex-shrink: 0;
               }
               .sp-btn-reset {
                 background: var(--bg-primary, rgba(128, 128, 128, 0.08));
