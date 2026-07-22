@@ -774,9 +774,44 @@ export default function ChatBot() {
           border-right-color: transparent;
         }
 
-        /* Suggestions */
+        /* ── Suggestions Section ─────────────────────────────── */
+        .chatbot-suggestions-section {
+          border-top: 1px solid rgba(139,92,246,0.1);
+          padding: 10px 0 10px;
+          background: transparent;
+        }
+        [data-theme="light"] .chatbot-suggestions-section {
+          border-top-color: rgba(99,102,241,0.1);
+        }
+        .chatbot-suggestions-label {
+          padding: 0 16px 7px;
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: rgba(139,92,246,0.5);
+        }
+        [data-theme="light"] .chatbot-suggestions-label {
+          color: rgba(99,102,241,0.45);
+        }
+        .chatbot-suggestions-scroll-wrap {
+          position: relative;
+        }
+        /* Right-fade gradient hinting at more chips */
+        .chatbot-suggestions-scroll-wrap::after {
+          content: '';
+          position: absolute;
+          top: 0; right: 0;
+          width: 48px; height: 100%;
+          background: linear-gradient(to right, transparent, var(--bg-primary, #fff));
+          pointer-events: none;
+          z-index: 2;
+        }
+        [data-theme="dark"] .chatbot-suggestions-scroll-wrap::after {
+          background: linear-gradient(to right, transparent, #1a1a2e);
+        }
         .chatbot-suggestions {
-          padding: 4px 16px 14px;
+          padding: 2px 40px 2px 16px;
           display: flex;
           flex-wrap: nowrap;
           overflow-x: auto;
@@ -786,42 +821,45 @@ export default function ChatBot() {
         }
         .chatbot-suggestions::-webkit-scrollbar { display: none; }
         .suggestion-chip {
-          padding: 6px 13px;
+          padding: 6px 14px;
           border-radius: 100px;
-          font-size: 11.5px;
+          font-size: 12px;
           font-weight: 600;
-          border: 1px solid rgba(139,92,246,0.25);
-          background: rgba(139,92,246,0.07);
-          color: rgba(139,92,246,0.9);
+          border: 1px solid rgba(139,92,246,0.28);
+          background: rgba(139,92,246,0.08);
+          color: rgba(139,92,246,0.92);
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.18s ease;
           white-space: nowrap;
           flex-shrink: 0;
           letter-spacing: 0.01em;
           font-family: inherit;
+          line-height: 1.4;
         }
         [data-theme="light"] .suggestion-chip {
           border-color: rgba(99,102,241,0.22);
           background: rgba(99,102,241,0.06);
-          color: rgba(79,70,229,0.88);
+          color: rgba(79,70,229,0.9);
         }
         .suggestion-chip:hover:not(:disabled) {
-          background: linear-gradient(135deg, rgba(139,92,246,0.18), rgba(99,102,241,0.12));
-          border-color: rgba(139,92,246,0.5);
-          color: #a78bfa;
+          background: linear-gradient(135deg, rgba(139,92,246,0.2), rgba(99,102,241,0.12));
+          border-color: rgba(139,92,246,0.55);
+          color: #c4b5fd;
           transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(139,92,246,0.18);
+          box-shadow: 0 4px 14px rgba(139,92,246,0.2);
         }
         [data-theme="light"] .suggestion-chip:hover:not(:disabled) {
-          background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(79,70,229,0.08));
-          border-color: rgba(99,102,241,0.45);
-          color: #4338ca;
-          box-shadow: 0 4px 12px rgba(99,102,241,0.15);
+          background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(79,70,229,0.07));
+          border-color: rgba(99,102,241,0.48);
+          color: #3730a3;
+          box-shadow: 0 4px 14px rgba(99,102,241,0.15);
+        }
+        .suggestion-chip:active:not(:disabled) {
+          transform: scale(0.96);
         }
         .suggestion-chip:disabled {
-          opacity: 0.38;
+          opacity: 0.35;
           cursor: not-allowed;
-          transform: none;
         }
 
         /* Input bar */
@@ -1278,18 +1316,23 @@ export default function ChatBot() {
             </div>
 
             {/* Suggestions — always visible for quick access */}
-            <div className="chatbot-suggestions">
-              {SUGGESTED_QUESTIONS.map(q => (
-                <button
-                  key={q}
-                  className="suggestion-chip"
-                  onClick={() => sendMessage(q)}
-                  disabled={isLoading}
-                  title={q}
-                >
-                  {q}
-                </button>
-              ))}
+            <div className="chatbot-suggestions-section">
+              <p className="chatbot-suggestions-label">⚡ Quick questions</p>
+              <div className="chatbot-suggestions-scroll-wrap">
+                <div className="chatbot-suggestions">
+                  {SUGGESTED_QUESTIONS.map(q => (
+                    <button
+                      key={q}
+                      className="suggestion-chip"
+                      onClick={() => sendMessage(q)}
+                      disabled={isLoading}
+                      title={q}
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
 
             {/* Input bar */}
