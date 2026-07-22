@@ -25,6 +25,7 @@ import Contact from '../pages/Contact';
 import ParticleCanvas from '../components/ParticleCanvas';
 import SectionSpotlight from '../components/SectionSpotlight';
 import { useTheme } from '../context/ThemeContext';
+import { trackPageView } from '../lib/analyticsTracker';
 
 const SECTIONS = [
   { id: 'home',           Component: Home           },
@@ -88,6 +89,10 @@ export default function MainLayout() {
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
+
+  useEffect(() => {
+    trackPageView(`/${activeSection}`);
+  }, [activeSection]);
 
   useEffect(() => {
     const onNavigate = (e) => {

@@ -15,6 +15,7 @@ const NotFound = React.lazy(() => import('./pages/NotFound'));
 const AdminLogin = React.lazy(() => import('./pages/AdminLogin'));
 const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
 const AdminMfaSetup = React.lazy(() => import('./pages/AdminMfaSetup'));
+const ResumePreview = React.lazy(() => import('./pages/ResumePreview'));
 
 // Wrapper for AnimatePresence to access useLocation
 function AnimatedRoutes() {
@@ -34,6 +35,7 @@ function AnimatedRoutes() {
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<MainLayout />} />
+        <Route path="/resume-preview" element={<ResumePreview />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
