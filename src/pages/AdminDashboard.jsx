@@ -508,6 +508,7 @@ const styles = {
   shell: {
     display: "grid",
     gridTemplateColumns: "220px 1fr",
+    gridTemplateRows: "1fr",
     minHeight: "100vh",
     background: "var(--bg-primary)",
     fontFamily: "system-ui, -apple-system, sans-serif"
