@@ -433,7 +433,7 @@ export default function SectionSpotlight({ section, keyword, duration = 6, onDis
             borderRadius: 100,
             padding: '8px 14px 8px 10px',
             boxShadow: `0 8px 32px rgba(0,0,0,0.55), 0 0 0 1px ${accentColor}18`,
-            backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+            backdropFilter: 'blur(var(--glass-blur, 12px))', WebkitbackdropFilter: 'blur(var(--glass-blur, 12px))',
             userSelect: 'none', maxWidth: '92vw',
           }}>
             {/* SVG Countdown Ring */}

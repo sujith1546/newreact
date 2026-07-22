@@ -1222,7 +1222,7 @@ export default function ChatBot() {
                 style={{
                   position: 'fixed', inset: 0,
                   background: 'rgba(0,0,0,0.4)',
-                  backdropFilter: 'blur(4px)',
+                  backdropFilter: 'blur(var(--glass-blur, 12px))',
                   zIndex: 999998
                 }}
               />

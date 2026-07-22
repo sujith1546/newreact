@@ -473,7 +473,7 @@ export default function SettingsSidebar() {
             style={{
               position: 'fixed', inset: 0, zIndex: 2000000,
               backgroundColor: isDark ? 'rgba(0,0,0,0.55)' : 'rgba(15,23,42,0.25)',
-              backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+              backdropFilter: 'blur(var(--glass-blur, 12px))', WebkitbackdropFilter: 'blur(var(--glass-blur, 12px))',
             }}
           />
 
@@ -492,7 +492,7 @@ export default function SettingsSidebar() {
                 : 'linear-gradient(160deg, rgba(255,255,255,0.98) 0%, rgba(248,250,252,0.98) 100%)',
               borderLeft: `1px solid ${isDark ? 'rgba(139,92,246,0.18)' : 'rgba(0,0,0,0.08)'}`,
               boxShadow: isDark ? '-24px 0 64px rgba(0,0,0,0.7)' : '-16px 0 48px rgba(0,0,0,0.12)',
-              backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
+              backdropFilter: 'blur(var(--glass-blur, 12px))', WebkitbackdropFilter: 'blur(var(--glass-blur, 12px))',
               zIndex: 2000001, display: 'flex', flexDirection: 'column', fontFamily: 'inherit',
             }}
           >
@@ -609,7 +609,7 @@ export default function SettingsSidebar() {
                   border: `1px solid ${toast.type === 'warn' ? 'rgba(239,68,68,0.4)' : `${accent}40`}`,
                   boxShadow: `0 8px 24px rgba(0,0,0,0.4), 0 0 0 1px ${toast.type === 'warn' ? 'rgba(239,68,68,0.2)' : `${accent}20`}`,
                   display: 'flex', alignItems: 'center', gap: '8px',
-                  backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+                  backdropFilter: 'blur(var(--glass-blur, 12px))', WebkitbackdropFilter: 'blur(var(--glass-blur, 12px))',
                   whiteSpace: 'nowrap',
                 }}
               >

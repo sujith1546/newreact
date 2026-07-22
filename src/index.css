@@ -88,8 +88,8 @@ body {
    ============================================ */
 .sidebar {
   background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(15px);
-  -webkit-backdrop-filter: blur(15px);
+  backdrop-filter: blur(var(--glass-blur, 12px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 12px)));
   border-right: 1px solid rgba(255, 255, 255, 0.2);
   padding: 30px;
   text-align: center;
@@ -277,8 +277,8 @@ body {
   height: 50px;
   border-radius: 50%;
   background: rgba(255,255,255,0.8);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(var(--glass-blur, 12px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 12px)));
   border: 1px solid var(--border-color);
   box-shadow: 0 4px 15px rgba(0,0,0,0.1);
   display: flex;
@@ -680,7 +680,7 @@ body {
   text-decoration: none;
   color: var(--text-primary);
   background: rgba(255,255,255,0.7);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(var(--glass-blur, 12px));
   padding: 10px 20px;
   border-radius: 30px;
   font-weight: 600;
@@ -889,7 +889,7 @@ body {
   width: 56px; height: 56px;
   display: flex; align-items: center; justify-content: center;
   background: rgba(255,255,255,0.15);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(var(--glass-blur, 12px));
   border-radius: 12px;
   font-size: 28px;
   margin-bottom: 20px;
@@ -1207,8 +1207,8 @@ body {
 
 .contact-section {
   background: rgba(255,255,255,0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(var(--glass-blur, 12px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 12px)));
   padding: 40px;
   border-radius: 24px;
   box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255,255,255,0.5) inset;
@@ -1308,8 +1308,8 @@ button.btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(var(--glass-blur, 12px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 12px)));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1636,8 +1636,8 @@ button.btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
   inset: 0;
   z-index: 9999999;
   background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(var(--glass-blur, 12px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 12px)));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1702,8 +1702,8 @@ button.btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
   inset: 0;
   z-index: 10000000;
   background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(var(--glass-blur, 12px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 12px)));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2079,8 +2079,8 @@ html {
     justify-content: space-between;
     padding: 0 14px;
     background: var(--mobile-nav-bg-light);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(var(--glass-blur, 12px));
+    -webkit-backdrop-filter: blur(var(--glass-blur, 12px)));
     border-bottom: 0.5px solid var(--border-color, rgba(0,0,0,0.08));
     box-sizing: border-box;
   }
@@ -2524,8 +2524,8 @@ html {
     padding: 8px 4px calc(8px + env(safe-area-inset-bottom, 12px)) 4px;
     border-top: 1px solid rgba(0, 0, 0, 0.08);
     background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(var(--glass-blur, 12px));
+    -webkit-backdrop-filter: blur(var(--glass-blur, 12px)));
     box-sizing: border-box;
     max-width: 100%;
     margin: 0;
@@ -2596,8 +2596,8 @@ html {
   .more-overlay-backdrop {
     position: fixed; inset: 0;
     background: rgba(0, 0, 0, 0.55);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(var(--glass-blur, 12px));
+    -webkit-backdrop-filter: blur(var(--glass-blur, 12px)));
     will-change: opacity, backdrop-filter;
     transform: translateZ(0);
     z-index: 100;
@@ -3414,8 +3414,8 @@ html {
 /* Glassmorphism utility */
 .glass-panel {
   background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(var(--glass-blur, 12px)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--glass-blur, 12px))) saturate(180%);
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
@@ -3428,8 +3428,8 @@ html {
 @media (max-width: 900px) {
   .mobile-nav-capsule {
     background: rgba(255, 255, 255, 0.75) !important;
-    backdrop-filter: blur(20px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+    backdrop-filter: blur(var(--glass-blur, 12px)) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(var(--glass-blur, 12px))) saturate(180%) !important;
     border: 1px solid rgba(200, 200, 200, 0.3) !important;
   }
   [data-theme="dark"] .mobile-nav-capsule {
@@ -3439,8 +3439,8 @@ html {
   
   .more-overlay-sheet {
     background: rgba(255, 255, 255, 0.85) !important;
-    backdrop-filter: blur(24px) saturate(180%) !important;
-    -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+    backdrop-filter: blur(var(--glass-blur, 12px)) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(var(--glass-blur, 12px))) saturate(180%) !important;
   }
   [data-theme="dark"] .more-overlay-sheet {
     background: rgba(24, 24, 27, 0.75) !important;
@@ -3519,8 +3519,8 @@ html {
   inset: 0;
   z-index: 10000;
   background: rgba(0,0,0,0.2);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(var(--glass-blur, 12px));
+  -webkit-backdrop-filter: blur(var(--glass-blur, 12px)));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3528,7 +3528,7 @@ html {
 
 .context-menu-sheet {
   background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(var(--glass-blur, 12px));
   border-radius: 20px;
   width: 250px;
   overflow: hidden;

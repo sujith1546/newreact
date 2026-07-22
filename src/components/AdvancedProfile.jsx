@@ -114,7 +114,7 @@ export default function AdvancedProfile({ isOpen, onClose, playSound, triggerEve
             style={{
               position: 'fixed', inset: 0,
               background: 'rgba(0,0,0,0.5)',
-              backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)',
+              backdropFilter: 'blur(var(--glass-blur, 12px))', WebkitbackdropFilter: 'blur(var(--glass-blur, 12px))',
               zIndex: 10002
             }}
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
@@ -375,7 +375,7 @@ export default function AdvancedProfile({ isOpen, onClose, playSound, triggerEve
                           </div>
                           <div style={{
                             width: 32, height: 32, borderRadius: 10,
-                            background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(10px)',
+                            background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(var(--glass-blur, 12px))',
                             display: 'flex', alignItems: 'center', justifyContent: 'center'
                           }}>
                             <Icon size={16} color="#fff" />
