@@ -4,6 +4,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+import { createClient } from "@supabase/supabase-js";
 
 const VOYAGE_MODEL = "voyage-3-lite"; // free-tier eligible, fast, good enough for a portfolio-sized knowledge base
 const GROQ_MODEL = "llama-3.3-70b-versatile";
@@ -447,6 +448,12 @@ export default async function handler(req, res) {
     return res.status(403).json({ error: "Invalid or missing session token. Unauthorized." });
   }
 
+  // Phase 4: AI Telemetry Initialization
+  let supabaseAdmin = null;
+  if (process.env.VITE_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    supabaseAdmin = createClient(process.env.VITE_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+  }
+
     try {
     const { message, image, history = [], contextPath = 'homepage' } = req.body;
     if (!message && !image) {
@@ -505,6 +512,20 @@ Analyze the tone and style of the user's message before responding:
           }
         ],
       };
+      sendStep('parse', 'done', "Parsed payload", Date.now() - t0);
+
+      // Log User Message to Supabase
+      if (supabaseAdmin) {
+        // Ensure session exists
+        await supabaseAdmin.from('chat_sessions').upsert({ id: sessionToken }).select();
+        // Insert user prompt
+        await supabaseAdmin.from('chat_messages').insert({
+          session_id: sessionToken,
+          role: 'user',
+          content: message
+        });
+      }
+
       sendStep('vision', 'done', "Processed base64 vision payload", Date.now() - t0);
     } else {
       setAgentName("RAG Router (Llama 3.3)");
@@ -512,6 +533,19 @@ Analyze the tone and style of the user's message before responding:
       let t0 = Date.now();
       sendStep('router', 'active', "Rewriting query with historical context...");
       const standaloneQuestion = await rewriteQuery(history, message);
+
+      // Log User Message to Supabase
+      if (supabaseAdmin) {
+        // Ensure session exists
+        await supabaseAdmin.from('chat_sessions').upsert({ id: sessionToken }).select();
+        // Insert user prompt
+        await supabaseAdmin.from('chat_messages').insert({
+          session_id: sessionToken,
+          role: 'user',
+          content: message
+        });
+      }
+
       let routerMs = Date.now() - t0;
       if (standaloneQuestion !== message) {
         sendStep('router', 'done', `Context extracted (${standaloneQuestion})`, routerMs);
@@ -569,6 +603,7 @@ Analyze the tone and style of the user's message before responding:
     const reader = groqRes.body.getReader();
     const decoder = new TextDecoder();
     let buffer = "";
+    let fullAiResponse = "";
 
     while (true) {
       const { done, value } = await reader.read();
@@ -585,11 +620,23 @@ Analyze the tone and style of the user's message before responding:
         try {
           const json = JSON.parse(payload);
           const token = json.choices?.[0]?.delta?.content;
-          if (token) res.write(`data: ${JSON.stringify({ type: "token", token })}\n\n`);
+          if (token) {
+            fullAiResponse += token;
+            res.write(`data: ${JSON.stringify({ type: "token", token })}\n\n`);
+          }
         } catch {
           // ignore malformed keep-alive chunks
         }
       }
+    }
+
+    // Log AI Response to Supabase
+    if (supabaseAdmin && fullAiResponse.trim()) {
+      await supabaseAdmin.from('chat_messages').insert({
+        session_id: sessionToken,
+        role: 'assistant',
+        content: fullAiResponse
+      });
     }
 
     res.write(`data: ${JSON.stringify({ type: "done" })}\n\n`);

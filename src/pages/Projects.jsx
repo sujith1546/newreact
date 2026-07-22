@@ -8,7 +8,7 @@ import {
   Sparkles, Layout, Cpu, Trees, ArrowRight, ChevronLeft
 } from 'lucide-react';
 import { FaGithub, FaPython, FaReact } from 'react-icons/fa';
-import { projectsData } from '../data/projectsData';
+import { supabase } from '../lib/supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLongPress } from '../hooks/useLongPress';
 
@@ -179,6 +179,8 @@ function MobileProjectRow({ project, index, onTap, onLongPress }) {
 /* ─── Main Component ─────────────────────────────────────────── */
 export default function Projects() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
+  const [projectsData, setProjectsData] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedProject, setSelectedProject] = useState(null);
   const [tab, setTab] = useState('overview');
   const [copied, setCopied] = useState(false);
@@ -210,6 +212,17 @@ export default function Projects() {
     const handleResize = () => setIsMobile(window.innerWidth <= 900);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    async function fetchProjects() {
+      const { data, error } = await supabase.from('projects').select('*').order('created_at', { ascending: true });
+      if (!error && data) {
+        setProjectsData(data);
+      }
+      setLoading(false);
+    }
+    fetchProjects();
   }, []);
 
   useEffect(() => {
@@ -921,7 +934,11 @@ export default function Projects() {
         </p>
       </div>
 
-      {!isMobile ? (
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '2rem', color: '#71717a' }}>
+          Loading projects...
+        </div>
+      ) : !isMobile ? (
         <div className="projects-grid">
           {projectsData.map(project => (
             <ProjectCard key={project.id} project={project} onCardClick={() => {}} />

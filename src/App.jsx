@@ -8,7 +8,13 @@ import { useTheme } from './context/ThemeContext';
 import MainLayout from './pages/MainLayout';
 import DynamicIsland from './components/DynamicIsland';
 import DevToolsDetector from './components/DevToolsDetector';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+
 const NotFound = React.lazy(() => import('./pages/NotFound'));
+const AdminLogin = React.lazy(() => import('./pages/AdminLogin'));
+const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
+const AdminMfaSetup = React.lazy(() => import('./pages/AdminMfaSetup'));
 
 // Wrapper for AnimatePresence to access useLocation
 function AnimatedRoutes() {
@@ -28,6 +34,11 @@ function AnimatedRoutes() {
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<MainLayout />} />
+        <Route path="/admin/login" element={<AdminLogin />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/mfa-setup" element={<AdminMfaSetup />} />
+        </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AnimatePresence>
@@ -62,7 +73,9 @@ export default function App() {
   return (
     <HelmetProvider>
       <ThemeProvider>
-        <AppContent />
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
       </ThemeProvider>
     </HelmetProvider>
   );

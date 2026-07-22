@@ -7,7 +7,6 @@ import { useLocalTime } from '../hooks/useLocalTime';
 import { useTheme } from '../context/ThemeContext';
 import WhatsNewPanel from './WhatsNewPanel';
 import AdvancedProfile from './AdvancedProfile';
-import { updates } from '../data/updates';
 
 const sunPath = "M 12 8 C 14.2 8 16 9.8 16 12 C 16 14.2 14.2 16 12 16 C 9.8 16 8 14.2 8 12 C 8 9.8 9.8 8 12 8 Z M12 2v2 M12 20v2 M4.93 4.93l1.41 1.41 M17.66 17.66l1.41 1.41 M2 12h2 M20 12h2 M6.34 17.66l-1.41 1.41 M19.07 4.93l-1.41 1.41";
 const moonPath = "M 12 3 C 16.97 3 21 7.03 21 12 C 21 16.97 16.97 21 12 21 C 14.5 17.5 16 14.5 16 12 C 16 9.5 14.5 6.5 12 3 Z M12 2v0 M12 20v0 M4.93 4.93l0 0 M17.66 17.66l0 0 M2 12h0 M20 12h0 M6.34 17.66l0 0 M19.07 4.93l0 0";
@@ -571,7 +570,6 @@ END:VCARD`;
       <WhatsNewPanel 
         open={isUpdatesOpen} 
         onClose={() => setIsUpdatesOpen(false)} 
-        releases={updates} 
       />
 
       {/* Help Slide-Up Drawer */}

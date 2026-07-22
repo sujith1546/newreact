@@ -5,6 +5,7 @@ import { Mail, Phone, ArrowRight, Check, Loader2, Send, Copy, ChevronRight, MapP
 import { FaGithub, FaLinkedin } from "react-icons/fa";
 import ScrollReveal from '../components/ScrollReveal';
 import { useIsland } from '../context/IslandContext';
+import { supabase } from '../lib/supabaseClient';
 const getSessionToken = () => {
   if (typeof window === 'undefined') return '';
   let token = sessionStorage.getItem('x-portfolio-session');
@@ -183,7 +184,18 @@ END:VCARD`;
     
     // HONEYPOT TRAP
     if (form._catch) {
-      // Bot detected! Trick it into thinking it worked, but abort.
+      // Bot detected! Log it to Supabase so you can audit spam, but abort UI.
+      try {
+        await supabase.from('contact_messages').insert([{
+          name: form.name,
+          email: form.email,
+          message: form.message,
+          is_bot: true
+        }]);
+      } catch (e) {
+        // Silently fail if spam logging fails
+      }
+      
       setStatus("sent");
       triggerIsland({
         title: 'Security Alert',
@@ -223,53 +235,29 @@ END:VCARD`;
     setStatus("sending");
     
     try {
-      // Mock the request for local development to avoid 502 Bad Gateway console errors
-      // since there is no local backend running on port 3001.
-      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        setTimeout(() => {
-          localStorage.setItem("lastContactSent", Date.now().toString());
-          setStatus("sent");
-          triggerIsland({
-            title: 'Message Sent',
-            subtitle: "I'll get back to you shortly",
-            icon: <Check size={18} strokeWidth={3} />,
-            color: '#10b981',
-            duration: 4000
-          });
-          setForm({ name: "", email: "", message: "" });
-          setTouched({ name: false, email: false, message: false });
-          setTimeout(() => setStatus("idle"), 5000);
-        }, 1200);
-        return;
-      }
+      // Insert directly into Supabase (Public Anon Key using Insert RLS Policy)
+      const { error } = await supabase.from('contact_messages').insert([{
+        name: form.name,
+        email: form.email,
+        message: form.message,
+        is_bot: false
+      }]);
 
-      // Production / Live backend call
-      const sessionToken = getSessionToken();
-      const response = await fetch("/api/contact", {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json", 
-          "Accept": "application/json",
-          "x-portfolio-session": sessionToken
-        },
-        body: JSON.stringify(form)
+      if (error) throw error;
+
+      localStorage.setItem("lastContactSent", Date.now().toString());
+      setStatus("sent");
+      triggerIsland({
+        title: 'Message Sent',
+        subtitle: "I'll get back to you shortly",
+        icon: <Check size={18} strokeWidth={3} />,
+        color: '#10b981',
+        duration: 4000
       });
-
-      const result = await response.json().catch(() => ({}));
-      if (response.ok && result.success) {
-        localStorage.setItem("lastContactSent", Date.now().toString());
-        setStatus("sent");
-        triggerIsland({
-          title: 'Message Sent',
-          subtitle: "I'll get back to you shortly",
-          icon: <Check size={18} strokeWidth={3} />,
-          color: '#10b981',
-          duration: 4000
-        });
-        setForm({ name: "", email: "", message: "" });
-        setTouched({ name: false, email: false, message: false });
-        setTimeout(() => setStatus("idle"), 5000);
-      } else throw new Error(result.error || "Failed");
+      setForm({ name: "", email: "", message: "", _catch: "" });
+      setTouched({ name: false, email: false, message: false });
+      setTimeout(() => setStatus("idle"), 5000);
+      
     } catch (err) {
       console.error(err);
       setStatus("idle");

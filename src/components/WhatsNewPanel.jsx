@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Sparkles, Bug, Zap, X, ChevronDown } from "lucide-react";
+import { Sparkles, Bug, Zap, X, ChevronDown, Loader2 } from "lucide-react";
+import { supabase } from '../lib/supabaseClient';
 
 const TABS = [
   { key: "all", label: "All" },
@@ -27,7 +28,9 @@ const TYPE_META = {
   },
 };
 
-export default function WhatsNewPanel({ open, onClose, releases = [] }) {
+export default function WhatsNewPanel({ open, onClose }) {
+  const [updates, setUpdates] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
   const [visibleCount, setVisibleCount] = useState(2);
   const [readVersion, setReadVersion] = useState(() => {
@@ -40,11 +43,22 @@ export default function WhatsNewPanel({ open, onClose, releases = [] }) {
   const sheetContentRef = useRef(null);
 
   useEffect(() => {
-    if (open && releases.length > 0) {
-       localStorage.setItem('lastReadUpdate', releases[0].version);
-       setReadVersion(releases[0].version);
+    async function fetchUpdates() {
+      if (open && updates.length === 0) {
+        setLoading(true);
+        const { data, error } = await supabase.from('updates').select('*').order('created_at', { ascending: false });
+        if (!error && data) {
+          setUpdates(data);
+          if (data.length > 0) {
+            localStorage.setItem('lastReadUpdate', data[0].version);
+            setReadVersion(data[0].version);
+          }
+        }
+        setLoading(false);
+      }
     }
-  }, [open, releases]);
+    fetchUpdates();
+  }, [open, updates.length]);
 
   useEffect(() => {
     if (open) {
@@ -59,23 +73,27 @@ export default function WhatsNewPanel({ open, onClose, releases = [] }) {
     }
   }, [open, activeTab, visibleCount]);
 
+  const filteredReleases = useMemo(() => {
+    if (activeTab === "all") return updates;
+    return updates
+      .map((rel) => ({
+        ...rel,
+        items: rel.items.filter((item) => item.type === activeTab || (activeTab === 'perf' && item.type === 'improvement')),
+      }))
+      .filter((rel) => rel.items.length > 0);
+  }, [updates, activeTab]);
+
   const visibleReleases = useMemo(() => {
-    return releases.slice(0, visibleCount).map((release) => {
-      // Very basic unread logic - compare versions or fallback to flag
+    return filteredReleases.slice(0, visibleCount).map((release) => {
       const isUnread = !readVersion || release.version > readVersion;
-      
       return {
         ...release,
         unread: isUnread,
-        items:
-          activeTab === "all"
-            ? release.items
-            : release.items.filter((item) => item.type === activeTab),
       }
     });
-  }, [releases, activeTab, visibleCount, readVersion]);
+  }, [filteredReleases, visibleCount, readVersion]);
 
-  const hasMore = visibleCount < releases.length;
+  const hasMore = visibleCount < filteredReleases.length;
 
   return (
     <AnimatePresence>
@@ -143,21 +161,27 @@ export default function WhatsNewPanel({ open, onClose, releases = [] }) {
               ref={sheetContentRef}
               onScroll={(e) => { if (e.target.scrollTop > 10 && !sheetScrolled) setSheetScrolled(true); }}
             >
-              {visibleReleases.every((r) => r.items.length === 0) && (
-                <motion.p layout className="wn-empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              {loading ? (
+                <div style={{ textAlign: 'center', padding: '2rem', color: '#71717a', display: 'flex', justifyContent: 'center' }}>
+                  <Loader2 size={24} className="spin" style={{ animation: 'spin 1s linear infinite' }} />
+                </div>
+              ) : filteredReleases.length === 0 ? (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="wn-empty"
+                >
                   No {activeTab === "all" ? "" : TYPE_META[activeTab]?.label.toLowerCase()} updates in this range yet.
                 </motion.p>
-              )}
-
-              <AnimatePresence mode="popLayout">
-                {visibleReleases.map((release, i) => {
-                  if (release.items.length === 0) return null;
-                  const isLast = i === visibleReleases.length - 1;
-
-                  return (
-                    <motion.div 
-                      key={release.version} 
-                      layout 
+              ) : (
+                <AnimatePresence mode="popLayout">
+                  {visibleReleases.map((release, i) => {
+                    if (release.items.length === 0) return null;
+                    const isLast = i === visibleReleases.length - 1;
+                    return (
+                      <motion.div 
+                        key={release.version} 
+                        layout 
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
@@ -198,10 +222,10 @@ export default function WhatsNewPanel({ open, onClose, releases = [] }) {
                   );
                 })}
               </AnimatePresence>
-
+              )}
               {hasMore && (
                 <button
-                  onClick={() => setVisibleCount(releases.length)}
+                  onClick={() => setVisibleCount(updates.length)}
                   className="wn-show-more"
                 >
                   Show earlier releases
