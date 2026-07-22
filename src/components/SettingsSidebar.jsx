@@ -200,25 +200,6 @@ export default function SettingsSidebar() {
 
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', color: isDark ? '#94a3b8' : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Layout size={14} /></div>
-                  <span style={{ fontSize: '13px', fontWeight: 600, color: isDark ? '#f1f5f9' : '#0f172a' }}>Page Animation</span>
-                </div>
-                <select 
-                  value={pageTransition} onChange={e => setPageTransition(e.target.value)}
-                  style={{ 
-                    background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', border: 'none', borderRadius: '6px', 
-                    color: isDark ? '#fff' : '#000', fontSize: '12px', padding: '4px 8px', outline: 'none', cursor: 'pointer' 
-                  }}
-                >
-                  <option value="fade">Fade</option>
-                  <option value="slide">Slide (iOS)</option>
-                  <option value="scale">Scale</option>
-                  <option value="flip">3D Flip</option>
-                </select>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', color: isDark ? '#94a3b8' : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Box size={14} /></div>
                   <span style={{ fontSize: '13px', fontWeight: 600, color: isDark ? '#f1f5f9' : '#0f172a' }}>Glass Intensity</span>
                 </div>

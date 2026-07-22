@@ -13,7 +13,6 @@ export function ThemeProvider({ children }) {
   const [accentColor, setAccentColor] = useState(localStorage.getItem('accentColor') || 'blue');
   const [fontFamily, setFontFamily] = useState(localStorage.getItem('fontFamily') || 'modern');
   const [uiAudio, setUiAudio] = useState(localStorage.getItem('uiAudio') !== 'false');
-  const [pageTransition, setPageTransition] = useState(localStorage.getItem('pageTransition') || 'fade');
   const [glassIntensity, setGlassIntensity] = useState(localStorage.getItem('glassIntensity') || 'medium');
   const [reduceMotion, setReduceMotion] = useState(localStorage.getItem('reduceMotion') === 'true');
   const [highContrast, setHighContrast] = useState(localStorage.getItem('highContrast') === 'true');
@@ -96,7 +95,6 @@ export function ThemeProvider({ children }) {
     localStorage.setItem('accentColor', accentColor);
     localStorage.setItem('fontFamily', fontFamily);
     localStorage.setItem('uiAudio', uiAudio);
-    localStorage.setItem('pageTransition', pageTransition);
     localStorage.setItem('glassIntensity', glassIntensity);
     localStorage.setItem('reduceMotion', String(reduceMotion));
     localStorage.setItem('highContrast', String(highContrast));
@@ -107,7 +105,7 @@ export function ThemeProvider({ children }) {
     localStorage.setItem('activePreset', activePreset || '');
     localStorage.setItem('devMode', String(devMode));
     localStorage.setItem('devFlags', JSON.stringify(flags));
-  }, [theme, accentColor, fontFamily, uiAudio, pageTransition, glassIntensity, reduceMotion, highContrast, aiVoice, aiAutoNav, notifyOnContact, photoAccent, activePreset, devMode, flags]);
+  }, [theme, accentColor, fontFamily, uiAudio, glassIntensity, reduceMotion, highContrast, aiVoice, aiAutoNav, notifyOnContact, photoAccent, activePreset, devMode, flags]);
 
   const toggleTheme = (e) => {
     const isDark = theme === 'dark';
@@ -184,7 +182,6 @@ export function ThemeProvider({ children }) {
     if ('accentColor' in obj) setAccentColor(obj.accentColor);
     if ('fontFamily' in obj) setFontFamily(obj.fontFamily);
     if ('uiAudio' in obj) setUiAudio(obj.uiAudio);
-    if ('pageTransition' in obj) setPageTransition(obj.pageTransition);
     if ('notifyOnContact' in obj) setNotifyOnContact(obj.notifyOnContact);
     if ('photoAccent' in obj) setPhotoAccent(obj.photoAccent);
     if ('devMode' in obj) setDevMode(obj.devMode);
@@ -207,7 +204,6 @@ export function ThemeProvider({ children }) {
       accentColor, setAccentColor,
       fontFamily, setFontFamily,
       uiAudio, setUiAudio,
-      pageTransition, setPageTransition,
       glassIntensity, setGlassIntensity,
       reduceMotion, setReduceMotion,
       highContrast, setHighContrast,

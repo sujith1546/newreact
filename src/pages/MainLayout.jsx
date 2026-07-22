@@ -63,19 +63,13 @@ const PROGRESS_DURATION = 0.3;
 // the component has been removed from the React tree. Without this, the exit
 // direction is stale from the previous render, causing the wrong-direction bug.
 const mobilePageVariants = {
-  initial: (dir) => ({
-    x:       dir > 0 ? '100%' : dir < 0 ? '-100%' : 0,
-    opacity: dir === 0 ? 0 : 1,
-  }),
-  animate: { x: 0, opacity: 1 },
-  exit: (dir) => ({
-    x:       dir > 0 ? '-100%' : dir < 0 ? '100%' : 0,
-    opacity: dir === 0 ? 0 : 1,
-  }),
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
 };
 
 export default function MainLayout() {
-  const { theme, pageTransition } = useTheme();
+  const { theme } = useTheme();
   const [activeSection,    setActiveSection]    = useState('home');
   const [isMobile,         setIsMobile]         = useState(window.innerWidth <= 900);
   const [isStatusOpen,     setIsStatusOpen]      = useState(false);
@@ -203,25 +197,7 @@ export default function MainLayout() {
     duration: NAV_DURATION,
   };
 
-  // Desktop: honour the user-selected pageTransition from settings
-  const getDesktopInitial = () => {
-    if (pageTransition === 'slide') return { opacity: 0, x: 50 };
-    if (pageTransition === 'scale') return { opacity: 0, scale: 0.96 };
-    if (pageTransition === 'flip')  return { opacity: 0, rotateY: 90 };
-    return { opacity: 0, y: 8 };
-  };
-  const getDesktopAnimate = () => {
-    if (pageTransition === 'slide') return { opacity: 1, x: 0 };
-    if (pageTransition === 'scale') return { opacity: 1, scale: 1 };
-    if (pageTransition === 'flip')  return { opacity: 1, rotateY: 0 };
-    return { opacity: 1, y: 0 };
-  };
-  const getDesktopExit = () => {
-    if (pageTransition === 'slide') return { opacity: 0, x: -50 };
-    if (pageTransition === 'scale') return { opacity: 1, scale: 1.04 };
-    if (pageTransition === 'flip')  return { opacity: 0, rotateY: -90 };
-    return { opacity: 0, y: -8 };
-  };
+
 
   return (
     <div className="layout">
@@ -318,18 +294,13 @@ export default function MainLayout() {
               custom={slideDirection}
 
               variants={isMobile ? mobilePageVariants : undefined}
-              initial={isMobile ? 'initial' : getDesktopInitial()}
-              animate={isMobile ? 'animate' : getDesktopAnimate()}
-              exit={isMobile ? 'exit' : getDesktopExit()}
+              initial={isMobile ? 'initial' : { opacity: 0 }}
+              animate={isMobile ? 'animate' : { opacity: 1 }}
+              exit={isMobile ? 'exit' : { opacity: 0 }}
 
-              transition={isMobile
-                ? mobileTransition
-                : { duration: pageTransition === 'flip' ? 0.4 : 0.25, ease: 'easeInOut' }
-              }
+              transition={isMobile ? mobileTransition : { duration: 0.25, ease: 'easeInOut' }}
 
               style={{
-                perspective:               pageTransition === 'flip' ? '1000px' : 'none',
-                transformStyle:            pageTransition === 'flip' ? 'preserve-3d' : 'flat',
                 width:                     isMobile ? 'calc(100% - 24px)' : '100%',
                 height:                    isMobile ? 'calc(100% - 24px)' : 'auto',
                 position:                  isMobile ? 'absolute' : 'relative',
