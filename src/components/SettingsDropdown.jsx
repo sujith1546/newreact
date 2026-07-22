@@ -319,6 +319,43 @@ export default function SettingsDropdown() {
                 <div className="toggle-switch-knob" />
               </button>
             </div>
+
+            {/* Divider */}
+            <div style={{
+              height: '1px',
+              background: 'var(--border-color, rgba(128, 128, 128, 0.12))',
+              margin: '8px 0',
+              width: '100%'
+            }} />
+
+            {/* 4. All Settings Trigger */}
+            <button
+              onClick={() => {
+                setIsOpen(false);
+                window.dispatchEvent(new CustomEvent('open-all-settings'));
+              }}
+              className="settings-row"
+              style={{
+                width: '100%',
+                background: 'transparent',
+                border: 'none',
+                cursor: 'pointer',
+                textAlign: 'left',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}
+            >
+              <div className="settings-row-left">
+                <div className="settings-row-icon" style={{ color: '#8b5cf6', background: 'transparent' }}>
+                  <Settings size={15} />
+                </div>
+                <span className="settings-row-label">All Settings</span>
+              </div>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: '#94a3b8' }}>
+                <path d="m9 18 6-6-6-6"/>
+              </svg>
+            </button>
           </motion.div>
         )}
       </AnimatePresence>

@@ -7,6 +7,7 @@ import WelcomeModal from '../components/WelcomeModal';
 import MobileBottomNav from '../components/MobileBottomNav';
 import DarkModeToggle from '../components/DarkModeToggle';
 import SettingsDropdown from '../components/SettingsDropdown';
+import SettingsSidebar from '../components/SettingsSidebar';
 import TimezoneStatus from '../components/TimezoneStatus';
 import ChatBot from '../components/ChatBot';
 import CommandPalette from '../components/CommandPalette';
@@ -361,6 +362,7 @@ export default function MainLayout() {
       {!isMobile && <TimezoneStatus />}
       <ChatBot />
       <CommandPalette />
+      <SettingsSidebar />
 
       {isMobile && <MobileStatusPanel isOpen={isStatusOpen} onClose={() => setIsStatusOpen(false)} />}
       {isMobile && <MobileBottomNav activeSection={activeSection} onNavClick={handleNavClick} />}
