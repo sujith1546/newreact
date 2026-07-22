@@ -776,38 +776,52 @@ export default function ChatBot() {
 
         /* Suggestions */
         .chatbot-suggestions {
-          padding: 0 16px 12px;
+          padding: 4px 16px 14px;
           display: flex;
           flex-wrap: nowrap;
           overflow-x: auto;
-          gap: 8px;
+          gap: 7px;
           -webkit-overflow-scrolling: touch;
-          scrollbar-width: none; /* Firefox */
+          scrollbar-width: none;
         }
-        .chatbot-suggestions::-webkit-scrollbar {
-          display: none; /* Chrome, Safari */
-        }
+        .chatbot-suggestions::-webkit-scrollbar { display: none; }
         .suggestion-chip {
-          padding: 5px 11px;
-          border-radius: 20px;
-          font-size: 12px;
-          font-weight: 500;
-          border: 1px solid var(--text-primary);
-          background: transparent;
-          color: var(--text-primary);
+          padding: 6px 13px;
+          border-radius: 100px;
+          font-size: 11.5px;
+          font-weight: 600;
+          border: 1px solid rgba(139,92,246,0.25);
+          background: rgba(139,92,246,0.07);
+          color: rgba(139,92,246,0.9);
           cursor: pointer;
-          transition: all 0.2s;
+          transition: all 0.2s ease;
           white-space: nowrap;
+          flex-shrink: 0;
+          letter-spacing: 0.01em;
+          font-family: inherit;
         }
-        [data-theme="dark"] .suggestion-chip {
-          border-color: var(--text-primary);
-          color: var(--text-primary);
-          background: transparent;
+        [data-theme="light"] .suggestion-chip {
+          border-color: rgba(99,102,241,0.22);
+          background: rgba(99,102,241,0.06);
+          color: rgba(79,70,229,0.88);
         }
-        .suggestion-chip:hover {
-          background: var(--text-primary);
-          color: var(--bg-primary);
+        .suggestion-chip:hover:not(:disabled) {
+          background: linear-gradient(135deg, rgba(139,92,246,0.18), rgba(99,102,241,0.12));
+          border-color: rgba(139,92,246,0.5);
+          color: #a78bfa;
           transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(139,92,246,0.18);
+        }
+        [data-theme="light"] .suggestion-chip:hover:not(:disabled) {
+          background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(79,70,229,0.08));
+          border-color: rgba(99,102,241,0.45);
+          color: #4338ca;
+          box-shadow: 0 4px 12px rgba(99,102,241,0.15);
+        }
+        .suggestion-chip:disabled {
+          opacity: 0.38;
+          cursor: not-allowed;
+          transform: none;
         }
 
         /* Input bar */
@@ -1263,14 +1277,22 @@ export default function ChatBot() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Suggestions - Always visible now */}
-            <div className="chatbot-suggestions">
-              {SUGGESTED_QUESTIONS.map(q => (
-                <button key={q} className="suggestion-chip" onClick={() => sendMessage(q)} disabled={isLoading}>
-                  {q}
-                </button>
-              ))}
-            </div>
+            {/* Suggestions — only shown when conversation is empty */}
+            {messages.length === 0 && (
+              <div className="chatbot-suggestions">
+                {SUGGESTED_QUESTIONS.map(q => (
+                  <button
+                    key={q}
+                    className="suggestion-chip"
+                    onClick={() => sendMessage(q)}
+                    disabled={isLoading}
+                    title={q}
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Input bar */}
             <div className="chatbot-input-bar">
