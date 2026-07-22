@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Globe } from 'lucide-react';
 import DiagnosticsToggle from './DiagnosticsToggle';
+import DarkModeToggle from './DarkModeToggle';
 import SettingsDropdown from './SettingsDropdown';
 
 export default function TimezoneStatus() {
