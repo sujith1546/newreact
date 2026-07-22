@@ -44,6 +44,7 @@ export function ThemeProvider({ children }) {
   const [devMode, setDevMode] = useState(
     () => localStorage.getItem('devMode') === 'true'
   );
+  const [showStateInspector, setShowStateInspector] = useState(false);
   const [flags, setFlags] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem('devFlags')) || {
@@ -262,6 +263,7 @@ export function ThemeProvider({ children }) {
       photoAccent, setPhotoAccent,
       activePreset, setActivePreset,
       devMode, setDevMode,
+      showStateInspector, setShowStateInspector,
       flags, setFlags,
       getAllPrefs, applyAllPrefs,
       applyPreset

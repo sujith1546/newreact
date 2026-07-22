@@ -11,6 +11,8 @@ import SettingsSidebar from '../components/SettingsSidebar';
 import TimezoneStatus from '../components/TimezoneStatus';
 import ChatBot from '../components/ChatBot';
 import CommandPalette from '../components/CommandPalette';
+import PerformanceHUD from '../components/PerformanceHUD';
+import LiveStateInspector from '../components/LiveStateInspector';
 import MobileStatusPanel from '../components/MobileStatusPanel';
 import Home from '../pages/Home';
 import About from '../pages/About';
@@ -331,9 +333,12 @@ export default function MainLayout() {
       />
 
       {!isMobile && <TimezoneStatus />}
+      {/* Global Overlays */}
       <ChatBot />
       <CommandPalette />
       <SettingsSidebar />
+      <PerformanceHUD />
+      <LiveStateInspector />
 
       {isMobile && <MobileStatusPanel isOpen={isStatusOpen} onClose={() => setIsStatusOpen(false)} />}
       {isMobile && <MobileBottomNav activeSection={activeSection} onNavClick={handleNavClick} />}

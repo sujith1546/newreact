@@ -51,6 +51,7 @@ export default function SettingsSidebar() {
     keyboardHud, setKeyboardHud,
     uiAudio, setUiAudio,
     devMode, setDevMode,
+    showStateInspector, setShowStateInspector,
   } = useTheme();
 
   const isDark = theme === 'dark';
@@ -478,6 +479,9 @@ export default function SettingsSidebar() {
         <Section title="Developer" />
         <Row icon={MonitorPlay} iconColor="#14b8a6" label="Performance HUD" sublabel="Live FPS and render diagnostics">
           <Toggle checked={devMode} onChange={v => { setDevMode(v); showToast(v ? 'HUD enabled' : 'HUD disabled'); }} accent="#14b8a6" />
+        </Row>
+        <Row icon={Code2} iconColor="#ec4899" label="Live State Inspector" sublabel="View real-time JSON application state">
+          <Toggle checked={showStateInspector} onChange={v => { setShowStateInspector(v); showToast(v ? 'Inspector ON' : 'Inspector OFF'); }} accent="#ec4899" />
         </Row>
 
         <Section title="Portfolio" />
