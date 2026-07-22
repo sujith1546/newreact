@@ -14,6 +14,11 @@ export function ThemeProvider({ children }) {
   const [fontFamily, setFontFamily] = useState(localStorage.getItem('fontFamily') || 'modern');
   const [uiAudio, setUiAudio] = useState(localStorage.getItem('uiAudio') !== 'false');
   const [pageTransition, setPageTransition] = useState(localStorage.getItem('pageTransition') || 'fade');
+  const [glassIntensity, setGlassIntensity] = useState(localStorage.getItem('glassIntensity') || 'medium');
+  const [reduceMotion, setReduceMotion] = useState(localStorage.getItem('reduceMotion') === 'true');
+  const [highContrast, setHighContrast] = useState(localStorage.getItem('highContrast') === 'true');
+  const [aiVoice, setAiVoice] = useState(localStorage.getItem('aiVoice') !== 'false');
+  const [aiAutoNav, setAiAutoNav] = useState(localStorage.getItem('aiAutoNav') !== 'false');
   
   // Tier 1 & 3 Advanced settings
   const [notifyOnContact, setNotifyOnContact] = useState(
@@ -77,18 +82,32 @@ export function ThemeProvider({ children }) {
     root.style.setProperty('--primary-blue', hexColor);
     root.style.setProperty('--app-font', fonts[fontFamily]);
     
+    // Apply CSS variables for glass intensity and contrast
+    const blurMap = { light: '4px', medium: '12px', heavy: '24px' };
+    root.style.setProperty('--glass-blur', blurMap[glassIntensity] || '12px');
+    if (highContrast) {
+      root.classList.add('high-contrast');
+    } else {
+      root.classList.remove('high-contrast');
+    }
+    
     // Save preferences
     localStorage.setItem('theme', theme);
     localStorage.setItem('accentColor', accentColor);
     localStorage.setItem('fontFamily', fontFamily);
     localStorage.setItem('uiAudio', uiAudio);
     localStorage.setItem('pageTransition', pageTransition);
+    localStorage.setItem('glassIntensity', glassIntensity);
+    localStorage.setItem('reduceMotion', String(reduceMotion));
+    localStorage.setItem('highContrast', String(highContrast));
+    localStorage.setItem('aiVoice', String(aiVoice));
+    localStorage.setItem('aiAutoNav', String(aiAutoNav));
     localStorage.setItem('notifyOnContact', JSON.stringify(notifyOnContact));
     if (photoAccent) localStorage.setItem('photoAccent', photoAccent);
     localStorage.setItem('activePreset', activePreset || '');
     localStorage.setItem('devMode', String(devMode));
     localStorage.setItem('devFlags', JSON.stringify(flags));
-  }, [theme, accentColor, fontFamily, uiAudio, pageTransition, notifyOnContact, photoAccent, activePreset, devMode, flags]);
+  }, [theme, accentColor, fontFamily, uiAudio, pageTransition, glassIntensity, reduceMotion, highContrast, aiVoice, aiAutoNav, notifyOnContact, photoAccent, activePreset, devMode, flags]);
 
   const toggleTheme = (e) => {
     const isDark = theme === 'dark';
@@ -189,6 +208,11 @@ export function ThemeProvider({ children }) {
       fontFamily, setFontFamily,
       uiAudio, setUiAudio,
       pageTransition, setPageTransition,
+      glassIntensity, setGlassIntensity,
+      reduceMotion, setReduceMotion,
+      highContrast, setHighContrast,
+      aiVoice, setAiVoice,
+      aiAutoNav, setAiAutoNav,
       playSound,
       notifyOnContact, setNotifyOnContact,
       photoAccent, setPhotoAccent,
