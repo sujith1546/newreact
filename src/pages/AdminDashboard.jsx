@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { Loader2, Trash2, Check, ChevronRight, X, MessageSquare, MessageCircle, Briefcase, Zap, LogOut, Plus } from 'lucide-react';
+import { Loader2, Trash2, Check, ChevronRight, ChevronDown, X, MessageSquare, MessageCircle, Briefcase, Zap, LogOut, Plus, Edit3, Star, Layers } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const NAV_ITEMS = [
@@ -11,6 +11,11 @@ const NAV_ITEMS = [
   { key: "projects", label: "Projects", icon: "ti-briefcase" },
   { key: "updates", label: "Updates", icon: "ti-bolt" },
   { key: "chats", label: "AI chats", icon: "ti-messages" },
+  { key: "settings", label: "Settings", icon: "ti-settings" },
+  { key: "skills", label: "Skills", icon: "ti-star" },
+  { key: "experience", label: "Experience", icon: "ti-id-badge" },
+  { key: "certifications", label: "Certifications", icon: "ti-certificate" },
+  { key: "education", label: "Education", icon: "ti-book" },
 ];
 
 export default function AdminDashboard() {
@@ -115,6 +120,11 @@ export default function AdminDashboard() {
           {activeTab === "projects" && <ProjectsPanel />}
           {activeTab === "updates" && <UpdatesPanel />}
           {activeTab === "chats" && <AiChatsPanel />}
+          {activeTab === "settings" && <SettingsPanel />}
+          {activeTab === "skills" && <SkillsPanel />}
+          {activeTab === "experience" && <ExperiencePanel />}
+          {activeTab === "certifications" && <CertificationsPanel />}
+          {activeTab === "education" && <EducationPanel />}
         </div>
       </div>
     </div>
@@ -190,17 +200,20 @@ function EmptyState({ icon, title, description }) {
   );
 }
 
-function PanelCard({ title, action, children }) {
+function PanelCard({ title, action, headerElement, children }) {
   return (
     <div style={styles.panelCard}>
       <div style={styles.panelHeader}>
         <h3 style={styles.panelTitle}>{title}</h3>
-        {action && (
-          <button style={styles.panelAction}>
-            <i className={`ti ${action.icon}`} style={{ fontSize: 14 }} aria-hidden="true" />
-            {action.label}
-          </button>
-        )}
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          {headerElement}
+          {action && (
+            <button style={styles.panelAction} onClick={action.onClick}>
+              <i className={`ti ${action.icon}`} style={{ fontSize: 14 }} aria-hidden="true" />
+              {action.label}
+            </button>
+          )}
+        </div>
       </div>
       <div style={{ overflowX: 'auto' }}>
         {children}
@@ -496,6 +509,553 @@ function AiChatsPanel() {
 }
 
 /* -------------------------------------------------------------------- */
+/* Site Settings Panel                                                  */
+/* -------------------------------------------------------------------- */
+function SettingsPanel() {
+  const [settings, setSettings] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    setLoading(true);
+    const { data, error } = await supabase.from('site_settings').select('*').eq('id', 1).single();
+    if (!error && data) setSettings(data);
+    setLoading(false);
+  };
+
+  const handleSave = async (e) => {
+    if (e) e.preventDefault();
+    setSaving(true);
+    const { error } = await supabase.from('site_settings').update(settings).eq('id', 1);
+    setSaving(false);
+    if (error) alert("Failed to save settings");
+    else alert("Settings saved successfully!");
+  };
+
+  if (loading) return <PanelCard title="Site Configuration"><div style={styles.emptyState}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div></PanelCard>;
+
+  return (
+    <PanelCard title="Site Configuration" action={{ label: saving ? "Saving..." : "Save changes", icon: "ti-device-floppy", onClick: handleSave }}>
+      <form onSubmit={handleSave} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px', maxWidth: '600px' }}>
+        <div>
+          <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase' }}>Hero Headline</label>
+          <input 
+            type="text" 
+            value={settings?.hero_headline || ''} 
+            onChange={e => setSettings({...settings, hero_headline: e.target.value})}
+            style={{ width: '100%', padding: '10px 12px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)' }}
+          />
+        </div>
+        <div>
+          <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase' }}>Resume URL</label>
+          <input 
+            type="text" 
+            value={settings?.resume_url || ''} 
+            onChange={e => setSettings({...settings, resume_url: e.target.value})}
+            style={{ width: '100%', padding: '10px 12px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)' }}
+            placeholder="https://..."
+          />
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'var(--bg-primary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+          <input 
+            type="checkbox" 
+            id="hire_toggle"
+            checked={settings?.is_available_for_hire || false}
+            onChange={e => setSettings({...settings, is_available_for_hire: e.target.checked})}
+            style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+          />
+          <div style={{ flex: 1 }}>
+            <label htmlFor="hire_toggle" style={{ fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600, display: 'block', cursor: 'pointer' }}>Available for hire</label>
+            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Shows a badge on your public portfolio.</span>
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'var(--bg-primary)', borderRadius: '8px', border: '1px solid #ef444440' }}>
+          <input 
+            type="checkbox" 
+            id="maintenance_toggle"
+            checked={settings?.maintenance_mode || false}
+            onChange={e => setSettings({...settings, maintenance_mode: e.target.checked})}
+            style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+          />
+          <div style={{ flex: 1 }}>
+            <label htmlFor="maintenance_toggle" style={{ fontSize: '14px', color: '#ef4444', fontWeight: 600, display: 'block', cursor: 'pointer' }}>Maintenance Mode</label>
+            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Locks public site with a "be right back" screen.</span>
+          </div>
+        </div>
+        <button type="submit" style={{ display: 'none' }}>Save</button>
+      </form>
+    </PanelCard>
+  );
+}
+
+/* -------------------------------------------------------------------- */
+/* Skills Panel                                                         */
+/* -------------------------------------------------------------------- */
+const SKILL_CATEGORIES = ['languages', 'database', 'ml', 'soft', 'exploring'];
+const SKILL_LEVELS = ['Learning', 'Intermediate', 'Advanced'];
+
+function SkillsPanel() {
+  const [skills, setSkills] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({});
+  const [searchQuery, setSearchQuery] = useState("");
+  const [collapsedCats, setCollapsedCats] = useState({});
+
+  useEffect(() => {
+    fetchSkills();
+  }, []);
+
+  const fetchSkills = async () => {
+    setLoading(true);
+    const { data, error } = await supabase.from('skills').select('*').order('order_index', { ascending: true });
+    if (!error && data) setSkills(data);
+    setLoading(false);
+  };
+
+  const handleEdit = (skill) => {
+    setFormData({
+      ...skill,
+      related_tools: skill.related_tools ? skill.related_tools.join(', ') : '',
+      projects: skill.projects ? skill.projects.join(', ') : '',
+    });
+    setIsEditing(true);
+  };
+
+  const handleAddNew = () => {
+    setFormData({
+      name: '', category: 'languages', icon_class: '', proficiency_level: 80,
+      years_experience: 0, project_count: 0, description: '', level_label: 'Intermediate',
+      related_tools: '', projects: '', is_featured: false, order_index: 0
+    });
+    setIsEditing(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this skill?')) return;
+    const { error } = await supabase.from('skills').delete().eq('id', id);
+    if (!error) setSkills(skills.filter(s => s.id !== id));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.name || !formData.category) return alert('Name and Category are required');
+    
+    let clampedProficiency = parseInt(formData.proficiency_level) || 80;
+    clampedProficiency = Math.max(1, Math.min(100, clampedProficiency));
+
+    const parseArray = (str) => typeof str === 'string' ? str.split(',').map(s => s.trim()).filter(Boolean) : str;
+
+    const payload = {
+      ...formData,
+      proficiency_level: clampedProficiency,
+      years_experience: parseInt(formData.years_experience) || 0,
+      project_count: parseInt(formData.project_count) || 0,
+      order_index: parseInt(formData.order_index) || 0,
+      related_tools: parseArray(formData.related_tools),
+      projects: parseArray(formData.projects),
+    };
+
+    if (payload.id) {
+      const { data, error } = await supabase.from('skills').update(payload).eq('id', payload.id).select().single();
+      if (!error && data) setSkills(skills.map(s => s.id === data.id ? data : s));
+    } else {
+      const { data, error } = await supabase.from('skills').insert([payload]).select().single();
+      if (!error && data) setSkills([...skills, data].sort((a, b) => a.order_index - b.order_index));
+    }
+    setIsEditing(false);
+  };
+
+  const toggleCategory = (cat) => {
+    setCollapsedCats(prev => ({ ...prev, [cat]: !prev[cat] }));
+  };
+
+  if (loading) return <PanelCard title="Skills Inventory"><div style={styles.emptyState}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div></PanelCard>;
+
+  if (isEditing) {
+    return (
+      <PanelCard title={formData.id ? "Edit Skill" : "Add Skill"} action={{ label: "Cancel", icon: "ti-x", onClick: () => setIsEditing(false) }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={styles.settingsGrid}>
+            <div style={styles.settingGroup}>
+              <label style={styles.settingLabel}>Skill Name *</label>
+              <input type="text" style={styles.input} required value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g. React" />
+            </div>
+            <div style={styles.settingGroup}>
+              <label style={styles.settingLabel}>Category *</label>
+              <select style={styles.input} value={formData.category || 'languages'} onChange={e => setFormData({...formData, category: e.target.value})}>
+                {SKILL_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <div style={styles.settingGroup}>
+              <label style={styles.settingLabel}>Level Label</label>
+              <select style={styles.input} value={formData.level_label || 'Intermediate'} onChange={e => setFormData({...formData, level_label: e.target.value})}>
+                {SKILL_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+              </select>
+            </div>
+            <div style={styles.settingGroup}>
+              <label style={styles.settingLabel}>Proficiency (1-100)</label>
+              <input type="number" min="1" max="100" style={styles.input} value={formData.proficiency_level || 80} onChange={e => setFormData({...formData, proficiency_level: e.target.value})} />
+            </div>
+            <div style={styles.settingGroup}>
+              <label style={styles.settingLabel}>Years Exp</label>
+              <input type="number" min="0" style={styles.input} value={formData.years_experience || 0} onChange={e => setFormData({...formData, years_experience: e.target.value})} />
+            </div>
+            <div style={styles.settingGroup}>
+              <label style={styles.settingLabel}>Project Count</label>
+              <input type="number" min="0" style={styles.input} value={formData.project_count || 0} onChange={e => setFormData({...formData, project_count: e.target.value})} />
+            </div>
+            <div style={styles.settingGroup}>
+              <label style={styles.settingLabel}>Icon Class</label>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <input type="text" style={{...styles.input, flex: 1}} value={formData.icon_class || ''} onChange={e => setFormData({...formData, icon_class: e.target.value})} placeholder="e.g. brand-python" />
+                {formData.icon_class && <div style={{width: 32, height: 32, background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center'}}><i className={`ti ti-${formData.icon_class}`}></i></div>}
+              </div>
+            </div>
+            <div style={styles.settingGroup}>
+              <label style={styles.settingLabel}>Display Order</label>
+              <input type="number" style={styles.input} value={formData.order_index || 0} onChange={e => setFormData({...formData, order_index: e.target.value})} />
+            </div>
+          </div>
+          
+          <div style={styles.settingGroup}>
+            <label style={styles.settingLabel}>Description</label>
+            <textarea style={{...styles.input, minHeight: '80px', resize: 'vertical'}} value={formData.description || ''} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Brief description..." />
+          </div>
+
+          <div style={styles.settingsGrid}>
+            <div style={styles.settingGroup}>
+              <label style={styles.settingLabel}>Related Tools (Comma-separated)</label>
+              <textarea style={{...styles.input, minHeight: '60px'}} value={formData.related_tools || ''} onChange={e => setFormData({...formData, related_tools: e.target.value})} placeholder="Node.js, Express, Vercel" />
+            </div>
+            <div style={styles.settingGroup}>
+              <label style={styles.settingLabel}>Projects (Comma-separated)</label>
+              <textarea style={{...styles.input, minHeight: '60px'}} value={formData.projects || ''} onChange={e => setFormData({...formData, projects: e.target.value})} placeholder="Project A, Project B" />
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px' }}>
+            <button type="button" onClick={() => setIsEditing(false)} style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-primary)', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
+            <button type="submit" style={{ background: 'var(--primary-blue)', border: 'none', color: '#fff', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>Save Skill</button>
+          </div>
+        </form>
+      </PanelCard>
+    );
+  }
+
+  const filteredSkills = skills.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  const groupedSkills = SKILL_CATEGORIES.reduce((acc, cat) => {
+    acc[cat] = filteredSkills.filter(s => s.category === cat);
+    return acc;
+  }, {});
+
+  return (
+    <PanelCard 
+      title="Skills Inventory" 
+      action={{ label: "Add Skill", icon: "ti-plus", onClick: handleAddNew }}
+      headerElement={
+        <div style={{ position: 'relative' }}>
+          <input 
+            type="text" 
+            placeholder="Search skills..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{...styles.input, width: '220px', padding: '6px 12px 6px 36px', fontSize: '13px', margin: 0}}
+          />
+          <i className="ti ti-search" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+        </div>
+      }
+    >
+      {skills.length === 0 ? (
+        <EmptyState icon="ti-star" title="No skills yet" description="Add your first skill to get started." />
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          {SKILL_CATEGORIES.map(cat => {
+            const catSkills = groupedSkills[cat] || [];
+            if (catSkills.length === 0) return null;
+            const isCollapsed = collapsedCats[cat];
+
+            return (
+              <div key={cat} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div 
+                  onClick={() => toggleCategory(cat)}
+                  style={{ 
+                    display: 'flex', alignItems: 'center', gap: '8px', 
+                    cursor: 'pointer', userSelect: 'none',
+                    paddingBottom: '8px', borderBottom: '1px solid var(--border-color)'
+                  }}
+                >
+                  {isCollapsed ? <ChevronRight size={16} color="var(--text-secondary)" /> : <ChevronDown size={16} color="var(--text-secondary)" />}
+                  <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', textTransform: 'capitalize' }}>
+                    {cat}
+                  </h3>
+                  <span style={{...styles.badge, background: 'var(--bg-primary)', border: '1px solid var(--border-color)'}}>
+                    {catSkills.length}
+                  </span>
+                </div>
+
+                {!isCollapsed && (
+                  <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', 
+                    gap: '12px' 
+                  }}>
+                    {catSkills.map(skill => (
+                      <div key={skill.id} style={{
+                        padding: '16px',
+                        background: 'var(--bg-primary)',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: '12px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '12px',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+                        position: 'relative',
+                        overflow: 'hidden'
+                      }}>
+                        {/* Header Row */}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            {skill.icon_class ? (
+                              <div style={{ width: 32, height: 32, borderRadius: '8px', background: 'var(--primary-blue)20', color: 'var(--primary-blue)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
+                                <i className={`ti ti-${skill.icon_class}`}></i>
+                              </div>
+                            ) : (
+                              <div style={{ width: 32, height: 32, borderRadius: '8px', background: 'var(--bg-secondary)', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <Star size={16} />
+                              </div>
+                            )}
+                            <div>
+                              <h4 style={{ margin: 0, fontWeight: 600, color: 'var(--text-primary)', fontSize: '15px' }}>{skill.name}</h4>
+                              <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{skill.level_label || 'Intermediate'}</span>
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', gap: '4px' }}>
+                            <button onClick={() => handleEdit(skill)} style={{ ...styles.iconBtn, color: 'var(--text-secondary)', background: 'var(--bg-secondary)', width: 28, height: 28 }} title="Edit">
+                              <Edit3 size={14} />
+                            </button>
+                            <button onClick={() => handleDelete(skill.id)} style={{ ...styles.iconBtn, color: '#ef4444', background: '#ef444415', width: 28, height: 28 }} title="Delete">
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Proficiency Bar */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '4px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>
+                            <span>Proficiency</span>
+                            <span>{skill.proficiency_level}%</span>
+                          </div>
+                          <div style={{ width: '100%', height: '4px', background: 'var(--border-color)', borderRadius: '2px', overflow: 'hidden' }}>
+                            <div style={{ width: `${skill.proficiency_level}%`, height: '100%', background: 'var(--primary-blue)', borderRadius: '2px' }} />
+                          </div>
+                        </div>
+
+                        {/* Meta Info */}
+                        <div style={{ display: 'flex', gap: '12px', marginTop: '4px', borderTop: '1px solid var(--border-color)', paddingTop: '10px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                            <Briefcase size={12} />
+                            <span>{skill.years_experience || 0} yrs</span>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--text-secondary)' }}>
+                            <Layers size={12} />
+                            <span>{skill.project_count || 0} projs</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+          
+          {filteredSkills.length === 0 && searchQuery && (
+            <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+              No skills found matching "{searchQuery}"
+            </div>
+          )}
+        </div>
+      )}
+    </PanelCard>
+  );
+}
+
+/* -------------------------------------------------------------------- */
+/* Experience Panel                                                     */
+/* -------------------------------------------------------------------- */
+function ExperiencePanel() {
+  const [experiences, setExperiences] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({});
+
+  useEffect(() => {
+    fetchExperience();
+  }, []);
+
+  const fetchExperience = async () => {
+    setLoading(true);
+    const { data, error } = await supabase.from('experience').select('*').order('display_order', { ascending: true });
+    if (!error && data) setExperiences(data);
+    setLoading(false);
+  };
+
+  const handleEdit = (exp) => {
+    setFormData({
+      ...exp,
+      description_bullets: exp.description_bullets ? exp.description_bullets.join('\n') : '',
+    });
+    setIsEditing(true);
+  };
+
+  const handleAddNew = () => {
+    setFormData({
+      role: '', company: '', start_date: '', end_date: '', 
+      description_bullets: '', logo_url: '', is_education: false, display_order: 0
+    });
+    setIsEditing(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this experience?')) return;
+    const { error } = await supabase.from('experience').delete().eq('id', id);
+    if (!error) setExperiences(experiences.filter(e => e.id !== id));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.role || !formData.company || !formData.start_date) return alert('Role, Company, and Start Date are required');
+    
+    // Basic date validation if both exist
+    if (formData.end_date) {
+      const d1 = new Date(formData.start_date);
+      const d2 = new Date(formData.end_date);
+      if (!isNaN(d1) && !isNaN(d2) && d2 < d1) {
+         return alert("End date cannot be before start date!");
+      }
+    }
+
+    const parseBullets = (str) => typeof str === 'string' ? str.split('\n').map(s => s.trim()).filter(Boolean) : str;
+
+    const payload = {
+      ...formData,
+      end_date: formData.end_date || null, // null means "Present"
+      display_order: parseInt(formData.display_order) || 0,
+      description_bullets: parseBullets(formData.description_bullets),
+    };
+
+    if (payload.id) {
+      const { data, error } = await supabase.from('experience').update(payload).eq('id', payload.id).select().single();
+      if (!error && data) setExperiences(experiences.map(e => e.id === data.id ? data : e));
+    } else {
+      const { data, error } = await supabase.from('experience').insert([payload]).select().single();
+      if (!error && data) setExperiences([...experiences, data].sort((a, b) => a.display_order - b.display_order));
+    }
+    setIsEditing(false);
+  };
+
+  if (loading) return <PanelCard title="Experience Timeline"><div style={styles.emptyState}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div></PanelCard>;
+
+  if (isEditing) {
+    return (
+      <PanelCard title={formData.id ? "Edit Experience" : "Add Experience"} action={{ label: "Cancel", icon: "ti-x", onClick: () => setIsEditing(false) }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={styles.settingsGrid}>
+            <div style={styles.settingGroup}>
+              <label style={styles.settingLabel}>Role / Title *</label>
+              <input type="text" style={styles.input} required value={formData.role || ''} onChange={e => setFormData({...formData, role: e.target.value})} placeholder="e.g. Software Engineer" />
+            </div>
+            <div style={styles.settingGroup}>
+              <label style={styles.settingLabel}>Company / Institution *</label>
+              <input type="text" style={styles.input} required value={formData.company || ''} onChange={e => setFormData({...formData, company: e.target.value})} placeholder="e.g. Google" />
+            </div>
+            <div style={styles.settingGroup}>
+              <label style={styles.settingLabel}>Start Date (e.g. Jan 2024) *</label>
+              <input type="text" style={styles.input} required value={formData.start_date || ''} onChange={e => setFormData({...formData, start_date: e.target.value})} placeholder="Jan 2024" />
+            </div>
+            <div style={styles.settingGroup}>
+              <label style={styles.settingLabel}>End Date (Leave blank for 'Present')</label>
+              <input type="text" style={styles.input} value={formData.end_date || ''} onChange={e => setFormData({...formData, end_date: e.target.value})} placeholder="Dec 2025 or leave blank" />
+            </div>
+            <div style={{...styles.settingGroup, gridColumn: '1 / -1'}}>
+              <label style={styles.settingLabel}>Logo URL (Optional)</label>
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <input type="text" style={{...styles.input, flex: 1}} value={formData.logo_url || ''} onChange={e => setFormData({...formData, logo_url: e.target.value})} placeholder="https://..." />
+                {formData.logo_url && <img src={formData.logo_url} alt="preview" style={{width: 32, height: 32, borderRadius: 6, objectFit: 'contain', background: '#fff', border: '1px solid var(--border-color)'}} onError={(e) => e.target.style.display='none'} />}
+              </div>
+            </div>
+            <div style={styles.settingGroup}>
+              <label style={styles.settingLabel}>Display Order</label>
+              <input type="number" style={styles.input} value={formData.display_order || 0} onChange={e => setFormData({...formData, display_order: e.target.value})} />
+            </div>
+            <div style={styles.settingGroup}>
+              <label style={styles.settingLabel}>Is Education?</label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', height: '38px' }}>
+                <input type="checkbox" checked={formData.is_education || false} onChange={e => setFormData({...formData, is_education: e.target.checked})} />
+                <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Check if this is an academic degree</span>
+              </label>
+            </div>
+          </div>
+          
+          <div style={styles.settingGroup}>
+            <label style={styles.settingLabel}>Description Bullets (One per line)</label>
+            <textarea style={{...styles.input, minHeight: '120px', resize: 'vertical'}} value={formData.description_bullets || ''} onChange={e => setFormData({...formData, description_bullets: e.target.value})} placeholder={"Built a scalable backend API\nReduced load times by 40%"} />
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px' }}>
+            <button type="button" onClick={() => setIsEditing(false)} style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-primary)', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
+            <button type="submit" style={{ background: 'var(--primary-blue)', border: 'none', color: '#fff', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>Save Experience</button>
+          </div>
+        </form>
+      </PanelCard>
+    );
+  }
+
+  return (
+    <PanelCard title="Experience Timeline" action={{ label: "Add Experience", icon: "ti-plus", onClick: handleAddNew }}>
+      {experiences.length === 0 ? (
+        <EmptyState icon="ti-id-badge" title="No experience entries" description="Add your first experience or education entry." />
+      ) : (
+        <table style={styles.table}>
+          <thead>
+            <tr>
+              <th style={styles.th}>Role</th>
+              <th style={styles.th}>Company</th>
+              <th style={styles.th}>Dates</th>
+              <th style={styles.th}>Order</th>
+              <th style={{ ...styles.th, textAlign: 'right' }}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {experiences.map(exp => (
+              <tr key={exp.id}>
+                <td style={styles.td}><strong>{exp.role}</strong></td>
+                <td style={styles.td}>{exp.company} {exp.is_education ? '(Edu)' : ''}</td>
+                <td style={styles.td}>{exp.start_date} - {exp.end_date || 'Present'}</td>
+                <td style={styles.td}>{exp.display_order}</td>
+                <td style={{ ...styles.td, textAlign: 'right', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                  <button onClick={() => handleEdit(exp)} style={{ ...styles.iconBtn, color: 'var(--text-secondary)' }} title="Edit">
+                    <Edit3 size={16} />
+                  </button>
+                  <button onClick={() => handleDelete(exp.id)} style={{ ...styles.iconBtn, color: '#ef4444' }} title="Delete">
+                    <Trash2 size={16} />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </PanelCard>
+  );
+}
+
+/* -------------------------------------------------------------------- */
 /* Utility                                                                */
 /* -------------------------------------------------------------------- */
 function parseUserAgent(ua) {
@@ -510,6 +1070,288 @@ function parseUserAgent(ua) {
 /* -------------------------------------------------------------------- */
 /* Styles                                                                 */
 /* -------------------------------------------------------------------- */
+
+/* -------------------------------------------------------------------- */
+/* Certifications Panel                                                 */
+/* -------------------------------------------------------------------- */
+function CertificationsPanel() {
+  const [certs, setCerts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({});
+
+  useEffect(() => {
+    fetchCerts();
+  }, []);
+
+  const fetchCerts = async () => {
+    setLoading(true);
+    const { data, error } = await supabase.from('certifications').select('*').order('display_order', { ascending: true });
+    if (!error && data) setCerts(data);
+    setLoading(false);
+  };
+
+  const handleEdit = (cert) => {
+    setFormData(cert);
+    setIsEditing(true);
+  };
+
+  const handleAddNew = () => {
+    setFormData({ id: '', title: '', issuer: '', date: '', description: '', icon_class: '', credential_url: '', display_order: 0 });
+    setIsEditing(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this certification?')) return;
+    const { error } = await supabase.from('certifications').delete().eq('id', id);
+    if (!error) setCerts(certs.filter(c => c.id !== id));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.title || !formData.issuer) return alert('Title and Issuer are required');
+
+    const payload = {
+      ...formData,
+      id: formData.id || formData.title.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+      display_order: parseInt(formData.display_order) || 0,
+    };
+
+    const isUpdate = certs.some(c => c.id === payload.id);
+
+    if (isUpdate) {
+      const { data, error } = await supabase.from('certifications').update(payload).eq('id', payload.id).select().single();
+      if (!error && data) setCerts(certs.map(c => c.id === data.id ? data : c).sort((a,b) => a.display_order - b.display_order));
+    } else {
+      const { data, error } = await supabase.from('certifications').insert([payload]).select().single();
+      if (!error && data) setCerts([...certs, data].sort((a,b) => a.display_order - b.display_order));
+    }
+    setIsEditing(false);
+  };
+
+  if (loading) return <PanelCard title="Certifications"><div style={styles.emptyState}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div></PanelCard>;
+
+  if (isEditing) {
+    return (
+      <PanelCard title={formData.id ? "Edit Certification" : "Add Certification"} action={{ label: "Cancel", icon: "ti-x", onClick: () => setIsEditing(false) }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={styles.settingsGrid}>
+            <div style={styles.settingGroup}>
+              <label style={styles.settingLabel}>Title *</label>
+              <input type="text" style={styles.input} required value={formData.title || ''} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="e.g. AWS Solutions Architect" />
+            </div>
+            <div style={styles.settingGroup}>
+              <label style={styles.settingLabel}>Issuer *</label>
+              <input type="text" style={styles.input} required value={formData.issuer || ''} onChange={e => setFormData({...formData, issuer: e.target.value})} placeholder="e.g. Amazon Web Services" />
+            </div>
+            <div style={styles.settingGroup}>
+              <label style={styles.settingLabel}>Date / Year</label>
+              <input type="text" style={styles.input} value={formData.date || ''} onChange={e => setFormData({...formData, date: e.target.value})} placeholder="e.g. 2024" />
+            </div>
+            <div style={styles.settingGroup}>
+              <label style={styles.settingLabel}>Credential URL</label>
+              <input type="text" style={styles.input} value={formData.credential_url || ''} onChange={e => setFormData({...formData, credential_url: e.target.value})} placeholder="https://..." />
+            </div>
+            <div style={styles.settingGroup}>
+              <label style={styles.settingLabel}>Icon Class</label>
+              <input type="text" style={styles.input} value={formData.icon_class || ''} onChange={e => setFormData({...formData, icon_class: e.target.value})} placeholder="e.g. brand-aws" />
+            </div>
+            <div style={styles.settingGroup}>
+              <label style={styles.settingLabel}>Display Order</label>
+              <input type="number" style={styles.input} value={formData.display_order || 0} onChange={e => setFormData({...formData, display_order: e.target.value})} />
+            </div>
+          </div>
+          <div style={styles.settingGroup}>
+            <label style={styles.settingLabel}>Description</label>
+            <textarea style={{...styles.input, minHeight: '80px', resize: 'vertical'}} value={formData.description || ''} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="What did you learn?" />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px' }}>
+            <button type="button" onClick={() => setIsEditing(false)} style={{ background: 'transparent', border: '1px solid var(--border-color)', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
+            <button type="submit" style={{ background: 'var(--primary-blue)', border: 'none', color: '#fff', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>Save</button>
+          </div>
+        </form>
+      </PanelCard>
+    );
+  }
+
+  return (
+    <PanelCard title="Certifications" action={{ label: "Add", icon: "ti-plus", onClick: handleAddNew }}>
+      {certs.length === 0 ? (
+        <EmptyState icon="ti-certificate" title="No certifications" description="Add your first certification." />
+      ) : (
+        <table style={styles.table}>
+          <thead><tr><th style={styles.th}>Title</th><th style={styles.th}>Issuer</th><th style={styles.th}>Date</th><th style={{ ...styles.th, textAlign: 'right' }}>Actions</th></tr></thead>
+          <tbody>
+            {certs.map(cert => (
+              <tr key={cert.id}>
+                <td style={styles.td}><strong>{cert.title}</strong></td>
+                <td style={styles.td}>{cert.issuer}</td>
+                <td style={styles.td}>{cert.date}</td>
+                <td style={{ ...styles.td, textAlign: 'right', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                  <button onClick={() => handleEdit(cert)} style={{ ...styles.iconBtn, color: 'var(--text-secondary)' }}><Edit3 size={16} /></button>
+                  <button onClick={() => handleDelete(cert.id)} style={{ ...styles.iconBtn, color: '#ef4444' }}><Trash2 size={16} /></button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </PanelCard>
+  );
+}
+
+/* -------------------------------------------------------------------- */
+/* Education Panel                                                      */
+/* -------------------------------------------------------------------- */
+function EducationPanel() {
+  const [edu, setEdu] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({});
+
+  useEffect(() => {
+    fetchEdu();
+  }, []);
+
+  const fetchEdu = async () => {
+    setLoading(true);
+    const { data, error } = await supabase.from('education').select('*').order('display_order', { ascending: true });
+    if (!error && data) setEdu(data);
+    setLoading(false);
+  };
+
+  const handleEdit = (item) => {
+    setFormData({
+      ...item,
+      highlights: item.highlights ? item.highlights.join(', ') : '',
+      back_stats: item.back_stats ? JSON.stringify(item.back_stats) : '[]',
+    });
+    setIsEditing(true);
+  };
+
+  const handleAddNew = () => {
+    setFormData({ 
+      id: '', short_label: '', year: '', title: '', institution: '', location: '', description: '', 
+      score: '', progress: 100, icon_class: 'School', theme_color: '#007bff', bg_color: '#e6f2ff', text_color: '#004085',
+      highlights: '', back_stats: '[]', highlight_text: '', display_order: 0 
+    });
+    setIsEditing(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this education entry?')) return;
+    const { error } = await supabase.from('education').delete().eq('id', id);
+    if (!error) setEdu(edu.filter(c => c.id !== id));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.title || !formData.institution) return alert('Title and Institution are required');
+
+    let parsedStats = [];
+    try {
+      parsedStats = JSON.parse(formData.back_stats || '[]');
+    } catch (e) {
+      return alert('Back stats must be valid JSON array, e.g. [{"label":"GPA", "value":"4.0"}]');
+    }
+
+    const payload = {
+      ...formData,
+      id: formData.id || formData.title.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+      progress: parseInt(formData.progress) || 100,
+      display_order: parseInt(formData.display_order) || 0,
+      highlights: typeof formData.highlights === 'string' ? formData.highlights.split(',').map(s=>s.trim()).filter(Boolean) : formData.highlights,
+      back_stats: parsedStats
+    };
+
+    const isUpdate = edu.some(c => c.id === payload.id);
+
+    if (isUpdate) {
+      const { data, error } = await supabase.from('education').update(payload).eq('id', payload.id).select().single();
+      if (!error && data) setEdu(edu.map(c => c.id === data.id ? data : c).sort((a,b) => a.display_order - b.display_order));
+    } else {
+      const { data, error } = await supabase.from('education').insert([payload]).select().single();
+      if (!error && data) setEdu([...edu, data].sort((a,b) => a.display_order - b.display_order));
+    }
+    setIsEditing(false);
+  };
+
+  if (loading) return <PanelCard title="Education"><div style={styles.emptyState}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div></PanelCard>;
+
+  if (isEditing) {
+    return (
+      <PanelCard title={formData.id ? "Edit Education" : "Add Education"} action={{ label: "Cancel", icon: "ti-x", onClick: () => setIsEditing(false) }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div style={styles.settingsGrid}>
+            <div style={styles.settingGroup}><label style={styles.settingLabel}>Title *</label><input type="text" style={styles.input} required value={formData.title || ''} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="B.Tech Computer Science" /></div>
+            <div style={styles.settingGroup}><label style={styles.settingLabel}>Institution *</label><input type="text" style={styles.input} required value={formData.institution || ''} onChange={e => setFormData({...formData, institution: e.target.value})} placeholder="University Name" /></div>
+            <div style={styles.settingGroup}><label style={styles.settingLabel}>Short Label</label><input type="text" style={styles.input} value={formData.short_label || ''} onChange={e => setFormData({...formData, short_label: e.target.value})} placeholder="b.tech" /></div>
+            <div style={styles.settingGroup}><label style={styles.settingLabel}>Year</label><input type="text" style={styles.input} value={formData.year || ''} onChange={e => setFormData({...formData, year: e.target.value})} placeholder="2020 - 2024" /></div>
+            <div style={styles.settingGroup}><label style={styles.settingLabel}>Location</label><input type="text" style={styles.input} value={formData.location || ''} onChange={e => setFormData({...formData, location: e.target.value})} placeholder="City, State" /></div>
+            <div style={styles.settingGroup}><label style={styles.settingLabel}>Score String</label><input type="text" style={styles.input} value={formData.score || ''} onChange={e => setFormData({...formData, score: e.target.value})} placeholder="CGPA: 8.7" /></div>
+            <div style={styles.settingGroup}><label style={styles.settingLabel}>Progress % (0-100)</label><input type="number" style={styles.input} value={formData.progress || 100} onChange={e => setFormData({...formData, progress: e.target.value})} /></div>
+            <div style={styles.settingGroup}><label style={styles.settingLabel}>Icon Class (Lucide)</label><input type="text" style={styles.input} value={formData.icon_class || ''} onChange={e => setFormData({...formData, icon_class: e.target.value})} placeholder="BookOpen" /></div>
+            <div style={styles.settingGroup}><label style={styles.settingLabel}>Theme Color</label><input type="color" style={{...styles.input, height: 42, padding: 4}} value={formData.theme_color || '#000000'} onChange={e => setFormData({...formData, theme_color: e.target.value})} /></div>
+            <div style={styles.settingGroup}><label style={styles.settingLabel}>Background Color</label><input type="color" style={{...styles.input, height: 42, padding: 4}} value={formData.bg_color || '#ffffff'} onChange={e => setFormData({...formData, bg_color: e.target.value})} /></div>
+            <div style={styles.settingGroup}><label style={styles.settingLabel}>Text Color</label><input type="color" style={{...styles.input, height: 42, padding: 4}} value={formData.text_color || '#000000'} onChange={e => setFormData({...formData, text_color: e.target.value})} /></div>
+            <div style={styles.settingGroup}><label style={styles.settingLabel}>Display Order</label><input type="number" style={styles.input} value={formData.display_order || 0} onChange={e => setFormData({...formData, display_order: e.target.value})} /></div>
+          </div>
+          
+          <div style={styles.settingGroup}>
+            <label style={styles.settingLabel}>Description</label>
+            <textarea style={{...styles.input, minHeight: '60px', resize: 'vertical'}} value={formData.description || ''} onChange={e => setFormData({...formData, description: e.target.value})} />
+          </div>
+          
+          <div style={styles.settingGroup}>
+            <label style={styles.settingLabel}>Highlight Text (Shown below card)</label>
+            <input type="text" style={styles.input} value={formData.highlight_text || ''} onChange={e => setFormData({...formData, highlight_text: e.target.value})} />
+          </div>
+
+          <div style={styles.settingsGrid}>
+            <div style={styles.settingGroup}>
+              <label style={styles.settingLabel}>Highlights (Comma-separated)</label>
+              <textarea style={{...styles.input, minHeight: '60px'}} value={formData.highlights || ''} onChange={e => setFormData({...formData, highlights: e.target.value})} placeholder="Data Science, ML" />
+            </div>
+            <div style={styles.settingGroup}>
+              <label style={styles.settingLabel}>Back Stats (JSON)</label>
+              <textarea style={{...styles.input, minHeight: '60px', fontFamily: 'monospace'}} value={formData.back_stats || ''} onChange={e => setFormData({...formData, back_stats: e.target.value})} placeholder='[{"value":"10","label":"GPA"}]' />
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px' }}>
+            <button type="button" onClick={() => setIsEditing(false)} style={{ background: 'transparent', border: '1px solid var(--border-color)', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
+            <button type="submit" style={{ background: 'var(--primary-blue)', border: 'none', color: '#fff', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>Save</button>
+          </div>
+        </form>
+      </PanelCard>
+    );
+  }
+
+  return (
+    <PanelCard title="Education" action={{ label: "Add", icon: "ti-plus", onClick: handleAddNew }}>
+      {edu.length === 0 ? (
+        <EmptyState icon="ti-book" title="No education" description="Add your educational history." />
+      ) : (
+        <table style={styles.table}>
+          <thead><tr><th style={styles.th}>Title</th><th style={styles.th}>Institution</th><th style={styles.th}>Year</th><th style={{ ...styles.th, textAlign: 'right' }}>Actions</th></tr></thead>
+          <tbody>
+            {edu.map(item => (
+              <tr key={item.id}>
+                <td style={styles.td}><strong>{item.title}</strong></td>
+                <td style={styles.td}>{item.institution}</td>
+                <td style={styles.td}>{item.year}</td>
+                <td style={{ ...styles.td, textAlign: 'right', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                  <button onClick={() => handleEdit(item)} style={{ ...styles.iconBtn, color: 'var(--text-secondary)' }}><Edit3 size={16} /></button>
+                  <button onClick={() => handleDelete(item.id)} style={{ ...styles.iconBtn, color: '#ef4444' }}><Trash2 size={16} /></button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </PanelCard>
+  );
+}
 
 const styles = {
   shell: {

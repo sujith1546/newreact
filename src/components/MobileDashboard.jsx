@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { supabase } from '../lib/supabaseClient';
 import { motion } from 'framer-motion';
 import { MapPin, Loader2, ArrowDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import useGlitchText from '../hooks/useGlitchText';
@@ -34,6 +35,15 @@ export default function MobileDashboard({ onNavClick }) {
     if (h < 17) return 'Good afternoon 🌤️';
     return 'Good evening 🌆';
   };
+
+  const [settings, setSettings] = useState(null);
+  useEffect(() => {
+    async function loadSettings() {
+      const { data } = await supabase.from('site_settings').select('*').eq('id', 1).single();
+      if (data) setSettings(data);
+    }
+    loadSettings();
+  }, []);
 
   const cgpa  = useCountUp('8.7');
   const certs = useCountUp('15');
@@ -203,10 +213,12 @@ export default function MobileDashboard({ onNavClick }) {
             <h1 className="hd-name">{nameText}</h1>
             <p className="hd-role">Data Science · Full Stack Dev</p>
             <p className="hd-location"><MapPin size={10} /> VIT University</p>
-            <div className="hd-avail">
-              <div className="hd-avail-dot" />
-              Available for opportunities
-            </div>
+            {(settings === null || settings.is_available_for_hire) && (
+              <div className="hd-avail">
+                <div className="hd-avail-dot" />
+                Available for opportunities
+              </div>
+            )}
           </div>
         </div>
 
@@ -233,9 +245,7 @@ export default function MobileDashboard({ onNavClick }) {
 
         {/* ── About Me ───────────────────────────────────────────── */}
         <p className="hd-section-label">About Me</p>
-        <p className="hd-bio">
-          A passionate <strong>B.Tech Graduate from VIT (8.7 CGPA)</strong>, actively exploring the boundaries between predictive machine learning systems and reactive web frameworks. I love building things that are both intelligent and elegant.
-        </p>
+        <p className="hd-bio" dangerouslySetInnerHTML={{ __html: settings?.hero_headline || "A passionate <strong>B.Tech Graduate from VIT (8.7 CGPA)</strong>, actively exploring the boundaries between predictive machine learning systems and reactive web frameworks. I love building things that are both intelligent and elegant." }} />
         
         </motion.div>
       </div>

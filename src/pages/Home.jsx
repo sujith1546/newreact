@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabaseClient';
 import ScrollReveal from '../components/ScrollReveal';
 import { Code, Briefcase, Mail, FileText, Sparkles, ArrowRight } from 'lucide-react';
 import MobileDashboard from '../components/MobileDashboard';
@@ -6,12 +7,21 @@ import useGlitchText from '../hooks/useGlitchText';
 
 export default function Home({ onNavClick }) {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
+  const [settings, setSettings] = useState(null);
   const nameText = useGlitchText("Sujith Thota", 100);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 900);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    async function loadSettings() {
+      const { data } = await supabase.from('site_settings').select('*').eq('id', 1).single();
+      if (data) setSettings(data);
+    }
+    loadSettings();
   }, []);
 
   const getGreeting = () => {
@@ -553,12 +563,14 @@ export default function Home({ onNavClick }) {
         /* Desktop grid view */
         <div className="home-grid">
           <div className="hero-info">
-            <div className="fc-badge">
-              <div className="fc-badge-dot-wrap">
-                <div className="fc-badge-dot" />
+            {(settings === null || settings.is_available_for_hire) && (
+              <div className="fc-badge">
+                <div className="fc-badge-dot-wrap">
+                  <div className="fc-badge-dot" />
+                </div>
+                Available for Opportunities
               </div>
-              Available for Opportunities
-            </div>
+            )}
 
             <div>
               <div className="hero-greeting">{getGreeting()}</div>
@@ -568,9 +580,7 @@ export default function Home({ onNavClick }) {
                 <DesktopTypewriter />
               </div>
               
-              <p className="hero-subtitle-text">
-                A passionate <strong>B.Tech Graduate from VIT (8.7 CGPA)</strong>, actively exploring the boundaries between complex data logic and seamless web experiences.
-              </p>
+              <p className="hero-subtitle-text" dangerouslySetInnerHTML={{ __html: settings?.hero_headline || "A passionate <strong>B.Tech Graduate from VIT (8.7 CGPA)</strong>, actively exploring the boundaries between complex data logic and seamless web experiences." }} />
             </div>
 
             <div className="home-quick-actions">

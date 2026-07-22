@@ -2,8 +2,8 @@ import { useRef, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import ScrollReveal from '../components/ScrollReveal';
-import { Award, ExternalLink, ShieldCheck, X, ChevronDown, ChevronRight } from 'lucide-react';
-import { certificationsData } from '../data/certificationsData';
+import { Award, ExternalLink, ShieldCheck, X, ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
+import { supabase } from '../lib/supabaseClient';
 
 export default function Certifications() {
   const [isMobile, setIsMobile] = useState(false);
@@ -11,6 +11,8 @@ export default function Certifications() {
   const [sheetScrolled, setSheetScrolled] = useState(false);
   const [sheetScrollable, setSheetScrollable] = useState(false);
   const sheetContentRef = useRef(null);
+  const [certificationsData, setCertificationsData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 900);
@@ -18,6 +20,18 @@ export default function Certifications() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  useEffect(() => {
+    fetchCertifications();
+  }, []);
+
+  const fetchCertifications = async () => {
+    const { data, error } = await supabase.from('certifications').select('*').order('display_order', { ascending: true });
+    if (!error && data) {
+      setCertificationsData(data);
+    }
+    setLoading(false);
+  };
 
   // Recalculate if sheet is scrollable when opened
   useEffect(() => {
@@ -108,6 +122,8 @@ export default function Certifications() {
 
         /* ============ MOBILE GRID ============ */
         .mobile-certs-feed { display: none; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .spin { animation: spin 1s linear infinite; }
         
         @media (max-width: 900px) {
           .certs-grid { display: none; /* Hide desktop grid */ }
@@ -258,45 +274,55 @@ export default function Certifications() {
 
       <div className="certs-header">
         <h1>Global Certifications</h1>
-        <p>
-          Verified credentials that demonstrate my expertise and commitment to mastering cutting-edge technologies in data science and artificial intelligence.
+        <p className="cert-header-desc">
+          Professional credentials and specialized training in emerging technologies.
         </p>
       </div>
-
-      {/* ── DESKTOP GRID ── */}
-      {!isMobile && (
-        <div className="certs-grid">
-          {certificationsData.map((cert) => (
-            <div 
-              key={cert.id}
-              className="cert-card" 
-              onMouseMove={(e) => handleMouseMove(e, e.currentTarget)}
-            >
-              <div className="cert-hologram-area">
-                <div className="mesh-gradient"></div>
-                <div className="cert-icon-cluster">
-                  <Award size={42} className="cert-main-icon" />
-                  <ShieldCheck size={20} className="cert-badge-icon" />
-                </div>
-              </div>
-
-              <div className="cert-content">
-                <div className="cert-header">
-                  <h3 className="cert-title">{cert.title}</h3>
-                  <span className="cert-issuer">{cert.issuer}</span>
-                </div>
-                <p className="cert-desc">{cert.description}</p>
-                
-                <div className="cert-footer">
-                  <a href={cert.credentialUrl} target="_blank" rel="noreferrer" className="cert-link">
-                    Verify Credential <ExternalLink size={14} />
-                  </a>
-                </div>
-              </div>
+          
+          {loading ? (
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '40px 0' }}>
+               <Loader2 className="spin" size={32} color="var(--primary-blue)" />
             </div>
-          ))}
-        </div>
-      )}
+          ) : certificationsData.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+              No certifications found.
+            </div>
+          ) : (
+            <>
+              {/* ── DESKTOP GRID ── */}
+              {!isMobile && (
+                <div className="certs-grid">
+                  {certificationsData.map((cert) => (
+                    <div 
+                      key={cert.id}
+                      className="cert-card" 
+                      onMouseMove={(e) => handleMouseMove(e, e.currentTarget)}
+                    >
+                      <div className="cert-hologram-area">
+                        <div className="mesh-gradient"></div>
+                        <div className="cert-icon-cluster">
+                          <Award size={42} className="cert-main-icon" />
+                          <ShieldCheck size={20} className="cert-badge-icon" />
+                        </div>
+                      </div>
+
+                      <div className="cert-content">
+                        <div className="cert-header">
+                          <h3 className="cert-title">{cert.title}</h3>
+                          <span className="cert-issuer">{cert.issuer}</span>
+                        </div>
+                        <p className="cert-desc">{cert.description}</p>
+                        
+                        <div className="cert-footer">
+                          <a href={cert.credentialUrl} target="_blank" rel="noreferrer" className="cert-link">
+                            Verify Credential <ExternalLink size={14} />
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
 
       {/* ── MOBILE VERTICAL FEED ── */}
       {isMobile && (
@@ -436,6 +462,8 @@ export default function Certifications() {
           })()}
         </AnimatePresence>,
         document.body
+      )}
+      </>
       )}
     </ScrollReveal>
   );

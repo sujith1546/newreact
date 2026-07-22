@@ -5,11 +5,19 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronRight, ChevronDown, Star, Layers, Clock, Briefcase, ChevronLeft } from 'lucide-react';
+import { X, ChevronRight, ChevronDown, Star, Layers, Clock, Briefcase, ChevronLeft, Loader2 } from 'lucide-react';
 import ScrollReveal from '../components/ScrollReveal';
-import { skillCategories } from '../data/skillsData';
+import { supabase } from '../lib/supabaseClient';
 import { categoryIconMap } from '../components/skillIcons';
 import SkillTooltip from '../components/SkillTooltip';
+
+const categoryMeta = {
+  languages: { id: "languages", title: "Languages", icon: "code" },
+  database:  { id: "database",  title: "Database & Tools", icon: "database" },
+  ml:        { id: "ml",        title: "ML & Data Science", icon: "ml" },
+  soft:      { id: "soft",      title: "Soft Skills", icon: "users" },
+  exploring: { id: "exploring", title: "Currently Exploring & Learning", icon: "rocket" },
+};
 
 const containerVariants = {
   hidden: {},
@@ -56,6 +64,56 @@ export default function Skills() {
   const [isSkillScrollable, setIsSkillScrollable] = useState(false);
   const catSheetRef   = useRef(null);
   const skillSheetRef = useRef(null);
+
+  const [skillCategories, setSkillCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchSkills() {
+      const { data, error } = await supabase.from('skills').select('*').order('order_index', { ascending: true });
+      if (!error && data) {
+        // Group skills by category
+        const grouped = {};
+        data.forEach(dbSkill => {
+          const cat = dbSkill.category;
+          if (!grouped[cat]) grouped[cat] = [];
+          
+          // Map DB snake_case fields to camelCase format expected by the UI
+          grouped[cat].push({
+            id: dbSkill.id,
+            name: dbSkill.name,
+            icon: dbSkill.icon_class,
+            level: dbSkill.level_label,
+            percent: dbSkill.proficiency_level,
+            years: dbSkill.years_experience,
+            projectCount: dbSkill.project_count,
+            description: dbSkill.description,
+            relatedTools: dbSkill.related_tools || [],
+            projects: dbSkill.projects || [],
+          });
+        });
+
+        // Convert to array matching the old format
+        const finalCategories = Object.keys(grouped).map(catKey => {
+          const meta = categoryMeta[catKey] || { id: catKey, title: catKey.charAt(0).toUpperCase() + catKey.slice(1), icon: 'code' };
+          return {
+            id: meta.id,
+            title: meta.title,
+            icon: meta.icon,
+            skills: grouped[catKey]
+          };
+        });
+
+        // Ensure stable order of categories (languages, database, ml, soft, exploring)
+        const orderMap = { languages: 1, database: 2, ml: 3, soft: 4, exploring: 5 };
+        finalCategories.sort((a, b) => (orderMap[a.id] || 99) - (orderMap[b.id] || 99));
+
+        setSkillCategories(finalCategories);
+      }
+      setLoading(false);
+    }
+    fetchSkills();
+  }, []);
 
   // Detect scrollability for category sheet
   useEffect(() => {
@@ -422,7 +480,15 @@ export default function Skills() {
           <p>Tap any category to explore</p>
         </motion.div>
 
-        {!isMobile ? (
+        {loading ? (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '60px' }}>
+            <Loader2 className="spin" size={32} color="var(--primary-blue)" />
+          </div>
+        ) : skillCategories.length === 0 ? (
+          <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
+            <p>No skills found in the database. Please add them in the Admin Dashboard.</p>
+          </div>
+        ) : !isMobile ? (
           /* ── DESKTOP unchanged ── */
           <motion.div className="skills-grid" variants={containerVariants}>
             {skillCategories.map(category => {

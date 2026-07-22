@@ -1,100 +1,17 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Trophy, Laptop, BookOpen, School, X, Hand, ChevronRight, ChevronDown } from 'lucide-react';
+import { MapPin, Trophy, Laptop, BookOpen, School, X, Hand, ChevronRight, ChevronDown, Loader2 } from 'lucide-react';
 import ScrollReveal from '../components/ScrollReveal';
 import { EducationArrowFlow } from '../components/EducationArrowFlow';
+import { supabase } from '../lib/supabaseClient';
 
-const TIMELINE = [
-  {
-    id: "primary",
-    shortLabel: "primary",
-    year: '2009 – 2015',
-    title: 'Primary Education',
-    institution: 'Aditya Birla Public School',
-    location: 'Thummalapenta',
-    description: 'Built foundational skills in reading, writing, and mathematics from KG through 5th grade. Developed early academic curiosity and enthusiasm for learning and school activities.',
-    score: null,
-    progress: null,
-    Icon: School,
-    color: "#378ADD",
-    bg: "#E6F1FB",
-    textColor: "#0C447C",
-    highlights: ['Foundation Skills', 'Early Learning', 'School Activities'],
-    backStats: [
-      { value: "5th", label: "Grade" },
-      { value: "CBSE", label: "Board" },
-      { value: "A+", label: "Grades" }
-    ],
-    highlight: "Built foundational skills and early academic curiosity."
-  },
-  {
-    id: "secondary",
-    shortLabel: "secondary",
-    year: '2015 – 2019',
-    title: 'Secondary Education',
-    institution: 'Viswabharathi High School',
-    location: 'Gudivada',
-    description: 'Achieved a perfect GPA in board examinations. Built a strong foundation in Mathematics, Science, and English while actively participating in school extracurricular activities.',
-    score: '10/10 GPA — 100%',
-    progress: 100,
-    Icon: Trophy,
-    color: "#EF9F27",
-    bg: "#FAEEDA",
-    textColor: "#633806",
-    highlights: ['Perfect GPA', 'Math & Science', 'Extracurriculars'],
-    backStats: [
-      { value: "10/10", label: "GPA" },
-      { value: "State", label: "Board" },
-      { value: "1st", label: "Class" }
-    ],
-    highlight: "Achieved a perfect GPA in 10th grade board examinations."
-  },
-  {
-    id: "intermediate",
-    shortLabel: "intermediate",
-    year: '2019 – 2022',
-    title: 'Intermediate (11th & 12th)',
-    institution: 'Narayana Junior College',
-    location: 'Vijayawada',
-    description: 'Completed MPC stream with focus on engineering entrance preparation. Maintained excellent academics while preparing for JEE and EAMCET competitive exams.',
-    score: '92.7% — 927/1000',
-    progress: 92.7,
-    Icon: BookOpen,
-    color: "#1D9E75",
-    bg: "#E1F5EE",
-    textColor: "#085041",
-    highlights: ['MPC Stream', 'JEE / EAMCET', 'Math & Physics'],
-    backStats: [
-      { value: "92.7%", label: "Marks" },
-      { value: "MPC", label: "Stream" },
-      { value: "State", label: "Board" }
-    ],
-    highlight: "Maintained excellent academics while preparing for JEE and EAMCET."
-  },
-  {
-    id: "btech",
-    shortLabel: "b.tech",
-    year: '2022 – 2026',
-    title: 'Bachelor of Technology',
-    institution: 'VIT University',
-    location: 'Katpadi, Vellore',
-    description: 'Pursuing B.Tech in Computer Science & Engineering. Gaining deep expertise in DSA, software development, and emerging technologies. Actively involved in coding competitions and technical projects.',
-    score: 'CGPA: 8.7 / 10',
-    progress: 87,
-    Icon: Laptop,
-    color: "#7F77DD",
-    bg: "#EEEDFE",
-    textColor: "#26215C",
-    highlights: ['CS & Engineering', 'DSA & Dev', 'Coding'],
-    backStats: [
-      { value: "8.7", label: "CGPA" },
-      { value: "3", label: "Projects" },
-      { value: "2", label: "Hackathons" }
-    ],
-    highlight: "Actively involved in coding competitions and technical projects."
-  }
-];
+const iconMap = {
+  'School': School,
+  'Trophy': Trophy,
+  'BookOpen': BookOpen,
+  'Laptop': Laptop
+};
 
 const RING_RADIUS = 27;
 const RING_CIRC = 2 * Math.PI * RING_RADIUS;
@@ -176,7 +93,7 @@ const cardVariants = {
 function EducationCard({ item, index, activeIndex, flippedIndex, onCardClick, onFlip, onClose }) {
   const isActive = index === activeIndex;
   const isFlipped = index === flippedIndex;
-  const { Icon } = item;
+  const Icon = iconMap[item.icon_class] || School;
   
   const cardRef = useRef(null);
 
@@ -292,15 +209,38 @@ function EducationCard({ item, index, activeIndex, flippedIndex, onCardClick, on
 }
 
 export default function Education() {
+  const [timelineData, setTimelineData] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
   const [flippedIndex, setFlippedIndex] = useState(null);
-  
-  // Mobile layout state
   const [isMobile, setIsMobile] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [sheetScrolled, setSheetScrolled] = useState(false);
   const [sheetScrollable, setSheetScrollable] = useState(false);
   const sheetContentRef = useRef(null);
+
+  useEffect(() => {
+    fetchEducation();
+  }, []);
+
+  const fetchEducation = async () => {
+    const { data, error } = await supabase.from('education').select('*').order('display_order', { ascending: true });
+    if (!error && data) {
+      // Map database fields to the exact prop names the UI expects
+      const mapped = data.map(d => ({
+        ...d,
+        shortLabel: d.short_label,
+        color: d.theme_color,
+        bg: d.bg_color,
+        textColor: d.text_color,
+        backStats: d.back_stats,
+        highlight: d.highlight_text
+      }));
+      setTimelineData(mapped);
+      if (mapped.length > 0) setActiveIndex(mapped.length - 1);
+    }
+    setLoading(false);
+  };
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 900);
@@ -1073,16 +1013,26 @@ export default function Education() {
         </div>
 
         {/* Horizontal Progress Rail */}
-        <div className="edu-rail">
-          <div className="edu-rail-line-container">
-            <div 
-              className="edu-rail-line-active" 
-              style={{ width: `${activeIndex * 33.33}%` }}
-            ></div>
+        {loading ? (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '40px 0' }}>
+            <Loader2 className="spin" size={32} color="var(--primary-blue)" />
           </div>
-          <div className="edu-rail-dots">
-            {TIMELINE.map((item, index) => (
-              <div key={item.year} className="edu-rail-dot-wrap">
+        ) : timelineData.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+            No education entries found.
+          </div>
+        ) : (
+          <>
+            <div className="edu-rail">
+              <div className="edu-rail-line-container">
+                <div 
+                  className="edu-rail-line-active" 
+                  style={{ width: `${(activeIndex / Math.max(1, timelineData.length - 1)) * 100}%` }}
+                ></div>
+              </div>
+              <div className="edu-rail-dots" style={{ gridTemplateColumns: `repeat(${timelineData.length}, 1fr)` }}>
+                {timelineData.map((item, index) => (
+                  <div key={item.id} className="edu-rail-dot-wrap">
                 {/* Floating Preview Tooltip */}
                 <div className="edu-rail-dot-tooltip">
                   <div style={{ fontWeight: '700', marginBottom: '2px' }}>{item.title}</div>
@@ -1115,9 +1065,9 @@ export default function Education() {
           initial="hidden"
           animate="visible"
         >
-          {TIMELINE.map((item, index) => (
+          {timelineData.map((item, index) => (
             <EducationCard 
-              key={item.year}
+              key={item.id}
               item={item}
               index={index}
               activeIndex={activeIndex}
@@ -1132,13 +1082,13 @@ export default function Education() {
         {/* ── MOBILE VERTICAL FEED ── */}
         {isMobile && (
           <div className="mobile-edu-feed">
-            {TIMELINE.map((item, index) => {
+            {timelineData.map((item, index) => {
               const accents = ['#3b82f6', '#eab308', '#10b981', '#8b5cf6'];
               const accent = accents[index % accents.length];
-              const { Icon } = item;
+              const Icon = iconMap[item.icon_class] || School;
               return (
                 <button 
-                  key={item.year} 
+                  key={item.id} 
                   className="medu-card"
                   onClick={() => setSelectedItem(item)}
                 >
@@ -1164,16 +1114,18 @@ export default function Education() {
           <p className="section-subtitle" style={{ color: '#6b7280', fontSize: '13px', marginBottom: '8px', textAlign: 'center', fontWeight: 'normal' }}>Your journey at a glance</p>
           <EducationArrowFlow activeIndex={activeIndex} />
         </div>
+        </>
+        )}
       </div>
 
       {/* ── DETAIL SHEET (Mobile) ── */}
       {typeof document !== 'undefined' && createPortal(
         <AnimatePresence>
           {selectedItem && (() => {
-            const itemIndex = TIMELINE.indexOf(selectedItem);
+            const itemIndex = timelineData.indexOf(selectedItem);
             const accents = ['#3b82f6', '#eab308', '#10b981', '#8b5cf6'];
             const accent = accents[itemIndex % accents.length];
-            const { Icon } = selectedItem;
+            const Icon = iconMap[selectedItem.icon_class] || School;
             return (
             <div style={{ position: 'relative', zIndex: 9999 }}>
               <motion.div
@@ -1267,7 +1219,7 @@ export default function Education() {
                     {/* Timeline Strip */}
                     <div>
                       <SectionLabel>timeline context</SectionLabel>
-                      <TimelineStrip stages={TIMELINE} activeId={selectedItem.id} />
+                      <TimelineStrip stages={timelineData} activeId={selectedItem.id} />
                     </div>
 
                   </div>

@@ -239,21 +239,8 @@ export default function AdminLogin() {
   }
 
   return (
-    <div style={styles.container}>
-      <style>{`
-        body { 
-          background-color: #111111 !important; 
-          margin: 0; 
-          padding: 0; 
-          zoom: 1 !important;
-          min-height: 100vh;
-        }
-        #root {
-          min-height: 100vh;
-          display: flex;
-          flex-direction: column;
-        }
-      `}</style>
+    <div style={styles.page}>
+      <style>{`body { background-color: #ffffff !important; margin: 0; padding: 0; }`}</style>
       <div style={styles.card}>
         <div style={styles.iconBadge}>
           <LockIcon size={20} color="#3b82f6" />

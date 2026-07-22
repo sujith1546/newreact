@@ -1,7 +1,24 @@
+import { useState, useEffect } from 'react';
 import ScrollReveal from '../components/ScrollReveal';
-import { Briefcase } from 'lucide-react';
+import { Briefcase, Loader2, Calendar } from 'lucide-react';
+import { supabase } from '../lib/supabaseClient';
 
 export default function Experience() {
+  const [experiences, setExperiences] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchExperience() {
+      const { data, error } = await supabase
+        .from('experience')
+        .select('*')
+        .order('display_order', { ascending: true });
+      if (!error && data) setExperiences(data);
+      setLoading(false);
+    }
+    fetchExperience();
+  }, []);
+
   return (
     <ScrollReveal>
       <style>{`
@@ -71,6 +88,87 @@ export default function Experience() {
           background: #374151;
           color: #6b7280;
         }
+
+        /* Timeline Styles */
+        .timeline {
+          position: relative;
+          padding-left: 24px;
+          margin-top: 10px;
+        }
+        .timeline::before {
+          content: '';
+          position: absolute;
+          top: 0; left: 6px; bottom: 0;
+          width: 2px;
+          background: var(--border-color);
+          border-radius: 2px;
+        }
+        .timeline-item {
+          position: relative;
+          margin-bottom: 32px;
+        }
+        .timeline-item:last-child {
+          margin-bottom: 0;
+        }
+        .timeline-dot {
+          position: absolute;
+          top: 4px; left: -23px;
+          width: 10px; height: 10px;
+          border-radius: 50%;
+          background: var(--primary-blue);
+          border: 2px solid var(--bg-primary);
+          box-sizing: content-box;
+        }
+        .timeline-content {
+          background: var(--bg-secondary);
+          border: 1px solid var(--border-color);
+          border-radius: 16px;
+          padding: 20px;
+        }
+        .timeline-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 12px;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+        .timeline-title h3 {
+          margin: 0 0 4px;
+          font-size: 18px;
+          font-weight: 700;
+          color: var(--text-primary);
+        }
+        .timeline-title p {
+          margin: 0;
+          font-size: 14px;
+          font-weight: 500;
+          color: var(--text-secondary);
+        }
+        .timeline-date {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 12px;
+          font-weight: 600;
+          color: var(--text-muted);
+          background: var(--bg-primary);
+          padding: 4px 10px;
+          border-radius: 20px;
+          border: 1px solid var(--border-color);
+        }
+        .timeline-bullets {
+          margin: 0; padding-left: 18px;
+          color: var(--text-secondary);
+          font-size: 14px;
+          line-height: 1.6;
+        }
+        .timeline-bullets li {
+          margin-bottom: 6px;
+        }
+        .timeline-bullets li:last-child {
+          margin-bottom: 0;
+        }
       `}</style>
       
       <div className="exp-page">
@@ -79,15 +177,48 @@ export default function Experience() {
           <p>My professional journey so far</p>
         </div>
 
-        <div className="empty-state-card">
-          <div className="empty-icon-wrap">
-            <Briefcase size={24} />
+        {loading ? (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '60px' }}>
+            <Loader2 className="spin" size={32} color="var(--primary-blue)" />
           </div>
-          <h2 className="empty-title">Seeking Opportunities</h2>
-          <p className="empty-desc">
-            I am currently a fresher, eagerly building my technical foundation through personal projects and continuous learning. I am actively looking for opportunities to apply my skills in a real-world environment.
-          </p>
-        </div>
+        ) : experiences.length === 0 ? (
+          <div className="empty-state-card">
+            <div className="empty-icon-wrap">
+              <Briefcase size={24} />
+            </div>
+            <h2 className="empty-title">Seeking Opportunities</h2>
+            <p className="empty-desc">
+              I am currently a fresher, eagerly building my technical foundation through personal projects and continuous learning. I am actively looking for opportunities to apply my skills in a real-world environment.
+            </p>
+          </div>
+        ) : (
+          <div className="timeline">
+            {experiences.map((exp) => (
+              <div key={exp.id} className="timeline-item">
+                <div className="timeline-dot" />
+                <div className="timeline-content">
+                  <div className="timeline-header">
+                    <div className="timeline-title">
+                      <h3>{exp.role}</h3>
+                      <p>{exp.company} {exp.is_education ? '(Education)' : ''}</p>
+                    </div>
+                    <div className="timeline-date">
+                      <Calendar size={14} />
+                      {exp.start_date} — {exp.end_date || 'Present'}
+                    </div>
+                  </div>
+                  {exp.description_bullets && exp.description_bullets.length > 0 && (
+                    <ul className="timeline-bullets">
+                      {exp.description_bullets.map((bullet, i) => (
+                        <li key={i}>{bullet}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </ScrollReveal>
   );
