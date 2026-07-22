@@ -60,9 +60,25 @@ export default function ChatBot() {
   const [isRecording, setIsRecording] = useState(false);
   const [isVoiceEnabled, setIsVoiceEnabled] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const [attachment, setAttachment] = useState(null); // { file, base64 }
-  const fileInputRef = useRef(null);
   const { triggerIsland } = useIsland();
+
+  const DISCLAIMER_KEY = 'ai_disclaimer_dismissed';
+  const [isDisclaimerDismissed, setIsDisclaimerDismissed] = useState(() => {
+    try {
+      return localStorage.getItem(DISCLAIMER_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const handleDismissDisclaimer = () => {
+    setIsDisclaimerDismissed(true);
+    try {
+      localStorage.setItem(DISCLAIMER_KEY, 'true');
+    } catch (err) {
+      console.error('Failed to save disclaimer state:', err);
+    }
+  };
 
   const speakText = (text) => {
     if (!isVoiceEnabled || !('speechSynthesis' in window)) return;
@@ -862,6 +878,64 @@ export default function ChatBot() {
           cursor: not-allowed;
         }
 
+        /* ── AI Disclaimer Banner ─────────────────────────────── */
+        .ai-disclaimer-banner {
+          width: 100%;
+          background: rgba(245, 158, 11, 0.1);
+          border-bottom: 1px solid rgba(245, 158, 11, 0.2);
+        }
+        [data-theme="dark"] .ai-disclaimer-banner {
+          background: rgba(251, 191, 36, 0.08);
+          border-bottom-color: rgba(251, 191, 36, 0.18);
+        }
+        .ai-disclaimer-content {
+          padding: 8px 14px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+        }
+        .ai-disclaimer-text {
+          display: flex;
+          align-items: center;
+          gap: 7px;
+          font-size: 11.5px;
+          font-weight: 500;
+          color: #d97706;
+          line-height: 1.35;
+        }
+        [data-theme="dark"] .ai-disclaimer-text {
+          color: #fbbf24;
+        }
+        .ai-disclaimer-icon {
+          flex-shrink: 0;
+          color: #d97706;
+        }
+        [data-theme="dark"] .ai-disclaimer-icon {
+          color: #fbbf24;
+        }
+        .ai-disclaimer-close {
+          background: transparent;
+          border: none;
+          color: #d97706;
+          opacity: 0.7;
+          cursor: pointer;
+          padding: 2px;
+          border-radius: 4px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          transition: all 0.15s ease;
+        }
+        [data-theme="dark"] .ai-disclaimer-close {
+          color: #fbbf24;
+        }
+        .ai-disclaimer-close:hover {
+          opacity: 1;
+          background: rgba(245, 158, 11, 0.15);
+        }
+
         /* Input bar */
         .chatbot-input-bar {
           padding: 12px 16px;
@@ -1137,6 +1211,35 @@ export default function ChatBot() {
                 </button>
               </div>
             </div>
+
+            {/* AI Disclaimer Banner */}
+            <AnimatePresence>
+              {!isDisclaimerDismissed && (
+                <motion.div
+                  className="ai-disclaimer-banner"
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+                  style={{ overflow: 'hidden' }}
+                >
+                  <div className="ai-disclaimer-content">
+                    <div className="ai-disclaimer-text">
+                      <Bot size={13} className="ai-disclaimer-icon" />
+                      <span>This is an AI assistant. It can make mistakes.</span>
+                    </div>
+                    <button
+                      onClick={handleDismissDisclaimer}
+                      className="ai-disclaimer-close"
+                      aria-label="Dismiss disclaimer"
+                      type="button"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Messages */}
             <div className="chatbot-messages">
