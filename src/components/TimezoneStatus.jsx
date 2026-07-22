@@ -86,12 +86,12 @@ export default function TimezoneStatus() {
       <style>{`
         .timezone-status-wrapper {
           position: fixed;
-          top: 24px;
-          right: 112px; /* 32px (toggle right) + 68px (toggle width) + 12px gap */
+          top: 20px;
+          right: 28px;
           z-index: 2000;
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 8px;
         }
 
 
@@ -292,7 +292,6 @@ export default function TimezoneStatus() {
 
       <div className="timezone-status-wrapper">
         <DiagnosticsToggle />
-        <SettingsDropdown />
         
         <button 
           className="cmdk-hint-pill"
@@ -336,6 +335,9 @@ export default function TimezoneStatus() {
             </div>
           </div>
         </div>
+
+        <DarkModeToggle />
+        <SettingsDropdown />
       </div>
     </>
   );

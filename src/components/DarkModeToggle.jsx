@@ -12,11 +12,10 @@ export default function DarkModeToggle() {
     <>
       <style>{`
         .theme-toggle-pill {
-          position: fixed;
-          top: 22px;
-          right: 76px;
+          position: relative;
           width: 68px;
           height: 34px;
+          border-radius: 17px;
           border-radius: 17px;
           background: rgba(243, 244, 246, 0.85); /* Slightly off-white to stand out */
           backdrop-filter: blur(12px);

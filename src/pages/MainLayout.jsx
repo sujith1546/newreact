@@ -289,8 +289,12 @@ export default function MainLayout() {
               <span>{cta.label}</span>
             </motion.button>
           </AnimatePresence>
-          <DarkModeToggle />
-          <SettingsDropdown />
+          {isMobile && (
+            <>
+              <DarkModeToggle />
+              <SettingsDropdown />
+            </>
+          )}
         </div>
       </header>
 
@@ -352,13 +356,7 @@ export default function MainLayout() {
         onDismiss={() => { setSpotlightSection(null); setSpotlightKeyword(''); }}
       />
 
-      {!isMobile && (
-        <>
-          <TimezoneStatus />
-          <DarkModeToggle />
-          <SettingsDropdown />
-        </>
-      )}
+      {!isMobile && <TimezoneStatus />}
       <ChatBot />
       <CommandPalette />
 

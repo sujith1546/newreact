@@ -83,16 +83,9 @@ export default function SettingsDropdown() {
     <div className="settings-dropdown-container" ref={dropdownRef} style={{ position: 'relative', display: 'inline-block' }}>
       <style>{`
         .settings-dropdown-container {
-          position: fixed;
-          top: 22px;
-          right: 28px;
-          z-index: 2001;
-        }
-        @media (max-width: 900px) {
-          .settings-dropdown-container {
-            top: 16px;
-            right: 90px;
-          }
+          position: relative;
+          display: inline-block;
+          flex-shrink: 0;
         }
 
         .settings-trigger-btn {
