@@ -50,10 +50,12 @@ export function ThemeProvider({ children }) {
 
   // Accent Colors dictionary
   const colors = {
-    blue: '#007bff',
-    purple: '#8b5cf6',
+    blue:    '#3b82f6',
+    purple:  '#8b5cf6',
     emerald: '#10b981',
-    rose: '#f43f5e'
+    rose:    '#f43f5e',
+    amber:   '#f59e0b',
+    cyan:    '#06b6d4',
   };
 
   // Fonts dictionary

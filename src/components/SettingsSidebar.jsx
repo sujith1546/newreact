@@ -1,44 +1,64 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  X, Settings2, Palette, Sparkles, Bot, 
-  Volume2, Eye, ShieldAlert, RotateCcw, 
-  MonitorPlay, Code, Paintbrush, Activity,
-  Moon, Sun, Layout, Box, Trash2
+import {
+  X, Settings2, Palette, Bot, Volume2, VolumeX, Eye, EyeOff,
+  Zap, ZapOff, MonitorPlay, Code2, Paintbrush, Activity,
+  Moon, Sun, Layers, Trash2, RotateCcw, Sparkles, Check,
+  ChevronRight, Info, Shield, ExternalLink
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
+/* ─── Accent palette ─────────────────────────────────────── */
+const ACCENTS = [
+  { key: 'blue',    hex: '#3b82f6', label: 'Blue'    },
+  { key: 'purple',  hex: '#8b5cf6', label: 'Violet'  },
+  { key: 'emerald', hex: '#10b981', label: 'Emerald' },
+  { key: 'rose',    hex: '#f43f5e', label: 'Rose'    },
+  { key: 'amber',   hex: '#f59e0b', label: 'Amber'   },
+  { key: 'cyan',    hex: '#06b6d4', label: 'Cyan'    },
+];
+
+/* ─── Tabs config ────────────────────────────────────────── */
+const TABS = [
+  { id: 'appearance', label: 'Look',        icon: Palette    },
+  { id: 'ai',         label: 'AI',          icon: Bot        },
+  { id: 'access',     label: 'Access',      icon: Eye        },
+  { id: 'pro',        label: 'Pro',         icon: Code2      },
+];
+
 export default function SettingsSidebar() {
-  const [isOpen, setIsOpen] = useState(false);
-  const { 
-    theme, toggleTheme, 
+  const [isOpen,   setIsOpen]   = useState(false);
+  const [activeTab, setActiveTab] = useState('appearance');
+  const [toast, setToast]       = useState(null); // { msg, type }
+
+  const {
+    theme, toggleTheme,
     accentColor, setAccentColor,
-    pageTransition, setPageTransition,
     glassIntensity, setGlassIntensity,
     reduceMotion, setReduceMotion,
     highContrast, setHighContrast,
     aiVoice, setAiVoice,
     aiAutoNav, setAiAutoNav,
     uiAudio, setUiAudio,
-    devMode, setDevMode
+    devMode, setDevMode,
   } = useTheme();
 
   const isDark = theme === 'dark';
+  const accent = ACCENTS.find(a => a.key === accentColor)?.hex ?? '#8b5cf6';
 
+  /* ── Event listeners ── */
   useEffect(() => {
-    const handleOpen = () => setIsOpen(true);
-    window.addEventListener('open-all-settings', handleOpen);
-    return () => window.removeEventListener('open-all-settings', handleOpen);
+    const open = () => { setIsOpen(true); };
+    window.addEventListener('open-all-settings', open);
+    return () => window.removeEventListener('open-all-settings', open);
   }, []);
 
   useEffect(() => {
     if (!isOpen) return;
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') setIsOpen(false);
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    const esc = (e) => { if (e.key === 'Escape') setIsOpen(false); };
+    window.addEventListener('keydown', esc);
+    return () => window.removeEventListener('keydown', esc);
   }, [isOpen]);
 
   useEffect(() => {
@@ -46,219 +66,494 @@ export default function SettingsSidebar() {
     return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
 
-  const handleFactoryReset = () => {
-    if (window.confirm("Are you sure you want to reset all preferences? This will clear your chat history and restore defaults.")) {
-      localStorage.clear();
-      window.location.reload();
-    }
-  };
+  /* ── Toast helper ── */
+  const showToast = useCallback((msg, type = 'success') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 2800);
+  }, []);
 
+  /* ── Actions ── */
   const handleClearChat = () => {
-    if (window.confirm("Clear AI chat history?")) {
-      window.dispatchEvent(new CustomEvent('clear-chat'));
-      alert('Chat history cleared.');
-    }
+    window.dispatchEvent(new CustomEvent('clear-chat'));
+    showToast('Chat memory cleared');
   };
 
-  const handleResetDisclaimer = () => {
+  const handleRestoreDisclaimer = () => {
     localStorage.removeItem('ai_disclaimer_dismissed');
-    window.dispatchEvent(new CustomEvent('clear-chat')); // Trigger re-render to show disclaimer
-    alert('AI Disclaimer restored in chat.');
+    window.dispatchEvent(new CustomEvent('clear-chat'));
+    showToast('AI disclaimer restored');
   };
 
-  // Reusable Switch Component
-  const Switch = ({ checked, onChange, label, icon: Icon, color = '#8b5cf6' }) => (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <div style={{ 
-          width: '28px', height: '28px', borderRadius: '8px', 
-          background: checked ? `${color}25` : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'), 
-          color: checked ? color : (isDark ? '#94a3b8' : '#64748b'),
-          display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }}>
-          <Icon size={14} />
-        </div>
-        <span style={{ fontSize: '13px', fontWeight: 600, color: isDark ? '#f1f5f9' : '#0f172a' }}>{label}</span>
-      </div>
-      <button
-        onClick={() => onChange(!checked)}
+  const handleFactoryReset = () => {
+    localStorage.clear();
+    showToast('Resetting…', 'warn');
+    setTimeout(() => window.location.reload(), 1200);
+  };
+
+  /* ──────────────────────────────────────────────────────────
+     Sub-components (defined inside so they close over theme)
+  ────────────────────────────────────────────────────────── */
+
+  /* Animated iOS-style toggle */
+  const Toggle = ({ checked, onChange, accent: toggleAccent = accent }) => (
+    <button
+      onClick={() => onChange(!checked)}
+      aria-checked={checked}
+      role="switch"
+      style={{
+        width: '44px', height: '26px', borderRadius: '100px',
+        background: checked ? toggleAccent : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.15)'),
+        border: 'none', cursor: 'pointer', position: 'relative',
+        transition: 'background 0.3s cubic-bezier(0.16,1,0.3,1)', flexShrink: 0,
+        boxShadow: checked ? `0 0 12px ${toggleAccent}55` : 'none',
+      }}
+    >
+      <motion.div
+        layout
+        transition={{ type: 'spring', stiffness: 500, damping: 30 }}
         style={{
-          width: '36px', height: '20px', borderRadius: '100px',
-          background: checked ? color : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.15)'),
-          border: 'none', cursor: 'pointer', position: 'relative',
-          transition: 'all 0.25s ease'
+          width: '20px', height: '20px', borderRadius: '50%',
+          background: '#fff', position: 'absolute', top: '3px',
+          left: checked ? '21px' : '3px',
+          boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
         }}
-      >
+      />
+    </button>
+  );
+
+  /* Row wrapper */
+  const Row = ({ icon: Icon, iconColor = accent, label, sublabel, children, danger }) => (
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      padding: '11px 14px', borderRadius: '12px',
+      background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+      border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}`,
+      marginBottom: '8px',
+      transition: 'background 0.2s',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
         <div style={{
-          width: '16px', height: '16px', borderRadius: '50%', background: '#fff',
-          position: 'absolute', top: '2px', left: checked ? '18px' : '2px',
-          transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-        }} />
-      </button>
+          width: '32px', height: '32px', borderRadius: '10px', flexShrink: 0,
+          background: danger ? 'rgba(239,68,68,0.1)' : `${iconColor}18`,
+          color: danger ? '#ef4444' : iconColor,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <Icon size={15} />
+        </div>
+        <div>
+          <div style={{ fontSize: '13px', fontWeight: 600, color: danger ? '#ef4444' : (isDark ? '#f1f5f9' : '#0f172a') }}>
+            {label}
+          </div>
+          {sublabel && (
+            <div style={{ fontSize: '11px', color: isDark ? '#64748b' : '#94a3b8', marginTop: '1px' }}>
+              {sublabel}
+            </div>
+          )}
+        </div>
+      </div>
+      {children}
     </div>
   );
 
-  const SectionTitle = ({ title, icon: Icon }) => (
-    <div style={{ 
-      display: 'flex', alignItems: 'center', gap: '6px', 
-      marginBottom: '12px', marginTop: '24px',
-      color: isDark ? '#64748b' : '#94a3b8', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em'
+  /* Section label */
+  const Section = ({ title }) => (
+    <div style={{
+      fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em',
+      color: isDark ? '#475569' : '#94a3b8', padding: '18px 0 8px',
     }}>
-      <Icon size={12} />
       {title}
     </div>
   );
+
+  /* Action button */
+  const ActionBtn = ({ label, icon: Icon, onClick, danger, sublabel }) => (
+    <button
+      onClick={onClick}
+      style={{
+        width: '100%', display: 'flex', alignItems: 'center', gap: '12px',
+        padding: '11px 14px', borderRadius: '12px', border: 'none', cursor: 'pointer',
+        background: danger ? 'rgba(239,68,68,0.08)' : (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'),
+        marginBottom: '8px', textAlign: 'left', transition: 'background 0.2s',
+      }}
+      onMouseEnter={e => e.currentTarget.style.background = danger ? 'rgba(239,68,68,0.15)' : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)')}
+      onMouseLeave={e => e.currentTarget.style.background = danger ? 'rgba(239,68,68,0.08)' : (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)')}
+    >
+      <div style={{
+        width: '32px', height: '32px', borderRadius: '10px', flexShrink: 0,
+        background: danger ? 'rgba(239,68,68,0.12)' : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'),
+        color: danger ? '#ef4444' : (isDark ? '#94a3b8' : '#64748b'),
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <Icon size={15} />
+      </div>
+      <div style={{ flex: 1 }}>
+        <div style={{ fontSize: '13px', fontWeight: 600, color: danger ? '#ef4444' : (isDark ? '#f1f5f9' : '#0f172a') }}>
+          {label}
+        </div>
+        {sublabel && <div style={{ fontSize: '11px', color: isDark ? '#64748b' : '#94a3b8', marginTop: '1px' }}>{sublabel}</div>}
+      </div>
+      <ChevronRight size={14} style={{ color: isDark ? '#475569' : '#94a3b8', flexShrink: 0 }} />
+    </button>
+  );
+
+  /* ── Tab content ── */
+  const renderTab = () => {
+    if (activeTab === 'appearance') return (
+      <div>
+        <Section title="Theme" />
+        <Row icon={isDark ? Moon : Sun} iconColor={isDark ? '#8b5cf6' : '#f59e0b'} label="Dark Mode" sublabel={isDark ? 'Night theme active' : 'Light theme active'}>
+          <Toggle checked={isDark} onChange={toggleTheme} accent={isDark ? '#8b5cf6' : '#f59e0b'} />
+        </Row>
+
+        <Section title="Accent Color" />
+        <div style={{
+          display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '8px',
+          padding: '14px', borderRadius: '14px',
+          background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+          border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}`,
+          marginBottom: '8px',
+        }}>
+          {ACCENTS.map(a => (
+            <button
+              key={a.key}
+              onClick={() => { setAccentColor(a.key); showToast(`Accent → ${a.label}`); }}
+              title={a.label}
+              style={{
+                width: '100%', aspectRatio: '1', borderRadius: '50%', cursor: 'pointer',
+                background: a.hex, border: 'none', position: 'relative',
+                boxShadow: accentColor === a.key ? `0 0 0 3px ${isDark ? '#1e1030' : '#fff'}, 0 0 0 5px ${a.hex}` : 'none',
+                transform: accentColor === a.key ? 'scale(1.15)' : 'scale(1)',
+                transition: 'all 0.25s cubic-bezier(0.16,1,0.3,1)',
+              }}
+            >
+              {accentColor === a.key && (
+                <Check size={10} style={{ color: '#fff', position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }} />
+              )}
+            </button>
+          ))}
+        </div>
+
+        <Section title="Glassmorphism" />
+        <div style={{
+          padding: '14px', borderRadius: '14px',
+          background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
+          border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}`,
+          marginBottom: '8px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+            <Layers size={13} style={{ color: accent }} />
+            <span style={{ fontSize: '12px', fontWeight: 600, color: isDark ? '#94a3b8' : '#64748b' }}>
+              Glass Blur Intensity
+            </span>
+            <span style={{
+              marginLeft: 'auto', fontSize: '11px', fontWeight: 700, padding: '2px 8px',
+              borderRadius: '100px', background: `${accent}20`, color: accent, textTransform: 'capitalize',
+            }}>
+              {glassIntensity}
+            </span>
+          </div>
+          <div style={{
+            display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '6px',
+          }}>
+            {['light', 'medium', 'heavy'].map(lvl => (
+              <button
+                key={lvl}
+                onClick={() => { setGlassIntensity(lvl); showToast(`Glass → ${lvl}`); }}
+                style={{
+                  padding: '8px 4px', borderRadius: '8px', cursor: 'pointer', border: 'none',
+                  background: glassIntensity === lvl
+                    ? `${accent}22`
+                    : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'),
+                  color: glassIntensity === lvl ? accent : (isDark ? '#94a3b8' : '#64748b'),
+                  fontWeight: 700, fontSize: '12px', textTransform: 'capitalize',
+                  boxShadow: glassIntensity === lvl ? `inset 0 0 0 1px ${accent}55` : 'none',
+                  transition: 'all 0.2s',
+                }}
+              >
+                {lvl}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+
+    if (activeTab === 'ai') return (
+      <div>
+        <Section title="Capabilities" />
+        <Row icon={Volume2} iconColor="#8b5cf6" label="AI Voice Responses" sublabel="Read replies aloud via speech synth">
+          <Toggle checked={aiVoice} onChange={v => { setAiVoice(v); showToast(v ? 'Voice ON' : 'Voice OFF'); }} />
+        </Row>
+        <Row icon={Sparkles} iconColor="#10b981" label="Screen Director" sublabel="AI auto-navigates to relevant sections">
+          <Toggle checked={aiAutoNav} onChange={v => { setAiAutoNav(v); showToast(v ? 'Auto-nav ON' : 'Auto-nav OFF'); }} />
+        </Row>
+
+        <Section title="Memory & History" />
+        <ActionBtn
+          label="Clear Chat Memory"
+          sublabel="Wipes chat history, keeps settings"
+          icon={Trash2}
+          onClick={handleClearChat}
+        />
+        <ActionBtn
+          label="Restore AI Disclaimer"
+          sublabel="Re-shows the AI accuracy notice"
+          icon={RotateCcw}
+          onClick={handleRestoreDisclaimer}
+        />
+
+        <Section title="About Atom AI" />
+        <div style={{
+          padding: '14px', borderRadius: '14px',
+          background: isDark ? 'rgba(139,92,246,0.06)' : 'rgba(139,92,246,0.04)',
+          border: `1px solid ${isDark ? 'rgba(139,92,246,0.18)' : 'rgba(139,92,246,0.12)'}`,
+        }}>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+            <Info size={14} style={{ color: '#8b5cf6', marginTop: '1px', flexShrink: 0 }} />
+            <p style={{ margin: 0, fontSize: '12px', lineHeight: 1.6, color: isDark ? '#94a3b8' : '#64748b' }}>
+              Powered by <strong style={{ color: isDark ? '#c4b5fd' : '#7c3aed' }}>Groq LLaMA 3.3</strong> with
+              RAG technology. Responses are based on Sujith's portfolio data. Always verify important info.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+
+    if (activeTab === 'access') return (
+      <div>
+        <Section title="Motion & Effects" />
+        <Row icon={uiAudio ? Volume2 : VolumeX} iconColor="#3b82f6" label="UI Sound Effects" sublabel="Subtle audio feedback on interactions">
+          <Toggle checked={uiAudio} onChange={v => { setUiAudio(v); showToast(v ? 'Sound ON' : 'Sound OFF'); }} accent="#3b82f6" />
+        </Row>
+        <Row icon={reduceMotion ? ZapOff : Zap} iconColor="#eab308" label="Reduce Motion" sublabel="Disables all animations globally">
+          <Toggle checked={reduceMotion} onChange={v => { setReduceMotion(v); showToast(v ? 'Motion reduced' : 'Motion enabled'); }} accent="#eab308" />
+        </Row>
+
+        <Section title="Visual" />
+        <Row icon={highContrast ? Eye : EyeOff} iconColor="#f97316" label="High Contrast" sublabel="Boosts text and border visibility">
+          <Toggle checked={highContrast} onChange={v => { setHighContrast(v); showToast(v ? 'High contrast ON' : 'High contrast OFF'); }} accent="#f97316" />
+        </Row>
+
+        <div style={{
+          marginTop: '8px', padding: '12px 14px', borderRadius: '12px',
+          background: isDark ? 'rgba(234,179,8,0.06)' : 'rgba(234,179,8,0.05)',
+          border: `1px solid ${isDark ? 'rgba(234,179,8,0.18)' : 'rgba(234,179,8,0.15)'}`,
+          display: 'flex', gap: '10px', alignItems: 'flex-start',
+        }}>
+          <Shield size={13} style={{ color: '#eab308', marginTop: '1px', flexShrink: 0 }} />
+          <p style={{ margin: 0, fontSize: '11px', lineHeight: 1.6, color: isDark ? '#92400e' : '#78350f', color: isDark ? '#fde68a' : '#92400e' }}>
+            Reduce Motion also respects your OS-level accessibility preference automatically.
+          </p>
+        </div>
+      </div>
+    );
+
+    if (activeTab === 'pro') return (
+      <div>
+        <Section title="Developer" />
+        <Row icon={MonitorPlay} iconColor="#14b8a6" label="Performance HUD" sublabel="Live FPS and render diagnostics">
+          <Toggle checked={devMode} onChange={v => { setDevMode(v); showToast(v ? 'HUD enabled' : 'HUD disabled'); }} accent="#14b8a6" />
+        </Row>
+
+        <Section title="Portfolio" />
+        <ActionBtn
+          label="View Source Code"
+          sublabel="Open GitHub repository"
+          icon={ExternalLink}
+          onClick={() => window.open('https://github.com/sujith1546/newreact', '_blank')}
+        />
+
+        <Section title="Danger Zone" />
+        <div style={{
+          padding: '14px', borderRadius: '14px',
+          background: 'rgba(239,68,68,0.06)',
+          border: '1px solid rgba(239,68,68,0.15)',
+        }}>
+          <p style={{ margin: '0 0 12px', fontSize: '12px', color: isDark ? '#fca5a5' : '#b91c1c', lineHeight: 1.5 }}>
+            This will clear <strong>all preferences</strong>, chat history, and reload the page. Cannot be undone.
+          </p>
+          <button
+            onClick={handleFactoryReset}
+            style={{
+              width: '100%', padding: '10px', borderRadius: '10px', border: '1px solid rgba(239,68,68,0.3)',
+              background: 'rgba(239,68,68,0.1)', color: '#ef4444', fontWeight: 700, fontSize: '13px',
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+              transition: 'all 0.2s',
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.2)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+          >
+            <Trash2 size={15} />
+            Factory Reset
+          </button>
+        </div>
+      </div>
+    );
+  };
 
   return createPortal(
     <AnimatePresence>
       {isOpen && (
         <>
+          {/* ── Backdrop ── */}
           <motion.div
+            key="backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.25 }}
             onClick={() => setIsOpen(false)}
             style={{
-              position: 'fixed', inset: 0,
-              backgroundColor: isDark ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.3)',
-              backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-              zIndex: 2000000,
+              position: 'fixed', inset: 0, zIndex: 2000000,
+              backgroundColor: isDark ? 'rgba(0,0,0,0.55)' : 'rgba(15,23,42,0.25)',
+              backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
             }}
           />
 
+          {/* ── Sidebar panel ── */}
           <motion.div
-            initial={{ x: '100%', opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: '100%', opacity: 0 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            key="sidebar"
+            initial={{ x: '100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '100%' }}
+            transition={{ type: 'spring', damping: 28, stiffness: 220 }}
             style={{
               position: 'fixed', top: 0, right: 0, bottom: 0,
-              width: '100%', maxWidth: '380px',
-              backgroundColor: isDark ? 'rgba(18, 12, 38, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-              borderLeft: `1px solid ${isDark ? 'rgba(139, 92, 246, 0.22)' : 'rgba(128, 128, 128, 0.18)'}`,
-              boxShadow: isDark ? '-20px 0 48px rgba(0, 0, 0, 0.6)' : '-16px 0 38px rgba(0, 0, 0, 0.16)',
-              backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+              width: '100%', maxWidth: '400px',
+              background: isDark
+                ? 'linear-gradient(160deg, rgba(18,12,38,0.98) 0%, rgba(10,6,24,0.98) 100%)'
+                : 'linear-gradient(160deg, rgba(255,255,255,0.98) 0%, rgba(248,250,252,0.98) 100%)',
+              borderLeft: `1px solid ${isDark ? 'rgba(139,92,246,0.18)' : 'rgba(0,0,0,0.08)'}`,
+              boxShadow: isDark ? '-24px 0 64px rgba(0,0,0,0.7)' : '-16px 0 48px rgba(0,0,0,0.12)',
+              backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
               zIndex: 2000001, display: 'flex', flexDirection: 'column', fontFamily: 'inherit',
             }}
           >
             {/* Header */}
             <div style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '20px 24px', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`
+              padding: '20px 20px 16px',
+              borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <div style={{
-                  width: '32px', height: '32px', borderRadius: '10px',
-                  background: isDark ? 'rgba(139, 92, 246, 0.15)' : 'rgba(139, 92, 246, 0.1)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#8b5cf6'
+                  width: '34px', height: '34px', borderRadius: '10px',
+                  background: `${accent}20`, color: accent,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: `0 0 16px ${accent}30`,
                 }}>
                   <Settings2 size={18} />
                 </div>
-                <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: isDark ? '#fff' : '#0f172a' }}>Preferences</h2>
+                <div>
+                  <div style={{ fontSize: '15px', fontWeight: 700, color: isDark ? '#fff' : '#0f172a' }}>
+                    Preferences
+                  </div>
+                  <div style={{ fontSize: '11px', color: isDark ? '#64748b' : '#94a3b8', marginTop: '1px' }}>
+                    All settings sync automatically
+                  </div>
+                </div>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
                 style={{
-                  background: 'transparent', border: 'none', cursor: 'pointer', padding: '6px', borderRadius: '50%',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: isDark ? '#94a3b8' : '#64748b', transition: 'all 0.2s'
+                  background: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)',
+                  border: 'none', cursor: 'pointer', width: '32px', height: '32px',
+                  borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: isDark ? '#94a3b8' : '#64748b', transition: 'all 0.2s',
                 }}
+                onMouseEnter={e => { e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)'; e.currentTarget.style.color = isDark ? '#fff' : '#000'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'; e.currentTarget.style.color = isDark ? '#94a3b8' : '#64748b'; }}
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
 
-            {/* Content Body */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '0 24px 24px' }}>
-              
-              <SectionTitle title="Appearance" icon={Palette} />
-              
-              <Switch label="Dark Mode" icon={isDark ? Moon : Sun} checked={isDark} onChange={toggleTheme} color={isDark ? '#8b5cf6' : '#f59e0b'} />
-              
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', color: isDark ? '#94a3b8' : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Paintbrush size={14} /></div>
-                  <span style={{ fontSize: '13px', fontWeight: 600, color: isDark ? '#f1f5f9' : '#0f172a' }}>Accent Color</span>
-                </div>
-                <div style={{ display: 'flex', gap: '6px' }}>
-                  {['blue', 'purple', 'emerald', 'rose'].map(color => (
-                    <button
-                      key={color}
-                      onClick={() => setAccentColor(color)}
-                      style={{
-                        width: '20px', height: '20px', borderRadius: '50%', cursor: 'pointer',
-                        background: color === 'blue' ? '#3b82f6' : color === 'purple' ? '#8b5cf6' : color === 'emerald' ? '#10b981' : '#f43f5e',
-                        border: accentColor === color ? '2px solid #fff' : '2px solid transparent',
-                        boxShadow: accentColor === color ? '0 0 0 1px rgba(139,92,246,0.5)' : 'none'
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
+            {/* Tab bar */}
+            <div style={{
+              display: 'flex', padding: '10px 16px', gap: '4px',
+              borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
+              background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)',
+            }}>
+              {TABS.map(tab => {
+                const active = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    style={{
+                      flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px',
+                      padding: '8px 4px', borderRadius: '10px', border: 'none', cursor: 'pointer',
+                      background: active ? `${accent}18` : 'transparent',
+                      color: active ? accent : (isDark ? '#64748b' : '#94a3b8'),
+                      transition: 'all 0.2s',
+                      boxShadow: active ? `inset 0 0 0 1px ${accent}30` : 'none',
+                    }}
+                  >
+                    <tab.icon size={15} />
+                    <span style={{ fontSize: '10px', fontWeight: active ? 700 : 500 }}>{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', color: isDark ? '#94a3b8' : '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Box size={14} /></div>
-                  <span style={{ fontSize: '13px', fontWeight: 600, color: isDark ? '#f1f5f9' : '#0f172a' }}>Glass Intensity</span>
-                </div>
-                <div style={{ display: 'flex', gap: '4px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', padding: '3px', borderRadius: '6px' }}>
-                  {['light', 'medium', 'heavy'].map(level => (
-                    <button
-                      key={level} onClick={() => setGlassIntensity(level)}
-                      style={{
-                        background: glassIntensity === level ? (isDark ? '#334155' : '#fff') : 'transparent',
-                        color: glassIntensity === level ? (isDark ? '#fff' : '#000') : (isDark ? '#94a3b8' : '#64748b'),
-                        border: 'none', borderRadius: '4px', padding: '2px 8px', fontSize: '11px', fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize'
-                      }}
-                    >
-                      {level}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <SectionTitle title="AI & Screen Director" icon={Bot} />
-              
-              <Switch label="AI Voice Responses" icon={Volume2} checked={aiVoice} onChange={setAiVoice} color="#8b5cf6" />
-              <Switch label="Auto-Navigate Pages" icon={Sparkles} checked={aiAutoNav} onChange={setAiAutoNav} color="#10b981" />
-              
-              <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-                <button onClick={handleResetDisclaimer} style={{ flex: 1, padding: '8px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', border: 'none', borderRadius: '8px', color: isDark ? '#cbd5e1' : '#475569', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>
-                  Restore Disclaimer
-                </button>
-                <button onClick={handleClearChat} style={{ flex: 1, padding: '8px', background: 'rgba(239,68,68,0.1)', border: 'none', borderRadius: '8px', color: '#ef4444', fontSize: '12px', fontWeight: 600, cursor: 'pointer' }}>
-                  Clear Memory
-                </button>
-              </div>
-
-              <SectionTitle title="Accessibility & UX" icon={Eye} />
-              <Switch label="UI Sound Effects" icon={Volume2} checked={uiAudio} onChange={setUiAudio} color="#3b82f6" />
-              <Switch label="Reduce Motion" icon={Activity} checked={reduceMotion} onChange={setReduceMotion} color="#eab308" />
-              <Switch label="High Contrast" icon={Eye} checked={highContrast} onChange={setHighContrast} color="#f97316" />
-
-              <SectionTitle title="Pro Tools" icon={Code} />
-              <Switch label="Performance HUD" icon={MonitorPlay} checked={devMode} onChange={setDevMode} color="#14b8a6" />
-              
-              <div style={{ marginTop: '30px', paddingTop: '20px', borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}` }}>
-                <button 
-                  onClick={handleFactoryReset}
-                  style={{
-                    width: '100%', padding: '10px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)',
-                    borderRadius: '8px', color: '#ef4444', fontSize: '13px', fontWeight: 600, cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', transition: 'all 0.2s'
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.2)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+            {/* Scrollable body */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px 32px', scrollbarWidth: 'none' }}>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.18, ease: 'easeOut' }}
                 >
-                  <Trash2 size={16} />
-                  Factory Reset Settings
-                </button>
-              </div>
+                  {renderTab()}
+                </motion.div>
+              </AnimatePresence>
+            </div>
 
+            {/* Footer */}
+            <div style={{
+              padding: '12px 20px',
+              borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+            }}>
+              <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#22c55e' }} />
+              <span style={{ fontSize: '11px', color: isDark ? '#475569' : '#94a3b8' }}>
+                All changes saved automatically
+              </span>
             </div>
           </motion.div>
+
+          {/* ── Toast notification ── */}
+          <AnimatePresence>
+            {toast && (
+              <motion.div
+                key="toast"
+                initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                transition={{ type: 'spring', damping: 22, stiffness: 300 }}
+                style={{
+                  position: 'fixed', bottom: '32px', left: '50%', transform: 'translateX(-50%)',
+                  zIndex: 2000002,
+                  background: isDark ? 'rgba(30,16,60,0.95)' : 'rgba(15,23,42,0.9)',
+                  color: '#fff', padding: '10px 18px', borderRadius: '100px',
+                  fontSize: '13px', fontWeight: 600,
+                  border: `1px solid ${toast.type === 'warn' ? 'rgba(239,68,68,0.4)' : `${accent}40`}`,
+                  boxShadow: `0 8px 24px rgba(0,0,0,0.4), 0 0 0 1px ${toast.type === 'warn' ? 'rgba(239,68,68,0.2)' : `${accent}20`}`,
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {toast.type === 'warn'
+                  ? <Trash2 size={13} style={{ color: '#ef4444' }} />
+                  : <Check size={13} style={{ color: '#22c55e' }} />
+                }
+                {toast.msg}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </>
       )}
     </AnimatePresence>,
