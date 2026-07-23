@@ -286,7 +286,8 @@ export default function MainLayout() {
             <>
               <DarkModeToggle />
               <SettingsDropdown />
-            </>
+              <AiChatWidget />
+    </>
           )}
         </div>
       </header>
