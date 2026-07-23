@@ -181,13 +181,6 @@ export default function AdminDashboard() {
           </div>
         </header>
 
-        {/* Fixed stats strip — never scrolls */}
-        <div className="admin-stats-strip">
-          <StatCard label="Messages"    value={stats.unreadMessages} loading={stats.loading} icon="ti-message-circle" color="#007bff" />
-          <StatCard label="Projects"    value={stats.projectCount}   loading={stats.loading} icon="ti-briefcase"     color="#28a745" />
-          <StatCard label="Changelog"   value={stats.updateCount}    loading={stats.loading} icon="ti-bolt"          color="#ff9800" />
-          <StatCard label="AI Sessions" value={stats.sessionCount}   loading={stats.loading} icon="ti-messages"      color="#6366f1" />
-        </div>
 
         {/* Scrollable body */}
         <div className="admin-body">
