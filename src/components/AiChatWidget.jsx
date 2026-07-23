@@ -31,9 +31,9 @@ export default function AiChatWidget() {
     
     if (data) {
       setSessionId(data.id);
-      setMessages([
-        { role: 'assistant', content: "Hi! I'm an AI assistant trained on this portfolio. What would you like to know about my skills, experience, or projects?" }
-      ]);
+      const greeting = "Hi! I'm an AI assistant trained on this portfolio. What would you like to know about my skills, experience, or projects?";
+      setMessages([{ role: 'assistant', content: greeting }]);
+      supabase.from('chat_messages').insert([{ id: crypto.randomUUID(), session_id: data.id, role: 'assistant', content: greeting }]).then();
     } else {
       console.error("Failed to init chat session", error);
     }

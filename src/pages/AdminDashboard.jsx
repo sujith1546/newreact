@@ -482,7 +482,11 @@ function AiChatsPanel() {
           <div style={styles.emptyState}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', background: 'var(--bg-light)', padding: '1.5rem', borderRadius: '12px' }}>
-            {messages.map((msg, i) => (
+            {messages.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+                No messages recorded in this session yet. The visitor likely opened the chat but hasn't typed anything.
+              </div>
+            ) : messages.map((msg, i) => (
               <div key={msg.id || i} style={{ 
                 alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
                 background: msg.role === 'user' ? 'var(--bg-accent)' : 'var(--border-color)',
