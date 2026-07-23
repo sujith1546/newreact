@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '../lib/supabaseClient';
 import { X, Send, Loader2, Bot, User, Atom, RotateCcw, Trash2, Copy, Check, ChevronDown, ChevronUp, Info, Mic, Cpu, Layers, Code, Zap, Paperclip, Volume2, VolumeX } from 'lucide-react';
 import { useIsland } from '../context/IslandContext';
 import { useTheme } from '../context/ThemeContext';
@@ -9,6 +10,16 @@ import SkillChart from './GenerativeUI/SkillChart';
 import ProjectCarousel from './GenerativeUI/ProjectCarousel';
 import BentoBox from './GenerativeUI/BentoBox';
 import ReactMarkdown from 'react-markdown';
+
+function generateUUID() {
+  try { return crypto.randomUUID(); } 
+  catch (e) {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
+}
 
 const SUGGESTED_QUESTIONS = [
   "What projects have you built?",
@@ -38,6 +49,33 @@ const getSessionToken = () => {
 };
 
 export default function ChatBot() {
+  const telemetrySessionRef = useRef(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('ai_session_id');
+    if (!saved) return;
+    supabase.from('chat_messages').select('*').eq('session_id', saved).order('created_at', { ascending: true })
+      .then(({ data, error }) => {
+        if (!error && data && data.length > 0) {
+          telemetrySessionRef.current = saved;
+        } else {
+          localStorage.removeItem('ai_session_id');
+        }
+      });
+  }, []);
+
+  const createTelemetrySession = async () => {
+    if (telemetrySessionRef.current) return telemetrySessionRef.current;
+    const newId = generateUUID();
+    const { data, error } = await supabase.from('chat_sessions').insert([{ id: newId }]).select().single();
+    if (data && !error) {
+      telemetrySessionRef.current = data.id;
+      localStorage.setItem('ai_session_id', data.id);
+      supabase.from('chat_messages').insert([{ id: generateUUID(), session_id: data.id, role: 'assistant', content: WELCOME_MESSAGE.content }]).then();
+      return data.id;
+    }
+    return null;
+  };
   const [isWidgetEnabled, setIsWidgetEnabled] = useState(() => {
     try {
       const saved = localStorage.getItem('portfolio_chatbot_enabled');
@@ -247,6 +285,11 @@ export default function ChatBot() {
     if (fileInputRef.current) fileInputRef.current.value = '';
     
     setHasError(false);
+    let telemetrySid = telemetrySessionRef.current;
+    if (!telemetrySid) telemetrySid = await createTelemetrySession();
+    if (telemetrySid) {
+      supabase.from('chat_messages').insert([{ id: generateUUID(), session_id: telemetrySid, role: 'user', content: userText }]).then();
+    }
     setMessages(prev => [...prev, { role: 'user', content: userText, image: currentAttachment?.base64 }]);
     setIsLoading(true);
 
@@ -421,6 +464,9 @@ export default function ChatBot() {
       if (aiVoice) {
         speakText(finalText);
       }
+      if (telemetrySid) {
+        supabase.from('chat_messages').insert([{ id: generateUUID(), session_id: telemetrySid, role: 'assistant', content: cleanDisplayContent }]).then();
+      }
 
       // 🎬 Screen Director: detect [NAVIGATE:sectionId] or [NAVIGATE:sectionId:keyword] 🎬
       const navMatch = finalText.match(/\[NAVIGATE:\s*([a-zA-Z]+)(?::\s*([^\]]+))?\]/i);
@@ -482,6 +528,7 @@ export default function ChatBot() {
 
   useEffect(() => {
     const handleTrigger = (e) => {
+      createTelemetrySession();
       const query = e.detail?.query || 'How can I contact you?';
       setIsOpen(true);
       setTimeout(() => {

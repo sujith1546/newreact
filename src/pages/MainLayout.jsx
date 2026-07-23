@@ -10,7 +10,6 @@ import SettingsDropdown from '../components/SettingsDropdown';
 import SettingsSidebar from '../components/SettingsSidebar';
 import TimezoneStatus from '../components/TimezoneStatus';
 import ChatBot from '../components/ChatBot';
-import AiChatWidget from '../components/AiChatWidget';
 import CommandPalette from '../components/CommandPalette';
 import PerformanceHUD from '../components/PerformanceHUD';
 import LiveStateInspector from '../components/LiveStateInspector';
@@ -347,7 +346,6 @@ export default function MainLayout() {
 
       {!isMobile && <TimezoneStatus />}
       {/* Global Overlays */}
-      <AiChatWidget />
       <ChatBot />
       <CommandPalette />
       <SettingsSidebar />
