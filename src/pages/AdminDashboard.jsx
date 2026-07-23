@@ -410,13 +410,18 @@ function ProjectsPanel() {
         
         {projects.length > 0 && (
           <div style={{ marginBottom: 16 }}>
-            <input 
-              type="text" 
-              placeholder="Search projects by title or tag..." 
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              style={{ ...styles.input, maxWidth: '300px' }}
-            />
+            <div style={{ position: 'relative', maxWidth: '350px' }}>
+              <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              </span>
+              <input 
+                type="text" 
+                placeholder="Search projects by title or tag..." 
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                style={{ ...styles.input, paddingLeft: 36, width: '100%', background: 'var(--bg-primary)', border: '1px solid var(--border-color)' }}
+              />
+            </div>
           </div>
         )}
 
@@ -429,6 +434,7 @@ function ProjectsPanel() {
             <table style={styles.table}>
               <thead>
                 <tr>
+                  <th style={styles.th}>ID</th>
                   <th style={styles.th}>Title</th>
                   <th style={styles.th}>Description</th>
                   <th style={styles.th}>Tags</th>
@@ -439,6 +445,7 @@ function ProjectsPanel() {
               <tbody>
                 {filteredProjects.map(proj => (
                   <tr key={proj.id} style={{ cursor: 'pointer' }} onDoubleClick={() => openModal(proj)}>
+                    <td style={styles.td}>{proj.id}</td>
                     <td style={{ ...styles.td, fontWeight: 600 }}>{proj.title}</td>
                     <td style={{ ...styles.td, maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{proj.description || '-'}</td>
                     <td style={styles.td}>
@@ -468,7 +475,7 @@ function ProjectsPanel() {
 
       {isModalOpen && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(4px)' }} onClick={closeModal}>
-          <div style={{ background: 'var(--bg-secondary)', padding: 24, borderRadius: 12, width: '100%', maxWidth: 500, border: '1px solid var(--border-color)', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: 'var(--bg-secondary)', padding: 24, borderRadius: 12, width: '100%', maxWidth: 600, border: '1px solid var(--border-color)', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
               <h3 style={{ margin: 0, fontSize: 18 }}>{editingProject ? 'Edit Project' : 'Add Project'}</h3>
               <button onClick={closeModal} style={styles.iconBtn}><X size={20} color="var(--text-secondary)" /></button>
@@ -520,7 +527,7 @@ function ProjectsPanel() {
                 <input style={styles.input} value={formData.image_url} onChange={e => setFormData({...formData, image_url: e.target.value})} placeholder="https://..." />
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 12, padding: '12px', background: 'var(--bg-primary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
                 <input type="checkbox" id="featured-cb" checked={formData.featured} onChange={e => setFormData({...formData, featured: e.target.checked})} style={{ width: 16, height: 16 }} />
                 <label htmlFor="featured-cb" style={{ margin: 0, fontSize: 14, color: 'var(--text-primary)', cursor: 'pointer' }}>Highlight as Featured Project</label>
               </div>
@@ -2825,6 +2832,30 @@ function AuditHealthPanel() {
 }
 
 const styles = {
+  btn: {
+    padding: '8px 16px',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontWeight: 500,
+    cursor: 'pointer',
+    border: '1px solid var(--border-color)',
+    background: 'var(--bg-secondary)',
+    color: 'var(--text-primary)',
+    transition: 'all 0.2s ease',
+  },
+  btnPrimary: {
+    padding: '8px 16px',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontWeight: 500,
+    cursor: 'pointer',
+    border: 'none',
+    background: '#3b82f6',
+    color: '#ffffff',
+    transition: 'all 0.2s ease',
+    boxShadow: '0 4px 12px rgba(59, 130, 246, 0.25)',
+  },
+
   shell: {
     display: "grid",
     gridTemplateColumns: "220px 1fr",
