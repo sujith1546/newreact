@@ -78,9 +78,7 @@ export function useMaintenanceStatus() {
 // =================================================================
 export function MaintenancePage({ status }) {
   const [now, setNow] = useState(Date.now());
-  const [pct, setPct] = useState(31);
-  const [stage, setStage] = useState(1);
-  const [elapsed, setElapsed] = useState(42);
+  const [reloadScheduled, setReloadScheduled] = useState(false);
 
   // Time tracking
   useEffect(() => {
@@ -88,33 +86,49 @@ export function MaintenancePage({ status }) {
     return () => clearInterval(id);
   }, []);
 
-  // Animation loop
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setPct(p => Math.min(99, p + 6 + Math.random() * 3));
-      setElapsed(e => e + 2);
-    }, 2200);
-    return () => clearInterval(interval);
-  }, []);
+  const startedAt = status.enabledAt ? new Date(status.enabledAt).getTime() : Date.now();
+  const totalMs = status.etaMinutes * 60 * 1000;
+  const targetAt = startedAt + totalMs;
+
+  const elapsed = Math.max(0, now - startedAt);
+  const remaining = Math.max(0, targetAt - now);
+  
+  const rawPct = (elapsed / totalMs) * 100;
+  const pct = Math.min(100, Math.max(0, rawPct));
+  const rounded = Math.round(pct);
+
+  let stage = 0;
+  if (pct < 15) stage = 0;
+  else if (pct < 55) stage = 1;
+  else if (pct < 90) stage = 2;
+  else if (pct < 100) stage = 3;
+  else stage = 4;
 
   useEffect(() => {
-    const rounded = Math.round(pct);
-    if (rounded > 55 && stage === 1) setStage(2);
-    if (rounded > 80 && stage === 2) setStage(3);
-    if (rounded >= 99 && stage === 3) setStage(4);
-  }, [pct, stage]);
+    if (remaining <= 0 && !reloadScheduled) {
+      setReloadScheduled(true);
+      setTimeout(() => window.location.reload(), 4000);
+    }
+  }, [remaining, reloadScheduled]);
 
-  const fmtTime = (s) => {
-    const m = Math.floor(s / 60);
-    const sec = s % 60;
+  const fmtTime = (ms) => {
+    const totalSec = Math.max(0, Math.floor(ms / 1000));
+    const m = Math.floor(totalSec / 60);
+    const sec = totalSec % 60;
     return `${m < 10 ? '0' : ''}${m}:${sec < 10 ? '0' : ''}${sec}`;
   };
 
-  const startedAt = status.enabledAt ? new Date(status.enabledAt).getTime() : null;
-  const totalMs = status.etaMinutes * 60 * 1000;
-  let etaLabel = '12:06 PM IST';
+  const fmtRemaining = (ms) => {
+    const totalSec = Math.max(0, Math.floor(ms / 1000));
+    const m = Math.floor(totalSec / 60);
+    const sec = totalSec % 60;
+    if (m <= 0) return sec + 's';
+    return `${m} min ${sec < 10 ? '0' : ''}${sec}s`;
+  };
+
+  let etaLabel = '—';
   if (startedAt) {
-    etaLabel = new Date(startedAt + totalMs).toLocaleTimeString('en-IN', {
+    etaLabel = new Date(targetAt).toLocaleTimeString('en-IN', {
       hour: '2-digit',
       minute: '2-digit',
     });
@@ -168,30 +182,39 @@ export function MaintenancePage({ status }) {
 
         <div className="maint-grid">
           <div>
-            <div className="maint-badge"><span className="maint-bdot"></span>Scheduled maintenance</div>
+            <div className={remaining <= 0 ? "maint-badge maint-late" : "maint-badge"}>
+              <span className="maint-bdot"></span>
+              {remaining <= 0 ? 'Almost there' : 'Scheduled maintenance'}
+            </div>
 
             <p className="maint-eyebrow">One moment</p>
             <h1 className="maint-h1">The site is<br />being updated.</h1>
 
             <div className="maint-tag">
-              <span className="maint-chev">&gt;_</span> <span>Shipping build #1784783952400</span><span className="maint-cursor"></span>
+              <span className="maint-chev">&gt;_</span> <span>Maintenance mode active</span><span className="maint-cursor"></span>
             </div>
 
             <p className="maint-desc">
               {status.message || "Pushing a new version live — the old one's taken down so nothing loads half-finished."}
-              <br /><b>Back by {etaLabel}.</b> If it's urgent, reach me directly below.
+              <br />If it's urgent, reach me directly below.
             </p>
+            
+            {remaining <= 0 ? (
+              <p className="maint-countdown-line">Finishing up — <b>should be live now</b></p>
+            ) : (
+              <p className="maint-countdown-line">Back online in <b>~{fmtRemaining(remaining)}</b> · by <b>{etaLabel}</b></p>
+            )}
 
             <div className="maint-cards">
               <div className="maint-mini-card">
                 <div className="maint-mini-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6" /></svg></div>
                 <div className="maint-mini-label">Build</div>
-                <div className="maint-mini-sub">complete</div>
+                <div className={stage >= 1 ? "maint-mini-sub maint-done" : "maint-mini-sub"}>{stage >= 1 ? 'complete' : 'in progress'}</div>
               </div>
               <div className="maint-mini-card">
                 <div className="maint-mini-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="10" rx="2" /><path d="M7 11V7a5 5 0 0110 0v4" /></svg></div>
                 <div className="maint-mini-label">Deploy</div>
-                <div className="maint-mini-sub">{stage >= 2 ? 'complete' : 'in progress'}</div>
+                <div className={stage >= 2 ? "maint-mini-sub maint-done" : (stage === 1 ? "maint-mini-sub maint-active" : "maint-mini-sub")}>{stage >= 2 ? 'complete' : (stage === 1 ? 'in progress' : 'pending')}</div>
               </div>
               <div className="maint-mini-card">
                 <div className="maint-mini-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 2L11 13" /><path d="M22 2l-7 20-4-9-9-4 20-7z" /></svg></div>
@@ -215,20 +238,21 @@ export function MaintenancePage({ status }) {
           <div className="maint-visual-panel">
             <div className="maint-vp-head">
               <span className="maint-vp-title">Deploy pipeline</span>
-              <span className="maint-vp-live"><span className="maint-ld"></span>run #1784783952400</span>
+              <span className="maint-vp-live"><span className="maint-ld"></span>run #live</span>
             </div>
 
             <svg className="maint-pipeline" viewBox="0 0 460 150">
               {nodes.slice(0, 3).map((n, i) => {
                 const x1 = n.x;
                 const x2 = nodes[i + 1].x;
-                const done = i < stage;
+                const activeIdx = Math.min(4, stage + 1);
+                const done = i < activeIdx;
                 const color = done ? '#22c55e' : '#e6e6e4';
                 return <line key={`line-${i}`} x1={x1} y1={y} x2={x2} y2={y} stroke={color} strokeWidth="2" />;
               })}
               
               {nodes.map((n, j) => {
-                const activeIdx = stage;
+                const activeIdx = Math.min(4, stage + 1);
                 const st = j < activeIdx ? 'done' : (j === activeIdx ? 'active' : 'pending');
                 const fill = st === 'done' ? '#e9f9ef' : (st === 'active' ? '#eaf1fe' : '#ffffff');
                 const stroke = st === 'done' ? '#22c55e' : (st === 'active' ? '#2f6fed' : '#d8d8d5');
@@ -257,7 +281,7 @@ export function MaintenancePage({ status }) {
             <div className="maint-stat-grid">
               <div className="maint-stat-card">
                 <div className="maint-stat-label">Progress</div>
-                <div className="maint-stat-val maint-blue">{Math.round(pct)}%</div>
+                <div className="maint-stat-val maint-blue">{rounded}%</div>
               </div>
               <div className="maint-stat-card">
                 <div className="maint-stat-label">Elapsed</div>
@@ -279,6 +303,14 @@ export function MaintenancePage({ status }) {
                 <span className={stage >= 3 ? "maint-region-lat" : "maint-region-lat maint-blue-text"}>{stage >= 3 ? '9ms' : 'warming'}</span>
               </div>
             </div>
+            
+            {remaining <= 0 && (
+              <div className="maint-reload-note">refreshing automatically in a few seconds...</div>
+            )}
+            
+            {remaining > 0 && (
+              <div className="maint-reload-note">this page checks its own status automatically — no need to refresh</div>
+            )}
           </div>
         </div>
       </div>
