@@ -62,11 +62,17 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* Apply zoom at the html level so it's resolved before first paint,
+   preventing the visible "compression" flash on load. */
 @media (min-width: 1025px) {
-  body {
+  html {
     zoom: 0.75;
+    /* Counteract font boosting that some engines apply after zoom */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
   }
 }
+
 
 /* ============================================
    MAIN LAYOUT
