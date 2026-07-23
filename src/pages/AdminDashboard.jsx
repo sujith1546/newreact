@@ -83,133 +83,131 @@ export default function AdminDashboard() {
   const activeNavItem = ALL_NAV_ITEMS.find(n => n.key === activeTab);
 
   return (
-    <div style={styles.shell}>
+    <div className="admin-shell">
       {/* ─── Sidebar ─── */}
-      <aside style={styles.sidebar}>
-        {/* Logo area */}
-        <div style={styles.sidebarLogo}>
-          <div style={styles.logoIcon}>
+      <aside className="admin-sidebar">
+        {/* Logo */}
+        <div className="admin-sidebar-logo">
+          <div className="admin-logo-icon">
             <i className="ti ti-command" style={{ fontSize: 18, color: '#fff' }} />
           </div>
           <div>
-            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.2px' }}>Portfolio CMS</p>
-            <p style={{ margin: 0, fontSize: 11, color: 'var(--text-muted)' }}>Admin Console</p>
+            <p className="admin-logo-title">Portfolio CMS</p>
+            <p className="admin-logo-sub">Admin Console</p>
           </div>
         </div>
 
         {/* Nav groups */}
-        <nav style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
+        <div className="admin-nav-scroll">
           {NAV_GROUPS.map(group => (
-            <div key={group.label} style={{ marginBottom: 20 }}>
-              <p style={styles.navGroupLabel}>{group.label}</p>
+            <div key={group.label} className="admin-nav-group">
+              <p className="admin-nav-group-label">{group.label}</p>
               {group.items.map(item => {
                 const isActive = activeTab === item.key;
                 return (
                   <button
                     key={item.key}
                     onClick={() => setActiveTab(item.key)}
-                    style={{
-                      ...styles.navItem,
-                      background: isActive ? `${item.color}18` : 'transparent',
-                      color: isActive ? item.color : 'var(--text-muted)',
-                      fontWeight: isActive ? 600 : 400,
-                      borderLeft: isActive ? `2px solid ${item.color}` : '2px solid transparent',
-                    }}
+                    className={`admin-nav-btn${isActive ? ' active' : ''}`}
+                    style={{ color: isActive ? item.color : undefined }}
                   >
-                    <div style={{
-                      width: 28, height: 28, borderRadius: 8, flexShrink: 0,
-                      background: isActive ? `${item.color}22` : 'transparent',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      transition: 'background 0.2s'
-                    }}>
-                      <i className={`ti ${item.icon}`} style={{ fontSize: 15, color: isActive ? item.color : 'var(--text-muted)' }} />
+                    <div
+                      className="admin-nav-icon-wrap"
+                      style={{ background: isActive ? `${item.color}1a` : 'transparent' }}
+                    >
+                      <i
+                        className={`ti ${item.icon}`}
+                        style={{ fontSize: 15, color: isActive ? item.color : 'var(--text-muted)' }}
+                      />
                     </div>
                     <span style={{ flex: 1 }}>{item.label}</span>
                     {item.key === 'messages' && stats.unreadMessages > 0 && (
-                      <span style={styles.navBadge}>{stats.unreadMessages}</span>
+                      <span className="admin-nav-badge">{stats.unreadMessages}</span>
                     )}
                   </button>
                 );
               })}
             </div>
           ))}
-        </nav>
+        </div>
 
         {/* User footer */}
-        <div style={styles.sidebarFooter}>
-          <div style={styles.userAvatar}>
+        <div className="admin-sidebar-footer">
+          <div className="admin-user-avatar">
             {(user?.email || 'A').charAt(0).toUpperCase()}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {user?.email || 'Admin'}
-            </p>
-            <p style={{ margin: 0, fontSize: 11, color: '#10b981' }}>● Online</p>
+            <p className="admin-user-email">{user?.email || 'Admin'}</p>
+            <p className="admin-user-status">● Online</p>
           </div>
-          <button onClick={handleLogout} title="Log out" style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ef4444', padding: 4, borderRadius: 6, display: 'flex', alignItems: 'center' }}>
+          <button onClick={handleLogout} className="admin-logout-btn" title="Log out">
             <LogOut size={15} />
           </button>
         </div>
       </aside>
 
-      {/* ─── Main content ─── */}
-      <div style={styles.main}>
+      {/* ─── Main ─── */}
+      <div className="admin-main">
         {/* Top bar */}
-        <header style={styles.topBar}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <header className="admin-topbar">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             {activeNavItem && (
-              <div style={{ width: 32, height: 32, borderRadius: 8, background: `${activeNavItem.color}22`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <i className={`ti ${activeNavItem.icon}`} style={{ fontSize: 16, color: activeNavItem.color }} />
+              <div style={{
+                width: 34, height: 34, borderRadius: 10, flexShrink: 0,
+                background: `${activeNavItem.color}18`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>
+                <i className={`ti ${activeNavItem.icon}`} style={{ fontSize: 17, color: activeNavItem.color }} />
               </div>
             )}
             <div>
-              <h1 style={styles.topBarTitle}>{activeNavItem?.label || 'Dashboard'}</h1>
-              <p style={styles.topBarSub}>Portfolio CMS &rsaquo; {activeNavItem?.label}</p>
+              <h1 className="admin-topbar-title">{activeNavItem?.label || 'Dashboard'}</h1>
+              <p className="admin-topbar-sub">Portfolio CMS &rsaquo; {activeNavItem?.label}</p>
             </div>
           </div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             {lastLogin && (
-              <span style={{ fontSize: 11, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                <ShieldCheck size={12} color="#10b981" />
+              <span style={{ fontSize: 11, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 5 }}>
+                <ShieldCheck size={12} color="var(--success-green)" />
                 Last login: {new Date(lastLogin.logged_in_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </span>
             )}
-            <button onClick={toggleTheme} style={styles.iconAction} title="Toggle Theme">
+            <button onClick={toggleTheme} className="admin-icon-btn" title="Toggle theme">
               <i className={theme === 'dark' ? 'ti ti-sun' : 'ti ti-moon'} style={{ fontSize: 15 }} />
             </button>
-            <a href="/" target="_blank" style={{ ...styles.iconAction, textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="View live site">
-              <Eye size={15} color="var(--text-primary)" />
+            <a href="/" target="_blank" className="admin-icon-btn" title="View live site">
+              <Eye size={15} />
             </a>
           </div>
         </header>
 
         {/* Scrollable body */}
-        <div style={styles.body}>
-          {/* Stats row */}
-          <div style={styles.statsRow}>
-            <StatCard label="Messages" value={stats.unreadMessages} loading={stats.loading} icon="ti-message-circle" color="#3b82f6" />
-            <StatCard label="Projects" value={stats.projectCount} loading={stats.loading} icon="ti-briefcase" color="#10b981" />
-            <StatCard label="Changelog" value={stats.updateCount} loading={stats.loading} icon="ti-bolt" color="#f59e0b" />
-            <StatCard label="AI Sessions" value={stats.sessionCount} loading={stats.loading} icon="ti-messages" color="#8b5cf6" />
+        <div className="admin-body">
+          {/* Stat cards */}
+          <div className="admin-stats-grid">
+            <StatCard label="Messages"  value={stats.unreadMessages} loading={stats.loading} icon="ti-message-circle" color="#007bff" />
+            <StatCard label="Projects"  value={stats.projectCount}   loading={stats.loading} icon="ti-briefcase"     color="#28a745" />
+            <StatCard label="Changelog" value={stats.updateCount}    loading={stats.loading} icon="ti-bolt"          color="#ff9800" />
+            <StatCard label="AI Sessions" value={stats.sessionCount} loading={stats.loading} icon="ti-messages"      color="#6366f1" />
           </div>
 
-          {/* Panel content */}
-          <div style={styles.panelContainer}>
-            {activeTab === "messages" && <MessagesPanel />}
-            {activeTab === "projects" && <ProjectsPanel />}
-            {activeTab === "updates" && <UpdatesPanel />}
-            {activeTab === "chats" && <AiChatsPanel />}
-            {activeTab === "settings" && <SettingsPanel />}
-            {activeTab === "skills" && <SkillsPanel />}
-            {activeTab === "experience" && <ExperiencePanel />}
+          {/* Panel */}
+          <div>
+            {activeTab === "messages"       && <MessagesPanel />}
+            {activeTab === "projects"       && <ProjectsPanel />}
+            {activeTab === "updates"        && <UpdatesPanel />}
+            {activeTab === "chats"          && <AiChatsPanel />}
+            {activeTab === "settings"       && <SettingsPanel />}
+            {activeTab === "skills"         && <SkillsPanel />}
+            {activeTab === "experience"     && <ExperiencePanel />}
             {activeTab === "certifications" && <CertificationsPanel />}
-            {activeTab === "education" && <EducationPanel />}
-            {activeTab === "analytics" && <AnalyticsPanel />}
-            {activeTab === "copilot" && <CopilotPanel />}
-            {activeTab === "assets" && <AssetsPanel />}
-            {activeTab === "theme" && <ThemeStudioPanel />}
-            {activeTab === "backup" && <BackupRestorePanel />}
-            {activeTab === "audit" && <AuditHealthPanel />}
+            {activeTab === "education"      && <EducationPanel />}
+            {activeTab === "analytics"      && <AnalyticsPanel />}
+            {activeTab === "copilot"        && <CopilotPanel />}
+            {activeTab === "assets"         && <AssetsPanel />}
+            {activeTab === "theme"          && <ThemeStudioPanel />}
+            {activeTab === "backup"         && <BackupRestorePanel />}
+            {activeTab === "audit"          && <AuditHealthPanel />}
           </div>
         </div>
       </div>
@@ -264,16 +262,18 @@ function useDashboardStats() {
 /* -------------------------------------------------------------------- */
 /* Stat card                                                             */
 /* -------------------------------------------------------------------- */
-function StatCard({ label, value, loading, icon, color = '#3b82f6' }) {
+function StatCard({ label, value, loading, icon, color = '#007bff' }) {
   return (
-    <div style={{ ...styles.statCard, borderTop: `3px solid ${color}` }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-        <p style={styles.statLabel}>{label}</p>
-        <div style={{ width: 34, height: 34, borderRadius: 10, background: `${color}1a`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div className="admin-stat-card" style={{ borderTop: `3px solid ${color}` }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+        <p className="admin-stat-label">{label}</p>
+        <div style={{ width: 34, height: 34, borderRadius: 10, background: `${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <i className={`ti ${icon}`} style={{ fontSize: 16, color }} />
         </div>
       </div>
-      <p style={{ ...styles.statValue, color }}>{loading ? <Loader2 className="spin" size={18} color={color} /> : value}</p>
+      <p className="admin-stat-value" style={{ color }}>
+        {loading ? <Loader2 className="spin" size={20} color={color} /> : value}
+      </p>
     </div>
   );
 }
@@ -283,30 +283,30 @@ function StatCard({ label, value, loading, icon, color = '#3b82f6' }) {
 /* -------------------------------------------------------------------- */
 function EmptyState({ icon, title, description }) {
   return (
-    <div style={styles.emptyState}>
-      <i className={`ti ${icon}`} style={{ fontSize: 28, color: "var(--text-muted)" }} aria-hidden="true" />
-      <p style={styles.emptyTitle}>{title}</p>
-      <p style={styles.emptyDescription}>{description}</p>
+    <div className="admin-empty">
+      <i className={`ti ${icon}`} style={{ fontSize: 32, color: 'var(--text-muted)', opacity: 0.5 }} aria-hidden="true" />
+      <h4>{title}</h4>
+      <p>{description}</p>
     </div>
   );
 }
 
 function PanelCard({ title, action, headerElement, children }) {
   return (
-    <div style={styles.panelCard}>
-      <div style={styles.panelHeader}>
-        <h3 style={styles.panelTitle}>{title}</h3>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+    <div className="admin-panel-card">
+      <div className="admin-panel-header">
+        <h3 className="admin-panel-title">{title}</h3>
+        <div className="admin-panel-actions">
           {headerElement}
           {action && (
-            <button style={styles.panelAction} onClick={action.onClick}>
+            <button className="admin-action-btn" onClick={action.onClick}>
               <i className={`ti ${action.icon}`} style={{ fontSize: 13 }} aria-hidden="true" />
               {action.label}
             </button>
           )}
         </div>
       </div>
-      <div style={{ overflowX: 'auto', padding: '20px' }}>
+      <div style={{ overflowX: 'auto' }}>
         {children}
       </div>
     </div>
