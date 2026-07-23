@@ -470,7 +470,7 @@ export function MaintenanceSettingsPanel() {
     const payload = {
       maintenance_enabled: nextEnabled,
       maintenance_eta: overrides.etaMinutes ?? Number(etaMinutes),
-      maintenance_message: overrides.message ?? message ?? null,
+      maintenance_message: overrides.message !== undefined ? overrides.message : message,
       ...(nextEnabled && !enabled ? { maintenance_enabled_at: new Date().toISOString() } : {}),
       ...(!nextEnabled ? { maintenance_enabled_at: null } : {}),
     };
@@ -483,12 +483,17 @@ export function MaintenanceSettingsPanel() {
 
     const { error } = await supabase.from('site_settings').update(payload).eq('id', rowId);
 
+    setTimeout(() => setSaving(false), 600);
+    
     if (!error) {
       setEnabled(nextEnabled);
       if (payload.maintenance_enabled_at !== undefined) setEnabledAt(payload.maintenance_enabled_at);
     }
-    setSaving(false);
   }
+
+  const handleBlur = (field, val) => {
+    save(enabled, { [field]: val });
+  };
 
   if (loading) return null;
 
@@ -496,7 +501,10 @@ export function MaintenanceSettingsPanel() {
     <div className="setting-card">
       <div className="setting-row">
         <div>
-          <h4 style={{ margin: '0 0 4px', fontSize: 15, color: 'var(--text-primary)' }}>Maintenance Mode</h4>
+          <h4 style={{ margin: '0 0 4px', fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 10 }}>
+            Maintenance Mode
+            {saving && <span style={{ fontSize: 12, fontWeight: 500, color: '#ef4444', display: 'flex', alignItems: 'center', gap: 4 }}><div className="maint-spinner" /> Saving...</span>}
+          </h4>
           <p className="setting-desc">
             Locks the public site with a "be right back" screen. Admin dashboard stays accessible.
           </p>
@@ -527,6 +535,7 @@ export function MaintenanceSettingsPanel() {
               min={1}
               value={etaMinutes}
               onChange={(e) => setEtaMinutes(e.target.value)}
+              onBlur={(e) => handleBlur('etaMinutes', e.target.value)}
               style={styles.input}
             />
           </div>
@@ -536,56 +545,44 @@ export function MaintenanceSettingsPanel() {
               rows={2}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
+              onBlur={(e) => handleBlur('message', e.target.value)}
               placeholder="e.g. We are upgrading the database..."
               style={{ ...styles.input, resize: 'vertical' }}
             />
           </div>
-          <button 
-            type="button" 
-            onClick={(e) => { e.preventDefault(); save(true); }} 
-            disabled={saving} 
-            style={styles.updateBtn}
-          >
-            Update Settings
-          </button>
         </div>
       )}
 
       <style>{`
         .setting-card { 
-          padding: 20px; 
+          padding: 24px; 
           background: var(--bg-primary); 
-          border-radius: 12px; 
+          border-radius: 20px; 
           border: 1px solid var(--border-color);
           position: relative;
           overflow: hidden;
+          box-shadow: 0 8px 30px rgba(0,0,0,0.04);
         }
         .setting-card::before {
           content: "";
           position: absolute;
-          top: 0; left: 0; bottom: 0; width: 4px;
+          top: 0; left: 0; bottom: 0; width: 6px;
           background: ${enabled ? '#ef4444' : 'transparent'};
           transition: 0.3s;
         }
         .setting-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
-        .setting-desc { font-size: 13px; color: var(--text-muted); margin: 4px 0 0; max-width: 50ch; line-height: 1.5; }
-        .setting-meta { font-size: 12px; color: #ef4444; margin: 8px 0 0; font-weight: 600; background: #ef444415; padding: 4px 10px; border-radius: 100px; display: inline-block; }
+        .setting-desc { font-size: 14px; color: var(--text-muted); margin: 4px 0 0; max-width: 50ch; line-height: 1.5; }
+        .setting-meta { font-size: 13px; color: #ef4444; margin: 12px 0 0; font-weight: 600; background: #ef444415; padding: 6px 12px; border-radius: 100px; display: inline-block; }
 
-        .switch { width: 42px; height: 24px; border-radius: 100px; border: none; background: #D8DCE3;
+        .switch { width: 52px; height: 28px; border-radius: 100px; border: none; background: #D8DCE3;
           position: relative; cursor: pointer; flex-shrink: 0; transition: background 0.2s ease; }
-        .switch.on { background: #ef4444; }
-        .switch .knob { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%;
-          background: #fff; transition: transform 0.2s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.15); }
-        .switch.on .knob { transform: translateX(18px); }
+        .switch.on { background: #ef4444; box-shadow: 0 4px 12px color-mix(in srgb, #ef4444 40%, transparent); }
+        .switch .knob { position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%;
+          background: #fff; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 1px 2px rgba(0,0,0,0.15); }
+        .switch.on .knob { transform: translateX(24px); }
 
-        .setting-subpanel { max-height: 0; overflow: hidden; transition: max-height 0.3s ease, margin-top 0.3s ease; }
-        .setting-subpanel.open { max-height: 200px; margin-top: 16px; }
-        .setting-subrow { display: flex; gap: 16px; padding: 14px; background: #ef444415; border-radius: 10px; border: 1px dashed #ef444430; }
-        .setting-subrow label { flex: 1; font-size: 12.5px; color: #5B6069; font-weight: 500;
-          display: flex; flex-direction: column; gap: 6px; }
-        .setting-subrow input { font-family: inherit; font-size: 13.5px; color: #1C1E22;
-          padding: 8px 10px; border: 1px solid #E4E4E0; border-radius: 6px; background: #fff; }
+        .maint-spinner { width: 14px; height: 14px; border: 2px solid #ef444430; border-top-color: #ef4444; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
-    </div>
-  );
+    </div>  );
 }

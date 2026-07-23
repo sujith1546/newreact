@@ -6,7 +6,8 @@ import { useTheme } from '../context/ThemeContext';
 import useRealtimeData from '../hooks/useRealtimeData';
 import { MaintenanceSettingsPanel } from '../components/MaintenanceMode';
 import MessagesAdmin, { UnreadBadge } from '../components/MessagesAdmin';
-import { Loader2, Trash2, Check, ChevronRight, ChevronDown, X, MessageSquare, MessageCircle, Briefcase, Zap, LogOut, Plus, Edit3, Star, Layers, BarChart3, Sparkles, Folder, Palette, Database, Activity, Download, Upload, ShieldCheck, FileText, RefreshCw, Eye, Printer } from 'lucide-react';
+import { Loader2, Trash2, Check, ChevronRight, ChevronDown, X, MessageSquare, MessageCircle, Briefcase, Zap, LogOut, Plus, Edit3, Star, Layers, BarChart3, Sparkles, Folder, Palette, Database, Activity, Download, Upload, ShieldCheck, FileText, RefreshCw, Eye, Printer, Award, Type, Image, Link, Settings, User, Mail, Globe, Bell } from 'lucide-react';
+import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { logAuditEvent } from '../lib/auditLogger';
 import { trackRecruiterEvent } from '../lib/analyticsTracker';
@@ -540,26 +541,139 @@ function AiChatsPanel() {
 /* ───────────────────────────────────────────────
    SETTINGS PANEL
    ─────────────────────────────────────────────── */
+
+// Premium Custom Toggle Switch
+function PremiumToggle({ checked, onChange, label, description, icon: Icon, color = 'var(--primary-blue)' }) {
+  return (
+    <div 
+      onClick={() => onChange(!checked)}
+      style={{ 
+        display: 'flex', alignItems: 'center', gap: 16, padding: '16px', 
+        background: checked ? `color-mix(in srgb, ${color} 8%, transparent)` : 'var(--bg-secondary)', 
+        borderRadius: 16, border: '1px solid',
+        borderColor: checked ? `color-mix(in srgb, ${color} 30%, transparent)` : 'var(--border-color)',
+        cursor: 'pointer', transition: 'all 0.2s ease',
+        boxShadow: checked ? `0 4px 20px color-mix(in srgb, ${color} 5%, transparent)` : 'none'
+      }}
+    >
+      {Icon && (
+        <div style={{ 
+          width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: checked ? color : 'var(--bg-primary)',
+          color: checked ? '#fff' : 'var(--text-muted)',
+          boxShadow: checked ? `0 4px 12px color-mix(in srgb, ${color} 40%, transparent)` : 'none',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+        }}>
+          <Icon size={20} strokeWidth={checked ? 2.5 : 2} />
+        </div>
+      )}
+      <div style={{ flex: 1 }}>
+        <span style={{ display: 'block', fontSize: 15, fontWeight: 600, color: checked ? 'var(--text-primary)' : 'var(--text-secondary)' }}>{label}</span>
+        {description && <span style={{ display: 'block', fontSize: 13, color: 'var(--text-muted)', marginTop: 2 }}>{description}</span>}
+      </div>
+      <div style={{ 
+        width: 44, height: 24, borderRadius: 12, background: checked ? color : 'var(--border-color)',
+        position: 'relative', transition: 'background 0.3s ease', flexShrink: 0
+      }}>
+        <motion.div 
+          layout
+          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+          style={{
+            width: 20, height: 20, borderRadius: '50%', background: '#fff',
+            position: 'absolute', top: 2, left: checked ? 22 : 2,
+            boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+// Premium Input Field
+function PremiumInput({ label, icon: Icon, type = "text", value, onChange, onBlur, placeholder, multiline = false }) {
+  const [focused, setFocused] = useState(false);
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+      <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginLeft: 4 }}>{label}</label>
+      <div style={{ 
+        display: 'flex', alignItems: multiline ? 'flex-start' : 'center', gap: 12, 
+        padding: multiline ? '12px 16px' : '0 16px', minHeight: 48,
+        background: 'var(--bg-secondary)', borderRadius: 12,
+        border: '1px solid', borderColor: focused ? 'var(--primary-blue)' : 'var(--border-color)',
+        boxShadow: focused ? '0 0 0 3px color-mix(in srgb, var(--primary-blue) 15%, transparent)' : 'none',
+        transition: 'all 0.2s ease'
+      }}>
+        {Icon && <Icon size={18} style={{ color: focused ? 'var(--primary-blue)' : 'var(--text-muted)', marginTop: multiline ? 2 : 0, transition: 'color 0.2s ease' }} />}
+        {multiline ? (
+          <textarea 
+            value={value} onChange={onChange} placeholder={placeholder}
+            onFocus={() => setFocused(true)} 
+            onBlur={(e) => { setFocused(false); if (onBlur) onBlur(e); }}
+            style={{ 
+              flex: 1, background: 'transparent', border: 'none', color: 'var(--text-primary)', 
+              fontSize: 15, outline: 'none', minHeight: 80, resize: 'vertical', fontFamily: 'inherit'
+            }}
+          />
+        ) : (
+          <input 
+            type={type} value={value} onChange={onChange} placeholder={placeholder}
+            onFocus={() => setFocused(true)} 
+            onBlur={(e) => { setFocused(false); if (onBlur) onBlur(e); }}
+            style={{ 
+              flex: 1, background: 'transparent', border: 'none', color: 'var(--text-primary)', 
+              fontSize: 15, outline: 'none', width: '100%'
+            }}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
 function SettingsPanel() {
   const { data: dbSettings, setData: setDbSettings, loading } = useRealtimeData('site_settings', { single: true, filter: { column: 'id', value: 1 } });
   const [settings, setSettings] = useState(null);
-  const [saving, setSaving]     = useState(false);
+  const [saving, setSaving] = useState(false);
   const [uploadingResume, setUploadingResume] = useState(false);
 
   useEffect(() => {
-    if (dbSettings) setSettings(dbSettings);
-  }, [dbSettings]);
+    // Only update local settings if they haven't been initialized yet
+    // This prevents realtime updates from overwriting local state while the user is typing
+    if (dbSettings && !settings) {
+      setSettings(dbSettings);
+    }
+  }, [dbSettings, settings]);
 
-  const handleSave = async (e) => {
-    if (e) e.preventDefault();
+  const updateSetting = async (key, value) => {
     setSaving(true);
-    setDbSettings(settings); 
-    const { error } = await supabase.from('site_settings').update(settings).eq('id', 1);
-    setSaving(false);
-    if (error) alert("Failed to save settings: " + error.message);
-    else {
-      logAuditEvent('UPDATE_SETTINGS', 'site_settings', '1');
-      alert("Settings saved successfully!");
+    // Send only the changed key to Supabase
+    const { error } = await supabase.from('site_settings').update({ [key]: value }).eq('id', 1);
+    
+    // Simulate slight network delay for better UX on fast connections
+    setTimeout(() => setSaving(false), 600); 
+
+    if (error) {
+      alert(`Failed to save ${key}: ` + error.message);
+    } else {
+      logAuditEvent('UPDATE_SETTINGS', 'site_settings', key);
+    }
+  };
+
+  const handleToggleChange = (key, value) => {
+    setSettings(prev => ({ ...prev, [key]: value }));
+    updateSetting(key, value);
+  };
+
+  const handleInputChange = (key, value) => {
+    setSettings(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleInputBlur = (key, value) => {
+    // Only save if the value actually changed from the DB state
+    if (dbSettings && dbSettings[key] !== value) {
+      updateSetting(key, value);
+      // Manually update the dbSettings cache so we don't save the same thing twice
+      setDbSettings(prev => ({ ...prev, [key]: value }));
     }
   };
 
@@ -577,7 +691,6 @@ function SettingsPanel() {
       setDbSettings(newSettings);
       await supabase.from('site_settings').update({ resume_url: publicUrl }).eq('id', 1);
       logAuditEvent('UPLOAD_RESUME', 'storage', safeName);
-      alert("Resume uploaded and saved successfully!");
     } else {
       alert(`Upload failed: ${error.message}`);
     }
@@ -585,179 +698,212 @@ function SettingsPanel() {
     e.target.value = '';
   };
 
-  if (loading) return (
-    <PanelCard title="Site Configuration">
-      <div style={{ padding: 60, display: 'flex', justifyContent: 'center' }}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div>
-    </PanelCard>
+  if (loading || !settings) return (
+    <div style={{ padding: 60, display: 'flex', justifyContent: 'center' }}><Loader2 className="spin" size={32} color="var(--primary-blue)" /></div>
   );
 
   return (
-    <PanelCard title="Site Configuration" action={{ label: saving ? "Saving…" : "Save changes", icon: "ti-device-floppy", onClick: handleSave }}>
-      <form onSubmit={handleSave} style={{ padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 32, maxWidth: 850 }}>
-        
-        {/* Global Feature Flags */}
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="settings-panel-wrapper">
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 32 }}>
         <div>
-          <p style={{ margin: '0 0 14px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Feature Flags</p>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px', background: 'var(--bg-primary)', borderRadius: 12, border: '1px solid var(--border-color)' }}>
-              <input type="checkbox" id="flag_cert" checked={settings?.feature_certifications ?? true}
-                onChange={e => setSettings({...settings, feature_certifications: e.target.checked})}
-                style={{ width: 18, height: 18, cursor: 'pointer', accentColor: 'var(--primary-blue)' }} />
-              <div>
-                <label htmlFor="flag_cert" style={{ fontSize: 14, color: 'var(--text-primary)', fontWeight: 600, display: 'block', cursor: 'pointer' }}>Certifications Module</label>
-                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Show in navigation and pages</span>
-              </div>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px', background: 'var(--bg-primary)', borderRadius: 12, border: '1px solid var(--border-color)' }}>
-              <input type="checkbox" id="flag_exp" checked={settings?.feature_experience ?? true}
-                onChange={e => setSettings({...settings, feature_experience: e.target.checked})}
-                style={{ width: 18, height: 18, cursor: 'pointer', accentColor: 'var(--primary-blue)' }} />
-              <div>
-                <label htmlFor="flag_exp" style={{ fontSize: 14, color: 'var(--text-primary)', fontWeight: 600, display: 'block', cursor: 'pointer' }}>Experience Module</label>
-                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Show in navigation and pages</span>
-              </div>
-            </div>
-          </div>
+          <h2 style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Settings size={28} color="var(--primary-blue)" /> Global Settings
+          </h2>
+          <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: 15 }}>Configure site-wide features, SEO, and personal details.</p>
         </div>
-
-        {/* Global Announcement Banner */}
-        <div style={{ paddingTop: 20, borderTop: '1px solid var(--border-color)' }}>
-          <p style={{ margin: '0 0 14px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Live Announcement Banner</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '16px', background: 'var(--bg-primary)', borderRadius: 12, border: '1px solid var(--border-color)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <input type="checkbox" id="announcement_toggle" checked={settings?.announcement_enabled || false}
-                onChange={e => setSettings({...settings, announcement_enabled: e.target.checked})}
-                style={{ width: 18, height: 18, cursor: 'pointer', accentColor: '#8b5cf6' }} />
-              <label htmlFor="announcement_toggle" style={{ fontSize: 14, color: 'var(--text-primary)', fontWeight: 600, cursor: 'pointer' }}>Enable Global Banner</label>
-            </div>
-            {settings?.announcement_enabled && (
-              <input className="admin-input" type="text" value={settings?.announcement_text || ''} 
-                onChange={e => setSettings({...settings, announcement_text: e.target.value})}
-                placeholder="e.g. Currently seeking Senior React roles for Q4" />
-            )}
-          </div>
+        <div style={{ 
+          display: 'flex', alignItems: 'center', gap: 8, padding: '8px 16px', 
+          background: saving ? 'color-mix(in srgb, var(--primary-blue) 10%, transparent)' : 'color-mix(in srgb, #10b981 10%, transparent)', 
+          borderRadius: 20, color: saving ? 'var(--primary-blue)' : '#10b981',
+          fontWeight: 600, fontSize: 14, transition: 'all 0.3s ease'
+        }}>
+          {saving ? <Loader2 size={16} className="spin" /> : <Check size={16} />}
+          {saving ? 'Saving changes...' : 'All changes saved'}
         </div>
+      </div>
 
-        {/* SEO & Metadata */}
-        <div style={{ paddingTop: 20, borderTop: '1px solid var(--border-color)' }}>
-          <p style={{ margin: '0 0 14px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>SEO & Metadata</p>
+      <div style={{ display: 'grid', gap: 32 }}>
+        
+        {/* Section: Feature Flags */}
+        <section style={{ background: 'var(--bg-primary)', padding: 24, borderRadius: 20, border: '1px solid var(--border-color)', boxShadow: '0 8px 30px rgba(0,0,0,0.04)' }}>
+          <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ padding: 8, background: 'color-mix(in srgb, #8b5cf6 10%, transparent)', borderRadius: 10, color: '#8b5cf6' }}><Layers size={18} /></div>
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Feature Toggles</h3>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 16 }}>
+            <PremiumToggle 
+              label="Experience Module" description="Show work history in navigation."
+              icon={Briefcase} color="#3b82f6"
+              checked={settings?.feature_experience ?? true} 
+              onChange={val => handleToggleChange('feature_experience', val)} 
+            />
+            <PremiumToggle 
+              label="Certifications Module" description="Display certificates & awards."
+              icon={Award} color="#10b981"
+              checked={settings?.feature_certifications ?? true} 
+              onChange={val => handleToggleChange('feature_certifications', val)} 
+            />
+            <PremiumToggle 
+              label="Available for Hire" description="Show 'Available' badge on profile."
+              icon={Sparkles} color="#8b5cf6"
+              checked={settings?.is_available_for_hire ?? false} 
+              onChange={val => handleToggleChange('is_available_for_hire', val)} 
+            />
+          </div>
+        </section>
+
+        {/* Section: Announcement Banner */}
+        <section style={{ background: 'var(--bg-primary)', padding: 24, borderRadius: 20, border: '1px solid var(--border-color)', boxShadow: '0 8px 30px rgba(0,0,0,0.04)' }}>
+          <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ padding: 8, background: 'color-mix(in srgb, #f59e0b 10%, transparent)', borderRadius: 10, color: '#f59e0b' }}><Bell size={18} /></div>
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Announcement Banner</h3>
+          </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div className="admin-field">
-              <label>Global Title (&lt;title&gt;)</label>
-              <input className="admin-input" type="text" value={settings?.seo_title || ''} 
-                onChange={e => setSettings({...settings, seo_title: e.target.value})}
-                placeholder="Sujith Thota | Portfolio" />
-            </div>
-            <div className="admin-field">
-              <label>Meta Description</label>
-              <textarea className="admin-input" style={{ minHeight: 60, resize: 'vertical' }}
-                value={settings?.seo_description || ''} 
-                onChange={e => setSettings({...settings, seo_description: e.target.value})}
-                placeholder="Full Stack Developer..." />
-            </div>
-            <div className="admin-field">
-              <label>OpenGraph Image URL</label>
-              <input className="admin-input" type="text" value={settings?.seo_og_image || ''} 
-                onChange={e => setSettings({...settings, seo_og_image: e.target.value})}
-                placeholder="https://..." />
-            </div>
+            <PremiumToggle 
+              label="Enable Global Banner" description="Displays a prominent message at the top of the site."
+              icon={Bell} color="#f59e0b"
+              checked={settings?.announcement_enabled ?? false} 
+              onChange={val => handleToggleChange('announcement_enabled', val)} 
+            />
+            <AnimatePresence>
+              {settings?.announcement_enabled && (
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} style={{ overflow: 'hidden' }}>
+                  <div style={{ paddingTop: 8 }}>
+                    <PremiumInput 
+                      label="Banner Text" icon={MessageSquare}
+                      value={settings?.announcement_text || ''} 
+                      onChange={e => handleInputChange('announcement_text', e.target.value)}
+                      onBlur={e => handleInputBlur('announcement_text', e.target.value)}
+                      placeholder="e.g., Actively seeking Senior Front-End Engineering roles."
+                    />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-        </div>
+        </section>
 
-        {/* Basic Info */}
-        <div style={{ paddingTop: 20, borderTop: '1px solid var(--border-color)' }}>
-          <p style={{ margin: '0 0 14px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Hero & Bio</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div className="admin-field">
-              <label>Hero Headline</label>
-              <input className="admin-input" type="text" value={settings?.hero_headline || ''} 
-                onChange={e => setSettings({...settings, hero_headline: e.target.value})}
-                placeholder="e.g. Full Stack Developer & AI Enthusiast" />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: 32 }}>
+          {/* Section: Personal Info */}
+          <section style={{ background: 'var(--bg-primary)', padding: 24, borderRadius: 20, border: '1px solid var(--border-color)', boxShadow: '0 8px 30px rgba(0,0,0,0.04)' }}>
+            <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ padding: 8, background: 'color-mix(in srgb, var(--primary-blue) 10%, transparent)', borderRadius: 10, color: 'var(--primary-blue)' }}><User size={18} /></div>
+              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Personal Info</h3>
             </div>
-            <div className="admin-field">
-              <label>Short Bio (About Me snippet)</label>
-              <textarea className="admin-input" style={{ minHeight: 80, resize: 'vertical' }}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <PremiumInput 
+                label="Hero Headline" icon={Type} 
+                value={settings?.hero_headline || ''} 
+                onChange={e => handleInputChange('hero_headline', e.target.value)}
+                onBlur={e => handleInputBlur('hero_headline', e.target.value)}
+                placeholder="Full Stack Developer" 
+              />
+              <PremiumInput 
+                label="Short Bio" icon={FileText} multiline 
                 value={settings?.short_bio || ''} 
-                onChange={e => setSettings({...settings, short_bio: e.target.value})}
-                placeholder="Write a brief introduction..." />
+                onChange={e => handleInputChange('short_bio', e.target.value)}
+                onBlur={e => handleInputBlur('short_bio', e.target.value)}
+                placeholder="Write a brief introduction..." 
+              />
             </div>
-          </div>
+          </section>
+
+          {/* Section: SEO */}
+          <section style={{ background: 'var(--bg-primary)', padding: 24, borderRadius: 20, border: '1px solid var(--border-color)', boxShadow: '0 8px 30px rgba(0,0,0,0.04)' }}>
+            <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ padding: 8, background: 'color-mix(in srgb, #06b6d4 10%, transparent)', borderRadius: 10, color: '#06b6d4' }}><Globe size={18} /></div>
+              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>SEO & Discovery</h3>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <PremiumInput 
+                label="Meta Title" icon={Type} 
+                value={settings?.seo_title || ''} 
+                onChange={e => handleInputChange('seo_title', e.target.value)}
+                onBlur={e => handleInputBlur('seo_title', e.target.value)}
+                placeholder="Portfolio | Sujith" 
+              />
+              <PremiumInput 
+                label="Meta Description" icon={FileText} multiline 
+                value={settings?.seo_description || ''} 
+                onChange={e => handleInputChange('seo_description', e.target.value)}
+                onBlur={e => handleInputBlur('seo_description', e.target.value)}
+                placeholder="SEO Description..." 
+              />
+              <PremiumInput 
+                label="OpenGraph Image URL" icon={Image} 
+                value={settings?.seo_og_image || ''} 
+                onChange={e => handleInputChange('seo_og_image', e.target.value)}
+                onBlur={e => handleInputBlur('seo_og_image', e.target.value)}
+                placeholder="https://..." 
+              />
+            </div>
+          </section>
         </div>
 
-        {/* Links & Contact */}
-        <div style={{ paddingTop: 20, borderTop: '1px solid var(--border-color)' }}>
-          <p style={{ margin: '0 0 14px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Links, Contact & Security</p>
-          <div className="admin-settings-grid">
-            <div className="admin-field" style={{ gridColumn: '1 / -1' }}>
-              <label>Resume PDF (Direct Upload)</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <input className="admin-input" type="text" value={settings?.resume_url || ''} 
-                  onChange={e => setSettings({...settings, resume_url: e.target.value})} placeholder="https://..." style={{ flex: 1 }} />
+        {/* Section: Links & Resume */}
+        <section style={{ background: 'var(--bg-primary)', padding: 24, borderRadius: 20, border: '1px solid var(--border-color)', boxShadow: '0 8px 30px rgba(0,0,0,0.04)' }}>
+          <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ padding: 8, background: 'color-mix(in srgb, #ec4899 10%, transparent)', borderRadius: 10, color: '#ec4899' }}><Link size={18} /></div>
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Links & Assets</h3>
+          </div>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 20 }}>
+            <PremiumInput 
+              label="Contact Email" icon={Mail} 
+              value={settings?.contact_email || ''} 
+              onChange={e => handleInputChange('contact_email', e.target.value)}
+              onBlur={e => handleInputBlur('contact_email', e.target.value)}
+              placeholder="hello@example.com" 
+            />
+            <PremiumInput 
+              label="GitHub URL" icon={FaGithub} 
+              value={settings?.github_url || ''} 
+              onChange={e => handleInputChange('github_url', e.target.value)}
+              onBlur={e => handleInputBlur('github_url', e.target.value)}
+              placeholder="https://github.com/..." 
+            />
+            <PremiumInput 
+              label="LinkedIn URL" icon={FaLinkedin} 
+              value={settings?.linkedin_url || ''} 
+              onChange={e => handleInputChange('linkedin_url', e.target.value)}
+              onBlur={e => handleInputBlur('linkedin_url', e.target.value)}
+              placeholder="https://linkedin.com/in/..." 
+            />
+            
+            <div style={{ gridColumn: '1 / -1' }}>
+              <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginLeft: 4, marginBottom: 6, display: 'block' }}>Resume PDF</label>
+              <div style={{ 
+                display: 'flex', alignItems: 'center', gap: 12, padding: 8,
+                background: 'var(--bg-secondary)', borderRadius: 16, border: '1px dashed var(--border-color)'
+              }}>
+                <div style={{ flex: 1, paddingLeft: 12, display: 'flex', alignItems: 'center', gap: 8, overflow: 'hidden' }}>
+                  <FileText size={18} color="var(--text-muted)" />
+                  <span style={{ fontSize: 14, color: settings?.resume_url ? 'var(--text-primary)' : 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    {settings?.resume_url || 'No resume uploaded yet'}
+                  </span>
+                </div>
                 <input type="file" id="resume-upload" accept="application/pdf" style={{ display: 'none' }} onChange={handleResumeUpload} />
                 <button type="button" onClick={() => document.getElementById('resume-upload').click()} 
-                  style={{ background: 'var(--primary-blue)', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <i className="ti ti-upload" /> {uploadingResume ? 'Uploading...' : 'Upload PDF'}
+                  style={{ 
+                    background: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', 
+                    padding: '8px 16px', borderRadius: 10, cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8,
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.05)', transition: 'all 0.2s'
+                  }}>
+                  {uploadingResume ? <Loader2 size={16} className="spin" /> : <Upload size={16} />} 
+                  {uploadingResume ? 'Uploading...' : 'Upload New'}
                 </button>
               </div>
             </div>
-            <div className="admin-field">
-              <label>Contact Email</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <i className="ti ti-mail" style={{ color: 'var(--text-muted)', fontSize: 18 }} />
-                <input className="admin-input" type="email" value={settings?.contact_email || ''} 
-                  onChange={e => setSettings({...settings, contact_email: e.target.value})} placeholder="hello@example.com" style={{ flex: 1 }} />
-              </div>
-            </div>
-            <div className="admin-field">
-              <label>Spam Filter & Rate Limit</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, height: 42, background: 'var(--bg-primary)', padding: '0 12px', borderRadius: 8, border: '1px solid var(--border-color)' }}>
-                <input type="checkbox" id="spam_filter" checked={settings?.contact_spam_filter ?? true}
-                  onChange={e => setSettings({...settings, contact_spam_filter: e.target.checked})}
-                  style={{ width: 16, height: 16, cursor: 'pointer', accentColor: '#10b981' }} />
-                <label htmlFor="spam_filter" style={{ fontSize: 13, color: 'var(--text-primary)', cursor: 'pointer', margin: 0 }}>Enable Strict Protection</label>
-              </div>
-            </div>
-            <div className="admin-field">
-              <label>GitHub Profile</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <i className="ti ti-brand-github" style={{ color: 'var(--text-muted)', fontSize: 18 }} />
-                <input className="admin-input" type="text" value={settings?.github_url || ''} 
-                  onChange={e => setSettings({...settings, github_url: e.target.value})} placeholder="https://github.com/..." style={{ flex: 1 }} />
-              </div>
-            </div>
-            <div className="admin-field">
-              <label>LinkedIn Profile</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <i className="ti ti-brand-linkedin" style={{ color: '#0a66c2', fontSize: 18 }} />
-                <input className="admin-input" type="text" value={settings?.linkedin_url || ''} 
-                  onChange={e => setSettings({...settings, linkedin_url: e.target.value})} placeholder="https://linkedin.com/in/..." style={{ flex: 1 }} />
-              </div>
-            </div>
           </div>
-        </div>
+        </section>
 
-        {/* Status Toggles */}
-        <div style={{ paddingTop: 20, borderTop: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <p style={{ margin: '0 0 4px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Global Status</p>
-          
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px', background: 'var(--bg-primary)', borderRadius: 12, border: '1px solid var(--border-color)' }}>
-            <input type="checkbox" id="hire_toggle" checked={settings?.is_available_for_hire || false}
-              onChange={e => setSettings({...settings, is_available_for_hire: e.target.checked})}
-              style={{ width: 20, height: 20, cursor: 'pointer', accentColor: '#28a745' }} />
-            <div style={{ flex: 1 }}>
-              <label htmlFor="hire_toggle" style={{ fontSize: 14, color: 'var(--text-primary)', fontWeight: 700, display: 'block', cursor: 'pointer' }}>Available for hire</label>
-              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Displays a green "Available" badge on your public portfolio header.</span>
-            </div>
-            {settings?.is_available_for_hire && <span className="admin-badge" style={{ background: '#28a74515', color: '#28a745', border: '1px solid #28a74530' }}>Active</span>}
-          </div>
-        </div>
-
-        <button type="submit" style={{ display: 'none' }}>Save</button>
-      </form>
-
-      {/* Advanced Maintenance Panel */}
+      </div>
+      
+      {/* Spacer before Maintenance panel */}
+      <div style={{ height: 32 }} />
       <MaintenanceSettingsPanel />
-    </PanelCard>
+    </motion.div>
   );
 }
 
