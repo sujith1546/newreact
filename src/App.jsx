@@ -11,6 +11,8 @@ import DevToolsDetector from './components/DevToolsDetector';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import { MaintenanceGate } from './components/MaintenanceMode';
+import SEOHelmet from './components/SEOHelmet';
+import AnnouncementBanner from './components/AnnouncementBanner';
 
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 const AdminLogin = React.lazy(() => import('./pages/AdminLogin'));
@@ -59,6 +61,8 @@ function AppContent() {
   const { reduceMotion } = useTheme();
   return (
     <MotionConfig reducedMotion={reduceMotion ? "always" : "never"}>
+      <SEOHelmet />
+      <AnnouncementBanner />
       <IslandProvider>
         <DynamicIsland />
         <DevToolsDetector />

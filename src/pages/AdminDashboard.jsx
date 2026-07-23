@@ -544,6 +544,7 @@ function SettingsPanel() {
   const { data: dbSettings, setData: setDbSettings, loading } = useRealtimeData('site_settings', { single: true, filter: { column: 'id', value: 1 } });
   const [settings, setSettings] = useState(null);
   const [saving, setSaving]     = useState(false);
+  const [uploadingResume, setUploadingResume] = useState(false);
 
   useEffect(() => {
     if (dbSettings) setSettings(dbSettings);
@@ -552,7 +553,6 @@ function SettingsPanel() {
   const handleSave = async (e) => {
     if (e) e.preventDefault();
     setSaving(true);
-    // Optimistic UI update instantly
     setDbSettings(settings); 
     const { error } = await supabase.from('site_settings').update(settings).eq('id', 1);
     setSaving(false);
@@ -563,6 +563,28 @@ function SettingsPanel() {
     }
   };
 
+  const handleResumeUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingResume(true);
+    const safeName = `resume_${Date.now()}.pdf`;
+    const { error } = await supabase.storage.from('portfolio-assets').upload(safeName, file, { upsert: true });
+    
+    if (!error) {
+      const publicUrl = supabase.storage.from('portfolio-assets').getPublicUrl(safeName).data.publicUrl;
+      const newSettings = { ...settings, resume_url: publicUrl };
+      setSettings(newSettings);
+      setDbSettings(newSettings);
+      await supabase.from('site_settings').update({ resume_url: publicUrl }).eq('id', 1);
+      logAuditEvent('UPLOAD_RESUME', 'storage', safeName);
+      alert("Resume uploaded and saved successfully!");
+    } else {
+      alert(`Upload failed: ${error.message}`);
+    }
+    setUploadingResume(false);
+    e.target.value = '';
+  };
+
   if (loading) return (
     <PanelCard title="Site Configuration">
       <div style={{ padding: 60, display: 'flex', justifyContent: 'center' }}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div>
@@ -571,10 +593,79 @@ function SettingsPanel() {
 
   return (
     <PanelCard title="Site Configuration" action={{ label: saving ? "Saving…" : "Save changes", icon: "ti-device-floppy", onClick: handleSave }}>
-      <form onSubmit={handleSave} style={{ padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 800 }}>
+      <form onSubmit={handleSave} style={{ padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 32, maxWidth: 850 }}>
         
-        {/* Basic Info */}
+        {/* Global Feature Flags */}
         <div>
+          <p style={{ margin: '0 0 14px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Feature Flags</p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px', background: 'var(--bg-primary)', borderRadius: 12, border: '1px solid var(--border-color)' }}>
+              <input type="checkbox" id="flag_cert" checked={settings?.feature_certifications ?? true}
+                onChange={e => setSettings({...settings, feature_certifications: e.target.checked})}
+                style={{ width: 18, height: 18, cursor: 'pointer', accentColor: 'var(--primary-blue)' }} />
+              <div>
+                <label htmlFor="flag_cert" style={{ fontSize: 14, color: 'var(--text-primary)', fontWeight: 600, display: 'block', cursor: 'pointer' }}>Certifications Module</label>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Show in navigation and pages</span>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px', background: 'var(--bg-primary)', borderRadius: 12, border: '1px solid var(--border-color)' }}>
+              <input type="checkbox" id="flag_exp" checked={settings?.feature_experience ?? true}
+                onChange={e => setSettings({...settings, feature_experience: e.target.checked})}
+                style={{ width: 18, height: 18, cursor: 'pointer', accentColor: 'var(--primary-blue)' }} />
+              <div>
+                <label htmlFor="flag_exp" style={{ fontSize: 14, color: 'var(--text-primary)', fontWeight: 600, display: 'block', cursor: 'pointer' }}>Experience Module</label>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Show in navigation and pages</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Global Announcement Banner */}
+        <div style={{ paddingTop: 20, borderTop: '1px solid var(--border-color)' }}>
+          <p style={{ margin: '0 0 14px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Live Announcement Banner</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, padding: '16px', background: 'var(--bg-primary)', borderRadius: 12, border: '1px solid var(--border-color)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <input type="checkbox" id="announcement_toggle" checked={settings?.announcement_enabled || false}
+                onChange={e => setSettings({...settings, announcement_enabled: e.target.checked})}
+                style={{ width: 18, height: 18, cursor: 'pointer', accentColor: '#8b5cf6' }} />
+              <label htmlFor="announcement_toggle" style={{ fontSize: 14, color: 'var(--text-primary)', fontWeight: 600, cursor: 'pointer' }}>Enable Global Banner</label>
+            </div>
+            {settings?.announcement_enabled && (
+              <input className="admin-input" type="text" value={settings?.announcement_text || ''} 
+                onChange={e => setSettings({...settings, announcement_text: e.target.value})}
+                placeholder="e.g. Currently seeking Senior React roles for Q4" />
+            )}
+          </div>
+        </div>
+
+        {/* SEO & Metadata */}
+        <div style={{ paddingTop: 20, borderTop: '1px solid var(--border-color)' }}>
+          <p style={{ margin: '0 0 14px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>SEO & Metadata</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div className="admin-field">
+              <label>Global Title (&lt;title&gt;)</label>
+              <input className="admin-input" type="text" value={settings?.seo_title || ''} 
+                onChange={e => setSettings({...settings, seo_title: e.target.value})}
+                placeholder="Sujith Thota | Portfolio" />
+            </div>
+            <div className="admin-field">
+              <label>Meta Description</label>
+              <textarea className="admin-input" style={{ minHeight: 60, resize: 'vertical' }}
+                value={settings?.seo_description || ''} 
+                onChange={e => setSettings({...settings, seo_description: e.target.value})}
+                placeholder="Full Stack Developer..." />
+            </div>
+            <div className="admin-field">
+              <label>OpenGraph Image URL</label>
+              <input className="admin-input" type="text" value={settings?.seo_og_image || ''} 
+                onChange={e => setSettings({...settings, seo_og_image: e.target.value})}
+                placeholder="https://..." />
+            </div>
+          </div>
+        </div>
+
+        {/* Basic Info */}
+        <div style={{ paddingTop: 20, borderTop: '1px solid var(--border-color)' }}>
           <p style={{ margin: '0 0 14px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Hero & Bio</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div className="admin-field">
@@ -595,14 +686,18 @@ function SettingsPanel() {
 
         {/* Links & Contact */}
         <div style={{ paddingTop: 20, borderTop: '1px solid var(--border-color)' }}>
-          <p style={{ margin: '0 0 14px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Links & Contact</p>
+          <p style={{ margin: '0 0 14px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Links, Contact & Security</p>
           <div className="admin-settings-grid">
-            <div className="admin-field">
-              <label>Resume URL (PDF Link)</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <i className="ti ti-file-type-pdf" style={{ color: '#ef4444', fontSize: 18 }} />
+            <div className="admin-field" style={{ gridColumn: '1 / -1' }}>
+              <label>Resume PDF (Direct Upload)</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <input className="admin-input" type="text" value={settings?.resume_url || ''} 
                   onChange={e => setSettings({...settings, resume_url: e.target.value})} placeholder="https://..." style={{ flex: 1 }} />
+                <input type="file" id="resume-upload" accept="application/pdf" style={{ display: 'none' }} onChange={handleResumeUpload} />
+                <button type="button" onClick={() => document.getElementById('resume-upload').click()} 
+                  style={{ background: 'var(--primary-blue)', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: 8, cursor: 'pointer', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <i className="ti ti-upload" /> {uploadingResume ? 'Uploading...' : 'Upload PDF'}
+                </button>
               </div>
             </div>
             <div className="admin-field">
@@ -611,6 +706,15 @@ function SettingsPanel() {
                 <i className="ti ti-mail" style={{ color: 'var(--text-muted)', fontSize: 18 }} />
                 <input className="admin-input" type="email" value={settings?.contact_email || ''} 
                   onChange={e => setSettings({...settings, contact_email: e.target.value})} placeholder="hello@example.com" style={{ flex: 1 }} />
+              </div>
+            </div>
+            <div className="admin-field">
+              <label>Spam Filter & Rate Limit</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, height: 42, background: 'var(--bg-primary)', padding: '0 12px', borderRadius: 8, border: '1px solid var(--border-color)' }}>
+                <input type="checkbox" id="spam_filter" checked={settings?.contact_spam_filter ?? true}
+                  onChange={e => setSettings({...settings, contact_spam_filter: e.target.checked})}
+                  style={{ width: 16, height: 16, cursor: 'pointer', accentColor: '#10b981' }} />
+                <label htmlFor="spam_filter" style={{ fontSize: 13, color: 'var(--text-primary)', cursor: 'pointer', margin: 0 }}>Enable Strict Protection</label>
               </div>
             </div>
             <div className="admin-field">
@@ -651,7 +755,7 @@ function SettingsPanel() {
         <button type="submit" style={{ display: 'none' }}>Save</button>
       </form>
 
-      {/* Advanced Maintenance Panel (Outside form to prevent conflict) */}
+      {/* Advanced Maintenance Panel */}
       <MaintenanceSettingsPanel />
     </PanelCard>
   );

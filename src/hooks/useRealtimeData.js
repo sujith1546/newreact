@@ -62,9 +62,10 @@ export default function useRealtimeData(table, options = {}) {
 
     fetchData();
 
-    // Set up Realtime Subscription
+    // Set up Realtime Subscription with a unique channel name per hook instance
+    const channelName = `public:${table}-${Math.random().toString(36).substring(7)}`;
     const channel = supabase
-      .channel(`public:${table}`)
+      .channel(channelName)
       .on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
         if (!isMounted) return;
         

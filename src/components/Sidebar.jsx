@@ -7,6 +7,7 @@ import ResumeQuickLook from './ResumeQuickLook';
 import { useLocalTime } from '../hooks/useLocalTime';
 import QRModal from './QRModal';
 import { useTheme } from '../context/ThemeContext';
+import useRealtimeData from '../hooks/useRealtimeData';
 import { useIsland } from '../context/IslandContext';
 
 function GmailIcon({ size = 20 }) {
@@ -44,7 +45,7 @@ function InstagramIcon({ size = 20 }) {
   );
 }
 
-const NAV_ITEMS = [
+const NAV_ITEMS_DEF = [
   { label: 'HOME', id: 'home' },
   { label: 'ABOUT', id: 'about' },
   { label: 'SKILLS', id: 'skills' },
@@ -56,6 +57,14 @@ const NAV_ITEMS = [
 ];
 
 export default function Sidebar({ activeSection, onNavClick }) {
+  const { data: dbSettings } = useRealtimeData('site_settings', { single: true, filter: { column: 'id', value: 1 } });
+  
+  const NAV_ITEMS = NAV_ITEMS_DEF.filter(item => {
+    if (item.id === 'experience' && dbSettings?.feature_experience === false) return false;
+    if (item.id === 'certifications' && dbSettings?.feature_certifications === false) return false;
+    return true;
+  });
+
   const localTime = useLocalTime();
   const { theme } = useTheme();
   const [qrOpen, setQrOpen] = useState(false);

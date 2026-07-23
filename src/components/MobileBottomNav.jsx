@@ -5,6 +5,7 @@ import { IconBolt, IconLayoutGrid } from '@tabler/icons-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLocalTime } from '../hooks/useLocalTime';
 import { useTheme } from '../context/ThemeContext';
+import useRealtimeData from '../hooks/useRealtimeData';
 import WhatsNewPanel from './WhatsNewPanel';
 import AdvancedProfile from './AdvancedProfile';
 
@@ -12,6 +13,8 @@ const sunPath = "M 12 8 C 14.2 8 16 9.8 16 12 C 16 14.2 14.2 16 12 16 C 9.8 16 8
 const moonPath = "M 12 3 C 16.97 3 21 7.03 21 12 C 21 16.97 16.97 21 12 21 C 14.5 17.5 16 14.5 16 12 C 16 9.5 14.5 6.5 12 3 Z M12 2v0 M12 20v0 M4.93 4.93l0 0 M17.66 17.66l0 0 M2 12h0 M20 12h0 M6.34 17.66l0 0 M19.07 4.93l0 0";
 
 export default function MobileBottomNav({ activeSection, onNavClick }) {
+  const { data: dbSettings } = useRealtimeData('site_settings', { single: true, filter: { column: 'id', value: 1 } });
+
   const [isMoreOpen, setIsMoreOpen] = useState(false);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isUpdatesOpen, setIsUpdatesOpen] = useState(false);
@@ -376,14 +379,18 @@ END:VCARD`;
                   <div className="drawer-item-box"><GraduationCap size={20} /></div>
                   <span>Education</span>
                 </button>
+                {dbSettings?.feature_experience !== false && (
                 <button onClick={() => handleTabClick('experience')} className="drawer-explore-item">
                   <div className="drawer-item-box"><Briefcase size={20} /></div>
                   <span>Experience</span>
                 </button>
+                )}
+                {dbSettings?.feature_certifications !== false && (
                 <button onClick={() => handleTabClick('certifications')} className="drawer-explore-item">
                   <div className="drawer-item-box"><Award size={20} /></div>
                   <span>Certs</span>
                 </button>
+                )}
                 <button onClick={() => { playSound(); setIsGithubStatsOpen(true); setIsMoreOpen(false); }} className="drawer-explore-item">
                   <div className="drawer-item-box"><FaGithub size={20} /></div>
                   <span>GitHub</span>

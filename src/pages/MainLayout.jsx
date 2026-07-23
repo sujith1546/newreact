@@ -25,9 +25,10 @@ import Contact from '../pages/Contact';
 import ParticleCanvas from '../components/ParticleCanvas';
 import SectionSpotlight from '../components/SectionSpotlight';
 import { useTheme } from '../context/ThemeContext';
+import useRealtimeData from '../hooks/useRealtimeData';
 import { trackPageView } from '../lib/analyticsTracker';
 
-const SECTIONS = [
+const SECTIONS_DEF = [
   { id: 'home',           Component: Home           },
   { id: 'about',          Component: About          },
   { id: 'skills',         Component: Skills         },
@@ -49,10 +50,7 @@ const SECTION_LABELS = {
   contact: 'Contact',
 };
 
-const ALL_PAGES = [
-  'home', 'about', 'skills', 'projects',
-  'education', 'experience', 'certifications', 'contact'
-];
+
 
 // ─── Navigation timing ────────────────────────────────────────────────────────
 // Apple UIKit NavigationController decelerate curve.
@@ -72,6 +70,15 @@ const mobilePageVariants = {
 };
 
 export default function MainLayout() {
+  const { data: dbSettings } = useRealtimeData('site_settings', { single: true, filter: { column: 'id', value: 1 } });
+  
+  const SECTIONS = SECTIONS_DEF.filter(sec => {
+    if (sec.id === 'experience' && dbSettings?.feature_experience === false) return false;
+    if (sec.id === 'certifications' && dbSettings?.feature_certifications === false) return false;
+    return true;
+  });
+  const ALL_PAGES = SECTIONS.map(s => s.id);
+
   const { theme } = useTheme();
   const [activeSection,    setActiveSection]    = useState('home');
   const [isMobile,         setIsMobile]         = useState(window.innerWidth <= 900);
