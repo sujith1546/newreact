@@ -5,6 +5,18 @@ import { generateChatResponse } from '../lib/groqClient';
 import { MessageSquare, X, Send, Sparkles, Loader2, Minimize2, Cpu, ChevronRight } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
+// UUID Fallback for non-secure contexts (e.g. testing on mobile via local IP)
+function generateUUID() {
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return generateUUID();
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+
 const SUGGESTED_QUESTIONS = [
   "What is your tech stack?",
   "What was your role at your last job?",
@@ -44,7 +56,7 @@ export default function AiChatWidget() {
 
   const initSession = async () => {
     if (sessionId) return;
-    const newId = crypto.randomUUID();
+    const newId = generateUUID();
     const { data, error } = await supabase.from('chat_sessions').insert([{ id: newId }]).select().single();
     
     if (data) {
@@ -52,7 +64,7 @@ export default function AiChatWidget() {
       localStorage.setItem('ai_session_id', data.id);
       const greeting = "Hello! I am an AI trained on this portfolio. How can I assist you today?";
       setMessages([{ role: 'assistant', content: greeting }]);
-      supabase.from('chat_messages').insert([{ id: crypto.randomUUID(), session_id: data.id, role: 'assistant', content: greeting }]).then();
+      supabase.from('chat_messages').insert([{ id: generateUUID(), session_id: data.id, role: 'assistant', content: greeting }]).then();
     }
   };
 
@@ -73,7 +85,7 @@ export default function AiChatWidget() {
     setMessages(newMessages);
     setIsTyping(true);
 
-    supabase.from('chat_messages').insert([{ id: crypto.randomUUID(), session_id: sessionId, role: 'user', content: textToProcess }]).then();
+    supabase.from('chat_messages').insert([{ id: generateUUID(), session_id: sessionId, role: 'user', content: textToProcess }]).then();
 
     const replyText = await generateChatResponse(newMessages);
     
@@ -81,7 +93,7 @@ export default function AiChatWidget() {
     setMessages(finalMessages);
     setIsTyping(false);
 
-    supabase.from('chat_messages').insert([{ id: crypto.randomUUID(), session_id: sessionId, role: 'assistant', content: replyText }]).then();
+    supabase.from('chat_messages').insert([{ id: generateUUID(), session_id: sessionId, role: 'assistant', content: replyText }]).then();
   };
 
   return (
