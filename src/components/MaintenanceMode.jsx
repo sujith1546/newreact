@@ -195,10 +195,10 @@ const styles = {
     borderRadius: 100,
     marginBottom: 22,
   },
-  input: { width: '100%', padding: '10px 12px', fontSize: 14, borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', outline: 'none' },
-  updateBtn: { marginTop: 8, padding: '8px 16px', background: '#ef4444', color: '#fff', fontSize: 13, fontWeight: 600, border: 'none', borderRadius: 6, cursor: 'pointer', transition: '0.2s' },
+  input: { width: '100%', padding: '10px 12px', fontSize: 14, borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' },
+  updateBtn: { marginTop: 4, padding: '10px 16px', background: '#ef4444', color: '#fff', fontSize: 13, fontWeight: 700, border: 'none', borderRadius: 8, cursor: 'pointer', transition: '0.2s', width: 'fit-content', alignSelf: 'flex-start' },
   inputGroup: { display: 'flex', flexDirection: 'column', gap: 6 },
-  label: { fontSize: 12.5, color: '#5B6069', fontWeight: 500 },
+  label: { fontSize: 12.5, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' },
   pulse: { width: 7, height: 7, borderRadius: '50%', background: '#1F3A5F', animation: 'pulse 2s ease-out infinite' },
   h1: {
     fontFamily: "'Source Serif 4', serif",
@@ -325,7 +325,7 @@ export function MaintenanceSettingsPanel() {
     <div className="setting-card">
       <div className="setting-row">
         <div>
-          <strong style={{ color: '#1C1E22' }}>Maintenance Mode</strong>
+          <h4 style={{ margin: '0 0 4px', fontSize: 15, color: 'var(--text-primary)' }}>Maintenance Mode</h4>
           <p className="setting-desc">
             Locks the public site with a "be right back" screen. Admin dashboard stays accessible.
           </p>
@@ -348,7 +348,7 @@ export function MaintenanceSettingsPanel() {
       </div>
 
       {enabled && (
-        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: 16 }}>
           <div style={styles.inputGroup}>
             <label style={styles.label}>Estimated Time (Minutes)</label>
             <input
@@ -381,10 +381,24 @@ export function MaintenanceSettingsPanel() {
       )}
 
       <style>{`
-        .setting-card { padding: 16px 0; border-bottom: 1px dashed #ef444460; margin-top: 16px; border-top: 1px solid var(--border-color); }
+        .setting-card { 
+          padding: 20px; 
+          background: var(--bg-primary); 
+          border-radius: 12px; 
+          border: 1px solid var(--border-color);
+          position: relative;
+          overflow: hidden;
+        }
+        .setting-card::before {
+          content: "";
+          position: absolute;
+          top: 0; left: 0; bottom: 0; width: 4px;
+          background: ${enabled ? '#ef4444' : 'transparent'};
+          transition: 0.3s;
+        }
         .setting-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
-        .setting-desc { font-size: 13px; color: #5B6069; margin: 4px 0 0; max-width: 46ch; }
-        .setting-meta { font-size: 12px; color: #1F3A5F; margin: 6px 0 0; font-weight: 500; }
+        .setting-desc { font-size: 13px; color: var(--text-muted); margin: 4px 0 0; max-width: 50ch; line-height: 1.5; }
+        .setting-meta { font-size: 12px; color: #ef4444; margin: 8px 0 0; font-weight: 600; background: #ef444415; padding: 4px 10px; border-radius: 100px; display: inline-block; }
 
         .switch { width: 42px; height: 24px; border-radius: 100px; border: none; background: #D8DCE3;
           position: relative; cursor: pointer; flex-shrink: 0; transition: background 0.2s ease; }
