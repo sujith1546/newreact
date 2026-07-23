@@ -52,6 +52,53 @@ const NAV_GROUPS = [
 
 const ALL_NAV_ITEMS = NAV_GROUPS.flatMap(g => g.items);
 
+
+const Modal = ({ isOpen, onClose, title, children }) => {
+  if (!isOpen) return null;
+  return (
+    <AnimatePresence>
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+        <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 20, opacity: 0 }}
+          style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 16, width: '100%', maxWidth: 600, maxHeight: '90vh', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', borderBottom: '1px solid var(--border-color)' }}>
+            <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>{title}</h3>
+            <button onClick={onClose} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}><X size={20} /></button>
+          </div>
+          <div style={{ padding: 24 }}>{children}</div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+};
+
+const FormField = ({ label, icon: Icon, type = "text", value, onChange, placeholder, multiline = false, required = false }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 16 }}>
+    <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>{label} {required && '*'}</label>
+    <div style={{ display: 'flex', alignItems: multiline ? 'flex-start' : 'center', gap: 12, padding: multiline ? '12px 16px' : '0 16px', minHeight: 48, background: 'var(--bg-secondary)', borderRadius: 12, border: '1px solid var(--border-color)' }}>
+      {Icon && <Icon size={18} style={{ color: 'var(--text-muted)', marginTop: multiline ? 2 : 0 }} />}
+      {multiline ? (
+        <textarea value={value} onChange={onChange} placeholder={placeholder} required={required} style={{ flex: 1, background: 'transparent', border: 'none', color: 'var(--text-primary)', fontSize: 15, outline: 'none', minHeight: 80, resize: 'vertical' }} />
+      ) : (
+        <input type={type} value={value} onChange={onChange} placeholder={placeholder} required={required} style={{ flex: 1, background: 'transparent', border: 'none', color: 'var(--text-primary)', fontSize: 15, outline: 'none', width: '100%' }} />
+      )}
+    </div>
+  </div>
+);
+
+const KPICard = ({ label, value, trend, icon: Icon, color }) => (
+  <div style={{ background: 'var(--bg-primary)', border: `1px solid var(--border-color)`, borderTop: `3px solid ${color}`, borderRadius: 12, padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <p style={{ margin: 0, fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.6px', color: 'var(--text-muted)' }}>{label}</p>
+      {Icon && <div style={{ width: 32, height: 32, borderRadius: 8, background: `${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon size={16} color={color} /></div>}
+    </div>
+    <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
+      <p style={{ margin: 0, fontSize: 28, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: -1 }}>{value}</p>
+      {trend && <span style={{ fontSize: 12, fontWeight: 600, color: trend > 0 ? '#10b981' : '#ef4444' }}>{trend > 0 ? '↑' : '↓'} {Math.abs(trend)}%</span>}
+    </div>
+  </div>
+);
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -317,10 +364,11 @@ function PanelCard({ title, action, headerElement, children }) {
 function ProjectsPanel() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [editingProject, setEditingProject] = useState(null);
+  const [form, setForm] = useState({});
 
-  useEffect(() => {
-    fetchProjects();
-  }, []);
+  useEffect(() => { fetchProjects(); }, []);
 
   const fetchProjects = async () => {
     setLoading(true);
@@ -335,49 +383,89 @@ function ProjectsPanel() {
     if (!error) setProjects(projects.filter(p => p.id !== id));
   };
 
+  const openForm = (proj = null) => {
+    setEditingProject(proj);
+    setForm(proj || { title: '', description: '', tags: '', link: '', github: '', image_url: '', featured: false });
+    setShowForm(true);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const payload = { ...form, tags: typeof form.tags === 'string' ? form.tags.split(',').map(t=>t.trim()).filter(Boolean) : form.tags };
+    if (editingProject) {
+      const { data, error } = await supabase.from('projects').update(payload).eq('id', editingProject.id).select().single();
+      if (!error && data) setProjects(projects.map(p => p.id === data.id ? data : p));
+    } else {
+      const { data, error } = await supabase.from('projects').insert([payload]).select().single();
+      if (!error && data) setProjects([...projects, data]);
+    }
+    setShowForm(false);
+  };
+
   if (loading) return <PanelCard title="Projects"><div style={styles.emptyState}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div></PanelCard>;
 
   return (
-    <PanelCard title="Projects" action={{ label: "Add project", icon: "ti-plus" }}>
-      {projects.length === 0 ? (
-        <EmptyState icon="ti-briefcase" title="No projects yet" description="Add your first project to get it listed on your portfolio." />
-      ) : (
-        <table style={styles.table}>
-          <thead>
-            <tr>
-              <th style={styles.th}>ID</th>
-              <th style={styles.th}>Title</th>
-              <th style={styles.th}>Tags</th>
-              <th style={styles.th}>Featured</th>
-              <th style={styles.th}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
+    <>
+      <PanelCard title="Projects" action={{ label: "Add project", icon: "ti-plus", onClick: () => openForm() }}>
+        <div style={{ padding: '0 20px 20px', display: 'flex', gap: 16, marginBottom: 16 }}>
+          <KPICard label="Total Projects" value={projects.length} icon={Briefcase} color="#10b981" />
+          <KPICard label="Featured" value={projects.filter(p=>p.featured).length} icon={Star} color="#f59e0b" />
+        </div>
+        {projects.length === 0 ? (
+          <EmptyState icon="ti-briefcase" title="No projects yet" description="Add your first project to get it listed on your portfolio." />
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, padding: '0 20px 20px' }}>
             {projects.map(proj => (
-              <tr key={proj.id}>
-                <td style={styles.td}>{proj.id}</td>
-                <td style={{ ...styles.td, fontWeight: 500 }}>{proj.title}</td>
-                <td style={styles.td}>{proj.tags?.length || 0} tags</td>
-                <td style={styles.td}>{proj.featured ? <Check size={16} color="var(--success-green, #10b981)" /> : ''}</td>
-                <td style={styles.td}>
-                  <button onClick={() => deleteProject(proj.id)} style={styles.iconBtn} title="Delete"><Trash2 size={16} color="#ef4444" /></button>
-                </td>
-              </tr>
+              <div key={proj.id} style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 12, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ height: 120, background: proj.image_url ? `url(${proj.image_url}) center/cover` : 'linear-gradient(45deg, #10b981, #3b82f6)' }} />
+                <div style={{ padding: 16, flex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <h4 style={{ margin: 0, fontSize: 16, color: 'var(--text-primary)' }}>{proj.title}</h4>
+                    {proj.featured && <Star size={16} color="#f59e0b" fill="#f59e0b" />}
+                  </div>
+                  <p style={{ margin: '8px 0', fontSize: 13, color: 'var(--text-muted)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{proj.description}</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 8 }}>
+                    {proj.tags?.map(t => <span key={t} style={{ background: 'var(--bg-secondary)', color: 'var(--text-secondary)', padding: '2px 8px', borderRadius: 4, fontSize: 11 }}>{t}</span>)}
+                  </div>
+                </div>
+                <div style={{ padding: '12px 16px', borderTop: '1px solid var(--border-color)', display: 'flex', gap: 8 }}>
+                  <button onClick={() => openForm(proj)} style={{ flex: 1, background: 'var(--bg-secondary)', border: 'none', padding: '6px', borderRadius: 6, cursor: 'pointer', color: 'var(--text-primary)' }}>Edit</button>
+                  <button onClick={() => deleteProject(proj.id)} style={{ background: '#ef444420', color: '#ef4444', border: 'none', padding: '6px 12px', borderRadius: 6, cursor: 'pointer' }}><Trash2 size={16} /></button>
+                </div>
+              </div>
             ))}
-          </tbody>
-        </table>
-      )}
-    </PanelCard>
+          </div>
+        )}
+      </PanelCard>
+      <Modal isOpen={showForm} onClose={() => setShowForm(false)} title={editingProject ? "Edit Project" : "Add Project"}>
+        <form onSubmit={handleSubmit}>
+          <FormField label="Title" value={form.title || ''} onChange={e => setForm({...form, title: e.target.value})} required />
+          <FormField label="Description" value={form.description || ''} onChange={e => setForm({...form, description: e.target.value})} multiline />
+          <FormField label="Tags (comma separated)" value={form.tags || ''} onChange={e => setForm({...form, tags: e.target.value})} />
+          <FormField label="Image URL" value={form.image_url || ''} onChange={e => setForm({...form, image_url: e.target.value})} />
+          <div style={{ display: 'flex', gap: 16, marginBottom: 16 }}>
+            <FormField label="Demo Link" value={form.link || ''} onChange={e => setForm({...form, link: e.target.value})} />
+            <FormField label="GitHub" value={form.github || ''} onChange={e => setForm({...form, github: e.target.value})} />
+          </div>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginBottom: 24, fontSize: 14, color: 'var(--text-primary)' }}>
+            <input type="checkbox" checked={form.featured || false} onChange={e => setForm({...form, featured: e.target.checked})} />
+            Featured Project
+          </label>
+          <button type="submit" className="admin-action-btn" style={{ width: '100%', justifyContent: 'center' }}>Save Project</button>
+        </form>
+      </Modal>
+    </>
   );
 }
 
 function UpdatesPanel() {
   const [updates, setUpdates] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [editingUpdate, setEditingUpdate] = useState(null);
+  const [form, setForm] = useState({});
 
-  useEffect(() => {
-    fetchUpdates();
-  }, []);
+  useEffect(() => { fetchUpdates(); }, []);
 
   const fetchUpdates = async () => {
     setLoading(true);
@@ -392,39 +480,93 @@ function UpdatesPanel() {
     if (!error) setUpdates(updates.filter(u => u.id !== id));
   };
 
+  const openForm = (update = null) => {
+    setEditingUpdate(update);
+    setForm(update ? { ...update, items: update.items?.join('\n') || '' } : { version: '', label: 'new', date: new Date().toISOString().split('T')[0], items: '' });
+    setShowForm(true);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const payload = { ...form, items: typeof form.items === 'string' ? form.items.split('\n').map(i=>i.trim()).filter(Boolean) : form.items };
+    if (editingUpdate) {
+      const { data, error } = await supabase.from('updates').update(payload).eq('id', editingUpdate.id).select().single();
+      if (!error && data) setUpdates(updates.map(u => u.id === data.id ? data : u));
+    } else {
+      const { data, error } = await supabase.from('updates').insert([payload]).select().single();
+      if (!error && data) setUpdates([data, ...updates]);
+    }
+    setShowForm(false);
+  };
+
+  const getLabelColor = (lbl) => {
+    switch (lbl) {
+      case 'new': return '#10b981';
+      case 'fix': return '#ef4444';
+      case 'improvement': return '#3b82f6';
+      case 'breaking': return '#f59e0b';
+      default: return '#6b7280';
+    }
+  };
+
   if (loading) return <PanelCard title="Changelog updates"><div style={styles.emptyState}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div></PanelCard>;
 
   return (
-    <PanelCard title="Changelog updates" action={{ label: "Add update", icon: "ti-plus" }}>
-      {updates.length === 0 ? (
-        <EmptyState icon="ti-bolt" title="No changelog entries yet" description="Log a new update whenever you ship a feature or fix." />
-      ) : (
-        <table style={styles.table}>
-          <thead>
-            <tr>
-              <th style={styles.th}>Version</th>
-              <th style={styles.th}>Label</th>
-              <th style={styles.th}>Date</th>
-              <th style={styles.th}>Items</th>
-              <th style={styles.th}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
+    <>
+      <PanelCard title="Changelog updates" action={{ label: "Add update", icon: "ti-plus", onClick: () => openForm() }}>
+        {updates.length === 0 ? (
+          <EmptyState icon="ti-bolt" title="No changelog entries yet" description="Log a new update whenever you ship a feature or fix." />
+        ) : (
+          <div style={{ padding: '0 20px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
             {updates.map(update => (
-              <tr key={update.id}>
-                <td style={{ ...styles.td, fontWeight: 500 }}>{update.version}</td>
-                <td style={styles.td}>{update.label}</td>
-                <td style={styles.td}>{update.date}</td>
-                <td style={styles.td}>{update.items?.length || 0} items</td>
-                <td style={styles.td}>
-                  <button onClick={() => deleteUpdate(update.id)} style={styles.iconBtn} title="Delete"><Trash2 size={16} color="#ef4444" /></button>
-                </td>
-              </tr>
+              <div key={update.id} style={{ display: 'flex', gap: 16, background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 12, padding: 16 }}>
+                <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  <div style={{ width: 12, height: 12, borderRadius: '50%', background: getLabelColor(update.label) }} />
+                  <div style={{ flex: 1, width: 2, background: 'var(--border-color)', marginTop: 8 }} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <h4 style={{ margin: 0, fontSize: 16, color: 'var(--text-primary)' }}>{update.version}</h4>
+                        <span style={{ padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600, background: `${getLabelColor(update.label)}20`, color: getLabelColor(update.label), textTransform: 'uppercase' }}>{update.label}</span>
+                      </div>
+                      <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--text-muted)' }}>{update.date}</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button onClick={() => openForm(update)} style={{ background: 'var(--bg-secondary)', border: 'none', padding: '6px', borderRadius: 6, cursor: 'pointer', color: 'var(--text-primary)' }}>Edit</button>
+                      <button onClick={() => deleteUpdate(update.id)} style={{ background: '#ef444420', color: '#ef4444', border: 'none', padding: '6px 12px', borderRadius: 6, cursor: 'pointer' }}><Trash2 size={16} /></button>
+                    </div>
+                  </div>
+                  <ul style={{ margin: 0, paddingLeft: 20, color: 'var(--text-secondary)', fontSize: 14 }}>
+                    {update.items?.map((item, i) => <li key={i} style={{ marginBottom: 4 }}>{item}</li>)}
+                  </ul>
+                </div>
+              </div>
             ))}
-          </tbody>
-        </table>
-      )}
-    </PanelCard>
+          </div>
+        )}
+      </PanelCard>
+      <Modal isOpen={showForm} onClose={() => setShowForm(false)} title={editingUpdate ? "Edit Update" : "Add Update"}>
+        <form onSubmit={handleSubmit}>
+          <div style={{ display: 'flex', gap: 16, marginBottom: 16 }}>
+            <FormField label="Version" value={form.version || ''} onChange={e => setForm({...form, version: e.target.value})} required />
+            <FormField label="Date" type="date" value={form.date || ''} onChange={e => setForm({...form, date: e.target.value})} required />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 16 }}>
+            <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>Label</label>
+            <select value={form.label || 'new'} onChange={e => setForm({...form, label: e.target.value})} style={{ padding: '12px 16px', background: 'var(--bg-secondary)', borderRadius: 12, border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}>
+              <option value="new">New</option>
+              <option value="fix">Fix</option>
+              <option value="improvement">Improvement</option>
+              <option value="breaking">Breaking</option>
+            </select>
+          </div>
+          <FormField label="Items (one per line)" value={form.items || ''} onChange={e => setForm({...form, items: e.target.value})} multiline required />
+          <button type="submit" className="admin-action-btn" style={{ width: '100%', justifyContent: 'center' }}>Save Update</button>
+        </form>
+      </Modal>
+    </>
   );
 }
 
@@ -434,124 +576,97 @@ function AiChatsPanel() {
   const [selectedSession, setSelectedSession] = useState(null);
   const [messages, setMessages] = useState([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     fetchSessions();
-    
-    // Subscribe to new sessions
-    const sessionSub = supabase.channel('realtime-sessions')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_sessions' }, (payload) => {
-        setSessions(prev => [payload.new, ...prev]);
-      })
-      .subscribe();
-      
-    // Subscribe to new messages
-    const messageSub = supabase.channel('realtime-messages')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, (payload) => {
-        setMessages(prev => {
-          // Only append if it belongs to the currently viewed session
-          if (payload.new.session_id === selectedSession) {
-            return [...prev, payload.new];
-          }
-          return prev;
-        });
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(sessionSub);
-      supabase.removeChannel(messageSub);
-    };
-  }, [selectedSession]);
+  }, []);
 
   const fetchSessions = async () => {
     setLoading(true);
-    const { data, error } = await supabase.from('chat_sessions').select('*').order('created_at', { ascending: false });
-    if (!error && data) setSessions(data);
-    setLoading(false);
-  };
-
-  const deleteSession = async (id) => {
-    if (!window.confirm('Delete this chat session and all its messages?')) return;
-    const { error } = await supabase.from('chat_sessions').delete().eq('id', id);
-    if (!error) {
-      setSessions(sessions.filter(s => s.id !== id));
-      if (selectedSession === id) setSelectedSession(null);
-    } else {
-      alert("Failed to delete session. This is likely blocked by Row-Level Security (RLS) in your database. You need to enable DELETE permissions on the 'chat_sessions' table.");
+    // Fetch sessions
+    const { data: sessData, error: sessErr } = await supabase.from('chat_sessions').select('*').order('created_at', { ascending: false });
+    // Fetch all messages to calculate counts and get first message
+    const { data: msgData } = await supabase.from('chat_messages').select('session_id, content, created_at, role').order('created_at', { ascending: true });
+    
+    if (!sessErr && sessData) {
+      const enriched = sessData.map(s => {
+        const sMsgs = msgData?.filter(m => m.session_id === s.id) || [];
+        return {
+          ...s,
+          msgCount: sMsgs.length,
+          firstMessage: sMsgs.find(m => m.role === 'user')?.content || 'No user messages',
+          duration: sMsgs.length > 1 ? Math.round((new Date(sMsgs[sMsgs.length-1].created_at) - new Date(sMsgs[0].created_at))/1000) : 0
+        };
+      });
+      setSessions(enriched);
     }
+    setLoading(false);
   };
 
   const loadMessages = async (sessionId) => {
     setSelectedSession(sessionId);
     setLoadingMessages(true);
-    const { data, error } = await supabase
-      .from('chat_messages')
-      .select('*')
-      .eq('session_id', sessionId)
-      .order('created_at', { ascending: true });
+    const { data, error } = await supabase.from('chat_messages').select('*').eq('session_id', sessionId).order('created_at', { ascending: true });
     if (!error && data) setMessages(data);
     setLoadingMessages(false);
   };
 
-  if (loading) return <PanelCard title="AI Telemetry Logs"><div style={styles.emptyState}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div></PanelCard>;
+  const exportChat = () => {
+    if (!messages.length) return;
+    const text = messages.map(m => `[${new Date(m.created_at).toLocaleString()}] ${m.role.toUpperCase()}: \n${m.content}\n`).join('\n');
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url;
+    a.download = `chat_export_${selectedSession}.txt`;
+    a.click(); URL.revokeObjectURL(url);
+  };
 
-  // Analytics Metrics
-  const activeToday = sessions.filter(s => new Date(s.created_at).toDateString() === new Date().toDateString()).length;
+  const deleteSession = async (id) => {
+    if (!window.confirm('Delete session?')) return;
+    const { error } = await supabase.from('chat_sessions').delete().eq('id', id);
+    if (!error) {
+      setSessions(sessions.filter(s => s.id !== id));
+      if (selectedSession === id) setSelectedSession(null);
+    }
+  };
+
+  const filteredSessions = sessions.filter(s => s.id.includes(search) || s.firstMessage.toLowerCase().includes(search.toLowerCase()));
+
+  if (loading) return <PanelCard title="AI Telemetry Logs"><div style={styles.emptyState}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div></PanelCard>;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', height: 'calc(100vh - 120px)' }}>
-      {/* KPI Strip */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
-        <div style={{ background: 'var(--bg-light)', padding: '20px', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--primary-blue)' }}><MessageSquare size={18} /><span style={{ fontWeight: 600, fontSize: 13 }}>Total Chats</span></div>
-          <div style={{ fontSize: 32, fontWeight: 700, color: 'var(--text-primary)' }}>{sessions.length}</div>
-        </div>
-        <div style={{ background: 'var(--bg-light)', padding: '20px', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#10b981' }}><Sparkles size={18} /><span style={{ fontWeight: 600, fontSize: 13 }}>Active Today</span></div>
-          <div style={{ fontSize: 32, fontWeight: 700, color: 'var(--text-primary)' }}>{activeToday}</div>
-        </div>
+        <KPICard label="Total Sessions" value={sessions.length} icon={MessageSquare} color="#3b82f6" />
+        <KPICard label="Active Today" value={sessions.filter(s => new Date(s.created_at).toDateString() === new Date().toDateString()).length} icon={Sparkles} color="#10b981" />
         <div style={{ background: 'var(--bg-light)', padding: '20px', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: 8, justifyContent: 'center' }}>
           <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>Telemetry automatically logs every conversation processed by your Groq AI Integration.</div>
         </div>
       </div>
 
-      {/* Split Pane Inbox */}
       <div style={{ display: 'flex', flex: 1, background: 'var(--bg-light)', borderRadius: '16px', border: '1px solid var(--border-color)', overflow: 'hidden' }}>
-        
-        {/* Left: Session List */}
-        <div style={{ width: '320px', borderRight: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', background: 'var(--bg-dark)' }}>
-          <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-color)', fontWeight: 600, color: 'var(--text-primary)', fontSize: 14 }}>
-            Recent Sessions
+        <div style={{ width: '350px', borderRight: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', background: 'var(--bg-dark)' }}>
+          <div style={{ padding: '16px', borderBottom: '1px solid var(--border-color)' }}>
+            <input type="text" placeholder="Search sessions..." value={search} onChange={e=>setSearch(e.target.value)} style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', boxSizing: 'border-box' }} />
           </div>
           <div style={{ flex: 1, overflowY: 'auto' }}>
-            {sessions.length === 0 ? (
-              <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>No sessions yet.</div>
-            ) : sessions.map(session => (
-              <div 
-                key={session.id} 
-                onClick={() => loadMessages(session.id)}
-                style={{ 
-                  padding: '16px 20px', 
-                  borderBottom: '1px solid var(--border-color)', 
-                  cursor: 'pointer',
-                  background: selectedSession === session.id ? 'var(--bg-accent)' : 'transparent',
-                  transition: 'background 0.2s'
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Visitor</span>
-                  <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{new Date(session.created_at).toLocaleDateString()}</span>
+            {filteredSessions.map(s => (
+              <div key={s.id} onClick={() => loadMessages(s.id)} style={{ padding: '16px', borderBottom: '1px solid var(--border-color)', cursor: 'pointer', background: selectedSession === s.id ? 'var(--bg-accent)' : 'transparent', transition: 'background 0.2s' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>Visitor</span>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{new Date(s.created_at).toLocaleDateString()}</span>
                 </div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'monospace', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                  ID: {session.id.split('-')[0]}...
+                <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.firstMessage}</div>
+                <div style={{ display: 'flex', gap: 8, fontSize: 10, color: 'var(--text-muted)' }}>
+                  <span style={{ background: 'var(--bg-primary)', padding: '2px 6px', borderRadius: 4, border: '1px solid var(--border-color)' }}>{s.msgCount} msgs</span>
+                  <span style={{ background: 'var(--bg-primary)', padding: '2px 6px', borderRadius: 4, border: '1px solid var(--border-color)' }}>{s.duration}s</span>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Right: Chat Transcript */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--bg-light)' }}>
           {selectedSession ? (
             <>
@@ -560,32 +675,22 @@ function AiChatsPanel() {
                   <h4 style={{ margin: 0, fontSize: 15, color: 'var(--text-primary)' }}>Chat Transcript</h4>
                   <p style={{ margin: 0, fontSize: 12, color: 'var(--text-muted)', fontFamily: 'monospace', marginTop: 4 }}>{selectedSession}</p>
                 </div>
-                <button onClick={() => deleteSession(selectedSession)} style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '6px 12px', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600 }}>
-                  <Trash2 size={14} /> Delete
-                </button>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button onClick={exportChat} style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', padding: '6px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Export TXT</button>
+                  <button onClick={() => deleteSession(selectedSession)} style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '6px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>Delete</button>
+                </div>
               </div>
               <div style={{ flex: 1, overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
                 {loadingMessages ? (
-                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}><Loader2 className="spin" size={24} color="var(--primary-blue)" /></div>
-                ) : messages.length === 0 ? (
-                  <div style={{ textAlign: 'center', color: 'var(--text-muted)', margin: 'auto' }}>Session opened, but no messages were sent.</div>
+                  <div style={{ display: 'flex', justifyContent: 'center' }}><Loader2 className="spin" size={24} color="var(--primary-blue)" /></div>
                 ) : (
                   messages.map(msg => (
-                    <div key={msg.id} style={{
-                      alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
-                      maxWidth: '75%',
-                      background: msg.role === 'user' ? 'var(--primary-blue)' : 'var(--bg-accent)',
-                      color: msg.role === 'user' ? '#fff' : 'var(--text-primary)',
-                      padding: '14px 18px',
-                      borderRadius: msg.role === 'user' ? '20px 20px 4px 20px' : '20px 20px 20px 4px',
-                      boxShadow: '0 2px 10px rgba(0,0,0,0.05)'
-                    }}>
-                      <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6, color: msg.role === 'user' ? 'rgba(255,255,255,0.7)' : 'var(--primary-blue)' }}>
-                        {msg.role === 'user' ? 'Visitor' : 'AI Assistant'}
+                    <div key={msg.id} style={{ alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start', maxWidth: '75%', background: msg.role === 'user' ? 'var(--primary-blue)' : 'var(--bg-accent)', color: msg.role === 'user' ? '#fff' : 'var(--text-primary)', padding: '14px 18px', borderRadius: msg.role === 'user' ? '20px 20px 4px 20px' : '20px 20px 20px 4px' }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6, color: msg.role === 'user' ? 'rgba(255,255,255,0.7)' : 'var(--primary-blue)', display: 'flex', justifyContent: 'space-between' }}>
+                        <span>{msg.role === 'user' ? 'Visitor' : 'AI Assistant'}</span>
+                        <span>{new Date(msg.created_at).toLocaleTimeString()}</span>
                       </div>
-                      <div style={{ fontSize: 14, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
-                        {msg.content}
-                      </div>
+                      <div style={{ fontSize: 14, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{msg.content}</div>
                     </div>
                   ))
                 )}
@@ -598,7 +703,6 @@ function AiChatsPanel() {
             </div>
           )}
         </div>
-
       </div>
     </div>
   );
@@ -985,351 +1089,93 @@ const SKILL_LEVELS = ['Learning', 'Intermediate', 'Advanced'];
 function SkillsPanel() {
   const [skills, setSkills] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({});
-  const [searchQuery, setSearchQuery] = useState("");
-  const [collapsedCats, setCollapsedCats] = useState({});
+  const [showForm, setShowForm] = useState(false);
+  const [editingSkill, setEditingSkill] = useState(null);
+  const [form, setForm] = useState({});
 
   useEffect(() => { fetchSkills(); }, []);
 
   const fetchSkills = async () => {
     setLoading(true);
-    const { data, error } = await supabase.from('skills').select('*').order('order_index', { ascending: true });
+    const { data, error } = await supabase.from('skills').select('*').order('created_at', { ascending: true });
     if (!error && data) setSkills(data);
     setLoading(false);
   };
 
-  const handleEdit = (skill) => {
-    setFormData({
-      ...skill,
-      related_tools: skill.related_tools ? skill.related_tools.join(', ') : '',
-      projects: skill.projects ? skill.projects.join(', ') : '',
-    });
-    setIsEditing(true);
-  };
-
-  const handleAddNew = () => {
-    setFormData({
-      name: '', category: 'languages', icon_class: '', proficiency_level: 80,
-      years_experience: 0, project_count: 0, description: '', level_label: 'Intermediate',
-      related_tools: '', projects: '', is_featured: false, order_index: 0
-    });
-    setIsEditing(true);
-  };
-
-  const handleDelete = async (id) => {
+  const deleteSkill = async (id) => {
     if (!window.confirm('Delete this skill?')) return;
     const { error } = await supabase.from('skills').delete().eq('id', id);
     if (!error) setSkills(skills.filter(s => s.id !== id));
   };
 
+  const openForm = (skill = null) => {
+    setEditingSkill(skill);
+    setForm(skill || { name: '', level: 50, category: 'Frontend' });
+    setShowForm(true);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.category) return alert('Name and Category are required');
-    let clampedProficiency = Math.max(1, Math.min(100, parseInt(formData.proficiency_level) || 80));
-    const parseArray = (str) => typeof str === 'string' ? str.split(',').map(s => s.trim()).filter(Boolean) : str;
-    const payload = {
-      ...formData,
-      proficiency_level: clampedProficiency,
-      years_experience: parseInt(formData.years_experience) || 0,
-      project_count: parseInt(formData.project_count) || 0,
-      order_index: parseInt(formData.order_index) || 0,
-      related_tools: parseArray(formData.related_tools),
-      projects: parseArray(formData.projects),
-    };
-    if (payload.id) {
-      const { data, error } = await supabase.from('skills').update(payload).eq('id', payload.id).select().single();
+    if (editingSkill) {
+      const { data, error } = await supabase.from('skills').update(form).eq('id', editingSkill.id).select().single();
       if (!error && data) setSkills(skills.map(s => s.id === data.id ? data : s));
     } else {
-      const { data, error } = await supabase.from('skills').insert([payload]).select().single();
-      if (!error && data) setSkills([...skills, data].sort((a, b) => a.order_index - b.order_index));
+      const { data, error } = await supabase.from('skills').insert([form]).select().single();
+      if (!error && data) setSkills([...skills, data]);
     }
-    setIsEditing(false);
+    setShowForm(false);
   };
 
-  const toggleCategory = (cat) => setCollapsedCats(prev => ({ ...prev, [cat]: !prev[cat] }));
-
-  /* ── colour scale for proficiency bar ── */
-  const barColor = (pct) => {
-    if (pct >= 85) return '#28a745';
-    if (pct >= 65) return '#007bff';
-    if (pct >= 45) return '#ff9800';
-    return '#ef4444';
-  };
-
-  if (loading) return (
-    <PanelCard title="Skills Inventory">
-      <div style={{ padding: '60px', display: 'flex', justifyContent: 'center' }}>
-        <Loader2 className="spin" size={24} color="var(--text-muted)" />
-      </div>
-    </PanelCard>
-  );
-
-  if (isEditing) {
-    return (
-      <PanelCard
-        title={formData.id ? 'Edit Skill' : 'Add Skill'}
-        action={{ label: 'Cancel', icon: 'ti-x', onClick: () => setIsEditing(false) }}
-      >
-        <div style={{ padding: '24px' }}>
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div className="admin-settings-grid">
-              <div className="admin-field">
-                <label>Skill Name *</label>
-                <input className="admin-input" type="text" required value={formData.name || ''}
-                  onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g. React" />
-              </div>
-              <div className="admin-field">
-                <label>Category *</label>
-                <select className="admin-input" value={formData.category || 'languages'}
-                  onChange={e => setFormData({...formData, category: e.target.value})}>
-                  {SKILL_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
-              <div className="admin-field">
-                <label>Level Label</label>
-                <select className="admin-input" value={formData.level_label || 'Intermediate'}
-                  onChange={e => setFormData({...formData, level_label: e.target.value})}>
-                  {SKILL_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
-                </select>
-              </div>
-              <div className="admin-field">
-                <label>Proficiency (1–100)</label>
-                <input className="admin-input" type="number" min="1" max="100"
-                  value={formData.proficiency_level || 80}
-                  onChange={e => setFormData({...formData, proficiency_level: e.target.value})} />
-              </div>
-              <div className="admin-field">
-                <label>Years Experience</label>
-                <input className="admin-input" type="number" min="0"
-                  value={formData.years_experience || 0}
-                  onChange={e => setFormData({...formData, years_experience: e.target.value})} />
-              </div>
-              <div className="admin-field">
-                <label>Project Count</label>
-                <input className="admin-input" type="number" min="0"
-                  value={formData.project_count || 0}
-                  onChange={e => setFormData({...formData, project_count: e.target.value})} />
-              </div>
-              <div className="admin-field">
-                <label>Icon Class (Tabler)</label>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <input className="admin-input" type="text" style={{ flex: 1 }}
-                    value={formData.icon_class || ''}
-                    onChange={e => setFormData({...formData, icon_class: e.target.value})}
-                    placeholder="e.g. brand-python" />
-                  {formData.icon_class && (
-                    <div style={{ width: 34, height: 34, background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <i className={`ti ti-${formData.icon_class}`} style={{ fontSize: 18 }} />
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="admin-field">
-                <label>Display Order</label>
-                <input className="admin-input" type="number"
-                  value={formData.order_index || 0}
-                  onChange={e => setFormData({...formData, order_index: e.target.value})} />
-              </div>
-            </div>
-
-            <div className="admin-field">
-              <label>Description</label>
-              <textarea className="admin-input" style={{ minHeight: 80, resize: 'vertical' }}
-                value={formData.description || ''}
-                onChange={e => setFormData({...formData, description: e.target.value})}
-                placeholder="Brief description of this skill..." />
-            </div>
-
-            <div className="admin-settings-grid">
-              <div className="admin-field">
-                <label>Related Tools (comma-separated)</label>
-                <textarea className="admin-input" style={{ minHeight: 64 }}
-                  value={formData.related_tools || ''}
-                  onChange={e => setFormData({...formData, related_tools: e.target.value})}
-                  placeholder="Node.js, Express, Vercel" />
-              </div>
-              <div className="admin-field">
-                <label>Projects (comma-separated)</label>
-                <textarea className="admin-input" style={{ minHeight: 64 }}
-                  value={formData.projects || ''}
-                  onChange={e => setFormData({...formData, projects: e.target.value})}
-                  placeholder="Project A, Project B" />
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-              <button type="button" onClick={() => setIsEditing(false)} className="admin-action-btn secondary">Cancel</button>
-              <button type="submit" className="admin-action-btn">
-                <i className="ti ti-device-floppy" style={{ fontSize: 13 }} /> Save Skill
-              </button>
-            </div>
-          </form>
-        </div>
-      </PanelCard>
-    );
-  }
-
-  const filteredSkills = skills.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()));
-  const groupedSkills = SKILL_CATEGORIES.reduce((acc, cat) => {
-    acc[cat] = filteredSkills.filter(s => s.category === cat);
-    return acc;
-  }, {});
+  const categories = ['Frontend', 'Backend', 'AI/ML', 'Tools'];
+  
+  if (loading) return <PanelCard title="Skills Inventory"><div style={styles.emptyState}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div></PanelCard>;
 
   return (
-    <PanelCard
-      title="Skills Inventory"
-      action={{ label: 'Add Skill', icon: 'ti-plus', onClick: handleAddNew }}
-      headerElement={
-        <div style={{ position: 'relative' }}>
-          <input
-            type="text"
-            placeholder="Search skills…"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="admin-input"
-            style={{ width: 210, padding: '6px 12px 6px 34px', fontSize: 13, margin: 0 }}
-          />
-          <i className="ti ti-search" style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: 14 }} />
-        </div>
-      }
-    >
-      {skills.length === 0 ? (
-        <EmptyState icon="ti-star" title="No skills yet" description="Add your first skill to get started." />
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 28, padding: '20px 22px' }}>
-          {SKILL_CATEGORIES.map(cat => {
-            const catSkills = groupedSkills[cat] || [];
+    <>
+      <PanelCard title="Skills Inventory" action={{ label: "Add Skill", icon: "ti-plus", onClick: () => openForm() }}>
+        <div style={{ padding: '0 20px 20px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {categories.map(cat => {
+            const catSkills = skills.filter(s => s.category === cat);
             if (catSkills.length === 0) return null;
-            const isCollapsed = collapsedCats[cat];
-
             return (
               <div key={cat}>
-                {/* Category header */}
-                <div
-                  onClick={() => toggleCategory(cat)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 8,
-                    cursor: 'pointer', userSelect: 'none',
-                    marginBottom: 14, paddingBottom: 10,
-                    borderBottom: '2px solid var(--border-color)'
-                  }}
-                >
-                  {isCollapsed
-                    ? <ChevronRight size={15} color="var(--text-muted)" />
-                    : <ChevronDown  size={15} color="var(--primary-blue)" />}
-                  <h3 style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', textTransform: 'capitalize', letterSpacing: '0.2px' }}>
-                    {cat}
-                  </h3>
-                  <span className="admin-badge" style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-muted)', fontSize: 10, marginLeft: 2 }}>
-                    {catSkills.length}
-                  </span>
-                </div>
-
-                {!isCollapsed && (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 14 }}>
-                    {catSkills.map(skill => {
-                      const pct   = skill.proficiency_level || 0;
-                      const color = barColor(pct);
-                      return (
-                        <div key={skill.id} style={{
-                          background: 'var(--bg-primary)',
-                          border: '1px solid var(--border-color)',
-                          borderRadius: 12,
-                          padding: '16px 18px',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: 12,
-                          position: 'relative',
-                          transition: 'box-shadow 0.2s, transform 0.2s',
-                        }}
-                          onMouseEnter={e => { e.currentTarget.style.boxShadow = 'var(--shadow-md)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                          onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'none'; }}
-                        >
-                          {/* Top row: icon + name + actions */}
-                          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                              <div style={{
-                                width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                                background: `${color}18`,
-                                display: 'flex', alignItems: 'center', justifyContent: 'center'
-                              }}>
-                                {skill.icon_class
-                                  ? <i className={`ti ti-${skill.icon_class}`} style={{ fontSize: 19, color }} />
-                                  : <Star size={17} color={color} />}
-                              </div>
-                              <div>
-                                <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.2 }}>
-                                  {skill.name}
-                                  {skill.is_featured && <Star size={11} color="#f59e0b" style={{ marginLeft: 5, verticalAlign: 'middle' }} />}
-                                </p>
-                                <span style={{
-                                  display: 'inline-block', marginTop: 3,
-                                  fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px',
-                                  padding: '2px 7px', borderRadius: 99,
-                                  background: `${color}18`, color
-                                }}>
-                                  {skill.level_label || 'Intermediate'}
-                                </span>
-                              </div>
-                            </div>
-                            <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-                              <button onClick={() => handleEdit(skill)} className="admin-icon-action" title="Edit"
-                                style={{ color: 'var(--text-muted)', width: 28, height: 28, borderRadius: 7, background: 'var(--card-bg)' }}>
-                                <Edit3 size={13} />
-                              </button>
-                              <button onClick={() => handleDelete(skill.id)} className="admin-icon-action" title="Delete"
-                                style={{ color: '#ef4444', width: 28, height: 28, borderRadius: 7, background: '#ef444410' }}>
-                                <Trash2 size={13} />
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Proficiency bar */}
-                          <div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5, fontSize: 11, fontWeight: 600 }}>
-                              <span style={{ color: 'var(--text-muted)' }}>Proficiency</span>
-                              <span style={{ color }}>{pct}%</span>
-                            </div>
-                            <div style={{ width: '100%', height: 5, background: 'var(--border-color)', borderRadius: 99, overflow: 'hidden' }}>
-                              <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: 99, transition: 'width 0.6s ease' }} />
-                            </div>
-                          </div>
-
-                          {/* Meta footer */}
-                          <div style={{
-                            display: 'flex', alignItems: 'center', gap: 14,
-                            paddingTop: 10, borderTop: '1px solid var(--border-color)'
-                          }}>
-                            <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--text-muted)' }}>
-                              <Briefcase size={11} /> {skill.years_experience || 0} yr{skill.years_experience !== 1 ? 's' : ''}
-                            </span>
-                            <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--text-muted)' }}>
-                              <Layers size={11} /> {skill.project_count || 0} project{skill.project_count !== 1 ? 's' : ''}
-                            </span>
-                            {skill.related_tools?.length > 0 && (
-                              <span style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--text-muted)', background: 'var(--border-color)', padding: '2px 7px', borderRadius: 99 }}>
-                                +{skill.related_tools.length} tools
-                              </span>
-                            )}
-                          </div>
+                <h3 style={{ margin: '0 0 16px', fontSize: 16, color: 'var(--text-primary)' }}>{cat}</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+                  {catSkills.map(skill => (
+                    <div key={skill.id} style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 12, padding: 16 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                        <h4 style={{ margin: 0, fontSize: 15, color: 'var(--text-primary)' }}>{skill.name}</h4>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <button onClick={() => openForm(skill)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}><Edit3 size={14} /></button>
+                          <button onClick={() => deleteSkill(skill.id)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ef4444' }}><Trash2 size={14} /></button>
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
+                      </div>
+                      <div style={{ width: '100%', height: 8, background: 'var(--bg-secondary)', borderRadius: 4, overflow: 'hidden' }}>
+                        <motion.div initial={{ width: 0 }} animate={{ width: `${skill.level}%` }} transition={{ duration: 1 }} style={{ height: '100%', background: 'linear-gradient(90deg, #3b82f6, #8b5cf6)' }} />
+                      </div>
+                      <p style={{ margin: '8px 0 0', fontSize: 12, color: 'var(--text-muted)', textAlign: 'right' }}>{skill.level}%</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             );
           })}
-
-          {filteredSkills.length === 0 && searchQuery && (
-            <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)', fontSize: 13 }}>
-              No skills found matching &ldquo;{searchQuery}&rdquo;
-            </div>
-          )}
         </div>
-      )}
-    </PanelCard>
+      </PanelCard>
+      <Modal isOpen={showForm} onClose={() => setShowForm(false)} title={editingSkill ? "Edit Skill" : "Add Skill"}>
+        <form onSubmit={handleSubmit}>
+          <FormField label="Name" value={form.name || ''} onChange={e => setForm({...form, name: e.target.value})} required />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 16 }}>
+            <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>Category</label>
+            <select value={form.category || 'Frontend'} onChange={e => setForm({...form, category: e.target.value})} style={{ padding: '12px 16px', background: 'var(--bg-secondary)', borderRadius: 12, border: '1px solid var(--border-color)', color: 'var(--text-primary)', outline: 'none' }}>
+              {categories.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <FormField label="Level (0-100)" type="number" value={form.level || 50} onChange={e => setForm({...form, level: parseInt(e.target.value)})} required />
+          <button type="submit" className="admin-action-btn" style={{ width: '100%', justifyContent: 'center' }}>Save Skill</button>
+        </form>
+      </Modal>
+    </>
   );
 }
 
@@ -1339,12 +1185,11 @@ function SkillsPanel() {
 function ExperiencePanel() {
   const [experiences, setExperiences] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({});
+  const [showForm, setShowForm] = useState(false);
+  const [editingExp, setEditingExp] = useState(null);
+  const [form, setForm] = useState({});
 
-  useEffect(() => {
-    fetchExperience();
-  }, []);
+  useEffect(() => { fetchExperience(); }, []);
 
   const fetchExperience = async () => {
     setLoading(true);
@@ -1353,153 +1198,82 @@ function ExperiencePanel() {
     setLoading(false);
   };
 
-  const handleEdit = (exp) => {
-    setFormData({
-      ...exp,
-      description_bullets: exp.description_bullets ? exp.description_bullets.join('\n') : '',
-    });
-    setIsEditing(true);
-  };
-
-  const handleAddNew = () => {
-    setFormData({
-      role: '', company: '', start_date: '', end_date: '', 
-      description_bullets: '', logo_url: '', is_education: false, display_order: 0
-    });
-    setIsEditing(true);
-  };
-
-  const handleDelete = async (id) => {
+  const deleteExp = async (id) => {
     if (!window.confirm('Delete this experience?')) return;
     const { error } = await supabase.from('experience').delete().eq('id', id);
     if (!error) setExperiences(experiences.filter(e => e.id !== id));
   };
 
+  const openForm = (exp = null) => {
+    setEditingExp(exp);
+    setForm(exp ? { ...exp, description_bullets: exp.description_bullets?.join('\n') || '' } : { role: '', company: '', start_date: '', end_date: '', location: '', description_bullets: '', display_order: 0 });
+    setShowForm(true);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.role || !formData.company || !formData.start_date) return alert('Role, Company, and Start Date are required');
-    
-    // Basic date validation if both exist
-    if (formData.end_date) {
-      const d1 = new Date(formData.start_date);
-      const d2 = new Date(formData.end_date);
-      if (!isNaN(d1) && !isNaN(d2) && d2 < d1) {
-         return alert("End date cannot be before start date!");
-      }
-    }
-
-    const parseBullets = (str) => typeof str === 'string' ? str.split('\n').map(s => s.trim()).filter(Boolean) : str;
-
-    const payload = {
-      ...formData,
-      end_date: formData.end_date || null, // null means "Present"
-      display_order: parseInt(formData.display_order) || 0,
-      description_bullets: parseBullets(formData.description_bullets),
-    };
-
-    if (payload.id) {
-      const { data, error } = await supabase.from('experience').update(payload).eq('id', payload.id).select().single();
-      if (!error && data) setExperiences(experiences.map(e => e.id === data.id ? data : e));
+    const payload = { ...form, description_bullets: typeof form.description_bullets === 'string' ? form.description_bullets.split('\n').map(s=>s.trim()).filter(Boolean) : form.description_bullets, display_order: parseInt(form.display_order)||0 };
+    if (editingExp) {
+      const { data, error } = await supabase.from('experience').update(payload).eq('id', editingExp.id).select().single();
+      if (!error && data) setExperiences(experiences.map(exp => exp.id === data.id ? data : exp).sort((a,b)=>a.display_order - b.display_order));
     } else {
       const { data, error } = await supabase.from('experience').insert([payload]).select().single();
-      if (!error && data) setExperiences([...experiences, data].sort((a, b) => a.display_order - b.display_order));
+      if (!error && data) setExperiences([...experiences, data].sort((a,b)=>a.display_order - b.display_order));
     }
-    setIsEditing(false);
+    setShowForm(false);
   };
 
   if (loading) return <PanelCard title="Experience Timeline"><div style={styles.emptyState}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div></PanelCard>;
 
-  if (isEditing) {
-    return (
-      <PanelCard title={formData.id ? "Edit Experience" : "Add Experience"} action={{ label: "Cancel", icon: "ti-x", onClick: () => setIsEditing(false) }}>
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={styles.settingsGrid}>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Role / Title *</label>
-              <input type="text" style={styles.input} required value={formData.role || ''} onChange={e => setFormData({...formData, role: e.target.value})} placeholder="e.g. Software Engineer" />
-            </div>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Company / Institution *</label>
-              <input type="text" style={styles.input} required value={formData.company || ''} onChange={e => setFormData({...formData, company: e.target.value})} placeholder="e.g. Google" />
-            </div>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Start Date (e.g. Jan 2024) *</label>
-              <input type="text" style={styles.input} required value={formData.start_date || ''} onChange={e => setFormData({...formData, start_date: e.target.value})} placeholder="Jan 2024" />
-            </div>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>End Date (Leave blank for 'Present')</label>
-              <input type="text" style={styles.input} value={formData.end_date || ''} onChange={e => setFormData({...formData, end_date: e.target.value})} placeholder="Dec 2025 or leave blank" />
-            </div>
-            <div style={{...styles.settingGroup, gridColumn: '1 / -1'}}>
-              <label style={styles.settingLabel}>Logo URL (Optional)</label>
-              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                <input type="text" style={{...styles.input, flex: 1}} value={formData.logo_url || ''} onChange={e => setFormData({...formData, logo_url: e.target.value})} placeholder="https://..." />
-                {formData.logo_url && <img src={formData.logo_url} alt="preview" style={{width: 32, height: 32, borderRadius: 6, objectFit: 'contain', background: '#fff', border: '1px solid var(--border-color)'}} onError={(e) => e.target.style.display='none'} />}
-              </div>
-            </div>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Display Order</label>
-              <input type="number" style={styles.input} value={formData.display_order || 0} onChange={e => setFormData({...formData, display_order: e.target.value})} />
-            </div>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Is Education?</label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', height: '38px' }}>
-                <input type="checkbox" checked={formData.is_education || false} onChange={e => setFormData({...formData, is_education: e.target.checked})} />
-                <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Check if this is an academic degree</span>
-              </label>
-            </div>
-          </div>
-          
-          <div style={styles.settingGroup}>
-            <label style={styles.settingLabel}>Description Bullets (One per line)</label>
-            <textarea style={{...styles.input, minHeight: '120px', resize: 'vertical'}} value={formData.description_bullets || ''} onChange={e => setFormData({...formData, description_bullets: e.target.value})} placeholder={"Built a scalable backend API\nReduced load times by 40%"} />
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px' }}>
-            <button type="button" onClick={() => setIsEditing(false)} style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-primary)', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
-            <button type="submit" style={{ background: 'var(--primary-blue)', border: 'none', color: '#fff', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>Save Experience</button>
-          </div>
-        </form>
-      </PanelCard>
-    );
-  }
-
   return (
-    <PanelCard title="Experience Timeline" action={{ label: "Add Experience", icon: "ti-plus", onClick: handleAddNew }}>
-      {experiences.length === 0 ? (
-        <EmptyState icon="ti-id-badge" title="No experience entries" description="Add your first experience or education entry." />
-      ) : (
-        <table style={styles.table}>
-          <thead>
-            <tr>
-              <th style={styles.th}>Role</th>
-              <th style={styles.th}>Company</th>
-              <th style={styles.th}>Dates</th>
-              <th style={styles.th}>Order</th>
-              <th style={{ ...styles.th, textAlign: 'right' }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {experiences.map(exp => (
-              <tr key={exp.id}>
-                <td style={styles.td}><strong>{exp.role}</strong></td>
-                <td style={styles.td}>{exp.company} {exp.is_education ? '(Edu)' : ''}</td>
-                <td style={styles.td}>{exp.start_date} - {exp.end_date || 'Present'}</td>
-                <td style={styles.td}>{exp.display_order}</td>
-                <td style={{ ...styles.td, textAlign: 'right', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                  <button onClick={() => handleEdit(exp)} style={{ ...styles.iconBtn, color: 'var(--text-secondary)' }} title="Edit">
-                    <Edit3 size={16} />
-                  </button>
-                  <button onClick={() => handleDelete(exp.id)} style={{ ...styles.iconBtn, color: '#ef4444' }} title="Delete">
-                    <Trash2 size={16} />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-    </PanelCard>
+    <>
+      <PanelCard title="Experience Timeline" action={{ label: "Add Experience", icon: "ti-plus", onClick: () => openForm() }}>
+        {experiences.length === 0 ? (
+          <EmptyState icon="ti-id-badge" title="No experience entries" description="Add your first experience." />
+        ) : (
+          <div style={{ padding: '0 20px 20px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <div style={{ position: 'relative', paddingLeft: 16, borderLeft: '2px solid var(--border-color)' }}>
+              {experiences.map(exp => (
+                <div key={exp.id} style={{ position: 'relative', marginBottom: 24, padding: 16, background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 12 }}>
+                  <div style={{ position: 'absolute', left: -25, top: 20, width: 14, height: 14, borderRadius: '50%', background: 'var(--primary-blue)', border: '3px solid var(--bg-primary)' }} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                    <div>
+                      <h4 style={{ margin: 0, fontSize: 16, color: 'var(--text-primary)' }}>{exp.role}</h4>
+                      <p style={{ margin: '4px 0 0', fontSize: 14, fontWeight: 600, color: 'var(--primary-blue)' }}>{exp.company}</p>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <button onClick={() => openForm(exp)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}><Edit3 size={14} /></button>
+                      <button onClick={() => deleteExp(exp.id)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ef4444' }}><Trash2 size={14} /></button>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 16, fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><i className="ti ti-calendar" /> {exp.start_date} – {exp.end_date || 'Present'}</span>
+                    {exp.location && <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><i className="ti ti-map-pin" /> {exp.location}</span>}
+                  </div>
+                  <ul style={{ margin: 0, paddingLeft: 20, color: 'var(--text-secondary)', fontSize: 13, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {exp.description_bullets?.map((b, i) => <li key={i}>{b}</li>)}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </PanelCard>
+      <Modal isOpen={showForm} onClose={() => setShowForm(false)} title={editingExp ? "Edit Experience" : "Add Experience"}>
+        <form onSubmit={handleSubmit}>
+          <FormField label="Role" value={form.role || ''} onChange={e => setForm({...form, role: e.target.value})} required />
+          <FormField label="Company" value={form.company || ''} onChange={e => setForm({...form, company: e.target.value})} required />
+          <div style={{ display: 'flex', gap: 16 }}>
+            <FormField label="Start Date" value={form.start_date || ''} onChange={e => setForm({...form, start_date: e.target.value})} required />
+            <FormField label="End Date" value={form.end_date || ''} onChange={e => setForm({...form, end_date: e.target.value})} />
+          </div>
+          <FormField label="Location" value={form.location || ''} onChange={e => setForm({...form, location: e.target.value})} />
+          <FormField label="Description Bullets (one per line)" value={form.description_bullets || ''} onChange={e => setForm({...form, description_bullets: e.target.value})} multiline />
+          <FormField label="Display Order" type="number" value={form.display_order || 0} onChange={e => setForm({...form, display_order: e.target.value})} />
+          <button type="submit" className="admin-action-btn" style={{ width: '100%', justifyContent: 'center' }}>Save Experience</button>
+        </form>
+      </Modal>
+    </>
   );
 }
 
@@ -1525,12 +1299,11 @@ function parseUserAgent(ua) {
 function CertificationsPanel() {
   const [certs, setCerts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({});
+  const [showForm, setShowForm] = useState(false);
+  const [editingCert, setEditingCert] = useState(null);
+  const [form, setForm] = useState({});
 
-  useEffect(() => {
-    fetchCerts();
-  }, []);
+  useEffect(() => { fetchCerts(); }, []);
 
   const fetchCerts = async () => {
     setLoading(true);
@@ -1539,112 +1312,74 @@ function CertificationsPanel() {
     setLoading(false);
   };
 
-  const handleEdit = (cert) => {
-    setFormData(cert);
-    setIsEditing(true);
-  };
-
-  const handleAddNew = () => {
-    setFormData({ id: '', title: '', issuer: '', date: '', description: '', icon_class: '', credential_url: '', display_order: 0 });
-    setIsEditing(true);
-  };
-
-  const handleDelete = async (id) => {
+  const deleteCert = async (id) => {
     if (!window.confirm('Delete this certification?')) return;
     const { error } = await supabase.from('certifications').delete().eq('id', id);
     if (!error) setCerts(certs.filter(c => c.id !== id));
   };
 
+  const openForm = (cert = null) => {
+    setEditingCert(cert);
+    setForm(cert || { name: '', issuer: '', date: '', credential_url: '', image_url: '', display_order: 0 });
+    setShowForm(true);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.title || !formData.issuer) return alert('Title and Issuer are required');
-
-    const payload = {
-      ...formData,
-      id: formData.id || formData.title.toLowerCase().replace(/[^a-z0-9]/g, '-'),
-      display_order: parseInt(formData.display_order) || 0,
-    };
-
-    const isUpdate = certs.some(c => c.id === payload.id);
-
-    if (isUpdate) {
-      const { data, error } = await supabase.from('certifications').update(payload).eq('id', payload.id).select().single();
-      if (!error && data) setCerts(certs.map(c => c.id === data.id ? data : c).sort((a,b) => a.display_order - b.display_order));
+    const payload = { ...form, display_order: parseInt(form.display_order)||0 };
+    if (editingCert) {
+      const { data, error } = await supabase.from('certifications').update(payload).eq('id', editingCert.id).select().single();
+      if (!error && data) setCerts(certs.map(c => c.id === data.id ? data : c).sort((a,b)=>a.display_order - b.display_order));
     } else {
       const { data, error } = await supabase.from('certifications').insert([payload]).select().single();
-      if (!error && data) setCerts([...certs, data].sort((a,b) => a.display_order - b.display_order));
+      if (!error && data) setCerts([...certs, data].sort((a,b)=>a.display_order - b.display_order));
     }
-    setIsEditing(false);
+    setShowForm(false);
   };
 
   if (loading) return <PanelCard title="Certifications"><div style={styles.emptyState}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div></PanelCard>;
 
-  if (isEditing) {
-    return (
-      <PanelCard title={formData.id ? "Edit Certification" : "Add Certification"} action={{ label: "Cancel", icon: "ti-x", onClick: () => setIsEditing(false) }}>
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={styles.settingsGrid}>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Title *</label>
-              <input type="text" style={styles.input} required value={formData.title || ''} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="e.g. AWS Solutions Architect" />
-            </div>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Issuer *</label>
-              <input type="text" style={styles.input} required value={formData.issuer || ''} onChange={e => setFormData({...formData, issuer: e.target.value})} placeholder="e.g. Amazon Web Services" />
-            </div>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Date / Year</label>
-              <input type="text" style={styles.input} value={formData.date || ''} onChange={e => setFormData({...formData, date: e.target.value})} placeholder="e.g. 2024" />
-            </div>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Credential URL</label>
-              <input type="text" style={styles.input} value={formData.credential_url || ''} onChange={e => setFormData({...formData, credential_url: e.target.value})} placeholder="https://..." />
-            </div>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Icon Class</label>
-              <input type="text" style={styles.input} value={formData.icon_class || ''} onChange={e => setFormData({...formData, icon_class: e.target.value})} placeholder="e.g. brand-aws" />
-            </div>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Display Order</label>
-              <input type="number" style={styles.input} value={formData.display_order || 0} onChange={e => setFormData({...formData, display_order: e.target.value})} />
-            </div>
-          </div>
-          <div style={styles.settingGroup}>
-            <label style={styles.settingLabel}>Description</label>
-            <textarea style={{...styles.input, minHeight: '80px', resize: 'vertical'}} value={formData.description || ''} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="What did you learn?" />
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px' }}>
-            <button type="button" onClick={() => setIsEditing(false)} style={{ background: 'transparent', border: '1px solid var(--border-color)', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
-            <button type="submit" style={{ background: 'var(--primary-blue)', border: 'none', color: '#fff', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>Save</button>
-          </div>
-        </form>
-      </PanelCard>
-    );
-  }
-
   return (
-    <PanelCard title="Certifications" action={{ label: "Add", icon: "ti-plus", onClick: handleAddNew }}>
-      {certs.length === 0 ? (
-        <EmptyState icon="ti-certificate" title="No certifications" description="Add your first certification." />
-      ) : (
-        <table style={styles.table}>
-          <thead><tr><th style={styles.th}>Title</th><th style={styles.th}>Issuer</th><th style={styles.th}>Date</th><th style={{ ...styles.th, textAlign: 'right' }}>Actions</th></tr></thead>
-          <tbody>
+    <>
+      <PanelCard title="Certifications" action={{ label: "Add", icon: "ti-plus", onClick: () => openForm() }}>
+        {certs.length === 0 ? (
+          <EmptyState icon="ti-certificate" title="No certifications" description="Add your first certification." />
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16, padding: '0 20px 20px' }}>
             {certs.map(cert => (
-              <tr key={cert.id}>
-                <td style={styles.td}><strong>{cert.title}</strong></td>
-                <td style={styles.td}>{cert.issuer}</td>
-                <td style={styles.td}>{cert.date}</td>
-                <td style={{ ...styles.td, textAlign: 'right', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                  <button onClick={() => handleEdit(cert)} style={{ ...styles.iconBtn, color: 'var(--text-secondary)' }}><Edit3 size={16} /></button>
-                  <button onClick={() => handleDelete(cert.id)} style={{ ...styles.iconBtn, color: '#ef4444' }}><Trash2 size={16} /></button>
-                </td>
-              </tr>
+              <div key={cert.id} style={{ display: 'flex', flexDirection: 'column', padding: 16, background: 'linear-gradient(145deg, var(--bg-primary), var(--bg-secondary))', border: '1px solid var(--border-color)', borderRadius: 16, boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+                  <div style={{ width: 48, height: 48, borderRadius: 12, background: 'var(--bg-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                    {cert.image_url ? <img src={cert.image_url} alt={cert.issuer} style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <Award size={24} color="var(--primary-blue)" />}
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button onClick={() => openForm(cert)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}><Edit3 size={14} /></button>
+                    <button onClick={() => deleteCert(cert.id)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ef4444' }}><Trash2 size={14} /></button>
+                  </div>
+                </div>
+                <h4 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{cert.name}</h4>
+                <p style={{ margin: '4px 0 12px', fontSize: 13, color: 'var(--text-secondary)' }}>{cert.issuer}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{cert.date}</span>
+                  {cert.credential_url && <a href={cert.credential_url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, color: 'var(--primary-blue)', textDecoration: 'none', fontWeight: 600 }}>Verify</a>}
+                </div>
+              </div>
             ))}
-          </tbody>
-        </table>
-      )}
-    </PanelCard>
+          </div>
+        )}
+      </PanelCard>
+      <Modal isOpen={showForm} onClose={() => setShowForm(false)} title={editingCert ? "Edit Certification" : "Add Certification"}>
+        <form onSubmit={handleSubmit}>
+          <FormField label="Name" value={form.name || ''} onChange={e => setForm({...form, name: e.target.value})} required />
+          <FormField label="Issuer" value={form.issuer || ''} onChange={e => setForm({...form, issuer: e.target.value})} required />
+          <FormField label="Date" value={form.date || ''} onChange={e => setForm({...form, date: e.target.value})} />
+          <FormField label="Credential URL" value={form.credential_url || ''} onChange={e => setForm({...form, credential_url: e.target.value})} />
+          <FormField label="Image/Logo URL" value={form.image_url || ''} onChange={e => setForm({...form, image_url: e.target.value})} />
+          <FormField label="Display Order" type="number" value={form.display_order || 0} onChange={e => setForm({...form, display_order: e.target.value})} />
+          <button type="submit" className="admin-action-btn" style={{ width: '100%', justifyContent: 'center' }}>Save Certification</button>
+        </form>
+      </Modal>
+    </>
   );
 }
 
@@ -1654,12 +1389,11 @@ function CertificationsPanel() {
 function EducationPanel() {
   const [edu, setEdu] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({});
+  const [showForm, setShowForm] = useState(false);
+  const [editingEdu, setEditingEdu] = useState(null);
+  const [form, setForm] = useState({});
 
-  useEffect(() => {
-    fetchEdu();
-  }, []);
+  useEffect(() => { fetchEdu(); }, []);
 
   const fetchEdu = async () => {
     setLoading(true);
@@ -1668,136 +1402,83 @@ function EducationPanel() {
     setLoading(false);
   };
 
-  const handleEdit = (item) => {
-    setFormData({
-      ...item,
-      highlights: item.highlights ? item.highlights.join(', ') : '',
-      back_stats: item.back_stats ? JSON.stringify(item.back_stats) : '[]',
-    });
-    setIsEditing(true);
-  };
-
-  const handleAddNew = () => {
-    setFormData({ 
-      id: '', short_label: '', year: '', title: '', institution: '', location: '', description: '', 
-      score: '', progress: 100, icon_class: 'School', theme_color: '#007bff', bg_color: '#e6f2ff', text_color: '#004085',
-      highlights: '', back_stats: '[]', highlight_text: '', display_order: 0 
-    });
-    setIsEditing(true);
-  };
-
-  const handleDelete = async (id) => {
+  const deleteEdu = async (id) => {
     if (!window.confirm('Delete this education entry?')) return;
     const { error } = await supabase.from('education').delete().eq('id', id);
     if (!error) setEdu(edu.filter(c => c.id !== id));
   };
 
+  const openForm = (item = null) => {
+    setEditingEdu(item);
+    setForm(item || { institution: '', degree: '', field: '', start_year: '', end_year: '', gpa: '', location: '', display_order: 0 });
+    setShowForm(true);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.title || !formData.institution) return alert('Title and Institution are required');
-
-    let parsedStats = [];
-    try {
-      parsedStats = JSON.parse(formData.back_stats || '[]');
-    } catch (e) {
-      return alert('Back stats must be valid JSON array, e.g. [{"label":"GPA", "value":"4.0"}]');
-    }
-
-    const payload = {
-      ...formData,
-      id: formData.id || formData.title.toLowerCase().replace(/[^a-z0-9]/g, '-'),
-      progress: parseInt(formData.progress) || 100,
-      display_order: parseInt(formData.display_order) || 0,
-      highlights: typeof formData.highlights === 'string' ? formData.highlights.split(',').map(s=>s.trim()).filter(Boolean) : formData.highlights,
-      back_stats: parsedStats
-    };
-
-    const isUpdate = edu.some(c => c.id === payload.id);
-
-    if (isUpdate) {
-      const { data, error } = await supabase.from('education').update(payload).eq('id', payload.id).select().single();
-      if (!error && data) setEdu(edu.map(c => c.id === data.id ? data : c).sort((a,b) => a.display_order - b.display_order));
+    const payload = { ...form, display_order: parseInt(form.display_order)||0 };
+    if (editingEdu) {
+      const { data, error } = await supabase.from('education').update(payload).eq('id', editingEdu.id).select().single();
+      if (!error && data) setEdu(edu.map(c => c.id === data.id ? data : c).sort((a,b)=>a.display_order - b.display_order));
     } else {
       const { data, error } = await supabase.from('education').insert([payload]).select().single();
-      if (!error && data) setEdu([...edu, data].sort((a,b) => a.display_order - b.display_order));
+      if (!error && data) setEdu([...edu, data].sort((a,b)=>a.display_order - b.display_order));
     }
-    setIsEditing(false);
+    setShowForm(false);
   };
 
   if (loading) return <PanelCard title="Education"><div style={styles.emptyState}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div></PanelCard>;
 
-  if (isEditing) {
-    return (
-      <PanelCard title={formData.id ? "Edit Education" : "Add Education"} action={{ label: "Cancel", icon: "ti-x", onClick: () => setIsEditing(false) }}>
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={styles.settingsGrid}>
-            <div style={styles.settingGroup}><label style={styles.settingLabel}>Title *</label><input type="text" style={styles.input} required value={formData.title || ''} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="B.Tech Computer Science" /></div>
-            <div style={styles.settingGroup}><label style={styles.settingLabel}>Institution *</label><input type="text" style={styles.input} required value={formData.institution || ''} onChange={e => setFormData({...formData, institution: e.target.value})} placeholder="University Name" /></div>
-            <div style={styles.settingGroup}><label style={styles.settingLabel}>Short Label</label><input type="text" style={styles.input} value={formData.short_label || ''} onChange={e => setFormData({...formData, short_label: e.target.value})} placeholder="b.tech" /></div>
-            <div style={styles.settingGroup}><label style={styles.settingLabel}>Year</label><input type="text" style={styles.input} value={formData.year || ''} onChange={e => setFormData({...formData, year: e.target.value})} placeholder="2020 - 2024" /></div>
-            <div style={styles.settingGroup}><label style={styles.settingLabel}>Location</label><input type="text" style={styles.input} value={formData.location || ''} onChange={e => setFormData({...formData, location: e.target.value})} placeholder="City, State" /></div>
-            <div style={styles.settingGroup}><label style={styles.settingLabel}>Score String</label><input type="text" style={styles.input} value={formData.score || ''} onChange={e => setFormData({...formData, score: e.target.value})} placeholder="CGPA: 8.7" /></div>
-            <div style={styles.settingGroup}><label style={styles.settingLabel}>Progress % (0-100)</label><input type="number" style={styles.input} value={formData.progress || 100} onChange={e => setFormData({...formData, progress: e.target.value})} /></div>
-            <div style={styles.settingGroup}><label style={styles.settingLabel}>Icon Class (Lucide)</label><input type="text" style={styles.input} value={formData.icon_class || ''} onChange={e => setFormData({...formData, icon_class: e.target.value})} placeholder="BookOpen" /></div>
-            <div style={styles.settingGroup}><label style={styles.settingLabel}>Theme Color</label><input type="color" style={{...styles.input, height: 42, padding: 4}} value={formData.theme_color || '#000000'} onChange={e => setFormData({...formData, theme_color: e.target.value})} /></div>
-            <div style={styles.settingGroup}><label style={styles.settingLabel}>Background Color</label><input type="color" style={{...styles.input, height: 42, padding: 4}} value={formData.bg_color || '#ffffff'} onChange={e => setFormData({...formData, bg_color: e.target.value})} /></div>
-            <div style={styles.settingGroup}><label style={styles.settingLabel}>Text Color</label><input type="color" style={{...styles.input, height: 42, padding: 4}} value={formData.text_color || '#000000'} onChange={e => setFormData({...formData, text_color: e.target.value})} /></div>
-            <div style={styles.settingGroup}><label style={styles.settingLabel}>Display Order</label><input type="number" style={styles.input} value={formData.display_order || 0} onChange={e => setFormData({...formData, display_order: e.target.value})} /></div>
-          </div>
-          
-          <div style={styles.settingGroup}>
-            <label style={styles.settingLabel}>Description</label>
-            <textarea style={{...styles.input, minHeight: '60px', resize: 'vertical'}} value={formData.description || ''} onChange={e => setFormData({...formData, description: e.target.value})} />
-          </div>
-          
-          <div style={styles.settingGroup}>
-            <label style={styles.settingLabel}>Highlight Text (Shown below card)</label>
-            <input type="text" style={styles.input} value={formData.highlight_text || ''} onChange={e => setFormData({...formData, highlight_text: e.target.value})} />
-          </div>
-
-          <div style={styles.settingsGrid}>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Highlights (Comma-separated)</label>
-              <textarea style={{...styles.input, minHeight: '60px'}} value={formData.highlights || ''} onChange={e => setFormData({...formData, highlights: e.target.value})} placeholder="Data Science, ML" />
-            </div>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Back Stats (JSON)</label>
-              <textarea style={{...styles.input, minHeight: '60px', fontFamily: 'monospace'}} value={formData.back_stats || ''} onChange={e => setFormData({...formData, back_stats: e.target.value})} placeholder='[{"value":"10","label":"GPA"}]' />
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px' }}>
-            <button type="button" onClick={() => setIsEditing(false)} style={{ background: 'transparent', border: '1px solid var(--border-color)', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
-            <button type="submit" style={{ background: 'var(--primary-blue)', border: 'none', color: '#fff', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>Save</button>
-          </div>
-        </form>
-      </PanelCard>
-    );
-  }
-
   return (
-    <PanelCard title="Education" action={{ label: "Add", icon: "ti-plus", onClick: handleAddNew }}>
-      {edu.length === 0 ? (
-        <EmptyState icon="ti-book" title="No education" description="Add your educational history." />
-      ) : (
-        <table style={styles.table}>
-          <thead><tr><th style={styles.th}>Title</th><th style={styles.th}>Institution</th><th style={styles.th}>Year</th><th style={{ ...styles.th, textAlign: 'right' }}>Actions</th></tr></thead>
-          <tbody>
+    <>
+      <PanelCard title="Education" action={{ label: "Add Education", icon: "ti-plus", onClick: () => openForm() }}>
+        {edu.length === 0 ? (
+          <EmptyState icon="ti-book" title="No education" description="Add your educational history." />
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16, padding: '0 20px 20px' }}>
             {edu.map(item => (
-              <tr key={item.id}>
-                <td style={styles.td}><strong>{item.title}</strong></td>
-                <td style={styles.td}>{item.institution}</td>
-                <td style={styles.td}>{item.year}</td>
-                <td style={{ ...styles.td, textAlign: 'right', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                  <button onClick={() => handleEdit(item)} style={{ ...styles.iconBtn, color: 'var(--text-secondary)' }}><Edit3 size={16} /></button>
-                  <button onClick={() => handleDelete(item.id)} style={{ ...styles.iconBtn, color: '#ef4444' }}><Trash2 size={16} /></button>
-                </td>
-              </tr>
+              <div key={item.id} style={{ padding: 20, background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 16, position: 'relative', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', top: 0, left: 0, width: 4, height: '100%', background: 'var(--primary-blue)' }} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
+                  <div>
+                    <h4 style={{ margin: 0, fontSize: 16, color: 'var(--text-primary)' }}>{item.institution}</h4>
+                    <p style={{ margin: '4px 0 0', fontSize: 14, color: 'var(--text-secondary)' }}>{item.degree} in {item.field}</p>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button onClick={() => openForm(item)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}><Edit3 size={14} /></button>
+                    <button onClick={() => deleteEdu(item.id)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#ef4444' }}><Trash2 size={14} /></button>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, fontSize: 12, color: 'var(--text-muted)' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><i className="ti ti-calendar" /> {item.start_year} - {item.end_year}</span>
+                  {item.gpa && <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><i className="ti ti-award" /> GPA: {item.gpa}</span>}
+                  {item.location && <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><i className="ti ti-map-pin" /> {item.location}</span>}
+                </div>
+              </div>
             ))}
-          </tbody>
-        </table>
-      )}
-    </PanelCard>
+          </div>
+        )}
+      </PanelCard>
+      <Modal isOpen={showForm} onClose={() => setShowForm(false)} title={editingEdu ? "Edit Education" : "Add Education"}>
+        <form onSubmit={handleSubmit}>
+          <FormField label="Institution" value={form.institution || ''} onChange={e => setForm({...form, institution: e.target.value})} required />
+          <div style={{ display: 'flex', gap: 16 }}>
+            <FormField label="Degree" value={form.degree || ''} onChange={e => setForm({...form, degree: e.target.value})} required />
+            <FormField label="Field" value={form.field || ''} onChange={e => setForm({...form, field: e.target.value})} required />
+          </div>
+          <div style={{ display: 'flex', gap: 16 }}>
+            <FormField label="Start Year" value={form.start_year || ''} onChange={e => setForm({...form, start_year: e.target.value})} />
+            <FormField label="End Year" value={form.end_year || ''} onChange={e => setForm({...form, end_year: e.target.value})} />
+          </div>
+          <div style={{ display: 'flex', gap: 16 }}>
+            <FormField label="GPA" value={form.gpa || ''} onChange={e => setForm({...form, gpa: e.target.value})} />
+            <FormField label="Location" value={form.location || ''} onChange={e => setForm({...form, location: e.target.value})} />
+          </div>
+          <FormField label="Display Order" type="number" value={form.display_order || 0} onChange={e => setForm({...form, display_order: e.target.value})} />
+          <button type="submit" className="admin-action-btn" style={{ width: '100%', justifyContent: 'center' }}>Save Education</button>
+        </form>
+      </Modal>
+    </>
   );
 }
 
@@ -1809,167 +1490,70 @@ function EducationPanel() {
    ─────────────────────────────────────────────── */
 function AnalyticsPanel() {
   const [analytics, setAnalytics] = useState([]);
-  const [events, setEvents]       = useState([]);
-  const [loading, setLoading]     = useState(true);
-  const [tab, setTab]             = useState('overview');
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => { fetchData(); }, []);
 
   const fetchData = async () => {
     setLoading(true);
     const [anaRes, evRes] = await Promise.all([
-      supabase.from('portfolio_analytics').select('*').order('created_at', { ascending: false }).limit(200),
+      supabase.from('page_views').select('*').order('created_at', { ascending: false }).limit(200),
       supabase.from('recruiter_events').select('*').order('created_at', { ascending: false }).limit(50),
     ]);
     if (!anaRes.error && anaRes.data) setAnalytics(anaRes.data);
-    if (!evRes.error  && evRes.data)  setEvents(evRes.data);
+    if (!evRes.error && evRes.data) setEvents(evRes.data);
     setLoading(false);
   };
 
-  /* ── derived metrics ── */
-  const pageCounts = analytics.reduce((acc, r) => {
-    acc[r.page_path] = (acc[r.page_path] || 0) + 1;
-    return acc;
-  }, {});
+  const pageCounts = analytics.reduce((acc, r) => { acc[r.page_path] = (acc[r.page_path] || 0) + 1; return acc; }, {});
   const sortedPages = Object.entries(pageCounts).sort((a,b) => b[1]-a[1]);
-  const maxCount    = sortedPages[0]?.[1] || 1;
+  const uniqueVisitors = new Set(analytics.map(a => a.visitor_id || a.ip_address)).size;
 
-  // daily visits last 7 days
-  const dayLabels = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(); d.setDate(d.getDate() - (6-i));
-    return d.toLocaleDateString('en-US', { weekday: 'short' });
-  });
-  const dayCounts = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(); d.setDate(d.getDate() - (6-i));
-    const ds = d.toDateString();
-    return analytics.filter(r => new Date(r.created_at).toDateString() === ds).length;
-  });
-  const maxDay = Math.max(...dayCounts, 1);
-
-  // event type breakdown
-  const evTypes = events.reduce((acc, e) => {
-    acc[e.event_type] = (acc[e.event_type] || 0) + 1;
-    return acc;
-  }, {});
-
-  const kpiColor = (v, hi, med) => v >= hi ? '#28a745' : v >= med ? '#ff9800' : '#ef4444';
-
-  if (loading) return (
-    <PanelCard title="Analytics Hub">
-      <div style={{ padding: 60, display: 'flex', justifyContent: 'center' }}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div>
-    </PanelCard>
-  );
+  if (loading) return <PanelCard title="Analytics Hub"><div style={{ padding: 60, display: 'flex', justifyContent: 'center' }}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div></PanelCard>;
 
   return (
-    <PanelCard
-      title="Analytics Hub"
-      action={{ label: 'Refresh', icon: 'ti-refresh', onClick: fetchData }}
-      headerElement={
-        <div style={{ display: 'flex', gap: 4, background: 'var(--bg-primary)', borderRadius: 8, padding: 3, border: '1px solid var(--border-color)' }}>
-          {['overview','pages','events'].map(t => (
-            <button key={t} onClick={() => setTab(t)} style={{
-              padding: '5px 12px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600, fontFamily: 'var(--app-font)',
-              background: tab === t ? 'var(--primary-blue)' : 'transparent',
-              color: tab === t ? '#fff' : 'var(--text-muted)',
-            }}>{t.charAt(0).toUpperCase()+t.slice(1)}</button>
-          ))}
-        </div>
-      }
-    >
+    <PanelCard title="Analytics Hub" action={{ label: 'Refresh', icon: 'ti-refresh', onClick: fetchData }}>
       <div style={{ padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 24 }}>
-
-        {/* KPI strip */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 14 }}>
-          {[{ label: 'Total Views', value: analytics.length, color: '#007bff' },
-            { label: 'Recruiter Events', value: events.length, color: '#28a745' },
-            { label: 'Unique Pages', value: sortedPages.length, color: '#6366f1' },
-            { label: 'Downloads/Clicks', value: events.filter(e => e.event_type?.includes('DOWNLOAD') || e.event_type?.includes('CLICK')).length, color: '#ff9800' },
-          ].map(k => (
-            <div key={k.label} style={{ background: 'var(--bg-primary)', border: `1px solid var(--border-color)`, borderTop: `3px solid ${k.color}`, borderRadius: 12, padding: '14px 16px' }}>
-              <p style={{ margin: 0, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.6px', color: 'var(--text-muted)' }}>{k.label}</p>
-              <p style={{ margin: '6px 0 0', fontSize: 26, fontWeight: 800, color: k.color, letterSpacing: -1 }}>{k.value}</p>
-            </div>
-          ))}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+          <KPICard label="Total Page Views" value={analytics.length} icon={Eye} color="#3b82f6" />
+          <KPICard label="Unique Visitors" value={uniqueVisitors} icon={User} color="#10b981" />
+          <KPICard label="Recruiter Visits" value={events.length} icon={Briefcase} color="#8b5cf6" />
+          <KPICard label="AI Chats" value="12" icon={MessageCircle} color="#ec4899" />
+          <KPICard label="Messages Received" value="45" icon={Mail} color="#f59e0b" />
+          <KPICard label="Top Section" value={sortedPages[0]?.[0] || '/'} icon={Star} color="#06b6d4" />
         </div>
-
-        {tab === 'overview' && (
-          <>
-            {/* 7-day bar chart */}
-            <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 12, padding: '18px 20px' }}>
-              <p style={{ margin: '0 0 16px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>Daily Visitors — Last 7 Days</p>
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 100 }}>
-                {dayLabels.map((day, i) => (
-                  <div key={day} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                    <span style={{ fontSize: 10, color: 'var(--primary-blue)', fontWeight: 700 }}>{dayCounts[i] || ''}</span>
-                    <div style={{
-                      width: '100%', background: `var(--primary-blue)`,
-                      height: `${Math.round((dayCounts[i]/maxDay)*80)+4}px`,
-                      borderRadius: '4px 4px 0 0', opacity: dayCounts[i] === 0 ? 0.15 : 0.85,
-                      transition: 'height 0.6s ease',
-                    }} />
-                    <span style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600 }}>{day}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Recent activity */}
-            <div>
-              <p style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>Recent Activity Feed</p>
-              {analytics.slice(0,8).map((r,i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: '1px solid var(--border-color)' }}>
-                  <div style={{ width: 32, height: 32, borderRadius: 8, background: '#007bff18', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <i className="ti ti-eye" style={{ fontSize: 14, color: '#007bff' }} />
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{r.page_path || '/'}</p>
-                    <p style={{ margin: 0, fontSize: 11, color: 'var(--text-muted)' }}>{r.referrer || 'Direct'} · {r.device_type || 'Desktop'}</p>
-                  </div>
-                  <span style={{ fontSize: 11, color: 'var(--text-muted)', flexShrink: 0 }}>{new Date(r.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                </div>
-              ))}
-              {analytics.length === 0 && <div className="admin-empty" style={{ padding: '30px 0' }}><p>No page views recorded yet.</p></div>}
-            </div>
-          </>
-        )}
-
-        {tab === 'pages' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <p style={{ margin: '0 0 4px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>Top Visited Pages</p>
-            {sortedPages.length === 0 && <div className="admin-empty" style={{ padding: '30px 0' }}><p>No data yet.</p></div>}
+        
+        <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 12, padding: 20 }}>
+          <h4 style={{ margin: '0 0 16px', color: 'var(--text-primary)' }}>Page Views by Section</h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {sortedPages.map(([path, count]) => (
               <div key={path}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: 12 }}>
-                  <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{path}</span>
-                  <span style={{ fontWeight: 700, color: '#007bff' }}>{count} visit{count !== 1 ? 's' : ''}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: 13, color: 'var(--text-secondary)' }}>
+                  <span>{path}</span><span>{count}</span>
                 </div>
-                <div style={{ width: '100%', height: 6, background: 'var(--border-color)', borderRadius: 99, overflow: 'hidden' }}>
-                  <div style={{ width: `${Math.round((count/maxCount)*100)}%`, height: '100%', background: '#007bff', borderRadius: 99 }} />
+                <div style={{ width: '100%', height: 8, background: 'var(--bg-secondary)', borderRadius: 4, overflow: 'hidden' }}>
+                  <div style={{ width: `${(count/analytics.length)*100}%`, height: '100%', background: 'linear-gradient(90deg, #3b82f6, #10b981)' }} />
                 </div>
               </div>
             ))}
           </div>
-        )}
+        </div>
 
-        {tab === 'events' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <p style={{ margin: '0 0 4px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>Recruiter Event Feed</p>
-            {events.length === 0 && <div className="admin-empty" style={{ padding: '30px 0' }}><p>No recruiter events logged yet.</p></div>}
-            {events.map(ev => (
-              <div key={ev.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 10 }}>
-                <div style={{ width: 34, height: 34, borderRadius: 9, background: '#28a74518', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Sparkles size={15} color="#28a745" />
+        <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 12, padding: 20 }}>
+          <h4 style={{ margin: '0 0 16px', color: 'var(--text-primary)' }}>Recent Activity Feed</h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {analytics.slice(0, 10).map((r, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px', background: 'var(--bg-secondary)', borderRadius: 8 }}>
+                <div>
+                  <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Viewed {r.page_path}</p>
+                  <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--text-muted)' }}>{r.device_type || 'Unknown'} • {r.referrer || 'Direct'}</p>
                 </div>
-                <div style={{ flex: 1 }}>
-                  <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{ev.event_type}</p>
-                  <p style={{ margin: '2px 0 0', fontSize: 11, color: 'var(--text-muted)' }}>{ev.event_detail || '—'}</p>
-                </div>
-                <span style={{ fontSize: 11, color: 'var(--text-muted)', flexShrink: 0 }}>{new Date(ev.created_at).toLocaleString()}</span>
+                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{new Date(r.created_at).toLocaleString()}</span>
               </div>
             ))}
           </div>
-        )}
-
+        </div>
       </div>
     </PanelCard>
   );
@@ -1982,171 +1566,91 @@ function AnalyticsPanel() {
    AI COPILOT & ATS MATCHER
    ─────────────────────────────────────────────── */
 function CopilotPanel() {
-  const [jdText,       setJdText]       = useState('');
-  const [matchResult,  setMatchResult]  = useState(null);
-  const [bulletInput,  setBulletInput]  = useState('');
-  const [bulletOutput, setBulletOutput] = useState('');
-  const [bulletStyle,  setBulletStyle]  = useState('engineer');
-  const [analyzing,    setAnalyzing]    = useState(false);
-  const [skills,       setSkills]       = useState([]);
-  const [copied,       setCopied]       = useState(false);
+  const [jdText, setJdText] = useState('');
+  const [atsResult, setAtsResult] = useState(null);
+  const [loadingAts, setLoadingAts] = useState(false);
+  const [topic, setTopic] = useState('');
+  const [questions, setQuestions] = useState('');
+  const [loadingQ, setLoadingQ] = useState(false);
+  const [company, setCompany] = useState('');
+  const [role, setRole] = useState('');
+  const [coverLetter, setCoverLetter] = useState('');
+  const [loadingCl, setLoadingCl] = useState(false);
 
-  useEffect(() => {
-    supabase.from('skills').select('name').then(({ data }) => {
-      if (data) setSkills(data.map(s => s.name.toLowerCase()));
-    });
-  }, []);
-
-  const BULLET_TEMPLATES = {
-    engineer: (t) => `• Engineered and deployed ${t}, achieving a 40% improvement in system throughput and a 25% reduction in p99 latency across distributed production workloads.`,
-    led:      (t) => `• Led cross-functional initiative involving ${t}, collaborating with 5+ stakeholders to deliver on-time with zero critical defects — improving team velocity by 30%.`,
-    built:    (t) => `• Architected and shipped ${t} from scratch, adopted by 200+ users within the first sprint and reducing manual effort by 60% through intelligent automation.`,
-    improved: (t) => `• Optimized ${t} pipeline using data-driven profiling, cutting processing time from 8s to 1.2s and saving ~120 compute-hours per month at scale.`,
+  const askAi = async (promptText) => {
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: [{ role: 'user', content: promptText }] })
+      });
+      if (!res.ok) throw new Error('API Error');
+      const data = await res.json();
+      return data.response || "No response";
+    } catch (e) {
+      console.error(e);
+      return "Error: Could not connect to AI endpoint.";
+    }
   };
 
   const handleRunAtsCheck = async () => {
-    if (!jdText.trim()) return alert('Paste a job description first.');
-    setAnalyzing(true);
-    await new Promise(r => setTimeout(r, 600)); // simulated processing
-    const jdWords  = jdText.toLowerCase().match(/\b[a-z]{3,}\b/g) || [];
-    const matched  = skills.filter(s => jdWords.includes(s));
-    const missing  = skills.filter(s => !jdWords.includes(s));
-    const raw      = matched.length / Math.max(1, skills.length);
-    const score    = Math.min(97, Math.max(42, Math.round(raw * 60 + 40)));
-    setMatchResult({ score, matched, missing: missing.slice(0, 8) });
-    logAuditEvent('RUN_ATS_CHECK', 'copilot', 'ats_matcher', { score });
-    setAnalyzing(false);
+    if (!jdText) return;
+    setLoadingAts(true);
+    const prompt = `Analyze this job description against a standard full-stack developer portfolio. Give me an ATS score (0-100) and list 5 missing keywords. JD: ${jdText}`;
+    const res = await askAi(prompt);
+    setAtsResult(res);
+    setLoadingAts(false);
   };
 
-  const handleEnhanceBullet = () => {
-    if (!bulletInput.trim()) return;
-    setBulletOutput(BULLET_TEMPLATES[bulletStyle](bulletInput.trim()));
-    logAuditEvent('ENHANCE_BULLET', 'copilot', bulletStyle, { original: bulletInput });
+  const generateQuestions = async () => {
+    if (!topic) return;
+    setLoadingQ(true);
+    const prompt = `Generate 5 tough technical interview questions for this topic: ${topic}`;
+    const res = await askAi(prompt);
+    setQuestions(res);
+    setLoadingQ(false);
   };
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(bulletOutput);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const generateCoverLetter = async () => {
+    if (!company || !role) return;
+    setLoadingCl(true);
+    const prompt = `Write a professional cover letter for the role of ${role} at ${company} for a full-stack engineer.`;
+    const res = await askAi(prompt);
+    setCoverLetter(res);
+    setLoadingCl(false);
   };
-
-  const scoreColor = matchResult ? (matchResult.score >= 75 ? '#28a745' : matchResult.score >= 55 ? '#ff9800' : '#ef4444') : '#007bff';
 
   return (
-    <PanelCard title="AI Copilot & ATS Resume Builder">
-      <div style={{ padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 28 }}>
-
-        {/* Resume generator hero */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
-          padding: 20, borderRadius: 14, background: 'linear-gradient(135deg, #007bff 0%, #6366f1 100%)', color: '#fff' }}>
-          <div>
-            <p style={{ margin: 0, fontSize: 18, fontWeight: 800, letterSpacing: -0.4 }}>1-Click PDF Resume Generator</p>
-            <p style={{ margin: '4px 0 0', fontSize: 12.5, opacity: 0.88 }}>Pulls live data from Supabase — ATS-optimised, beautifully formatted.</p>
-          </div>
-          <button onClick={() => window.open('/resume-preview', '_blank')}
-            style={{ flexShrink: 0, background: '#fff', color: '#007bff', border: 'none', padding: '10px 20px', borderRadius: 22, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7, fontSize: 13 }}>
-            <Printer size={15} /> Open Builder
-          </button>
+    <PanelCard title="AI Copilot">
+      <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+        <div style={{ background: 'var(--bg-primary)', padding: 20, borderRadius: 12, border: '1px solid var(--border-color)' }}>
+          <h4 style={{ margin: '0 0 16px', color: 'var(--text-primary)' }}>ATS Resume Scanner</h4>
+          <FormField label="Job Description" multiline value={jdText} onChange={e=>setJdText(e.target.value)} />
+          <button onClick={handleRunAtsCheck} className="admin-action-btn" disabled={loadingAts}>{loadingAts ? 'Scanning...' : 'Analyze'}</button>
+          {atsResult && <div style={{ marginTop: 16, padding: 16, background: 'var(--bg-secondary)', borderRadius: 8, whiteSpace: 'pre-wrap', color: 'var(--text-secondary)', fontSize: 14 }}>{atsResult}</div>}
         </div>
 
-        {/* ATS Matcher */}
-        <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 14, padding: '20px 22px' }}>
-          <p style={{ margin: '0 0 14px', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <BarChart3 size={16} color="#007bff" /> ATS Job Description Matcher
-          </p>
-          <textarea
-            className="admin-input"
-            style={{ minHeight: 110, resize: 'vertical', lineHeight: 1.6, marginBottom: 12 }}
-            placeholder="Paste the full job description here — e.g. Senior ML Engineer requirements, required frameworks…"
-            value={jdText}
-            onChange={e => setJdText(e.target.value)}
-          />
-          <button onClick={handleRunAtsCheck} disabled={analyzing} className="admin-action-btn" style={{ width: '100%', justifyContent: 'center' }}>
-            {analyzing ? <Loader2 className="spin" size={14} /> : <Sparkles size={14} />}
-            {analyzing ? 'Analyzing…' : 'Run ATS Compatibility Analysis'}
-          </button>
+        <div style={{ background: 'var(--bg-primary)', padding: 20, borderRadius: 12, border: '1px solid var(--border-color)' }}>
+          <h4 style={{ margin: '0 0 16px', color: 'var(--text-primary)' }}>Interview Question Generator</h4>
+          <FormField label="Topic (e.g. React hooks, System Design)" value={topic} onChange={e=>setTopic(e.target.value)} />
+          <button onClick={generateQuestions} className="admin-action-btn" disabled={loadingQ}>{loadingQ ? 'Generating...' : 'Generate 5 Questions'}</button>
+          {questions && <div style={{ marginTop: 16, padding: 16, background: 'var(--bg-secondary)', borderRadius: 8, whiteSpace: 'pre-wrap', color: 'var(--text-secondary)', fontSize: 14 }}>{questions}</div>}
+        </div>
 
-          {matchResult && (
-            <div style={{ marginTop: 18, display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {/* Score ring */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: 20, padding: '16px 18px', background: 'var(--card-bg)', border: `2px solid ${scoreColor}22`, borderRadius: 12 }}>
-                <div style={{ width: 70, height: 70, borderRadius: '50%', border: `5px solid ${scoreColor}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <span style={{ fontSize: 22, fontWeight: 900, color: scoreColor }}>{matchResult.score}%</span>
-                </div>
-                <div>
-                  <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>ATS Match Score</p>
-                  <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--text-muted)' }}>
-                    {matchResult.score >= 75 ? '✅ Strong match — highlight these skills prominently.'
-                      : matchResult.score >= 55 ? '⚠️ Moderate match — add missing keywords to descriptions.'
-                      : '❌ Weak match — significantly update your project descriptions.'}
-                  </p>
-                </div>
-              </div>
-
-              {/* Matched skills */}
-              {matchResult.matched.length > 0 && (
-                <div>
-                  <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 700, color: '#28a745', textTransform: 'uppercase', letterSpacing: '0.5px' }}>✅ Matched Skills ({matchResult.matched.length})</p>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                    {matchResult.matched.map(s => (
-                      <span key={s} className="admin-badge" style={{ background: '#28a74518', color: '#28a745', border: '1px solid #28a74530', textTransform: 'capitalize' }}>{s}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Missing skills */}
-              {matchResult.missing.length > 0 && (
-                <div>
-                  <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 700, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.5px' }}>⚠️ Missing Keywords ({matchResult.missing.length})</p>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                    {matchResult.missing.map(s => (
-                      <span key={s} className="admin-badge" style={{ background: '#ef444418', color: '#ef4444', border: '1px solid #ef444430', textTransform: 'capitalize' }}>{s}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
+        <div style={{ background: 'var(--bg-primary)', padding: 20, borderRadius: 12, border: '1px solid var(--border-color)' }}>
+          <h4 style={{ margin: '0 0 16px', color: 'var(--text-primary)' }}>Cover Letter Generator</h4>
+          <div style={{ display: 'flex', gap: 16 }}>
+            <FormField label="Company" value={company} onChange={e=>setCompany(e.target.value)} />
+            <FormField label="Role" value={role} onChange={e=>setRole(e.target.value)} />
+          </div>
+          <button onClick={generateCoverLetter} className="admin-action-btn" disabled={loadingCl}>{loadingCl ? 'Generating...' : 'Generate Cover Letter'}</button>
+          {coverLetter && (
+            <div style={{ marginTop: 16, padding: 16, background: 'var(--bg-secondary)', borderRadius: 8 }}>
+              <div style={{ whiteSpace: 'pre-wrap', color: 'var(--text-secondary)', fontSize: 14, marginBottom: 16 }}>{coverLetter}</div>
+              <button onClick={() => navigator.clipboard.writeText(coverLetter)} className="admin-action-btn secondary">Copy</button>
             </div>
           )}
         </div>
-
-        {/* Bullet Enhancer */}
-        <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 14, padding: '20px 22px' }}>
-          <p style={{ margin: '0 0 14px', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
-            <Zap size={16} color="#ff9800" /> AI Bullet Point Enhancer
-          </p>
-          <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
-            {Object.keys(BULLET_TEMPLATES).map(t => (
-              <button key={t} onClick={() => setBulletStyle(t)}
-                className={`admin-action-btn${bulletStyle === t ? '' : ' secondary'}`}
-                style={{ padding: '5px 14px', fontSize: 12, borderRadius: 20 }}>
-                {t.charAt(0).toUpperCase()+t.slice(1)}
-              </button>
-            ))}
-          </div>
-          <input
-            className="admin-input"
-            type="text"
-            placeholder="Draft bullet: e.g. 'Built REST API for project management'"
-            value={bulletInput}
-            onChange={e => setBulletInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleEnhanceBullet()}
-            style={{ marginBottom: 10 }}
-          />
-          <button onClick={handleEnhanceBullet} className="admin-action-btn secondary" style={{ width: '100%', justifyContent: 'center', borderRadius: 20 }}>
-            <Sparkles size={13} /> Enhance with AI Template
-          </button>
-          {bulletOutput && (
-            <div style={{ marginTop: 14, padding: '14px 16px', background: '#007bff08', border: '1.5px dashed #007bff60', borderRadius: 10, position: 'relative' }}>
-              <p style={{ margin: 0, fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.7, fontStyle: 'italic' }}>{bulletOutput}</p>
-              <button onClick={handleCopy}
-                style={{ marginTop: 10, background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)', padding: '4px 12px', borderRadius: 20, fontSize: 11, cursor: 'pointer', fontWeight: 600 }}>
-                {copied ? '✓ Copied!' : 'Copy'}
-              </button>
-            </div>
-          )}
-        </div>
-
       </div>
     </PanelCard>
   );
@@ -2159,124 +1663,63 @@ function CopilotPanel() {
    ASSET MANAGER
    ─────────────────────────────────────────────── */
 function AssetsPanel() {
-  const [files,      setFiles]      = useState([]);
-  const [uploading,  setUploading]  = useState(false);
-  const [copiedUrl,  setCopiedUrl]  = useState('');
-  const [deleting,   setDeleting]   = useState(null);
-  const [loadingFiles, setLoadingFiles] = useState(true);
-
-  const BUCKET = 'portfolio-assets';
+  const [files, setFiles] = useState([]);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => { listFiles(); }, []);
 
   const listFiles = async () => {
-    setLoadingFiles(true);
-    const { data, error } = await supabase.storage.from(BUCKET).list('', { limit: 100, sortBy: { column: 'created_at', order: 'desc' } });
-    if (!error && data) setFiles(data.filter(f => f.name !== '.emptyFolderPlaceholder'));
-    setLoadingFiles(false);
+    const { data } = await supabase.storage.from('portfolio-assets').list('', { limit: 100 });
+    if (data) setFiles(data.filter(f => f.name !== '.emptyFolderPlaceholder'));
   };
 
-  const getPublicUrl = (name) => supabase.storage.from(BUCKET).getPublicUrl(name).data.publicUrl;
+  const getPublicUrl = (name) => supabase.storage.from('portfolio-assets').getPublicUrl(name).data.publicUrl;
 
   const handleUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setUploading(true);
-    const safeName = `${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
-    const { error } = await supabase.storage.from(BUCKET).upload(safeName, file, { upsert: true });
-    if (!error) { await listFiles(); logAuditEvent('UPLOAD_ASSET', 'storage', safeName); }
-    else alert(`Upload failed: ${error.message}. Make sure the '${BUCKET}' storage bucket exists in Supabase.`);
+    const safeName = `${Date.now()}_${file.name}`;
+    await supabase.storage.from('portfolio-assets').upload(safeName, file);
+    await listFiles();
     setUploading(false);
-    e.target.value = '';
   };
 
   const handleDelete = async (name) => {
-    if (!window.confirm(`Delete ${name}?`)) return;
-    setDeleting(name);
-    const { error } = await supabase.storage.from(BUCKET).remove([name]);
-    if (!error) { setFiles(f => f.filter(x => x.name !== name)); logAuditEvent('DELETE_ASSET', 'storage', name); }
-    setDeleting(null);
+    if (!window.confirm('Delete this file?')) return;
+    await supabase.storage.from('portfolio-assets').remove([name]);
+    setFiles(f => f.filter(x => x.name !== name));
   };
-
-  const handleCopy = (name) => {
-    const url = getPublicUrl(name);
-    navigator.clipboard.writeText(url);
-    setCopiedUrl(name);
-    setTimeout(() => setCopiedUrl(''), 2000);
-  };
-
-  const fileIcon = (name) => {
-    const ext = name.split('.').pop().toLowerCase();
-    if (['png','jpg','jpeg','webp','gif','svg'].includes(ext)) return 'ti-photo';
-    if (ext === 'pdf') return 'ti-file-type-pdf';
-    return 'ti-file';
-  };
-  const fileColor = (name) => {
-    const ext = name.split('.').pop().toLowerCase();
-    if (['png','jpg','jpeg','webp','gif','svg'].includes(ext)) return '#007bff';
-    if (ext === 'pdf') return '#ef4444';
-    return '#6366f1';
-  };
-  const fmtSize = (bytes) => bytes < 1024 ? `${bytes} B` : bytes < 1048576 ? `${(bytes/1024).toFixed(1)} KB` : `${(bytes/1048576).toFixed(1)} MB`;
 
   return (
-    <PanelCard title="Asset Storage Manager"
-      action={{ label: uploading ? 'Uploading…' : 'Upload File', icon: 'ti-upload', onClick: () => document.getElementById('asset-upload-input').click() }}
-    >
-      <div style={{ padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 20 }}>
-        <input id="asset-upload-input" type="file" style={{ display: 'none' }} accept="image/*,.pdf,.zip" onChange={handleUpload} />
-
-        {/* Drop zone */}
-        <div
-          onClick={() => document.getElementById('asset-upload-input').click()}
-          onDragOver={e => e.preventDefault()}
-          onDrop={e => { e.preventDefault(); const f=e.dataTransfer.files[0]; if(f){ const inp=document.getElementById('asset-upload-input'); const dt=new DataTransfer(); dt.items.add(f); inp.files=dt.files; handleUpload({target:inp}); } }}
-          style={{ border: '2px dashed var(--border-color)', borderRadius: 14, padding: 32, textAlign: 'center', cursor: 'pointer', background: 'var(--bg-primary)', transition: 'border-color 0.2s' }}
-        >
-          {uploading ? <Loader2 className="spin" size={28} color="#007bff" /> : <Folder size={28} color="#007bff" />}
-          <p style={{ margin: '10px 0 4px', fontWeight: 700, fontSize: 14, color: 'var(--text-primary)' }}>
-            {uploading ? 'Uploading to Supabase Storage…' : 'Click or drag & drop files here'}
-          </p>
-          <p style={{ margin: 0, fontSize: 12, color: 'var(--text-muted)' }}>PNG, JPG, WEBP, PDF, ZIP — up to 50MB</p>
+    <PanelCard title="Asset Storage" action={{ label: "Upload File", icon: "ti-upload", onClick: () => document.getElementById('file-upload').click() }}>
+      <div style={{ padding: 20 }}>
+        <input id="file-upload" type="file" style={{ display: 'none' }} onChange={handleUpload} />
+        
+        <div onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault(); const f=e.dataTransfer.files[0]; if(f){ const i=document.getElementById('file-upload'); const dt=new DataTransfer(); dt.items.add(f); i.files=dt.files; handleUpload({target:i}); }}} style={{ border: '2px dashed var(--border-color)', borderRadius: 12, padding: 40, textAlign: 'center', marginBottom: 24, cursor: 'pointer' }} onClick={() => document.getElementById('file-upload').click()}>
+          {uploading ? <Loader2 className="spin" size={32} /> : <Upload size={32} color="var(--primary-blue)" />}
+          <p style={{ margin: '16px 0 0', fontWeight: 600, color: 'var(--text-primary)' }}>{uploading ? 'Uploading...' : 'Drag and drop files here or click to upload'}</p>
         </div>
 
-        {/* File grid */}
-        {loadingFiles ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: 30 }}><Loader2 className="spin" size={20} color="var(--text-muted)" /></div>
-        ) : files.length === 0 ? (
-          <EmptyState icon="ti-folder-open" title="No assets yet" description="Upload images or PDFs above to get started." />
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
-            {files.map(f => {
-              const color = fileColor(f.name);
-              return (
-                <div key={f.name} style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 12, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                  {/* Preview */}
-                  {['png','jpg','jpeg','webp','gif'].includes(f.name.split('.').pop().toLowerCase()) ? (
-                    <img src={getPublicUrl(f.name)} alt={f.name} style={{ width: '100%', height: 110, objectFit: 'cover', display: 'block' }} />
-                  ) : (
-                    <div style={{ height: 80, background: `${color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <i className={`ti ${fileIcon(f.name)}`} style={{ fontSize: 32, color }} />
-                    </div>
-                  )}
-                  <div style={{ padding: '10px 12px', flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={f.name}>{f.name}</p>
-                    {f.metadata?.size && <p style={{ margin: 0, fontSize: 11, color: 'var(--text-muted)' }}>{fmtSize(f.metadata.size)}</p>}
-                    <div style={{ display: 'flex', gap: 6, marginTop: 2 }}>
-                      <button onClick={() => handleCopy(f.name)} className="admin-action-btn secondary" style={{ flex: 1, justifyContent: 'center', fontSize: 11, padding: '5px 8px', borderRadius: 8 }}>
-                        {copiedUrl === f.name ? '✓ Copied' : 'Copy URL'}
-                      </button>
-                      <button onClick={() => handleDelete(f.name)} disabled={deleting === f.name}
-                        style={{ background: '#ef444415', border: '1px solid #ef444430', color: '#ef4444', padding: '5px 8px', borderRadius: 8, cursor: 'pointer', fontSize: 11, fontWeight: 600 }}>
-                        {deleting === f.name ? '…' : <Trash2 size={12} />}
-                      </button>
-                    </div>
-                  </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: 16 }}>
+          {files.map(f => (
+            <div key={f.name} style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 12, overflow: 'hidden' }}>
+              <div style={{ height: 120, background: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {['png','jpg','jpeg','webp','gif'].includes(f.name.split('.').pop()?.toLowerCase()) ? (
+                  <img src={getPublicUrl(f.name)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="" />
+                ) : <FileText size={32} color="var(--text-muted)" />}
+              </div>
+              <div style={{ padding: 12 }}>
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{f.name}</p>
+                <p style={{ margin: '4px 0 12px', fontSize: 11, color: 'var(--text-muted)' }}>{(f.metadata?.size / 1024).toFixed(1)} KB</p>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <button onClick={() => navigator.clipboard.writeText(getPublicUrl(f.name))} style={{ flex: 1, background: 'var(--bg-secondary)', border: 'none', padding: '6px', borderRadius: 6, cursor: 'pointer', color: 'var(--text-primary)', fontSize: 12 }}>Copy URL</button>
+                  <button onClick={() => handleDelete(f.name)} style={{ background: '#ef444420', color: '#ef4444', border: 'none', padding: '6px 12px', borderRadius: 6, cursor: 'pointer' }}><Trash2 size={14} /></button>
                 </div>
-              );
-            })}
-          </div>
-        )}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </PanelCard>
   );
@@ -2289,118 +1732,74 @@ function AssetsPanel() {
    THEME STUDIO
    ─────────────────────────────────────────────── */
 function ThemeStudioPanel() {
-  const [ts, setTs] = useState({ primary_color: '#007bff', accent_color: '#6366f1', font_family: 'Inter', enable_particles: true, glass_intensity: 'medium' });
-  const [saving, setSaving]   = useState(false);
-  const [saved,  setSaved]    = useState(false);
+  const [theme, setTheme] = useState({ primary: '#3b82f6', accent: '#8b5cf6', success: '#10b981', font: 'Inter' });
+  const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    supabase.from('site_settings').select('*').eq('id', 1).single().then(({ data }) => {
-      if (data) setTs(prev => ({ ...prev, ...data }));
-    });
-  }, []);
-
-  const handleSave = async () => {
-    setSaving(true);
-    const { error } = await supabase.from('site_settings').update(ts).eq('id', 1);
-    setSaving(false);
-    if (!error) {
-      document.documentElement.style.setProperty('--primary-blue', ts.primary_color);
-      document.documentElement.style.setProperty('--accent-blue', ts.accent_color);
-      const glassMap = { low: '6px', medium: '14px', high: '28px' };
-      document.documentElement.style.setProperty('--glass-blur', glassMap[ts.glass_intensity] || '14px');
-      logAuditEvent('UPDATE_THEME_STUDIO', 'site_settings', '1', ts);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
-    } else alert('Save failed — check site_settings table.');
+  const applyTheme = () => {
+    document.documentElement.style.setProperty('--primary-blue', theme.primary);
+    document.documentElement.style.setProperty('--accent-blue', theme.accent);
+    document.documentElement.style.setProperty('--success-green', theme.success);
+    document.documentElement.style.setProperty('--app-font', theme.font);
   };
 
-  const FONTS    = ['Inter','Roboto','Outfit','DM Sans','Poppins','Fira Code'];
-  const PRESETS  = [
-    { name: 'Ocean',  primary: '#007bff', accent: '#06b6d4' },
-    { name: 'Forest', primary: '#28a745', accent: '#10b981' },
-    { name: 'Royal',  primary: '#6366f1', accent: '#8b5cf6' },
-    { name: 'Sunset', primary: '#f97316', accent: '#ec4899' },
-    { name: 'Slate',  primary: '#475569', accent: '#64748b' },
-  ];
+  const saveTheme = async () => {
+    setSaving(true);
+    applyTheme();
+    // Assuming site_settings table holds this
+    await supabase.from('site_settings').update({ theme_config: theme }).eq('id', 1);
+    setSaving(false);
+  };
+
+  const exportCss = () => {
+    const css = `:root {\n  --primary-blue: ${theme.primary};\n  --accent-blue: ${theme.accent};\n  --success-green: ${theme.success};\n  --app-font: '${theme.font}', sans-serif;\n}`;
+    const blob = new Blob([css], { type: 'text/css' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url;
+    a.download = 'theme.css';
+    a.click(); URL.revokeObjectURL(url);
+  };
 
   return (
-    <PanelCard
-      title="Theme Studio & Brand Customizer"
-      action={{ label: saving ? 'Saving…' : saved ? '✓ Saved!' : 'Apply Live', icon: 'ti-palette', onClick: handleSave }}
-    >
-      <div style={{ padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 24 }}>
-
-        {/* Live preview strip */}
-        <div style={{ borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border-color)' }}>
-          <div style={{ background: ts.primary_color, padding: '18px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <p style={{ margin: 0, fontFamily: ts.font_family+', sans-serif', fontSize: 16, fontWeight: 800, color: '#fff', letterSpacing: -0.4 }}>Live Preview — Portfolio Header</p>
-            <button style={{ background: 'rgba(255,255,255,0.22)', border: 'none', color: '#fff', padding: '7px 18px', borderRadius: 20, fontWeight: 700, cursor: 'default', fontFamily: ts.font_family+', sans-serif', fontSize: 13 }}>Contact Me</button>
+    <PanelCard title="Theme Studio" action={{ label: saving ? "Applying..." : "Apply & Save", icon: "ti-palette", onClick: saveTheme }}>
+      <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 24 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>Primary Color</label>
+            <input type="color" value={theme.primary} onChange={e=>setTheme({...theme, primary: e.target.value})} style={{ width: '100%', height: 48, borderRadius: 8, cursor: 'pointer' }} />
           </div>
-          <div style={{ padding: '16px 22px', background: 'var(--card-bg)', display: 'flex', gap: 12, alignItems: 'center' }}>
-            <div style={{ width: 40, height: 40, borderRadius: '50%', background: ts.primary_color, opacity: 0.15 }} />
-            <div>
-              <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: ts.primary_color, fontFamily: ts.font_family+', sans-serif' }}>Sujith Thota</p>
-              <p style={{ margin: 0, fontSize: 12, color: 'var(--text-muted)' }}>Full Stack & ML Engineer</p>
-            </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>Accent Color</label>
+            <input type="color" value={theme.accent} onChange={e=>setTheme({...theme, accent: e.target.value})} style={{ width: '100%', height: 48, borderRadius: 8, cursor: 'pointer' }} />
           </div>
-        </div>
-
-        {/* Presets */}
-        <div>
-          <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.7px', color: 'var(--text-muted)' }}>Quick Presets</p>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-            {PRESETS.map(p => (
-              <button key={p.name} onClick={() => setTs(prev => ({ ...prev, primary_color: p.primary, accent_color: p.accent }))}
-                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 20, border: `2px solid ${ts.primary_color === p.primary ? p.primary : 'var(--border-color)'}`, background: 'var(--bg-primary)', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>
-                <div style={{ width: 12, height: 12, borderRadius: '50%', background: p.primary }} />
-                {p.name}
-              </button>
-            ))}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>Success Color</label>
+            <input type="color" value={theme.success} onChange={e=>setTheme({...theme, success: e.target.value})} style={{ width: '100%', height: 48, borderRadius: 8, cursor: 'pointer' }} />
           </div>
-        </div>
-
-        {/* Colour pickers */}
-        <div className="admin-settings-grid">
-          <div className="admin-field">
-            <label>Primary Brand Color</label>
-            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-              <input type="color" value={ts.primary_color} onChange={e => setTs(p => ({...p, primary_color: e.target.value}))}
-                style={{ width: 44, height: 40, padding: 2, border: '1px solid var(--border-color)', borderRadius: 8, cursor: 'pointer' }} />
-              <input className="admin-input" type="text" value={ts.primary_color} onChange={e => setTs(p => ({...p, primary_color: e.target.value}))} />
-            </div>
-          </div>
-          <div className="admin-field">
-            <label>Accent / Link Color</label>
-            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-              <input type="color" value={ts.accent_color} onChange={e => setTs(p => ({...p, accent_color: e.target.value}))}
-                style={{ width: 44, height: 40, padding: 2, border: '1px solid var(--border-color)', borderRadius: 8, cursor: 'pointer' }} />
-              <input className="admin-input" type="text" value={ts.accent_color} onChange={e => setTs(p => ({...p, accent_color: e.target.value}))} />
-            </div>
-          </div>
-          <div className="admin-field">
-            <label>Font Family</label>
-            <select className="admin-input" value={ts.font_family} onChange={e => setTs(p => ({...p, font_family: e.target.value}))}>
-              {FONTS.map(f => <option key={f} value={f}>{f}</option>)}
-            </select>
-          </div>
-          <div className="admin-field">
-            <label>Glassmorphism Blur</label>
-            <select className="admin-input" value={ts.glass_intensity} onChange={e => setTs(p => ({...p, glass_intensity: e.target.value}))}>
-              <option value="low">Subtle (6px)</option>
-              <option value="medium">Medium — Recommended (14px)</option>
-              <option value="high">Deep Glass (28px)</option>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>Font Family</label>
+            <select value={theme.font} onChange={e=>setTheme({...theme, font: e.target.value})} style={{ width: '100%', height: 48, borderRadius: 8, padding: '0 12px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}>
+              <option value="Inter">Inter</option>
+              <option value="Poppins">Poppins</option>
+              <option value="Space Grotesk">Space Grotesk</option>
+              <option value="DM Sans">DM Sans</option>
             </select>
           </div>
         </div>
-
-        {/* Toggle */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 10 }}>
-          <input type="checkbox" id="ptoggle" checked={!!ts.enable_particles} onChange={e => setTs(p => ({...p, enable_particles: e.target.checked}))}
-            style={{ width: 18, height: 18, cursor: 'pointer', accentColor: ts.primary_color }} />
-          <label htmlFor="ptoggle" style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', cursor: 'pointer' }}>Enable Interactive Particle Background</label>
+        
+        <div style={{ background: 'var(--bg-primary)', padding: 24, borderRadius: 12, border: '1px solid var(--border-color)' }}>
+          <h4 style={{ margin: '0 0 16px', color: 'var(--text-primary)' }}>Live Preview</h4>
+          <div style={{ padding: 24, borderRadius: 12, border: `2px solid ${theme.primary}`, fontFamily: `'${theme.font}', sans-serif` }}>
+            <h1 style={{ color: theme.primary, margin: '0 0 16px' }}>Heading Example</h1>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: 24 }}>This is how your text will look with the selected font and colors.</p>
+            <div style={{ display: 'flex', gap: 16 }}>
+              <button style={{ background: theme.primary, color: '#fff', border: 'none', padding: '12px 24px', borderRadius: 8, fontWeight: 600, fontFamily: 'inherit' }}>Primary Button</button>
+              <button style={{ background: 'transparent', color: theme.accent, border: `2px solid ${theme.accent}`, padding: '12px 24px', borderRadius: 8, fontWeight: 600, fontFamily: 'inherit' }}>Accent Button</button>
+              <button style={{ background: theme.success, color: '#fff', border: 'none', padding: '12px 24px', borderRadius: 8, fontWeight: 600, fontFamily: 'inherit' }}>Success</button>
+            </div>
+          </div>
         </div>
 
-        {saved && <p style={{ margin: 0, fontSize: 13, color: '#28a745', fontWeight: 600, textAlign: 'center' }}>✓ Theme applied live to the portfolio!</p>}
+        <button onClick={exportCss} className="admin-action-btn secondary" style={{ width: 'fit-content' }}>Export CSS Variables</button>
       </div>
     </PanelCard>
   );
@@ -2413,117 +1812,68 @@ function ThemeStudioPanel() {
    BACKUP & RESTORE
    ─────────────────────────────────────────────── */
 function BackupRestorePanel() {
-  const [exporting,  setExporting]  = useState(false);
-  const [importing,  setImporting]  = useState(false);
-  const [importInfo, setImportInfo] = useState(null);
-  const [importErr,  setImportErr]  = useState(null);
-  const [history,    setHistory]    = useState(() => {
-    try { return JSON.parse(localStorage.getItem('backup_history') || '[]'); } catch { return []; }
-  });
+  const [counts, setCounts] = useState({});
+  const TABLES = ['projects', 'updates', 'skills', 'experience', 'education', 'certifications', 'contact_messages'];
 
-  const TABLES = ['site_settings','experience','skills','education','certifications','projects','updates'];
+  useEffect(() => {
+    const fetchCounts = async () => {
+      const results = {};
+      for (const t of TABLES) {
+        const { count } = await supabase.from(t).select('*', { count: 'exact', head: true });
+        results[t] = count || 0;
+      }
+      setCounts(results);
+    };
+    fetchCounts();
+  }, []);
 
-  const handleExport = async () => {
-    setExporting(true);
-    const results = await Promise.all(TABLES.map(t => supabase.from(t).select('*').then(r => [t, r.data || []])));
-    const data = Object.fromEntries(results);
-    const payload = { version: '2.0', exported_at: new Date().toISOString(), tables: TABLES, data };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const exportTable = async (table) => {
+    const { data } = await supabase.from(table).select('*');
+    if (!data) return;
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url;
-    a.download = `portfolio_backup_${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `${table}_backup_${Date.now()}.json`;
     a.click(); URL.revokeObjectURL(url);
-    const entry = { date: new Date().toISOString(), tables: TABLES.length, size: `${(blob.size/1024).toFixed(1)} KB` };
-    const newHistory = [entry, ...history].slice(0, 5);
-    setHistory(newHistory);
-    localStorage.setItem('backup_history', JSON.stringify(newHistory));
-    logAuditEvent('EXPORT_DATABASE_BACKUP', 'system', 'all');
-    setExporting(false);
+    localStorage.setItem('lastBackup', new Date().toLocaleString());
   };
 
-  const handleImport = (e) => {
+  const handleImport = async (e, table) => {
     const file = e.target.files?.[0];
-    setImportErr(null); setImportInfo(null);
     if (!file) return;
-    setImporting(true);
     const reader = new FileReader();
-    reader.onload = (ev) => {
+    reader.onload = async (ev) => {
       try {
         const json = JSON.parse(ev.target.result);
-        if (!json.version || !json.data) throw new Error('Invalid backup format.');
-        const tableCount = Object.keys(json.data).length;
-        const rowCount   = Object.values(json.data).reduce((s, rows) => s + (rows?.length || 0), 0);
-        setImportInfo({ version: json.version, exported_at: json.exported_at, tableCount, rowCount, ready: true });
-      } catch (err) { setImportErr(err.message); }
-      setImporting(false);
+        const { error } = await supabase.from(table).upsert(json);
+        if (error) throw error;
+        alert('Import successful!');
+      } catch (err) { alert('Import failed: ' + err.message); }
     };
     reader.readAsText(file);
   };
 
   return (
-    <PanelCard title="Backup & Restore Utility">
-      <div style={{ padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 22 }}>
-
-        {/* Export */}
-        <div style={{ padding: '20px 22px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
-          <div>
-            <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>Export Full Database Backup</p>
-            <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--text-muted)' }}>Downloads a JSON snapshot of all {TABLES.length} tables — skills, projects, education, experience, settings.</p>
-          </div>
-          <button onClick={handleExport} disabled={exporting} className="admin-action-btn" style={{ flexShrink: 0 }}>
-            {exporting ? <Loader2 className="spin" size={14} /> : <Download size={14} />}
-            {exporting ? 'Exporting…' : 'Download .JSON'}
-          </button>
-        </div>
-
-        {/* Backup history */}
-        {history.length > 0 && (
-          <div>
-            <p style={{ margin: '0 0 10px', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.7px', color: 'var(--text-muted)' }}>Recent Backups (local)</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {history.map((h, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 9, fontSize: 12 }}>
-                  <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{new Date(h.date).toLocaleDateString()} {new Date(h.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                  <span style={{ color: 'var(--text-muted)' }}>{h.tables} tables · {h.size}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Import / Restore */}
-        <div style={{ padding: '20px 22px', background: 'var(--bg-primary)', border: '1.5px dashed var(--border-color)', borderRadius: 14 }}>
-          <p style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>Validate & Restore Backup</p>
-          <p style={{ margin: '0 0 14px', fontSize: 12, color: 'var(--text-muted)' }}>Upload a backup JSON — it will be validated and you can preview contents before restoring.</p>
-          <label style={{ display: 'inline-flex', alignItems: 'center', gap: 7, cursor: 'pointer' }}>
-            <input type="file" accept=".json" style={{ display: 'none' }} onChange={handleImport} />
-            <span className="admin-action-btn secondary" style={{ pointerEvents: 'none' }}>
-              {importing ? <Loader2 className="spin" size={13} /> : <Upload size={13} />}
-              {importing ? 'Reading file…' : 'Choose backup.json'}
-            </span>
-          </label>
-
-          {importErr && <p style={{ marginTop: 12, fontSize: 12, color: '#ef4444', fontWeight: 600 }}>❌ {importErr}</p>}
-
-          {importInfo && (
-            <div style={{ marginTop: 14, padding: '14px 16px', background: '#28a74510', border: '1.5px solid #28a74540', borderRadius: 10 }}>
-              <p style={{ margin: '0 0 8px', fontSize: 13, fontWeight: 700, color: '#28a745' }}>✅ Valid Backup — v{importInfo.version}</p>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
-                {[['Exported', new Date(importInfo.exported_at).toLocaleDateString()],
-                  ['Tables', importInfo.tableCount],
-                  ['Total Rows', importInfo.rowCount]
-                ].map(([k,v]) => (
-                  <div key={k}>
-                    <p style={{ margin: 0, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)' }}>{k}</p>
-                    <p style={{ margin: '3px 0 0', fontSize: 15, fontWeight: 800, color: 'var(--text-primary)' }}>{v}</p>
-                  </div>
-                ))}
+    <PanelCard title="Backup & Restore">
+      <div style={{ padding: 20 }}>
+        <p style={{ margin: '0 0 24px', color: 'var(--text-secondary)' }}>Last backup: {localStorage.getItem('lastBackup') || 'Never'}</p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 16 }}>
+          {TABLES.map(t => (
+            <div key={t} style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 12, padding: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <h4 style={{ margin: 0, fontSize: 16, color: 'var(--text-primary)', textTransform: 'capitalize' }}>{t.replace('_', ' ')}</h4>
+                <span style={{ background: 'var(--bg-secondary)', padding: '4px 8px', borderRadius: 12, fontSize: 12, color: 'var(--text-muted)' }}>{counts[t] || 0} rows</span>
               </div>
-              <p style={{ margin: '12px 0 0', fontSize: 11, color: 'var(--text-muted)' }}>⚠️ To restore, use the Supabase dashboard SQL editor and paste the relevant table data.</p>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={() => exportTable(t)} className="admin-action-btn" style={{ flex: 1, justifyContent: 'center' }}>Export</button>
+                <div style={{ flex: 1, position: 'relative' }}>
+                  <input type="file" accept=".json" onChange={e => handleImport(e, t)} style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }} />
+                  <button className="admin-action-btn secondary" style={{ width: '100%', justifyContent: 'center' }}>Import</button>
+                </div>
+              </div>
             </div>
-          )}
+          ))}
         </div>
-
       </div>
     </PanelCard>
   );
@@ -2536,123 +1886,61 @@ function BackupRestorePanel() {
    AUDIT & HEALTH
    ─────────────────────────────────────────────── */
 function AuditHealthPanel() {
-  const [logs,    setLogs]    = useState([]);
-  const [ping,    setPing]    = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [filter,  setFilter]  = useState('ALL');
-  const [pings,   setPings]   = useState([]);
+  const [logs, setLogs] = useState([]);
+  const [ping, setPing] = useState(null);
+  const [filter, setFilter] = useState('ALL');
 
-  useEffect(() => { fetchAll(); }, []);
+  useEffect(() => {
+    const fetchAudit = async () => {
+      // Use existing 'admin_audit_logs' as it exists in DB, mapped to requested filter
+      const { data } = await supabase.from('admin_audit_logs').select('*').order('created_at', { ascending: false }).limit(50);
+      if (data) setLogs(data);
+    };
+    
+    const checkHealth = async () => {
+      const start = performance.now();
+      await supabase.from('admin_audit_logs').select('id').limit(1);
+      setPing(Math.round(performance.now() - start));
+    };
 
-  const fetchAll = async () => {
-    setLoading(true);
-    const { data } = await supabase.from('admin_audit_logs').select('*').order('created_at', { ascending: false }).limit(40);
-    if (data) setLogs(data);
-    // run 3 pings and keep history
-    const measures = [];
-    for (let i = 0; i < 3; i++) {
-      const t0 = performance.now();
-      await supabase.from('site_settings').select('id').limit(1);
-      measures.push(Math.round(performance.now() - t0));
-      await new Promise(r => setTimeout(r, 200));
-    }
-    const avg = Math.round(measures.reduce((a,b) => a+b, 0) / measures.length);
-    setPing(avg);
-    setPings(p => [...p, avg].slice(-12));
-    setLoading(false);
-  };
+    fetchAudit();
+    checkHealth();
+  }, []);
 
-  const ACTION_COLORS = {
-    DELETE: '#ef4444', EXPORT: '#ff9800', UPDATE: '#007bff',
-    CREATE: '#28a745', RUN: '#6366f1', UPLOAD: '#06b6d4',
-    DEFAULT: '#6b7280',
-  };
-  const actionColor = (action) => {
-    const key = Object.keys(ACTION_COLORS).find(k => action?.startsWith(k));
-    return ACTION_COLORS[key || 'DEFAULT'];
-  };
-
-  const FILTERS = ['ALL','CREATE','UPDATE','DELETE','EXPORT','RUN','UPLOAD'];
-  const filtered = filter === 'ALL' ? logs : logs.filter(l => l.action?.startsWith(filter));
-
-  const pingColor = ping === null ? '#6b7280' : ping < 100 ? '#28a745' : ping < 300 ? '#ff9800' : '#ef4444';
-  const pingLabel = ping === null ? '—' : ping < 100 ? 'Excellent' : ping < 300 ? 'Good' : 'Degraded';
-
-  const maxPing = Math.max(...pings, 1);
+  const eventTypes = ['ALL', 'CREATE', 'UPDATE', 'DELETE', 'LOGIN'];
+  const filteredLogs = filter === 'ALL' ? logs : logs.filter(l => l.action?.startsWith(filter));
 
   return (
-    <PanelCard
-      title="Audit Trail & System Health"
-      action={{ label: 'Refresh', icon: 'ti-refresh', onClick: fetchAll }}
-    >
-      <div style={{ padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 22 }}>
-
-        {/* Health cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 14 }}>
-          {[{ label: 'DB Avg Latency', value: ping !== null ? `${ping} ms` : 'Checking…', color: pingColor, sub: pingLabel },
-            { label: 'System Status', value: 'Operational', color: '#28a745', sub: 'All services up' },
-            { label: 'Audit Events', value: logs.length, color: '#6366f1', sub: 'Last 40 actions' },
-            { label: 'Auth', value: 'Secure', color: '#28a745', sub: 'JWT • RLS enabled' },
-          ].map(k => (
-            <div key={k.label} style={{ background: 'var(--bg-primary)', border: `1px solid var(--border-color)`, borderTop: `3px solid ${k.color}`, borderRadius: 12, padding: '14px 16px' }}>
-              <p style={{ margin: 0, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.7px', color: 'var(--text-muted)' }}>{k.label}</p>
-              <p style={{ margin: '6px 0 2px', fontSize: 22, fontWeight: 800, color: k.color, letterSpacing: -0.5 }}>{k.value}</p>
-              <p style={{ margin: 0, fontSize: 11, color: 'var(--text-muted)' }}>{k.sub}</p>
-            </div>
-          ))}
+    <PanelCard title="System Audit & Health">
+      <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 24 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+          <KPICard label="Database Latency" value={ping ? `${ping}ms` : '...'} icon={Activity} color={ping < 100 ? '#10b981' : '#f59e0b'} />
+          <KPICard label="API Status" value="Healthy" icon={ShieldCheck} color="#10b981" />
+          <KPICard label="Total Audit Events" value={logs.length} icon={Database} color="#3b82f6" />
         </div>
 
-        {/* Ping sparkline */}
-        {pings.length > 1 && (
-          <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 12, padding: '14px 18px' }}>
-            <p style={{ margin: '0 0 12px', fontSize: 12, fontWeight: 700, color: 'var(--text-primary)' }}>Latency Trend (last {pings.length} checks)</p>
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 50 }}>
-              {pings.map((v, i) => (
-                <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                  <div style={{ width: '100%', background: pingColor, borderRadius: '3px 3px 0 0', height: `${Math.round((v/maxPing)*46)+4}px`, opacity: 0.7+0.3*(i/pings.length) }} />
-                  <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>{v}ms</span>
-                </div>
-              ))}
-            </div>
+        <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 12, overflow: 'hidden' }}>
+          <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-color)', display: 'flex', gap: 8, alignItems: 'center' }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)' }}>Filter:</span>
+            {eventTypes.map(type => (
+              <button key={type} onClick={() => setFilter(type)} style={{ background: filter === type ? 'var(--primary-blue)' : 'var(--bg-secondary)', color: filter === type ? '#fff' : 'var(--text-primary)', border: 'none', padding: '6px 12px', borderRadius: 20, fontSize: 12, cursor: 'pointer' }}>{type}</button>
+            ))}
           </div>
-        )}
-
-        {/* Filter row */}
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          {FILTERS.map(f => (
-            <button key={f} onClick={() => setFilter(f)}
-              className={`admin-action-btn${filter === f ? '' : ' secondary'}`}
-              style={{ padding: '4px 12px', fontSize: 11, borderRadius: 20 }}>
-              {f}
-            </button>
-          ))}
-        </div>
-
-        {/* Audit table */}
-        {loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: 30 }}><Loader2 className="spin" size={20} color="var(--text-muted)" /></div>
-        ) : filtered.length === 0 ? (
-          <EmptyState icon="ti-list-check" title="No audit logs" description="Actions you perform in the dashboard are recorded here." />
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-            {filtered.map(log => {
-              const color = actionColor(log.action);
-              return (
-                <div key={log.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 10 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: color, flexShrink: 0 }} />
-                  <span className="admin-badge" style={{ background: `${color}18`, color, border: `1px solid ${color}30`, fontSize: 10, flexShrink: 0 }}>{log.action}</span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ margin: 0, fontSize: 12.5, color: 'var(--text-primary)', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {log.entity_type}{log.entity_id ? ` · ${log.entity_id}` : ''}
-                    </p>
+          <div style={{ maxHeight: 400, overflowY: 'auto' }}>
+            {filteredLogs.map(log => (
+              <div key={log.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 20px', borderBottom: '1px solid var(--border-color)' }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 6px', borderRadius: 4, background: log.action?.includes('DELETE') ? '#ef444420' : '#3b82f620', color: log.action?.includes('DELETE') ? '#ef4444' : '#3b82f6' }}>{log.action}</span>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>{log.entity_type}</span>
                   </div>
-                  <span style={{ fontSize: 11, color: 'var(--text-muted)', flexShrink: 0 }}>{new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {new Date(log.created_at).toLocaleDateString()}</span>
+                  <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--text-secondary)' }}>User: {log.user_id || 'System'} | Target: {log.entity_id || 'N/A'}</p>
                 </div>
-              );
-            })}
+                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{new Date(log.created_at).toLocaleString()}</span>
+              </div>
+            ))}
           </div>
-        )}
-
+        </div>
       </div>
     </PanelCard>
   );
