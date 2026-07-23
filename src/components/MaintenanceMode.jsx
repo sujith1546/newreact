@@ -333,6 +333,7 @@ export function MaintenanceSettingsPanel() {
           )}
         </div>
         <button
+          type="button"
           className={`switch ${enabled ? 'on' : ''}`}
           onClick={(e) => { e.preventDefault(); save(!enabled); }}
           disabled={saving}

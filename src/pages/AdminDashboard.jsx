@@ -706,13 +706,13 @@ function SettingsPanel() {
             </div>
             {settings?.is_available_for_hire && <span className="admin-badge" style={{ background: '#28a74515', color: '#28a745', border: '1px solid #28a74530' }}>Active</span>}
           </div>
-
-          {/* Advanced Maintenance Panel */}
-          <MaintenanceSettingsPanel />
         </div>
 
         <button type="submit" style={{ display: 'none' }}>Save</button>
       </form>
+
+      {/* Advanced Maintenance Panel (Outside form to prevent conflict) */}
+      <MaintenanceSettingsPanel />
     </PanelCard>
   );
 }
