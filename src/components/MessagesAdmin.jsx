@@ -109,7 +109,12 @@ function MessageRow({ msg, selected, onToggleSelect, actions }) {
   return (
     <div style={{ ...rowStyles.wrap, background: msg.is_read ? '#fff' : '#F5F8FC' }}>
       <div style={rowStyles.main}>
-        <input type="checkbox" checked={selected} onChange={() => onToggleSelect(msg.id)} />
+        <input 
+          type="checkbox" 
+          checked={selected} 
+          onChange={() => onToggleSelect(msg.id)} 
+          style={{ width: 'auto', margin: 0, cursor: 'pointer', flexShrink: 0 }}
+        />
 
         <button
           onClick={() => actions.update(msg.id, { is_starred: !msg.is_starred })}
