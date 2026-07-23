@@ -437,7 +437,32 @@ function AiChatsPanel() {
 
   useEffect(() => {
     fetchSessions();
-  }, []);
+    
+    // Subscribe to new sessions
+    const sessionSub = supabase.channel('realtime-sessions')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_sessions' }, (payload) => {
+        setSessions(prev => [payload.new, ...prev]);
+      })
+      .subscribe();
+      
+    // Subscribe to new messages
+    const messageSub = supabase.channel('realtime-messages')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' }, (payload) => {
+        setMessages(prev => {
+          // Only append if it belongs to the currently viewed session
+          if (payload.new.session_id === selectedSession) {
+            return [...prev, payload.new];
+          }
+          return prev;
+        });
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(sessionSub);
+      supabase.removeChannel(messageSub);
+    };
+  }, [selectedSession]);
 
   const fetchSessions = async () => {
     setLoading(true);

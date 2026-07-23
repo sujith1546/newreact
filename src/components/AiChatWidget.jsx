@@ -43,11 +43,12 @@ export default function AiChatWidget() {
     setIsOpen(!isOpen);
   };
 
-  const handleSend = async (textOverride) => {
+  const handleSend = async (e, textOverride) => {
+    if (e && e.preventDefault) e.preventDefault();
+    
     const textToProcess = typeof textOverride === 'string' ? textOverride : input.trim();
     if (!textToProcess || !sessionId || isTyping) return;
 
-    if (typeof textOverride !== 'string') e?.preventDefault?.();
     setInput('');
     
     const newMessages = [...messages, { role: 'user', content: textToProcess }];
@@ -167,7 +168,7 @@ export default function AiChatWidget() {
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} style={{ padding: '0 20px 10px', display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', margin: '0 0 4px 4px', textTransform: 'uppercase', fontWeight: 600 }}>Suggested</p>
                 {SUGGESTED_QUESTIONS.map((q, idx) => (
-                  <button key={idx} onClick={() => handleSend(q)} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.9)', padding: '10px 14px', borderRadius: 12, fontSize: 13, textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.borderColor = 'rgba(59,130,246,0.5)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}>
+                  <button key={idx} onClick={() => handleSend(null, q)} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.9)', padding: '10px 14px', borderRadius: 12, fontSize: 13, textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }} onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.borderColor = 'rgba(59,130,246,0.5)'; }} onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; }}>
                     {q}
                     <ChevronRight size={14} color="#60a5fa" />
                   </button>
@@ -176,7 +177,7 @@ export default function AiChatWidget() {
             )}
 
             {/* Input Area */}
-            <form onSubmit={(e) => handleSend()} style={{ padding: '16px 20px', background: 'rgba(0,0,0,0.2)', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: 12, alignItems: 'center' }}>
+            <form onSubmit={(e) => handleSend(e)} style={{ padding: '16px 20px', background: 'rgba(0,0,0,0.2)', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: 12, alignItems: 'center' }}>
               <input
                 type="text"
                 value={input}
