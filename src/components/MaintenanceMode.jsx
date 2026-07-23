@@ -195,6 +195,10 @@ const styles = {
     borderRadius: 100,
     marginBottom: 22,
   },
+  input: { width: '100%', padding: '10px 12px', fontSize: 14, borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', outline: 'none' },
+  updateBtn: { marginTop: 8, padding: '8px 16px', background: '#ef4444', color: '#fff', fontSize: 13, fontWeight: 600, border: 'none', borderRadius: 6, cursor: 'pointer', transition: '0.2s' },
+  inputGroup: { display: 'flex', flexDirection: 'column', gap: 6 },
+  label: { fontSize: 12.5, color: '#5B6069', fontWeight: 500 },
   pulse: { width: 7, height: 7, borderRadius: '50%', background: '#1F3A5F', animation: 'pulse 2s ease-out infinite' },
   h1: {
     fontFamily: "'Source Serif 4', serif",
@@ -343,30 +347,38 @@ export function MaintenanceSettingsPanel() {
         </button>
       </div>
 
-      <div className={`setting-subpanel ${enabled ? 'open' : ''}`}>
-        <div className="setting-subrow">
-          <label style={{ color: '#5B6069' }}>
-            Estimated time (minutes)
+      {enabled && (
+        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>Estimated Time (Minutes)</label>
             <input
               type="number"
               min={1}
               value={etaMinutes}
               onChange={(e) => setEtaMinutes(e.target.value)}
-              onBlur={() => enabled && save(true, { etaMinutes: Number(etaMinutes) })}
+              style={styles.input}
             />
-          </label>
-          <label style={{ color: '#5B6069' }}>
-            Custom message (optional)
-            <input
-              type="text"
-              placeholder="I'm making improvements behind the scenes…"
+          </div>
+          <div style={styles.inputGroup}>
+            <label style={styles.label}>Custom Message (Optional)</label>
+            <textarea
+              rows={2}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              onBlur={() => enabled && save(true, { message })}
+              placeholder="e.g. We are upgrading the database..."
+              style={{ ...styles.input, resize: 'vertical' }}
             />
-          </label>
+          </div>
+          <button 
+            type="button" 
+            onClick={(e) => { e.preventDefault(); save(true); }} 
+            disabled={saving} 
+            style={styles.updateBtn}
+          >
+            Update Settings
+          </button>
         </div>
-      </div>
+      )}
 
       <style>{`
         .setting-card { padding: 16px 0; border-bottom: 1px dashed #ef444460; margin-top: 16px; border-top: 1px solid var(--border-color); }
