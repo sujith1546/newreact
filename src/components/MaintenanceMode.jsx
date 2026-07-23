@@ -13,26 +13,22 @@ export function useMaintenanceStatus() {
     enabled: false,
     enabledAt: null,
     etaMinutes: 20,
-    message: null,
+    message: '',
   });
 
   useEffect(() => {
     let channel;
 
     async function loadInitial() {
-      const { data, error } = await supabase
-        .from('site_settings')
-        .select('maintenance_enabled, maintenance_enabled_at, maintenance_eta, maintenance_message')
-        .limit(1)
-        .single();
+      const { data } = await supabase.from('site_settings').select('*').limit(1).single();
 
-      if (!error && data) {
+      if (data) {
         setStatus({
           loading: false,
           enabled: data.maintenance_enabled,
           enabledAt: data.maintenance_enabled_at,
-          etaMinutes: data.maintenance_eta,
-          message: data.maintenance_message,
+          etaMinutes: data.maintenance_eta ?? 20,
+          message: data.maintenance_message ?? '',
         });
       } else {
         setStatus((s) => ({ ...s, loading: false }));
@@ -40,6 +36,14 @@ export function useMaintenanceStatus() {
     }
 
     loadInitial();
+
+    // Catch up on missed events if tab was suspended by browser
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        loadInitial();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     channel = supabase
       .channel('site_settings_maintenance')
@@ -60,6 +64,7 @@ export function useMaintenanceStatus() {
       .subscribe();
 
     return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       if (channel) supabase.removeChannel(channel);
     };
   }, []);
