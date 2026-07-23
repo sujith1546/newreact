@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import '../styles/maintenance.css';
 
 const BYPASS_KEY = 'maint_bypass_token';
 const BYPASS_SECRET = import.meta.env.VITE_MAINTENANCE_BYPASS_SECRET || 'preview123';
@@ -77,74 +78,207 @@ export function useMaintenanceStatus() {
 // =================================================================
 export function MaintenancePage({ status }) {
   const [now, setNow] = useState(Date.now());
+  const [pct, setPct] = useState(31);
+  const [stage, setStage] = useState(1);
+  const [elapsed, setElapsed] = useState(42);
 
+  // Time tracking
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
 
+  // Animation loop
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPct(p => Math.min(99, p + 6 + Math.random() * 3));
+      setElapsed(e => e + 2);
+    }, 2200);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const rounded = Math.round(pct);
+    if (rounded > 55 && stage === 1) setStage(2);
+    if (rounded > 80 && stage === 2) setStage(3);
+    if (rounded >= 99 && stage === 3) setStage(4);
+  }, [pct, stage]);
+
+  const fmtTime = (s) => {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m < 10 ? '0' : ''}${m}:${sec < 10 ? '0' : ''}${sec}`;
+  };
+
   const startedAt = status.enabledAt ? new Date(status.enabledAt).getTime() : null;
   const totalMs = status.etaMinutes * 60 * 1000;
-
-  let pct = 4;
-  let remainingLabel = 'in progress';
-  let etaLabel = '—';
-
+  let etaLabel = '12:06 PM IST';
   if (startedAt) {
-    const elapsed = now - startedAt;
-    pct = Math.min(100, Math.max(4, (elapsed / totalMs) * 100));
-    const remainingMs = Math.max(0, startedAt + totalMs - now);
-    remainingLabel = remainingMs > 0 ? `~${Math.ceil(remainingMs / 60000)} min remaining` : 'wrapping up';
     etaLabel = new Date(startedAt + totalMs).toLocaleTimeString('en-IN', {
       hour: '2-digit',
       minute: '2-digit',
     });
   }
 
+  const nodes = [
+    { x: 40, label: 'Build' },
+    { x: 175, label: 'Deploy' },
+    { x: 310, label: 'Cache' },
+    { x: 420, label: 'Live' }
+  ];
+  const y = 60;
+
   return (
-    <div style={styles.page}>
-      <div style={styles.card}>
-        <div style={styles.mark}>
-          <div style={styles.markBadge}>ST</div>
-          <div>
-            <div style={styles.markName}>Sujith Thota</div>
-            <div style={styles.markRole}>Data &amp; ML Portfolio</div>
-          </div>
-        </div>
-
-        <div style={styles.statusTag}>
-          <span style={styles.pulse} />
-          Scheduled maintenance
-        </div>
-
-        <h1 style={styles.h1}>The site is being updated.</h1>
-        <p style={styles.sub}>
-          {status.message ||
-            "I'm making improvements behind the scenes. Everything will be back shortly, exactly as you left it."}
+    <div className="maint-body">
+      <div className="maint-sidebar">
+        <div className="maint-avatar">ST</div>
+        <p className="maint-side-name">Sujith Thota</p>
+        <p className="maint-side-loc">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 21s-7-6.2-7-11a7 7 0 0114 0c0 4.8-7 11-7 11z" /><circle cx="12" cy="10" r="2.5" /></svg>
+          Vellore, India
         </p>
 
-        <div style={{ marginBottom: 30 }}>
-          <div style={styles.progressLabels}>
-            <span>Update in progress</span>
-            <b style={{ color: '#1C1E22' }}>{remainingLabel}</b>
+        <div className="maint-nav">
+          <div className="maint-nav-item">Home</div>
+          <div className="maint-nav-item">About</div>
+          <div className="maint-nav-item">Skills</div>
+          <div className="maint-nav-item">Projects</div>
+          <div className="maint-nav-item">Education</div>
+          <div className="maint-nav-item">Experience</div>
+          <div className="maint-nav-item">Certifications</div>
+          <div className="maint-nav-item">Contact</div>
+        </div>
+
+        <div className="maint-side-footer">
+          <div className="maint-side-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
+            Deploy status
           </div>
-          <div style={styles.track}>
-            <div style={{ ...styles.fill, width: `${pct}%` }} />
+          <div className="maint-side-note">Last checked just now<br />© 2026 All rights reserved Sujith</div>
+        </div>
+      </div>
+
+      <div className="maint-main">
+        <div className="maint-topbar">
+          <div className="maint-top-pill"><span className="maint-dot"></span>Deploying</div>
+          <div className="maint-top-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
           </div>
         </div>
 
-        <div style={styles.divider} />
+        <div className="maint-grid">
+          <div>
+            <div className="maint-badge"><span className="maint-bdot"></span>Scheduled maintenance</div>
 
-        <div style={styles.row}>
-          <div>
-            <div style={styles.smallLabel}>Need to reach me</div>
-            <a href="mailto:sujithreddy1546@gmail.com" style={styles.link}>
-              sujithreddy1546@gmail.com
-            </a>
+            <p className="maint-eyebrow">One moment</p>
+            <h1 className="maint-h1">The site is<br />being updated.</h1>
+
+            <div className="maint-tag">
+              <span className="maint-chev">&gt;_</span> <span>Shipping build #1784783952400</span><span className="maint-cursor"></span>
+            </div>
+
+            <p className="maint-desc">
+              {status.message || "Pushing a new version live — the old one's taken down so nothing loads half-finished."}
+              <br /><b>Back by {etaLabel}.</b> If it's urgent, reach me directly below.
+            </p>
+
+            <div className="maint-cards">
+              <div className="maint-mini-card">
+                <div className="maint-mini-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6" /></svg></div>
+                <div className="maint-mini-label">Build</div>
+                <div className="maint-mini-sub">complete</div>
+              </div>
+              <div className="maint-mini-card">
+                <div className="maint-mini-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="10" rx="2" /><path d="M7 11V7a5 5 0 0110 0v4" /></svg></div>
+                <div className="maint-mini-label">Deploy</div>
+                <div className="maint-mini-sub">{stage >= 2 ? 'complete' : 'in progress'}</div>
+              </div>
+              <div className="maint-mini-card">
+                <div className="maint-mini-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 2L11 13" /><path d="M22 2l-7 20-4-9-9-4 20-7z" /></svg></div>
+                <div className="maint-mini-label">Contact me</div>
+                <div className="maint-mini-sub">sujithreddy1546@gmail.com</div>
+              </div>
+            </div>
+
+            <div className="maint-footer-row">
+              <div>
+                <div className="maint-flabel">Need me sooner</div>
+                <a href="mailto:sujithreddy1546@gmail.com">sujithreddy1546@gmail.com</a>
+              </div>
+              <div className="maint-eta-block">
+                <div className="maint-flabel">Back online by</div>
+                <div className="maint-eta-val">{etaLabel}</div>
+              </div>
+            </div>
           </div>
-          <div>
-            <div style={{ ...styles.smallLabel, textAlign: 'right' }}>Expected back</div>
-            <div style={{ fontWeight: 600, textAlign: 'right' }}>{etaLabel}</div>
+
+          <div className="maint-visual-panel">
+            <div className="maint-vp-head">
+              <span className="maint-vp-title">Deploy pipeline</span>
+              <span className="maint-vp-live"><span className="maint-ld"></span>run #1784783952400</span>
+            </div>
+
+            <svg className="maint-pipeline" viewBox="0 0 460 150">
+              {nodes.slice(0, 3).map((n, i) => {
+                const x1 = n.x;
+                const x2 = nodes[i + 1].x;
+                const done = i < stage;
+                const color = done ? '#22c55e' : '#e6e6e4';
+                return <line key={`line-${i}`} x1={x1} y1={y} x2={x2} y2={y} stroke={color} strokeWidth="2" />;
+              })}
+              
+              {nodes.map((n, j) => {
+                const activeIdx = stage;
+                const st = j < activeIdx ? 'done' : (j === activeIdx ? 'active' : 'pending');
+                const fill = st === 'done' ? '#e9f9ef' : (st === 'active' ? '#eaf1fe' : '#ffffff');
+                const stroke = st === 'done' ? '#22c55e' : (st === 'active' ? '#2f6fed' : '#d8d8d5');
+                const textColor = st === 'pending' ? '#a3a39e' : '#161616';
+                
+                return (
+                  <g key={`node-${j}`}>
+                    <circle cx={n.x} cy={y} r="16" fill={fill} stroke={stroke} strokeWidth="2" />
+                    {st === 'done' && (
+                      <path d={`M${n.x - 6} ${y} l4 4 l8 -9`} fill="none" stroke="#22c55e" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+                    )}
+                    {st === 'active' && (
+                      <circle cx={n.x} cy={y} r="4.5" fill="#2f6fed">
+                        <animate attributeName="opacity" values="1;0.3;1" dur="1.4s" repeatCount="indefinite" />
+                      </circle>
+                    )}
+                    {st === 'pending' && (
+                      <circle cx={n.x} cy={y} r="4.5" fill="#d8d8d5" />
+                    )}
+                    <text x={n.x} y={y + 34} textAnchor="middle" fontFamily="Inter" fontSize="12" fontWeight="500" fill={textColor}>{n.label}</text>
+                  </g>
+                );
+              })}
+            </svg>
+
+            <div className="maint-stat-grid">
+              <div className="maint-stat-card">
+                <div className="maint-stat-label">Progress</div>
+                <div className="maint-stat-val maint-blue">{Math.round(pct)}%</div>
+              </div>
+              <div className="maint-stat-card">
+                <div className="maint-stat-label">Elapsed</div>
+                <div className="maint-stat-val">{fmtTime(elapsed)}</div>
+              </div>
+            </div>
+
+            <div className="maint-region-list">
+              <div className="maint-region-row">
+                <span className="maint-region-name"><span className="maint-rd maint-green"></span>API — Mumbai</span>
+                <span className="maint-region-lat">42ms</span>
+              </div>
+              <div className="maint-region-row">
+                <span className="maint-region-name"><span className="maint-rd maint-green"></span>Database — Supabase</span>
+                <span className="maint-region-lat">18ms</span>
+              </div>
+              <div className="maint-region-row">
+                <span className="maint-region-name"><span className={stage >= 3 ? "maint-rd maint-green" : "maint-rd maint-blue"}></span>Edge cache — Singapore</span>
+                <span className={stage >= 3 ? "maint-region-lat" : "maint-region-lat maint-blue-text"}>{stage >= 3 ? '9ms' : 'warming'}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
