@@ -37,14 +37,14 @@ export default function AiChatWidget() {
   };
   useEffect(() => { scrollToBottom(); }, [messages, isTyping]);
 
-  // Restore session from localStorage
+  // Restore session from localStorage safely
   useEffect(() => {
     const savedSessionId = localStorage.getItem('ai_session_id');
     if (savedSessionId) {
-      setSessionId(savedSessionId);
       supabase.from('chat_messages').select('*').eq('session_id', savedSessionId).order('created_at', { ascending: true })
         .then(({ data }) => {
           if (data && data.length > 0) {
+            setSessionId(savedSessionId);
             setMessages(data.map(m => ({ role: m.role, content: m.content })));
           } else {
             localStorage.removeItem('ai_session_id');
@@ -55,7 +55,7 @@ export default function AiChatWidget() {
   }, []);
 
   const initSession = async () => {
-    if (sessionId) return;
+    if (sessionId) return sessionId;
     const newId = generateUUID();
     const { data, error } = await supabase.from('chat_sessions').insert([{ id: newId }]).select().single();
     
@@ -63,9 +63,11 @@ export default function AiChatWidget() {
       setSessionId(data.id);
       localStorage.setItem('ai_session_id', data.id);
       const greeting = "Hello! I am an AI trained on this portfolio. How can I assist you today?";
-      setMessages([{ role: 'assistant', content: greeting }]);
-      supabase.from('chat_messages').insert([{ id: generateUUID(), session_id: data.id, role: 'assistant', content: greeting }]).then();
+      setMessages(prev => [...prev, { role: 'assistant', content: greeting }]);
+      await supabase.from('chat_messages').insert([{ id: generateUUID(), session_id: data.id, role: 'assistant', content: greeting }]);
+      return data.id;
     }
+    return null;
   };
 
   const toggleOpen = () => {
@@ -77,7 +79,13 @@ export default function AiChatWidget() {
     if (e && e.preventDefault) e.preventDefault();
     
     const textToProcess = typeof textOverride === 'string' ? textOverride : input.trim();
-    if (!textToProcess || !sessionId || isTyping) return;
+    if (!textToProcess || isTyping) return;
+
+    let activeSession = sessionId;
+    if (!activeSession) {
+      activeSession = await initSession();
+      if (!activeSession) return;
+    }
 
     setInput('');
     
@@ -85,7 +93,7 @@ export default function AiChatWidget() {
     setMessages(newMessages);
     setIsTyping(true);
 
-    supabase.from('chat_messages').insert([{ id: generateUUID(), session_id: sessionId, role: 'user', content: textToProcess }]).then();
+    await supabase.from('chat_messages').insert([{ id: generateUUID(), session_id: activeSession, role: 'user', content: textToProcess }]);
 
     const replyText = await generateChatResponse(newMessages);
     
@@ -93,7 +101,7 @@ export default function AiChatWidget() {
     setMessages(finalMessages);
     setIsTyping(false);
 
-    supabase.from('chat_messages').insert([{ id: generateUUID(), session_id: sessionId, role: 'assistant', content: replyText }]).then();
+    await supabase.from('chat_messages').insert([{ id: generateUUID(), session_id: activeSession, role: 'assistant', content: replyText }]);
   };
 
   return (
