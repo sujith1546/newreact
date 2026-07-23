@@ -108,7 +108,7 @@ function MessageRow({ msg, selected, onToggleSelect, actions }) {
   }
 
   return (
-    <div style={{ ...rowStyles.wrap, background: msg.is_read ? '#fff' : '#F5F8FC' }}>
+    <div style={{ ...rowStyles.wrap, background: msg.is_read ? 'transparent' : 'rgba(59, 130, 246, 0.05)' }}>
       <div style={rowStyles.main}>
         <input 
           type="checkbox" 
@@ -192,35 +192,35 @@ function MessageRow({ msg, selected, onToggleSelect, actions }) {
 
 function StatusPill({ status }) {
   const colors = {
-    new: { bg: '#EAF0F7', text: '#1F3A5F' },
-    replied: { bg: '#E8F5EC', text: '#1E7A3D' },
-    closed: { bg: '#F0F0EE', text: '#6B6F76' },
+    new: { bg: 'rgba(59, 130, 246, 0.15)', text: '#3b82f6' },
+    replied: { bg: 'rgba(34, 197, 94, 0.15)', text: '#22c55e' },
+    closed: { bg: 'var(--border-color)', text: 'var(--text-muted)' },
   };
   const c = colors[status] || colors.new;
   return <span style={{ ...rowStyles.statusPill, background: c.bg, color: c.text }}>{status}</span>;
 }
 
 const rowStyles = {
-  wrap: { borderBottom: '1px solid #E4E4E0', color: '#1C1E22' },
+  wrap: { borderBottom: '1px solid var(--border-color)', color: 'var(--text-primary)' },
   main: { display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px' },
   starBtn: { border: 'none', background: 'none', fontSize: 18, color: '#E8A33D', cursor: 'pointer' },
   clickArea: { flex: 1, cursor: 'pointer', minWidth: 0 },
   topLine: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 3 },
-  email: { fontSize: 12.5, color: '#5B6069' },
-  spamTag: { fontSize: 11, fontWeight: 600, color: '#B23B2E', background: '#FBEAE7', padding: '2px 8px', borderRadius: 100 },
+  email: { fontSize: 12.5, color: 'var(--text-muted)' },
+  spamTag: { fontSize: 11, fontWeight: 600, color: '#ef4444', background: 'rgba(239, 68, 68, 0.15)', padding: '2px 8px', borderRadius: 100 },
   statusPill: { fontSize: 11, fontWeight: 600, padding: '2px 9px', borderRadius: 100, textTransform: 'capitalize' },
-  preview: { fontSize: 13.5, color: '#5B6069', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 480 },
-  meta: { fontSize: 12, color: '#5B6069', textAlign: 'right', width: 110, flexShrink: 0 },
+  preview: { fontSize: 13.5, color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 480 },
+  meta: { fontSize: 12, color: 'var(--text-muted)', textAlign: 'right', width: 110, flexShrink: 0 },
   locationText: { marginTop: 2 },
-  iconBtn: { border: 'none', background: 'none', fontSize: 15, cursor: 'pointer', opacity: 0.7 },
-  iconBtnDanger: { border: 'none', background: 'none', fontSize: 15, cursor: 'pointer', color: '#B23B2E' },
-  expanded: { padding: '0 16px 18px 46px', background: '#FAFAF9' },
-  fullMessage: { fontSize: 14, lineHeight: 1.6, color: '#1C1E22', margin: '0 0 12px' },
-  expandedMeta: { display: 'flex', gap: 16, fontSize: 12, color: '#5B6069', marginBottom: 12 },
+  iconBtn: { border: 'none', background: 'none', fontSize: 15, cursor: 'pointer', opacity: 0.7, color: 'var(--text-muted)' },
+  iconBtnDanger: { border: 'none', background: 'none', fontSize: 15, cursor: 'pointer', color: '#ef4444' },
+  expanded: { padding: '0 16px 18px 46px', background: 'var(--bg-primary)' },
+  fullMessage: { fontSize: 14, lineHeight: 1.6, color: 'var(--text-primary)', margin: '0 0 12px' },
+  expandedMeta: { display: 'flex', gap: 16, fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 },
   actionRow: { display: 'flex', gap: 10, marginBottom: 12 },
-  replyBtn: { background: '#1F3A5F', color: '#fff', fontSize: 13, fontWeight: 600, padding: '8px 14px', borderRadius: 7, textDecoration: 'none' },
-  statusSelect: { fontSize: 13, padding: '8px 10px', borderRadius: 7, border: '1px solid #E4E4E0', color: '#1C1E22' },
-  notesArea: { width: '100%', minHeight: 60, fontSize: 13, padding: 10, borderRadius: 7, border: '1px solid #E4E4E0', fontFamily: 'inherit', resize: 'vertical', color: '#1C1E22' },
+  replyBtn: { background: 'var(--primary-blue)', color: '#fff', fontSize: 13, fontWeight: 600, padding: '8px 14px', borderRadius: 7, textDecoration: 'none' },
+  statusSelect: { fontSize: 13, padding: '8px 10px', borderRadius: 7, border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)' },
+  notesArea: { width: '100%', minHeight: 60, fontSize: 13, padding: 10, borderRadius: 7, border: '1px solid var(--border-color)', background: 'var(--bg-primary)', fontFamily: 'inherit', resize: 'vertical', color: 'var(--text-primary)' },
 };
 
 // ---- 3e. Toolbar: search, filter, sort, bulk actions ----
@@ -262,12 +262,12 @@ function Toolbar({ query, setQuery, filter, setFilter, sort, setSort, selectedId
 }
 
 const toolbarStyles = {
-  wrap: { display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', flexWrap: 'wrap' },
-  search: { flex: 1, minWidth: 220, fontSize: 13.5, padding: '9px 12px', borderRadius: 7, border: '1px solid #E4E4E0', color: '#1C1E22' },
-  select: { fontSize: 13.5, padding: '9px 12px', borderRadius: 7, border: '1px solid #E4E4E0', color: '#1C1E22' },
-  exportBtn: { fontSize: 13, fontWeight: 600, padding: '9px 14px', borderRadius: 7, border: '1px solid #E4E4E0', background: '#fff', cursor: 'pointer', color: '#1C1E22' },
-  bulkBar: { display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, marginLeft: 'auto', color: '#1C1E22' },
-  bulkBtn: { fontSize: 13, fontWeight: 600, padding: '9px 14px', borderRadius: 7, border: '1px solid #E4E4E0', background: '#fff', cursor: 'pointer', color: '#1C1E22' },
+  wrap: { display: 'flex', alignItems: 'center', gap: 10, padding: '14px 16px', flexWrap: 'wrap', background: 'var(--card-bg)' },
+  search: { flex: 1, minWidth: 220, fontSize: 13.5, padding: '9px 12px', borderRadius: 7, border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)' },
+  select: { fontSize: 13.5, padding: '9px 12px', borderRadius: 7, border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)' },
+  exportBtn: { fontSize: 13, fontWeight: 600, padding: '9px 14px', borderRadius: 7, border: '1px solid var(--border-color)', background: 'var(--bg-primary)', cursor: 'pointer', color: 'var(--text-primary)' },
+  bulkBar: { display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, marginLeft: 'auto', color: 'var(--text-primary)' },
+  bulkBtn: { fontSize: 13, fontWeight: 600, padding: '9px 14px', borderRadius: 7, border: '1px solid var(--border-color)', background: 'var(--bg-primary)', cursor: 'pointer', color: 'var(--text-primary)' },
 };
 
 // ---- 3f. The page itself ----
@@ -360,7 +360,7 @@ export default function MessagesAdmin() {
 }
 
 const pageStyles = {
-  wrap: { background: '#fff', border: '1px solid #E4E4E0', borderRadius: 12, overflow: 'hidden' },
+  wrap: { background: 'var(--card-bg)', border: '1px solid var(--border-color)', borderRadius: 12, overflow: 'hidden' },
   list: { maxHeight: '70vh', overflowY: 'auto' },
-  empty: { padding: 40, textAlign: 'center', color: '#5B6069', fontSize: 14 },
+  empty: { padding: 40, textAlign: 'center', color: 'var(--text-muted)', fontSize: 14 },
 };
