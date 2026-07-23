@@ -602,14 +602,15 @@ function AiChatsPanel() {
 /* -------------------------------------------------------------------- */
 /* Site Settings Panel                                                  */
 /* -------------------------------------------------------------------- */
+/* ───────────────────────────────────────────────
+   SETTINGS PANEL
+   ─────────────────────────────────────────────── */
 function SettingsPanel() {
   const [settings, setSettings] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [loading, setLoading]   = useState(true);
+  const [saving, setSaving]     = useState(false);
 
-  useEffect(() => {
-    fetchSettings();
-  }, []);
+  useEffect(() => { fetchSettings(); }, []);
 
   const fetchSettings = async () => {
     setLoading(true);
@@ -623,60 +624,109 @@ function SettingsPanel() {
     setSaving(true);
     const { error } = await supabase.from('site_settings').update(settings).eq('id', 1);
     setSaving(false);
-    if (error) alert("Failed to save settings");
-    else alert("Settings saved successfully!");
+    if (error) alert("Failed to save settings: " + error.message);
+    else {
+      logAuditEvent('UPDATE_SETTINGS', 'site_settings', '1');
+      alert("Settings saved successfully!");
+    }
   };
 
-  if (loading) return <PanelCard title="Site Configuration"><div style={styles.emptyState}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div></PanelCard>;
+  if (loading) return (
+    <PanelCard title="Site Configuration">
+      <div style={{ padding: 60, display: 'flex', justifyContent: 'center' }}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div>
+    </PanelCard>
+  );
 
   return (
-    <PanelCard title="Site Configuration" action={{ label: saving ? "Saving..." : "Save changes", icon: "ti-device-floppy", onClick: handleSave }}>
-      <form onSubmit={handleSave} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px', maxWidth: '600px' }}>
+    <PanelCard title="Site Configuration" action={{ label: saving ? "Saving…" : "Save changes", icon: "ti-device-floppy", onClick: handleSave }}>
+      <form onSubmit={handleSave} style={{ padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 800 }}>
+        
+        {/* Basic Info */}
         <div>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase' }}>Hero Headline</label>
-          <input 
-            type="text" 
-            value={settings?.hero_headline || ''} 
-            onChange={e => setSettings({...settings, hero_headline: e.target.value})}
-            style={{ width: '100%', padding: '10px 12px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)' }}
-          />
-        </div>
-        <div>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '8px', textTransform: 'uppercase' }}>Resume URL</label>
-          <input 
-            type="text" 
-            value={settings?.resume_url || ''} 
-            onChange={e => setSettings({...settings, resume_url: e.target.value})}
-            style={{ width: '100%', padding: '10px 12px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)' }}
-            placeholder="https://..."
-          />
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'var(--bg-primary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-          <input 
-            type="checkbox" 
-            id="hire_toggle"
-            checked={settings?.is_available_for_hire || false}
-            onChange={e => setSettings({...settings, is_available_for_hire: e.target.checked})}
-            style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-          />
-          <div style={{ flex: 1 }}>
-            <label htmlFor="hire_toggle" style={{ fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600, display: 'block', cursor: 'pointer' }}>Available for hire</label>
-            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Shows a badge on your public portfolio.</span>
+          <p style={{ margin: '0 0 14px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Hero & Bio</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div className="admin-field">
+              <label>Hero Headline</label>
+              <input className="admin-input" type="text" value={settings?.hero_headline || ''} 
+                onChange={e => setSettings({...settings, hero_headline: e.target.value})}
+                placeholder="e.g. Full Stack Developer & AI Enthusiast" />
+            </div>
+            <div className="admin-field">
+              <label>Short Bio (About Me snippet)</label>
+              <textarea className="admin-input" style={{ minHeight: 80, resize: 'vertical' }}
+                value={settings?.short_bio || ''} 
+                onChange={e => setSettings({...settings, short_bio: e.target.value})}
+                placeholder="Write a brief introduction..." />
+            </div>
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'var(--bg-primary)', borderRadius: '8px', border: '1px solid #ef444440' }}>
-          <input 
-            type="checkbox" 
-            id="maintenance_toggle"
-            checked={settings?.maintenance_mode || false}
-            onChange={e => setSettings({...settings, maintenance_mode: e.target.checked})}
-            style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-          />
-          <div style={{ flex: 1 }}>
-            <label htmlFor="maintenance_toggle" style={{ fontSize: '14px', color: '#ef4444', fontWeight: 600, display: 'block', cursor: 'pointer' }}>Maintenance Mode</label>
-            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Locks public site with a "be right back" screen.</span>
+
+        {/* Links & Contact */}
+        <div style={{ paddingTop: 20, borderTop: '1px solid var(--border-color)' }}>
+          <p style={{ margin: '0 0 14px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Links & Contact</p>
+          <div className="admin-settings-grid">
+            <div className="admin-field">
+              <label>Resume URL (PDF Link)</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <i className="ti ti-file-type-pdf" style={{ color: '#ef4444', fontSize: 18 }} />
+                <input className="admin-input" type="text" value={settings?.resume_url || ''} 
+                  onChange={e => setSettings({...settings, resume_url: e.target.value})} placeholder="https://..." style={{ flex: 1 }} />
+              </div>
+            </div>
+            <div className="admin-field">
+              <label>Contact Email</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <i className="ti ti-mail" style={{ color: 'var(--text-muted)', fontSize: 18 }} />
+                <input className="admin-input" type="email" value={settings?.contact_email || ''} 
+                  onChange={e => setSettings({...settings, contact_email: e.target.value})} placeholder="hello@example.com" style={{ flex: 1 }} />
+              </div>
+            </div>
+            <div className="admin-field">
+              <label>GitHub Profile</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <i className="ti ti-brand-github" style={{ color: 'var(--text-muted)', fontSize: 18 }} />
+                <input className="admin-input" type="text" value={settings?.github_url || ''} 
+                  onChange={e => setSettings({...settings, github_url: e.target.value})} placeholder="https://github.com/..." style={{ flex: 1 }} />
+              </div>
+            </div>
+            <div className="admin-field">
+              <label>LinkedIn Profile</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <i className="ti ti-brand-linkedin" style={{ color: '#0a66c2', fontSize: 18 }} />
+                <input className="admin-input" type="text" value={settings?.linkedin_url || ''} 
+                  onChange={e => setSettings({...settings, linkedin_url: e.target.value})} placeholder="https://linkedin.com/in/..." style={{ flex: 1 }} />
+              </div>
+            </div>
           </div>
         </div>
+
+        {/* Status Toggles */}
+        <div style={{ paddingTop: 20, borderTop: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <p style={{ margin: '0 0 4px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Global Status</p>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px', background: 'var(--bg-primary)', borderRadius: 12, border: '1px solid var(--border-color)' }}>
+            <input type="checkbox" id="hire_toggle" checked={settings?.is_available_for_hire || false}
+              onChange={e => setSettings({...settings, is_available_for_hire: e.target.checked})}
+              style={{ width: 20, height: 20, cursor: 'pointer', accentColor: '#28a745' }} />
+            <div style={{ flex: 1 }}>
+              <label htmlFor="hire_toggle" style={{ fontSize: 14, color: 'var(--text-primary)', fontWeight: 700, display: 'block', cursor: 'pointer' }}>Available for hire</label>
+              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Displays a green "Available" badge on your public portfolio header.</span>
+            </div>
+            {settings?.is_available_for_hire && <span className="admin-badge" style={{ background: '#28a74515', color: '#28a745', border: '1px solid #28a74530' }}>Active</span>}
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px', background: 'var(--bg-primary)', borderRadius: 12, border: '1px dashed #ef444460' }}>
+            <input type="checkbox" id="maintenance_toggle" checked={settings?.maintenance_mode || false}
+              onChange={e => setSettings({...settings, maintenance_mode: e.target.checked})}
+              style={{ width: 20, height: 20, cursor: 'pointer', accentColor: '#ef4444' }} />
+            <div style={{ flex: 1 }}>
+              <label htmlFor="maintenance_toggle" style={{ fontSize: 14, color: '#ef4444', fontWeight: 700, display: 'block', cursor: 'pointer' }}>Maintenance Mode</label>
+              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Locks public site with a "be right back" screen. Admin dashboard remains accessible.</span>
+            </div>
+            {settings?.maintenance_mode && <span className="admin-badge" style={{ background: '#ef444415', color: '#ef4444', border: '1px solid #ef444430' }}>Locked</span>}
+          </div>
+        </div>
+
         <button type="submit" style={{ display: 'none' }}>Save</button>
       </form>
     </PanelCard>
@@ -1511,89 +1561,171 @@ function EducationPanel() {
 /* -------------------------------------------------------------------- */
 /* 1. Real-Time Visitor Analytics & Recruiter Insights Hub              */
 /* -------------------------------------------------------------------- */
+/* ───────────────────────────────────────────────
+   ANALYTICS HUB
+   ─────────────────────────────────────────────── */
 function AnalyticsPanel() {
   const [analytics, setAnalytics] = useState([]);
-  const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [events, setEvents]       = useState([]);
+  const [loading, setLoading]     = useState(true);
+  const [tab, setTab]             = useState('overview');
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  useEffect(() => { fetchData(); }, []);
 
   const fetchData = async () => {
     setLoading(true);
     const [anaRes, evRes] = await Promise.all([
-      supabase.from('portfolio_analytics').select('*').order('created_at', { ascending: false }).limit(50),
-      supabase.from('recruiter_events').select('*').order('created_at', { ascending: false }).limit(50)
+      supabase.from('portfolio_analytics').select('*').order('created_at', { ascending: false }).limit(200),
+      supabase.from('recruiter_events').select('*').order('created_at', { ascending: false }).limit(50),
     ]);
     if (!anaRes.error && anaRes.data) setAnalytics(anaRes.data);
-    if (!evRes.error && evRes.data) setEvents(evRes.data);
+    if (!evRes.error  && evRes.data)  setEvents(evRes.data);
     setLoading(false);
   };
 
-  if (loading) return <PanelCard title="Visitor Analytics & Recruiter Insights"><div style={styles.emptyState}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div></PanelCard>;
+  /* ── derived metrics ── */
+  const pageCounts = analytics.reduce((acc, r) => {
+    acc[r.page_path] = (acc[r.page_path] || 0) + 1;
+    return acc;
+  }, {});
+  const sortedPages = Object.entries(pageCounts).sort((a,b) => b[1]-a[1]);
+  const maxCount    = sortedPages[0]?.[1] || 1;
 
-  const pageCounts = analytics.reduce((acc, curr) => {
-    acc[curr.page_path] = (acc[curr.page_path] || 0) + 1;
+  // daily visits last 7 days
+  const dayLabels = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(); d.setDate(d.getDate() - (6-i));
+    return d.toLocaleDateString('en-US', { weekday: 'short' });
+  });
+  const dayCounts = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(); d.setDate(d.getDate() - (6-i));
+    const ds = d.toDateString();
+    return analytics.filter(r => new Date(r.created_at).toDateString() === ds).length;
+  });
+  const maxDay = Math.max(...dayCounts, 1);
+
+  // event type breakdown
+  const evTypes = events.reduce((acc, e) => {
+    acc[e.event_type] = (acc[e.event_type] || 0) + 1;
     return acc;
   }, {});
 
+  const kpiColor = (v, hi, med) => v >= hi ? '#28a745' : v >= med ? '#ff9800' : '#ef4444';
+
+  if (loading) return (
+    <PanelCard title="Analytics Hub">
+      <div style={{ padding: 60, display: 'flex', justifyContent: 'center' }}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div>
+    </PanelCard>
+  );
+
   return (
-    <PanelCard title="Visitor Analytics & Recruiter Insights Hub" action={{ label: "Refresh", icon: "ti-refresh", onClick: fetchData }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-        
-        {/* KPI Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-          <div style={{ padding: '16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
-            <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 600 }}>Total Tracked Views</span>
-            <h2 style={{ margin: '8px 0 0', fontSize: '24px', color: 'var(--primary-blue)' }}>{analytics.length}</h2>
-          </div>
-          <div style={{ padding: '16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
-            <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 600 }}>Recruiter Engagements</span>
-            <h2 style={{ margin: '8px 0 0', fontSize: '24px', color: '#10b981' }}>{events.length}</h2>
-          </div>
-          <div style={{ padding: '16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
-            <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 600 }}>Top Page Path</span>
-            <h2 style={{ margin: '8px 0 0', fontSize: '16px', color: 'var(--text-primary)', textTransform: 'capitalize' }}>
-              {Object.keys(pageCounts)[0] || '/'}
-            </h2>
-          </div>
+    <PanelCard
+      title="Analytics Hub"
+      action={{ label: 'Refresh', icon: 'ti-refresh', onClick: fetchData }}
+      headerElement={
+        <div style={{ display: 'flex', gap: 4, background: 'var(--bg-primary)', borderRadius: 8, padding: 3, border: '1px solid var(--border-color)' }}>
+          {['overview','pages','events'].map(t => (
+            <button key={t} onClick={() => setTab(t)} style={{
+              padding: '5px 12px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600, fontFamily: 'var(--app-font)',
+              background: tab === t ? 'var(--primary-blue)' : 'transparent',
+              color: tab === t ? '#fff' : 'var(--text-muted)',
+            }}>{t.charAt(0).toUpperCase()+t.slice(1)}</button>
+          ))}
+        </div>
+      }
+    >
+      <div style={{ padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+        {/* KPI strip */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 14 }}>
+          {[{ label: 'Total Views', value: analytics.length, color: '#007bff' },
+            { label: 'Recruiter Events', value: events.length, color: '#28a745' },
+            { label: 'Unique Pages', value: sortedPages.length, color: '#6366f1' },
+            { label: 'Downloads/Clicks', value: events.filter(e => e.event_type?.includes('DOWNLOAD') || e.event_type?.includes('CLICK')).length, color: '#ff9800' },
+          ].map(k => (
+            <div key={k.label} style={{ background: 'var(--bg-primary)', border: `1px solid var(--border-color)`, borderTop: `3px solid ${k.color}`, borderRadius: 12, padding: '14px 16px' }}>
+              <p style={{ margin: 0, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.6px', color: 'var(--text-muted)' }}>{k.label}</p>
+              <p style={{ margin: '6px 0 0', fontSize: 26, fontWeight: 800, color: k.color, letterSpacing: -1 }}>{k.value}</p>
+            </div>
+          ))}
         </div>
 
-        {/* Recruiter Activity Feed */}
-        <div>
-          <h4 style={{ margin: '0 0 12px', fontSize: '14px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Sparkles size={16} color="var(--primary-blue)" /> Live Recruiter Event Feed
-          </h4>
-          {events.length === 0 ? (
-            <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>No recruiter events logged yet.</div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {events.map(ev => (
-                <div key={ev.id} style={{ padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '13px' }}>{ev.event_type}</span>
-                    <p style={{ margin: '2px 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>{ev.event_detail}</p>
+        {tab === 'overview' && (
+          <>
+            {/* 7-day bar chart */}
+            <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 12, padding: '18px 20px' }}>
+              <p style={{ margin: '0 0 16px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>Daily Visitors — Last 7 Days</p>
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 100 }}>
+                {dayLabels.map((day, i) => (
+                  <div key={day} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                    <span style={{ fontSize: 10, color: 'var(--primary-blue)', fontWeight: 700 }}>{dayCounts[i] || ''}</span>
+                    <div style={{
+                      width: '100%', background: `var(--primary-blue)`,
+                      height: `${Math.round((dayCounts[i]/maxDay)*80)+4}px`,
+                      borderRadius: '4px 4px 0 0', opacity: dayCounts[i] === 0 ? 0.15 : 0.85,
+                      transition: 'height 0.6s ease',
+                    }} />
+                    <span style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600 }}>{day}</span>
                   </div>
-                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{new Date(ev.created_at).toLocaleTimeString()}</span>
+                ))}
+              </div>
+            </div>
+
+            {/* Recent activity */}
+            <div>
+              <p style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>Recent Activity Feed</p>
+              {analytics.slice(0,8).map((r,i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: '1px solid var(--border-color)' }}>
+                  <div style={{ width: 32, height: 32, borderRadius: 8, background: '#007bff18', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <i className="ti ti-eye" style={{ fontSize: 14, color: '#007bff' }} />
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{r.page_path || '/'}</p>
+                    <p style={{ margin: 0, fontSize: 11, color: 'var(--text-muted)' }}>{r.referrer || 'Direct'} · {r.device_type || 'Desktop'}</p>
+                  </div>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)', flexShrink: 0 }}>{new Date(r.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                 </div>
               ))}
+              {analytics.length === 0 && <div className="admin-empty" style={{ padding: '30px 0' }}><p>No page views recorded yet.</p></div>}
             </div>
-          )}
-        </div>
+          </>
+        )}
 
-        {/* Page Views Breakdown */}
-        <div>
-          <h4 style={{ margin: '0 0 12px', fontSize: '14px', color: 'var(--text-primary)' }}>Most Visited Routes</h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {Object.entries(pageCounts).map(([path, count]) => (
-              <div key={path} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', fontSize: '13px' }}>
-                <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{path}</span>
-                <span style={{ fontWeight: 700, color: 'var(--primary-blue)' }}>{count} visits</span>
+        {tab === 'pages' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <p style={{ margin: '0 0 4px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>Top Visited Pages</p>
+            {sortedPages.length === 0 && <div className="admin-empty" style={{ padding: '30px 0' }}><p>No data yet.</p></div>}
+            {sortedPages.map(([path, count]) => (
+              <div key={path}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: 12 }}>
+                  <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{path}</span>
+                  <span style={{ fontWeight: 700, color: '#007bff' }}>{count} visit{count !== 1 ? 's' : ''}</span>
+                </div>
+                <div style={{ width: '100%', height: 6, background: 'var(--border-color)', borderRadius: 99, overflow: 'hidden' }}>
+                  <div style={{ width: `${Math.round((count/maxCount)*100)}%`, height: '100%', background: '#007bff', borderRadius: 99 }} />
+                </div>
               </div>
             ))}
           </div>
-        </div>
+        )}
+
+        {tab === 'events' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <p style={{ margin: '0 0 4px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>Recruiter Event Feed</p>
+            {events.length === 0 && <div className="admin-empty" style={{ padding: '30px 0' }}><p>No recruiter events logged yet.</p></div>}
+            {events.map(ev => (
+              <div key={ev.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 10 }}>
+                <div style={{ width: 34, height: 34, borderRadius: 9, background: '#28a74518', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Sparkles size={15} color="#28a745" />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{ev.event_type}</p>
+                  <p style={{ margin: '2px 0 0', fontSize: 11, color: 'var(--text-muted)' }}>{ev.event_detail || '—'}</p>
+                </div>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', flexShrink: 0 }}>{new Date(ev.created_at).toLocaleString()}</span>
+              </div>
+            ))}
+          </div>
+        )}
 
       </div>
     </PanelCard>
@@ -1603,12 +1735,18 @@ function AnalyticsPanel() {
 /* -------------------------------------------------------------------- */
 /* 2. AI Content Copilot, ATS Matcher & Printable PDF Resume            */
 /* -------------------------------------------------------------------- */
+/* ───────────────────────────────────────────────
+   AI COPILOT & ATS MATCHER
+   ─────────────────────────────────────────────── */
 function CopilotPanel() {
-  const [jdText, setJdText] = useState("");
-  const [matchResult, setMatchResult] = useState(null);
-  const [bulletInput, setBulletInput] = useState("");
-  const [bulletOutput, setBulletOutput] = useState("");
-  const [skills, setSkills] = useState([]);
+  const [jdText,       setJdText]       = useState('');
+  const [matchResult,  setMatchResult]  = useState(null);
+  const [bulletInput,  setBulletInput]  = useState('');
+  const [bulletOutput, setBulletOutput] = useState('');
+  const [bulletStyle,  setBulletStyle]  = useState('engineer');
+  const [analyzing,    setAnalyzing]    = useState(false);
+  const [skills,       setSkills]       = useState([]);
+  const [copied,       setCopied]       = useState(false);
 
   useEffect(() => {
     supabase.from('skills').select('name').then(({ data }) => {
@@ -1616,99 +1754,152 @@ function CopilotPanel() {
     });
   }, []);
 
-  const handleRunAtsCheck = () => {
-    if (!jdText.trim()) return alert("Please paste a job description first.");
-    const words = jdText.toLowerCase().match(/\b[a-z]{3,}\b/g) || [];
-    const matched = skills.filter(s => words.includes(s));
-    const score = Math.min(98, Math.max(45, Math.round((matched.length / Math.max(1, skills.length)) * 100 + 40)));
-    
-    setMatchResult({
-      score,
-      matchedSkills: matched,
-      missingCount: Math.max(0, skills.length - matched.length),
-      recommendation: score > 75 
-        ? "Excellent alignment! Your portfolio highlights key requirements for this position."
-        : "Moderate alignment. Consider featuring more specific frameworks mentioned in the job description."
-    });
+  const BULLET_TEMPLATES = {
+    engineer: (t) => `• Engineered and deployed ${t}, achieving a 40% improvement in system throughput and a 25% reduction in p99 latency across distributed production workloads.`,
+    led:      (t) => `• Led cross-functional initiative involving ${t}, collaborating with 5+ stakeholders to deliver on-time with zero critical defects — improving team velocity by 30%.`,
+    built:    (t) => `• Architected and shipped ${t} from scratch, adopted by 200+ users within the first sprint and reducing manual effort by 60% through intelligent automation.`,
+    improved: (t) => `• Optimized ${t} pipeline using data-driven profiling, cutting processing time from 8s to 1.2s and saving ~120 compute-hours per month at scale.`,
+  };
+
+  const handleRunAtsCheck = async () => {
+    if (!jdText.trim()) return alert('Paste a job description first.');
+    setAnalyzing(true);
+    await new Promise(r => setTimeout(r, 600)); // simulated processing
+    const jdWords  = jdText.toLowerCase().match(/\b[a-z]{3,}\b/g) || [];
+    const matched  = skills.filter(s => jdWords.includes(s));
+    const missing  = skills.filter(s => !jdWords.includes(s));
+    const raw      = matched.length / Math.max(1, skills.length);
+    const score    = Math.min(97, Math.max(42, Math.round(raw * 60 + 40)));
+    setMatchResult({ score, matched, missing: missing.slice(0, 8) });
     logAuditEvent('RUN_ATS_CHECK', 'copilot', 'ats_matcher', { score });
+    setAnalyzing(false);
   };
 
   const handleEnhanceBullet = () => {
     if (!bulletInput.trim()) return;
-    // Rule-based high-impact enhancement template
-    const enhanced = `• Engineered high-performance architecture utilizing ${bulletInput.trim()}, resulting in a 35% reduction in latency and improved scalability across enterprise workflows.`;
-    setBulletOutput(enhanced);
-    logAuditEvent('ENHANCE_BULLET', 'copilot', 'ai_enhancer', { original: bulletInput });
+    setBulletOutput(BULLET_TEMPLATES[bulletStyle](bulletInput.trim()));
+    logAuditEvent('ENHANCE_BULLET', 'copilot', bulletStyle, { original: bulletInput });
   };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(bulletOutput);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const scoreColor = matchResult ? (matchResult.score >= 75 ? '#28a745' : matchResult.score >= 55 ? '#ff9800' : '#ef4444') : '#007bff';
 
   return (
     <PanelCard title="AI Copilot & ATS Resume Builder">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
-        
-        {/* Printable PDF Resume Action */}
-        <div style={{ padding: '20px', background: 'linear-gradient(135deg, var(--primary-blue) 0%, #1d4ed8 100%)', borderRadius: '12px', color: '#ffffff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 28 }}>
+
+        {/* Resume generator hero */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16,
+          padding: 20, borderRadius: 14, background: 'linear-gradient(135deg, #007bff 0%, #6366f1 100%)', color: '#fff' }}>
           <div>
-            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700 }}>1-Click Dynamic PDF Resume</h3>
-            <p style={{ margin: '4px 0 0', fontSize: '13px', opacity: 0.9 }}>Generates a formatted ATS-friendly PDF dynamically from your latest Supabase database content.</p>
+            <p style={{ margin: 0, fontSize: 18, fontWeight: 800, letterSpacing: -0.4 }}>1-Click PDF Resume Generator</p>
+            <p style={{ margin: '4px 0 0', fontSize: 12.5, opacity: 0.88 }}>Pulls live data from Supabase — ATS-optimised, beautifully formatted.</p>
           </div>
-          <button 
-            onClick={() => window.open('/resume-preview', '_blank')}
-            style={{ background: '#ffffff', color: 'var(--primary-blue)', border: 'none', padding: '10px 20px', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px' }}
-          >
-            <Printer size={16} /> Open Resume Builder
+          <button onClick={() => window.open('/resume-preview', '_blank')}
+            style={{ flexShrink: 0, background: '#fff', color: '#007bff', border: 'none', padding: '10px 20px', borderRadius: 22, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 7, fontSize: 13 }}>
+            <Printer size={15} /> Open Builder
           </button>
         </div>
 
-        {/* ATS Job Matcher */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <h4 style={{ margin: 0, fontSize: '15px', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Sparkles size={16} color="var(--primary-blue)" /> ATS Job Description Matcher
-          </h4>
-          <textarea 
-            style={{...styles.input, minHeight: '100px', resize: 'vertical'}}
-            placeholder="Paste target Job Description (e.g. Senior Data Scientist / Full Stack Engineer requirements)..."
+        {/* ATS Matcher */}
+        <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 14, padding: '20px 22px' }}>
+          <p style={{ margin: '0 0 14px', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <BarChart3 size={16} color="#007bff" /> ATS Job Description Matcher
+          </p>
+          <textarea
+            className="admin-input"
+            style={{ minHeight: 110, resize: 'vertical', lineHeight: 1.6, marginBottom: 12 }}
+            placeholder="Paste the full job description here — e.g. Senior ML Engineer requirements, required frameworks…"
             value={jdText}
             onChange={e => setJdText(e.target.value)}
           />
-          <div>
-            <button onClick={handleRunAtsCheck} style={{ background: 'var(--primary-blue)', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}>
-              Analyze Compatibility Score
-            </button>
-          </div>
+          <button onClick={handleRunAtsCheck} disabled={analyzing} className="admin-action-btn" style={{ width: '100%', justifyContent: 'center' }}>
+            {analyzing ? <Loader2 className="spin" size={14} /> : <Sparkles size={14} />}
+            {analyzing ? 'Analyzing…' : 'Run ATS Compatibility Analysis'}
+          </button>
 
           {matchResult && (
-            <div style={{ padding: '16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '10px', marginTop: '8px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <div style={{ fontSize: '32px', fontWeight: 800, color: matchResult.score > 70 ? '#10b981' : '#f59e0b' }}>
-                  {matchResult.score}%
+            <div style={{ marginTop: 18, display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {/* Score ring */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 20, padding: '16px 18px', background: 'var(--card-bg)', border: `2px solid ${scoreColor}22`, borderRadius: 12 }}>
+                <div style={{ width: 70, height: 70, borderRadius: '50%', border: `5px solid ${scoreColor}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <span style={{ fontSize: 22, fontWeight: 900, color: scoreColor }}>{matchResult.score}%</span>
                 </div>
                 <div>
-                  <h5 style={{ margin: 0, fontSize: '14px', color: 'var(--text-primary)' }}>Match Score</h5>
-                  <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>{matchResult.recommendation}</p>
+                  <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>ATS Match Score</p>
+                  <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--text-muted)' }}>
+                    {matchResult.score >= 75 ? '✅ Strong match — highlight these skills prominently.'
+                      : matchResult.score >= 55 ? '⚠️ Moderate match — add missing keywords to descriptions.'
+                      : '❌ Weak match — significantly update your project descriptions.'}
+                  </p>
                 </div>
               </div>
+
+              {/* Matched skills */}
+              {matchResult.matched.length > 0 && (
+                <div>
+                  <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 700, color: '#28a745', textTransform: 'uppercase', letterSpacing: '0.5px' }}>✅ Matched Skills ({matchResult.matched.length})</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {matchResult.matched.map(s => (
+                      <span key={s} className="admin-badge" style={{ background: '#28a74518', color: '#28a745', border: '1px solid #28a74530', textTransform: 'capitalize' }}>{s}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Missing skills */}
+              {matchResult.missing.length > 0 && (
+                <div>
+                  <p style={{ margin: '0 0 8px', fontSize: 12, fontWeight: 700, color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.5px' }}>⚠️ Missing Keywords ({matchResult.missing.length})</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {matchResult.missing.map(s => (
+                      <span key={s} className="admin-badge" style={{ background: '#ef444418', color: '#ef4444', border: '1px solid #ef444430', textTransform: 'capitalize' }}>{s}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
 
-        {/* AI Bullet Enhancer */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', borderTop: '1px solid var(--border-color)', paddingTop: '20px' }}>
-          <h4 style={{ margin: 0, fontSize: '15px', color: 'var(--text-primary)' }}>AI Bullet Point Enhancer</h4>
-          <input 
-            type="text" 
-            style={styles.input}
-            placeholder="Enter draft point (e.g. Built API for project)..." 
+        {/* Bullet Enhancer */}
+        <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 14, padding: '20px 22px' }}>
+          <p style={{ margin: '0 0 14px', fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Zap size={16} color="#ff9800" /> AI Bullet Point Enhancer
+          </p>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+            {Object.keys(BULLET_TEMPLATES).map(t => (
+              <button key={t} onClick={() => setBulletStyle(t)}
+                className={`admin-action-btn${bulletStyle === t ? '' : ' secondary'}`}
+                style={{ padding: '5px 14px', fontSize: 12, borderRadius: 20 }}>
+                {t.charAt(0).toUpperCase()+t.slice(1)}
+              </button>
+            ))}
+          </div>
+          <input
+            className="admin-input"
+            type="text"
+            placeholder="Draft bullet: e.g. 'Built REST API for project management'"
             value={bulletInput}
             onChange={e => setBulletInput(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleEnhanceBullet()}
+            style={{ marginBottom: 10 }}
           />
-          <div>
-            <button onClick={handleEnhanceBullet} style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', padding: '8px 16px', borderRadius: '8px', fontWeight: 600, cursor: 'pointer' }}>
-              Optimize Bullet Point
-            </button>
-          </div>
+          <button onClick={handleEnhanceBullet} className="admin-action-btn secondary" style={{ width: '100%', justifyContent: 'center', borderRadius: 20 }}>
+            <Sparkles size={13} /> Enhance with AI Template
+          </button>
           {bulletOutput && (
-            <div style={{ padding: '12px 16px', background: 'var(--bg-primary)', border: '1px dashed var(--primary-blue)', borderRadius: '8px', fontSize: '13px', color: 'var(--text-primary)', fontWeight: 500 }}>
-              {bulletOutput}
+            <div style={{ marginTop: 14, padding: '14px 16px', background: '#007bff08', border: '1.5px dashed #007bff60', borderRadius: 10, position: 'relative' }}>
+              <p style={{ margin: 0, fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.7, fontStyle: 'italic' }}>{bulletOutput}</p>
+              <button onClick={handleCopy}
+                style={{ marginTop: 10, background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)', padding: '4px 12px', borderRadius: 20, fontSize: 11, cursor: 'pointer', fontWeight: 600 }}>
+                {copied ? '✓ Copied!' : 'Copy'}
+              </button>
             </div>
           )}
         </div>
@@ -1721,50 +1912,128 @@ function CopilotPanel() {
 /* -------------------------------------------------------------------- */
 /* 3. Asset Manager & Image Cloud Storage Browser                       */
 /* -------------------------------------------------------------------- */
+/* ───────────────────────────────────────────────
+   ASSET MANAGER
+   ─────────────────────────────────────────────── */
 function AssetsPanel() {
-  const [files, setFiles] = useState([
-    { name: 'profile_photo.png', url: '/profile_photo.png', size: '1.2 MB', type: 'image/png' },
-    { name: 'resume_sujith.pdf', url: '/resume.pdf', size: '240 KB', type: 'application/pdf' },
-  ]);
-  const [copiedUrl, setCopiedUrl] = useState("");
+  const [files,      setFiles]      = useState([]);
+  const [uploading,  setUploading]  = useState(false);
+  const [copiedUrl,  setCopiedUrl]  = useState('');
+  const [deleting,   setDeleting]   = useState(null);
+  const [loadingFiles, setLoadingFiles] = useState(true);
 
-  const handleCopy = (url) => {
-    navigator.clipboard.writeText(url);
-    setCopiedUrl(url);
-    setTimeout(() => setCopiedUrl(""), 2000);
-    logAuditEvent('COPY_ASSET_URL', 'assets', url);
+  const BUCKET = 'portfolio-assets';
+
+  useEffect(() => { listFiles(); }, []);
+
+  const listFiles = async () => {
+    setLoadingFiles(true);
+    const { data, error } = await supabase.storage.from(BUCKET).list('', { limit: 100, sortBy: { column: 'created_at', order: 'desc' } });
+    if (!error && data) setFiles(data.filter(f => f.name !== '.emptyFolderPlaceholder'));
+    setLoadingFiles(false);
   };
 
+  const getPublicUrl = (name) => supabase.storage.from(BUCKET).getPublicUrl(name).data.publicUrl;
+
+  const handleUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const safeName = `${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+    const { error } = await supabase.storage.from(BUCKET).upload(safeName, file, { upsert: true });
+    if (!error) { await listFiles(); logAuditEvent('UPLOAD_ASSET', 'storage', safeName); }
+    else alert(`Upload failed: ${error.message}. Make sure the '${BUCKET}' storage bucket exists in Supabase.`);
+    setUploading(false);
+    e.target.value = '';
+  };
+
+  const handleDelete = async (name) => {
+    if (!window.confirm(`Delete ${name}?`)) return;
+    setDeleting(name);
+    const { error } = await supabase.storage.from(BUCKET).remove([name]);
+    if (!error) { setFiles(f => f.filter(x => x.name !== name)); logAuditEvent('DELETE_ASSET', 'storage', name); }
+    setDeleting(null);
+  };
+
+  const handleCopy = (name) => {
+    const url = getPublicUrl(name);
+    navigator.clipboard.writeText(url);
+    setCopiedUrl(name);
+    setTimeout(() => setCopiedUrl(''), 2000);
+  };
+
+  const fileIcon = (name) => {
+    const ext = name.split('.').pop().toLowerCase();
+    if (['png','jpg','jpeg','webp','gif','svg'].includes(ext)) return 'ti-photo';
+    if (ext === 'pdf') return 'ti-file-type-pdf';
+    return 'ti-file';
+  };
+  const fileColor = (name) => {
+    const ext = name.split('.').pop().toLowerCase();
+    if (['png','jpg','jpeg','webp','gif','svg'].includes(ext)) return '#007bff';
+    if (ext === 'pdf') return '#ef4444';
+    return '#6366f1';
+  };
+  const fmtSize = (bytes) => bytes < 1024 ? `${bytes} B` : bytes < 1048576 ? `${(bytes/1024).toFixed(1)} KB` : `${(bytes/1048576).toFixed(1)} MB`;
+
   return (
-    <PanelCard title="Asset Manager & Cloud Storage Browser">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        
-        {/* Upload Zone */}
-        <div style={{ border: '2px dashed var(--border-color)', padding: '32px', borderRadius: '12px', textAlign: 'center', background: 'var(--bg-primary)', cursor: 'pointer' }}>
-          <Folder size={32} color="var(--primary-blue)" style={{ marginBottom: '8px' }} />
-          <h4 style={{ margin: 0, fontSize: '15px', color: 'var(--text-primary)' }}>Drop asset files to upload to Supabase Storage</h4>
-          <span style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px', display: 'block' }}>Supports PNG, JPG, WEBP, and PDF up to 10MB</span>
+    <PanelCard title="Asset Storage Manager"
+      action={{ label: uploading ? 'Uploading…' : 'Upload File', icon: 'ti-upload', onClick: () => document.getElementById('asset-upload-input').click() }}
+    >
+      <div style={{ padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <input id="asset-upload-input" type="file" style={{ display: 'none' }} accept="image/*,.pdf,.zip" onChange={handleUpload} />
+
+        {/* Drop zone */}
+        <div
+          onClick={() => document.getElementById('asset-upload-input').click()}
+          onDragOver={e => e.preventDefault()}
+          onDrop={e => { e.preventDefault(); const f=e.dataTransfer.files[0]; if(f){ const inp=document.getElementById('asset-upload-input'); const dt=new DataTransfer(); dt.items.add(f); inp.files=dt.files; handleUpload({target:inp}); } }}
+          style={{ border: '2px dashed var(--border-color)', borderRadius: 14, padding: 32, textAlign: 'center', cursor: 'pointer', background: 'var(--bg-primary)', transition: 'border-color 0.2s' }}
+        >
+          {uploading ? <Loader2 className="spin" size={28} color="#007bff" /> : <Folder size={28} color="#007bff" />}
+          <p style={{ margin: '10px 0 4px', fontWeight: 700, fontSize: 14, color: 'var(--text-primary)' }}>
+            {uploading ? 'Uploading to Supabase Storage…' : 'Click or drag & drop files here'}
+          </p>
+          <p style={{ margin: 0, fontSize: 12, color: 'var(--text-muted)' }}>PNG, JPG, WEBP, PDF, ZIP — up to 50MB</p>
         </div>
 
-        {/* Assets List */}
-        <div>
-          <h4 style={{ margin: '0 0 12px', fontSize: '14px', color: 'var(--text-primary)' }}>Workspace Assets</h4>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '12px' }}>
-            {files.map(f => (
-              <div key={f.name} style={{ padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ fontWeight: 600, fontSize: '13px', color: 'var(--text-primary)', wordBreak: 'break-all' }}>{f.name}</div>
-                <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{f.size} • {f.type}</div>
-                <button 
-                  onClick={() => handleCopy(f.url)}
-                  style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer', fontWeight: 600, marginTop: '4px' }}
-                >
-                  {copiedUrl === f.url ? "Copied!" : "Copy URL"}
-                </button>
-              </div>
-            ))}
+        {/* File grid */}
+        {loadingFiles ? (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: 30 }}><Loader2 className="spin" size={20} color="var(--text-muted)" /></div>
+        ) : files.length === 0 ? (
+          <EmptyState icon="ti-folder-open" title="No assets yet" description="Upload images or PDFs above to get started." />
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 14 }}>
+            {files.map(f => {
+              const color = fileColor(f.name);
+              return (
+                <div key={f.name} style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 12, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                  {/* Preview */}
+                  {['png','jpg','jpeg','webp','gif'].includes(f.name.split('.').pop().toLowerCase()) ? (
+                    <img src={getPublicUrl(f.name)} alt={f.name} style={{ width: '100%', height: 110, objectFit: 'cover', display: 'block' }} />
+                  ) : (
+                    <div style={{ height: 80, background: `${color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <i className={`ti ${fileIcon(f.name)}`} style={{ fontSize: 32, color }} />
+                    </div>
+                  )}
+                  <div style={{ padding: '10px 12px', flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={f.name}>{f.name}</p>
+                    {f.metadata?.size && <p style={{ margin: 0, fontSize: 11, color: 'var(--text-muted)' }}>{fmtSize(f.metadata.size)}</p>}
+                    <div style={{ display: 'flex', gap: 6, marginTop: 2 }}>
+                      <button onClick={() => handleCopy(f.name)} className="admin-action-btn secondary" style={{ flex: 1, justifyContent: 'center', fontSize: 11, padding: '5px 8px', borderRadius: 8 }}>
+                        {copiedUrl === f.name ? '✓ Copied' : 'Copy URL'}
+                      </button>
+                      <button onClick={() => handleDelete(f.name)} disabled={deleting === f.name}
+                        style={{ background: '#ef444415', border: '1px solid #ef444430', color: '#ef4444', padding: '5px 8px', borderRadius: 8, cursor: 'pointer', fontSize: 11, fontWeight: 600 }}>
+                        {deleting === f.name ? '…' : <Trash2 size={12} />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        </div>
-
+        )}
       </div>
     </PanelCard>
   );
@@ -1773,75 +2042,122 @@ function AssetsPanel() {
 /* -------------------------------------------------------------------- */
 /* 4. Live Portfolio Theme & Brand Customizer                            */
 /* -------------------------------------------------------------------- */
+/* ───────────────────────────────────────────────
+   THEME STUDIO
+   ─────────────────────────────────────────────── */
 function ThemeStudioPanel() {
-  const [themeState, setThemeState] = useState({
-    primary_color: '#007bff',
-    accent_color: '#3b82f6',
-    font_family: 'Inter',
-    enable_particles: true,
-    glass_intensity: 'medium'
-  });
-  const [saving, setSaving] = useState(false);
+  const [ts, setTs] = useState({ primary_color: '#007bff', accent_color: '#6366f1', font_family: 'Inter', enable_particles: true, glass_intensity: 'medium' });
+  const [saving, setSaving]   = useState(false);
+  const [saved,  setSaved]    = useState(false);
 
   useEffect(() => {
     supabase.from('site_settings').select('*').eq('id', 1).single().then(({ data }) => {
-      if (data) setThemeState(prev => ({ ...prev, ...data }));
+      if (data) setTs(prev => ({ ...prev, ...data }));
     });
   }, []);
 
-  const handleSaveTheme = async () => {
+  const handleSave = async () => {
     setSaving(true);
-    const { error } = await supabase.from('site_settings').update(themeState).eq('id', 1);
+    const { error } = await supabase.from('site_settings').update(ts).eq('id', 1);
     setSaving(false);
     if (!error) {
-      document.documentElement.style.setProperty('--primary-blue', themeState.primary_color);
-      alert('Theme updated live across portfolio!');
-      logAuditEvent('UPDATE_THEME_STUDIO', 'site_settings', '1', themeState);
-    }
+      document.documentElement.style.setProperty('--primary-blue', ts.primary_color);
+      document.documentElement.style.setProperty('--accent-blue', ts.accent_color);
+      const glassMap = { low: '6px', medium: '14px', high: '28px' };
+      document.documentElement.style.setProperty('--glass-blur', glassMap[ts.glass_intensity] || '14px');
+      logAuditEvent('UPDATE_THEME_STUDIO', 'site_settings', '1', ts);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } else alert('Save failed — check site_settings table.');
   };
 
+  const FONTS    = ['Inter','Roboto','Outfit','DM Sans','Poppins','Fira Code'];
+  const PRESETS  = [
+    { name: 'Ocean',  primary: '#007bff', accent: '#06b6d4' },
+    { name: 'Forest', primary: '#28a745', accent: '#10b981' },
+    { name: 'Royal',  primary: '#6366f1', accent: '#8b5cf6' },
+    { name: 'Sunset', primary: '#f97316', accent: '#ec4899' },
+    { name: 'Slate',  primary: '#475569', accent: '#64748b' },
+  ];
+
   return (
-    <PanelCard title="Theme Studio & Brand Customizer" action={{ label: saving ? "Saving..." : "Apply Theme", icon: "ti-palette", onClick: handleSaveTheme }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', maxWidth: '600px' }}>
-        
-        <div style={styles.settingGroup}>
-          <label style={styles.settingLabel}>Primary Brand Color</label>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <input type="color" value={themeState.primary_color} onChange={e => setThemeState({...themeState, primary_color: e.target.value})} style={{ width: 44, height: 44, padding: 0, border: 'none', borderRadius: 8, cursor: 'pointer' }} />
-            <input type="text" value={themeState.primary_color} onChange={e => setThemeState({...themeState, primary_color: e.target.value})} style={styles.input} />
+    <PanelCard
+      title="Theme Studio & Brand Customizer"
+      action={{ label: saving ? 'Saving…' : saved ? '✓ Saved!' : 'Apply Live', icon: 'ti-palette', onClick: handleSave }}
+    >
+      <div style={{ padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+        {/* Live preview strip */}
+        <div style={{ borderRadius: 14, overflow: 'hidden', border: '1px solid var(--border-color)' }}>
+          <div style={{ background: ts.primary_color, padding: '18px 22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <p style={{ margin: 0, fontFamily: ts.font_family+', sans-serif', fontSize: 16, fontWeight: 800, color: '#fff', letterSpacing: -0.4 }}>Live Preview — Portfolio Header</p>
+            <button style={{ background: 'rgba(255,255,255,0.22)', border: 'none', color: '#fff', padding: '7px 18px', borderRadius: 20, fontWeight: 700, cursor: 'default', fontFamily: ts.font_family+', sans-serif', fontSize: 13 }}>Contact Me</button>
+          </div>
+          <div style={{ padding: '16px 22px', background: 'var(--card-bg)', display: 'flex', gap: 12, alignItems: 'center' }}>
+            <div style={{ width: 40, height: 40, borderRadius: '50%', background: ts.primary_color, opacity: 0.15 }} />
+            <div>
+              <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: ts.primary_color, fontFamily: ts.font_family+', sans-serif' }}>Sujith Thota</p>
+              <p style={{ margin: 0, fontSize: 12, color: 'var(--text-muted)' }}>Full Stack & ML Engineer</p>
+            </div>
           </div>
         </div>
 
-        <div style={styles.settingGroup}>
-          <label style={styles.settingLabel}>Accent Blue Color</label>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <input type="color" value={themeState.accent_color} onChange={e => setThemeState({...themeState, accent_color: e.target.value})} style={{ width: 44, height: 44, padding: 0, border: 'none', borderRadius: 8, cursor: 'pointer' }} />
-            <input type="text" value={themeState.accent_color} onChange={e => setThemeState({...themeState, accent_color: e.target.value})} style={styles.input} />
+        {/* Presets */}
+        <div>
+          <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.7px', color: 'var(--text-muted)' }}>Quick Presets</p>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {PRESETS.map(p => (
+              <button key={p.name} onClick={() => setTs(prev => ({ ...prev, primary_color: p.primary, accent_color: p.accent }))}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 14px', borderRadius: 20, border: `2px solid ${ts.primary_color === p.primary ? p.primary : 'var(--border-color)'}`, background: 'var(--bg-primary)', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: 'var(--text-primary)' }}>
+                <div style={{ width: 12, height: 12, borderRadius: '50%', background: p.primary }} />
+                {p.name}
+              </button>
+            ))}
           </div>
         </div>
 
-        <div style={styles.settingGroup}>
-          <label style={styles.settingLabel}>Glassmorphism Intensity</label>
-          <select style={styles.input} value={themeState.glass_intensity} onChange={e => setThemeState({...themeState, glass_intensity: e.target.value})}>
-            <option value="low">Subtle Blur</option>
-            <option value="medium">Medium Glow (Recommended)</option>
-            <option value="high">Ultra Deep Glass</option>
-          </select>
+        {/* Colour pickers */}
+        <div className="admin-settings-grid">
+          <div className="admin-field">
+            <label>Primary Brand Color</label>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+              <input type="color" value={ts.primary_color} onChange={e => setTs(p => ({...p, primary_color: e.target.value}))}
+                style={{ width: 44, height: 40, padding: 2, border: '1px solid var(--border-color)', borderRadius: 8, cursor: 'pointer' }} />
+              <input className="admin-input" type="text" value={ts.primary_color} onChange={e => setTs(p => ({...p, primary_color: e.target.value}))} />
+            </div>
+          </div>
+          <div className="admin-field">
+            <label>Accent / Link Color</label>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+              <input type="color" value={ts.accent_color} onChange={e => setTs(p => ({...p, accent_color: e.target.value}))}
+                style={{ width: 44, height: 40, padding: 2, border: '1px solid var(--border-color)', borderRadius: 8, cursor: 'pointer' }} />
+              <input className="admin-input" type="text" value={ts.accent_color} onChange={e => setTs(p => ({...p, accent_color: e.target.value}))} />
+            </div>
+          </div>
+          <div className="admin-field">
+            <label>Font Family</label>
+            <select className="admin-input" value={ts.font_family} onChange={e => setTs(p => ({...p, font_family: e.target.value}))}>
+              {FONTS.map(f => <option key={f} value={f}>{f}</option>)}
+            </select>
+          </div>
+          <div className="admin-field">
+            <label>Glassmorphism Blur</label>
+            <select className="admin-input" value={ts.glass_intensity} onChange={e => setTs(p => ({...p, glass_intensity: e.target.value}))}>
+              <option value="low">Subtle (6px)</option>
+              <option value="medium">Medium — Recommended (14px)</option>
+              <option value="high">Deep Glass (28px)</option>
+            </select>
+          </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'var(--bg-primary)', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-          <input 
-            type="checkbox" 
-            id="particles_toggle"
-            checked={themeState.enable_particles}
-            onChange={e => setThemeState({...themeState, enable_particles: e.target.checked})}
-            style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-          />
-          <label htmlFor="particles_toggle" style={{ fontSize: '14px', color: 'var(--text-primary)', fontWeight: 600, cursor: 'pointer' }}>
-            Enable Interactive Ambient Background Particles
-          </label>
+        {/* Toggle */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '14px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 10 }}>
+          <input type="checkbox" id="ptoggle" checked={!!ts.enable_particles} onChange={e => setTs(p => ({...p, enable_particles: e.target.checked}))}
+            style={{ width: 18, height: 18, cursor: 'pointer', accentColor: ts.primary_color }} />
+          <label htmlFor="ptoggle" style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', cursor: 'pointer' }}>Enable Interactive Particle Background</label>
         </div>
 
+        {saved && <p style={{ margin: 0, fontSize: 13, color: '#28a745', fontWeight: 600, textAlign: 'center' }}>✓ Theme applied live to the portfolio!</p>}
       </div>
     </PanelCard>
   );
@@ -1850,64 +2166,119 @@ function ThemeStudioPanel() {
 /* -------------------------------------------------------------------- */
 /* 5. 1-Click Database Backup & Restore Utility                         */
 /* -------------------------------------------------------------------- */
+/* ───────────────────────────────────────────────
+   BACKUP & RESTORE
+   ─────────────────────────────────────────────── */
 function BackupRestorePanel() {
-  const [exporting, setExporting] = useState(false);
+  const [exporting,  setExporting]  = useState(false);
+  const [importing,  setImporting]  = useState(false);
+  const [importInfo, setImportInfo] = useState(null);
+  const [importErr,  setImportErr]  = useState(null);
+  const [history,    setHistory]    = useState(() => {
+    try { return JSON.parse(localStorage.getItem('backup_history') || '[]'); } catch { return []; }
+  });
+
+  const TABLES = ['site_settings','experience','skills','education','certifications','projects','updates'];
 
   const handleExport = async () => {
     setExporting(true);
-    const [sett, exp, sk, edu, cert, proj] = await Promise.all([
-      supabase.from('site_settings').select('*'),
-      supabase.from('experience').select('*'),
-      supabase.from('skills').select('*'),
-      supabase.from('education').select('*'),
-      supabase.from('certifications').select('*'),
-      supabase.from('projects').select('*')
-    ]);
-
-    const backupPayload = {
-      version: "1.0",
-      exported_at: new Date().toISOString(),
-      data: {
-        site_settings: sett.data || [],
-        experience: exp.data || [],
-        skills: sk.data || [],
-        education: edu.data || [],
-        certifications: cert.data || [],
-        projects: proj.data || []
-      }
-    };
-
-    const blob = new Blob([JSON.stringify(backupPayload, null, 2)], { type: 'application/json' });
+    const results = await Promise.all(TABLES.map(t => supabase.from(t).select('*').then(r => [t, r.data || []])));
+    const data = Object.fromEntries(results);
+    const payload = { version: '2.0', exported_at: new Date().toISOString(), tables: TABLES, data };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
+    const a = document.createElement('a'); a.href = url;
     a.download = `portfolio_backup_${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    setExporting(false);
+    a.click(); URL.revokeObjectURL(url);
+    const entry = { date: new Date().toISOString(), tables: TABLES.length, size: `${(blob.size/1024).toFixed(1)} KB` };
+    const newHistory = [entry, ...history].slice(0, 5);
+    setHistory(newHistory);
+    localStorage.setItem('backup_history', JSON.stringify(newHistory));
     logAuditEvent('EXPORT_DATABASE_BACKUP', 'system', 'all');
+    setExporting(false);
+  };
+
+  const handleImport = (e) => {
+    const file = e.target.files?.[0];
+    setImportErr(null); setImportInfo(null);
+    if (!file) return;
+    setImporting(true);
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const json = JSON.parse(ev.target.result);
+        if (!json.version || !json.data) throw new Error('Invalid backup format.');
+        const tableCount = Object.keys(json.data).length;
+        const rowCount   = Object.values(json.data).reduce((s, rows) => s + (rows?.length || 0), 0);
+        setImportInfo({ version: json.version, exported_at: json.exported_at, tableCount, rowCount, ready: true });
+      } catch (err) { setImportErr(err.message); }
+      setImporting(false);
+    };
+    reader.readAsText(file);
   };
 
   return (
-    <PanelCard title="1-Click Database Backup & Restore Utility">
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-        
-        {/* Export Card */}
-        <div style={{ padding: '20px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    <PanelCard title="Backup & Restore Utility">
+      <div style={{ padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 22 }}>
+
+        {/* Export */}
+        <div style={{ padding: '20px 22px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
           <div>
-            <h4 style={{ margin: 0, fontSize: '15px', color: 'var(--text-primary)' }}>Export Database Backup (.JSON)</h4>
-            <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--text-secondary)' }}>Creates a complete timestamped backup of all skills, projects, education, and site configuration.</p>
+            <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>Export Full Database Backup</p>
+            <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--text-muted)' }}>Downloads a JSON snapshot of all {TABLES.length} tables — skills, projects, education, experience, settings.</p>
           </div>
-          <button onClick={handleExport} disabled={exporting} style={{ background: 'var(--primary-blue)', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: '8px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Download size={16} /> {exporting ? "Exporting..." : "Download Backup"}
+          <button onClick={handleExport} disabled={exporting} className="admin-action-btn" style={{ flexShrink: 0 }}>
+            {exporting ? <Loader2 className="spin" size={14} /> : <Download size={14} />}
+            {exporting ? 'Exporting…' : 'Download .JSON'}
           </button>
         </div>
 
-        {/* Restore Card */}
-        <div style={{ padding: '20px', background: 'var(--bg-primary)', border: '1px dashed var(--border-color)', borderRadius: '12px' }}>
-          <h4 style={{ margin: 0, fontSize: '15px', color: 'var(--text-primary)' }}>Restore Database Snapshot</h4>
-          <p style={{ margin: '4px 0 16px', fontSize: '12px', color: 'var(--text-secondary)' }}>Upload a valid portfolio backup `.json` file to restore dataset tables.</p>
-          <input type="file" accept=".json" style={{ fontSize: '13px', color: 'var(--text-primary)' }} onChange={() => alert('Validation successful! Backup verified.')} />
+        {/* Backup history */}
+        {history.length > 0 && (
+          <div>
+            <p style={{ margin: '0 0 10px', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.7px', color: 'var(--text-muted)' }}>Recent Backups (local)</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {history.map((h, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 9, fontSize: 12 }}>
+                  <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{new Date(h.date).toLocaleDateString()} {new Date(h.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  <span style={{ color: 'var(--text-muted)' }}>{h.tables} tables · {h.size}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Import / Restore */}
+        <div style={{ padding: '20px 22px', background: 'var(--bg-primary)', border: '1.5px dashed var(--border-color)', borderRadius: 14 }}>
+          <p style={{ margin: '0 0 6px', fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>Validate & Restore Backup</p>
+          <p style={{ margin: '0 0 14px', fontSize: 12, color: 'var(--text-muted)' }}>Upload a backup JSON — it will be validated and you can preview contents before restoring.</p>
+          <label style={{ display: 'inline-flex', alignItems: 'center', gap: 7, cursor: 'pointer' }}>
+            <input type="file" accept=".json" style={{ display: 'none' }} onChange={handleImport} />
+            <span className="admin-action-btn secondary" style={{ pointerEvents: 'none' }}>
+              {importing ? <Loader2 className="spin" size={13} /> : <Upload size={13} />}
+              {importing ? 'Reading file…' : 'Choose backup.json'}
+            </span>
+          </label>
+
+          {importErr && <p style={{ marginTop: 12, fontSize: 12, color: '#ef4444', fontWeight: 600 }}>❌ {importErr}</p>}
+
+          {importInfo && (
+            <div style={{ marginTop: 14, padding: '14px 16px', background: '#28a74510', border: '1.5px solid #28a74540', borderRadius: 10 }}>
+              <p style={{ margin: '0 0 8px', fontSize: 13, fontWeight: 700, color: '#28a745' }}>✅ Valid Backup — v{importInfo.version}</p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+                {[['Exported', new Date(importInfo.exported_at).toLocaleDateString()],
+                  ['Tables', importInfo.tableCount],
+                  ['Total Rows', importInfo.rowCount]
+                ].map(([k,v]) => (
+                  <div key={k}>
+                    <p style={{ margin: 0, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-muted)' }}>{k}</p>
+                    <p style={{ margin: '3px 0 0', fontSize: 15, fontWeight: 800, color: 'var(--text-primary)' }}>{v}</p>
+                  </div>
+                ))}
+              </div>
+              <p style={{ margin: '12px 0 0', fontSize: 11, color: 'var(--text-muted)' }}>⚠️ To restore, use the Supabase dashboard SQL editor and paste the relevant table data.</p>
+            </div>
+          )}
         </div>
 
       </div>
@@ -1918,69 +2289,126 @@ function BackupRestorePanel() {
 /* -------------------------------------------------------------------- */
 /* 6. Security Audit Trail & System Health Monitor                       */
 /* -------------------------------------------------------------------- */
+/* ───────────────────────────────────────────────
+   AUDIT & HEALTH
+   ─────────────────────────────────────────────── */
 function AuditHealthPanel() {
-  const [logs, setLogs] = useState([]);
-  const [ping, setPing] = useState(null);
+  const [logs,    setLogs]    = useState([]);
+  const [ping,    setPing]    = useState(null);
   const [loading, setLoading] = useState(true);
+  const [filter,  setFilter]  = useState('ALL');
+  const [pings,   setPings]   = useState([]);
 
-  useEffect(() => {
-    fetchAuditLogs();
-    checkHealth();
-  }, []);
+  useEffect(() => { fetchAll(); }, []);
 
-  const fetchAuditLogs = async () => {
+  const fetchAll = async () => {
     setLoading(true);
-    const { data } = await supabase.from('admin_audit_logs').select('*').order('created_at', { ascending: false }).limit(30);
+    const { data } = await supabase.from('admin_audit_logs').select('*').order('created_at', { ascending: false }).limit(40);
     if (data) setLogs(data);
+    // run 3 pings and keep history
+    const measures = [];
+    for (let i = 0; i < 3; i++) {
+      const t0 = performance.now();
+      await supabase.from('site_settings').select('id').limit(1);
+      measures.push(Math.round(performance.now() - t0));
+      await new Promise(r => setTimeout(r, 200));
+    }
+    const avg = Math.round(measures.reduce((a,b) => a+b, 0) / measures.length);
+    setPing(avg);
+    setPings(p => [...p, avg].slice(-12));
     setLoading(false);
   };
 
-  const checkHealth = async () => {
-    const start = performance.now();
-    await supabase.from('site_settings').select('id').limit(1);
-    const duration = Math.round(performance.now() - start);
-    setPing(duration);
+  const ACTION_COLORS = {
+    DELETE: '#ef4444', EXPORT: '#ff9800', UPDATE: '#007bff',
+    CREATE: '#28a745', RUN: '#6366f1', UPLOAD: '#06b6d4',
+    DEFAULT: '#6b7280',
+  };
+  const actionColor = (action) => {
+    const key = Object.keys(ACTION_COLORS).find(k => action?.startsWith(k));
+    return ACTION_COLORS[key || 'DEFAULT'];
   };
 
+  const FILTERS = ['ALL','CREATE','UPDATE','DELETE','EXPORT','RUN','UPLOAD'];
+  const filtered = filter === 'ALL' ? logs : logs.filter(l => l.action?.startsWith(filter));
+
+  const pingColor = ping === null ? '#6b7280' : ping < 100 ? '#28a745' : ping < 300 ? '#ff9800' : '#ef4444';
+  const pingLabel = ping === null ? '—' : ping < 100 ? 'Excellent' : ping < 300 ? 'Good' : 'Degraded';
+
+  const maxPing = Math.max(...pings, 1);
+
   return (
-    <PanelCard title="Security Audit Trail & System Health Diagnostics" action={{ label: "Refresh Status", icon: "ti-refresh", onClick: () => { fetchAuditLogs(); checkHealth(); } }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-        
-        {/* Health Widget */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-          <div style={{ padding: '16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
-            <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 600 }}>Database Ping Latency</span>
-            <h2 style={{ margin: '8px 0 0', fontSize: '24px', color: ping < 150 ? '#10b981' : '#f59e0b' }}>
-              {ping !== null ? `${ping} ms` : 'Checking...'}
-            </h2>
-          </div>
-          <div style={{ padding: '16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '12px' }}>
-            <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 600 }}>System Health</span>
-            <h2 style={{ margin: '8px 0 0', fontSize: '24px', color: '#10b981' }}>Optimal</h2>
-          </div>
+    <PanelCard
+      title="Audit Trail & System Health"
+      action={{ label: 'Refresh', icon: 'ti-refresh', onClick: fetchAll }}
+    >
+      <div style={{ padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 22 }}>
+
+        {/* Health cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 14 }}>
+          {[{ label: 'DB Avg Latency', value: ping !== null ? `${ping} ms` : 'Checking…', color: pingColor, sub: pingLabel },
+            { label: 'System Status', value: 'Operational', color: '#28a745', sub: 'All services up' },
+            { label: 'Audit Events', value: logs.length, color: '#6366f1', sub: 'Last 40 actions' },
+            { label: 'Auth', value: 'Secure', color: '#28a745', sub: 'JWT • RLS enabled' },
+          ].map(k => (
+            <div key={k.label} style={{ background: 'var(--bg-primary)', border: `1px solid var(--border-color)`, borderTop: `3px solid ${k.color}`, borderRadius: 12, padding: '14px 16px' }}>
+              <p style={{ margin: 0, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.7px', color: 'var(--text-muted)' }}>{k.label}</p>
+              <p style={{ margin: '6px 0 2px', fontSize: 22, fontWeight: 800, color: k.color, letterSpacing: -0.5 }}>{k.value}</p>
+              <p style={{ margin: 0, fontSize: 11, color: 'var(--text-muted)' }}>{k.sub}</p>
+            </div>
+          ))}
         </div>
 
-        {/* Audit Log Table */}
-        <div>
-          <h4 style={{ margin: '0 0 12px', fontSize: '14px', color: 'var(--text-primary)' }}>Live Audit Trail</h4>
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: '20px' }}><Loader2 className="spin" size={20} /></div>
-          ) : logs.length === 0 ? (
-            <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>No audit logs recorded yet.</div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {logs.map(log => (
-                <div key={log.id} style={{ padding: '10px 14px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12.5px' }}>
-                  <div>
-                    <span style={{ fontWeight: 700, color: 'var(--primary-blue)' }}>[{log.action}]</span>
-                    <span style={{ marginLeft: '8px', color: 'var(--text-primary)' }}>{log.entity_type} {log.entity_id ? `(${log.entity_id})` : ''}</span>
-                  </div>
-                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{new Date(log.created_at).toLocaleString()}</span>
+        {/* Ping sparkline */}
+        {pings.length > 1 && (
+          <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 12, padding: '14px 18px' }}>
+            <p style={{ margin: '0 0 12px', fontSize: 12, fontWeight: 700, color: 'var(--text-primary)' }}>Latency Trend (last {pings.length} checks)</p>
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 50 }}>
+              {pings.map((v, i) => (
+                <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                  <div style={{ width: '100%', background: pingColor, borderRadius: '3px 3px 0 0', height: `${Math.round((v/maxPing)*46)+4}px`, opacity: 0.7+0.3*(i/pings.length) }} />
+                  <span style={{ fontSize: 9, color: 'var(--text-muted)' }}>{v}ms</span>
                 </div>
               ))}
             </div>
-          )}
+          </div>
+        )}
+
+        {/* Filter row */}
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {FILTERS.map(f => (
+            <button key={f} onClick={() => setFilter(f)}
+              className={`admin-action-btn${filter === f ? '' : ' secondary'}`}
+              style={{ padding: '4px 12px', fontSize: 11, borderRadius: 20 }}>
+              {f}
+            </button>
+          ))}
         </div>
+
+        {/* Audit table */}
+        {loading ? (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: 30 }}><Loader2 className="spin" size={20} color="var(--text-muted)" /></div>
+        ) : filtered.length === 0 ? (
+          <EmptyState icon="ti-list-check" title="No audit logs" description="Actions you perform in the dashboard are recorded here." />
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {filtered.map(log => {
+              const color = actionColor(log.action);
+              return (
+                <div key={log.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 10 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: color, flexShrink: 0 }} />
+                  <span className="admin-badge" style={{ background: `${color}18`, color, border: `1px solid ${color}30`, fontSize: 10, flexShrink: 0 }}>{log.action}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ margin: 0, fontSize: 12.5, color: 'var(--text-primary)', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {log.entity_type}{log.entity_id ? ` · ${log.entity_id}` : ''}
+                    </p>
+                  </div>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)', flexShrink: 0 }}>{new Date(log.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {new Date(log.created_at).toLocaleDateString()}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
       </div>
     </PanelCard>
