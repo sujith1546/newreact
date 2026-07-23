@@ -4,24 +4,17 @@ import ScrollReveal from '../components/ScrollReveal';
 import { Code, Briefcase, Mail, FileText, Sparkles, ArrowRight } from 'lucide-react';
 import MobileDashboard from '../components/MobileDashboard';
 import useGlitchText from '../hooks/useGlitchText';
+import useRealtimeData from '../hooks/useRealtimeData';
 
 export default function Home({ onNavClick }) {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
-  const [settings, setSettings] = useState(null);
+  const { data: settings } = useRealtimeData('site_settings', { single: true, filter: { column: 'id', value: 1 } });
   const nameText = useGlitchText("Sujith Thota", 100);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 900);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  useEffect(() => {
-    async function loadSettings() {
-      const { data } = await supabase.from('site_settings').select('*').eq('id', 1).single();
-      if (data) setSettings(data);
-    }
-    loadSettings();
   }, []);
 
   const getGreeting = () => {

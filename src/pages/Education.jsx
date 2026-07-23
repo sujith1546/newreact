@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Trophy, Laptop, BookOpen, School, X, Hand, ChevronRight, ChevronDown, Loader2 } from 'lucide-react';
 import ScrollReveal from '../components/ScrollReveal';
 import { EducationArrowFlow } from '../components/EducationArrowFlow';
-import { supabase } from '../lib/supabaseClient';
+import useRealtimeData from '../hooks/useRealtimeData';
 
 const iconMap = {
   'School': School,
@@ -209,8 +209,8 @@ function EducationCard({ item, index, activeIndex, flippedIndex, onCardClick, on
 }
 
 export default function Education() {
+  const { data: rawEducation, loading } = useRealtimeData('education', { orderColumn: 'display_order', ascending: true });
   const [timelineData, setTimelineData] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
   const [flippedIndex, setFlippedIndex] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
@@ -220,14 +220,8 @@ export default function Education() {
   const sheetContentRef = useRef(null);
 
   useEffect(() => {
-    fetchEducation();
-  }, []);
-
-  const fetchEducation = async () => {
-    const { data, error } = await supabase.from('education').select('*').order('display_order', { ascending: true });
-    if (!error && data) {
-      // Map database fields to the exact prop names the UI expects
-      const mapped = data.map(d => ({
+    if (rawEducation && rawEducation.length > 0) {
+      const mapped = rawEducation.map(d => ({
         ...d,
         shortLabel: d.short_label,
         color: d.theme_color,
@@ -237,11 +231,13 @@ export default function Education() {
         highlight: d.highlight_text
       }));
       setTimelineData(mapped);
-      if (mapped.length > 0) setActiveIndex(mapped.length - 1);
+      if (mapped.length > 0 && activeIndex === 0 && !isMobile) {
+        // optionally set active index initially
+      }
+    } else if (rawEducation) {
+      setTimelineData([]);
     }
-    setLoading(false);
-  };
-
+  }, [rawEducation]);
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 900);
     handleResize();

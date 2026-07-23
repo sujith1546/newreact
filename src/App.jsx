@@ -10,6 +10,7 @@ import DynamicIsland from './components/DynamicIsland';
 import DevToolsDetector from './components/DevToolsDetector';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import { MaintenanceGate } from './components/MaintenanceMode';
 
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 const AdminLogin = React.lazy(() => import('./pages/AdminLogin'));
@@ -63,7 +64,9 @@ function AppContent() {
         <DevToolsDetector />
         <BrowserRouter>
           <Suspense fallback={<Loader />}>
-            <AnimatedRoutes />
+            <MaintenanceGate>
+              <AnimatedRoutes />
+            </MaintenanceGate>
           </Suspense>
         </BrowserRouter>
       </IslandProvider>

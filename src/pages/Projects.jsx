@@ -11,6 +11,7 @@ import { FaGithub, FaPython, FaReact } from 'react-icons/fa';
 import { supabase } from '../lib/supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLongPress } from '../hooks/useLongPress';
+import useRealtimeData from '../hooks/useRealtimeData';
 
 const pipelineIconMap = {
   MessageSquare: MessageSquare,
@@ -179,8 +180,7 @@ function MobileProjectRow({ project, index, onTap, onLongPress }) {
 /* ─── Main Component ─────────────────────────────────────────── */
 export default function Projects() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
-  const [projectsData, setProjectsData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: projectsData, loading } = useRealtimeData('projects', { orderColumn: 'created_at', ascending: true });
   const [selectedProject, setSelectedProject] = useState(null);
   const [tab, setTab] = useState('overview');
   const [copied, setCopied] = useState(false);
@@ -214,16 +214,7 @@ export default function Projects() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  useEffect(() => {
-    async function fetchProjects() {
-      const { data, error } = await supabase.from('projects').select('*').order('created_at', { ascending: true });
-      if (!error && data) {
-        setProjectsData(data);
-      }
-      setLoading(false);
-    }
-    fetchProjects();
-  }, []);
+
 
   useEffect(() => {
     if (!selectedProject) return;

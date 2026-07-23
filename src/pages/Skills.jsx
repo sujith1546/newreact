@@ -7,7 +7,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronRight, ChevronDown, Star, Layers, Clock, Briefcase, ChevronLeft, Loader2 } from 'lucide-react';
 import ScrollReveal from '../components/ScrollReveal';
-import { supabase } from '../lib/supabaseClient';
+import useRealtimeData from '../hooks/useRealtimeData';
 import { categoryIconMap } from '../components/skillIcons';
 import SkillTooltip from '../components/SkillTooltip';
 
@@ -65,13 +65,12 @@ export default function Skills() {
   const catSheetRef   = useRef(null);
   const skillSheetRef = useRef(null);
 
+  const { data: rawSkills, loading } = useRealtimeData('skills', { orderColumn: 'order_index', ascending: true });
   const [skillCategories, setSkillCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchSkills() {
-      const { data, error } = await supabase.from('skills').select('*').order('order_index', { ascending: true });
-      if (!error && data) {
+    if (rawSkills && rawSkills.length > 0) {
+      const data = rawSkills;
         // Group skills by category
         const grouped = {};
         data.forEach(dbSkill => {
@@ -109,11 +108,8 @@ export default function Skills() {
         finalCategories.sort((a, b) => (orderMap[a.id] || 99) - (orderMap[b.id] || 99));
 
         setSkillCategories(finalCategories);
-      }
-      setLoading(false);
     }
-    fetchSkills();
-  }, []);
+  }, [rawSkills]);
 
   // Detect scrollability for category sheet
   useEffect(() => {

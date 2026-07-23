@@ -1,23 +1,10 @@
 import { useState, useEffect } from 'react';
 import ScrollReveal from '../components/ScrollReveal';
 import { Briefcase, Loader2, Calendar } from 'lucide-react';
-import { supabase } from '../lib/supabaseClient';
+import useRealtimeData from '../hooks/useRealtimeData';
 
 export default function Experience() {
-  const [experiences, setExperiences] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchExperience() {
-      const { data, error } = await supabase
-        .from('experience')
-        .select('*')
-        .order('display_order', { ascending: true });
-      if (!error && data) setExperiences(data);
-      setLoading(false);
-    }
-    fetchExperience();
-  }, []);
+  const { data: experiences, loading } = useRealtimeData('experience', { orderColumn: 'display_order', ascending: true });
 
   return (
     <ScrollReveal>

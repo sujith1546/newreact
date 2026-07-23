@@ -3,16 +3,14 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import ScrollReveal from '../components/ScrollReveal';
 import { Award, ExternalLink, ShieldCheck, X, ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
-import { supabase } from '../lib/supabaseClient';
-
+import useRealtimeData from '../hooks/useRealtimeData';
 export default function Certifications() {
   const [isMobile, setIsMobile] = useState(false);
   const [selectedCert, setSelectedCert] = useState(null);
   const [sheetScrolled, setSheetScrolled] = useState(false);
   const [sheetScrollable, setSheetScrollable] = useState(false);
   const sheetContentRef = useRef(null);
-  const [certificationsData, setCertificationsData] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: certificationsData, loading } = useRealtimeData('certifications', { orderColumn: 'display_order', ascending: true });
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 900);
@@ -20,18 +18,6 @@ export default function Certifications() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-
-  useEffect(() => {
-    fetchCertifications();
-  }, []);
-
-  const fetchCertifications = async () => {
-    const { data, error } = await supabase.from('certifications').select('*').order('display_order', { ascending: true });
-    if (!error && data) {
-      setCertificationsData(data);
-    }
-    setLoading(false);
-  };
 
   // Recalculate if sheet is scrollable when opened
   useEffect(() => {

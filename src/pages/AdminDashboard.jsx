@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import useRealtimeData from '../hooks/useRealtimeData';
+import { MaintenanceSettingsPanel } from '../components/MaintenanceMode';
 import { Loader2, Trash2, Check, ChevronRight, ChevronDown, X, MessageSquare, MessageCircle, Briefcase, Zap, LogOut, Plus, Edit3, Star, Layers, BarChart3, Sparkles, Folder, Palette, Database, Activity, Download, Upload, ShieldCheck, FileText, RefreshCw, Eye, Printer } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { logAuditEvent } from '../lib/auditLogger';
@@ -599,22 +601,19 @@ function AiChatsPanel() {
    SETTINGS PANEL
    ─────────────────────────────────────────────── */
 function SettingsPanel() {
+  const { data: dbSettings, setData: setDbSettings, loading } = useRealtimeData('site_settings', { single: true, filter: { column: 'id', value: 1 } });
   const [settings, setSettings] = useState(null);
-  const [loading, setLoading]   = useState(true);
   const [saving, setSaving]     = useState(false);
 
-  useEffect(() => { fetchSettings(); }, []);
-
-  const fetchSettings = async () => {
-    setLoading(true);
-    const { data, error } = await supabase.from('site_settings').select('*').eq('id', 1).single();
-    if (!error && data) setSettings(data);
-    setLoading(false);
-  };
+  useEffect(() => {
+    if (dbSettings) setSettings(dbSettings);
+  }, [dbSettings]);
 
   const handleSave = async (e) => {
     if (e) e.preventDefault();
     setSaving(true);
+    // Optimistic UI update instantly
+    setDbSettings(settings); 
     const { error } = await supabase.from('site_settings').update(settings).eq('id', 1);
     setSaving(false);
     if (error) alert("Failed to save settings: " + error.message);
@@ -708,16 +707,8 @@ function SettingsPanel() {
             {settings?.is_available_for_hire && <span className="admin-badge" style={{ background: '#28a74515', color: '#28a745', border: '1px solid #28a74530' }}>Active</span>}
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '16px', background: 'var(--bg-primary)', borderRadius: 12, border: '1px dashed #ef444460' }}>
-            <input type="checkbox" id="maintenance_toggle" checked={settings?.maintenance_mode || false}
-              onChange={e => setSettings({...settings, maintenance_mode: e.target.checked})}
-              style={{ width: 20, height: 20, cursor: 'pointer', accentColor: '#ef4444' }} />
-            <div style={{ flex: 1 }}>
-              <label htmlFor="maintenance_toggle" style={{ fontSize: 14, color: '#ef4444', fontWeight: 700, display: 'block', cursor: 'pointer' }}>Maintenance Mode</label>
-              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Locks public site with a "be right back" screen. Admin dashboard remains accessible.</span>
-            </div>
-            {settings?.maintenance_mode && <span className="admin-badge" style={{ background: '#ef444415', color: '#ef4444', border: '1px solid #ef444430' }}>Locked</span>}
-          </div>
+          {/* Advanced Maintenance Panel */}
+          <MaintenanceSettingsPanel />
         </div>
 
         <button type="submit" style={{ display: 'none' }}>Save</button>
