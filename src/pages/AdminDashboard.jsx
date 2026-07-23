@@ -181,16 +181,16 @@ export default function AdminDashboard() {
           </div>
         </header>
 
+        {/* Fixed stats strip — never scrolls */}
+        <div className="admin-stats-strip">
+          <StatCard label="Messages"    value={stats.unreadMessages} loading={stats.loading} icon="ti-message-circle" color="#007bff" />
+          <StatCard label="Projects"    value={stats.projectCount}   loading={stats.loading} icon="ti-briefcase"     color="#28a745" />
+          <StatCard label="Changelog"   value={stats.updateCount}    loading={stats.loading} icon="ti-bolt"          color="#ff9800" />
+          <StatCard label="AI Sessions" value={stats.sessionCount}   loading={stats.loading} icon="ti-messages"      color="#6366f1" />
+        </div>
+
         {/* Scrollable body */}
         <div className="admin-body">
-          {/* Stat cards */}
-          <div className="admin-stats-grid">
-            <StatCard label="Messages"  value={stats.unreadMessages} loading={stats.loading} icon="ti-message-circle" color="#007bff" />
-            <StatCard label="Projects"  value={stats.projectCount}   loading={stats.loading} icon="ti-briefcase"     color="#28a745" />
-            <StatCard label="Changelog" value={stats.updateCount}    loading={stats.loading} icon="ti-bolt"          color="#ff9800" />
-            <StatCard label="AI Sessions" value={stats.sessionCount} loading={stats.loading} icon="ti-messages"      color="#6366f1" />
-          </div>
-
           {/* Panel */}
           <div>
             {activeTab === "messages"       && <MessagesPanel />}
@@ -697,9 +697,7 @@ function SkillsPanel() {
   const [searchQuery, setSearchQuery] = useState("");
   const [collapsedCats, setCollapsedCats] = useState({});
 
-  useEffect(() => {
-    fetchSkills();
-  }, []);
+  useEffect(() => { fetchSkills(); }, []);
 
   const fetchSkills = async () => {
     setLoading(true);
@@ -735,12 +733,8 @@ function SkillsPanel() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.category) return alert('Name and Category are required');
-    
-    let clampedProficiency = parseInt(formData.proficiency_level) || 80;
-    clampedProficiency = Math.max(1, Math.min(100, clampedProficiency));
-
+    let clampedProficiency = Math.max(1, Math.min(100, parseInt(formData.proficiency_level) || 80));
     const parseArray = (str) => typeof str === 'string' ? str.split(',').map(s => s.trim()).filter(Boolean) : str;
-
     const payload = {
       ...formData,
       proficiency_level: clampedProficiency,
@@ -750,7 +744,6 @@ function SkillsPanel() {
       related_tools: parseArray(formData.related_tools),
       projects: parseArray(formData.projects),
     };
-
     if (payload.id) {
       const { data, error } = await supabase.from('skills').update(payload).eq('id', payload.id).select().single();
       if (!error && data) setSkills(skills.map(s => s.id === data.id ? data : s));
@@ -761,79 +754,125 @@ function SkillsPanel() {
     setIsEditing(false);
   };
 
-  const toggleCategory = (cat) => {
-    setCollapsedCats(prev => ({ ...prev, [cat]: !prev[cat] }));
+  const toggleCategory = (cat) => setCollapsedCats(prev => ({ ...prev, [cat]: !prev[cat] }));
+
+  /* ── colour scale for proficiency bar ── */
+  const barColor = (pct) => {
+    if (pct >= 85) return '#28a745';
+    if (pct >= 65) return '#007bff';
+    if (pct >= 45) return '#ff9800';
+    return '#ef4444';
   };
 
-  if (loading) return <PanelCard title="Skills Inventory"><div style={styles.emptyState}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div></PanelCard>;
+  if (loading) return (
+    <PanelCard title="Skills Inventory">
+      <div style={{ padding: '60px', display: 'flex', justifyContent: 'center' }}>
+        <Loader2 className="spin" size={24} color="var(--text-muted)" />
+      </div>
+    </PanelCard>
+  );
 
   if (isEditing) {
     return (
-      <PanelCard title={formData.id ? "Edit Skill" : "Add Skill"} action={{ label: "Cancel", icon: "ti-x", onClick: () => setIsEditing(false) }}>
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={styles.settingsGrid}>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Skill Name *</label>
-              <input type="text" style={styles.input} required value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g. React" />
-            </div>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Category *</label>
-              <select style={styles.input} value={formData.category || 'languages'} onChange={e => setFormData({...formData, category: e.target.value})}>
-                {SKILL_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Level Label</label>
-              <select style={styles.input} value={formData.level_label || 'Intermediate'} onChange={e => setFormData({...formData, level_label: e.target.value})}>
-                {SKILL_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
-              </select>
-            </div>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Proficiency (1-100)</label>
-              <input type="number" min="1" max="100" style={styles.input} value={formData.proficiency_level || 80} onChange={e => setFormData({...formData, proficiency_level: e.target.value})} />
-            </div>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Years Exp</label>
-              <input type="number" min="0" style={styles.input} value={formData.years_experience || 0} onChange={e => setFormData({...formData, years_experience: e.target.value})} />
-            </div>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Project Count</label>
-              <input type="number" min="0" style={styles.input} value={formData.project_count || 0} onChange={e => setFormData({...formData, project_count: e.target.value})} />
-            </div>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Icon Class</label>
-              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                <input type="text" style={{...styles.input, flex: 1}} value={formData.icon_class || ''} onChange={e => setFormData({...formData, icon_class: e.target.value})} placeholder="e.g. brand-python" />
-                {formData.icon_class && <div style={{width: 32, height: 32, background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center'}}><i className={`ti ti-${formData.icon_class}`}></i></div>}
+      <PanelCard
+        title={formData.id ? 'Edit Skill' : 'Add Skill'}
+        action={{ label: 'Cancel', icon: 'ti-x', onClick: () => setIsEditing(false) }}
+      >
+        <div style={{ padding: '24px' }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div className="admin-settings-grid">
+              <div className="admin-field">
+                <label>Skill Name *</label>
+                <input className="admin-input" type="text" required value={formData.name || ''}
+                  onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g. React" />
+              </div>
+              <div className="admin-field">
+                <label>Category *</label>
+                <select className="admin-input" value={formData.category || 'languages'}
+                  onChange={e => setFormData({...formData, category: e.target.value})}>
+                  {SKILL_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div className="admin-field">
+                <label>Level Label</label>
+                <select className="admin-input" value={formData.level_label || 'Intermediate'}
+                  onChange={e => setFormData({...formData, level_label: e.target.value})}>
+                  {SKILL_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+                </select>
+              </div>
+              <div className="admin-field">
+                <label>Proficiency (1–100)</label>
+                <input className="admin-input" type="number" min="1" max="100"
+                  value={formData.proficiency_level || 80}
+                  onChange={e => setFormData({...formData, proficiency_level: e.target.value})} />
+              </div>
+              <div className="admin-field">
+                <label>Years Experience</label>
+                <input className="admin-input" type="number" min="0"
+                  value={formData.years_experience || 0}
+                  onChange={e => setFormData({...formData, years_experience: e.target.value})} />
+              </div>
+              <div className="admin-field">
+                <label>Project Count</label>
+                <input className="admin-input" type="number" min="0"
+                  value={formData.project_count || 0}
+                  onChange={e => setFormData({...formData, project_count: e.target.value})} />
+              </div>
+              <div className="admin-field">
+                <label>Icon Class (Tabler)</label>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <input className="admin-input" type="text" style={{ flex: 1 }}
+                    value={formData.icon_class || ''}
+                    onChange={e => setFormData({...formData, icon_class: e.target.value})}
+                    placeholder="e.g. brand-python" />
+                  {formData.icon_class && (
+                    <div style={{ width: 34, height: 34, background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <i className={`ti ti-${formData.icon_class}`} style={{ fontSize: 18 }} />
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="admin-field">
+                <label>Display Order</label>
+                <input className="admin-input" type="number"
+                  value={formData.order_index || 0}
+                  onChange={e => setFormData({...formData, order_index: e.target.value})} />
               </div>
             </div>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Display Order</label>
-              <input type="number" style={styles.input} value={formData.order_index || 0} onChange={e => setFormData({...formData, order_index: e.target.value})} />
-            </div>
-          </div>
-          
-          <div style={styles.settingGroup}>
-            <label style={styles.settingLabel}>Description</label>
-            <textarea style={{...styles.input, minHeight: '80px', resize: 'vertical'}} value={formData.description || ''} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="Brief description..." />
-          </div>
 
-          <div style={styles.settingsGrid}>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Related Tools (Comma-separated)</label>
-              <textarea style={{...styles.input, minHeight: '60px'}} value={formData.related_tools || ''} onChange={e => setFormData({...formData, related_tools: e.target.value})} placeholder="Node.js, Express, Vercel" />
+            <div className="admin-field">
+              <label>Description</label>
+              <textarea className="admin-input" style={{ minHeight: 80, resize: 'vertical' }}
+                value={formData.description || ''}
+                onChange={e => setFormData({...formData, description: e.target.value})}
+                placeholder="Brief description of this skill..." />
             </div>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Projects (Comma-separated)</label>
-              <textarea style={{...styles.input, minHeight: '60px'}} value={formData.projects || ''} onChange={e => setFormData({...formData, projects: e.target.value})} placeholder="Project A, Project B" />
-            </div>
-          </div>
 
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px' }}>
-            <button type="button" onClick={() => setIsEditing(false)} style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-primary)', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
-            <button type="submit" style={{ background: 'var(--primary-blue)', border: 'none', color: '#fff', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>Save Skill</button>
-          </div>
-        </form>
+            <div className="admin-settings-grid">
+              <div className="admin-field">
+                <label>Related Tools (comma-separated)</label>
+                <textarea className="admin-input" style={{ minHeight: 64 }}
+                  value={formData.related_tools || ''}
+                  onChange={e => setFormData({...formData, related_tools: e.target.value})}
+                  placeholder="Node.js, Express, Vercel" />
+              </div>
+              <div className="admin-field">
+                <label>Projects (comma-separated)</label>
+                <textarea className="admin-input" style={{ minHeight: 64 }}
+                  value={formData.projects || ''}
+                  onChange={e => setFormData({...formData, projects: e.target.value})}
+                  placeholder="Project A, Project B" />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+              <button type="button" onClick={() => setIsEditing(false)} className="admin-action-btn secondary">Cancel</button>
+              <button type="submit" className="admin-action-btn">
+                <i className="ti ti-device-floppy" style={{ fontSize: 13 }} /> Save Skill
+              </button>
+            </div>
+          </form>
+        </div>
       </PanelCard>
     );
   }
@@ -845,129 +884,154 @@ function SkillsPanel() {
   }, {});
 
   return (
-    <PanelCard 
-      title="Skills Inventory" 
-      action={{ label: "Add Skill", icon: "ti-plus", onClick: handleAddNew }}
+    <PanelCard
+      title="Skills Inventory"
+      action={{ label: 'Add Skill', icon: 'ti-plus', onClick: handleAddNew }}
       headerElement={
         <div style={{ position: 'relative' }}>
-          <input 
-            type="text" 
-            placeholder="Search skills..." 
+          <input
+            type="text"
+            placeholder="Search skills…"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            style={{...styles.input, width: '220px', padding: '6px 12px 6px 36px', fontSize: '13px', margin: 0}}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="admin-input"
+            style={{ width: 210, padding: '6px 12px 6px 34px', fontSize: 13, margin: 0 }}
           />
-          <i className="ti ti-search" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+          <i className="ti ti-search" style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: 14 }} />
         </div>
       }
     >
       {skills.length === 0 ? (
         <EmptyState icon="ti-star" title="No skills yet" description="Add your first skill to get started." />
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 28, padding: '20px 22px' }}>
           {SKILL_CATEGORIES.map(cat => {
             const catSkills = groupedSkills[cat] || [];
             if (catSkills.length === 0) return null;
             const isCollapsed = collapsedCats[cat];
 
             return (
-              <div key={cat} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div 
+              <div key={cat}>
+                {/* Category header */}
+                <div
                   onClick={() => toggleCategory(cat)}
-                  style={{ 
-                    display: 'flex', alignItems: 'center', gap: '8px', 
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
                     cursor: 'pointer', userSelect: 'none',
-                    paddingBottom: '8px', borderBottom: '1px solid var(--border-color)'
+                    marginBottom: 14, paddingBottom: 10,
+                    borderBottom: '2px solid var(--border-color)'
                   }}
                 >
-                  {isCollapsed ? <ChevronRight size={16} color="var(--text-secondary)" /> : <ChevronDown size={16} color="var(--text-secondary)" />}
-                  <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', textTransform: 'capitalize' }}>
+                  {isCollapsed
+                    ? <ChevronRight size={15} color="var(--text-muted)" />
+                    : <ChevronDown  size={15} color="var(--primary-blue)" />}
+                  <h3 style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', textTransform: 'capitalize', letterSpacing: '0.2px' }}>
                     {cat}
                   </h3>
-                  <span style={{...styles.badge, background: 'var(--bg-primary)', border: '1px solid var(--border-color)'}}>
+                  <span className="admin-badge" style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-muted)', fontSize: 10, marginLeft: 2 }}>
                     {catSkills.length}
                   </span>
                 </div>
 
                 {!isCollapsed && (
-                  <div style={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', 
-                    gap: '12px' 
-                  }}>
-                    {catSkills.map(skill => (
-                      <div key={skill.id} style={{
-                        padding: '16px',
-                        background: 'var(--bg-primary)',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: '12px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '12px',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
-                        position: 'relative',
-                        overflow: 'hidden'
-                      }}>
-                        {/* Header Row */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            {skill.icon_class ? (
-                              <div style={{ width: 32, height: 32, borderRadius: '8px', background: 'var(--primary-blue)20', color: 'var(--primary-blue)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
-                                <i className={`ti ti-${skill.icon_class}`}></i>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 14 }}>
+                    {catSkills.map(skill => {
+                      const pct   = skill.proficiency_level || 0;
+                      const color = barColor(pct);
+                      return (
+                        <div key={skill.id} style={{
+                          background: 'var(--bg-primary)',
+                          border: '1px solid var(--border-color)',
+                          borderRadius: 12,
+                          padding: '16px 18px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: 12,
+                          position: 'relative',
+                          transition: 'box-shadow 0.2s, transform 0.2s',
+                        }}
+                          onMouseEnter={e => { e.currentTarget.style.boxShadow = 'var(--shadow-md)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                          onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'none'; }}
+                        >
+                          {/* Top row: icon + name + actions */}
+                          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                              <div style={{
+                                width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                                background: `${color}18`,
+                                display: 'flex', alignItems: 'center', justifyContent: 'center'
+                              }}>
+                                {skill.icon_class
+                                  ? <i className={`ti ti-${skill.icon_class}`} style={{ fontSize: 19, color }} />
+                                  : <Star size={17} color={color} />}
                               </div>
-                            ) : (
-                              <div style={{ width: 32, height: 32, borderRadius: '8px', background: 'var(--bg-secondary)', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <Star size={16} />
+                              <div>
+                                <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.2 }}>
+                                  {skill.name}
+                                  {skill.is_featured && <Star size={11} color="#f59e0b" style={{ marginLeft: 5, verticalAlign: 'middle' }} />}
+                                </p>
+                                <span style={{
+                                  display: 'inline-block', marginTop: 3,
+                                  fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px',
+                                  padding: '2px 7px', borderRadius: 99,
+                                  background: `${color}18`, color
+                                }}>
+                                  {skill.level_label || 'Intermediate'}
+                                </span>
                               </div>
-                            )}
-                            <div>
-                              <h4 style={{ margin: 0, fontWeight: 600, color: 'var(--text-primary)', fontSize: '15px' }}>{skill.name}</h4>
-                              <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{skill.level_label || 'Intermediate'}</span>
+                            </div>
+                            <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                              <button onClick={() => handleEdit(skill)} className="admin-icon-action" title="Edit"
+                                style={{ color: 'var(--text-muted)', width: 28, height: 28, borderRadius: 7, background: 'var(--card-bg)' }}>
+                                <Edit3 size={13} />
+                              </button>
+                              <button onClick={() => handleDelete(skill.id)} className="admin-icon-action" title="Delete"
+                                style={{ color: '#ef4444', width: 28, height: 28, borderRadius: 7, background: '#ef444410' }}>
+                                <Trash2 size={13} />
+                              </button>
                             </div>
                           </div>
-                          <div style={{ display: 'flex', gap: '4px' }}>
-                            <button onClick={() => handleEdit(skill)} style={{ ...styles.iconBtn, color: 'var(--text-secondary)', background: 'var(--bg-secondary)', width: 28, height: 28 }} title="Edit">
-                              <Edit3 size={14} />
-                            </button>
-                            <button onClick={() => handleDelete(skill.id)} style={{ ...styles.iconBtn, color: '#ef4444', background: '#ef444415', width: 28, height: 28 }} title="Delete">
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        </div>
 
-                        {/* Proficiency Bar */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '4px' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>
-                            <span>Proficiency</span>
-                            <span>{skill.proficiency_level}%</span>
+                          {/* Proficiency bar */}
+                          <div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5, fontSize: 11, fontWeight: 600 }}>
+                              <span style={{ color: 'var(--text-muted)' }}>Proficiency</span>
+                              <span style={{ color }}>{pct}%</span>
+                            </div>
+                            <div style={{ width: '100%', height: 5, background: 'var(--border-color)', borderRadius: 99, overflow: 'hidden' }}>
+                              <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: 99, transition: 'width 0.6s ease' }} />
+                            </div>
                           </div>
-                          <div style={{ width: '100%', height: '4px', background: 'var(--border-color)', borderRadius: '2px', overflow: 'hidden' }}>
-                            <div style={{ width: `${skill.proficiency_level}%`, height: '100%', background: 'var(--primary-blue)', borderRadius: '2px' }} />
-                          </div>
-                        </div>
 
-                        {/* Meta Info */}
-                        <div style={{ display: 'flex', gap: '12px', marginTop: '4px', borderTop: '1px solid var(--border-color)', paddingTop: '10px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--text-secondary)' }}>
-                            <Briefcase size={12} />
-                            <span>{skill.years_experience || 0} yrs</span>
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--text-secondary)' }}>
-                            <Layers size={12} />
-                            <span>{skill.project_count || 0} projs</span>
+                          {/* Meta footer */}
+                          <div style={{
+                            display: 'flex', alignItems: 'center', gap: 14,
+                            paddingTop: 10, borderTop: '1px solid var(--border-color)'
+                          }}>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--text-muted)' }}>
+                              <Briefcase size={11} /> {skill.years_experience || 0} yr{skill.years_experience !== 1 ? 's' : ''}
+                            </span>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--text-muted)' }}>
+                              <Layers size={11} /> {skill.project_count || 0} project{skill.project_count !== 1 ? 's' : ''}
+                            </span>
+                            {skill.related_tools?.length > 0 && (
+                              <span style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--text-muted)', background: 'var(--border-color)', padding: '2px 7px', borderRadius: 99 }}>
+                                +{skill.related_tools.length} tools
+                              </span>
+                            )}
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
             );
           })}
-          
+
           {filteredSkills.length === 0 && searchQuery && (
-            <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
-              No skills found matching "{searchQuery}"
+            <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)', fontSize: 13 }}>
+              No skills found matching &ldquo;{searchQuery}&rdquo;
             </div>
           )}
         </div>
