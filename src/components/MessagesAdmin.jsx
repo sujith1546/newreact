@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../lib/supabaseClient'; 
+import { Archive, ArchiveRestore, Trash2, Star } from 'lucide-react';
 
 // ---- 3a. Realtime data hook ----
 export function useMessages() {
@@ -121,7 +122,7 @@ function MessageRow({ msg, selected, onToggleSelect, actions }) {
           style={rowStyles.starBtn}
           title={msg.is_starred ? 'Unstar' : 'Star'}
         >
-          {msg.is_starred ? '★' : '☆'}
+          <Star size={18} fill={msg.is_starred ? '#E8A33D' : 'none'} color={msg.is_starred ? '#E8A33D' : '#C4C4C4'} />
         </button>
 
         <div style={rowStyles.clickArea} onClick={openAndMarkRead}>
@@ -139,11 +140,11 @@ function MessageRow({ msg, selected, onToggleSelect, actions }) {
           {msg.location && <div style={rowStyles.locationText}>{msg.location}</div>}
         </div>
 
-        <button onClick={() => actions.update(msg.id, { is_archived: !msg.is_archived })} style={rowStyles.iconBtn}>
-          {msg.is_archived ? '↩︎' : '🗄'}
+        <button onClick={() => actions.update(msg.id, { is_archived: !msg.is_archived })} style={rowStyles.iconBtn} title={msg.is_archived ? 'Unarchive' : 'Archive'}>
+          {msg.is_archived ? <ArchiveRestore size={16} /> : <Archive size={16} />}
         </button>
-        <button onClick={() => actions.remove(msg.id)} style={rowStyles.iconBtnDanger}>
-          🗑
+        <button onClick={() => actions.remove(msg.id)} style={rowStyles.iconBtnDanger} title="Delete">
+          <Trash2 size={16} />
         </button>
       </div>
 
