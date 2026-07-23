@@ -13,6 +13,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { MaintenanceGate } from './components/MaintenanceMode';
 import SEOHelmet from './components/SEOHelmet';
 import AnnouncementBanner from './components/AnnouncementBanner';
+import { trackPageView } from './lib/analyticsTracker';
 
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 const AdminLogin = React.lazy(() => import('./pages/AdminLogin'));
@@ -31,6 +32,12 @@ function AnimatedRoutes() {
     if (trail[trail.length - 1] !== location.pathname) {
       trail.push(location.pathname);
       sessionStorage.setItem("visited_trail", JSON.stringify(trail.slice(-6)));
+    }
+    
+    // Log page view to Supabase analytics
+    // Only track non-admin routes to avoid polluting data with dashboard views
+    if (!location.pathname.startsWith('/admin')) {
+      trackPageView(location.pathname);
     }
   }, [location.pathname]);
 
