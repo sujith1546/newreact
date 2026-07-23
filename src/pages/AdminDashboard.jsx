@@ -452,6 +452,8 @@ function AiChatsPanel() {
     if (!error) {
       setSessions(sessions.filter(s => s.id !== id));
       if (selectedSession === id) setSelectedSession(null);
+    } else {
+      alert("Failed to delete session. This is likely blocked by Row-Level Security (RLS) in your database. You need to enable DELETE permissions on the 'chat_sessions' table.");
     }
   };
 

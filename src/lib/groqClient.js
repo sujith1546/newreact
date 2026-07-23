@@ -64,7 +64,7 @@ export async function generateChatResponse(messages) {
 
     const completion = await groq.chat.completions.create({
       messages: apiMessages,
-      model: "llama3-8b-8192", // Fast, highly capable model ideal for chat
+      model: "llama-3.1-8b-instant", // Fast, highly capable model ideal for chat
       temperature: 0.5,
       max_tokens: 150,
     });
