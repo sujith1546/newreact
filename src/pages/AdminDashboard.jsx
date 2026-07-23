@@ -469,75 +469,113 @@ function AiChatsPanel() {
     setLoadingMessages(false);
   };
 
-  if (loading) return <PanelCard title="AI telemetry logs"><div style={styles.emptyState}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div></PanelCard>;
+  if (loading) return <PanelCard title="AI Telemetry Logs"><div style={styles.emptyState}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div></PanelCard>;
 
-  if (selectedSession) {
-    return (
-      <PanelCard title={`Session: ${selectedSession}`}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <button onClick={() => setSelectedSession(null)} style={{ ...styles.panelAction, marginRight: '1rem' }}>
-            <X size={14} /> Back
-          </button>
+  // Analytics Metrics
+  const activeToday = sessions.filter(s => new Date(s.created_at).toDateString() === new Date().toDateString()).length;
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', height: 'calc(100vh - 120px)' }}>
+      {/* KPI Strip */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+        <div style={{ background: 'var(--bg-light)', padding: '20px', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--primary-blue)' }}><MessageSquare size={18} /><span style={{ fontWeight: 600, fontSize: 13 }}>Total Chats</span></div>
+          <div style={{ fontSize: 32, fontWeight: 700, color: 'var(--text-primary)' }}>{sessions.length}</div>
         </div>
+        <div style={{ background: 'var(--bg-light)', padding: '20px', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#10b981' }}><Sparkles size={18} /><span style={{ fontWeight: 600, fontSize: 13 }}>Active Today</span></div>
+          <div style={{ fontSize: 32, fontWeight: 700, color: 'var(--text-primary)' }}>{activeToday}</div>
+        </div>
+        <div style={{ background: 'var(--bg-light)', padding: '20px', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: 8, justifyContent: 'center' }}>
+          <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>Telemetry automatically logs every conversation processed by your Groq AI Integration.</div>
+        </div>
+      </div>
 
-        {loadingMessages ? (
-          <div style={styles.emptyState}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', background: 'var(--bg-light)', padding: '1.5rem', borderRadius: '12px' }}>
-            {messages.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
-                No messages recorded in this session yet. The visitor likely opened the chat but hasn't typed anything.
-              </div>
-            ) : messages.map((msg, i) => (
-              <div key={msg.id || i} style={{ 
-                alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
-                background: msg.role === 'user' ? 'var(--bg-accent)' : 'var(--border-color)',
-                padding: '1rem',
-                borderRadius: '12px',
-                maxWidth: '80%'
-              }}>
-                <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '0.5rem', fontWeight: 600 }}>
-                  {msg.role}
+      {/* Split Pane Inbox */}
+      <div style={{ display: 'flex', flex: 1, background: 'var(--bg-light)', borderRadius: '16px', border: '1px solid var(--border-color)', overflow: 'hidden' }}>
+        
+        {/* Left: Session List */}
+        <div style={{ width: '320px', borderRight: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', background: 'var(--bg-dark)' }}>
+          <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-color)', fontWeight: 600, color: 'var(--text-primary)', fontSize: 14 }}>
+            Recent Sessions
+          </div>
+          <div style={{ flex: 1, overflowY: 'auto' }}>
+            {sessions.length === 0 ? (
+              <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>No sessions yet.</div>
+            ) : sessions.map(session => (
+              <div 
+                key={session.id} 
+                onClick={() => loadMessages(session.id)}
+                style={{ 
+                  padding: '16px 20px', 
+                  borderBottom: '1px solid var(--border-color)', 
+                  cursor: 'pointer',
+                  background: selectedSession === session.id ? 'var(--bg-accent)' : 'transparent',
+                  transition: 'background 0.2s'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Visitor</span>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{new Date(session.created_at).toLocaleDateString()}</span>
                 </div>
-                <div style={{ fontSize: '0.95rem', lineHeight: 1.5, whiteSpace: 'pre-wrap', color: 'var(--text-primary)' }}>
-                  {msg.content}
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'monospace', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                  ID: {session.id.split('-')[0]}...
                 </div>
               </div>
             ))}
           </div>
-        )}
-      </PanelCard>
-    );
-  }
+        </div>
 
-  return (
-    <PanelCard title="AI telemetry logs">
-      {sessions.length === 0 ? (
-        <EmptyState icon="ti-messages" title="No chat sessions recorded yet" description="Conversations from your AI assistant will appear here once visitors start chatting." />
-      ) : (
-        <table style={styles.table}>
-          <thead>
-            <tr>
-              <th style={styles.th}>Session ID</th>
-              <th style={styles.th}>Started At</th>
-              <th style={styles.th}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sessions.map(session => (
-              <tr key={session.id}>
-                <td style={{ ...styles.td, fontFamily: 'monospace', color: 'var(--primary-blue)' }}>{session.id}</td>
-                <td style={styles.td}>{new Date(session.created_at).toLocaleString()}</td>
-                <td style={{ ...styles.td, display: 'flex', gap: 8 }}>
-                  <button onClick={() => loadMessages(session.id)} style={styles.iconBtn} title="View Chat"><ChevronRight size={16} color="var(--primary-blue)" /></button>
-                  <button onClick={() => deleteSession(session.id)} style={styles.iconBtn} title="Delete"><Trash2 size={16} color="#ef4444" /></button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-    </PanelCard>
+        {/* Right: Chat Transcript */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--bg-light)' }}>
+          {selectedSession ? (
+            <>
+              <div style={{ padding: '16px 24px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <h4 style={{ margin: 0, fontSize: 15, color: 'var(--text-primary)' }}>Chat Transcript</h4>
+                  <p style={{ margin: 0, fontSize: 12, color: 'var(--text-muted)', fontFamily: 'monospace', marginTop: 4 }}>{selectedSession}</p>
+                </div>
+                <button onClick={() => deleteSession(selectedSession)} style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '6px 12px', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 600 }}>
+                  <Trash2 size={14} /> Delete
+                </button>
+              </div>
+              <div style={{ flex: 1, overflowY: 'auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {loadingMessages ? (
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}><Loader2 className="spin" size={24} color="var(--primary-blue)" /></div>
+                ) : messages.length === 0 ? (
+                  <div style={{ textAlign: 'center', color: 'var(--text-muted)', margin: 'auto' }}>Session opened, but no messages were sent.</div>
+                ) : (
+                  messages.map(msg => (
+                    <div key={msg.id} style={{
+                      alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                      maxWidth: '75%',
+                      background: msg.role === 'user' ? 'var(--primary-blue)' : 'var(--bg-accent)',
+                      color: msg.role === 'user' ? '#fff' : 'var(--text-primary)',
+                      padding: '14px 18px',
+                      borderRadius: msg.role === 'user' ? '20px 20px 4px 20px' : '20px 20px 20px 4px',
+                      boxShadow: '0 2px 10px rgba(0,0,0,0.05)'
+                    }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', marginBottom: 6, color: msg.role === 'user' ? 'rgba(255,255,255,0.7)' : 'var(--primary-blue)' }}>
+                        {msg.role === 'user' ? 'Visitor' : 'AI Assistant'}
+                      </div>
+                      <div style={{ fontSize: 14, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
+                        {msg.content}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </>
+          ) : (
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
+              <MessageSquare size={48} opacity={0.2} style={{ marginBottom: 16 }} />
+              <p style={{ fontSize: 15, fontWeight: 500 }}>Select a session to view transcript</p>
+            </div>
+          )}
+        </div>
+
+      </div>
+    </div>
   );
 }
 
