@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import useRealtimeData from '../hooks/useRealtimeData';
 import { MaintenanceSettingsPanel } from '../components/MaintenanceMode';
+import MessagesAdmin, { UnreadBadge } from '../components/MessagesAdmin';
 import { Loader2, Trash2, Check, ChevronRight, ChevronDown, X, MessageSquare, MessageCircle, Briefcase, Zap, LogOut, Plus, Edit3, Star, Layers, BarChart3, Sparkles, Folder, Palette, Database, Activity, Download, Upload, ShieldCheck, FileText, RefreshCw, Eye, Printer } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { logAuditEvent } from '../lib/auditLogger';
@@ -188,7 +189,7 @@ export default function AdminDashboard() {
         <div className="admin-body">
           {/* Panel */}
           <div>
-            {activeTab === "messages"       && <MessagesPanel />}
+            {activeTab === "messages"       && <MessagesAdmin />}
             {activeTab === "projects"       && <ProjectsPanel />}
             {activeTab === "updates"        && <UpdatesPanel />}
             {activeTab === "chats"          && <AiChatsPanel />}
@@ -311,67 +312,6 @@ function PanelCard({ title, action, headerElement, children }) {
 /* -------------------------------------------------------------------- */
 /* Live Data Panels                                                     */
 /* -------------------------------------------------------------------- */
-
-function MessagesPanel() {
-  const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchMessages();
-  }, []);
-
-  const fetchMessages = async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('contact_messages')
-      .select('*')
-      .eq('is_bot', false)
-      .order('created_at', { ascending: false });
-    if (!error && data) setMessages(data);
-    setLoading(false);
-  };
-
-  const deleteMessage = async (id) => {
-    if (!window.confirm('Delete this message?')) return;
-    const { error } = await supabase.from('contact_messages').delete().eq('id', id);
-    if (!error) setMessages(messages.filter(m => m.id !== id));
-  };
-
-  if (loading) return <PanelCard title="Contact messages"><div style={styles.emptyState}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div></PanelCard>;
-
-  return (
-    <PanelCard title="Contact messages">
-      {messages.length === 0 ? (
-        <EmptyState icon="ti-inbox" title="No messages yet" description="Submissions from your contact form will show up here." />
-      ) : (
-        <table style={styles.table}>
-          <thead>
-            <tr>
-              <th style={styles.th}>Date</th>
-              <th style={styles.th}>Name</th>
-              <th style={styles.th}>Email</th>
-              <th style={styles.th}>Message</th>
-              <th style={styles.th}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {messages.map(msg => (
-              <tr key={msg.id}>
-                <td style={styles.td}>{new Date(msg.created_at).toLocaleDateString()}</td>
-                <td style={{ ...styles.td, fontWeight: 500 }}>{msg.name}</td>
-                <td style={styles.td}>{msg.email}</td>
-                <td style={{ ...styles.td, maxWidth: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{msg.message}</td>
-                <td style={styles.td}>
-                  <button onClick={() => deleteMessage(msg.id)} style={styles.iconBtn} title="Delete"><Trash2 size={16} color="#ef4444" /></button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-    </PanelCard>
-  );
-}
 
 function ProjectsPanel() {
   const [projects, setProjects] = useState([]);

@@ -1,6 +1,38 @@
 import nodemailer from "nodemailer";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+import { createClient } from "@supabase/supabase-js";
+
+const supabaseAdmin = createClient(
+  process.env.VITE_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
+function scoreSpam({ email, message }) {
+  let score = 0;
+  const linkCount = (message.match(/https?:\/\//g) || []).length;
+  if (linkCount >= 2) score += 40;
+  if (linkCount >= 1) score += 15;
+  if (message.length < 15) score += 20;
+  if (message === message.toUpperCase() && message.length > 20) score += 15;
+  if (/\b(viagra|crypto|loan|casino|seo services|backlink)\b/i.test(message)) score += 50;
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) score += 30;
+  if (/(.)\1{6,}/.test(message)) score += 20;
+  return Math.min(100, score);
+}
+
+async function lookupLocation(ip) {
+  try {
+    if (!ip || ip === '::1' || ip.startsWith('127.')) return null;
+    const res = await fetch(`https://ipapi.co/${ip}/json/`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data.city && data.country_name) return `${data.city}, ${data.country_code}`;
+    return data.country_name || null;
+  } catch {
+    return null;
+  }
+}
 
 function escapeHTML(str) {
   if (typeof str !== 'string') return '';
@@ -102,7 +134,12 @@ export default async function handler(req, res) {
     return res.status(403).json({ error: "Invalid or missing session token. Unauthorized." });
   }
 
-  const { name, email, message } = req.body;
+  const { name, email, message, company_website, referrer_path } = req.body;
+
+  if (company_website) {
+    // Honeypot triggered, silently pretend success
+    return res.status(200).json({ success: true });
+  }
 
   if (!name || !email || !message) {
     return res.status(400).json({ error: "Missing required fields (name, email, message)" });
@@ -131,7 +168,39 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 1. Calculate dynamic fields
+    // 0. Calculate intelligence metrics
+    const spamScore = scoreSpam({ email, message });
+    const location = await lookupLocation(clientIp);
+    const isSpam = spamScore >= 60;
+
+    // 1. Insert into Supabase with Admin Key
+    const { data: inserted, error: dbError } = await supabaseAdmin
+      .from('contact_messages')
+      .insert({
+        name,
+        email,
+        message,
+        ip_address: clientIp,
+        location,
+        referrer_path: referrer_path || null,
+        spam_score: spamScore,
+        is_spam: isSpam,
+        is_bot: false // explicit
+      })
+      .select()
+      .single();
+
+    if (dbError) {
+      console.error("Database insert failed:", dbError);
+      return res.status(500).json({ error: "Could not save your message. Please try again." });
+    }
+
+    // 2. Skip Email Notification if it's highly likely spam
+    if (isSpam) {
+      return res.status(201).json({ success: true, warning: "Flagged as spam" });
+    }
+
+    // 3. Calculate dynamic fields for Email
     const initials = name
       .split(" ")
       .map((w) => w[0])

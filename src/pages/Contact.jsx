@@ -184,16 +184,20 @@ END:VCARD`;
     
     // HONEYPOT TRAP
     if (form._catch) {
-      // Bot detected! Log it to Supabase so you can audit spam, but abort UI.
+      // Bot detected! Submit it to the API to silently swallow and log it
       try {
-        await supabase.from('contact_messages').insert([{
-          name: form.name,
-          email: form.email,
-          message: form.message,
-          is_bot: true
-        }]);
+        await fetch('/api/contact', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-portfolio-session': getSessionToken() },
+          body: JSON.stringify({
+            name: form.name,
+            email: form.email,
+            message: form.message,
+            company_website: form._catch
+          })
+        });
       } catch (e) {
-        // Silently fail if spam logging fails
+        // Silently fail
       }
       
       setStatus("sent");
@@ -235,15 +239,24 @@ END:VCARD`;
     setStatus("sending");
     
     try {
-      // Insert directly into Supabase (Public Anon Key using Insert RLS Policy)
-      const { error } = await supabase.from('contact_messages').insert([{
-        name: form.name,
-        email: form.email,
-        message: form.message,
-        is_bot: false
-      }]);
+      // Send to backend API for robust processing (rate-limit, spam score, email, DB insert)
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-portfolio-session': getSessionToken()
+        },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          message: form.message,
+          company_website: form._catch, // honeypot
+          referrer_path: window.location.pathname
+        })
+      });
 
-      if (error) throw error;
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to send message');
 
       localStorage.setItem("lastContactSent", Date.now().toString());
       setStatus("sent");
