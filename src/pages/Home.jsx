@@ -68,6 +68,14 @@ export default function Home({ onNavClick }) {
     );
   }
 
+  if (isMobile) {
+    return (
+      <div className="home-content home-pane" style={{ height: '100%', width: '100%' }}>
+        <MobileDashboard onNavClick={onNavClick} />
+      </div>
+    );
+  }
+
   return (
     <ScrollReveal className="home-content home-pane">
       <style>{`
@@ -552,9 +560,8 @@ export default function Home({ onNavClick }) {
         }
       `}</style>
 
-      {!isMobile ? (
-        /* Desktop grid view */
-        <div className="home-grid">
+      {/* Desktop grid view */}
+      <div className="home-grid">
           <div className="hero-info">
             {(settings === null || settings.is_available_for_hire) && (
               <div className="fc-badge">
@@ -602,10 +609,6 @@ export default function Home({ onNavClick }) {
             <img src="/IMG_0322.jpg" alt="Sujith Thota" className="hero-img-new" />
           </div>
         </div>
-      ) : (
-        /* Mobile dashboard app view: perfectly fits viewport without scroll */
-        <MobileDashboard onNavClick={onNavClick} />
-      )}
     </ScrollReveal>
   );
 }
