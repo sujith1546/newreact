@@ -16,7 +16,7 @@ import AnnouncementBanner from './components/AnnouncementBanner';
 import { trackPageView } from './lib/analyticsTracker';
 import { supabase } from './lib/supabaseClient';
 import { PersonaProvider } from './context/PersonaContext';
-import SplashScreen from './components/SplashScreen';
+import QuantumPreloader from './components/QuantumPreloader';
 import { globalDataCache } from './hooks/useRealtimeData';
 
 const NotFound = React.lazy(() => import('./pages/NotFound'));
