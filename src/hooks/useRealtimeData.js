@@ -62,58 +62,56 @@ export default function useRealtimeData(table, options = {}) {
 
     fetchData();
 
-    // Set up Realtime Subscription with a unique channel name per hook instance
-    const channelName = `public:${table}-${Math.random().toString(36).substring(7)}`;
-    const channel = supabase
-      .channel(channelName)
-      .on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
-        if (!isMounted) return;
-        
-        const { eventType, new: newRow, old: oldRow } = payload;
-        
-        setData((currentData) => {
-          if (single) {
-            // For single object (like site_settings), just replace if it matches the filter
-            if (filter && newRow && newRow[filter.column] !== filter.value) {
-              return currentData;
-            }
-            if (eventType === 'DELETE') return null;
-            return { ...currentData, ...newRow };
-          }
+    let channel = null;
 
-          // For arrays
-          if (eventType === 'INSERT') {
-            // Check if it already exists (optimistic update might have added it)
-            if (currentData.some(item => item.id === newRow.id)) {
-              return currentData.map(item => item.id === newRow.id ? { ...item, ...newRow } : item);
-            }
-            // Append or prepend? Let's just prepend. We could sort it properly but this works for most cases
-            return [newRow, ...currentData];
-          }
-
-          if (eventType === 'UPDATE') {
-            return currentData.map((item) => (item.id === newRow.id ? { ...item, ...newRow } : item));
-          }
-
-          if (eventType === 'DELETE') {
-            return currentData.filter((item) => item.id !== oldRow.id);
-          }
-
-          return currentData;
-        });
-      });
-
-    // Debounce the subscribe call to avoid React StrictMode rapid mount/unmount WSS abortion
+    // Debounce the Realtime channel setup to avoid React StrictMode rapid mount/unmount WSS abortion
     const subTimeout = setTimeout(() => {
-      if (isMounted) {
-        channel.subscribe();
-      }
-    }, 100);
+      if (!isMounted) return;
+
+      const channelName = `public:${table}-${Math.random().toString(36).substring(7)}`;
+      channel = supabase
+        .channel(channelName)
+        .on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
+          if (!isMounted) return;
+          
+          const { eventType, new: newRow, old: oldRow } = payload;
+          
+          setData((currentData) => {
+            if (single) {
+              if (filter && newRow && newRow[filter.column] !== filter.value) {
+                return currentData;
+              }
+              if (eventType === 'DELETE') return null;
+              return { ...currentData, ...newRow };
+            }
+
+            if (eventType === 'INSERT') {
+              if (currentData.some(item => item.id === newRow.id)) {
+                return currentData.map(item => item.id === newRow.id ? { ...item, ...newRow } : item);
+              }
+              return [newRow, ...currentData];
+            }
+
+            if (eventType === 'UPDATE') {
+              return currentData.map((item) => (item.id === newRow.id ? { ...item, ...newRow } : item));
+            }
+
+            if (eventType === 'DELETE') {
+              return currentData.filter((item) => item.id !== oldRow.id);
+            }
+
+            return currentData;
+          });
+        })
+        .subscribe();
+    }, 150);
 
     return () => {
       isMounted = false;
       clearTimeout(subTimeout);
-      supabase.removeChannel(channel);
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
     };
   }, [table, select, single, orderColumn, ascending, filter?.column, filter?.value]);
 
