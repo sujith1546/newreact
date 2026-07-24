@@ -16,7 +16,6 @@ import AnnouncementBanner from './components/AnnouncementBanner';
 import { trackPageView } from './lib/analyticsTracker';
 import { supabase } from './lib/supabaseClient';
 import { PersonaProvider } from './context/PersonaContext';
-import QuantumPreloader from './components/QuantumPreloader';
 import { globalDataCache } from './hooks/useRealtimeData';
 
 const NotFound = React.lazy(() => import('./pages/NotFound'));
@@ -70,8 +69,6 @@ const Loader = () => (
 
 function AppContent() {
   const { reduceMotion } = useTheme();
-  const [appReady, setAppReady] = useState(false);
-  const [showContent, setShowContent] = useState(false); // Controls when App Content mounts to prevent layout shifts
 
   useEffect(() => {
     async function prefetchData() {
@@ -89,11 +86,6 @@ function AppContent() {
            globalDataCache[`site_settings_${JSON.stringify({select:'*', single:true, orderColumn:'id', ascending:true, filter: { column: 'id', value: 1 }})}`] = settingsRes.data;
         }
 
-        // Release the Splash Screen to fade out
-        setAppReady(true);
-        // Safely mount background content slightly before splash unmounts for a seamless crossfade
-        setTimeout(() => setShowContent(true), 200);
-
         // Silent Background SWR Cache Population (Heavy Data)
         setTimeout(async () => {
           const fetchConfigs = [
@@ -109,11 +101,10 @@ function AppContent() {
                globalDataCache[`${table}_${JSON.stringify(options)}`] = res.data;
              }
           }));
-        }, 800); // Wait until splash screen is done animating before using network
+        }, 800); // Wait until initial render is done before using network
         
       } catch (e) {
-        setAppReady(true);
-        setShowContent(true);
+        // Continue normally
       }
     }
     
@@ -122,25 +113,19 @@ function AppContent() {
 
   return (
     <MotionConfig reducedMotion={reduceMotion ? "always" : "never"}>
-      <SplashScreen isReady={appReady} onComplete={() => {}} />
-      
-      {showContent && (
-        <>
-          <SEOHelmet />
-          <AnnouncementBanner />
-          <IslandProvider>
-            <DynamicIsland />
-            <DevToolsDetector />
-            <BrowserRouter>
-              <Suspense fallback={<Loader />}>
-                <MaintenanceGate>
-                  <AnimatedRoutes />
-                </MaintenanceGate>
-              </Suspense>
-            </BrowserRouter>
-          </IslandProvider>
-        </>
-      )}
+      <SEOHelmet />
+      <AnnouncementBanner />
+      <IslandProvider>
+        <DynamicIsland />
+        <DevToolsDetector />
+        <BrowserRouter>
+          <Suspense fallback={<Loader />}>
+            <MaintenanceGate>
+              <AnimatedRoutes />
+            </MaintenanceGate>
+          </Suspense>
+        </BrowserRouter>
+      </IslandProvider>
     </MotionConfig>
   );
 }
