@@ -1999,6 +1999,7 @@ html {
   .layout {
     display: flex;
     flex-direction: column;
+    height: 100vh;
     height: 100dvh;
     overflow: hidden;
   }
@@ -2009,6 +2010,7 @@ html {
 
   .main-content {
     flex: 1;
+    height: 100vh !important;
     height: 100dvh !important;
     padding-top: 60px !important;      /* clears the fixed header */
     padding-bottom: 90px !important;   /* clears the fixed bottom dock + safe area */
@@ -2790,6 +2792,7 @@ html {
     left: 0;
     width: 85%;
     max-width: 320px;
+    height: 100vh;
     height: 100dvh;
     background: var(--bg-secondary);
     z-index: 103; /* Above settings-overlay */
@@ -3087,6 +3090,7 @@ html {
     top: 0;
     right: 0;
     width: 100%;
+    height: 100vh;
     height: 100dvh;
     background: var(--bg-secondary);
     z-index: 102; /* Above more-overlay */
