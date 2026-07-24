@@ -4150,3 +4150,16 @@ html[data-density="relaxed"] { font-size: 18px; }
   .settings-sidebar-action-btn { padding: 8px 10px !important; margin-bottom: 6px !important; }
 }
 
+
+/* Ultra-compact Home Page Mobile Overrides */
+@media (max-width: 900px) {
+  .home-content.home-pane { gap: 12px !important; }
+  .dashboard-profile-card { padding: 12px 14px !important; border-radius: 14px !important; gap: 10px !important; }
+  .dashboard-avatar { width: 44px !important; height: 44px !important; border-radius: 12px !important; }
+  .dashboard-welcome h2 { font-size: 15px !important; }
+  .dashboard-welcome h3 { font-size: 9px !important; }
+  .dashboard-quick-stats { gap: 8px !important; }
+  .stat-card-home { padding: 10px 12px !important; border-radius: 12px !important; }
+  .stat-card-home .stat-value { font-size: 14px !important; }
+  .stat-card-home .stat-label { font-size: 9px !important; }
+}

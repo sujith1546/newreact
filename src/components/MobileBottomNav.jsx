@@ -602,19 +602,18 @@ END:VCARD`;
               <div className="drawer-handle" />
 
               {/* Header */}
-              <div style={{ padding: '16px 18px 14px', borderBottom: '1px solid var(--border-color)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{
-                    width: '44px', height: '44px', borderRadius: '14px',
-                    background: 'linear-gradient(135deg, rgba(59,130,246,0.15), rgba(139,92,246,0.15))',
+              <div style={{ padding: '12px 14px 10px', borderBottom: '1px solid var(--border-color)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ 
+                    width: '32px', height: '32px', borderRadius: '10px', background: 'rgba(59,130,246,0.1)',
                     border: '1px solid rgba(59,130,246,0.2)',
                     color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center'
                   }}>
-                    <HelpCircle size={22} />
+                    <HelpCircle size={18} />
                   </div>
                   <div>
-                    <h3 style={{ margin: 0, fontSize: '17px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>Help & Info</h3>
-                    <p style={{ margin: '1px 0 0', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Portfolio Guide</p>
+                    <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>Help & Info</h3>
+                    <p style={{ margin: '1px 0 0', fontSize: '9px', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Portfolio Guide</p>
                   </div>
                 </div>
                 <button className="drawer-close-btn" onClick={() => setIsHelpOpen(false)}>
