@@ -4163,3 +4163,5 @@ html[data-density="relaxed"] { font-size: 18px; }
   .stat-card-home .stat-value { font-size: 14px !important; }
   .stat-card-home .stat-label { font-size: 9px !important; }
 }
+
+.spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-radius: 50%; border-top-color: var(--primary-blue); animation: spin 1s ease-in-out infinite; } @keyframes spin { to { transform: rotate(360deg); } }

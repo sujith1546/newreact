@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, Suspense, lazy } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileText, Mail, Briefcase, Check } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
@@ -15,13 +15,13 @@ import PerformanceHUD from '../components/PerformanceHUD';
 import LiveStateInspector from '../components/LiveStateInspector';
 import MobileStatusPanel from '../components/MobileStatusPanel';
 import Home from '../pages/Home';
-import About from '../pages/About';
-import Skills from '../pages/Skills';
-import Projects from '../pages/Projects';
-import Education from '../pages/Education';
-import Experience from '../pages/Experience';
-import Certifications from '../pages/Certifications';
-import Contact from '../pages/Contact';
+const About = lazy(() => import('../pages/About'));
+const Skills = lazy(() => import('../pages/Skills'));
+const Projects = lazy(() => import('../pages/Projects'));
+const Education = lazy(() => import('../pages/Education'));
+const Experience = lazy(() => import('../pages/Experience'));
+const Certifications = lazy(() => import('../pages/Certifications'));
+const Contact = lazy(() => import('../pages/Contact'));
 import ParticleCanvas from '../components/ParticleCanvas';
 import SectionSpotlight from '../components/SectionSpotlight';
 import { useTheme } from '../context/ThemeContext';
@@ -333,7 +333,13 @@ export default function MainLayout() {
                 ${['contact','education','about','skills','experience','projects','certifications'].includes(activeSection) ? ' wide-content' : ''}
               `}
             >
-              <ActiveComponent onNavClick={handleNavClick} />
+              <Suspense fallback={
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', width: '100%' }}>
+                  <div className="spinner"></div>
+                </div>
+              }>
+                <ActiveComponent onNavClick={handleNavClick} />
+              </Suspense>
             </motion.div>
           </AnimatePresence>
         </div>
