@@ -4122,3 +4122,31 @@ html[data-density="relaxed"] { font-size: 18px; }
 }
 
 
+
+@media (max-width: 900px) {
+  .settings-row { padding: 8px 12px; }
+  .settings-row-left { gap: 10px; }
+  .settings-row-icon { width: 28px; height: 28px; border-radius: 8px; }
+  .settings-row-icon svg { width: 14px; height: 14px; }
+  .settings-row-text h4 { font-size: 12px; margin-bottom: 0px; }
+  .settings-row-text p { font-size: 10px; }
+  .settings-group-label { font-size: 10px; margin-bottom: 6px; }
+  .settings-card { border-radius: 12px; }
+  
+  /* Settings Sidebar Overrides */
+  .settings-sidebar-panel { padding: 12px !important; }
+  .settings-sidebar-header { padding: 12px 12px 10px !important; }
+  .settings-sidebar-header-title { font-size: 13px !important; }
+  .settings-sidebar-header-sub { font-size: 9px !important; }
+  .settings-sidebar-tab { padding: 6px 4px !important; }
+  .settings-sidebar-tab-icon { width: 13px !important; height: 13px !important; }
+  .settings-sidebar-tab-text { font-size: 9px !important; }
+  .settings-sidebar-section { padding: 12px 0 6px !important; font-size: 9px !important; }
+  .settings-sidebar-row { padding: 8px 10px !important; margin-bottom: 6px !important; border-radius: 10px !important; }
+  .settings-sidebar-icon { width: 26px !important; height: 26px !important; border-radius: 8px !important; }
+  .settings-sidebar-icon svg { width: 14px !important; height: 14px !important; }
+  .settings-sidebar-title { font-size: 12px !important; }
+  .settings-sidebar-sub { font-size: 9px !important; }
+  .settings-sidebar-action-btn { padding: 8px 10px !important; margin-bottom: 6px !important; }
+}
+

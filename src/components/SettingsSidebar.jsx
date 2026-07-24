@@ -133,7 +133,7 @@ export default function SettingsSidebar() {
 
   /* Row wrapper */
   const Row = ({ icon: Icon, iconColor = accent, label, sublabel, children, danger }) => (
-    <div style={{
+    <div className="settings-sidebar-row" style={{
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       padding: '11px 14px', borderRadius: '12px',
       background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
@@ -142,7 +142,7 @@ export default function SettingsSidebar() {
       transition: 'background 0.2s',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
-        <div style={{
+        <div className="settings-sidebar-icon" style={{
           width: '32px', height: '32px', borderRadius: '10px', flexShrink: 0,
           background: danger ? 'rgba(239,68,68,0.1)' : `${iconColor}18`,
           color: danger ? '#ef4444' : iconColor,
@@ -151,23 +151,23 @@ export default function SettingsSidebar() {
           <Icon size={15} />
         </div>
         <div>
-          <div style={{ fontSize: '13px', fontWeight: 600, color: danger ? '#ef4444' : (isDark ? '#f1f5f9' : '#0f172a') }}>
+          <div className="settings-sidebar-title" style={{ fontSize: '13px', fontWeight: 600, color: danger ? '#ef4444' : (isDark ? '#f1f5f9' : '#0f172a') }}>
             {label}
           </div>
           {sublabel && (
-            <div style={{ fontSize: '11px', color: isDark ? '#64748b' : '#94a3b8', marginTop: '1px' }}>
+            <div className="settings-sidebar-sub" style={{ fontSize: '11px', color: isDark ? '#64748b' : '#94a3b8', marginTop: '2px' }}>
               {sublabel}
             </div>
           )}
         </div>
       </div>
-      {children}
+      <div style={{ flexShrink: 0, marginLeft: '12px' }}>{children}</div>
     </div>
   );
 
   /* Section label */
   const Section = ({ title }) => (
-    <div style={{
+    <div className="settings-sidebar-section" style={{
       fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em',
       color: isDark ? '#475569' : '#94a3b8', padding: '18px 0 8px',
     }}>
@@ -179,6 +179,7 @@ export default function SettingsSidebar() {
   const ActionBtn = ({ label, icon: Icon, onClick, danger, sublabel }) => (
     <button
       onClick={onClick}
+      className="settings-sidebar-action-btn"
       style={{
         width: '100%', display: 'flex', alignItems: 'center', gap: '12px',
         padding: '11px 14px', borderRadius: '12px', border: 'none', cursor: 'pointer',
@@ -188,14 +189,12 @@ export default function SettingsSidebar() {
       onMouseEnter={e => e.currentTarget.style.background = danger ? 'rgba(239,68,68,0.15)' : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)')}
       onMouseLeave={e => e.currentTarget.style.background = danger ? 'rgba(239,68,68,0.08)' : (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)')}
     >
-      <div style={{
-        width: '32px', height: '32px', borderRadius: '10px', flexShrink: 0,
-        background: danger ? 'rgba(239,68,68,0.12)' : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'),
-        color: danger ? '#ef4444' : (isDark ? '#94a3b8' : '#64748b'),
+      <div className="settings-sidebar-icon" style={{
+        width: '30px', height: '30px', borderRadius: '8px',
+        background: danger ? 'transparent' : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'),
+        color: danger ? '#ef4444' : (isDark ? '#e2e8f0' : '#475569'),
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
-        <Icon size={15} />
-      </div>
       <div style={{ flex: 1 }}>
         <div style={{ fontSize: '13px', fontWeight: 600, color: danger ? '#ef4444' : (isDark ? '#f1f5f9' : '#0f172a') }}>
           {label}
@@ -559,13 +558,13 @@ export default function SettingsSidebar() {
             }}
           >
             {/* Header */}
-            <div style={{
+            <div className="settings-sidebar-header" style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               padding: '20px 20px 16px',
               borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{
+                <div className="settings-sidebar-icon" style={{
                   width: '34px', height: '34px', borderRadius: '10px',
                   background: `${accent}20`, color: accent,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -574,10 +573,10 @@ export default function SettingsSidebar() {
                   <Settings2 size={18} />
                 </div>
                 <div>
-                  <div style={{ fontSize: '15px', fontWeight: 700, color: isDark ? '#fff' : '#0f172a' }}>
+                  <div className="settings-sidebar-header-title" style={{ fontSize: '15px', fontWeight: 700, color: isDark ? '#fff' : '#0f172a' }}>
                     Preferences
                   </div>
-                  <div style={{ fontSize: '11px', color: isDark ? '#64748b' : '#94a3b8', marginTop: '1px' }}>
+                  <div className="settings-sidebar-header-sub" style={{ fontSize: '11px', color: isDark ? '#64748b' : '#94a3b8', marginTop: '1px' }}>
                     All settings sync automatically
                   </div>
                 </div>
@@ -608,6 +607,7 @@ export default function SettingsSidebar() {
                 return (
                   <button
                     key={tab.id}
+                    className="settings-sidebar-tab"
                     onClick={() => setActiveTab(tab.id)}
                     style={{
                       flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px',
@@ -618,8 +618,8 @@ export default function SettingsSidebar() {
                       boxShadow: active ? `inset 0 0 0 1px ${accent}30` : 'none',
                     }}
                   >
-                    <tab.icon size={15} />
-                    <span style={{ fontSize: '10px', fontWeight: active ? 700 : 500 }}>{tab.label}</span>
+                    <tab.icon className="settings-sidebar-tab-icon" size={15} />
+                    <span className="settings-sidebar-tab-text" style={{ fontSize: '10px', fontWeight: active ? 700 : 500 }}>{tab.label}</span>
                   </button>
                 );
               })}
