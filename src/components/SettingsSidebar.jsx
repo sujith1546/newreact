@@ -195,6 +195,8 @@ export default function SettingsSidebar() {
         color: danger ? '#ef4444' : (isDark ? '#e2e8f0' : '#475569'),
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}>
+        <Icon size={14} />
+      </div>
       <div style={{ flex: 1 }}>
         <div style={{ fontSize: '13px', fontWeight: 600, color: danger ? '#ef4444' : (isDark ? '#f1f5f9' : '#0f172a') }}>
           {label}
