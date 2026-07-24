@@ -21,7 +21,8 @@ export default function useRealtimeData(table, options = {}) {
     single = false,
     orderColumn = 'id',
     ascending = true,
-    filter = null
+    filter = null,
+    disableRealtime = false
   } = options;
 
   const [data, setData] = useState(single ? null : []);
@@ -61,6 +62,8 @@ export default function useRealtimeData(table, options = {}) {
     }
 
     fetchData();
+
+    if (disableRealtime) return;
 
     let channel = null;
 

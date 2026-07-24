@@ -180,7 +180,7 @@ function MobileProjectRow({ project, index, onTap, onLongPress }) {
 /* ─── Main Component ─────────────────────────────────────────── */
 export default function Projects() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
-  const { data: projectsData, loading } = useRealtimeData('projects', { orderColumn: 'created_at', ascending: true });
+  const { data: projectsData, loading } = useRealtimeData('projects', { orderColumn: 'created_at', ascending: true, disableRealtime: true });
   const [selectedProject, setSelectedProject] = useState(null);
   const [tab, setTab] = useState('overview');
   const [copied, setCopied] = useState(false);
@@ -330,8 +330,8 @@ export default function Projects() {
 
           .mpj-row {
             position: relative; overflow: hidden;
-            display: flex; align-items: flex-start; gap: 13px;
-            padding: 14px 14px 14px 18px;
+            display: flex; align-items: center; gap: 13px;
+            padding: 10px 14px 10px 18px;
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
             border-radius: 18px;
@@ -355,7 +355,7 @@ export default function Projects() {
 
           .mpj-body { flex: 1; min-width: 0; }
 
-          .mpj-title-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; flex-wrap: wrap; }
+          .mpj-title-row { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; flex-wrap: wrap; }
           .mpj-title {
             font-size: 14.5px; font-weight: 700;
             color: var(--text-primary); margin: 0; line-height: 1.2;
@@ -363,10 +363,11 @@ export default function Projects() {
 
           .mpj-desc {
             font-size: 11.5px; color: var(--text-secondary);
-            line-height: 1.45; margin: 0 0 9px;
+            line-height: 1.45; margin: 0;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
           }
 
-          .mpj-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+          .mpj-tags { display: none; }
           .mpj-tag {
             font-size: 10px; font-weight: 700;
             padding: 3px 8px; border-radius: 20px;
