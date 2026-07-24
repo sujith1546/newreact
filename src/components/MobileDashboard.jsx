@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabaseClient';
 import { motion } from 'framer-motion';
 import { MapPin, Loader2, ArrowDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import useGlitchText from '../hooks/useGlitchText';
+import useRealtimeData from '../hooks/useRealtimeData';
 
 /* ── Count-up hook ─────────────────────────────────────────── */
 function useCountUp(target, duration = 900) {
@@ -36,14 +37,10 @@ export default function MobileDashboard({ onNavClick }) {
     return 'Good evening 🌆';
   };
 
-  const [settings, setSettings] = useState(null);
-  useEffect(() => {
-    async function loadSettings() {
-      const { data } = await supabase.from('site_settings').select('*').eq('id', 1).single();
-      if (data) setSettings(data);
-    }
-    loadSettings();
-  }, []);
+  const { data: settings, loading } = useRealtimeData('site_settings', {
+    single: true,
+    filter: { column: 'id', value: 1 }
+  });
 
   const cgpa  = useCountUp('8.7');
   const certs = useCountUp('15');
@@ -84,6 +81,14 @@ export default function MobileDashboard({ onNavClick }) {
     if (rootRef.current) rootRef.current.startY = undefined;
   };
 
+  if (loading) {
+    return (
+      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Loader2 className="spin" size={24} color="var(--text-muted)" />
+      </div>
+    );
+  }
+
   return (
     <>
       <style>{`
@@ -105,9 +110,9 @@ export default function MobileDashboard({ onNavClick }) {
 
         /* ── section label ── */
         .hd-section-label {
-          font-size: 10.5px; font-weight: 800; letter-spacing: .08em;
+          font-size: 9px; font-weight: 800; letter-spacing: .08em;
           text-transform: uppercase; color: var(--text-muted);
-          padding: 14px 18px 6px; margin: 0; flex-shrink: 0;
+          padding: 12px 16px 6px; margin: 0; flex-shrink: 0;
         }
 
         /* ════════ PROFILE SECTION ════════ */
@@ -116,29 +121,29 @@ export default function MobileDashboard({ onNavClick }) {
           padding: 18px 18px 16px;
         }
         .hd-avatar {
-          width: 60px; height: 60px; border-radius: 16px;
+          width: 52px; height: 52px; border-radius: 14px;
           object-fit: cover; border: 2px solid var(--primary-blue);
           flex-shrink: 0;
         }
         .hd-profile-info { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
         .hd-name {
-          font-size: 20px; font-weight: 800; color: var(--text-primary);
+          font-size: 17px; font-weight: 800; color: var(--text-primary);
           letter-spacing: -.03em; margin: 0; line-height: 1.15;
         }
-        .hd-role { font-size: 12px; color: var(--text-secondary); margin: 0; font-weight: 500; }
+        .hd-role { font-size: 10px; color: var(--text-secondary); margin: 0; font-weight: 500; }
         .hd-location {
           display: flex; align-items: center; gap: 4px;
-          font-size: 11px; color: var(--text-muted); margin: 0;
+          font-size: 9.5px; color: var(--text-muted); margin: 0;
         }
         .hd-avail {
-          display: inline-flex; align-items: center; gap: 5px;
+          display: inline-flex; align-items: center; gap: 4px;
           background: rgba(16,185,129,.1); border: 1px solid rgba(16,185,129,.25);
-          border-radius: 20px; padding: 3px 9px;
-          font-size: 10px; font-weight: 700; color: #10b981;
+          border-radius: 20px; padding: 2.5px 8px;
+          font-size: 8.5px; font-weight: 700; color: #10b981;
           width: fit-content; margin-top: 2px;
         }
         .hd-avail-dot {
-          width: 6px; height: 6px; border-radius: 50%; background: #10b981;
+          width: 5px; height: 5px; border-radius: 50%; background: #10b981;
           animation: hd-pulse 2s ease-in-out infinite;
         }
         @keyframes hd-pulse {
@@ -158,26 +163,27 @@ export default function MobileDashboard({ onNavClick }) {
         }
         .hd-stat:last-child { border-right: none; }
         .hd-stat-val {
-          font-size: 20px; font-weight: 800; margin: 0; line-height: 1;
+          font-size: 22px; font-weight: 800; color: var(--text-primary);
+          letter-spacing: -.04em; margin: 0; line-height: 1;
         }
         .hd-stat-lbl {
-          font-size: 9.5px; font-weight: 700; color: var(--text-muted);
+          font-size: 8px; font-weight: 700; color: var(--text-muted);
           text-transform: uppercase; letter-spacing: .06em; margin: 4px 0 0;
         }
 
-        /* ════════ BIO ════════ */
+        /* ── BIO ── */
         .hd-bio {
-          padding: 14px 18px 18px;
-          font-size: 12.5px; color: var(--text-secondary);
+          padding: 12px 16px 16px;
+          font-size: 11px; color: var(--text-secondary);
           line-height: 1.55; margin: 0;
         }
         
-        /* ════════ SWIPE HINT ════════ */
+        /* ── SWIPE HINT ── */
         .swipe-hint {
           display: flex; align-items: center; justify-content: center;
-          padding: 14px 0 12px; color: var(--text-muted); font-size: 10px;
+          padding: 12px 0 10px; color: var(--text-muted); font-size: 8.5px;
           font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
-          gap: 8px; flex-shrink: 0;
+          gap: 6px; flex-shrink: 0;
           background: transparent;
         }
         .swipe-hint-icon { display: flex; align-items: center; color: var(--text-secondary); }
@@ -243,9 +249,9 @@ export default function MobileDashboard({ onNavClick }) {
 
         <div className="hd-divider" />
 
-        {/* ── About Me ───────────────────────────────────────────── */}
+        {/* ── About Me ── */}
         <p className="hd-section-label">About Me</p>
-        <p className="hd-bio" dangerouslySetInnerHTML={{ __html: settings?.hero_headline || "A passionate <strong>B.Tech Graduate from VIT (8.7 CGPA)</strong>, actively exploring the boundaries between predictive machine learning systems and reactive web frameworks. I love building things that are both intelligent and elegant." }} />
+        <p className="hd-bio" dangerouslySetInnerHTML={{ __html: settings?.hero_headline || "" }} />
         
         </motion.div>
       </div>
