@@ -1,18 +1,23 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import * as THREE from "three";
 import { Globe2, MapPin, Radar, Satellite, X } from "lucide-react";
+import indiaBordersData from "../data/indiaBorders.json";
 
 const TARGET = { name: "Vellore", region: "Tamil Nadu, India", lat: 12.9165, lon: 79.1325 };
 
-const INDIA_BORDERS = [
-  [23.7, 68.2], [24.5, 71.0], [28.0, 70.0], [30.0, 74.0], [33.0, 74.0],
-  [35.0, 74.5], [35.5, 77.0], [33.0, 79.0], [31.0, 79.0], [29.0, 80.0],
-  [27.0, 84.0], [27.0, 88.0], [28.0, 89.0], [27.5, 92.0], [29.0, 95.0],
-  [28.0, 97.0], [26.0, 95.0], [24.0, 94.0], [23.0, 93.0], [22.0, 91.5],
-  [25.0, 90.0], [26.0, 89.0], [25.0, 88.0], [22.0, 88.0], [20.0, 86.0],
-  [17.0, 83.0], [13.0, 80.0], [10.0, 79.5], [8.0, 77.5],  [9.0, 76.0],
-  [12.0, 75.0], [15.0, 74.0], [19.0, 72.8], [21.0, 72.0], [22.0, 69.0],
-  [23.7, 68.2]
+// Major Indian cities for the glowing night lights effect
+const MAJOR_CITIES = [
+  [19.0760, 72.8777], [28.7041, 77.1025], [12.9716, 77.5946], [17.3850, 78.4867],
+  [13.0827, 80.2707], [22.5726, 88.3639], [18.5204, 73.8567], [23.0225, 72.5714],
+  [21.1702, 72.8311], [26.9124, 75.7873], [26.8467, 80.9462], [26.4499, 80.3319],
+  [21.1458, 79.0882], [22.7196, 75.8577], [23.2599, 77.4126], [17.6868, 83.2185],
+  [25.5941, 85.1376], [22.3072, 73.1812], [28.6692, 77.4538], [30.9010, 75.8573],
+  [27.1767, 78.0081], [19.9975, 73.7898], [28.4089, 77.3178], [28.9845, 77.7064],
+  [22.3039, 70.8022], [25.3176, 82.9739], [34.0837, 74.7973], [19.8762, 75.3433],
+  [23.7957, 86.4304], [31.6340, 74.8723], [19.0330, 73.0297], [25.4358, 81.8463],
+  [22.5958, 88.3110], [23.3441, 85.3096], [26.2124, 78.1772], [23.1815, 79.9864],
+  [11.0168, 76.9558], [16.5062, 80.6480], [26.2389, 73.0243], [9.9252, 78.1198],
+  [21.2514, 81.6296], [25.1814, 75.8323], [26.1445, 91.7362], [30.7333, 76.7794]
 ];
 
 // Earth's real axial tilt, so the globe reads as an actual planet rather than a spinning ball.
@@ -253,7 +258,7 @@ export default function GlobeLocator({ onClose }) {
     const TEX_BASE =
       "https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/textures/planets/";
 
-    let cloudMesh, gridMesh, beamMesh, indiaLine;
+    let cloudMesh, gridMesh, beamMesh, indiaGroup;
     const pulseRings = [];
 
     Promise.all([
@@ -326,16 +331,46 @@ export default function GlobeLocator({ onClose }) {
       gridMesh = new THREE.Mesh(gridGeo, gridMat);
       globeGroup.add(gridMesh);
 
-      const indiaPts = INDIA_BORDERS.map(pt => latLonToVector3(pt[0], pt[1], RADIUS * 1.002));
-      const indiaGeo = new THREE.BufferGeometry().setFromPoints(indiaPts);
-      const indiaMat = new THREE.LineBasicMaterial({
+      // Construct high-detail India borders and city lights
+      indiaGroup = new THREE.Group();
+      
+      const lineMat = new THREE.LineBasicMaterial({
         color: 0xffd700,
         transparent: true,
         opacity: 0,
         blending: THREE.AdditiveBlending,
       });
-      indiaLine = new THREE.Line(indiaGeo, indiaMat);
-      globeGroup.add(indiaLine);
+
+      indiaBordersData.forEach(path => {
+        const pts = path.map(pt => latLonToVector3(pt[0], pt[1], RADIUS * 1.002));
+        const geo = new THREE.BufferGeometry().setFromPoints(pts);
+        const line = new THREE.Line(geo, lineMat);
+        indiaGroup.add(line);
+      });
+
+      // City lights
+      const cityGeo = new THREE.BufferGeometry();
+      const cityPos = new Float32Array(MAJOR_CITIES.length * 3);
+      MAJOR_CITIES.forEach((city, i) => {
+        const v = latLonToVector3(city[0], city[1], RADIUS * 1.003);
+        cityPos[i*3] = v.x;
+        cityPos[i*3+1] = v.y;
+        cityPos[i*3+2] = v.z;
+      });
+      cityGeo.setAttribute("position", new THREE.BufferAttribute(cityPos, 3));
+      
+      const cityMat = new THREE.PointsMaterial({
+        color: 0xffe680,
+        size: 0.03,
+        sizeAttenuation: true,
+        transparent: true,
+        opacity: 0,
+        blending: THREE.AdditiveBlending,
+      });
+      const cityPoints = new THREE.Points(cityGeo, cityMat);
+      indiaGroup.add(cityPoints);
+
+      globeGroup.add(indiaGroup);
 
       const markerLocalPos = latLonToVector3(TARGET.lat, TARGET.lon, RADIUS);
 
@@ -410,12 +445,22 @@ export default function GlobeLocator({ onClose }) {
       if (gridMesh) gridMesh.rotation.y -= 0.00018;
       stars.rotation.y += 0.00004;
 
-      if (indiaLine) {
+      if (indiaGroup) {
         const hourIST = new Date().toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour12: false, hour: 'numeric' });
         const hr = parseInt(hourIST, 10);
         const isNight = hr >= 19 || hr <= 5;
-        const targetOpacity = isNight ? 0.85 : 0.0;
-        indiaLine.material.opacity += (targetOpacity - indiaLine.material.opacity) * 0.03;
+        const targetLineOp = isNight ? 0.6 : 0.0;
+        const targetCityOp = isNight ? 0.9 : 0.0;
+        
+        indiaGroup.children.forEach(child => {
+          if (child.isLine) {
+            child.material.opacity += (targetLineOp - child.material.opacity) * 0.03;
+          } else if (child.isPoints) {
+            // Add a subtle twinkle to cities when fully visible
+            const twinkle = child.material.opacity > 0.5 ? (0.7 + 0.3 * Math.sin(performance.now() * 0.005)) : 1;
+            child.material.opacity += ((targetCityOp * twinkle) - child.material.opacity) * 0.03;
+          }
+        });
       }
 
       if (phaseRef.current === "spinning") {
