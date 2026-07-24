@@ -63,7 +63,15 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
   }, []);
 
   const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
+    if (!deferredPrompt) {
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      if (isIOS) {
+        alert("To install the app on iOS, tap the Share icon and select 'Add to Home Screen'.");
+      } else {
+        alert("App is already installed or your browser doesn't support automatic installation. You can install it from your browser's menu.");
+      }
+      return;
+    }
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
     if (outcome === 'accepted') {
@@ -459,11 +467,9 @@ END:VCARD`;
               {/* Actions */}
               <p className="drawer-sections-label">Actions</p>
               <div className="drawer-actions-list">
-                {deferredPrompt && (
-                  <button onClick={() => { playSound(); handleInstallClick(); setIsMoreOpen(false); }} className="drawer-action-row-btn" style={{ color: 'var(--primary-blue)' }}>
-                    <FileDown size={17} /><span>Install App</span>
-                  </button>
-                )}
+                <button onClick={() => { playSound(); handleInstallClick(); setIsMoreOpen(false); }} className="drawer-action-row-btn" style={{ color: 'var(--primary-blue)' }}>
+                  <FileDown size={17} /><span>Install App</span>
+                </button>
                 <button onClick={() => triggerEvent('open-resume')} className="drawer-action-row-btn">
                   <FileDown size={17} /><span>Resume</span>
                 </button>
