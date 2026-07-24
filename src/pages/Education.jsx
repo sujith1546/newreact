@@ -853,6 +853,8 @@ export default function Education() {
             height: 100% !important;
             overflow: hidden !important;
           }
+          .edu-header h1 { font-size: 16px; margin-bottom: 4px; }
+          .edu-header p { font-size: 10px; line-height: 1.4; }
           .edu-rail, .edu-grid, .education-arrow-flow, .section-subtitle, .edu-closing-summary { display: none !important; }
           .mobile-edu-feed {
             display: flex; flex-direction: column; gap: 8px; width: 100%;

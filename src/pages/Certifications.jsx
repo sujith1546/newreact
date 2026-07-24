@@ -112,6 +112,8 @@ export default function Certifications() {
         .spin { animation: spin 1s linear infinite; }
         
         @media (max-width: 900px) {
+          .certs-header h1 { font-size: 16px; margin-bottom: 4px; }
+          .certs-header p { font-size: 10px; line-height: 1.4; }
           .certs-grid { display: none; /* Hide desktop grid */ }
           .mobile-certs-feed {
             display: flex; flex-direction: column; gap: 8px; width: 100%;
