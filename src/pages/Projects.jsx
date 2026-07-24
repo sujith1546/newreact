@@ -323,18 +323,18 @@ export default function Projects() {
         /* ========== MOBILE — project row cards ========== */
         @media (max-width: 900px) {
           .projects-header { margin-bottom: 16px; }
-          .projects-header h1 { font-size: 18px; margin-bottom: 4px; }
-          .projects-header p { font-size: 11.5px; line-height: 1.4; }
+          .projects-header h1 { font-size: 16px; margin-bottom: 4px; }
+          .projects-header p { font-size: 10px; line-height: 1.4; }
 
-          .mpj-list { display: flex; flex-direction: column; gap: 12px; }
+          .mpj-list { display: flex; flex-direction: column; gap: 8px; }
 
           .mpj-row {
             position: relative; overflow: hidden;
-            display: flex; align-items: center; gap: 13px;
-            padding: 10px 14px 10px 18px;
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 12px 8px 14px;
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
-            border-radius: 18px;
+            border-radius: 14px;
             width: 100%; text-align: left; cursor: pointer;
             transition: background .15s;
           }
@@ -342,14 +342,14 @@ export default function Projects() {
 
           .mpj-stripe {
             position: absolute; left: 0; top: 0; bottom: 0;
-            width: 3px; border-radius: 18px 0 0 18px;
+            width: 3px; border-radius: 14px 0 0 14px;
           }
 
           .mpj-icon {
-            width: 42px; height: 42px; flex-shrink: 0;
-            border-radius: 12px; border: 1px solid;
+            width: 32px; height: 32px; flex-shrink: 0;
+            border-radius: 10px; border: 1px solid;
             display: flex; align-items: center; justify-content: center;
-            font-size: 12px; font-weight: 800; letter-spacing: -.5px;
+            font-size: 10px; font-weight: 800; letter-spacing: -.5px;
             font-family: inherit;
           }
 
@@ -357,12 +357,12 @@ export default function Projects() {
 
           .mpj-title-row { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; flex-wrap: wrap; }
           .mpj-title {
-            font-size: 14.5px; font-weight: 700;
+            font-size: 13px; font-weight: 700;
             color: var(--text-primary); margin: 0; line-height: 1.2;
           }
 
           .mpj-desc {
-            font-size: 11.5px; color: var(--text-secondary);
+            font-size: 10px; color: var(--text-secondary);
             line-height: 1.45; margin: 0;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
           }
