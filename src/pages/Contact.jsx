@@ -347,9 +347,9 @@ END:VCARD`;
             display: flex; flex-direction: column;
             width: 100%; overflow-y: auto; overflow-x: hidden;
             -ms-overflow-style: none; scrollbar-width: none;
-            padding: 0 4px 20px 4px;
+            padding: 0 4px 10px 4px;
             box-sizing: border-box;
-            gap: 20px;
+            gap: 16px;
           }
           .mc-outer-container::-webkit-scrollbar { display: none; }
           
@@ -380,14 +380,14 @@ END:VCARD`;
           .mc-cards-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
+            gap: 10px;
           }
           .mc-contact-card-item {
             background: rgba(255,255,255,0.03);
             border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 16px;
-            display: flex; flex-direction: column; gap: 12px;
+            border-radius: 14px;
+            padding: 12px;
+            display: flex; flex-direction: column; gap: 10px;
             text-decoration: none;
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
@@ -410,10 +410,10 @@ END:VCARD`;
           /* Form Area */
           .mc-form-container {
             background: var(--bg-primary);
-            border-radius: 20px;
+            border-radius: 18px;
             border: 1px solid var(--border-color);
-            padding: 16px;
-            display: flex; flex-direction: column; gap: 12px;
+            padding: 12px;
+            display: flex; flex-direction: column; gap: 10px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.03);
           }
           [data-theme="dark"] .mc-form-container {
@@ -430,8 +430,8 @@ END:VCARD`;
             background: rgba(128,128,128,0.05);
             border: 1px solid rgba(128,128,128,0.2);
             border-radius: 12px;
-            padding: 20px 14px 8px;
-            font-size: 13.5px; font-family: inherit; font-weight: 500;
+            padding: 16px 12px 6px;
+            font-size: 12.5px; font-family: inherit; font-weight: 500;
             color: var(--text-primary);
             outline: none; transition: all 0.2s;
             -webkit-appearance: none;
@@ -458,16 +458,16 @@ END:VCARD`;
           .swipe-send-container {
             position: relative;
             width: 100%;
-            height: 56px;
+            height: 48px;
             background: rgba(128,128,128,0.06);
             border: 1px solid rgba(128,128,128,0.15);
-            border-radius: 28px;
+            border-radius: 24px;
             margin-top: 4px;
             overflow: hidden;
             display: flex;
             align-items: center;
             box-sizing: border-box;
-            padding: 6px;
+            padding: 5px;
           }
           [data-theme="dark"] .swipe-send-container {
             background: rgba(0,0,0,0.3);
@@ -484,7 +484,7 @@ END:VCARD`;
             position: absolute;
             width: 100%;
             text-align: center;
-            font-size: 13.5px;
+            font-size: 12px;
             font-weight: 700;
             color: var(--text-secondary);
             pointer-events: none;
@@ -493,9 +493,9 @@ END:VCARD`;
           }
           .swipe-send-knob {
             position: relative;
-            width: 44px;
-            height: 44px;
-            border-radius: 22px;
+            width: 38px;
+            height: 38px;
+            border-radius: 19px;
             background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
             color: #fff;
             display: flex;
