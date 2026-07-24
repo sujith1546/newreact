@@ -170,7 +170,7 @@ export default function MainLayout() {
     const dt = Date.now() - touchStartRef.current.time;
 
     if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 2 && dt < 500) {
-      const SWIPE_PAGES = ['home', 'about', 'skills', 'projects', 'education', 'experience', 'certifications', 'contact'];
+      const SWIPE_PAGES = ['home', 'skills', 'projects', 'contact'];
       const idx = SWIPE_PAGES.indexOf(activeSection);
       if (idx !== -1) {
         if (dx < 0 && idx < SWIPE_PAGES.length - 1) handleNavClick(SWIPE_PAGES[idx + 1]);
