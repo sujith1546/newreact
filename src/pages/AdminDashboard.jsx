@@ -11,7 +11,7 @@ import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { logAuditEvent } from '../lib/auditLogger';
 import { trackRecruiterEvent } from '../lib/analyticsTracker';
-import VisitorGlobe from './VisitorGlobe';
+import VisitorGlobe from '../components/VisitorGlobe';
 
 const NAV_GROUPS = [
   {
