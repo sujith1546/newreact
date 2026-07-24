@@ -347,17 +347,17 @@ END:VCARD`;
             display: flex; flex-direction: column;
             width: 100%; overflow-y: auto; overflow-x: hidden;
             -ms-overflow-style: none; scrollbar-width: none;
-            padding: 0 4px 10px 4px;
+            padding: 0 2px 8px 2px;
             box-sizing: border-box;
-            gap: 16px;
+            gap: 12px;
           }
           .mc-outer-container::-webkit-scrollbar { display: none; }
           
           .mc-header-row {
             display: flex; justify-content: space-between; align-items: flex-start;
           }
-          .mc-page-title { font-size: 24px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px; letter-spacing: -0.02em; }
-          .mc-page-sub { font-size: 13px; color: var(--text-secondary); margin: 0; line-height: 1.4; }
+          .mc-page-title { font-size: 20px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px; letter-spacing: -0.02em; }
+          .mc-page-sub { font-size: 11px; color: var(--text-secondary); margin: 0; line-height: 1.4; }
           
           .mc-avail-pill {
             display: inline-flex; align-items: center; gap: 6px;
@@ -380,14 +380,14 @@ END:VCARD`;
           .mc-cards-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 8px;
           }
           .mc-contact-card-item {
             background: rgba(255,255,255,0.03);
             border: 1px solid var(--border-color);
-            border-radius: 14px;
-            padding: 12px;
-            display: flex; flex-direction: column; gap: 10px;
+            border-radius: 12px;
+            padding: 10px;
+            display: flex; flex-direction: column; gap: 8px;
             text-decoration: none;
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
@@ -401,19 +401,19 @@ END:VCARD`;
           }
           .mc-contact-card-item:active { transform: scale(0.96); }
           .mc-card-icon-wrap {
-            width: 38px; height: 38px; border-radius: 12px;
+            width: 28px; height: 28px; border-radius: 8px;
             display: flex; align-items: center; justify-content: center;
           }
-          .mc-card-title { font-size: 12px; font-weight: 600; color: var(--text-secondary); margin: 0; }
-          .mc-card-value { font-size: 14px; font-weight: 700; color: var(--text-primary); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          .mc-card-title { font-size: 10px; font-weight: 600; color: var(--text-secondary); margin: 0; }
+          .mc-card-value { font-size: 11.5px; font-weight: 700; color: var(--text-primary); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
           
           /* Form Area */
           .mc-form-container {
             background: var(--bg-primary);
-            border-radius: 18px;
+            border-radius: 16px;
             border: 1px solid var(--border-color);
-            padding: 12px;
-            display: flex; flex-direction: column; gap: 10px;
+            padding: 10px;
+            display: flex; flex-direction: column; gap: 8px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.03);
           }
           [data-theme="dark"] .mc-form-container {
@@ -421,7 +421,7 @@ END:VCARD`;
             border-color: rgba(255,255,255,0.06);
             box-shadow: 0 10px 40px rgba(0,0,0,0.2);
           }
-          .mc-form-title { font-size: 15px; font-weight: 700; color: var(--text-primary); margin: 0 0 2px; display: flex; align-items: center; gap: 6px; }
+          .mc-form-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin: 0 0 2px; display: flex; align-items: center; gap: 6px; }
           
           /* Floating Label Inputs */
           .mc-input-group { position: relative; }
@@ -429,9 +429,9 @@ END:VCARD`;
             width: 100%; box-sizing: border-box;
             background: rgba(128,128,128,0.05);
             border: 1px solid rgba(128,128,128,0.2);
-            border-radius: 12px;
-            padding: 16px 12px 6px;
-            font-size: 12.5px; font-family: inherit; font-weight: 500;
+            border-radius: 10px;
+            padding: 14px 10px 4px;
+            font-size: 11px; font-family: inherit; font-weight: 500;
             color: var(--text-primary);
             outline: none; transition: all 0.2s;
             -webkit-appearance: none;
@@ -443,13 +443,13 @@ END:VCARD`;
           }
           .mc-input.has-error { border-color: #ef4444; }
           .mc-label {
-            position: absolute; left: 14px; top: 14px;
-            font-size: 13px; font-weight: 500; color: var(--text-secondary);
+            position: absolute; left: 10px; top: 11px;
+            font-size: 11px; font-weight: 500; color: var(--text-secondary);
             pointer-events: none; transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
           }
           .mc-input:focus ~ .mc-label,
           .mc-input:not(:placeholder-shown) ~ .mc-label {
-            top: 6px; font-size: 9px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; letter-spacing: 0.05em;
+            top: 4px; font-size: 8px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; letter-spacing: 0.05em;
           }
           .mc-input.has-error ~ .mc-label { color: #ef4444; }
           .mc-error-msg { font-size: 10px; font-weight: 600; color: #ef4444; margin: 3px 0 0 4px; display: block; }
@@ -458,16 +458,16 @@ END:VCARD`;
           .swipe-send-container {
             position: relative;
             width: 100%;
-            height: 48px;
+            height: 40px;
             background: rgba(128,128,128,0.06);
             border: 1px solid rgba(128,128,128,0.15);
-            border-radius: 24px;
+            border-radius: 20px;
             margin-top: 4px;
             overflow: hidden;
             display: flex;
             align-items: center;
             box-sizing: border-box;
-            padding: 5px;
+            padding: 4px;
           }
           [data-theme="dark"] .swipe-send-container {
             background: rgba(0,0,0,0.3);
@@ -484,7 +484,7 @@ END:VCARD`;
             position: absolute;
             width: 100%;
             text-align: center;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
             color: var(--text-secondary);
             pointer-events: none;
@@ -493,9 +493,9 @@ END:VCARD`;
           }
           .swipe-send-knob {
             position: relative;
-            width: 38px;
-            height: 38px;
-            border-radius: 19px;
+            width: 32px;
+            height: 32px;
+            border-radius: 16px;
             background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
             color: #fff;
             display: flex;
