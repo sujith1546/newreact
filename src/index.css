@@ -80,13 +80,13 @@ body {
 .layout {
   display: grid;
   grid-template-columns: 300px 1fr;
-  height: 100%;
   overflow: hidden;
   /* Prevent body from scrolling while on main layout */
   position: fixed;
   width: 100%;
   top: 0;
   left: 0;
+  bottom: 0;
 }
 
 /* ============================================
