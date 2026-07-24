@@ -5,9 +5,10 @@ import {
   X, Settings2, Palette, Bot, Volume2, VolumeX, Eye, EyeOff,
   Zap, ZapOff, MonitorPlay, Code2, Paintbrush, Activity,
   Moon, Sun, Layers, Trash2, RotateCcw, Sparkles, Check,
-  ChevronRight, Info, Shield, ExternalLink, Layout
+  ChevronRight, Info, Shield, ExternalLink, Layout, User
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { usePersona } from '../context/PersonaContext';
 
 /* ─── Accent palette ─────────────────────────────────────── */
 const ACCENTS = [
@@ -53,6 +54,8 @@ export default function SettingsSidebar() {
     devMode, setDevMode,
     showStateInspector, setShowStateInspector,
   } = useTheme();
+
+  const { persona, setPersona } = usePersona();
 
   const isDark = theme === 'dark';
   const accent = ACCENTS.find(a => a.key === accentColor)?.hex ?? '#8b5cf6';
@@ -211,6 +214,25 @@ export default function SettingsSidebar() {
   const renderTab = () => {
     if (activeTab === 'appearance') return (
       <div>
+        <Section title="AI Persona (Visitor Experience)" />
+        <Row icon={User} iconColor="#ec4899" label="Active Persona" sublabel="Dynamically reorders the UI sections">
+          <div style={{ display: 'flex', gap: '4px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', padding: '3px', borderRadius: '6px' }}>
+            {['general', 'developer', 'recruiter'].map(p => (
+              <button
+                key={p} onClick={() => { setPersona(p); showToast(`Persona -> ${p}`); }}
+                style={{
+                  background: persona === p ? (isDark ? '#334155' : '#fff') : 'transparent',
+                  color: persona === p ? (isDark ? '#fff' : '#000') : (isDark ? '#94a3b8' : '#64748b'),
+                  border: 'none', borderRadius: '4px', padding: '2px 6px', fontSize: '10px', fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize',
+                  boxShadow: persona === p ? `inset 0 0 0 1px ${accent}55` : 'none',
+                }}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+        </Row>
+
         <Section title="Theme" />
         <Row icon={isDark ? Moon : Sun} iconColor={isDark ? '#8b5cf6' : '#f59e0b'} label="Dark Mode" sublabel={isDark ? 'Night theme active' : 'Light theme active'}>
           <Toggle checked={isDark} onChange={toggleTheme} accent={isDark ? '#8b5cf6' : '#f59e0b'} />

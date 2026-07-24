@@ -11,6 +11,7 @@ import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { logAuditEvent } from '../lib/auditLogger';
 import { trackRecruiterEvent } from '../lib/analyticsTracker';
+import VisitorGlobe from './VisitorGlobe';
 
 const NAV_GROUPS = [
   {
@@ -58,7 +59,32 @@ export default function AdminDashboard() {
   const { theme, toggleTheme } = useTheme();
   const [activeTab, setActiveTab] = useState("messages");
   const [lastLogin, setLastLogin] = useState(null);
+  const [visitorMarkers, setVisitorMarkers] = useState([]);
   const stats = useDashboardStats();
+
+  useEffect(() => {
+    // Setup Supabase Realtime presence for Visitor Globe
+    const channel = supabase.channel('visitor_presence');
+    
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState();
+        const markers = [];
+        for (const id in state) {
+          state[id].forEach((presence) => {
+            if (presence.lat && presence.lng) {
+              markers.push({ location: [presence.lat, presence.lng], size: 0.1 });
+            }
+          });
+        }
+        setVisitorMarkers(markers);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   useEffect(() => {
     async function fetchLastLogin() {
@@ -186,8 +212,26 @@ export default function AdminDashboard() {
         </header>
 
 
-        {/* Scrollable body */}
         <div className="admin-body">
+          {/* Real-time Visitor Globe Widget (visible on Analytics Hub or as a permanent widget) */}
+          {activeTab === "analytics" && (
+            <div style={{ padding: '20px', background: 'var(--card-bg)', borderRadius: '16px', border: '1px solid var(--border)', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '24px' }}>
+              <div style={{ flex: 1 }}>
+                <h3 style={{ fontSize: '18px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <GlobeIcon size={18} color="var(--primary-blue)" />
+                  Live Visitor Map
+                </h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginTop: '4px' }}>
+                  Real-time visualization of current visitors browsing the portfolio across the globe.
+                  Active users: <span style={{ color: 'var(--success-green)', fontWeight: 600 }}>{visitorMarkers.length}</span>
+                </p>
+              </div>
+              <div style={{ width: '150px', height: '150px' }}>
+                <VisitorGlobe markers={visitorMarkers} />
+              </div>
+            </div>
+          )}
+
           {/* Panel */}
           <div>
             {activeTab === "messages"       && <MessagesAdmin />}

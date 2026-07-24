@@ -14,6 +14,8 @@ import { MaintenanceGate } from './components/MaintenanceMode';
 import SEOHelmet from './components/SEOHelmet';
 import AnnouncementBanner from './components/AnnouncementBanner';
 import { trackPageView } from './lib/analyticsTracker';
+import { supabase } from './lib/supabaseClient';
+import { PersonaProvider } from './context/PersonaContext';
 
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 const AdminLogin = React.lazy(() => import('./pages/AdminLogin'));
@@ -86,12 +88,39 @@ function AppContent() {
 }
 
 export default function App() {
+  useEffect(() => {
+    const broadcastPresence = async () => {
+      try {
+        const res = await fetch('https://ipapi.co/json/');
+        const data = await res.json();
+        if (data && data.latitude && data.longitude) {
+          const channel = supabase.channel('visitor_presence');
+          channel.subscribe(async (status) => {
+            if (status === 'SUBSCRIBED') {
+              await channel.track({
+                lat: data.latitude,
+                lng: data.longitude,
+                online_at: new Date().toISOString()
+              });
+            }
+          });
+        }
+      } catch (e) {
+        // Silently ignore if adblocker or fetch fails
+      }
+    };
+    // Delay broadcast slightly to not block initial render
+    setTimeout(broadcastPresence, 2000);
+  }, []);
+
   return (
     <HelmetProvider>
       <ThemeProvider>
-        <AuthProvider>
-          <AppContent />
-        </AuthProvider>
+        <PersonaProvider>
+          <AuthProvider>
+            <AppContent />
+          </AuthProvider>
+        </PersonaProvider>
       </ThemeProvider>
     </HelmetProvider>
   );

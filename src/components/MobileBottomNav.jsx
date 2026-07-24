@@ -22,6 +22,7 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
   const [isUpdatesOpen, setIsUpdatesOpen] = useState(false);
   const [isGithubStatsOpen, setIsGithubStatsOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [copiedEmail, setCopiedEmail] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
   const [toast, setToast] = useState(null); // { label, prevValue, nextValue, undo }
@@ -50,7 +51,25 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
     }, 1500);
   };
     
-  // IntersectionObserver removed because we now render components dynamically instead of in a single scrolling feed.
+  // PWA Install Prompt Listener
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
+    }
+  };
+
   const localTime = useLocalTime();
   const { 
     theme, toggleTheme, 
@@ -436,6 +455,11 @@ END:VCARD`;
               {/* Actions */}
               <p className="drawer-sections-label">Actions</p>
               <div className="drawer-actions-list">
+                {deferredPrompt && (
+                  <button onClick={() => { playSound(); handleInstallClick(); setIsMoreOpen(false); }} className="drawer-action-row-btn" style={{ color: 'var(--primary-blue)' }}>
+                    <FileDown size={17} /><span>Install App</span>
+                  </button>
+                )}
                 <button onClick={() => triggerEvent('open-resume')} className="drawer-action-row-btn">
                   <FileDown size={17} /><span>Resume</span>
                 </button>

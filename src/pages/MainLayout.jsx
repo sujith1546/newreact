@@ -25,6 +25,7 @@ import Contact from '../pages/Contact';
 import ParticleCanvas from '../components/ParticleCanvas';
 import SectionSpotlight from '../components/SectionSpotlight';
 import { useTheme } from '../context/ThemeContext';
+import { usePersona } from '../context/PersonaContext';
 import useRealtimeData from '../hooks/useRealtimeData';
 import { trackPageView } from '../lib/analyticsTracker';
 
@@ -54,9 +55,9 @@ const SECTION_LABELS = {
 
 // ─── Navigation timing ────────────────────────────────────────────────────────
 // Apple UIKit NavigationController decelerate curve.
-const NAV_DURATION = 0.34;
-const NAV_EASE     = [0.32, 0.72, 0, 1];
-const PROGRESS_DURATION = 0.3;
+const NAV_DURATION = 0.45;
+const NAV_EASE     = [0.22, 1, 0.36, 1];
+const PROGRESS_DURATION = NAV_DURATION * 0.8;
 
 // ─── Page transition variants ─────────────────────────────────────────────────
 // Using framer-motion's `custom` prop pattern so AnimatePresence can pass the
@@ -71,12 +72,15 @@ const mobilePageVariants = {
 
 export default function MainLayout() {
   const { data: dbSettings } = useRealtimeData('site_settings', { single: true, filter: { column: 'id', value: 1 } });
+  const { getSectionOrder } = usePersona();
   
-  const SECTIONS = SECTIONS_DEF.filter(sec => {
+  const baseSections = SECTIONS_DEF.filter(sec => {
     if (sec.id === 'experience' && dbSettings?.feature_experience === false) return false;
     if (sec.id === 'certifications' && dbSettings?.feature_certifications === false) return false;
     return true;
   });
+
+  const SECTIONS = getSectionOrder(baseSections);
   const ALL_PAGES = SECTIONS.map(s => s.id);
 
   const { theme } = useTheme();
@@ -166,7 +170,7 @@ export default function MainLayout() {
     const dt = Date.now() - touchStartRef.current.time;
 
     if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 2 && dt < 500) {
-      const SWIPE_PAGES = ['home', 'skills', 'projects', 'contact'];
+      const SWIPE_PAGES = ['home', 'about', 'skills', 'projects', 'education', 'experience', 'certifications', 'contact'];
       const idx = SWIPE_PAGES.indexOf(activeSection);
       if (idx !== -1) {
         if (dx < 0 && idx < SWIPE_PAGES.length - 1) handleNavClick(SWIPE_PAGES[idx + 1]);
