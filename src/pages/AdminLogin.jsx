@@ -1,18 +1,15 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
-
-/**
- * AdminLogin
- * Restyled to match the portfolio's design system with hardcoded dark mode colors.
- * Includes advanced security: Client-side lockout, TOTP challenge, Passkey support, and Telemetry logging.
- */
+import { useTheme } from "../context/ThemeContext";
+import './AdminLogin.css';
 
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 60000; // 60 seconds
 
 export default function AdminLogin() {
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
 
   // Primary Auth State
   const [email, setEmail] = useState("");
@@ -32,18 +29,39 @@ export default function AdminLogin() {
 
   // Passkey State
   const [passkeySupported, setPasskeySupported] = useState(false);
+  
+  // UI State
+  const [activeMethod, setActiveMethod] = useState("passkey");
+  const [currentTime, setCurrentTime] = useState("");
+  const [greeting, setGreeting] = useState("GOOD AFTERNOON");
+  const [capsLockOn, setCapsLockOn] = useState(false);
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
 
   useEffect(() => {
     if (window.PublicKeyCredential) {
       setPasskeySupported(true);
+    } else {
+      setActiveMethod("password"); // fallback if not supported
     }
-    checkLockoutStatus();
     
-    // Countdown timer for lockout
+    checkLockoutStatus();
     const interval = setInterval(() => {
       checkLockoutStatus();
     }, 1000);
+    
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const updateClock = () => {
+      const now = new Date();
+      setCurrentTime(now.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' }));
+      const h = now.getHours();
+      setGreeting(h < 12 ? 'GOOD MORNING' : h < 17 ? 'GOOD AFTERNOON' : 'GOOD EVENING');
+    };
+    updateClock();
+    const clockInterval = setInterval(updateClock, 30000);
+    return () => clearInterval(clockInterval);
   }, []);
 
   const checkLockoutStatus = () => {
@@ -55,7 +73,6 @@ export default function AdminLogin() {
     } else {
       setLockoutTimer(0);
       if (data.lockedUntil !== 0 && data.lockedUntil <= Date.now() && data.count >= MAX_ATTEMPTS) {
-        // Reset count after lockout expires
         localStorage.setItem(`admin_lockout_${email}`, JSON.stringify({ count: 0, lockedUntil: 0 }));
         setAttempts(0);
       }
@@ -73,8 +90,6 @@ export default function AdminLogin() {
     
     localStorage.setItem(`admin_lockout_${email}`, JSON.stringify({ count: newCount, lockedUntil }));
     checkLockoutStatus();
-
-    // Log failure to telemetry
     await logTelemetry(null, email, false);
   };
 
@@ -107,11 +122,9 @@ export default function AdminLogin() {
   };
 
   const handlePostAuthSuccess = async (user) => {
-    // Check if MFA is required (AAL2)
     const { data: aalData, error: aalError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
     
     if (!aalError && aalData.currentLevel === 'aal1' && aalData.nextLevel === 'aal2') {
-      // MFA required! Look up their enrolled factor
       const { data: factorsData } = await supabase.auth.mfa.listFactors();
       const totpFactor = factorsData?.all?.find(f => f.factor_type === 'totp' && f.status === 'verified');
       
@@ -119,17 +132,16 @@ export default function AdminLogin() {
         setTotpFactorId(totpFactor.id);
         setMfaRequired(true);
         setLoading(false);
-        return; // Halt transition, show MFA screen
+        return; 
       }
     }
 
-    // Success and fully authenticated (or no MFA required)
     resetLockout();
     await logTelemetry(user.id, user.email, true);
     navigate("/admin/dashboard");
   };
 
-  async function handlePasswordSubmit(e) {
+  const handlePasswordSubmit = async (e) => {
     if (e) e.preventDefault();
     if (lockoutTimer > 0) return;
     
@@ -153,9 +165,9 @@ export default function AdminLogin() {
     }
 
     await handlePostAuthSuccess(data.user);
-  }
+  };
 
-  async function handlePasskeySubmit() {
+  const handlePasskeySubmit = async () => {
     if (lockoutTimer > 0) return;
     setError("");
     setLoading(true);
@@ -170,9 +182,36 @@ export default function AdminLogin() {
     }
 
     await handlePostAuthSuccess(data.user);
-  }
+  };
 
-  async function handleTotpSubmit(e) {
+  const handleMagicLinkSubmit = async (e) => {
+    e.preventDefault();
+    if (lockoutTimer > 0) return;
+    setError("");
+    if (!email) {
+      setError("Please enter an email address.");
+      return;
+    }
+    setLoading(true);
+    
+    const { error: authError } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: window.location.origin + "/admin/dashboard",
+      }
+    });
+
+    if (authError) {
+      setError("Failed to send magic link.");
+      setLoading(false);
+      return;
+    }
+    
+    setMagicLinkSent(true);
+    setLoading(false);
+  };
+
+  const handleTotpSubmit = async (e) => {
     if (e) e.preventDefault();
     setError("");
     setLoading(true);
@@ -197,325 +236,263 @@ export default function AdminLogin() {
       return;
     }
 
-    // TOTP verified successfully!
     const { data: { user } } = await supabase.auth.getUser();
     resetLockout();
     await logTelemetry(user.id, user.email, true);
     navigate("/admin/dashboard");
-  }
+  };
+
+  const onKeyUp = (e) => {
+    if (typeof e.getModifierState === 'function') {
+      setCapsLockOn(e.getModifierState('CapsLock'));
+    }
+  };
 
   if (mfaRequired) {
     return (
-      <div style={styles.page}>
-        <div style={styles.card}>
-          <div style={styles.iconBadge}><LockIcon size={20} color="#3b82f6" /></div>
-          <h1 style={styles.title}>Two-Factor Auth</h1>
-          <p style={styles.subtitle}>Enter the 6-digit code from your authenticator app.</p>
-          
-          <form onSubmit={handleTotpSubmit} noValidate>
-            <label style={styles.label}>Verification Code</label>
-            <div style={styles.inputWrap}>
-              <input
-                type="text"
-                autoComplete="one-time-code"
-                placeholder="000000"
-                value={totpCode}
-                onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                style={{ ...styles.input, textAlign: 'center', letterSpacing: '4px', fontSize: 18 }}
-              />
+      <div className="login-page-container">
+        <div className="login-main" style={{ alignItems: 'center' }}>
+          <div className="form-panel mfa-container">
+            <div className="mfa-icon">
+              <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="20" height="20">
+                <rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+              </svg>
             </div>
-            {error && <p role="alert" style={styles.errorText}>{error}</p>}
-            <button type="submit" disabled={loading || totpCode.length !== 6 || lockoutTimer > 0} style={styles.submitButton}>
-              {loading ? "Verifying…" : lockoutTimer > 0 ? `Locked (${lockoutTimer}s)` : "Verify"}
-              {!loading && lockoutTimer === 0 && <ArrowRightIcon size={14} />}
-            </button>
-            <button type="button" onClick={() => { setMfaRequired(false); supabase.auth.signOut(); }} style={styles.textButton}>
-              Cancel and go back
-            </button>
-          </form>
+            <h1 className="mfa-title">Two-Factor Auth</h1>
+            <p className="mfa-subtitle">Enter the 6-digit code from your authenticator app.</p>
+            
+            <form onSubmit={handleTotpSubmit} noValidate>
+              <div className="field" style={{ textAlign: 'left' }}>
+                <label>Verification Code</label>
+                <div className="input-shell" style={{ height: 50 }}>
+                  <input
+                    type="text"
+                    autoComplete="one-time-code"
+                    placeholder="000000"
+                    value={totpCode}
+                    onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    style={{ textAlign: 'center', letterSpacing: '8px', fontSize: 20, fontWeight: 700 }}
+                  />
+                </div>
+              </div>
+              {error && <p className="caps-warn show" style={{ color: '#ef4444', marginTop: 8 }}>{error}</p>}
+              <button type="submit" disabled={loading || totpCode.length !== 6 || lockoutTimer > 0} className="submit-btn" style={{ marginTop: 24 }}>
+                {loading ? "Verifying..." : lockoutTimer > 0 ? `Locked (${lockoutTimer}s)` : "Verify Code"}
+                {!loading && lockoutTimer === 0 && <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>}
+              </button>
+              <button type="button" onClick={() => { setMfaRequired(false); supabase.auth.signOut(); }} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 13, marginTop: 16, cursor: 'pointer' }}>
+                Cancel and go back
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={styles.page}>
-      <style>{`body { background-color: #ffffff !important; margin: 0; padding: 0; }`}</style>
-      <div style={styles.card}>
-        <div style={styles.iconBadge}>
-          <LockIcon size={20} color="#3b82f6" />
+    <div className="login-page-container">
+      {/* SIDEBAR */}
+      <aside className="login-sidebar">
+        <div className="login-avatar">
+          <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        </div>
+        <div className="side-name">Sujith Thota</div>
+        <div className="side-sub">
+          <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span>Admin Console · <span>{currentTime}</span></span>
         </div>
 
-        <h1 style={styles.title}>Admin Access</h1>
-        <p style={styles.subtitle}>Secure login for portfolio management</p>
+        <div className="side-divider"></div>
 
-        {passkeySupported && (
-          <div style={{ marginBottom: 24, paddingBottom: 24, borderBottom: "1px solid #3f3f46" }}>
-            <button type="button" onClick={handlePasskeySubmit} disabled={loading || lockoutTimer > 0} style={styles.passkeyButton}>
-              <FingerprintIcon size={16} /> Sign in with Passkey
-            </button>
-            <p style={{ textAlign: "center", fontSize: 11, color: "#71717a", margin: "8px 0 0 0" }}>
-              Only works if you have previously registered a passkey.
-            </p>
+        <div className="status-list">
+          <div className="status-row">Session
+            <span className="status-tag pending"><span className="sdot"></span>none</span>
           </div>
-        )}
-
-        <form onSubmit={handlePasswordSubmit} noValidate>
-          <label htmlFor="admin-email" style={styles.label}>
-            Email Address
-          </label>
-          <div style={styles.inputWrap}>
-            <MailIcon size={15} color="#a1a1aa" />
-            <input
-              id="admin-email"
-              type="email"
-              autoComplete="username"
-              placeholder="admin@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              style={styles.input}
-              disabled={lockoutTimer > 0}
-            />
+          <div className="status-row">Passkey service
+            <span className="status-tag"><span className="sdot"></span>reachable</span>
           </div>
-
-          <label htmlFor="admin-password" style={{ ...styles.label, marginTop: 16 }}>
-            Password
-          </label>
-          <div style={styles.inputWrap}>
-            <LockIcon size={14} color="#a1a1aa" />
-            <input
-              id="admin-password"
-              type={showPassword ? "text" : "password"}
-              autoComplete="current-password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              style={{ ...styles.input, letterSpacing: showPassword ? "normal" : "2px" }}
-              disabled={lockoutTimer > 0}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword((v) => !v)}
-              style={styles.eyeButton}
-              disabled={lockoutTimer > 0}
-            >
-              {showPassword ? <EyeOffIcon size={15} /> : <EyeIcon size={15} />}
-            </button>
+          <div className="status-row">Database
+            <span className="status-tag"><span className="sdot"></span>connected</span>
           </div>
+          <div className="status-row">Encryption
+            <span className="status-tag"><span className="sdot"></span>TLS 1.3</span>
+          </div>
+        </div>
 
-          {attempts > 0 && attempts < MAX_ATTEMPTS && (
-            <p style={styles.warningText}>
-              {MAX_ATTEMPTS - attempts} attempts remaining before lockout.
-            </p>
-          )}
-
-          {error && <p role="alert" style={styles.errorText}>{error}</p>}
-
-          <button type="submit" disabled={loading || lockoutTimer > 0} style={{
-            ...styles.submitButton,
-            background: lockoutTimer > 0 ? '#3f3f46' : '#ffffff',
-            color: lockoutTimer > 0 ? '#a1a1aa' : '#000000',
-            cursor: lockoutTimer > 0 ? 'not-allowed' : 'pointer'
-          }}>
-            {loading ? "Signing in…" : lockoutTimer > 0 ? `Locked (${lockoutTimer}s)` : "Sign In"}
-            {!loading && lockoutTimer === 0 && <ArrowRightIcon size={14} />}
+        <div className="side-actions">
+          <button className="btn-black" type="button">
+            <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 2-3 4M12 17h.01"/></svg>
+            Need Help?
           </button>
-        </form>
+          <button className="btn-outline" type="button">
+            <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5M12 7v5l4 2"/></svg>
+            Status Page
+          </button>
+        </div>
 
-        <p style={styles.footerNote}>Restricted access · authorized personnel only</p>
-      </div>
+        <div className="side-socials">
+          <a className="social-btn" href="#" aria-label="Email"><svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg></a>
+          <a className="social-btn" href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6Z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
+          <a className="social-btn" href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg></a>
+        </div>
+
+        <div className="side-footer">
+          Session secured · July 2026<br/>
+          © 2026 All Rights Reserved Sujith
+        </div>
+      </aside>
+
+      {/* MAIN CONTENT */}
+      <main className="login-main">
+        <div className="utility-bar">
+          <div className="u-btn"><kbd>Ctrl</kbd><kbd>K</kbd></div>
+          <div className="u-btn secure"><span className="sdot"></span>Secure</div>
+          <div className="theme-toggle">
+            <button type="button" className={theme === 'light' ? 'active' : ''} onClick={() => theme !== 'light' && toggleTheme()} aria-label="Light theme">
+              <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+            </button>
+            <button type="button" className={theme === 'dark' ? 'active' : ''} onClick={() => theme !== 'dark' && toggleTheme()} aria-label="Dark theme">
+              <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></svg>
+            </button>
+          </div>
+          <button className="icon-btn" aria-label="Settings" type="button">
+            <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 0 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1Z"/></svg>
+          </button>
+        </div>
+
+        <div className="login-content">
+          <div className="eyebrow" id="greeting">{greeting}</div>
+          <h1 className="headline">Admin Console</h1>
+
+          <div className="term-pill"><span className="prompt">&gt;_</span> Authentication required</div>
+
+          <p className="lede">Sign in to manage projects, content, and deployments for the portfolio.</p>
+
+          <div className="method-row">
+            {passkeySupported && (
+              <button className={`method-card ${activeMethod === 'passkey' ? 'active' : ''}`} onClick={() => { setError(""); setActiveMethod("passkey"); }} type="button">
+                <div className="method-icon"><svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a5 5 0 0 0-5 5c0 2.5 1 3.5 1 6v2"/><path d="M12 2a5 5 0 0 1 5 5c0 2.5-.5 4-1 5"/><path d="M8 15v3a3 3 0 0 0 3 3"/><path d="M16 13v5a3 3 0 0 1-3 3"/><circle cx="12" cy="9" r="1.5"/></svg></div>
+                <div className="method-label">Passkey</div>
+                <div className="method-sub">Fastest · hardware-backed</div>
+              </button>
+            )}
+            <button className={`method-card ${activeMethod === 'password' ? 'active' : ''}`} onClick={() => { setError(""); setActiveMethod("password"); }} type="button">
+              <div className="method-icon"><svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+              <div className="method-label">Password</div>
+              <div className="method-sub">Email & password</div>
+            </button>
+            <button className={`method-card ${activeMethod === 'magic' ? 'active' : ''}`} onClick={() => { setError(""); setActiveMethod("magic"); }} type="button">
+              <div className="method-icon"><svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg></div>
+              <div className="method-label">Magic Link</div>
+              <div className="method-sub">One-time email link</div>
+            </button>
+          </div>
+
+          <div className="form-panel">
+            {error && (
+              <div style={{ padding: '8px 12px', background: 'rgba(239,68,68,0.1)', color: '#ef4444', borderRadius: 8, fontSize: 13, marginBottom: 16, fontWeight: 500 }}>
+                {error}
+              </div>
+            )}
+            {attempts > 0 && attempts < MAX_ATTEMPTS && (
+              <div style={{ padding: '8px 12px', background: 'rgba(217,119,6,0.1)', color: '#d97706', borderRadius: 8, fontSize: 13, marginBottom: 16, fontWeight: 500 }}>
+                {MAX_ATTEMPTS - attempts} attempts remaining before lockout.
+              </div>
+            )}
+
+            {/* PASSKEY VIEW */}
+            {activeMethod === 'passkey' && passkeySupported && (
+              <div className="method-view" id="view-passkey">
+                <div className="passkey-panel">
+                  <div className="pk-icon"><svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a5 5 0 0 0-5 5c0 2.5 1 3.5 1 6v2"/><path d="M12 2a5 5 0 0 1 5 5c0 2.5-.5 4-1 5"/><path d="M8 15v3a3 3 0 0 0 3 3"/><path d="M16 13v5a3 3 0 0 1-3 3"/><circle cx="12" cy="9" r="1.5"/></svg></div>
+                  <h3>Sign in with your passkey</h3>
+                  <p>Use Touch ID, Windows Hello, or a security key registered on this device.</p>
+                </div>
+                <button className="submit-btn" type="button" onClick={handlePasskeySubmit} disabled={loading || lockoutTimer > 0}>
+                  {loading ? "Verifying..." : lockoutTimer > 0 ? `Locked (${lockoutTimer}s)` : "Continue with passkey"}
+                  {!loading && lockoutTimer === 0 && <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>}
+                </button>
+              </div>
+            )}
+
+            {/* PASSWORD VIEW */}
+            {activeMethod === 'password' && (
+              <div className="method-view" id="view-password">
+                <form onSubmit={handlePasswordSubmit} noValidate>
+                  <div className="field">
+                    <label htmlFor="email">Email address</label>
+                    <div className={`input-shell ${error ? 'error' : ''}`}>
+                      <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg>
+                      <input id="email" type="email" placeholder="admin@example.com" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} disabled={lockoutTimer > 0} />
+                    </div>
+                  </div>
+                  <div className="field">
+                    <label htmlFor="password">Password</label>
+                    <div className={`input-shell ${error ? 'error' : ''}`}>
+                      <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+                      <input id="password" type={showPassword ? "text" : "password"} placeholder="Enter your password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} onKeyUp={onKeyUp} onBlur={() => setCapsLockOn(false)} disabled={lockoutTimer > 0} style={{ letterSpacing: showPassword || !password ? 'normal' : '2px' }} />
+                      <button type="button" className="toggle-vis" aria-label={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword(!showPassword)}>
+                        <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          {showPassword ? (
+                            <>
+                              <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-5.94M9.9 4.24A10.6 10.6 0 0 1 12 4c7 0 11 7 11 7a21.5 21.5 0 0 1-2.61 3.66M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/>
+                            </>
+                          ) : (
+                            <>
+                              <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>
+                            </>
+                          )}
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                  <div className="row-between">
+                    <label className="remember"><input type="checkbox" /> Remember me</label>
+                    <span className={`caps-warn ${capsLockOn ? 'show' : ''}`}>
+                      <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.86 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.86a2 2 0 0 0-3.4 0Z"/></svg>
+                      Caps Lock on
+                    </span>
+                    <a className="forgot" href="#">Forgot?</a>
+                  </div>
+                  <button className="submit-btn" type="submit" disabled={loading || lockoutTimer > 0}>
+                    {loading ? "Signing in..." : lockoutTimer > 0 ? `Locked (${lockoutTimer}s)` : "Sign in"}
+                    {!loading && lockoutTimer === 0 && <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>}
+                  </button>
+                </form>
+              </div>
+            )}
+
+            {/* MAGIC LINK VIEW */}
+            {activeMethod === 'magic' && (
+              <div className="method-view magic-panel" id="view-magic">
+                <form onSubmit={handleMagicLinkSubmit} noValidate>
+                  <div className="field">
+                    <label htmlFor="magicEmail">Email address</label>
+                    <div className={`input-shell ${error ? 'error' : ''}`}>
+                      <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg>
+                      <input id="magicEmail" type="email" placeholder="admin@example.com" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} disabled={lockoutTimer > 0 || magicLinkSent} />
+                    </div>
+                  </div>
+                  <button className="submit-btn" type="submit" style={{ marginTop: 16 }} disabled={loading || lockoutTimer > 0 || magicLinkSent}>
+                    {loading ? "Sending link..." : magicLinkSent ? "Link sent — check your inbox" : lockoutTimer > 0 ? `Locked (${lockoutTimer}s)` : "Send magic link"}
+                    {!loading && !magicLinkSent && lockoutTimer === 0 && <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>}
+                  </button>
+                </form>
+              </div>
+            )}
+
+          </div>
+
+          <div className="footer-trust">
+            <span className="trust-item"><svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>TLS 1.3</span>
+            <span className="trust-item"><svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>Passkey ready</span>
+            <span className="trust-item"><svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Rate limited</span>
+          </div>
+
+          <p className="foot-note">Restricted access · authorized personnel only</p>
+        </div>
+      </main>
     </div>
   );
 }
-
-/* ---------- Inline icons ---------- */
-
-function FingerprintIcon({ size = 16, color = "currentColor" }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M2 12C2 6.5 6.5 2 12 2a10 10 0 0 1 8 4" />
-      <path d="M5 19.5C5.5 18 6 15 6 11.5a6 6 0 0 1 12 0c0 3.5.5 6.5 1 8.5" />
-      <path d="M8.5 15.6a3.5 3.5 0 0 1 7 0" />
-      <path d="M10 10.5a2 2 0 1 1 4 0" />
-    </svg>
-  );
-}
-
-function LockIcon({ size = 16, color = "currentColor" }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <rect x="5" y="11" width="14" height="9" rx="2" stroke={color} strokeWidth="1.8" />
-      <path d="M8 11V7a4 4 0 018 0v4" stroke={color} strokeWidth="1.8" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function MailIcon({ size = 16, color = "currentColor" }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <rect x="3" y="5" width="18" height="14" rx="2" stroke={color} strokeWidth="1.8" />
-      <path d="M3 7l9 6 9-6" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function ArrowRightIcon({ size = 16, color = "currentColor" }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <path d="M5 12h14M13 6l6 6-6 6" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-function EyeIcon({ size = 16, color = "#a1a1aa" }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" stroke={color} strokeWidth="1.6" />
-      <circle cx="12" cy="12" r="3" stroke={color} strokeWidth="1.6" />
-    </svg>
-  );
-}
-
-function EyeOffIcon({ size = 16, color = "#a1a1aa" }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <path d="M3 3l18 18" stroke={color} strokeWidth="1.6" strokeLinecap="round" />
-      <path d="M10.6 5.1A10.6 10.6 0 0112 5c6.5 0 10 7 10 7a17.9 17.9 0 01-3.2 4.1M6.5 6.6C4 8.3 2 12 2 12s3.5 7 10 7a9.6 9.6 0 004.4-1" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-      <path d="M9.9 9.9a3 3 0 004.2 4.2" stroke={color} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
-const styles = {
-  page: {
-    position: "fixed",
-    inset: 0,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 20,
-    background: "#ffffff",
-    fontFamily: "system-ui, -apple-system, sans-serif",
-    zIndex: 9999
-  },
-  card: {
-    width: 380,
-    maxWidth: "100%",
-    background: "#2a2a2a",
-    borderRadius: 20,
-    padding: 32,
-    border: "1px solid #3f3f46",
-    boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
-  },
-  iconBadge: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    background: "rgba(59, 130, 246, 0.15)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    margin: "0 auto 18px",
-  },
-  title: {
-    textAlign: "center",
-    fontSize: 21,
-    fontWeight: 600,
-    margin: "0 0 6px",
-    color: "#ffffff",
-    letterSpacing: -0.2,
-  },
-  subtitle: {
-    textAlign: "center",
-    fontSize: 13,
-    color: "#a1a1aa",
-    margin: "0 0 28px",
-  },
-  label: {
-    fontSize: 12,
-    fontWeight: 600,
-    color: "#e4e4e7",
-    display: "block",
-    marginBottom: 6,
-  },
-  inputWrap: {
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
-    background: "#1a1a1a",
-    border: "1px solid #3f3f46",
-    borderRadius: "8px",
-    padding: "0 12px",
-    height: 42,
-  },
-  input: {
-    flex: 1,
-    border: "none",
-    background: "transparent",
-    outline: "none",
-    fontSize: 13,
-    color: "#ffffff",
-    height: "100%",
-  },
-  eyeButton: {
-    background: "transparent",
-    border: "none",
-    cursor: "pointer",
-    display: "flex",
-    padding: 2,
-    color: "#a1a1aa"
-  },
-  warningText: {
-    fontSize: 12,
-    color: "#f59e0b", // text-warning (amber)
-    margin: "10px 0 0",
-  },
-  errorText: {
-    fontSize: 12,
-    color: "#ef4444",
-    margin: "10px 0 0",
-  },
-  submitButton: {
-    width: "100%",
-    height: 44,
-    borderRadius: "8px",
-    border: "none",
-    fontSize: 14,
-    fontWeight: 600,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    marginTop: 24,
-  },
-  passkeyButton: {
-    width: "100%",
-    height: 42,
-    borderRadius: "8px",
-    background: "rgba(255,255,255,0.05)",
-    color: "#ffffff",
-    border: "1px solid #3f3f46",
-    fontSize: 14,
-    fontWeight: 500,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    cursor: "pointer",
-  },
-  textButton: {
-    width: "100%",
-    background: "transparent",
-    border: "none",
-    color: "#a1a1aa",
-    fontSize: 13,
-    marginTop: 16,
-    cursor: "pointer",
-  },
-  footerNote: {
-    textAlign: "center",
-    fontSize: 12,
-    color: "#71717a",
-    margin: "20px 0 0",
-  },
-};

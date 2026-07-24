@@ -1656,12 +1656,26 @@ const SKILL_LEVELS = ['Learning', 'Intermediate', 'Advanced'];
 function SkillsPanel() {
   const [skills, setSkills] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({});
+  const [saving, setSaving] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingSkill, setEditingSkill] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [collapsedCats, setCollapsedCats] = useState({});
+  const [toast, setToast] = useState(null);
+
+  const EMPTY_FORM = {
+    name: '', category: 'languages', icon_class: '', proficiency_level: 80,
+    years_experience: 0, project_count: 0, description: '', level_label: 'Intermediate',
+    related_tools: [''], projects: [''], is_featured: false, order_index: 0
+  };
+  const [formData, setFormData] = useState(EMPTY_FORM);
 
   useEffect(() => { fetchSkills(); }, []);
+
+  const showToast = (msg, type = 'success') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   const fetchSkills = async () => {
     setLoading(true);
@@ -1670,176 +1684,74 @@ function SkillsPanel() {
     setLoading(false);
   };
 
-  const handleEdit = (skill) => {
-    setFormData({
-      ...skill,
-      related_tools: skill.related_tools ? skill.related_tools.join(', ') : '',
-      projects: skill.projects ? skill.projects.join(', ') : '',
-    });
-    setIsEditing(true);
+  const openModal = (skill = null) => {
+    if (skill) {
+      setEditingSkill(skill);
+      setFormData({
+        ...skill,
+        related_tools: Array.isArray(skill.related_tools) && skill.related_tools.length > 0 ? skill.related_tools : [''],
+        projects: Array.isArray(skill.projects) && skill.projects.length > 0 ? skill.projects : [''],
+      });
+    } else {
+      setEditingSkill(null);
+      setFormData(EMPTY_FORM);
+    }
+    setIsModalOpen(true);
   };
 
-  const handleAddNew = () => {
-    setFormData({
-      name: '', category: 'languages', icon_class: '', proficiency_level: 80,
-      years_experience: 0, project_count: 0, description: '', level_label: 'Intermediate',
-      related_tools: '', projects: '', is_featured: false, order_index: 0
-    });
-    setIsEditing(true);
-  };
+  const closeModal = () => { setIsModalOpen(false); setEditingSkill(null); };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Delete this skill?')) return;
+  const handleDelete = async (id, name) => {
+    if (!window.confirm(`Delete "${name}"? This cannot be undone.`)) return;
     const { error } = await supabase.from('skills').delete().eq('id', id);
-    if (!error) setSkills(skills.filter(s => s.id !== id));
+    if (!error) {
+      setSkills(skills.filter(s => s.id !== id));
+      showToast(`"${name}" deleted`, 'error');
+    } else showToast('Failed to delete', 'error');
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!formData.name || !formData.category) return alert('Name and Category are required');
+  const handleSubmit = async () => {
+    if (!formData.name.trim()) { showToast('Name is required', 'error'); return; }
+    if (!formData.category) { showToast('Category is required', 'error'); return; }
+    
+    setSaving(true);
     let clampedProficiency = Math.max(1, Math.min(100, parseInt(formData.proficiency_level) || 80));
-    const parseArray = (str) => typeof str === 'string' ? str.split(',').map(s => s.trim()).filter(Boolean) : str;
     const payload = {
       ...formData,
       proficiency_level: clampedProficiency,
       years_experience: parseInt(formData.years_experience) || 0,
       project_count: parseInt(formData.project_count) || 0,
       order_index: parseInt(formData.order_index) || 0,
-      related_tools: parseArray(formData.related_tools),
-      projects: parseArray(formData.projects),
+      related_tools: formData.related_tools.filter(t => t.trim()),
+      projects: formData.projects.filter(p => p.trim()),
     };
-    if (payload.id) {
-      const { data, error } = await supabase.from('skills').update(payload).eq('id', payload.id).select().single();
-      if (!error && data) setSkills(skills.map(s => s.id === data.id ? data : s));
+
+    if (editingSkill) {
+      const { data, error } = await supabase.from('skills').update(payload).eq('id', editingSkill.id).select().single();
+      if (!error && data) {
+        setSkills(skills.map(s => s.id === data.id ? data : s).sort((a, b) => a.order_index - b.order_index));
+        showToast(`"${data.name}" updated successfully`);
+        closeModal();
+      } else showToast('Failed to save', 'error');
     } else {
       const { data, error } = await supabase.from('skills').insert([payload]).select().single();
-      if (!error && data) setSkills([...skills, data].sort((a, b) => a.order_index - b.order_index));
+      if (!error && data) {
+        setSkills([...skills, data].sort((a, b) => a.order_index - b.order_index));
+        showToast(`"${data.name}" added successfully`);
+        closeModal();
+      } else showToast('Failed to create', 'error');
     }
-    setIsEditing(false);
+    setSaving(false);
   };
 
   const toggleCategory = (cat) => setCollapsedCats(prev => ({ ...prev, [cat]: !prev[cat] }));
 
-  /* ── colour scale for proficiency bar ── */
   const barColor = (pct) => {
-    if (pct >= 85) return '#28a745';
-    if (pct >= 65) return '#007bff';
-    if (pct >= 45) return '#ff9800';
+    if (pct >= 85) return '#10b981';
+    if (pct >= 65) return '#3b82f6';
+    if (pct >= 45) return '#f59e0b';
     return '#ef4444';
   };
-
-  if (loading) return (
-    <PanelCard title="Skills Inventory">
-      <div style={{ padding: '60px', display: 'flex', justifyContent: 'center' }}>
-        <Loader2 className="spin" size={24} color="var(--text-muted)" />
-      </div>
-    </PanelCard>
-  );
-
-  if (isEditing) {
-    return (
-      <PanelCard
-        title={formData.id ? 'Edit Skill' : 'Add Skill'}
-        action={{ label: 'Cancel', icon: 'ti-x', onClick: () => setIsEditing(false) }}
-      >
-        <div style={{ padding: '24px' }}>
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div className="admin-settings-grid">
-              <div className="admin-field">
-                <label>Skill Name *</label>
-                <input className="admin-input" type="text" required value={formData.name || ''}
-                  onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g. React" />
-              </div>
-              <div className="admin-field">
-                <label>Category *</label>
-                <select className="admin-input" value={formData.category || 'languages'}
-                  onChange={e => setFormData({...formData, category: e.target.value})}>
-                  {SKILL_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
-              </div>
-              <div className="admin-field">
-                <label>Level Label</label>
-                <select className="admin-input" value={formData.level_label || 'Intermediate'}
-                  onChange={e => setFormData({...formData, level_label: e.target.value})}>
-                  {SKILL_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
-                </select>
-              </div>
-              <div className="admin-field">
-                <label>Proficiency (1–100)</label>
-                <input className="admin-input" type="number" min="1" max="100"
-                  value={formData.proficiency_level || 80}
-                  onChange={e => setFormData({...formData, proficiency_level: e.target.value})} />
-              </div>
-              <div className="admin-field">
-                <label>Years Experience</label>
-                <input className="admin-input" type="number" min="0"
-                  value={formData.years_experience || 0}
-                  onChange={e => setFormData({...formData, years_experience: e.target.value})} />
-              </div>
-              <div className="admin-field">
-                <label>Project Count</label>
-                <input className="admin-input" type="number" min="0"
-                  value={formData.project_count || 0}
-                  onChange={e => setFormData({...formData, project_count: e.target.value})} />
-              </div>
-              <div className="admin-field">
-                <label>Icon Class (Tabler)</label>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <input className="admin-input" type="text" style={{ flex: 1 }}
-                    value={formData.icon_class || ''}
-                    onChange={e => setFormData({...formData, icon_class: e.target.value})}
-                    placeholder="e.g. brand-python" />
-                  {formData.icon_class && (
-                    <div style={{ width: 34, height: 34, background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <i className={`ti ti-${formData.icon_class}`} style={{ fontSize: 18 }} />
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="admin-field">
-                <label>Display Order</label>
-                <input className="admin-input" type="number"
-                  value={formData.order_index || 0}
-                  onChange={e => setFormData({...formData, order_index: e.target.value})} />
-              </div>
-            </div>
-
-            <div className="admin-field">
-              <label>Description</label>
-              <textarea className="admin-input" style={{ minHeight: 80, resize: 'vertical' }}
-                value={formData.description || ''}
-                onChange={e => setFormData({...formData, description: e.target.value})}
-                placeholder="Brief description of this skill..." />
-            </div>
-
-            <div className="admin-settings-grid">
-              <div className="admin-field">
-                <label>Related Tools (comma-separated)</label>
-                <textarea className="admin-input" style={{ minHeight: 64 }}
-                  value={formData.related_tools || ''}
-                  onChange={e => setFormData({...formData, related_tools: e.target.value})}
-                  placeholder="Node.js, Express, Vercel" />
-              </div>
-              <div className="admin-field">
-                <label>Projects (comma-separated)</label>
-                <textarea className="admin-input" style={{ minHeight: 64 }}
-                  value={formData.projects || ''}
-                  onChange={e => setFormData({...formData, projects: e.target.value})}
-                  placeholder="Project A, Project B" />
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
-              <button type="button" onClick={() => setIsEditing(false)} className="admin-action-btn secondary">Cancel</button>
-              <button type="submit" className="admin-action-btn">
-                <i className="ti ti-device-floppy" style={{ fontSize: 13 }} /> Save Skill
-              </button>
-            </div>
-          </form>
-        </div>
-      </PanelCard>
-    );
-  }
 
   const filteredSkills = skills.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()));
   const groupedSkills = SKILL_CATEGORIES.reduce((acc, cat) => {
@@ -1847,175 +1759,268 @@ function SkillsPanel() {
     return acc;
   }, {});
 
+  if (loading) return <PanelCard title="Skills Inventory"><div style={styles.emptyState}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div></PanelCard>;
+
+  const modalOverlay = { position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' };
+  const modalBox = { background: 'var(--sidebar-bg, #1a1a2e)', border: '1px solid var(--border-color)', borderRadius: '16px', width: '100%', maxWidth: '640px', maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 32px 64px rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column' };
+  const labelStyle = { fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.5px', textTransform: 'uppercase', display: 'block', marginBottom: 6 };
+  const inputStyle = { ...styles.input, background: 'var(--bg-primary)' };
+
+  const handleArrayChange = (field, index, value) => {
+    const newArray = [...formData[field]];
+    newArray[index] = value;
+    setFormData({ ...formData, [field]: newArray });
+  };
+  const addArrayItem = (field) => setFormData({ ...formData, [field]: [...formData[field], ''] });
+  const removeArrayItem = (field, index) => setFormData({ ...formData, [field]: formData[field].filter((_, i) => i !== index) });
+
   return (
-    <PanelCard
-      title="Skills Inventory"
-      action={{ label: 'Add Skill', icon: 'ti-plus', onClick: handleAddNew }}
-      headerElement={
-        <div style={{ position: 'relative' }}>
-          <input
-            type="text"
-            placeholder="Search skills…"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="admin-input"
-            style={{ width: 210, padding: '6px 12px 6px 34px', fontSize: 13, margin: 0 }}
-          />
-          <i className="ti ti-search" style={{ position: 'absolute', left: 11, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: 14 }} />
-        </div>
-      }
-    >
-      {skills.length === 0 ? (
-        <EmptyState icon="ti-star" title="No skills yet" description="Add your first skill to get started." />
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 28, padding: '20px 22px' }}>
-          {SKILL_CATEGORIES.map(cat => {
-            const catSkills = groupedSkills[cat] || [];
-            if (catSkills.length === 0) return null;
-            const isCollapsed = collapsedCats[cat];
-
-            return (
-              <div key={cat}>
-                {/* Category header */}
-                <div
-                  onClick={() => toggleCategory(cat)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 8,
-                    cursor: 'pointer', userSelect: 'none',
-                    marginBottom: 14, paddingBottom: 10,
-                    borderBottom: '2px solid var(--border-color)'
-                  }}
-                >
-                  {isCollapsed
-                    ? <ChevronRight size={15} color="var(--text-muted)" />
-                    : <ChevronDown  size={15} color="var(--primary-blue)" />}
-                  <h3 style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', textTransform: 'capitalize', letterSpacing: '0.2px' }}>
-                    {cat}
-                  </h3>
-                  <span className="admin-badge" style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-muted)', fontSize: 10, marginLeft: 2 }}>
-                    {catSkills.length}
-                  </span>
-                </div>
-
-                {!isCollapsed && (
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 14 }}>
-                    {catSkills.map(skill => {
-                      const pct   = skill.proficiency_level || 0;
-                      const color = barColor(pct);
-                      return (
-                        <div key={skill.id} style={{
-                          background: 'var(--bg-primary)',
-                          border: '1px solid var(--border-color)',
-                          borderRadius: 12,
-                          padding: '16px 18px',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: 12,
-                          position: 'relative',
-                          transition: 'box-shadow 0.2s, transform 0.2s',
-                        }}
-                          onMouseEnter={e => { e.currentTarget.style.boxShadow = 'var(--shadow-md)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                          onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'none'; }}
-                        >
-                          {/* Top row: icon + name + actions */}
-                          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                              <div style={{
-                                width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                                background: `${color}18`,
-                                display: 'flex', alignItems: 'center', justifyContent: 'center'
-                              }}>
-                                {skill.icon_class
-                                  ? <i className={`ti ti-${skill.icon_class}`} style={{ fontSize: 19, color }} />
-                                  : <Star size={17} color={color} />}
-                              </div>
-                              <div>
-                                <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.2 }}>
-                                  {skill.name}
-                                  {skill.is_featured && <Star size={11} color="#f59e0b" style={{ marginLeft: 5, verticalAlign: 'middle' }} />}
-                                </p>
-                                <span style={{
-                                  display: 'inline-block', marginTop: 3,
-                                  fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px',
-                                  padding: '2px 7px', borderRadius: 99,
-                                  background: `${color}18`, color
-                                }}>
-                                  {skill.level_label || 'Intermediate'}
-                                </span>
-                              </div>
-                            </div>
-                            <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-                              <button onClick={() => handleEdit(skill)} className="admin-icon-action" title="Edit"
-                                style={{ color: 'var(--text-muted)', width: 28, height: 28, borderRadius: 7, background: 'var(--card-bg)' }}>
-                                <Edit3 size={13} />
-                              </button>
-                              <button onClick={() => handleDelete(skill.id)} className="admin-icon-action" title="Delete"
-                                style={{ color: '#ef4444', width: 28, height: 28, borderRadius: 7, background: '#ef444410' }}>
-                                <Trash2 size={13} />
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Proficiency bar */}
-                          <div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5, fontSize: 11, fontWeight: 600 }}>
-                              <span style={{ color: 'var(--text-muted)' }}>Proficiency</span>
-                              <span style={{ color }}>{pct}%</span>
-                            </div>
-                            <div style={{ width: '100%', height: 5, background: 'var(--border-color)', borderRadius: 99, overflow: 'hidden' }}>
-                              <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: 99, transition: 'width 0.6s ease' }} />
-                            </div>
-                          </div>
-
-                          {/* Meta footer */}
-                          <div style={{
-                            display: 'flex', alignItems: 'center', gap: 14,
-                            paddingTop: 10, borderTop: '1px solid var(--border-color)'
-                          }}>
-                            <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--text-muted)' }}>
-                              <Briefcase size={11} /> {skill.years_experience || 0} yr{skill.years_experience !== 1 ? 's' : ''}
-                            </span>
-                            <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--text-muted)' }}>
-                              <Layers size={11} /> {skill.project_count || 0} project{skill.project_count !== 1 ? 's' : ''}
-                            </span>
-                            {skill.related_tools?.length > 0 && (
-                              <span style={{ marginLeft: 'auto', fontSize: 10, color: 'var(--text-muted)', background: 'var(--border-color)', padding: '2px 7px', borderRadius: 99 }}>
-                                +{skill.related_tools.length} tools
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-
-          {filteredSkills.length === 0 && searchQuery && (
-            <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)', fontSize: 13 }}>
-              No skills found matching &ldquo;{searchQuery}&rdquo;
-            </div>
-          )}
+    <>
+      {toast && (
+        <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 9999, background: toast.type === 'error' ? '#ef4444' : '#10b981', color: '#fff', padding: '12px 20px', borderRadius: 10, fontSize: 13, fontWeight: 600, boxShadow: '0 8px 24px rgba(0,0,0,0.3)' }}>
+          {toast.msg}
         </div>
       )}
-    </PanelCard>
+
+      <PanelCard 
+        title="Skills Inventory" 
+        action={{ label: 'Add Skill', icon: 'ti-plus', onClick: () => openModal() }}
+      >
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', borderBottom: '1px solid var(--border-color)' }}>
+          {[
+            { label: 'Total Skills', val: skills.length, color: '#3b82f6' },
+            { label: 'Featured Skills', val: skills.filter(s => s.is_featured).length, color: '#f59e0b' },
+            { label: 'Avg Proficiency', val: Math.round(skills.reduce((a, b) => a + b.proficiency_level, 0) / (skills.length || 1)) + '%', color: '#10b981' },
+          ].map(s => (
+            <div key={s.label} style={{ padding: '14px 20px', borderRight: '1px solid var(--border-color)' }}>
+              <p style={{ margin: 0, fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{s.label}</p>
+              <p style={{ margin: '4px 0 0', fontSize: 20, fontWeight: 800, color: s.color }}>{s.val}</p>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ padding: '12px 20px', borderBottom: '1px solid var(--border-color)', background: 'var(--bg-secondary)', display: 'flex', gap: 10, alignItems: 'center' }}>
+          <div style={{ position: 'relative', flex: 1 }}>
+            <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </span>
+            <input type="text" placeholder="Search skills by name..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} style={{ ...inputStyle, paddingLeft: 32, paddingTop: 7, paddingBottom: 7, fontSize: 13 }} />
+          </div>
+          <span style={{ fontSize: 12, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{filteredSkills.length} matches</span>
+        </div>
+
+        {skills.length === 0 ? (
+          <EmptyState icon="ti-star" title="No skills yet" description="Click '+ Add Skill' to build your inventory." />
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 28, padding: '20px 22px' }}>
+            {SKILL_CATEGORIES.map(cat => {
+              const catSkills = groupedSkills[cat] || [];
+              if (catSkills.length === 0) return null;
+              const isCollapsed = collapsedCats[cat];
+
+              return (
+                <div key={cat}>
+                  <div onClick={() => toggleCategory(cat)} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', userSelect: 'none', marginBottom: 14, paddingBottom: 10, borderBottom: '2px solid var(--border-color)' }}>
+                    {isCollapsed ? <ChevronRight size={15} color="var(--text-muted)" /> : <ChevronDown size={15} color="var(--primary-blue)" />}
+                    <h3 style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', textTransform: 'capitalize', letterSpacing: '0.2px' }}>{cat}</h3>
+                    <span style={{ padding: '2px 8px', borderRadius: 12, background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-muted)', fontSize: 10, fontWeight: 700 }}>{catSkills.length}</span>
+                  </div>
+
+                  {!isCollapsed && (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 14 }}>
+                      {catSkills.map(skill => {
+                        const pct = skill.proficiency_level || 0;
+                        const color = barColor(pct);
+                        return (
+                          <div key={skill.id} style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 12, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 12, position: 'relative', transition: 'all 0.2s' }}>
+                            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                <div style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0, background: `${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                  {skill.icon_class ? <i className={`ti ti-${skill.icon_class}`} style={{ fontSize: 19, color }} /> : <Star size={17} color={color} />}
+                                </div>
+                                <div>
+                                  <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.2 }}>
+                                    {skill.name} {skill.is_featured && <Star size={12} color="#f59e0b" style={{ fill: '#f59e0b', marginLeft: 4, verticalAlign: 'text-top' }} />}
+                                  </p>
+                                  <span style={{ display: 'inline-block', marginTop: 3, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', padding: '2px 7px', borderRadius: 99, background: `${color}18`, color }}>
+                                    {skill.level_label || 'Intermediate'}
+                                  </span>
+                                </div>
+                              </div>
+                              <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
+                                <button onClick={() => openModal(skill)} title="Edit" style={{ ...styles.iconBtn, padding: 5, borderRadius: 6, background: 'rgba(59,130,246,0.08)' }}><Edit3 size={13} color="#3b82f6" /></button>
+                                <button onClick={() => handleDelete(skill.id, skill.name)} title="Delete" style={{ ...styles.iconBtn, padding: 5, borderRadius: 6, background: 'rgba(239,68,68,0.08)' }}><Trash2 size={13} color="#ef4444" /></button>
+                              </div>
+                            </div>
+                            <div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5, fontSize: 11, fontWeight: 600 }}><span style={{ color: 'var(--text-muted)' }}>Proficiency</span><span style={{ color }}>{pct}%</span></div>
+                              <div style={{ width: '100%', height: 5, background: 'var(--border-color)', borderRadius: 99, overflow: 'hidden' }}><div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: 99 }} /></div>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 14, paddingTop: 10, borderTop: '1px solid var(--border-color)' }}>
+                              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--text-muted)' }}><Briefcase size={11} /> {skill.years_experience || 0} yrs</span>
+                              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--text-muted)' }}><Layers size={11} /> {skill.project_count || 0} projs</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </PanelCard>
+
+      {isModalOpen && (
+        <div style={modalOverlay} onClick={closeModal}>
+          <div style={modalBox} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', borderBottom: '1px solid var(--border-color)', flexShrink: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(59,130,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Star size={15} color="#3b82f6" /></div>
+                <div>
+                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{editingSkill ? 'Edit Skill' : 'New Skill'}</p>
+                  <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '2px 0 0' }}>{editingSkill ? `Editing: ${editingSkill.name}` : 'Add to your inventory'}</p>
+                </div>
+              </div>
+              <button onClick={closeModal} style={{ ...styles.iconBtn, padding: 6 }}><X size={18} color="var(--text-muted)" /></button>
+            </div>
+
+            <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 18 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                <div>
+                  <label style={labelStyle}>Skill Name <span style={{ color: '#ef4444' }}>*</span></label>
+                  <input style={inputStyle} value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="e.g. React" autoFocus />
+                </div>
+                <div>
+                  <label style={labelStyle}>Category <span style={{ color: '#ef4444' }}>*</span></label>
+                  <select style={inputStyle} value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })}>
+                    {SKILL_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+                <div>
+                  <label style={labelStyle}>Level Label</label>
+                  <select style={inputStyle} value={formData.level_label} onChange={e => setFormData({ ...formData, level_label: e.target.value })}>
+                    {SKILL_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
+                  </select>
+                </div>
+                <div style={{ gridColumn: 'span 2' }}>
+                  <label style={labelStyle}>Proficiency (1-100)</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <input type="range" min="1" max="100" value={formData.proficiency_level} onChange={e => setFormData({ ...formData, proficiency_level: e.target.value })} style={{ flex: 1 }} />
+                    <span style={{ fontSize: 13, fontWeight: 700, color: barColor(formData.proficiency_level), width: 40, textAlign: 'right' }}>{formData.proficiency_level}%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+                <div>
+                  <label style={labelStyle}>Years Exp</label>
+                  <input type="number" min="0" style={inputStyle} value={formData.years_experience} onChange={e => setFormData({ ...formData, years_experience: e.target.value })} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Projects</label>
+                  <input type="number" min="0" style={inputStyle} value={formData.project_count} onChange={e => setFormData({ ...formData, project_count: e.target.value })} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Order</label>
+                  <input type="number" style={inputStyle} value={formData.order_index} onChange={e => setFormData({ ...formData, order_index: e.target.value })} />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 14, alignItems: 'end' }}>
+                <div>
+                  <label style={labelStyle}>Icon Class (Tabler)</label>
+                  <input style={inputStyle} value={formData.icon_class} onChange={e => setFormData({ ...formData, icon_class: e.target.value })} placeholder="e.g. brand-react" />
+                </div>
+                <div style={{ width: 42, height: 42, background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {formData.icon_class ? <i className={`ti ti-${formData.icon_class}`} style={{ fontSize: 24, color: 'var(--text-primary)' }} /> : <Star size={20} color="var(--text-muted)" />}
+                </div>
+              </div>
+
+              <div>
+                <label style={labelStyle}>Description</label>
+                <textarea style={{ ...inputStyle, minHeight: 60, resize: 'vertical' }} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} placeholder="Brief description..." />
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', background: 'var(--bg-secondary)', borderRadius: 10, border: '1px solid var(--border-color)' }}>
+                <input type="checkbox" id="is_featured" checked={formData.is_featured} onChange={e => setFormData({ ...formData, is_featured: e.target.checked })} style={{ width: 16, height: 16 }} />
+                <label htmlFor="is_featured" style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', cursor: 'pointer', margin: 0 }}>Mark as Featured Skill</label>
+                <Star size={14} color={formData.is_featured ? "#f59e0b" : "var(--text-muted)"} style={{ fill: formData.is_featured ? "#f59e0b" : "transparent" }} />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                {/* Related Tools */}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                    <label style={{ ...labelStyle, marginBottom: 0 }}>Related Tools</label>
+                    <button onClick={() => addArrayItem('related_tools')} style={{ background: 'none', border: 'none', color: '#3b82f6', fontSize: 11, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 2 }}><Plus size={12}/> Add</button>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {formData.related_tools.map((tool, idx) => (
+                      <div key={idx} style={{ display: 'flex', gap: 6 }}>
+                        <input style={{ ...inputStyle, flex: 1, padding: '6px 10px', fontSize: 13 }} value={tool} onChange={e => handleArrayChange('related_tools', idx, e.target.value)} placeholder="e.g. Next.js" />
+                        {formData.related_tools.length > 1 && <button onClick={() => removeArrayItem('related_tools', idx)} style={{ ...styles.iconBtn, padding: 4, background: 'rgba(239,68,68,0.1)' }}><X size={12} color="#ef4444" /></button>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {/* Projects */}
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                    <label style={{ ...labelStyle, marginBottom: 0 }}>Featured Projects</label>
+                    <button onClick={() => addArrayItem('projects')} style={{ background: 'none', border: 'none', color: '#3b82f6', fontSize: 11, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 2 }}><Plus size={12}/> Add</button>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {formData.projects.map((proj, idx) => (
+                      <div key={idx} style={{ display: 'flex', gap: 6 }}>
+                        <input style={{ ...inputStyle, flex: 1, padding: '6px 10px', fontSize: 13 }} value={proj} onChange={e => handleArrayChange('projects', idx, e.target.value)} placeholder="e.g. E-commerce App" />
+                        {formData.projects.length > 1 && <button onClick={() => removeArrayItem('projects', idx)} style={{ ...styles.iconBtn, padding: 4, background: 'rgba(239,68,68,0.1)' }}><X size={12} color="#ef4444" /></button>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+            </div>
+            
+            <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end', gap: 10, flexShrink: 0 }}>
+              <button onClick={closeModal} style={{ padding: '8px 18px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-secondary)', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>Cancel</button>
+              <button onClick={handleSubmit} disabled={saving} style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: '#3b82f6', color: '#fff', fontSize: 13, fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1, display: 'flex', alignItems: 'center', gap: 7 }}>
+                {saving && <Loader2 size={14} className="spin" />} {editingSkill ? 'Save Changes' : 'Add Skill'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
-/* -------------------------------------------------------------------- */
-/* Experience Panel                                                     */
-/* -------------------------------------------------------------------- */
 function ExperiencePanel() {
   const [experiences, setExperiences] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({});
+  const [saving, setSaving] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingExp, setEditingExp] = useState(null);
+  const [toast, setToast] = useState(null);
 
-  useEffect(() => {
-    fetchExperience();
-  }, []);
+  const EMPTY_FORM = {
+    role: '', company: '', start_date: '', end_date: '', 
+    description_bullets: [''], logo_url: '', is_education: false, display_order: 0,
+    is_current: false
+  };
+  const [formData, setFormData] = useState(EMPTY_FORM);
+
+  useEffect(() => { fetchExperience(); }, []);
+
+  const showToast = (msg, type = 'success') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   const fetchExperience = async () => {
     setLoading(true);
@@ -2024,159 +2029,246 @@ function ExperiencePanel() {
     setLoading(false);
   };
 
-  const handleEdit = (exp) => {
-    setFormData({
-      ...exp,
-      description_bullets: exp.description_bullets ? exp.description_bullets.join('\n') : '',
-    });
-    setIsEditing(true);
+  const openModal = (exp = null) => {
+    if (exp) {
+      setEditingExp(exp);
+      setFormData({
+        ...exp,
+        is_current: !exp.end_date,
+        end_date: exp.end_date || '',
+        description_bullets: Array.isArray(exp.description_bullets) && exp.description_bullets.length > 0 ? exp.description_bullets : [''],
+      });
+    } else {
+      setEditingExp(null);
+      setFormData(EMPTY_FORM);
+    }
+    setIsModalOpen(true);
   };
 
-  const handleAddNew = () => {
-    setFormData({
-      role: '', company: '', start_date: '', end_date: '', 
-      description_bullets: '', logo_url: '', is_education: false, display_order: 0
-    });
-    setIsEditing(true);
-  };
+  const closeModal = () => { setIsModalOpen(false); setEditingExp(null); };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Delete this experience?')) return;
+  const handleDelete = async (id, role) => {
+    if (!window.confirm(`Delete "${role}"? This cannot be undone.`)) return;
     const { error } = await supabase.from('experience').delete().eq('id', id);
-    if (!error) setExperiences(experiences.filter(e => e.id !== id));
+    if (!error) {
+      setExperiences(experiences.filter(e => e.id !== id));
+      showToast(`"${role}" deleted`, 'error');
+    } else showToast('Failed to delete', 'error');
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!formData.role || !formData.company || !formData.start_date) return alert('Role, Company, and Start Date are required');
+  const handleSubmit = async () => {
+    if (!formData.role.trim() || !formData.company.trim() || !formData.start_date.trim()) { 
+      showToast('Role, Company, and Start Date are required', 'error'); return; 
+    }
     
-    // Basic date validation if both exist
-    if (formData.end_date) {
+    if (!formData.is_current && formData.end_date) {
       const d1 = new Date(formData.start_date);
       const d2 = new Date(formData.end_date);
       if (!isNaN(d1) && !isNaN(d2) && d2 < d1) {
-         return alert("End date cannot be before start date!");
+         showToast("End date cannot be before start date", 'error'); return;
       }
     }
 
-    const parseBullets = (str) => typeof str === 'string' ? str.split('\n').map(s => s.trim()).filter(Boolean) : str;
-
+    setSaving(true);
     const payload = {
       ...formData,
-      end_date: formData.end_date || null, // null means "Present"
+      end_date: formData.is_current ? null : formData.end_date,
       display_order: parseInt(formData.display_order) || 0,
-      description_bullets: parseBullets(formData.description_bullets),
+      description_bullets: formData.description_bullets.filter(b => b.trim()),
     };
+    delete payload.is_current; 
 
-    if (payload.id) {
-      const { data, error } = await supabase.from('experience').update(payload).eq('id', payload.id).select().single();
-      if (!error && data) setExperiences(experiences.map(e => e.id === data.id ? data : e));
+    if (editingExp) {
+      const { data, error } = await supabase.from('experience').update(payload).eq('id', editingExp.id).select().single();
+      if (!error && data) {
+        setExperiences(experiences.map(e => e.id === data.id ? data : e).sort((a, b) => a.display_order - b.display_order));
+        showToast('Experience updated successfully');
+        closeModal();
+      } else showToast('Failed to save', 'error');
     } else {
       const { data, error } = await supabase.from('experience').insert([payload]).select().single();
-      if (!error && data) setExperiences([...experiences, data].sort((a, b) => a.display_order - b.display_order));
+      if (!error && data) {
+        setExperiences([...experiences, data].sort((a, b) => a.display_order - b.display_order));
+        showToast('Experience added successfully');
+        closeModal();
+      } else showToast('Failed to create', 'error');
     }
-    setIsEditing(false);
+    setSaving(false);
   };
+
+  const handleArrayChange = (index, value) => {
+    const newArray = [...formData.description_bullets];
+    newArray[index] = value;
+    setFormData({ ...formData, description_bullets: newArray });
+  };
+  const addArrayItem = () => setFormData({ ...formData, description_bullets: [...formData.description_bullets, ''] });
+  const removeArrayItem = (index) => setFormData({ ...formData, description_bullets: formData.description_bullets.filter((_, i) => i !== index) });
 
   if (loading) return <PanelCard title="Experience Timeline"><div style={styles.emptyState}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div></PanelCard>;
 
-  if (isEditing) {
-    return (
-      <PanelCard title={formData.id ? "Edit Experience" : "Add Experience"} action={{ label: "Cancel", icon: "ti-x", onClick: () => setIsEditing(false) }}>
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={styles.settingsGrid}>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Role / Title *</label>
-              <input type="text" style={styles.input} required value={formData.role || ''} onChange={e => setFormData({...formData, role: e.target.value})} placeholder="e.g. Software Engineer" />
-            </div>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Company / Institution *</label>
-              <input type="text" style={styles.input} required value={formData.company || ''} onChange={e => setFormData({...formData, company: e.target.value})} placeholder="e.g. Google" />
-            </div>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Start Date (e.g. Jan 2024) *</label>
-              <input type="text" style={styles.input} required value={formData.start_date || ''} onChange={e => setFormData({...formData, start_date: e.target.value})} placeholder="Jan 2024" />
-            </div>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>End Date (Leave blank for 'Present')</label>
-              <input type="text" style={styles.input} value={formData.end_date || ''} onChange={e => setFormData({...formData, end_date: e.target.value})} placeholder="Dec 2025 or leave blank" />
-            </div>
-            <div style={{...styles.settingGroup, gridColumn: '1 / -1'}}>
-              <label style={styles.settingLabel}>Logo URL (Optional)</label>
-              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                <input type="text" style={{...styles.input, flex: 1}} value={formData.logo_url || ''} onChange={e => setFormData({...formData, logo_url: e.target.value})} placeholder="https://..." />
-                {formData.logo_url && <img src={formData.logo_url} alt="preview" style={{width: 32, height: 32, borderRadius: 6, objectFit: 'contain', background: '#fff', border: '1px solid var(--border-color)'}} onError={(e) => e.target.style.display='none'} />}
-              </div>
-            </div>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Display Order</label>
-              <input type="number" style={styles.input} value={formData.display_order || 0} onChange={e => setFormData({...formData, display_order: e.target.value})} />
-            </div>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Is Education?</label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', height: '38px' }}>
-                <input type="checkbox" checked={formData.is_education || false} onChange={e => setFormData({...formData, is_education: e.target.checked})} />
-                <span style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>Check if this is an academic degree</span>
-              </label>
-            </div>
-          </div>
-          
-          <div style={styles.settingGroup}>
-            <label style={styles.settingLabel}>Description Bullets (One per line)</label>
-            <textarea style={{...styles.input, minHeight: '120px', resize: 'vertical'}} value={formData.description_bullets || ''} onChange={e => setFormData({...formData, description_bullets: e.target.value})} placeholder={"Built a scalable backend API\nReduced load times by 40%"} />
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px' }}>
-            <button type="button" onClick={() => setIsEditing(false)} style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-primary)', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
-            <button type="submit" style={{ background: 'var(--primary-blue)', border: 'none', color: '#fff', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>Save Experience</button>
-          </div>
-        </form>
-      </PanelCard>
-    );
-  }
+  const modalOverlay = { position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' };
+  const modalBox = { background: 'var(--sidebar-bg, #1a1a2e)', border: '1px solid var(--border-color)', borderRadius: '16px', width: '100%', maxWidth: '640px', maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 32px 64px rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column' };
+  const labelStyle = { fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.5px', textTransform: 'uppercase', display: 'block', marginBottom: 6 };
+  const inputStyle = { ...styles.input, background: 'var(--bg-primary)' };
 
   return (
-    <PanelCard title="Experience Timeline" action={{ label: "Add Experience", icon: "ti-plus", onClick: handleAddNew }}>
-      {experiences.length === 0 ? (
-        <EmptyState icon="ti-id-badge" title="No experience entries" description="Add your first experience or education entry." />
-      ) : (
-        <table style={styles.table}>
-          <thead>
-            <tr>
-              <th style={styles.th}>Role</th>
-              <th style={styles.th}>Company</th>
-              <th style={styles.th}>Dates</th>
-              <th style={styles.th}>Order</th>
-              <th style={{ ...styles.th, textAlign: 'right' }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {experiences.map(exp => (
-              <tr key={exp.id}>
-                <td style={styles.td}><strong>{exp.role}</strong></td>
-                <td style={styles.td}>{exp.company} {exp.is_education ? '(Edu)' : ''}</td>
-                <td style={styles.td}>{exp.start_date} - {exp.end_date || 'Present'}</td>
-                <td style={styles.td}>{exp.display_order}</td>
-                <td style={{ ...styles.td, textAlign: 'right', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                  <button onClick={() => handleEdit(exp)} style={{ ...styles.iconBtn, color: 'var(--text-secondary)' }} title="Edit">
-                    <Edit3 size={16} />
-                  </button>
-                  <button onClick={() => handleDelete(exp.id)} style={{ ...styles.iconBtn, color: '#ef4444' }} title="Delete">
-                    <Trash2 size={16} />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <>
+      {toast && (
+        <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 9999, background: toast.type === 'error' ? '#ef4444' : '#10b981', color: '#fff', padding: '12px 20px', borderRadius: 10, fontSize: 13, fontWeight: 600, boxShadow: '0 8px 24px rgba(0,0,0,0.3)' }}>
+          {toast.msg}
+        </div>
       )}
-    </PanelCard>
+
+      <PanelCard title="Experience Timeline" action={{ label: "Add Experience", icon: "ti-plus", onClick: () => openModal() }}>
+        {experiences.length === 0 ? (
+          <EmptyState icon="ti-id-badge" title="No experience entries" description="Click '+ Add Experience' to log your work history." />
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={styles.table}>
+              <thead>
+                <tr>
+                  <th style={{ ...styles.th, width: '60px' }}>Logo</th>
+                  <th style={styles.th}>Role & Company</th>
+                  <th style={styles.th}>Dates</th>
+                  <th style={styles.th}>Order</th>
+                  <th style={{ ...styles.th, textAlign: 'right' }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {experiences.map((exp, i) => (
+                  <tr key={exp.id} style={{ background: i % 2 === 0 ? 'transparent' : 'rgba(128,128,128,0.025)' }}>
+                    <td style={styles.td}>
+                      <div style={{ width: 40, height: 40, borderRadius: 8, background: '#fff', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                        {exp.logo_url ? <img src={exp.logo_url} alt="logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={(e) => { e.target.style.display='none'; e.target.parentElement.innerHTML = '<i class="ti ti-briefcase" style="color:#9ca3af; font-size: 20px;"></i>'; }} /> : <Briefcase size={20} color="#9ca3af" />}
+                      </div>
+                    </td>
+                    <td style={styles.td}>
+                      <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-primary)' }}>{exp.role}</div>
+                      <div style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
+                        {exp.company}
+                        {exp.is_education && <span style={{ padding: '2px 6px', borderRadius: 4, background: 'rgba(59,130,246,0.1)', color: '#3b82f6', fontSize: 10, fontWeight: 700, textTransform: 'uppercase' }}>Edu</span>}
+                      </div>
+                    </td>
+                    <td style={{ ...styles.td, color: 'var(--text-secondary)', fontSize: 13 }}>
+                      {exp.start_date} <span style={{ color: 'var(--text-muted)' }}>→</span> {exp.end_date ? exp.end_date : <span style={{ color: '#10b981', fontWeight: 600 }}>Present</span>}
+                    </td>
+                    <td style={{ ...styles.td, color: 'var(--text-muted)' }}>{exp.display_order}</td>
+                    <td style={{ ...styles.td, textAlign: 'right' }}>
+                      <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
+                        <button onClick={() => openModal(exp)} style={{ ...styles.iconBtn, padding: 6, borderRadius: 7, background: 'rgba(59,130,246,0.08)' }} title="Edit"><Edit3 size={14} color="#3b82f6" /></button>
+                        <button onClick={() => handleDelete(exp.id, exp.role)} style={{ ...styles.iconBtn, padding: 6, borderRadius: 7, background: 'rgba(239,68,68,0.08)' }} title="Delete"><Trash2 size={14} color="#ef4444" /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </PanelCard>
+
+      {isModalOpen && (
+        <div style={modalOverlay} onClick={closeModal}>
+          <div style={modalBox} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', borderBottom: '1px solid var(--border-color)', flexShrink: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(16,185,129,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Briefcase size={15} color="#10b981" /></div>
+                <div>
+                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{editingExp ? 'Edit Experience' : 'New Experience'}</p>
+                  <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '2px 0 0' }}>Log a new role or position</p>
+                </div>
+              </div>
+              <button onClick={closeModal} style={{ ...styles.iconBtn, padding: 6 }}><X size={18} color="var(--text-muted)" /></button>
+            </div>
+
+            <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 18 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                <div>
+                  <label style={labelStyle}>Role / Title <span style={{ color: '#ef4444' }}>*</span></label>
+                  <input style={inputStyle} value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })} placeholder="e.g. Senior Developer" autoFocus />
+                </div>
+                <div>
+                  <label style={labelStyle}>Company <span style={{ color: '#ef4444' }}>*</span></label>
+                  <input style={inputStyle} value={formData.company} onChange={e => setFormData({ ...formData, company: e.target.value })} placeholder="e.g. Acme Corp" />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, alignItems: 'start' }}>
+                <div>
+                  <label style={labelStyle}>Start Date <span style={{ color: '#ef4444' }}>*</span></label>
+                  <input style={inputStyle} value={formData.start_date} onChange={e => setFormData({ ...formData, start_date: e.target.value })} placeholder="e.g. Jan 2022" />
+                </div>
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                    <label style={{ ...labelStyle, marginBottom: 0 }}>End Date</label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
+                      <input type="checkbox" checked={formData.is_current} onChange={e => setFormData({ ...formData, is_current: e.target.checked })} style={{ margin: 0 }} />
+                      <span style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 600 }}>Present</span>
+                    </label>
+                  </div>
+                  <input style={{ ...inputStyle, opacity: formData.is_current ? 0.5 : 1 }} value={formData.is_current ? 'Present' : formData.end_date} onChange={e => setFormData({ ...formData, end_date: e.target.value })} disabled={formData.is_current} placeholder="e.g. Dec 2023" />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                <div>
+                  <label style={labelStyle}>Logo URL</label>
+                  <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                    <div style={{ width: 40, height: 40, borderRadius: 8, background: '#fff', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+                      {formData.logo_url ? <img src={formData.logo_url} style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={(e) => { e.target.style.display='none'; }} /> : <ImageIcon size={18} color="#9ca3af" />}
+                    </div>
+                    <input style={{ ...inputStyle, flex: 1 }} value={formData.logo_url} onChange={e => setFormData({ ...formData, logo_url: e.target.value })} placeholder="https://..." />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  <div>
+                    <label style={labelStyle}>Display Order</label>
+                    <input type="number" style={inputStyle} value={formData.display_order} onChange={e => setFormData({ ...formData, display_order: e.target.value })} />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <label style={{ ...labelStyle, marginBottom: 0 }}>Description Bullets</label>
+                  <button onClick={addArrayItem} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#10b981', background: 'rgba(16,185,129,0.1)', border: 'none', borderRadius: 6, padding: '4px 10px', cursor: 'pointer', fontWeight: 600 }}><Plus size={12} /> Add bullet</button>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {formData.description_bullets.map((bullet, idx) => (
+                    <div key={idx} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                      <span style={{ fontSize: 18, color: 'var(--text-muted)', lineHeight: '42px', paddingLeft: 4 }}>•</span>
+                      <textarea
+                        style={{ ...inputStyle, flex: 1, minHeight: 42, resize: 'vertical', paddingTop: 10 }}
+                        value={bullet}
+                        onChange={e => handleArrayChange(idx, e.target.value)}
+                        placeholder="Led development of..."
+                      />
+                      {formData.description_bullets.length > 1 && (
+                        <button onClick={() => removeArrayItem(idx)} style={{ ...styles.iconBtn, padding: 6, borderRadius: 6, background: 'rgba(239,68,68,0.08)', marginTop: 4, flexShrink: 0 }}>
+                          <X size={14} color="#ef4444" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+            
+            <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end', gap: 10, flexShrink: 0 }}>
+              <button onClick={closeModal} style={{ padding: '8px 18px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-secondary)', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>Cancel</button>
+              <button onClick={handleSubmit} disabled={saving} style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: '#10b981', color: '#fff', fontSize: 13, fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1, display: 'flex', alignItems: 'center', gap: 7 }}>
+                {saving && <Loader2 size={14} className="spin" />} {editingExp ? 'Save Changes' : 'Add Experience'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
-/* -------------------------------------------------------------------- */
-/* Utility                                                                */
-/* -------------------------------------------------------------------- */
+
 function parseUserAgent(ua) {
   if (ua.includes('Win')) return 'Windows';
   if (ua.includes('Mac')) return 'macOS';
@@ -2196,12 +2288,20 @@ function parseUserAgent(ua) {
 function CertificationsPanel() {
   const [certs, setCerts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({});
+  const [saving, setSaving] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingCert, setEditingCert] = useState(null);
+  const [toast, setToast] = useState(null);
 
-  useEffect(() => {
-    fetchCerts();
-  }, []);
+  const EMPTY_FORM = { id: '', title: '', issuer: '', date: '', description: '', icon_class: '', credential_url: '', display_order: 0 };
+  const [formData, setFormData] = useState(EMPTY_FORM);
+
+  useEffect(() => { fetchCerts(); }, []);
+
+  const showToast = (msg, type = 'success') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   const fetchCerts = async () => {
     setLoading(true);
@@ -2210,26 +2310,32 @@ function CertificationsPanel() {
     setLoading(false);
   };
 
-  const handleEdit = (cert) => {
-    setFormData(cert);
-    setIsEditing(true);
+  const openModal = (cert = null) => {
+    if (cert) {
+      setEditingCert(cert);
+      setFormData(cert);
+    } else {
+      setEditingCert(null);
+      setFormData(EMPTY_FORM);
+    }
+    setIsModalOpen(true);
   };
 
-  const handleAddNew = () => {
-    setFormData({ id: '', title: '', issuer: '', date: '', description: '', icon_class: '', credential_url: '', display_order: 0 });
-    setIsEditing(true);
-  };
+  const closeModal = () => { setIsModalOpen(false); setEditingCert(null); };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Delete this certification?')) return;
+  const handleDelete = async (id, title) => {
+    if (!window.confirm(`Delete "${title}"?`)) return;
     const { error } = await supabase.from('certifications').delete().eq('id', id);
-    if (!error) setCerts(certs.filter(c => c.id !== id));
+    if (!error) {
+      setCerts(certs.filter(c => c.id !== id));
+      showToast(`"${title}" deleted`, 'error');
+    } else showToast('Failed to delete', 'error');
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!formData.title || !formData.issuer) return alert('Title and Issuer are required');
+  const handleSubmit = async () => {
+    if (!formData.title.trim() || !formData.issuer.trim()) { showToast('Title and Issuer are required', 'error'); return; }
 
+    setSaving(true);
     const payload = {
       ...formData,
       id: formData.id || formData.title.toLowerCase().replace(/[^a-z0-9]/g, '-'),
@@ -2240,97 +2346,153 @@ function CertificationsPanel() {
 
     if (isUpdate) {
       const { data, error } = await supabase.from('certifications').update(payload).eq('id', payload.id).select().single();
-      if (!error && data) setCerts(certs.map(c => c.id === data.id ? data : c).sort((a,b) => a.display_order - b.display_order));
+      if (!error && data) {
+        setCerts(certs.map(c => c.id === data.id ? data : c).sort((a,b) => a.display_order - b.display_order));
+        showToast('Certification updated');
+        closeModal();
+      } else showToast('Failed to update', 'error');
     } else {
       const { data, error } = await supabase.from('certifications').insert([payload]).select().single();
-      if (!error && data) setCerts([...certs, data].sort((a,b) => a.display_order - b.display_order));
+      if (!error && data) {
+        setCerts([...certs, data].sort((a,b) => a.display_order - b.display_order));
+        showToast('Certification added');
+        closeModal();
+      } else showToast('Failed to add', 'error');
     }
-    setIsEditing(false);
+    setSaving(false);
   };
 
   if (loading) return <PanelCard title="Certifications"><div style={styles.emptyState}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div></PanelCard>;
 
-  if (isEditing) {
-    return (
-      <PanelCard title={formData.id ? "Edit Certification" : "Add Certification"} action={{ label: "Cancel", icon: "ti-x", onClick: () => setIsEditing(false) }}>
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={styles.settingsGrid}>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Title *</label>
-              <input type="text" style={styles.input} required value={formData.title || ''} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="e.g. AWS Solutions Architect" />
-            </div>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Issuer *</label>
-              <input type="text" style={styles.input} required value={formData.issuer || ''} onChange={e => setFormData({...formData, issuer: e.target.value})} placeholder="e.g. Amazon Web Services" />
-            </div>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Date / Year</label>
-              <input type="text" style={styles.input} value={formData.date || ''} onChange={e => setFormData({...formData, date: e.target.value})} placeholder="e.g. 2024" />
-            </div>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Credential URL</label>
-              <input type="text" style={styles.input} value={formData.credential_url || ''} onChange={e => setFormData({...formData, credential_url: e.target.value})} placeholder="https://..." />
-            </div>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Icon Class</label>
-              <input type="text" style={styles.input} value={formData.icon_class || ''} onChange={e => setFormData({...formData, icon_class: e.target.value})} placeholder="e.g. brand-aws" />
-            </div>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Display Order</label>
-              <input type="number" style={styles.input} value={formData.display_order || 0} onChange={e => setFormData({...formData, display_order: e.target.value})} />
-            </div>
-          </div>
-          <div style={styles.settingGroup}>
-            <label style={styles.settingLabel}>Description</label>
-            <textarea style={{...styles.input, minHeight: '80px', resize: 'vertical'}} value={formData.description || ''} onChange={e => setFormData({...formData, description: e.target.value})} placeholder="What did you learn?" />
-          </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px' }}>
-            <button type="button" onClick={() => setIsEditing(false)} style={{ background: 'transparent', border: '1px solid var(--border-color)', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
-            <button type="submit" style={{ background: 'var(--primary-blue)', border: 'none', color: '#fff', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>Save</button>
-          </div>
-        </form>
-      </PanelCard>
-    );
-  }
+  const modalOverlay = { position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' };
+  const modalBox = { background: 'var(--sidebar-bg, #1a1a2e)', border: '1px solid var(--border-color)', borderRadius: '16px', width: '100%', maxWidth: '560px', maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 32px 64px rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column' };
+  const labelStyle = { fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.5px', textTransform: 'uppercase', display: 'block', marginBottom: 6 };
+  const inputStyle = { ...styles.input, background: 'var(--bg-primary)' };
 
   return (
-    <PanelCard title="Certifications" action={{ label: "Add", icon: "ti-plus", onClick: handleAddNew }}>
-      {certs.length === 0 ? (
-        <EmptyState icon="ti-certificate" title="No certifications" description="Add your first certification." />
-      ) : (
-        <table style={styles.table}>
-          <thead><tr><th style={styles.th}>Title</th><th style={styles.th}>Issuer</th><th style={styles.th}>Date</th><th style={{ ...styles.th, textAlign: 'right' }}>Actions</th></tr></thead>
-          <tbody>
-            {certs.map(cert => (
-              <tr key={cert.id}>
-                <td style={styles.td}><strong>{cert.title}</strong></td>
-                <td style={styles.td}>{cert.issuer}</td>
-                <td style={styles.td}>{cert.date}</td>
-                <td style={{ ...styles.td, textAlign: 'right', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                  <button onClick={() => handleEdit(cert)} style={{ ...styles.iconBtn, color: 'var(--text-secondary)' }}><Edit3 size={16} /></button>
-                  <button onClick={() => handleDelete(cert.id)} style={{ ...styles.iconBtn, color: '#ef4444' }}><Trash2 size={16} /></button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <>
+      {toast && (
+        <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 9999, background: toast.type === 'error' ? '#ef4444' : '#10b981', color: '#fff', padding: '12px 20px', borderRadius: 10, fontSize: 13, fontWeight: 600, boxShadow: '0 8px 24px rgba(0,0,0,0.3)' }}>
+          {toast.msg}
+        </div>
       )}
-    </PanelCard>
+
+      <PanelCard title="Certifications" action={{ label: "Add", icon: "ti-plus", onClick: () => openModal() }}>
+        {certs.length === 0 ? (
+          <EmptyState icon="ti-certificate" title="No certifications" description="Add your first certification to showcase your credentials." />
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={styles.table}>
+              <thead><tr><th style={styles.th}>Badge</th><th style={styles.th}>Title</th><th style={styles.th}>Issuer</th><th style={styles.th}>Date</th><th style={{ ...styles.th, textAlign: 'right' }}>Actions</th></tr></thead>
+              <tbody>
+                {certs.map((cert, i) => (
+                  <tr key={cert.id} style={{ background: i % 2 === 0 ? 'transparent' : 'rgba(128,128,128,0.025)' }}>
+                    <td style={styles.td}>
+                      <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(139,92,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {cert.icon_class ? <i className={`ti ti-${cert.icon_class}`} style={{ fontSize: 20, color: '#8b5cf6' }} /> : <Award size={20} color="#8b5cf6" />}
+                      </div>
+                    </td>
+                    <td style={{ ...styles.td, fontWeight: 600, color: 'var(--text-primary)' }}>
+                      {cert.credential_url ? <a href={cert.credential_url} target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none' }} className="hover-underline">{cert.title} <ExternalLink size={12} style={{ marginLeft: 4, color: 'var(--text-muted)' }}/></a> : cert.title}
+                    </td>
+                    <td style={{ ...styles.td, color: 'var(--text-secondary)' }}>{cert.issuer}</td>
+                    <td style={{ ...styles.td, color: 'var(--text-muted)' }}>{cert.date}</td>
+                    <td style={{ ...styles.td, textAlign: 'right' }}>
+                      <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
+                        <button onClick={() => openModal(cert)} style={{ ...styles.iconBtn, padding: 6, borderRadius: 7, background: 'rgba(59,130,246,0.08)' }}><Edit3 size={14} color="#3b82f6" /></button>
+                        <button onClick={() => handleDelete(cert.id, cert.title)} style={{ ...styles.iconBtn, padding: 6, borderRadius: 7, background: 'rgba(239,68,68,0.08)' }}><Trash2 size={14} color="#ef4444" /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </PanelCard>
+
+      {isModalOpen && (
+        <div style={modalOverlay} onClick={closeModal}>
+          <div style={modalBox} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', borderBottom: '1px solid var(--border-color)', flexShrink: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(139,92,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Award size={15} color="#8b5cf6" /></div>
+                <div>
+                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{editingCert ? 'Edit Certification' : 'New Certification'}</p>
+                </div>
+              </div>
+              <button onClick={closeModal} style={{ ...styles.iconBtn, padding: 6 }}><X size={18} color="var(--text-muted)" /></button>
+            </div>
+
+            <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 18 }}>
+              <div>
+                <label style={labelStyle}>Title <span style={{ color: '#ef4444' }}>*</span></label>
+                <input style={inputStyle} value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} placeholder="e.g. AWS Solutions Architect" autoFocus />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                <div>
+                  <label style={labelStyle}>Issuer <span style={{ color: '#ef4444' }}>*</span></label>
+                  <input style={inputStyle} value={formData.issuer} onChange={e => setFormData({ ...formData, issuer: e.target.value })} placeholder="e.g. Amazon Web Services" />
+                </div>
+                <div>
+                  <label style={labelStyle}>Date / Year</label>
+                  <input style={inputStyle} value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} placeholder="e.g. 2024" />
+                </div>
+              </div>
+              <div>
+                <label style={labelStyle}>Credential URL</label>
+                <input style={inputStyle} value={formData.credential_url} onChange={e => setFormData({ ...formData, credential_url: e.target.value })} placeholder="https://..." />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                <div>
+                  <label style={labelStyle}>Icon Class (Tabler)</label>
+                  <input style={inputStyle} value={formData.icon_class} onChange={e => setFormData({ ...formData, icon_class: e.target.value })} placeholder="e.g. brand-aws" />
+                </div>
+                <div>
+                  <label style={labelStyle}>Display Order</label>
+                  <input type="number" style={inputStyle} value={formData.display_order} onChange={e => setFormData({ ...formData, display_order: e.target.value })} />
+                </div>
+              </div>
+              <div>
+                <label style={labelStyle}>Description</label>
+                <textarea style={{ ...inputStyle, minHeight: 80, resize: 'vertical' }} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} placeholder="What did you learn?" />
+              </div>
+            </div>
+            
+            <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end', gap: 10, flexShrink: 0 }}>
+              <button onClick={closeModal} style={{ padding: '8px 18px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-secondary)', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>Cancel</button>
+              <button onClick={handleSubmit} disabled={saving} style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: '#8b5cf6', color: '#fff', fontSize: 13, fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1, display: 'flex', alignItems: 'center', gap: 7 }}>
+                {saving && <Loader2 size={14} className="spin" />} Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
-/* -------------------------------------------------------------------- */
-/* Education Panel                                                      */
-/* -------------------------------------------------------------------- */
 function EducationPanel() {
   const [edu, setEdu] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({});
+  const [saving, setSaving] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState(null);
+  const [toast, setToast] = useState(null);
 
-  useEffect(() => {
-    fetchEdu();
-  }, []);
+  const EMPTY_FORM = { 
+    id: '', short_label: '', year: '', title: '', institution: '', location: '', description: '', 
+    score: '', progress: 100, icon_class: 'BookOpen', theme_color: '#3b82f6', bg_color: '#eff6ff', text_color: '#1e3a8a',
+    highlights: [''], back_stats: '', highlight_text: '', display_order: 0 
+  };
+  const [formData, setFormData] = useState(EMPTY_FORM);
+
+  useEffect(() => { fetchEdu(); }, []);
+
+  const showToast = (msg, type = 'success') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   const fetchEdu = async () => {
     setLoading(true);
@@ -2339,47 +2501,52 @@ function EducationPanel() {
     setLoading(false);
   };
 
-  const handleEdit = (item) => {
-    setFormData({
-      ...item,
-      highlights: item.highlights ? item.highlights.join(', ') : '',
-      back_stats: item.back_stats ? JSON.stringify(item.back_stats) : '[]',
-    });
-    setIsEditing(true);
+  const openModal = (item = null) => {
+    if (item) {
+      setEditingItem(item);
+      setFormData({
+        ...item,
+        highlights: Array.isArray(item.highlights) && item.highlights.length > 0 ? item.highlights : [''],
+        back_stats: item.back_stats ? JSON.stringify(item.back_stats, null, 2) : '[\n  {\n    "label": "GPA",\n    "value": "4.0"\n  }\n]',
+      });
+    } else {
+      setEditingItem(null);
+      setFormData(EMPTY_FORM);
+    }
+    setIsModalOpen(true);
   };
 
-  const handleAddNew = () => {
-    setFormData({ 
-      id: '', short_label: '', year: '', title: '', institution: '', location: '', description: '', 
-      score: '', progress: 100, icon_class: 'School', theme_color: '#007bff', bg_color: '#e6f2ff', text_color: '#004085',
-      highlights: '', back_stats: '[]', highlight_text: '', display_order: 0 
-    });
-    setIsEditing(true);
-  };
+  const closeModal = () => { setIsModalOpen(false); setEditingItem(null); };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Delete this education entry?')) return;
+  const handleDelete = async (id, title) => {
+    if (!window.confirm(`Delete "${title}"?`)) return;
     const { error } = await supabase.from('education').delete().eq('id', id);
-    if (!error) setEdu(edu.filter(c => c.id !== id));
+    if (!error) {
+      setEdu(edu.filter(c => c.id !== id));
+      showToast(`"${title}" deleted`, 'error');
+    } else showToast('Failed to delete', 'error');
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!formData.title || !formData.institution) return alert('Title and Institution are required');
+  const handleSubmit = async () => {
+    if (!formData.title.trim() || !formData.institution.trim()) { showToast('Title and Institution are required', 'error'); return; }
 
     let parsedStats = [];
-    try {
-      parsedStats = JSON.parse(formData.back_stats || '[]');
-    } catch (e) {
-      return alert('Back stats must be valid JSON array, e.g. [{"label":"GPA", "value":"4.0"}]');
+    if (formData.back_stats && formData.back_stats.trim()) {
+      try {
+        parsedStats = JSON.parse(formData.back_stats);
+        if (!Array.isArray(parsedStats)) throw new Error('Must be an array');
+      } catch (e) {
+        showToast('Back stats must be valid JSON array', 'error'); return;
+      }
     }
 
+    setSaving(true);
     const payload = {
       ...formData,
       id: formData.id || formData.title.toLowerCase().replace(/[^a-z0-9]/g, '-'),
       progress: parseInt(formData.progress) || 100,
       display_order: parseInt(formData.display_order) || 0,
-      highlights: typeof formData.highlights === 'string' ? formData.highlights.split(',').map(s=>s.trim()).filter(Boolean) : formData.highlights,
+      highlights: formData.highlights.filter(h => h.trim()),
       back_stats: parsedStats
     };
 
@@ -2387,97 +2554,204 @@ function EducationPanel() {
 
     if (isUpdate) {
       const { data, error } = await supabase.from('education').update(payload).eq('id', payload.id).select().single();
-      if (!error && data) setEdu(edu.map(c => c.id === data.id ? data : c).sort((a,b) => a.display_order - b.display_order));
+      if (!error && data) {
+        setEdu(edu.map(c => c.id === data.id ? data : c).sort((a,b) => a.display_order - b.display_order));
+        showToast('Education updated');
+        closeModal();
+      } else showToast('Failed to update', 'error');
     } else {
       const { data, error } = await supabase.from('education').insert([payload]).select().single();
-      if (!error && data) setEdu([...edu, data].sort((a,b) => a.display_order - b.display_order));
+      if (!error && data) {
+        setEdu([...edu, data].sort((a,b) => a.display_order - b.display_order));
+        showToast('Education added');
+        closeModal();
+      } else showToast('Failed to add', 'error');
     }
-    setIsEditing(false);
+    setSaving(false);
   };
+
+  const handleArrayChange = (index, value) => {
+    const newArray = [...formData.highlights];
+    newArray[index] = value;
+    setFormData({ ...formData, highlights: newArray });
+  };
+  const addArrayItem = () => setFormData({ ...formData, highlights: [...formData.highlights, ''] });
+  const removeArrayItem = (index) => setFormData({ ...formData, highlights: formData.highlights.filter((_, i) => i !== index) });
 
   if (loading) return <PanelCard title="Education"><div style={styles.emptyState}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div></PanelCard>;
 
-  if (isEditing) {
-    return (
-      <PanelCard title={formData.id ? "Edit Education" : "Add Education"} action={{ label: "Cancel", icon: "ti-x", onClick: () => setIsEditing(false) }}>
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div style={styles.settingsGrid}>
-            <div style={styles.settingGroup}><label style={styles.settingLabel}>Title *</label><input type="text" style={styles.input} required value={formData.title || ''} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="B.Tech Computer Science" /></div>
-            <div style={styles.settingGroup}><label style={styles.settingLabel}>Institution *</label><input type="text" style={styles.input} required value={formData.institution || ''} onChange={e => setFormData({...formData, institution: e.target.value})} placeholder="University Name" /></div>
-            <div style={styles.settingGroup}><label style={styles.settingLabel}>Short Label</label><input type="text" style={styles.input} value={formData.short_label || ''} onChange={e => setFormData({...formData, short_label: e.target.value})} placeholder="b.tech" /></div>
-            <div style={styles.settingGroup}><label style={styles.settingLabel}>Year</label><input type="text" style={styles.input} value={formData.year || ''} onChange={e => setFormData({...formData, year: e.target.value})} placeholder="2020 - 2024" /></div>
-            <div style={styles.settingGroup}><label style={styles.settingLabel}>Location</label><input type="text" style={styles.input} value={formData.location || ''} onChange={e => setFormData({...formData, location: e.target.value})} placeholder="City, State" /></div>
-            <div style={styles.settingGroup}><label style={styles.settingLabel}>Score String</label><input type="text" style={styles.input} value={formData.score || ''} onChange={e => setFormData({...formData, score: e.target.value})} placeholder="CGPA: 8.7" /></div>
-            <div style={styles.settingGroup}><label style={styles.settingLabel}>Progress % (0-100)</label><input type="number" style={styles.input} value={formData.progress || 100} onChange={e => setFormData({...formData, progress: e.target.value})} /></div>
-            <div style={styles.settingGroup}><label style={styles.settingLabel}>Icon Class (Lucide)</label><input type="text" style={styles.input} value={formData.icon_class || ''} onChange={e => setFormData({...formData, icon_class: e.target.value})} placeholder="BookOpen" /></div>
-            <div style={styles.settingGroup}><label style={styles.settingLabel}>Theme Color</label><input type="color" style={{...styles.input, height: 42, padding: 4}} value={formData.theme_color || '#000000'} onChange={e => setFormData({...formData, theme_color: e.target.value})} /></div>
-            <div style={styles.settingGroup}><label style={styles.settingLabel}>Background Color</label><input type="color" style={{...styles.input, height: 42, padding: 4}} value={formData.bg_color || '#ffffff'} onChange={e => setFormData({...formData, bg_color: e.target.value})} /></div>
-            <div style={styles.settingGroup}><label style={styles.settingLabel}>Text Color</label><input type="color" style={{...styles.input, height: 42, padding: 4}} value={formData.text_color || '#000000'} onChange={e => setFormData({...formData, text_color: e.target.value})} /></div>
-            <div style={styles.settingGroup}><label style={styles.settingLabel}>Display Order</label><input type="number" style={styles.input} value={formData.display_order || 0} onChange={e => setFormData({...formData, display_order: e.target.value})} /></div>
-          </div>
-          
-          <div style={styles.settingGroup}>
-            <label style={styles.settingLabel}>Description</label>
-            <textarea style={{...styles.input, minHeight: '60px', resize: 'vertical'}} value={formData.description || ''} onChange={e => setFormData({...formData, description: e.target.value})} />
-          </div>
-          
-          <div style={styles.settingGroup}>
-            <label style={styles.settingLabel}>Highlight Text (Shown below card)</label>
-            <input type="text" style={styles.input} value={formData.highlight_text || ''} onChange={e => setFormData({...formData, highlight_text: e.target.value})} />
-          </div>
-
-          <div style={styles.settingsGrid}>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Highlights (Comma-separated)</label>
-              <textarea style={{...styles.input, minHeight: '60px'}} value={formData.highlights || ''} onChange={e => setFormData({...formData, highlights: e.target.value})} placeholder="Data Science, ML" />
-            </div>
-            <div style={styles.settingGroup}>
-              <label style={styles.settingLabel}>Back Stats (JSON)</label>
-              <textarea style={{...styles.input, minHeight: '60px', fontFamily: 'monospace'}} value={formData.back_stats || ''} onChange={e => setFormData({...formData, back_stats: e.target.value})} placeholder='[{"value":"10","label":"GPA"}]' />
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '16px' }}>
-            <button type="button" onClick={() => setIsEditing(false)} style={{ background: 'transparent', border: '1px solid var(--border-color)', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>Cancel</button>
-            <button type="submit" style={{ background: 'var(--primary-blue)', border: 'none', color: '#fff', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}>Save</button>
-          </div>
-        </form>
-      </PanelCard>
-    );
-  }
+  const modalOverlay = { position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' };
+  const modalBox = { background: 'var(--sidebar-bg, #1a1a2e)', border: '1px solid var(--border-color)', borderRadius: '16px', width: '100%', maxWidth: '680px', maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 32px 64px rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column' };
+  const labelStyle = { fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.5px', textTransform: 'uppercase', display: 'block', marginBottom: 6 };
+  const inputStyle = { ...styles.input, background: 'var(--bg-primary)' };
 
   return (
-    <PanelCard title="Education" action={{ label: "Add", icon: "ti-plus", onClick: handleAddNew }}>
-      {edu.length === 0 ? (
-        <EmptyState icon="ti-book" title="No education" description="Add your educational history." />
-      ) : (
-        <table style={styles.table}>
-          <thead><tr><th style={styles.th}>Title</th><th style={styles.th}>Institution</th><th style={styles.th}>Year</th><th style={{ ...styles.th, textAlign: 'right' }}>Actions</th></tr></thead>
-          <tbody>
-            {edu.map(item => (
-              <tr key={item.id}>
-                <td style={styles.td}><strong>{item.title}</strong></td>
-                <td style={styles.td}>{item.institution}</td>
-                <td style={styles.td}>{item.year}</td>
-                <td style={{ ...styles.td, textAlign: 'right', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                  <button onClick={() => handleEdit(item)} style={{ ...styles.iconBtn, color: 'var(--text-secondary)' }}><Edit3 size={16} /></button>
-                  <button onClick={() => handleDelete(item.id)} style={{ ...styles.iconBtn, color: '#ef4444' }}><Trash2 size={16} /></button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+    <>
+      {toast && (
+        <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 9999, background: toast.type === 'error' ? '#ef4444' : '#10b981', color: '#fff', padding: '12px 20px', borderRadius: 10, fontSize: 13, fontWeight: 600, boxShadow: '0 8px 24px rgba(0,0,0,0.3)' }}>
+          {toast.msg}
+        </div>
       )}
-    </PanelCard>
+
+      <PanelCard title="Education" action={{ label: "Add", icon: "ti-plus", onClick: () => openModal() }}>
+        {edu.length === 0 ? (
+          <EmptyState icon="ti-book" title="No education" description="Add your educational history." />
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table style={styles.table}>
+              <thead><tr><th style={styles.th}>Degree / Title</th><th style={styles.th}>Institution</th><th style={styles.th}>Year</th><th style={{ ...styles.th, textAlign: 'right' }}>Actions</th></tr></thead>
+              <tbody>
+                {edu.map((item, i) => (
+                  <tr key={item.id} style={{ background: i % 2 === 0 ? 'transparent' : 'rgba(128,128,128,0.025)' }}>
+                    <td style={{ ...styles.td, fontWeight: 600, color: 'var(--text-primary)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div style={{ width: 12, height: 12, borderRadius: '50%', background: item.theme_color || '#3b82f6' }} />
+                        {item.title}
+                      </div>
+                    </td>
+                    <td style={{ ...styles.td, color: 'var(--text-secondary)' }}>{item.institution}</td>
+                    <td style={{ ...styles.td, color: 'var(--text-muted)' }}>{item.year}</td>
+                    <td style={{ ...styles.td, textAlign: 'right' }}>
+                      <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
+                        <button onClick={() => openModal(item)} style={{ ...styles.iconBtn, padding: 6, borderRadius: 7, background: 'rgba(59,130,246,0.08)' }}><Edit3 size={14} color="#3b82f6" /></button>
+                        <button onClick={() => handleDelete(item.id, item.title)} style={{ ...styles.iconBtn, padding: 6, borderRadius: 7, background: 'rgba(239,68,68,0.08)' }}><Trash2 size={14} color="#ef4444" /></button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </PanelCard>
+
+      {isModalOpen && (
+        <div style={modalOverlay} onClick={closeModal}>
+          <div style={modalBox} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', borderBottom: '1px solid var(--border-color)', flexShrink: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(59,130,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><BookOpen size={15} color="#3b82f6" /></div>
+                <div>
+                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{editingItem ? 'Edit Education' : 'New Education'}</p>
+                </div>
+              </div>
+              <button onClick={closeModal} style={{ ...styles.iconBtn, padding: 6 }}><X size={18} color="var(--text-muted)" /></button>
+            </div>
+
+            <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 18 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                <div>
+                  <label style={labelStyle}>Title <span style={{ color: '#ef4444' }}>*</span></label>
+                  <input style={inputStyle} value={formData.title} onChange={e => setFormData({ ...formData, title: e.target.value })} placeholder="B.Tech Computer Science" autoFocus />
+                </div>
+                <div>
+                  <label style={labelStyle}>Institution <span style={{ color: '#ef4444' }}>*</span></label>
+                  <input style={inputStyle} value={formData.institution} onChange={e => setFormData({ ...formData, institution: e.target.value })} placeholder="University Name" />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+                <div>
+                  <label style={labelStyle}>Short Label</label>
+                  <input style={inputStyle} value={formData.short_label} onChange={e => setFormData({ ...formData, short_label: e.target.value })} placeholder="e.g. B.Tech" />
+                </div>
+                <div>
+                  <label style={labelStyle}>Year</label>
+                  <input style={inputStyle} value={formData.year} onChange={e => setFormData({ ...formData, year: e.target.value })} placeholder="2020 - 2024" />
+                </div>
+                <div>
+                  <label style={labelStyle}>Location</label>
+                  <input style={inputStyle} value={formData.location} onChange={e => setFormData({ ...formData, location: e.target.value })} placeholder="City, State" />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
+                <div>
+                  <label style={labelStyle}>Score String</label>
+                  <input style={inputStyle} value={formData.score} onChange={e => setFormData({ ...formData, score: e.target.value })} placeholder="CGPA: 8.7" />
+                </div>
+                <div>
+                  <label style={labelStyle}>Progress % (0-100)</label>
+                  <input type="number" min="0" max="100" style={inputStyle} value={formData.progress} onChange={e => setFormData({ ...formData, progress: e.target.value })} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Icon Class (Lucide)</label>
+                  <input style={inputStyle} value={formData.icon_class} onChange={e => setFormData({ ...formData, icon_class: e.target.value })} placeholder="BookOpen" />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 14 }}>
+                <div>
+                  <label style={labelStyle}>Theme Color</label>
+                  <input type="color" style={{ ...inputStyle, padding: 4, height: 42 }} value={formData.theme_color} onChange={e => setFormData({ ...formData, theme_color: e.target.value })} />
+                </div>
+                <div>
+                  <label style={labelStyle}>BG Color</label>
+                  <input type="color" style={{ ...inputStyle, padding: 4, height: 42 }} value={formData.bg_color} onChange={e => setFormData({ ...formData, bg_color: e.target.value })} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Text Color</label>
+                  <input type="color" style={{ ...inputStyle, padding: 4, height: 42 }} value={formData.text_color} onChange={e => setFormData({ ...formData, text_color: e.target.value })} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Display Order</label>
+                  <input type="number" style={inputStyle} value={formData.display_order} onChange={e => setFormData({ ...formData, display_order: e.target.value })} />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                <div>
+                  <label style={labelStyle}>Description</label>
+                  <textarea style={{ ...inputStyle, minHeight: 80, resize: 'vertical' }} value={formData.description} onChange={e => setFormData({ ...formData, description: e.target.value })} />
+                </div>
+                <div>
+                  <label style={labelStyle}>Back Stats (JSON)</label>
+                  <textarea style={{ ...inputStyle, minHeight: 80, resize: 'vertical', fontFamily: 'monospace', fontSize: 12, lineHeight: 1.4 }} value={formData.back_stats} onChange={e => setFormData({ ...formData, back_stats: e.target.value })} placeholder='[
+  {
+    "label": "GPA",
+    "value": "4.0"
+  }
+]' />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+                <div>
+                  <label style={labelStyle}>Highlight Text (Footer)</label>
+                  <input style={inputStyle} value={formData.highlight_text} onChange={e => setFormData({ ...formData, highlight_text: e.target.value })} placeholder="e.g. Top 5% of class" />
+                </div>
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                    <label style={{ ...labelStyle, marginBottom: 0 }}>Highlights List</label>
+                    <button onClick={addArrayItem} style={{ background: 'none', border: 'none', color: '#3b82f6', fontSize: 11, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 2 }}><Plus size={12}/> Add</button>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    {formData.highlights.map((h, idx) => (
+                      <div key={idx} style={{ display: 'flex', gap: 6 }}>
+                        <input style={{ ...inputStyle, flex: 1, padding: '6px 10px', fontSize: 13 }} value={h} onChange={e => handleArrayChange(idx, e.target.value)} placeholder="e.g. Data Science" />
+                        {formData.highlights.length > 1 && <button onClick={() => removeArrayItem(idx)} style={{ ...styles.iconBtn, padding: 4, background: 'rgba(239,68,68,0.1)' }}><X size={12} color="#ef4444" /></button>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+            </div>
+            
+            <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end', gap: 10, flexShrink: 0 }}>
+              <button onClick={closeModal} style={{ padding: '8px 18px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-secondary)', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>Cancel</button>
+              <button onClick={handleSubmit} disabled={saving} style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: '#3b82f6', color: '#fff', fontSize: 13, fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1, display: 'flex', alignItems: 'center', gap: 7 }}>
+                {saving && <Loader2 size={14} className="spin" />} Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
-/* -------------------------------------------------------------------- */
-/* 1. Real-Time Visitor Analytics & Recruiter Insights Hub              */
-/* -------------------------------------------------------------------- */
-/* ───────────────────────────────────────────────
-   ANALYTICS HUB
-   ─────────────────────────────────────────────── */
+
 function AnalyticsPanel() {
   const [analytics, setAnalytics] = useState([]);
   const [events, setEvents]       = useState([]);
