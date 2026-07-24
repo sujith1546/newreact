@@ -260,6 +260,7 @@ export default function GlobeLocator({ onClose }) {
 
     let cloudMesh, gridMesh, beamMesh, indiaGroup;
     const pulseRings = [];
+    const satArray = [];
 
     Promise.all([
       loadTex(TEX_BASE + "earth_atmos_2048.jpg"),
@@ -428,6 +429,59 @@ export default function GlobeLocator({ onClose }) {
       const targetBase = Math.atan2(-x0, z0);
       apiRef.current.targetBase = targetBase;
 
+      // --- Advanced 3D Satellites ---
+      const createSatellite = () => {
+        const satGroup = new THREE.Group();
+        
+        // Metallic Core Bus
+        const busGeo = new THREE.BoxGeometry(0.06, 0.06, 0.12);
+        const busMat = new THREE.MeshStandardMaterial({ color: 0xe0e0e0, metalness: 0.9, roughness: 0.2 });
+        satGroup.add(new THREE.Mesh(busGeo, busMat));
+
+        // Solar Panels
+        const panelGeo = new THREE.BoxGeometry(0.35, 0.01, 0.08);
+        const panelMat = new THREE.MeshStandardMaterial({ color: 0x051024, metalness: 0.8, roughness: 0.4 });
+        satGroup.add(new THREE.Mesh(panelGeo, panelMat));
+
+        // Glowing Beacon (Visible in the dark)
+        const beaconGeo = new THREE.SphereGeometry(0.015, 8, 8);
+        const beaconMat = new THREE.MeshBasicMaterial({ color: 0xff1144, transparent: true });
+        const beacon = new THREE.Mesh(beaconGeo, beaconMat);
+        beacon.position.set(0, 0.04, 0.05);
+        satGroup.add(beacon);
+
+        return { mesh: satGroup, beacon };
+      };
+
+      for (let i = 0; i < 6; i++) {
+        const orbitPivot = new THREE.Group();
+        // Randomize orbit inclination
+        orbitPivot.rotation.x = Math.random() * Math.PI;
+        orbitPivot.rotation.z = Math.random() * Math.PI; 
+
+        const satData = createSatellite();
+        const altitude = RADIUS + 0.35 + (Math.random() * 0.4);
+        satData.mesh.position.z = altitude;
+        
+        orbitPivot.add(satData.mesh);
+        
+        // Faint orbital trail
+        const trailGeo = new THREE.TorusGeometry(altitude, 0.002, 4, 64);
+        const trailMat = new THREE.MeshBasicMaterial({ color: 0x6ea8ff, transparent: true, opacity: 0.08 });
+        const trail = new THREE.Mesh(trailGeo, trailMat);
+        trail.rotation.x = Math.PI / 2; // Orient torus to the XZ plane of the pivot
+        orbitPivot.add(trail);
+
+        scene.add(orbitPivot);
+
+        satArray.push({
+          pivot: orbitPivot,
+          beacon: satData.beacon,
+          speed: (0.0015 + Math.random() * 0.002) * (Math.random() > 0.5 ? 1 : -1),
+          offset: Math.random() * 100 // Stagger blinking
+        });
+      }
+
       setReady(true);
     });
 
@@ -444,6 +498,12 @@ export default function GlobeLocator({ onClose }) {
       if (cloudMesh) cloudMesh.rotation.y += 0.00035;
       if (gridMesh) gridMesh.rotation.y -= 0.00018;
       stars.rotation.y += 0.00004;
+
+      // Animate Satellites
+      satArray.forEach(sat => {
+        sat.pivot.rotation.y += sat.speed;
+        sat.beacon.material.opacity = Math.sin((performance.now() * 0.005) + sat.offset) > 0 ? 1 : 0.1;
+      });
 
       if (indiaGroup) {
         const hourIST = new Date().toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour12: false, hour: 'numeric' });
