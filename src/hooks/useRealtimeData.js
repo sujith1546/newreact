@@ -15,6 +15,8 @@ import { supabase } from '../lib/supabaseClient';
  * @param {object} [options.filter] - Simple equality filter e.g., { column: 'id', value: 1 }
  * @returns {object} { data, setData, loading, error }
  */
+export const globalDataCache = {};
+
 export default function useRealtimeData(table, options = {}) {
   const {
     select = '*',
@@ -25,15 +27,24 @@ export default function useRealtimeData(table, options = {}) {
     disableRealtime = false
   } = options;
 
-  const [data, setData] = useState(single ? null : []);
-  const [loading, setLoading] = useState(true);
+  const cacheKey = `${table}_${JSON.stringify({ select, single, orderColumn, ascending, filter })}`;
+
+  const [data, setData] = useState(() => 
+    globalDataCache[cacheKey] !== undefined ? globalDataCache[cacheKey] : (single ? null : [])
+  );
+  // Only show loading if cache is empty
+  const [loading, setLoading] = useState(globalDataCache[cacheKey] === undefined);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
 
     async function fetchData() {
-      setLoading(true);
+      // Don't trigger loading state if we already have cached data (Stale-While-Revalidate)
+      if (globalDataCache[cacheKey] === undefined) {
+        setLoading(true);
+      }
+      
       let query = supabase.from(table).select(select);
 
       if (filter) {
@@ -55,6 +66,7 @@ export default function useRealtimeData(table, options = {}) {
           setError(fetchError);
           setData(single ? null : []);
         } else {
+          globalDataCache[cacheKey] = result; // Update global cache
           setData(result);
         }
         setLoading(false);

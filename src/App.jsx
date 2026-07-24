@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { IslandProvider } from './context/IslandContext';
@@ -16,6 +16,8 @@ import AnnouncementBanner from './components/AnnouncementBanner';
 import { trackPageView } from './lib/analyticsTracker';
 import { supabase } from './lib/supabaseClient';
 import { PersonaProvider } from './context/PersonaContext';
+import SplashScreen from './components/SplashScreen';
+import { globalDataCache } from './hooks/useRealtimeData';
 
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 const AdminLogin = React.lazy(() => import('./pages/AdminLogin'));
@@ -62,27 +64,83 @@ function AnimatedRoutes() {
 // Fallback spinner for Suspense
 const Loader = () => (
   <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', color: 'var(--text-color)' }}>
-    <div className="spinner">Loading...</div>
+    <div className="spinner"></div>
   </div>
 );
 
 function AppContent() {
   const { reduceMotion } = useTheme();
+  const [appReady, setAppReady] = useState(false);
+  const [showContent, setShowContent] = useState(false); // Controls when App Content mounts to prevent layout shifts
+
+  useEffect(() => {
+    async function prefetchData() {
+      try {
+        // Fetch core data required for initial paint
+        const [profileRes, settingsRes] = await Promise.all([
+          supabase.from('profile').select('*').single(),
+          supabase.from('site_settings').select('*').single()
+        ]);
+        
+        if (!profileRes.error) {
+           globalDataCache[`profile_${JSON.stringify({select:'*', single:true, orderColumn:'id', ascending:true, filter:null})}`] = profileRes.data;
+        }
+        if (!settingsRes.error) {
+           globalDataCache[`site_settings_${JSON.stringify({select:'*', single:true, orderColumn:'id', ascending:true, filter: { column: 'id', value: 1 }})}`] = settingsRes.data;
+        }
+
+        // Release the Splash Screen to fade out
+        setAppReady(true);
+        // Safely mount background content slightly before splash unmounts for a seamless crossfade
+        setTimeout(() => setShowContent(true), 200);
+
+        // Silent Background SWR Cache Population (Heavy Data)
+        setTimeout(async () => {
+          const fetchConfigs = [
+            { table: 'projects', options: { select: '*', single: false, orderColumn: 'created_at', ascending: true, filter: null } },
+            { table: 'experience', options: { select: '*', single: false, orderColumn: 'display_order', ascending: true, filter: null } },
+            { table: 'skills', options: { select: '*', single: false, orderColumn: 'order_index', ascending: true, filter: null } },
+            { table: 'education', options: { select: '*', single: false, orderColumn: 'display_order', ascending: true, filter: null } }
+          ];
+          
+          await Promise.all(fetchConfigs.map(async ({ table, options }) => {
+             const res = await supabase.from(table).select(options.select).order(options.orderColumn, { ascending: options.ascending });
+             if (!res.error) {
+               globalDataCache[`${table}_${JSON.stringify(options)}`] = res.data;
+             }
+          }));
+        }, 800); // Wait until splash screen is done animating before using network
+        
+      } catch (e) {
+        setAppReady(true);
+        setShowContent(true);
+      }
+    }
+    
+    prefetchData();
+  }, []);
+
   return (
     <MotionConfig reducedMotion={reduceMotion ? "always" : "never"}>
-      <SEOHelmet />
-      <AnnouncementBanner />
-      <IslandProvider>
-        <DynamicIsland />
-        <DevToolsDetector />
-        <BrowserRouter>
-          <Suspense fallback={<Loader />}>
-            <MaintenanceGate>
-              <AnimatedRoutes />
-            </MaintenanceGate>
-          </Suspense>
-        </BrowserRouter>
-      </IslandProvider>
+      <SplashScreen isReady={appReady} onComplete={() => {}} />
+      
+      {showContent && (
+        <>
+          <SEOHelmet />
+          <AnnouncementBanner />
+          <IslandProvider>
+            <DynamicIsland />
+            <DevToolsDetector />
+            <BrowserRouter>
+              <Suspense fallback={<Loader />}>
+                <MaintenanceGate>
+                  <AnimatedRoutes />
+                </MaintenanceGate>
+              </Suspense>
+            </BrowserRouter>
+          </IslandProvider>
+        </>
+      )}
     </MotionConfig>
   );
 }
