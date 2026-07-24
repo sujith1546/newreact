@@ -4,6 +4,17 @@ import { Globe2, MapPin, Radar, Satellite, X } from "lucide-react";
 
 const TARGET = { name: "Vellore", region: "Tamil Nadu, India", lat: 12.9165, lon: 79.1325 };
 
+const INDIA_BORDERS = [
+  [23.7, 68.2], [24.5, 71.0], [28.0, 70.0], [30.0, 74.0], [33.0, 74.0],
+  [35.0, 74.5], [35.5, 77.0], [33.0, 79.0], [31.0, 79.0], [29.0, 80.0],
+  [27.0, 84.0], [27.0, 88.0], [28.0, 89.0], [27.5, 92.0], [29.0, 95.0],
+  [28.0, 97.0], [26.0, 95.0], [24.0, 94.0], [23.0, 93.0], [22.0, 91.5],
+  [25.0, 90.0], [26.0, 89.0], [25.0, 88.0], [22.0, 88.0], [20.0, 86.0],
+  [17.0, 83.0], [13.0, 80.0], [10.0, 79.5], [8.0, 77.5],  [9.0, 76.0],
+  [12.0, 75.0], [15.0, 74.0], [19.0, 72.8], [21.0, 72.0], [22.0, 69.0],
+  [23.7, 68.2]
+];
+
 // Earth's real axial tilt, so the globe reads as an actual planet rather than a spinning ball.
 const AXIAL_TILT = (23.4 * Math.PI) / 180;
 
@@ -242,7 +253,7 @@ export default function GlobeLocator({ onClose }) {
     const TEX_BASE =
       "https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/textures/planets/";
 
-    let cloudMesh, gridMesh, beamMesh;
+    let cloudMesh, gridMesh, beamMesh, indiaLine;
     const pulseRings = [];
 
     Promise.all([
@@ -314,6 +325,17 @@ export default function GlobeLocator({ onClose }) {
       });
       gridMesh = new THREE.Mesh(gridGeo, gridMat);
       globeGroup.add(gridMesh);
+
+      const indiaPts = INDIA_BORDERS.map(pt => latLonToVector3(pt[0], pt[1], RADIUS * 1.002));
+      const indiaGeo = new THREE.BufferGeometry().setFromPoints(indiaPts);
+      const indiaMat = new THREE.LineBasicMaterial({
+        color: 0xffd700,
+        transparent: true,
+        opacity: 0,
+        blending: THREE.AdditiveBlending,
+      });
+      indiaLine = new THREE.Line(indiaGeo, indiaMat);
+      globeGroup.add(indiaLine);
 
       const markerLocalPos = latLonToVector3(TARGET.lat, TARGET.lon, RADIUS);
 
@@ -387,6 +409,14 @@ export default function GlobeLocator({ onClose }) {
       if (cloudMesh) cloudMesh.rotation.y += 0.00035;
       if (gridMesh) gridMesh.rotation.y -= 0.00018;
       stars.rotation.y += 0.00004;
+
+      if (indiaLine) {
+        const hourIST = new Date().toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour12: false, hour: 'numeric' });
+        const hr = parseInt(hourIST, 10);
+        const isNight = hr >= 19 || hr <= 5;
+        const targetOpacity = isNight ? 0.85 : 0.0;
+        indiaLine.material.opacity += (targetOpacity - indiaLine.material.opacity) * 0.03;
+      }
 
       if (phaseRef.current === "spinning") {
         const now = performance.now();
