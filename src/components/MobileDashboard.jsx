@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { motion } from 'framer-motion';
 import { MapPin, Loader2, ArrowDown, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import useGlitchText from '../hooks/useGlitchText';
 import useRealtimeData from '../hooks/useRealtimeData';
 
@@ -48,29 +47,6 @@ export default function MobileDashboard({ onNavClick }) {
   const projs = useCountUp('5');
   
   const nameText = useGlitchText("Sujith Thota", 100);
-  const navigate = useNavigate();
-
-  // Secret 5-click admin login trigger
-  const [clickCount, setClickCount] = useState(0);
-  const clickTimerRef = useRef(null);
-
-  const handleSecretAdminClick = () => {
-    setClickCount((prev) => {
-      const newCount = prev + 1;
-      if (newCount === 5) {
-        navigate('/admin/login');
-        return 0; // Reset
-      }
-      return newCount;
-    });
-
-    if (clickTimerRef.current) {
-      clearTimeout(clickTimerRef.current);
-    }
-    clickTimerRef.current = setTimeout(() => {
-      setClickCount(0); // Reset after 1.5 seconds of inactivity
-    }, 1500);
-  };
 
   // Pull to refresh logic
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -243,7 +219,6 @@ export default function MobileDashboard({ onNavClick }) {
             alt="Sujith Thota" 
             className="hd-avatar" 
             id="profile-avatar-img" 
-            onClick={handleSecretAdminClick}
           />
           <div className="hd-profile-info">
             <h1 className="hd-name">{nameText}</h1>

@@ -3,6 +3,7 @@ import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Award, FileT
 import { FaGithub } from 'react-icons/fa';
 import { IconBolt, IconLayoutGrid } from '@tabler/icons-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { useLocalTime } from '../hooks/useLocalTime';
 import { useTheme } from '../context/ThemeContext';
 import useRealtimeData from '../hooks/useRealtimeData';
@@ -14,9 +15,10 @@ const moonPath = "M 12 3 C 16.97 3 21 7.03 21 12 C 21 16.97 16.97 21 12 21 C 14.
 
 export default function MobileBottomNav({ activeSection, onNavClick }) {
   const { data: dbSettings } = useRealtimeData('site_settings', { single: true, filter: { column: 'id', value: 1 } });
+  const navigate = useNavigate();
 
   const [isMoreOpen, setIsMoreOpen] = useState(false);
-    const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isUpdatesOpen, setIsUpdatesOpen] = useState(false);
   const [isGithubStatsOpen, setIsGithubStatsOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
@@ -24,6 +26,29 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
   const [reduceMotion, setReduceMotion] = useState(false);
   const [toast, setToast] = useState(null); // { label, prevValue, nextValue, undo }
   const [tapCount, setTapCount] = useState(0);
+
+  // Secret 5-click admin login trigger
+  const [clickCount, setClickCount] = useState(0);
+  const clickTimerRef = useRef(null);
+
+  const handleSecretAdminClick = () => {
+    setClickCount((prev) => {
+      const newCount = prev + 1;
+      if (newCount === 5) {
+        setIsMoreOpen(false); // Close the drawer
+        navigate('/admin/login');
+        return 0; // Reset
+      }
+      return newCount;
+    });
+
+    if (clickTimerRef.current) {
+      clearTimeout(clickTimerRef.current);
+    }
+    clickTimerRef.current = setTimeout(() => {
+      setClickCount(0); // Reset after 1.5 seconds of inactivity
+    }, 1500);
+  };
     
   // IntersectionObserver removed because we now render components dynamically instead of in a single scrolling feed.
   const localTime = useLocalTime();
@@ -352,7 +377,12 @@ END:VCARD`;
 
             {/* Header: avatar + name + close */}
             <div className="drawer-header-profile">
-              <img src="/profile_photo.png" alt="Sujith Thota" className="drawer-avatar" />
+              <img 
+                src="/profile_photo.png" 
+                alt="Sujith Thota" 
+                className="drawer-avatar" 
+                onClick={handleSecretAdminClick}
+              />
               <div className="drawer-profile-info">
                 <h4>Sujith Thota</h4>
                 <div className="drawer-status-badge">
