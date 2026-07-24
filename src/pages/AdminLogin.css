@@ -397,7 +397,7 @@
   .status-list, .side-actions, .side-footer{ display:none; }
   .side-socials{ margin-top:0; margin-left:auto; }
   .login-main{ flex: 1; height:auto; overflow-y:auto; padding:20px; justify-content:center; align-items:center; }
-  .utility-bar{ position:static; justify-content:flex-end; margin-bottom:16px; width:100%; max-width:400px; }
+  .utility-bar{ display: none; }
   .login-content{ margin-top:0; max-width:400px; width:100%; display:flex; flex-direction:column; }
   .headline{ font-size:26px; margin-top:4px; }
   .lede{ font-size:13px; margin-top:8px; margin-bottom: 12px; }
