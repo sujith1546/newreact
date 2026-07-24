@@ -263,9 +263,10 @@ export default function AdminLogin() {
             
             <form onSubmit={handleTotpSubmit} noValidate>
               <div className="field" style={{ textAlign: 'left' }}>
-                <label>Verification Code</label>
+                <label htmlFor="totpCode">Verification Code</label>
                 <div className="input-shell" style={{ height: 50 }}>
                   <input
+                    id="totpCode"
                     type="text"
                     autoComplete="one-time-code"
                     placeholder="000000"
@@ -448,7 +449,7 @@ export default function AdminLogin() {
                     </div>
                   </div>
                   <div className="row-between">
-                    <label className="remember"><input type="checkbox" /> Remember me</label>
+                    <label className="remember" htmlFor="rememberMe"><input id="rememberMe" type="checkbox" /> Remember me</label>
                     <span className={`caps-warn ${capsLockOn ? 'show' : ''}`}>
                       <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.86 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.86a2 2 0 0 0-3.4 0Z"/></svg>
                       Caps Lock on

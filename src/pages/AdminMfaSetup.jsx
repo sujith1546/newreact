@@ -207,13 +207,15 @@ export default function AdminMfaSetup() {
 
             {disableMode && (
               <div style={styles.authGate}>
-                <p style={{ fontSize: 13, color: '#ef4444', marginBottom: 12, fontWeight: 500 }}>
+                <label htmlFor="disablePassword" style={{ fontSize: 13, color: '#ef4444', marginBottom: 12, fontWeight: 500, display: 'block' }}>
                   Re-enter your password to disable this MFA factor:
-                </p>
+                </label>
                 <div style={styles.inputWrap}>
                   <Key size={14} color="#a1a1aa" />
                   <input
+                    id="disablePassword"
                     type="password"
+                    autoComplete="current-password"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     placeholder="Admin Password"
@@ -252,10 +254,12 @@ export default function AdminMfaSetup() {
                   {qrCodeData ? <QRCodeSVG value={qrCodeData} size={150} /> : <Loader2 className="spin" size={24} color="#000" />}
                 </div>
 
-                <h4 style={{ margin: '0 0 12px', fontSize: 14, color: '#fff' }}>2. Enter Verification Code</h4>
+                <label htmlFor="setupTotp" style={{ margin: '0 0 12px', fontSize: 14, color: '#fff', display: 'block', fontWeight: 'bold' }}>2. Enter Verification Code</label>
                 <div style={styles.inputWrap}>
                   <input
+                    id="setupTotp"
                     type="text"
+                    autoComplete="one-time-code"
                     value={verificationCode}
                     onChange={e => setVerificationCode(e.target.value)}
                     placeholder="123456"
