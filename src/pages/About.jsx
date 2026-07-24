@@ -447,10 +447,19 @@ export default function About() {
 
         /* Responsive */
         @media (max-width: 900px) {
-          .hobbies-grid { grid-template-columns: repeat(2, 1fr); }
-          .stats-grid { grid-template-columns: repeat(2, 1fr); }
-          .cta-section { flex-direction: column; text-align: center; gap: 24px; }
-          .cta-text p { max-width: 100%; }
+          .hobbies-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+          .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+          .cta-section { flex-direction: column; text-align: center; gap: 16px; padding: 24px; border-radius: 16px; }
+          .cta-text h2 { font-size: 20px; }
+          .cta-text p { max-width: 100%; font-size: 12px; }
+          
+          .about-header h1 { font-size: 24px; }
+          .about-header p { font-size: 12px; }
+          .about-intro-text { font-size: 13px; padding: 16px; border-radius: 12px; }
+          .section-title { font-size: 16px; }
+          .stat-card { padding: 16px; border-radius: 12px; }
+          .stat-value { font-size: 24px; }
+          .stat-label { font-size: 10px; }
         }
         @media (max-width: 600px) {
           .hobbies-grid { grid-template-columns: 1fr; }

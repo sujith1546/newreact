@@ -156,6 +156,26 @@ export default function Experience() {
         .timeline-bullets li:last-child {
           margin-bottom: 0;
         }
+
+        /* ========== MOBILE ULTRA-COMPACT ========== */
+        @media (max-width: 900px) {
+          .exp-header h1 { font-size: 16px; margin-bottom: 4px; }
+          .exp-header p { font-size: 10px; }
+          
+          .timeline { margin-top: 5px; padding-left: 18px; }
+          .timeline-item { margin-bottom: 16px; }
+          .timeline-dot { width: 8px; height: 8px; left: -16px; top: 8px; }
+          .timeline::before { left: -12px; }
+          
+          .timeline-content { padding: 12px; border-radius: 12px; }
+          .timeline-header { margin-bottom: 8px; gap: 6px; }
+          .timeline-title h3 { font-size: 13px; margin: 0 0 2px; }
+          .timeline-title p { font-size: 10px; }
+          .timeline-date { font-size: 10px; padding: 2px 8px; }
+          
+          .timeline-bullets { font-size: 11px; padding-left: 14px; }
+          .timeline-bullets li { margin-bottom: 4px; }
+        }
       `}</style>
       
       <div className="exp-page">

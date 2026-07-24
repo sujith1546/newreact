@@ -855,16 +855,16 @@ export default function Education() {
           }
           .edu-rail, .edu-grid, .education-arrow-flow, .section-subtitle, .edu-closing-summary { display: none !important; }
           .mobile-edu-feed {
-            display: flex; flex-direction: column; gap: 12px; width: 100%;
+            display: flex; flex-direction: column; gap: 8px; width: 100%;
           }
 
           .medu-card {
             position: relative; overflow: hidden;
-            display: flex; align-items: flex-start; gap: 13px;
-            padding: 14px 14px 14px 18px;
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 10px 12px 10px 14px;
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
-            border-radius: 18px;
+            border-radius: 14px;
             width: 100%; text-align: left; cursor: pointer;
             transition: background 0.15s; outline: none;
           }
@@ -872,20 +872,20 @@ export default function Education() {
           
           .medu-stripe {
             position: absolute; left: 0; top: 0; bottom: 0;
-            width: 3px; border-radius: 18px 0 0 18px;
+            width: 3px; border-radius: 14px 0 0 14px;
           }
 
           .medu-icon-wrap {
-            width: 42px; height: 42px; border-radius: 12px;
+            width: 32px; height: 32px; border-radius: 10px;
             display: flex; align-items: center; justify-content: center;
             flex-shrink: 0; position: relative; overflow: hidden;
             border: 1px solid;
           }
 
           .medu-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
-          .medu-title-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; flex-wrap: wrap; }
-          .medu-title { font-size: 14.5px; font-weight: 700; color: var(--text-primary); margin: 0; line-height: 1.2; }
-          .medu-inst { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; }
+          .medu-title-row { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; flex-wrap: wrap; }
+          .medu-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin: 0; line-height: 1.2; }
+          .medu-inst { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; }
           
           .medu-chevron { color: var(--text-muted); flex-shrink: 0; margin-top: 2px; }
 
@@ -911,25 +911,25 @@ export default function Education() {
           }
           .dsheet-header {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 16px 18px 14px; border-bottom: 1px solid var(--border-color); flex-shrink: 0;
+            padding: 12px 14px 10px; border-bottom: 1px solid var(--border-color); flex-shrink: 0;
           }
-          .dsheet-header-left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+          .dsheet-header-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
           .dsheet-header-icon {
-            width: 44px; height: 44px; border-radius: 14px; flex-shrink: 0;
+            width: 32px; height: 32px; border-radius: 10px; flex-shrink: 0;
             display: flex; align-items: center; justify-content: center;
           }
-          .dsheet-title h3 { font-size: 16px; font-weight: 800; color: var(--text-primary); margin: 0 0 2px; letter-spacing: -.02em; line-height: 1.25; }
-          .dsheet-title p { font-size: 11px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; letter-spacing: .06em; margin: 0; }
+          .dsheet-title h3 { font-size: 14px; font-weight: 800; color: var(--text-primary); margin: 0 0 2px; letter-spacing: -.02em; line-height: 1.25; }
+          .dsheet-title p { font-size: 9px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; letter-spacing: .06em; margin: 0; }
           .dsheet-close {
-            width: 30px; height: 30px; border-radius: 15px; background: var(--bg-primary);
+            width: 24px; height: 24px; border-radius: 12px; background: var(--bg-primary);
             border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center;
-            color: var(--text-secondary); cursor: pointer; flex-shrink: 0; margin-left: 10px;
+            color: var(--text-secondary); cursor: pointer; flex-shrink: 0; margin-left: 8px;
           }
           .dsheet-body {
             flex: 1; overflow-y: auto; padding: 0; display: flex; flex-direction: column; position: relative;
           }
           .dsheet-body::-webkit-scrollbar { display: none; }
-          .dsheet-content { padding: 18px; display: flex; flex-direction: column; gap: 16px; padding-bottom: 32px; }
+          .dsheet-content { padding: 12px; display: flex; flex-direction: column; gap: 12px; padding-bottom: 24px; }
           
           .dsheet-section-label {
             font-size: 10px; font-weight: 800; color: var(--text-muted);
@@ -938,12 +938,12 @@ export default function Education() {
 
           /* Hero stat card */
           .edu-hero-card {
-            display: flex; align-items: center; gap: 16px; padding: 16px;
+            display: flex; align-items: center; gap: 12px; padding: 12px;
             background: var(--bg-primary); border: 1px solid var(--border-color);
-            border-radius: 16px;
+            border-radius: 14px;
           }
           .edu-hero-icon-wrap {
-            width: 68px; height: 68px; border-radius: 18px; flex-shrink: 0;
+            width: 48px; height: 48px; border-radius: 12px; flex-shrink: 0;
             display: flex; align-items: center; justify-content: center;
             position: relative; overflow: hidden;
           }

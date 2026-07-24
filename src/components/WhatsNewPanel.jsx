@@ -323,6 +323,30 @@ export default function WhatsNewPanel({ open, onClose }) {
                 pointer-events: none; color: var(--text-secondary); z-index: 100;
                 border-bottom-left-radius: 0; border-bottom-right-radius: 0;
               }
+
+              /* ========== MOBILE ULTRA-COMPACT ========== */
+              @media (max-width: 900px) {
+                .wn-header { padding: 10px 14px 8px; }
+                .wn-title { font-size: 14px; }
+                .wn-close-btn { width: 24px; height: 24px; border-radius: 12px; }
+                
+                .wn-tab { padding: 8px 0; font-size: 11px; }
+                .wn-body { padding: 12px; }
+                
+                .wn-release-row { gap: 10px; }
+                .wn-rail-dot { width: 8px; height: 8px; margin-top: 4px; }
+                
+                .wn-release-content { padding-bottom: 20px; }
+                .wn-release-version { font-size: 13px; }
+                .wn-release-label { font-size: 11px; }
+                .wn-release-date { font-size: 9px; margin-bottom: 10px; }
+                
+                .wn-item-card { padding: 10px; border-radius: 10px; }
+                .wn-item-title-row { font-size: 11px; margin-bottom: 4px; }
+                .wn-item-body { font-size: 10px; line-height: 1.4; }
+                
+                .wn-show-more { padding: 8px; font-size: 11px; }
+              }
             `}</style>
           </motion.div>
         </>
