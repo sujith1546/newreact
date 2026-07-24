@@ -218,7 +218,7 @@ export default function AdminDashboard() {
             <div style={{ padding: '20px', background: 'var(--card-bg)', borderRadius: '16px', border: '1px solid var(--border)', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '24px' }}>
               <div style={{ flex: 1 }}>
                 <h3 style={{ fontSize: '18px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <GlobeIcon size={18} color="var(--primary-blue)" />
+                  <Globe size={18} color="var(--primary-blue)" />
                   Live Visitor Map
                 </h3>
                 <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginTop: '4px' }}>
