@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { QrCode, Download, MapPin, Loader2, CheckCircle, FileText, Eye, X, Cpu, Layers, Wifi, RefreshCw, ExternalLink, ShieldCheck, FileDown, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ResumeQuickLook from './ResumeQuickLook';
@@ -73,7 +73,30 @@ export default function Sidebar({ activeSection, onNavClick }) {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const isMainPage = location.pathname === '/';
+
+  // Secret 5-click admin login trigger
+  const [clickCount, setClickCount] = useState(0);
+  const clickTimerRef = useRef(null);
+
+  const handleSecretAdminClick = () => {
+    setClickCount((prev) => {
+      const newCount = prev + 1;
+      if (newCount === 5) {
+        navigate('/admin/login');
+        return 0; // Reset
+      }
+      return newCount;
+    });
+
+    if (clickTimerRef.current) {
+      clearTimeout(clickTimerRef.current);
+    }
+    clickTimerRef.current = setTimeout(() => {
+      setClickCount(0); // Reset after 1.5 seconds of inactivity
+    }, 1500);
+  };
 
   useEffect(() => {
     const handleOpenResume = () => setIsPreviewOpen(true);
@@ -159,7 +182,11 @@ export default function Sidebar({ activeSection, onNavClick }) {
 
   return (
     <aside className="sidebar">
-      <div className="sidebar-avatar-container" onDoubleClick={() => setIsProfileModalOpen(true)}>
+      <div 
+        className="sidebar-avatar-container" 
+        onClick={handleSecretAdminClick}
+        onDoubleClick={() => setIsProfileModalOpen(true)}
+      >
         <img src="/profile_photo.png" alt="Sujith Thota" />
         <div className="sidebar-avatar-overlay">
           <Eye size={18} />
