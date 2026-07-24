@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Globe } from 'lucide-react';
+const GlobeLocator = lazy(() => import('./GlobeLocator'));
 import DiagnosticsToggle from './DiagnosticsToggle';
 import DarkModeToggle from './DarkModeToggle';
 import SettingsDropdown from './SettingsDropdown';
@@ -11,6 +13,7 @@ export default function TimezoneStatus() {
   const [localEnd, setLocalEnd] = useState('');
   const [isAwake, setIsAwake] = useState(true);
   const [isIST, setIsIST] = useState(false);
+  const [isGlobeOpen, setIsGlobeOpen] = useState(false);
 
   useEffect(() => {
     try {
@@ -337,9 +340,30 @@ export default function TimezoneStatus() {
           </div>
         </div>
 
+        <button className="globe-btn" onClick={() => setIsGlobeOpen(true)} title="View Globe" aria-label="Open Globe Locator">
+          <Globe size={16} strokeWidth={2.5} />
+        </button>
+
         <DarkModeToggle />
         <SettingsDropdown />
       </div>
+
+      <AnimatePresence>
+        {isGlobeOpen && (
+          <motion.div
+            key="globe-locator-overlay"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            style={{ position: 'fixed', inset: 0, zIndex: 999999, backgroundColor: '#030509' }}
+          >
+            <Suspense fallback={<div style={{ width: '100%', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div className="spinner"></div></div>}>
+              <GlobeLocator onClose={() => setIsGlobeOpen(false)} />
+            </Suspense>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }

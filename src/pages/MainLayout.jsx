@@ -1,11 +1,10 @@
 import React, { useState, useRef, useEffect, Suspense, lazy } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, Mail, Briefcase, Check, Globe2 } from 'lucide-react';
+import { FileText, Mail, Briefcase, Check } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
 import Sidebar from '../components/Sidebar';
 import WelcomeModal from '../components/WelcomeModal';
 import MobileBottomNav from '../components/MobileBottomNav';
-const GlobeLocator = lazy(() => import('../components/GlobeLocator'));
 import DarkModeToggle from '../components/DarkModeToggle';
 import SettingsDropdown from '../components/SettingsDropdown';
 import SettingsSidebar from '../components/SettingsSidebar';
@@ -88,8 +87,7 @@ export default function MainLayout() {
   const [activeSection, setActiveSection] = useState('home');
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
   const [isStatusOpen, setIsStatusOpen] = useState(false);
-  const [slideDirection, setSlideDirection] = useState(1);
-  const [isGlobeOpen, setIsGlobeOpen] = useState(false); // 1=fwd, -1=back, 0=replace
+  const [slideDirection, setSlideDirection] = useState(0); // 1=fwd, -1=back, 0=replace
   const [isNavActive,      setIsNavActive]      = useState(false); // drives progress bar
   const [emailCopied,      setEmailCopied]      = useState(false);
   const [spotlightSection, setSpotlightSection] = useState(null); // AI Screen Director
@@ -306,13 +304,6 @@ export default function MainLayout() {
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        <div className="desktop-top-header">
-          <button className="globe-btn" onClick={() => setIsGlobeOpen(true)} aria-label="Open Globe Locator">
-            <Globe2 size={22} />
-          </button>
-          <DarkModeToggle />
-          <SettingsDropdown />
-        </div>
         
         <div className="scroll-container">
           <AnimatePresence mode={isMobile ? "sync" : "wait"} initial={false} custom={slideDirection}>
@@ -374,23 +365,6 @@ export default function MainLayout() {
 
       {isMobile && <MobileStatusPanel isOpen={isStatusOpen} onClose={() => setIsStatusOpen(false)} />}
       {isMobile && <MobileBottomNav activeSection={activeSection} onNavClick={handleNavClick} />}
-      
-      <AnimatePresence>
-        {isGlobeOpen && (
-          <motion.div
-            key="globe-locator-overlay"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            style={{ position: 'fixed', inset: 0, zIndex: 999999, backgroundColor: '#030509' }}
-          >
-            <Suspense fallback={<div style={{ width: '100%', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div className="spinner"></div></div>}>
-              <GlobeLocator onClose={() => setIsGlobeOpen(false)} />
-            </Suspense>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
