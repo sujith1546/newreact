@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useLocalTime } from '../hooks/useLocalTime';
 import { useTheme } from '../context/ThemeContext';
+import { usePersona } from '../context/PersonaContext';
 import useRealtimeData from '../hooks/useRealtimeData';
 import WhatsNewPanel from './WhatsNewPanel';
 import AdvancedProfile from './AdvancedProfile';
@@ -354,12 +355,15 @@ END:VCARD`;
     }
   };
 
-  const navItems = [
+  const { getSectionOrder } = usePersona();
+
+  const baseNavItems = [
     { id: 'home', label: 'Home', Icon: Home },
     { id: 'skills', label: 'Skills', Icon: IconBolt },
     { id: 'projects', label: 'Projects', Icon: IconLayoutGrid },
     { id: 'contact', label: 'Contact', Icon: Mail },
   ];
+  const navItems = getSectionOrder(baseNavItems);
 
   return (
     <>

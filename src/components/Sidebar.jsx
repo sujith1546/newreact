@@ -7,6 +7,7 @@ import ResumeQuickLook from './ResumeQuickLook';
 import { useLocalTime } from '../hooks/useLocalTime';
 import QRModal from './QRModal';
 import { useTheme } from '../context/ThemeContext';
+import { usePersona } from '../context/PersonaContext';
 import useRealtimeData from '../hooks/useRealtimeData';
 import { useIsland } from '../context/IslandContext';
 
@@ -58,12 +59,15 @@ const NAV_ITEMS_DEF = [
 
 export default function Sidebar({ activeSection, onNavClick }) {
   const { data: dbSettings } = useRealtimeData('site_settings', { single: true, filter: { column: 'id', value: 1 } });
+  const { getSectionOrder } = usePersona();
   
-  const NAV_ITEMS = NAV_ITEMS_DEF.filter(item => {
+  const baseItems = NAV_ITEMS_DEF.filter(item => {
     if (item.id === 'experience' && dbSettings?.feature_experience === false) return false;
     if (item.id === 'certifications' && dbSettings?.feature_certifications === false) return false;
     return true;
   });
+  
+  const NAV_ITEMS = getSectionOrder(baseItems);
 
   const localTime = useLocalTime();
   const { theme } = useTheme();

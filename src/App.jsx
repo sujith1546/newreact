@@ -89,17 +89,33 @@ function AppContent() {
 
 export default function App() {
   useEffect(() => {
+    let presenceChannel;
+
     const broadcastPresence = async () => {
       try {
-        const res = await fetch('https://ipapi.co/json/');
-        const data = await res.json();
-        if (data && data.latitude && data.longitude) {
-          const channel = supabase.channel('visitor_presence');
-          channel.subscribe(async (status) => {
+        let lat, lng;
+        const cachedLoc = sessionStorage.getItem('visitor_location');
+        if (cachedLoc) {
+          const parsed = JSON.parse(cachedLoc);
+          lat = parsed.lat;
+          lng = parsed.lng;
+        } else {
+          const res = await fetch('https://ipapi.co/json/');
+          const data = await res.json();
+          if (data && data.latitude && data.longitude) {
+            lat = data.latitude;
+            lng = data.longitude;
+            sessionStorage.setItem('visitor_location', JSON.stringify({ lat, lng }));
+          }
+        }
+
+        if (lat && lng) {
+          presenceChannel = supabase.channel('visitor_presence');
+          presenceChannel.subscribe(async (status) => {
             if (status === 'SUBSCRIBED') {
-              await channel.track({
-                lat: data.latitude,
-                lng: data.longitude,
+              await presenceChannel.track({
+                lat,
+                lng,
                 online_at: new Date().toISOString()
               });
             }
@@ -109,8 +125,13 @@ export default function App() {
         // Silently ignore if adblocker or fetch fails
       }
     };
+    
     // Delay broadcast slightly to not block initial render
     setTimeout(broadcastPresence, 2000);
+
+    return () => {
+      if (presenceChannel) supabase.removeChannel(presenceChannel);
+    };
   }, []);
 
   return (
