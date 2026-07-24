@@ -388,17 +388,32 @@
 }
 
 @media (max-width: 900px){
-  .login-page-container { height:auto; overflow:auto; flex-direction:column; position: static; }
-  .login-sidebar{ width:100%; height:auto; overflow:visible; border-right:none; border-bottom:1px solid var(--border); flex-direction:row; align-items:center; flex-wrap:wrap; gap:16px; padding:24px 28px; }
-  .login-avatar{ width:56px; height:56px; margin-bottom:0; }
+  .login-page-container { height:100dvh; overflow:hidden; flex-direction:column; position: fixed; top: 0; left: 0; right: 0; bottom: 0; }
+  .login-sidebar{ width:100%; height:auto; overflow:visible; border-right:none; border-bottom:1px solid var(--border); flex-direction:row; align-items:center; gap:12px; padding:16px 20px; }
+  .login-avatar{ width:40px; height:40px; margin-bottom:0; }
+  .side-name{ font-size:14px; margin-top:0; }
+  .side-sub{ display:none; }
   .side-divider{ display:none; }
   .status-list, .side-actions, .side-footer{ display:none; }
   .side-socials{ margin-top:0; margin-left:auto; }
-  .login-main{ height:auto; overflow:visible; padding:28px 24px 56px; justify-content:flex-start; }
-  .utility-bar{ position:static; justify-content:flex-end; margin-bottom:24px; }
-  .login-content{ margin-top:8px; max-width:100%; }
-  .headline{ font-size:32px; }
-  .method-row{ flex-direction:column; }
+  .login-main{ flex: 1; height:auto; overflow:hidden; padding:20px; justify-content:center; align-items:center; }
+  .utility-bar{ position:static; justify-content:flex-end; margin-bottom:16px; width:100%; max-width:400px; }
+  .login-content{ margin-top:0; max-width:400px; width:100%; display:flex; flex-direction:column; }
+  .headline{ font-size:26px; margin-top:4px; }
+  .lede{ font-size:13px; margin-top:8px; margin-bottom: 12px; }
+  .term-pill{ display: none; } /* Hide terminal pill on mobile to save space */
+  .method-row{ flex-direction:row; flex-wrap:nowrap; gap:8px; margin-top:12px; }
+  .method-card{ padding:10px 8px; gap:4px; align-items:center; text-align:center; }
+  .method-icon{ width:26px; height:26px; }
+  .method-icon svg{ width:12px; height:12px; }
+  .method-label{ font-size: 11px; }
+  .method-sub{ display:none; } /* Hide subtext on mobile */
+  .form-panel{ margin-top:16px; }
+  .input-label{ font-size:10px; }
+  .input-field{ padding:10px 12px; font-size:14px; }
+  .submit-btn{ padding:10px 14px; font-size:13px; margin-top:12px; }
+  .footer-trust{ margin-top:20px; flex-wrap:wrap; gap:10px; }
+  .foot-note{ margin-top:10px; font-size:10px; }
 }
 
 /* MFA Specific Adjustments */
