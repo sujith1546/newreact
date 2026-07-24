@@ -100,11 +100,35 @@ export default function App() {
           lat = parsed.lat;
           lng = parsed.lng;
         } else {
-          const res = await fetch('https://ipapi.co/json/');
-          const data = await res.json();
-          if (data && data.latitude && data.longitude) {
-            lat = data.latitude;
-            lng = data.longitude;
+          // Fallback chain for IP Geolocation APIs to prevent rate-limit (429) & CORS errors
+          try {
+            const res = await fetch('https://get.geojs.io/v1/ip/geo.json');
+            if (!res.ok) throw new Error('geojs failed');
+            const data = await res.json();
+            if (data && data.latitude && data.longitude) {
+              lat = parseFloat(data.latitude);
+              lng = parseFloat(data.longitude);
+            } else {
+              throw new Error('invalid geojs data');
+            }
+          } catch (err1) {
+            try {
+              const res2 = await fetch('https://freeipapi.com/api/json');
+              if (!res2.ok) throw new Error('freeipapi failed');
+              const data2 = await res2.json();
+              if (data2 && data2.latitude && data2.longitude) {
+                lat = parseFloat(data2.latitude);
+                lng = parseFloat(data2.longitude);
+              } else {
+                throw new Error('invalid freeipapi data');
+              }
+            } catch (err2) {
+              // If all APIs fail, gracefully skip instead of throwing red console errors
+              console.warn('Visitor location APIs unavailable, skipping globe presence broadcast.');
+            }
+          }
+
+          if (lat && lng) {
             sessionStorage.setItem('visitor_location', JSON.stringify({ lat, lng }));
           }
         }
