@@ -3,10 +3,17 @@ import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseAdmin = createClient(
-  process.env.VITE_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+let supabaseAdmin = null;
+try {
+  if (process.env.VITE_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    supabaseAdmin = createClient(
+      process.env.VITE_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    );
+  }
+} catch (err) {
+  console.warn("Failed to initialize Supabase Admin in global scope:", err);
+}
 
 function scoreSpam({ email, message }) {
   let score = 0;
@@ -174,21 +181,25 @@ export default async function handler(req, res) {
     const isSpam = spamScore >= 60;
 
     // 1. Insert into Supabase with Admin Key
-    const { data: inserted, error: dbError } = await supabaseAdmin
-      .from('contact_messages')
-      .insert({
-        name,
-        email,
-        message,
-        ip_address: clientIp,
-        location,
-        referrer_path: referrer_path || null,
-        spam_score: spamScore,
-        is_spam: isSpam,
-        is_bot: false // explicit
-      })
-      .select()
-      .single();
+    let dbError = null;
+    if (supabaseAdmin) {
+      const { error } = await supabaseAdmin
+        .from('contact_messages')
+        .insert({
+          name,
+          email,
+          message,
+          ip_address: clientIp,
+          location,
+          referrer_path: referrer_path || null,
+          spam_score: spamScore,
+          is_spam: isSpam,
+          is_bot: false
+        });
+      dbError = error;
+    } else {
+      console.warn("Skipping DB insert because Supabase Admin is not initialized.");
+    }
 
     if (dbError) {
       console.error("Database insert failed:", dbError);
