@@ -4,6 +4,15 @@ import { Globe2, MapPin, Radar, Satellite, X } from "lucide-react";
 
 const TARGET = { name: "Vellore", region: "Tamil Nadu, India", lat: 12.9165, lon: 79.1325 };
 
+const TECH_HUBS = [
+  { name: "San Francisco", lat: 37.7749, lon: -122.4194 },
+  { name: "London", lat: 51.5074, lon: -0.1278 },
+  { name: "Tokyo", lat: 35.6762, lon: 139.6503 },
+  { name: "Sydney", lat: -33.8688, lon: 151.2093 },
+  { name: "Singapore", lat: 1.3521, lon: 103.8198 },
+  { name: "New York", lat: 40.7128, lon: -74.0060 }
+];
+
 // Earth's real axial tilt, so the globe reads as an actual planet rather than a spinning ball.
 const AXIAL_TILT = (23.4 * Math.PI) / 180;
 
@@ -24,6 +33,23 @@ function easeOutBack(x) {
 }
 function easeOutCubic(x) {
   return 1 - Math.pow(1 - x, 3);
+}
+
+// Real-Time Subsolar Point Tracking
+function getSubsolarPoint() {
+  const now = new Date();
+  const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
+  
+  // Declination (latitude)
+  const declination = 23.44 * Math.sin((2 * Math.PI / 365.24) * (dayOfYear - 81));
+  
+  // Right Ascension / Longitude
+  // 12:00 UTC = Sun at ~0 degrees longitude. 1 hour = 15 degrees.
+  const utcHours = now.getUTCHours() + now.getUTCMinutes() / 60 + now.getUTCSeconds() / 3600;
+  // Account for Equation of Time loosely, but for a visual globe, UTC offset is highly accurate.
+  const lon = -15 * (utcHours - 12); 
+  
+  return { lat: declination, lon };
 }
 
 // Hand-drawn fallback "Blue Marble" texture, used only if the remote NASA/three.js
@@ -175,14 +201,15 @@ export default function GlobeLocator({ onClose }) {
     const stars = new THREE.Points(starGeo, starMat);
     scene.add(stars);
 
-    const sun = new THREE.DirectionalLight(0xfff3df, 2.3);
-    sun.position.set(5, 2.5, 4);
-    scene.add(sun);
-    const rim = new THREE.DirectionalLight(0x6ea8ff, 0.5);
+    // Dynamic Real-Time Sun (Subsolar Point)
+    const sun = new THREE.DirectionalLight(0xfff3df, 2.5);
+    const ambient = new THREE.AmbientLight(0x1a2639, 0.4); // Darker ambient to emphasize terminator line
+    scene.add(ambient);
+    
+    // Add rim light for cinematic edge
+    const rim = new THREE.DirectionalLight(0x6ea8ff, 0.8);
     rim.position.set(-6, -2, -4);
     scene.add(rim);
-    const ambient = new THREE.AmbientLight(0x2c3c5c, 0.9);
-    scene.add(ambient);
 
     // Tilt group holds the constant 23.4° axial tilt; globeGroup handles spin/rotation.
     const tiltGroup = new THREE.Group();
@@ -192,6 +219,19 @@ export default function GlobeLocator({ onClose }) {
     const globeGroup = new THREE.Group();
     globeGroup.rotation.y = state.accumRotY;
     tiltGroup.add(globeGroup);
+
+    // Sun orbits exactly with the globe surface so it stays over the real-time Lat/Lon
+    globeGroup.add(sun);
+
+    // Initial sun position update
+    const updateSunPosition = () => {
+      const subsolar = getSubsolarPoint();
+      const sunVec = latLonToVector3(subsolar.lat, subsolar.lon, 10);
+      sun.position.copy(sunVec);
+    };
+    updateSunPosition();
+    // Update sun once every 60 seconds
+    const sunInterval = setInterval(updateSunPosition, 60000);
 
     const loader = new THREE.TextureLoader();
     loader.crossOrigin = "anonymous";
@@ -213,6 +253,7 @@ export default function GlobeLocator({ onClose }) {
 
     let cloudMesh, gridMesh, beamMesh;
     const pulseRings = [];
+    const arcParticles = []; // For the global network arcs
 
     Promise.all([
       loadTex(TEX_BASE + "earth_atmos_2048.jpg"),
@@ -335,6 +376,63 @@ export default function GlobeLocator({ onClose }) {
       beamMesh.scale.set(1, 0.0001, 1);
       globeGroup.add(beamMesh);
 
+      // --- Option 2: Multi-Target "Global Network" Data Arcs ---
+      const arcGroup = new THREE.Group();
+      globeGroup.add(arcGroup);
+
+      const arcMat = new THREE.MeshBasicMaterial({
+        color: 0x3b82f6,
+        transparent: true,
+        opacity: 0.15,
+        blending: THREE.AdditiveBlending,
+      });
+
+      const particleMat = new THREE.MeshBasicMaterial({
+        color: 0x00ffff, // Cyan data packet
+        transparent: true,
+        opacity: 0,
+        blending: THREE.AdditiveBlending,
+      });
+
+      TECH_HUBS.forEach((hub) => {
+        const hubLocalPos = latLonToVector3(hub.lat, hub.lon, RADIUS);
+        
+        // Calculate distance to determine arc height
+        const dist = markerLocalPos.distanceTo(hubLocalPos);
+        const midPoint = markerLocalPos.clone().lerp(hubLocalPos, 0.5);
+        // Push control point outward
+        const curveHeight = RADIUS + (dist * 0.4); 
+        midPoint.normalize().multiplyScalar(curveHeight);
+
+        const curve = new THREE.QuadraticBezierCurve3(
+          markerLocalPos,
+          midPoint,
+          hubLocalPos
+        );
+
+        // Solid trailing tube
+        const tubeGeo = new THREE.TubeGeometry(curve, 32, 0.008, 8, false);
+        const tubeMesh = new THREE.Mesh(tubeGeo, arcMat);
+        arcGroup.add(tubeMesh);
+
+        // Animated Particle
+        const particleGeo = new THREE.SphereGeometry(0.018, 8, 8);
+        const particle = new THREE.Mesh(particleGeo, particleMat);
+        arcGroup.add(particle);
+
+        arcParticles.push({
+          mesh: particle,
+          curve: curve,
+          progress: Math.random(), // Stagger start times
+          speed: 0.003 + (Math.random() * 0.002) // Slight speed variation
+        });
+        
+        // Small destination dot
+        const destDot = new THREE.Mesh(new THREE.SphereGeometry(0.015, 12, 12), new THREE.MeshBasicMaterial({ color: 0x3b82f6 }));
+        destDot.position.copy(hubLocalPos.clone().multiplyScalar(1.005));
+        arcGroup.add(destDot);
+      });
+
       const x0 = markerLocalPos.x;
       const z0 = markerLocalPos.z;
       const targetBase = Math.atan2(-x0, z0);
@@ -394,6 +492,20 @@ export default function GlobeLocator({ onClose }) {
           beamMesh.scale.y = 0.0001 + easeOutCubic(bp) * 0.85;
           beamMesh.material.opacity = 0.55 * (1 - Math.min(1, since / 2.4));
         }
+
+        // Animate Network Arcs & Particles
+        arcParticles.forEach(p => {
+          p.progress += p.speed;
+          if (p.progress > 1) {
+            p.progress = 0; // Loop particle
+          }
+          const pt = p.curve.getPoint(p.progress);
+          p.mesh.position.copy(pt);
+          
+          // Fade in particles smoothly as we arrive
+          const arriveFade = Math.min(1, since / 2);
+          p.mesh.material.opacity = 0.8 * arriveFade;
+        });
       }
 
       renderer.render(scene, camera);
@@ -434,6 +546,7 @@ export default function GlobeLocator({ onClose }) {
     animate();
 
     return () => {
+      clearInterval(sunInterval);
       cancelAnimationFrame(raf);
       ro.disconnect();
       mount.removeEventListener("mousemove", onMouseMove);
