@@ -101,11 +101,18 @@ export default function useRealtimeData(table, options = {}) {
 
           return currentData;
         });
-      })
-      .subscribe();
+      });
+
+    // Debounce the subscribe call to avoid React StrictMode rapid mount/unmount WSS abortion
+    const subTimeout = setTimeout(() => {
+      if (isMounted) {
+        channel.subscribe();
+      }
+    }, 100);
 
     return () => {
       isMounted = false;
+      clearTimeout(subTimeout);
       supabase.removeChannel(channel);
     };
   }, [table, select, single, orderColumn, ascending, filter?.column, filter?.value]);
