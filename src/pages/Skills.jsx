@@ -211,7 +211,7 @@ export default function Skills() {
           .skills-mobile-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 11px;
+            gap: 8px;
             width: 100%;
           }
 
@@ -219,11 +219,11 @@ export default function Skills() {
           .sk-cat-card {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 12px 10px 10px;
+            border-radius: 12px;
+            padding: 10px 8px 8px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
             cursor: pointer;
             text-align: left;
             outline: none;
@@ -242,7 +242,7 @@ export default function Skills() {
           }
 
           .sk-cat-icon-box {
-            width: 28px; height: 28px; border-radius: 8px;
+            width: 24px; height: 24px; border-radius: 6px;
             display: flex; align-items: center; justify-content: center;
             background: var(--bg-primary);
             border: 1px solid var(--border-color);
@@ -251,7 +251,7 @@ export default function Skills() {
           }
 
           .sk-cat-name {
-            font-size: 11.5px; font-weight: 700;
+            font-size: 10px; font-weight: 700;
             color: var(--text-primary);
             margin: 0; line-height: 1.25;
           }
@@ -321,7 +321,7 @@ export default function Skills() {
           }
           .sk-sheet-header {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 12px 14px 10px;
+            padding: 10px 12px 8px;
             border-bottom: 1px solid var(--border-color);
             flex-shrink: 0;
           }
@@ -329,11 +329,11 @@ export default function Skills() {
             display: flex; align-items: center; gap: 8px;
           }
           .sk-sheet-header-left h2 {
-            font-size: 16px; font-weight: 700;
+            font-size: 14px; font-weight: 700;
             color: var(--text-primary); margin: 0;
           }
           .sk-sheet-close {
-            width: 26px; height: 26px; border-radius: 13px;
+            width: 22px; height: 22px; border-radius: 11px;
             background: var(--bg-primary); border: 1px solid var(--border-color);
             display: flex; align-items: center; justify-content: center;
             color: var(--text-secondary); cursor: pointer; flex-shrink: 0;
@@ -349,7 +349,7 @@ export default function Skills() {
             font-size: 11px; font-weight: 700;
             color: var(--text-secondary);
             text-transform: uppercase; letter-spacing: .06em;
-            padding: 16px 18px 8px; flex-shrink: 0;
+            padding: 12px 14px 6px; flex-shrink: 0;
           }
           .sk-skills-card {
             margin: 0 14px 14px;
@@ -360,39 +360,39 @@ export default function Skills() {
           .sk-skill-row {
             display: flex; align-items: center;
             justify-content: space-between;
-            padding: 8px 10px;
+            padding: 6px 8px;
             border-bottom: 1px solid var(--border-color);
             background: transparent;
             border-left: none; border-right: none; border-top: none;
             width: 100%; text-align: left; cursor: pointer;
-            gap: 8px; transition: background .15s;
+            gap: 6px; transition: background .15s;
           }
           .sk-skill-row:last-child { border-bottom: none; }
           .sk-skill-row:active { background: var(--bg-secondary); }
           .sk-skill-row-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
           .sk-skill-row-icon {
-            width: 28px; height: 28px; border-radius: 8px;
+            width: 24px; height: 24px; border-radius: 6px;
             display: flex; align-items: center; justify-content: center;
             flex-shrink: 0;
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
-            font-size: 9px; font-weight: 800; letter-spacing: -.5px;
+            font-size: 8px; font-weight: 800; letter-spacing: -.5px;
             color: var(--text-secondary); font-family: inherit;
           }
           .sk-skill-row-text { flex: 1; min-width: 0; }
           .sk-skill-row-text h4 {
-            font-size: 13px; font-weight: 600;
+            font-size: 11px; font-weight: 600;
             color: var(--text-primary); margin: 0 0 2px;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
           }
           .sk-skill-row-text p {
-            font-size: 11px; color: var(--text-secondary); margin: 0;
+            font-size: 9px; color: var(--text-secondary); margin: 0;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
           }
           .sk-skill-row-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
           .sk-level-badge {
-            font-size: 10px; font-weight: 700;
-            padding: 3px 8px; border-radius: 20px; white-space: nowrap;
+            font-size: 9px; font-weight: 700;
+            padding: 2px 6px; border-radius: 20px; white-space: nowrap;
           }
           .sk-bar-mini {
             width: 44px; height: 4px;
@@ -403,16 +403,16 @@ export default function Skills() {
           /* ============ SKILL DETAIL SHEET ============ */
           .sk-detail-body {
             flex: 1; overflow-y: auto;
-            padding: 14px; display: flex; flex-direction: column; gap: 14px;
+            padding: 10px; display: flex; flex-direction: column; gap: 10px;
           }
           .sk-detail-body::-webkit-scrollbar { display: none; }
 
           .sk-detail-hero {
-            display: flex; align-items: center; gap: 14px;
-            padding: 12px;
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px;
             background: var(--bg-primary);
             border: 1px solid var(--border-color);
-            border-radius: 14px;
+            border-radius: 12px;
           }
           .sk-ring-wrap { position: relative; flex-shrink: 0; }
           .sk-ring-label {
@@ -420,10 +420,10 @@ export default function Skills() {
             display: flex; flex-direction: column;
             align-items: center; justify-content: center; pointer-events: none;
           }
-          .sk-ring-pct  { font-size: 16px; font-weight: 800; color: var(--text-primary); line-height: 1; }
+          .sk-ring-pct  { font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1; }
           .sk-ring-sub  { font-size: 8px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
           .sk-meta-list { flex: 1; display: flex; flex-direction: column; gap: 9px; }
-          .sk-meta-row  { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text-secondary); }
+          .sk-meta-row  { display: flex; align-items: center; gap: 7px; font-size: 11px; color: var(--text-secondary); }
           .sk-meta-row svg  { color: var(--text-muted); flex-shrink: 0; }
           .sk-meta-row strong { color: var(--text-primary); font-weight: 700; }
 
@@ -433,16 +433,16 @@ export default function Skills() {
             letter-spacing: .06em; margin: 0 0 8px;
           }
           .sk-desc-card {
-            font-size: 13.5px; line-height: 1.6;
+            font-size: 11.5px; line-height: 1.6;
             color: var(--text-secondary);
             background: var(--bg-primary);
             border: 1px solid var(--border-color);
-            border-radius: 14px; padding: 14px 16px; margin: 0;
+            border-radius: 12px; padding: 10px 12px; margin: 0;
           }
           .sk-tags { display: flex; flex-wrap: wrap; gap: 7px; }
           .sk-tag {
-            font-size: 11px; font-weight: 600;
-            padding: 5px 11px; border-radius: 20px;
+            font-size: 9px; font-weight: 600;
+            padding: 4px 8px; border-radius: 20px;
             background: var(--bg-primary);
             border: 1px solid var(--border-color);
             color: var(--text-secondary);
