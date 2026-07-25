@@ -9,8 +9,8 @@ import {
   IconX,
   IconArrowRight,
 } from "@tabler/icons-react";
-import TechStackTicker from "./TechStackTicker";
-import { useTheme } from "../context/ThemeContext";
+import TechStackTicker from "../ui/TechStackTicker";
+import { useTheme } from "../../context/ThemeContext";
 
 // ----------------------------------------------------------------------------
 // 1. CONFIG

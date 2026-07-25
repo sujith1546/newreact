@@ -1,6 +1,6 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
-import useRealtimeData from '../hooks/useRealtimeData';
+import useRealtimeData from '../../hooks/useRealtimeData';
 
 export default function SEOHelmet() {
   const { data: dbSettings } = useRealtimeData('site_settings', { single: true, filter: { column: 'id', value: 1 } });

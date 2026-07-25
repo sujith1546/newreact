@@ -6,7 +6,7 @@ import {
   Briefcase, Award, Brain, Code2, Star, Zap, ChevronRight, ChevronDown
 } from 'lucide-react';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../../context/ThemeContext';
 
 /* ── Animated skill bar ──────────────────────────────────────────────────── */
 function SkillBar({ label, pct, color, active, delay = 0 }) {

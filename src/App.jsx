@@ -5,17 +5,19 @@ import { IslandProvider } from './context/IslandContext';
 import { HelmetProvider } from 'react-helmet-async';
 import { AnimatePresence, MotionConfig } from 'framer-motion';
 import PortfolioLayout from './pages/PortfolioLayout';
-import DynamicIsland from './components/DynamicIsland';
-import DevToolsDetector from './components/DevToolsDetector';
+import {
+  DynamicIsland,
+  DevToolsDetector,
+  SEOHelmet,
+  AnnouncementBanner,
+  SplashScreen,
+  MaintenanceGate
+} from './components';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
-import { MaintenanceGate } from './components/MaintenanceMode';
-import SEOHelmet from './components/SEOHelmet';
-import AnnouncementBanner from './components/AnnouncementBanner';
 import { trackPageView } from './lib/analyticsTracker';
 import { supabase } from './lib/supabaseClient';
 import { PersonaProvider } from "./context/PersonaContext";
-import SplashScreen from "./components/SplashScreen";
 import { prefetchTable } from "./hooks/useRealtimeData";
 
 const NotFound = React.lazy(() => import('./pages/NotFound'));

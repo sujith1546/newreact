@@ -2,8 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Trophy, Laptop, BookOpen, School, X, Hand, ChevronRight, ChevronDown, Loader2 } from 'lucide-react';
-import ScrollReveal from '../components/ScrollReveal';
-import { EducationArrowFlow } from '../components/EducationArrowFlow';
+import { ScrollReveal, EducationArrowFlow } from '../components';
 import useRealtimeData from '../hooks/useRealtimeData';
 
 const iconMap = {

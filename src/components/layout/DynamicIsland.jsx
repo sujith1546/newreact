@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useIsland } from '../context/IslandContext';
+import { useIsland } from '../../context/IslandContext';
 
 export default function DynamicIsland() {
   const { islandState } = useIsland();

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { useIsland } from '../context/IslandContext';
+import { useIsland } from '../../context/IslandContext';
 import { AlertOctagon } from 'lucide-react';
 
 export default function DevToolsDetector() {

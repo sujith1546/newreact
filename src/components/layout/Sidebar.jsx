@@ -3,13 +3,13 @@ import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { QrCode, Download, MapPin, Loader2, CheckCircle, FileText, Eye, X, Cpu, Layers, Wifi, RefreshCw, ExternalLink, ShieldCheck, FileDown, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import ResumeQuickLook from './ResumeQuickLook';
-import { useLocalTime } from '../hooks/useLocalTime';
-import QRModal from './QRModal';
-import { useTheme } from '../context/ThemeContext';
-import { usePersona } from '../context/PersonaContext';
-import useRealtimeData from '../hooks/useRealtimeData';
-import { useIsland } from '../context/IslandContext';
+import ResumeQuickLook from '../widgets/ResumeQuickLook';
+import { useLocalTime } from '../../hooks/useLocalTime';
+import QRModal from '../widgets/QRModal';
+import { useTheme } from '../../context/ThemeContext';
+import { usePersona } from '../../context/PersonaContext';
+import useRealtimeData from '../../hooks/useRealtimeData';
+import { useIsland } from '../../context/IslandContext';
 
 function GmailIcon({ size = 20 }) {
   return (

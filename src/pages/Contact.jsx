@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { motion, AnimatePresence, useAnimation, useMotionValue, useTransform } from "framer-motion";
 import { Mail, Phone, ArrowRight, Check, Loader2, Send, Copy, ChevronRight, MapPin, Clock, FileText, X, Contact as ContactIcon, ChevronLeft } from "lucide-react";
 import { FaGithub, FaLinkedin } from "react-icons/fa";
-import ScrollReveal from '../components/ScrollReveal';
+import { ScrollReveal } from '../components';
 import { useIsland } from '../context/IslandContext';
 import { supabase } from '../lib/supabaseClient';
 const getSessionToken = () => {

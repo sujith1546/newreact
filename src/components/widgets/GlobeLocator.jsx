@@ -5,8 +5,8 @@ import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 import { Globe2, MapPin, Radar, Satellite, X, Moon, Activity, Wifi } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import indiaBordersData from "../data/indiaBorders.json";
-import { fetchGithubActivity } from "../lib/githubActivityEngine";
+import indiaBordersData from "../../data/indiaBorders.json";
+import { fetchGithubActivity } from "../../lib/githubActivityEngine";
 
 const TARGET = { name: "Vellore", region: "Tamil Nadu, India", lat: 12.9165, lon: 79.1325 };
 

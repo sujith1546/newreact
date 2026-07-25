@@ -6,10 +6,8 @@ import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronRight, ChevronDown, Star, Layers, Clock, Briefcase, ChevronLeft, Loader2 } from 'lucide-react';
-import ScrollReveal from '../components/ScrollReveal';
-import useRealtimeData from '../hooks/useRealtimeData';
-import { categoryIconMap } from '../components/skillIcons';
-import SkillTooltip from '../components/SkillTooltip';
+import { ScrollReveal, SkillTooltip } from '../components';
+import { categoryIconMap } from '../components/ui/skillIcons';
 
 const categoryMeta = {
   languages: { id: "languages", title: "Languages", icon: "code" },

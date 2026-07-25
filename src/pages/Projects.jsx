@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import ScrollReveal from '../components/ScrollReveal';
+import { ScrollReveal } from '../components';
 import { 
   ExternalLink, Code2, X, ChevronRight, ChevronDown, Star,
   MessageSquare, Database, ShieldCheck, TrendingUp,

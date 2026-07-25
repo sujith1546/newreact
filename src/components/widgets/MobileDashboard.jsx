@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '../../lib/supabaseClient';
 import { motion } from 'framer-motion';
 import { MapPin, Loader2, ArrowDown, ChevronLeft, ChevronRight } from 'lucide-react';
-import useGlitchText from '../hooks/useGlitchText';
-import useRealtimeData from '../hooks/useRealtimeData';
+import useGlitchText from '../../hooks/useGlitchText';
+import useRealtimeData from '../../hooks/useRealtimeData';
 
 /* ── Count-up hook ─────────────────────────────────────────── */
 function useCountUp(target, duration = 900) {

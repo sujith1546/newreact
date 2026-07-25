@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useMaintenanceStatus } from '../components/MaintenanceMode';
+import { useMaintenanceStatus } from '../components/MaintenanceGate';
 import '../styles/maintenance.css';
 
 export default function Maintenance({ status: propStatus }) {

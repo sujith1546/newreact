@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import ScrollReveal from '../components/ScrollReveal';
+import { ScrollReveal } from '../components';
 import { Award, ExternalLink, ShieldCheck, X, ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
 import useRealtimeData from '../hooks/useRealtimeData';
 export default function Certifications() {

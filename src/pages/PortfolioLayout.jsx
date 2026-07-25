@@ -2,18 +2,22 @@ import React, { useState, useRef, useEffect, Suspense, lazy } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileText, Mail, Briefcase, Check } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
-import Sidebar from '../components/Sidebar';
-import WelcomeModal from '../components/WelcomeModal';
-import MobileBottomNav from '../components/MobileBottomNav';
-import DarkModeToggle from '../components/DarkModeToggle';
-import SettingsDropdown from '../components/SettingsDropdown';
-import SettingsSidebar from '../components/SettingsSidebar';
-import TimezoneStatus from '../components/TimezoneStatus';
-import ChatBot from '../components/ChatBot';
-import CommandPalette from '../components/CommandPalette';
-import PerformanceHUD from '../components/PerformanceHUD';
-import LiveStateInspector from '../components/LiveStateInspector';
-import MobileStatusPanel from '../components/MobileStatusPanel';
+import {
+  Sidebar,
+  WelcomeModal,
+  MobileBottomNav,
+  DarkModeToggle,
+  SettingsDropdown,
+  SettingsSidebar,
+  TimezoneStatus,
+  ChatBot,
+  CommandPalette,
+  PerformanceHUD,
+  LiveStateInspector,
+  MobileStatusPanel,
+  ParticleCanvas,
+  SectionSpotlight
+} from '../components';
 
 import Home from './Home';
 const About = lazy(() => import('./About'));
@@ -23,9 +27,6 @@ const Education = lazy(() => import('./Education'));
 const Experience = lazy(() => import('./Experience'));
 const Certifications = lazy(() => import('./Certifications'));
 const Contact = lazy(() => import('./Contact'));
-
-import ParticleCanvas from '../components/ParticleCanvas';
-import SectionSpotlight from '../components/SectionSpotlight';
 import { useTheme } from '../context/ThemeContext';
 import { usePersona } from '../context/PersonaContext';
 import useRealtimeData from '../hooks/useRealtimeData';

@@ -3,7 +3,7 @@ import { supabase } from '../../../lib/supabaseClient';
 import { Loader2, Globe, Sparkles } from 'lucide-react';
 import { styles, MODAL_STYLES } from '../shared/constants';
 import { PanelCard, EmptyState, StatCard } from '../shared/components';
-import VisitorGlobe from '../../VisitorGlobe';
+import GlobeLocator from '../../widgets/GlobeLocator';
 
 export default function AnalyticsPanel() {
   const [analytics, setAnalytics] = useState([]);

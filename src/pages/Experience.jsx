@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import ScrollReveal from '../components/ScrollReveal';
+import { ScrollReveal } from '../components';
 import { Briefcase, Loader2, Calendar } from 'lucide-react';
 import useRealtimeData from '../hooks/useRealtimeData';
 

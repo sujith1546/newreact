@@ -1,5 +1,5 @@
 import React from 'react';
-import useRealtimeData from '../hooks/useRealtimeData';
+import useRealtimeData from '../../hooks/useRealtimeData';
 
 export default function AnnouncementBanner() {
   const { data: dbSettings } = useRealtimeData('site_settings', { single: true, filter: { column: 'id', value: 1 } });

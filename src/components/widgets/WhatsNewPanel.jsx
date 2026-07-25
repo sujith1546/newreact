@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Sparkles, Bug, Zap, X, ChevronDown, Loader2 } from "lucide-react";
-import { supabase } from '../lib/supabaseClient';
+import { supabase } from '../../lib/supabaseClient';
 
 const TABS = [
   { key: "all", label: "All" },

@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import ScrollReveal from '../components/ScrollReveal';
+import { ScrollReveal, MobileDashboard } from '../components';
 import { Code, Briefcase, Mail, FileText, Sparkles, ArrowRight } from 'lucide-react';
-import MobileDashboard from '../components/MobileDashboard';
 import useGlitchText from '../hooks/useGlitchText';
 import useRealtimeData from '../hooks/useRealtimeData';
 

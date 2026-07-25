@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../../context/ThemeContext';
 import { Activity, LayoutTemplate, Cpu, AlertTriangle } from 'lucide-react';
 
 export default function PerformanceHUD() {

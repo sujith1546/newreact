@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Coffee, BookOpen, Dumbbell, Compass, Gamepad2, Mail, Terminal, Layers, Target, Award, Download, ArrowRight, BarChart2, Loader2, CheckCircle } from 'lucide-react';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
-import ScrollReveal from '../components/ScrollReveal';
+import { ScrollReveal } from '../components';
 
 const HOBBIES = [
   { label: 'Strategic Thinking', value: 'Chess Enthusiast', icon: Gamepad2 },

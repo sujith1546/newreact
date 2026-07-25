@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabaseClient';
 import useRealtimeData from '../../../hooks/useRealtimeData';
 import { logAuditEvent } from '../../../lib/auditLogger';
-import { MaintenanceSettingsPanel } from '../../MaintenanceMode';
+import { MaintenanceSettingsPanel } from '../../MaintenanceGate';
 import { Loader2, Check, Settings, Layers, Briefcase, Award, Sparkles, Bell, MessageSquare, User, Type, FileText, Globe, Image, Link, Mail, Upload } from 'lucide-react';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';

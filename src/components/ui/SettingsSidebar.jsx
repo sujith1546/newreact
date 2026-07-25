@@ -7,8 +7,8 @@ import {
   Moon, Sun, Layers, Trash2, RotateCcw, Sparkles, Check,
   ChevronRight, Info, Shield, ExternalLink, Layout, User
 } from 'lucide-react';
-import { useTheme } from '../context/ThemeContext';
-import { usePersona } from '../context/PersonaContext';
+import { useTheme } from '../../context/ThemeContext';
+import { usePersona } from '../../context/PersonaContext';
 
 /* ─── Accent palette ─────────────────────────────────────── */
 const ACCENTS = [

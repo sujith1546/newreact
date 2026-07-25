@@ -2,9 +2,9 @@ import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Globe } from 'lucide-react';
 const GlobeLocator = lazy(() => import('./GlobeLocator'));
-import DiagnosticsToggle from './DiagnosticsToggle';
-import DarkModeToggle from './DarkModeToggle';
-import SettingsDropdown from './SettingsDropdown';
+import DiagnosticsToggle from '../dev/DiagnosticsToggle';
+import DarkModeToggle from '../ui/DarkModeToggle';
+import SettingsDropdown from '../ui/SettingsDropdown';
 
 export default function TimezoneStatus() {
   const [visitorCity, setVisitorCity] = useState('');
