@@ -108,8 +108,8 @@ function MessageRow({ msg, selected, onToggleSelect, actions }) {
   }
 
   return (
-    <div style={{ ...rowStyles.wrap, background: msg.is_read ? 'transparent' : 'rgba(59, 130, 246, 0.05)' }}>
-      <div style={rowStyles.main}>
+    <div className="msg-row-wrap" style={{ ...rowStyles.wrap, background: msg.is_read ? 'transparent' : 'rgba(59, 130, 246, 0.05)' }}>
+      <div className="msg-row-main" style={rowStyles.main}>
         <input 
           type="checkbox" 
           checked={selected} 
@@ -125,8 +125,8 @@ function MessageRow({ msg, selected, onToggleSelect, actions }) {
           <Star size={18} fill={msg.is_starred ? '#E8A33D' : 'none'} color={msg.is_starred ? '#E8A33D' : '#C4C4C4'} />
         </button>
 
-        <div style={rowStyles.clickArea} onClick={openAndMarkRead}>
-          <div style={rowStyles.topLine}>
+        <div className="msg-click-area" style={rowStyles.clickArea} onClick={openAndMarkRead}>
+          <div className="msg-top-line" style={rowStyles.topLine}>
             <span style={{ fontWeight: msg.is_read ? 500 : 700 }}>{msg.name}</span>
             <span style={rowStyles.email}>{msg.email}</span>
             {msg.is_spam && <span style={rowStyles.spamTag}>possible spam</span>}
@@ -135,7 +135,7 @@ function MessageRow({ msg, selected, onToggleSelect, actions }) {
           <div style={rowStyles.preview}>{msg.message}</div>
         </div>
 
-        <div style={rowStyles.meta}>
+        <div className="msg-meta" style={rowStyles.meta}>
           <div>{new Date(msg.created_at).toLocaleDateString('en-IN')}</div>
           {msg.location && <div style={rowStyles.locationText}>{msg.location}</div>}
         </div>
@@ -226,7 +226,7 @@ const rowStyles = {
 // ---- 3e. Toolbar: search, filter, sort, bulk actions ----
 function Toolbar({ query, setQuery, filter, setFilter, sort, setSort, selectedIds, onBulk, onExport }) {
   return (
-    <div style={toolbarStyles.wrap}>
+    <div className="msg-toolbar-wrap" style={toolbarStyles.wrap}>
       <input
         placeholder="Search name, email, or message…"
         value={query}

@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import useRealtimeData from '../hooks/useRealtimeData';
 import { MaintenanceSettingsPanel } from '../components/MaintenanceMode';
 import MessagesAdmin, { UnreadBadge } from '../components/MessagesAdmin';
-import { Loader2, Trash2, Check, ChevronRight, ChevronDown, X, MessageSquare, MessageCircle, Briefcase, Zap, LogOut, Plus, Edit3, Star, Layers, BarChart3, Sparkles, Folder, Palette, Database, Activity, Download, Upload, ShieldCheck, FileText, RefreshCw, Eye, Printer, Award, Type, Image, Link, Settings, User, Mail, Globe, Bell } from 'lucide-react';
+import { Menu, Loader2, Trash2, Check, ChevronRight, ChevronDown, X, MessageSquare, MessageCircle, Briefcase, Zap, LogOut, Plus, Edit3, Star, Layers, BarChart3, Sparkles, Folder, Palette, Database, Activity, Download, Upload, ShieldCheck, FileText, RefreshCw, Eye, Printer, Award, Type, Image, Link, Settings, User, Mail, Globe, Bell } from 'lucide-react';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { logAuditEvent } from '../lib/auditLogger';
@@ -55,15 +55,35 @@ const ALL_NAV_ITEMS = NAV_GROUPS.flatMap(g => g.items);
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+  const { tab } = useParams();
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
-  const [activeTab, setActiveTab] = useState("messages");
+  const [activeTab, setActiveTabState] = useState(tab || "messages");
   const [lastLogin, setLastLogin] = useState(null);
   const [visitorMarkers, setVisitorMarkers] = useState([]);
   const stats = useDashboardStats();
 
   useEffect(() => {
+    if (tab && tab !== activeTab) {
+      setActiveTabState(tab);
+    } else if (!tab) {
+      navigate("/admin/dashboard/messages", { replace: true });
+    }
+  }, [tab, activeTab, navigate]);
+
+  const setActiveTab = (newTab) => {
+    setActiveTabState(newTab);
+    navigate(`/admin/dashboard/${newTab}`);
+  };
+
+  useEffect(() => {
     // Setup Supabase Realtime presence for Visitor Globe
+    // First remove any lingering channel with the same name to prevent "cannot add presence callbacks after subscribe" error
+    const existingChannel = supabase.getChannels().find(c => c.topic === 'realtime:visitor_presence' || c.topic === 'visitor_presence');
+    if (existingChannel) {
+      supabase.removeChannel(existingChannel);
+    }
+
     const channel = supabase.channel('visitor_presence');
     
     channel
@@ -3948,4 +3968,24 @@ const styles = {
     textTransform: "uppercase",
     letterSpacing: "0.6px",
   },
+};
+
+export {
+  NAV_GROUPS,
+  ALL_NAV_ITEMS,
+  useDashboardStats,
+  ProjectsPanel,
+  UpdatesPanel,
+  AiChatsPanel,
+  SettingsPanel,
+  SkillsPanel,
+  ExperiencePanel,
+  CertificationsPanel,
+  EducationPanel,
+  AnalyticsPanel,
+  CopilotPanel,
+  AssetsPanel,
+  ThemeStudioPanel,
+  BackupRestorePanel,
+  AuditHealthPanel,
 };
