@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { supabase } from '../lib/supabaseClient'; 
+import { supabase } from '../../../lib/supabaseClient'; 
 import { Archive, ArchiveRestore, Trash2, Star } from 'lucide-react';
 
 // ---- 3a. Realtime data hook ----

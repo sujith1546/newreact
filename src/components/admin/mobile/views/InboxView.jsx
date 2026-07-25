@@ -1,5 +1,5 @@
 import React from 'react';
-import MessagesAdmin from '../../../MessagesAdmin';
+import MessagesAdmin from '../../panels/MessagesAdmin';
 import { AiChatsPanel } from '../../../../pages/AdminDashboard';
 
 const INBOX_TABS = [
