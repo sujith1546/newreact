@@ -112,6 +112,12 @@ export default function MainLayout() {
   }, []);
 
   useEffect(() => {
+    if (location.pathname === '/') {
+      navigate('/home', { replace: true });
+    }
+  }, [location.pathname, navigate]);
+
+  useEffect(() => {
     trackPageView(`/${activeSection}`);
   }, [activeSection]);
 
@@ -147,7 +153,7 @@ export default function MainLayout() {
     setSlideDirection(dir);
     setIsNavActive(true);
     
-    const targetPath = id === 'home' ? '/' : `/${id}`;
+    const targetPath = `/${id}`;
     navigate(targetPath);
 
     if (scrollRef.current) scrollRef.current.scrollTo({ top: 0, behavior: 'auto' });

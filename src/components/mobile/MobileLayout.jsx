@@ -14,10 +14,16 @@ export default function MobileLayout() {
     return cleanPath || 'home';
   };
 
+  useEffect(() => {
+    if (location.pathname === '/') {
+      navigate('/home', { replace: true });
+    }
+  }, [location.pathname, navigate]);
+
   const activeSection = getSectionFromPath(location.pathname);
 
   const handleNavClick = (id) => {
-    const targetPath = id === 'home' ? '/' : `/${id}`;
+    const targetPath = `/${id}`;
     if (location.pathname !== targetPath) {
       navigate(targetPath);
     }
