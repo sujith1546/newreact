@@ -6,25 +6,19 @@ import { HelmetProvider } from 'react-helmet-async';
 import { AnimatePresence, MotionConfig } from 'framer-motion';
 import { useTheme } from './context/ThemeContext';
 import MainLayout from './pages/MainLayout';
-import DynamicIsland from './components/DynamicIsland';
-import DevToolsDetector from './components/DevToolsDetector';
-import { AuthProvider } from './context/AuthContext';
-import ProtectedRoute from './components/ProtectedRoute';
-import { MaintenanceGate } from './components/MaintenanceMode';
-import SEOHelmet from './components/SEOHelmet';
-import AnnouncementBanner from './components/AnnouncementBanner';
-import { trackPageView } from './lib/analyticsTracker';
-import { supabase } from './lib/supabaseClient';
-import { PersonaProvider } from "./context/PersonaContext";
-import SplashScreen from "./components/SplashScreen";
-import { prefetchTable } from "./hooks/useRealtimeData";
+import MobileLayout from './components/mobile/MobileLayout';
 
-const NotFound = React.lazy(() => import('./pages/NotFound'));
-const AdminLogin = React.lazy(() => import('./pages/AdminLogin'));
-const AdminLayout = React.lazy(() => import('./pages/AdminLayout'));
-const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
-const AdminMfaSetup = React.lazy(() => import('./pages/AdminMfaSetup'));
-const ResumePreview = React.lazy(() => import('./pages/ResumePreview'));
+function DynamicMainLayout() {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 900);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return isMobile ? <MobileLayout /> : <MainLayout />;
+}
 
 // Wrapper for AnimatePresence to access useLocation
 function AnimatedRoutes() {
@@ -49,7 +43,7 @@ function AnimatedRoutes() {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<MainLayout />}>
+        <Route path="/" element={<DynamicMainLayout />}>
           <Route index element={null} />
           <Route path="home" element={null} />
           <Route path="about" element={null} />

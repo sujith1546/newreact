@@ -1,8 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import MobileBottomNav from '../MobileBottomNav';
 import { useTheme } from '../../context/ThemeContext';
-import { Sun, Moon, Sparkles } from 'lucide-react';
+import { Sun, Moon } from 'lucide-react';
+
+import MobileHomeView from './views/MobileHomeView';
+import MobileAboutView from './views/MobileAboutView';
+import MobileSkillsView from './views/MobileSkillsView';
+import MobileProjectsView from './views/MobileProjectsView';
+import MobileEducationView from './views/MobileEducationView';
+import MobileExperienceView from './views/MobileExperienceView';
+import MobileCertificationsView from './views/MobileCertificationsView';
+import MobileContactView from './views/MobileContactView';
+
+const viewsMap = {
+  home: MobileHomeView,
+  about: MobileAboutView,
+  skills: MobileSkillsView,
+  projects: MobileProjectsView,
+  education: MobileEducationView,
+  experience: MobileExperienceView,
+  certifications: MobileCertificationsView,
+  contact: MobileContactView,
+};
 
 export default function MobileLayout() {
   const location = useLocation();
@@ -21,6 +41,7 @@ export default function MobileLayout() {
   }, [location.pathname, navigate]);
 
   const activeSection = getSectionFromPath(location.pathname);
+  const ActiveView = viewsMap[activeSection] || MobileHomeView;
 
   const handleNavClick = (id) => {
     const targetPath = `/${id}`;
@@ -39,7 +60,7 @@ export default function MobileLayout() {
           zIndex: 900,
           display: 'flex',
           alignItems: 'center',
-          justify-content: 'space-between',
+          justifyContent: 'space-between',
           padding: '12px 18px',
           background: 'var(--bg-secondary, rgba(255,255,255,0.85))',
           backdropFilter: 'blur(12px)',
@@ -71,7 +92,7 @@ export default function MobileLayout() {
             color: 'var(--text-primary)',
             display: 'flex',
             alignItems: 'center',
-            justify-content: 'center',
+            justifyContent: 'center',
             cursor: 'pointer',
           }}
         >
@@ -79,9 +100,9 @@ export default function MobileLayout() {
         </button>
       </header>
 
-      {/* Main Outlet Render */}
+      {/* Main Active Mobile View */}
       <main className="mobile-page-container" style={{ padding: '16px' }}>
-        <Outlet />
+        <ActiveView />
       </main>
 
       {/* Shared Mobile Bottom Navigation */}
