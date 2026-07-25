@@ -29,21 +29,22 @@ export default function AdminDashboard() {
   const { tab } = useParams();
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
-  const [activeTab, setActiveTabState] = useState(tab || "messages");
   const [lastLogin, setLastLogin] = useState(null);
   const stats = useDashboardStats();
 
+  const VALID_TABS = ALL_NAV_ITEMS.map(n => n.key);
+  const activeTab = VALID_TABS.includes(tab) ? tab : "messages";
+
   useEffect(() => {
-    if (tab && tab !== activeTab) {
-      setActiveTabState(tab);
-    } else if (!tab) {
+    if (!tab || !VALID_TABS.includes(tab)) {
       navigate("/admin/dashboard/messages", { replace: true });
     }
-  }, [tab, activeTab, navigate]);
+  }, [tab, navigate]);
 
   const setActiveTab = (newTab) => {
-    setActiveTabState(newTab);
-    navigate(`/admin/dashboard/${newTab}`);
+    if (newTab !== tab) {
+      navigate(`/admin/dashboard/${newTab}`);
+    }
   };
 
   useEffect(() => {
