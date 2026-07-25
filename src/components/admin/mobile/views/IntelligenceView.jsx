@@ -1,9 +1,7 @@
 import React from 'react';
-import {
-  AnalyticsPanel,
-  CopilotPanel,
-  AssetsPanel,
-} from '../../../../pages/AdminDashboard';
+import AnalyticsPanel from '../../panels/AnalyticsPanel';
+import CopilotPanel from '../../panels/CopilotPanel';
+import AssetsPanel from '../../panels/AssetsPanel';
 
 const INTELLIGENCE_TABS = [
   { key: 'analytics', label: 'Analytics Hub', icon: 'ti-chart-bar' },

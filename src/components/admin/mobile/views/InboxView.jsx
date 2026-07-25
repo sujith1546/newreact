@@ -1,6 +1,6 @@
 import React from 'react';
 import MessagesAdmin from '../../panels/MessagesAdmin';
-import { AiChatsPanel } from '../../../../pages/AdminDashboard';
+import AiChatsPanel from '../../panels/AiChatsPanel';
 
 const INBOX_TABS = [
   { key: 'messages', label: 'Messages', icon: 'ti-message-circle' },

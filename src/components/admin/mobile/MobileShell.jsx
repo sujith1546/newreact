@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { useTheme } from '../../../context/ThemeContext';
-import { useDashboardStats } from '../../../pages/AdminDashboard';
+import { useDashboardStats } from '../shared/useDashboardStats';
 import { LogOut, Palette, Plus, ShieldCheck, Sparkles, Folder, Briefcase, Bolt } from 'lucide-react';
 import SwipeableTabs from './SwipeableTabs';
 import MobileNav from './MobileNav';

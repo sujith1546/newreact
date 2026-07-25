@@ -1,10 +1,8 @@
 import React from 'react';
-import {
-  ThemeStudioPanel,
-  SettingsPanel,
-  BackupRestorePanel,
-  AuditHealthPanel,
-} from '../../../../pages/AdminDashboard';
+import ThemeStudioPanel from '../../panels/ThemeStudioPanel';
+import SettingsPanel from '../../panels/SettingsPanel';
+import BackupRestorePanel from '../../panels/BackupRestorePanel';
+import AuditHealthPanel from '../../panels/AuditHealthPanel';
 
 const SYSTEM_TABS = [
   { key: 'theme', label: 'Theme Studio', icon: 'ti-palette' },

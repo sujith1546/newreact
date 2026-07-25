@@ -1,12 +1,10 @@
 import React from 'react';
-import {
-  ProjectsPanel,
-  UpdatesPanel,
-  SkillsPanel,
-  ExperiencePanel,
-  EducationPanel,
-  CertificationsPanel,
-} from '../../../../pages/AdminDashboard';
+import ProjectsPanel from '../../panels/ProjectsPanel';
+import UpdatesPanel from '../../panels/UpdatesPanel';
+import SkillsPanel from '../../panels/SkillsPanel';
+import ExperiencePanel from '../../panels/ExperiencePanel';
+import EducationPanel from '../../panels/EducationPanel';
+import CertificationsPanel from '../../panels/CertificationsPanel';
 
 const CONTENT_TABS = [
   { key: 'projects', label: 'Projects', icon: 'ti-briefcase' },
