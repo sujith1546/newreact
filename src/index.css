@@ -4570,7 +4570,8 @@ body:has(.admin-shell) {
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100% !important;
+  min-height: 100% !important;
   box-sizing: border-box;
   overflow: hidden;
 }
@@ -4747,7 +4748,8 @@ body:has(.admin-shell) {
 .admin-main {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100% !important;
+  min-height: 100% !important;
   width: 100%;
   min-width: 0;
   overflow: hidden;
