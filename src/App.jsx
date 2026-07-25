@@ -83,7 +83,6 @@ function AppContent() {
 
         // Stage 1: Always fetch global required data
         const corePromises = [
-          prefetchTable('profile', { single: true, orderColumn: 'id', ascending: true }),
           prefetchTable('site_settings', { single: true, filter: { column: 'id', value: 1 } })
         ];
 
