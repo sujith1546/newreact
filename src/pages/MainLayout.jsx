@@ -70,10 +70,14 @@ const mobilePageVariants = {
   exit: { opacity: 0 },
 };
 
+import { useLocation, useNavigate } from 'react-router-dom';
+
 export default function MainLayout() {
   const { data: dbSettings } = useRealtimeData('site_settings', { single: true, filter: { column: 'id', value: 1 } });
   const { getSectionOrder } = usePersona();
-  
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const baseSections = SECTIONS_DEF.filter(sec => {
     if (sec.id === 'experience' && dbSettings?.feature_experience === false) return false;
     if (sec.id === 'certifications' && dbSettings?.feature_certifications === false) return false;
@@ -84,7 +88,13 @@ export default function MainLayout() {
   const ALL_PAGES = SECTIONS.map(s => s.id);
 
   const { theme } = useTheme();
-  const [activeSection, setActiveSection] = useState('home');
+  
+  const getSectionFromPath = (path) => {
+    const cleanPath = path.replace(/^\//, '');
+    return cleanPath || 'home';
+  };
+  const activeSection = getSectionFromPath(location.pathname);
+
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
   const [isStatusOpen, setIsStatusOpen] = useState(false);
   const [slideDirection, setSlideDirection] = useState(0); // 1=fwd, -1=back, 0=replace
@@ -109,7 +119,6 @@ export default function MainLayout() {
     const onNavigate = (e) => {
       const { section, highlight } = e.detail || {};
       if (section) {
-        // Resume → don't navigate pages (open-resume event already handles the modal)
         if (section !== 'resume') handleNavClick(section);
         if (highlight) {
           const kw = e.detail?.keyword || '';
@@ -137,10 +146,12 @@ export default function MainLayout() {
 
     setSlideDirection(dir);
     setIsNavActive(true);
-    setActiveSection(id);
+    
+    const targetPath = id === 'home' ? '/' : `/${id}`;
+    navigate(targetPath);
+
     if (scrollRef.current) scrollRef.current.scrollTo({ top: 0, behavior: 'auto' });
 
-    // Auto-dismiss progress bar after animation completes
     clearTimeout(navTimerRef.current);
     navTimerRef.current = setTimeout(() => setIsNavActive(false), 500);
   };

@@ -49,7 +49,16 @@ function AnimatedRoutes() {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<MainLayout />} />
+        <Route path="/" element={<MainLayout />}>
+          <Route index element={null} />
+          <Route path="about" element={null} />
+          <Route path="skills" element={null} />
+          <Route path="projects" element={null} />
+          <Route path="education" element={null} />
+          <Route path="experience" element={null} />
+          <Route path="certifications" element={null} />
+          <Route path="contact" element={null} />
+        </Route>
         <Route path="/resume-preview" element={<ResumePreview />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route element={<ProtectedRoute />}>
