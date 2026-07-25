@@ -3,11 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { MaintenanceSettingsPanel } from '../components/MaintenanceMode';
+import { LogOut, Eye } from 'lucide-react';
 import MessagesAdmin, { UnreadBadge } from '../components/admin/panels/MessagesAdmin';
-import { Menu, Loader2, Trash2, Check, ChevronRight, ChevronDown, X, MessageSquare, MessageCircle, Briefcase, Zap, LogOut, Plus, Edit3, Star, Layers, BarChart3, Sparkles, Folder, Palette, Database, Activity, Download, Upload, ShieldCheck, FileText, RefreshCw, Eye, Printer, Award, Type, Image, Link, Settings, User, Mail, Globe, Bell } from 'lucide-react';
-import { FaGithub, FaLinkedin } from 'react-icons/fa';
-import { motion, AnimatePresence } from 'framer-motion';
 
 import SettingsPanel from '../components/admin/panels/SettingsPanel';
 import EducationPanel from '../components/admin/panels/EducationPanel';
