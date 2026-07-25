@@ -65,7 +65,7 @@ body {
 /* Apply zoom at the html level so it's resolved before first paint,
    preventing the visible "compression" flash on load. */
 @media (min-width: 1025px) {
-  html {
+  html:not(.admin-mode):not(:has(.admin-shell)) {
     zoom: 0.75;
     /* Counteract font boosting that some engines apply after zoom */
     -webkit-text-size-adjust: 100%;
@@ -4539,20 +4539,33 @@ html[data-density="relaxed"] { font-size: 18px; }
    ADVANCED ADMIN DASHBOARD LAYOUT - FULL VIEWPORT FIT
    ========================================================================== */
 
+html.admin-mode,
+body.admin-mode,
+html:has(.admin-shell),
+body:has(.admin-shell) {
+  zoom: 1 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
 .admin-shell {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  width: 100vw;
-  height: 100vh;
-  display: grid;
-  grid-template-columns: 260px 1fr;
-  z-index: 9999;
-  background: var(--bg-primary);
-  font-family: var(--app-font, system-ui, -apple-system, sans-serif);
-  overflow: hidden;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  display: grid !important;
+  grid-template-columns: 260px 1fr !important;
+  z-index: 9999 !important;
+  background: var(--bg-primary) !important;
+  font-family: var(--app-font, system-ui, -apple-system, sans-serif) !important;
+  overflow: hidden !important;
+  zoom: 1 !important;
 }
 
 .admin-sidebar {

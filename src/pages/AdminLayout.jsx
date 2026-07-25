@@ -11,6 +11,9 @@ export default function AdminLayout() {
   });
 
   useEffect(() => {
+    document.documentElement.classList.add('admin-mode');
+    document.body.classList.add('admin-mode');
+
     let timeoutId = null;
     const handleResize = () => {
       if (timeoutId) clearTimeout(timeoutId);
@@ -21,6 +24,8 @@ export default function AdminLayout() {
 
     window.addEventListener('resize', handleResize);
     return () => {
+      document.documentElement.classList.remove('admin-mode');
+      document.body.classList.remove('admin-mode');
       window.removeEventListener('resize', handleResize);
       if (timeoutId) clearTimeout(timeoutId);
     };
