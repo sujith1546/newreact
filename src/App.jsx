@@ -4,8 +4,8 @@ import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { IslandProvider } from './context/IslandContext';
 import { HelmetProvider } from 'react-helmet-async';
 import { AnimatePresence, MotionConfig } from 'framer-motion';
-import MainLayout from './pages/MainLayout';
-import MobileLayout from './components/mobile/MobileLayout';
+import DesktopLayout from './pages/desktop/DesktopLayout';
+import MobileLayout from './pages/mobile/MobileLayout';
 import DynamicIsland from './components/DynamicIsland';
 import DevToolsDetector from './components/DevToolsDetector';
 import { AuthProvider } from './context/AuthContext';
@@ -35,7 +35,7 @@ function DynamicMainLayout() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  return isMobile ? <MobileLayout /> : <MainLayout />;
+  return isMobile ? <MobileLayout /> : <DesktopLayout />;
 }
 
 // Wrapper for AnimatePresence to access useLocation
