@@ -64,7 +64,7 @@ const mobilePageVariants = {
   exit: { opacity: 0 },
 };
 
-export default function DesktopLayout() {
+export default function PortfolioLayout() {
   const { data: dbSettings } = useRealtimeData('site_settings', { single: true, filter: { column: 'id', value: 1 } });
   const { getSectionOrder } = usePersona();
   const location = useLocation();

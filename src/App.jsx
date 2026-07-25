@@ -4,8 +4,7 @@ import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { IslandProvider } from './context/IslandContext';
 import { HelmetProvider } from 'react-helmet-async';
 import { AnimatePresence, MotionConfig } from 'framer-motion';
-import DesktopLayout from './pages/DesktopLayout';
-import MobileLayout from './pages/DesktopLayout';
+import PortfolioLayout from './pages/PortfolioLayout';
 import DynamicIsland from './components/DynamicIsland';
 import DevToolsDetector from './components/DevToolsDetector';
 import { AuthProvider } from './context/AuthContext';
@@ -26,15 +25,7 @@ const AdminMfaSetup = React.lazy(() => import('./pages/AdminMfaSetup'));
 const ResumePreview = React.lazy(() => import('./pages/ResumePreview'));
 
 function DynamicMainLayout() {
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 900);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  return isMobile ? <MobileLayout /> : <DesktopLayout />;
+  return <PortfolioLayout />;
 }
 
 // Wrapper for AnimatePresence to access useLocation
