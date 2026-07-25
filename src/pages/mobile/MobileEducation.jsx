@@ -1,3 +1,3 @@
-import MobileEducationView from '../../components/mobile/views/MobileEducationView';
+import DesktopEducation from '../desktop/DesktopEducation';
 
-export default MobileEducationView;
+export default DesktopEducation;

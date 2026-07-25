@@ -1,10 +1,3 @@
-import React, { useState } from 'react';
-import ContactForm from '../../components/portfolio/contact/ContactForm';
+import DesktopContact from '../desktop/DesktopContact';
 
-export default function MobileContact() {
-  return (
-    <div className="mobile-page-contact">
-      <ContactForm />
-    </div>
-  );
-}
+export default DesktopContact;
