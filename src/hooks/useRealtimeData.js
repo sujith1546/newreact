@@ -18,6 +18,34 @@ import { supabase } from '../lib/supabaseClient';
 export const globalDataCache = {};
 export const fetchPromises = {};
 
+// Intelligent Automated Image Preloader
+function preloadImagesFromData(data) {
+  if (!data) return;
+  const extractUrls = (obj) => {
+    if (typeof obj === 'string') {
+      // Catch standard images and Supabase storage URLs
+      if (
+        obj.startsWith('http') && 
+        (obj.match(/\.(jpeg|jpg|gif|png|webp|svg)$/i) || obj.includes('/storage/v1/object/public/'))
+      ) {
+        const img = new Image();
+        img.src = obj;
+      }
+    } else if (Array.isArray(obj)) {
+      obj.forEach(extractUrls);
+    } else if (typeof obj === 'object' && obj !== null) {
+      Object.values(obj).forEach(extractUrls);
+    }
+  };
+  
+  // Run on idle callback so we don't block the main thread
+  if ('requestIdleCallback' in window) {
+    window.requestIdleCallback(() => extractUrls(data));
+  } else {
+    setTimeout(() => extractUrls(data), 200);
+  }
+}
+
 export async function prefetchTable(table, options = {}) {
   const {
     select = '*',
@@ -41,6 +69,7 @@ export async function prefetchTable(table, options = {}) {
   fetchPromises[cacheKey] = query.then(({ data, error }) => {
     if (!error) {
       globalDataCache[cacheKey] = data;
+      preloadImagesFromData(data); // Automatically cache images inside the fetched data
     }
     delete fetchPromises[cacheKey];
     return { data, error };
@@ -94,7 +123,10 @@ export default function useRealtimeData(table, options = {}) {
       // Deduplicate simultaneous fetches
       if (!fetchPromises[cacheKey]) {
         fetchPromises[cacheKey] = query.then(({ data, error }) => {
-          if (!error) globalDataCache[cacheKey] = data;
+          if (!error) {
+            globalDataCache[cacheKey] = data;
+            preloadImagesFromData(data); // Automatically cache images
+          }
           delete fetchPromises[cacheKey];
           return { data, error };
         });
