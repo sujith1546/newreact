@@ -21,7 +21,6 @@ import { prefetchTable } from "./hooks/useRealtimeData";
 
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 const AdminLogin = React.lazy(() => import('./pages/AdminLogin'));
-const AdminLayout = React.lazy(() => import('./pages/AdminLayout'));
 const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
 const AdminMfaSetup = React.lazy(() => import('./pages/AdminMfaSetup'));
 const ResumePreview = React.lazy(() => import('./pages/ResumePreview'));
@@ -75,8 +74,8 @@ function AnimatedRoutes() {
         <Route path="/resume-preview" element={<ResumePreview />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route element={<ProtectedRoute />}>
-          <Route path="/admin/dashboard" element={<AdminLayout />} />
-          <Route path="/admin/dashboard/:tab" element={<AdminLayout />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/dashboard/:tab" element={<AdminDashboard />} />
           <Route path="/admin/mfa-setup" element={<AdminMfaSetup />} />
         </Route>
         <Route path="*" element={<NotFound />} />
