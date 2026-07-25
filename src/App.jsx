@@ -17,7 +17,7 @@ import { trackPageView } from './lib/analyticsTracker';
 import { supabase } from './lib/supabaseClient';
 import { PersonaProvider } from "./context/PersonaContext";
 import SplashScreen from "./components/SplashScreen";
-import { globalDataCache } from "./hooks/useRealtimeData";
+import { prefetchTable } from "./hooks/useRealtimeData";
 
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 const AdminLogin = React.lazy(() => import('./pages/AdminLogin'));
@@ -71,49 +71,56 @@ const Loader = () => (
 function AppContent() {
   const { reduceMotion } = useTheme();
   const [appReady, setAppReady] = useState(false);
-  const [showContent, setShowContent] = useState(false); // Controls when App Content mounts to prevent layout shifts
+  const [showContent, setShowContent] = useState(false);
 
   useEffect(() => {
     async function prefetchData() {
       try {
-        // Fetch core data required for initial paint
-        const [profileRes, settingsRes] = await Promise.all([
-          supabase.from('profile').select('*').single(),
-          supabase.from('site_settings').select('*').single()
-        ]);
-        
-        if (!profileRes.error) {
-           globalDataCache[`profile_${JSON.stringify({select:'*', single:true, orderColumn:'id', ascending:true, filter:null})}`] = profileRes.data;
-        }
-        if (!settingsRes.error) {
-           globalDataCache[`site_settings_${JSON.stringify({select:'*', single:true, orderColumn:'id', ascending:true, filter: { column: 'id', value: 1 }})}`] = settingsRes.data;
+        // Prevent layout shift scrollbars during splash screen
+        document.body.style.overflow = 'hidden';
+
+        // Stage 1: Always fetch global required data
+        const corePromises = [
+          prefetchTable('profile', { single: true, orderColumn: 'id', ascending: true }),
+          prefetchTable('site_settings', { single: true, filter: { column: 'id', value: 1 } })
+        ];
+
+        // Route-specific intelligent prefetching (deep linking)
+        const path = window.location.pathname;
+        if (path.startsWith('/projects')) {
+          corePromises.push(prefetchTable('projects', { orderColumn: 'created_at', ascending: true }));
+        } else if (path.startsWith('/experience')) {
+          corePromises.push(prefetchTable('experience', { orderColumn: 'display_order', ascending: true }));
+        } else if (path.startsWith('/skills')) {
+          corePromises.push(prefetchTable('skills', { orderColumn: 'order_index', ascending: true }));
+        } else if (path.startsWith('/education')) {
+          corePromises.push(prefetchTable('education', { orderColumn: 'display_order', ascending: true }));
         }
 
-        // Release the Splash Screen to fade out
+        await Promise.all(corePromises);
+
+        // Stage 2: Release the Splash Screen to fade out
         setAppReady(true);
         // Safely mount background content slightly before splash unmounts for a seamless crossfade
-        setTimeout(() => setShowContent(true), 200);
+        setTimeout(() => {
+          setShowContent(true);
+          document.body.style.overflow = 'unset';
+        }, 200);
 
-        // Silent Background SWR Cache Population (Heavy Data)
+        // Stage 3: Silent Background Prefetching Engine (Everything else)
         setTimeout(async () => {
-          const fetchConfigs = [
-            { table: 'projects', options: { select: '*', single: false, orderColumn: 'created_at', ascending: true, filter: null } },
-            { table: 'experience', options: { select: '*', single: false, orderColumn: 'display_order', ascending: true, filter: null } },
-            { table: 'skills', options: { select: '*', single: false, orderColumn: 'order_index', ascending: true, filter: null } },
-            { table: 'education', options: { select: '*', single: false, orderColumn: 'display_order', ascending: true, filter: null } }
-          ];
-          
-          await Promise.all(fetchConfigs.map(async ({ table, options }) => {
-             const res = await supabase.from(table).select(options.select).order(options.orderColumn, { ascending: options.ascending });
-             if (!res.error) {
-               globalDataCache[`${table}_${JSON.stringify(options)}`] = res.data;
-             }
-          }));
-        }, 800); // Wait until splash screen is done animating before using network
+          await Promise.all([
+            prefetchTable('projects', { orderColumn: 'created_at', ascending: true }),
+            prefetchTable('experience', { orderColumn: 'display_order', ascending: true }),
+            prefetchTable('skills', { orderColumn: 'order_index', ascending: true }),
+            prefetchTable('education', { orderColumn: 'display_order', ascending: true })
+          ]);
+        }, 1000); 
         
       } catch (e) {
         setAppReady(true);
         setShowContent(true);
+        document.body.style.overflow = 'unset';
       }
     }
     

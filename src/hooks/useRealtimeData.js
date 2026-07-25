@@ -16,6 +16,38 @@ import { supabase } from '../lib/supabaseClient';
  * @returns {object} { data, setData, loading, error }
  */
 export const globalDataCache = {};
+export const fetchPromises = {};
+
+export async function prefetchTable(table, options = {}) {
+  const {
+    select = '*',
+    single = false,
+    orderColumn = 'id',
+    ascending = true,
+    filter = null,
+  } = options;
+
+  const cacheKey = `${table}_${JSON.stringify({ select, single, orderColumn, ascending, filter })}`;
+
+  if (globalDataCache[cacheKey] !== undefined) return globalDataCache[cacheKey];
+  
+  if (fetchPromises[cacheKey]) return fetchPromises[cacheKey];
+
+  let query = supabase.from(table).select(select);
+  if (filter) query = query.eq(filter.column, filter.value);
+  if (!single && orderColumn) query = query.order(orderColumn, { ascending });
+  if (single) query = query.single();
+
+  fetchPromises[cacheKey] = query.then(({ data, error }) => {
+    if (!error) {
+      globalDataCache[cacheKey] = data;
+    }
+    delete fetchPromises[cacheKey];
+    return { data, error };
+  });
+
+  return fetchPromises[cacheKey];
+}
 
 export default function useRealtimeData(table, options = {}) {
   const {
@@ -59,14 +91,22 @@ export default function useRealtimeData(table, options = {}) {
         query = query.single();
       }
 
-      const { data: result, error: fetchError } = await query;
+      // Deduplicate simultaneous fetches
+      if (!fetchPromises[cacheKey]) {
+        fetchPromises[cacheKey] = query.then(({ data, error }) => {
+          if (!error) globalDataCache[cacheKey] = data;
+          delete fetchPromises[cacheKey];
+          return { data, error };
+        });
+      }
+
+      const { data: result, error: fetchError } = await fetchPromises[cacheKey];
       
       if (isMounted) {
         if (fetchError) {
           setError(fetchError);
           setData(single ? null : []);
         } else {
-          globalDataCache[cacheKey] = result; // Update global cache
           setData(result);
         }
         setLoading(false);
