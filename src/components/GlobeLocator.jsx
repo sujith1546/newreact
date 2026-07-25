@@ -141,6 +141,8 @@ export default function GlobeLocator({ onClose }) {
   const mountRef = useRef(null);
   const apiRef = useRef({});
   const [phase, setPhase] = useState("entering");
+  const [ready, setReady] = useState(false);
+  const [clock, setClock] = useState("");
   const [activityData, setActivityData] = useState(null);
   const phaseRef = useRef("entering");
 
