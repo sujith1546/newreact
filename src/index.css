@@ -4543,7 +4543,6 @@ html.admin-mode,
 body.admin-mode,
 html:has(.admin-shell),
 body:has(.admin-shell) {
-  zoom: 1 !important;
   width: 100vw !important;
   height: 100vh !important;
   margin: 0 !important;
@@ -4555,17 +4554,15 @@ body:has(.admin-shell) {
   position: fixed !important;
   top: 0 !important;
   left: 0 !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
+  width: 133.3333vw !important;
+  height: 133.3333vh !important;
+  zoom: 0.75 !important;
   display: grid !important;
-  grid-template-columns: 260px 1fr !important;
+  grid-template-columns: 240px 1fr !important;
   z-index: 9999 !important;
   background: var(--bg-primary) !important;
   font-family: var(--app-font, system-ui, -apple-system, sans-serif) !important;
   overflow: hidden !important;
-  zoom: 1 !important;
 }
 
 .admin-sidebar {
