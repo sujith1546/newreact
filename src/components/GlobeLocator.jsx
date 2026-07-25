@@ -1,7 +1,8 @@
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import * as THREE from "three";
 import { Globe2, MapPin, Radar, Satellite, X } from "lucide-react";
 import indiaBordersData from "../data/indiaBorders.json";
+import { fetchGithubActivity } from "../lib/githubActivityEngine";
 
 const TARGET = { name: "Vellore", region: "Tamil Nadu, India", lat: 12.9165, lon: 79.1325 };
 
@@ -139,9 +140,15 @@ function buildFallbackEarthTexture() {
 export default function GlobeLocator({ onClose }) {
   const mountRef = useRef(null);
   const apiRef = useRef({});
-  const [phase, setPhase] = useState("idle");
-  const [ready, setReady] = useState(false);
-  const [clock, setClock] = useState("");
+  const [phase, setPhase] = useState("entering");
+  const [activityData, setActivityData] = useState(null);
+  const phaseRef = useRef("entering");
+
+  useEffect(() => {
+    fetchGithubActivity("sujith1546").then(setActivityData);
+  }, []);
+
+  const [state] = useState({});
 
   useEffect(() => {
     const tick = () => {
@@ -258,9 +265,8 @@ export default function GlobeLocator({ onClose }) {
     const TEX_BASE =
       "https://cdn.jsdelivr.net/gh/mrdoob/three.js@r128/examples/textures/planets/";
 
-    let cloudMesh, gridMesh, beamMesh, indiaGroup;
+    let cloudMesh, gridMesh, beamMesh, indiaGroup, skylineMesh;
     const pulseRings = [];
-    const satArray = [];
 
     Promise.all([
       loadTex(TEX_BASE + "earth_atmos_2048.jpg"),
@@ -373,6 +379,54 @@ export default function GlobeLocator({ onClose }) {
 
       globeGroup.add(indiaGroup);
 
+      // GitHub Skyline (3D Instanced Mesh)
+      const skylineGeo = new THREE.BoxGeometry(0.012, 1, 0.012);
+      // Move pivot to bottom so it scales upwards
+      skylineGeo.translate(0, 0.5, 0); 
+      const skylineMat = new THREE.MeshBasicMaterial({ 
+        color: 0x39d353,
+        transparent: true,
+        opacity: 0.85,
+        blending: THREE.AdditiveBlending
+      });
+      skylineMesh = new THREE.InstancedMesh(skylineGeo, skylineMat, 364);
+      
+      const dummy = new THREE.Object3D();
+      const weeks = 52;
+      const days = 7;
+      const latSpread = 24; // Cover India from South to North
+      const lonSpread = 28; // Cover India West to East
+      
+      // Calculate starting coords (top-left of the grid)
+      const startLat = 34; // Kashmir
+      const startLon = 68; // Gujarat
+      
+      for (let i = 0; i < 364; i++) {
+        const week = Math.floor(i / days);
+        const day = i % days;
+        
+        const lat = startLat - (day * (latSpread / days));
+        const lon = startLon + (week * (lonSpread / weeks));
+        
+        const pos = latLonToVector3(lat, lon, RADIUS);
+        
+        // Orient the box to face perfectly outwards from the sphere
+        dummy.position.copy(pos);
+        dummy.lookAt(0, 0, 0);
+        // Box geometry defaults to Z-forward, so we rotate it so Y points OUT
+        dummy.rotateX(Math.PI / 2);
+        
+        // Initial scale is tiny (invisible)
+        dummy.scale.set(1, 0.001, 1);
+        dummy.updateMatrix();
+        skylineMesh.setMatrixAt(i, dummy.matrix);
+        // Default color (dark empty day)
+        skylineMesh.setColorAt(i, new THREE.Color(0x161b22));
+      }
+      skylineMesh.instanceMatrix.needsUpdate = true;
+      skylineMesh.instanceColor.needsUpdate = true;
+      globeGroup.add(skylineMesh);
+
       const markerLocalPos = latLonToVector3(TARGET.lat, TARGET.lon, RADIUS);
 
       const dotGeo = new THREE.SphereGeometry(0.028, 20, 20);
@@ -429,59 +483,6 @@ export default function GlobeLocator({ onClose }) {
       const targetBase = Math.atan2(-x0, z0);
       apiRef.current.targetBase = targetBase;
 
-      // --- Advanced 3D Satellites ---
-      const createSatellite = () => {
-        const satGroup = new THREE.Group();
-        
-        // Metallic Core Bus
-        const busGeo = new THREE.BoxGeometry(0.06, 0.06, 0.12);
-        const busMat = new THREE.MeshStandardMaterial({ color: 0xe0e0e0, metalness: 0.9, roughness: 0.2 });
-        satGroup.add(new THREE.Mesh(busGeo, busMat));
-
-        // Solar Panels
-        const panelGeo = new THREE.BoxGeometry(0.35, 0.01, 0.08);
-        const panelMat = new THREE.MeshStandardMaterial({ color: 0x051024, metalness: 0.8, roughness: 0.4 });
-        satGroup.add(new THREE.Mesh(panelGeo, panelMat));
-
-        // Glowing Beacon (Visible in the dark)
-        const beaconGeo = new THREE.SphereGeometry(0.015, 8, 8);
-        const beaconMat = new THREE.MeshBasicMaterial({ color: 0xff1144, transparent: true });
-        const beacon = new THREE.Mesh(beaconGeo, beaconMat);
-        beacon.position.set(0, 0.04, 0.05);
-        satGroup.add(beacon);
-
-        return { mesh: satGroup, beacon };
-      };
-
-      for (let i = 0; i < 6; i++) {
-        const orbitPivot = new THREE.Group();
-        // Randomize orbit inclination
-        orbitPivot.rotation.x = Math.random() * Math.PI;
-        orbitPivot.rotation.z = Math.random() * Math.PI; 
-
-        const satData = createSatellite();
-        const altitude = RADIUS + 0.35 + (Math.random() * 0.4);
-        satData.mesh.position.z = altitude;
-        
-        orbitPivot.add(satData.mesh);
-        
-        // Faint orbital trail
-        const trailGeo = new THREE.TorusGeometry(altitude, 0.002, 4, 64);
-        const trailMat = new THREE.MeshBasicMaterial({ color: 0x6ea8ff, transparent: true, opacity: 0.08 });
-        const trail = new THREE.Mesh(trailGeo, trailMat);
-        trail.rotation.x = Math.PI / 2; // Orient torus to the XZ plane of the pivot
-        orbitPivot.add(trail);
-
-        scene.add(orbitPivot);
-
-        satArray.push({
-          pivot: orbitPivot,
-          beacon: satData.beacon,
-          speed: (0.0015 + Math.random() * 0.002) * (Math.random() > 0.5 ? 1 : -1),
-          offset: Math.random() * 100 // Stagger blinking
-        });
-      }
-
       setReady(true);
     });
 
@@ -499,12 +500,6 @@ export default function GlobeLocator({ onClose }) {
       if (gridMesh) gridMesh.rotation.y -= 0.00018;
       stars.rotation.y += 0.00004;
 
-      // Animate Satellites
-      satArray.forEach(sat => {
-        sat.pivot.rotation.y += sat.speed;
-        sat.beacon.material.opacity = Math.sin((performance.now() * 0.005) + sat.offset) > 0 ? 1 : 0.1;
-      });
-
       if (indiaGroup) {
         const hourIST = new Date().toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour12: false, hour: 'numeric' });
         const hr = parseInt(hourIST, 10);
@@ -521,6 +516,45 @@ export default function GlobeLocator({ onClose }) {
             child.material.opacity += ((targetCityOp * twinkle) - child.material.opacity) * 0.03;
           }
         });
+      }
+      
+      if (skylineMesh && activityData) {
+        const hourIST = new Date().toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour12: false, hour: 'numeric' });
+        const hr = parseInt(hourIST, 10);
+        const isNight = hr >= 19 || hr <= 5;
+        
+        // Calculate the camera distance to the globe to fade out the skyline if we are zoomed in too close
+        // But since this is a fixed scene, we use time to fade it in/out
+        const targetOp = isNight ? 0.9 : 0.0;
+        skylineMesh.material.opacity += (targetOp - skylineMesh.material.opacity) * 0.02;
+
+        const dummy = new THREE.Object3D();
+        const mat4 = new THREE.Matrix4();
+        const color = new THREE.Color();
+        
+        for (let i = 0; i < 364; i++) {
+          skylineMesh.getMatrixAt(i, mat4);
+          mat4.decompose(dummy.position, dummy.quaternion, dummy.scale);
+          
+          const commits = activityData[i] || 0;
+          // Scale max height is 0.15 for super active days
+          const targetHeight = commits === 0 ? 0.005 : (commits * 0.015);
+          
+          dummy.scale.y += (targetHeight - dummy.scale.y) * 0.05; // Smooth rising animation
+          dummy.updateMatrix();
+          skylineMesh.setMatrixAt(i, dummy.matrix);
+          
+          // Color based on activity (GitHub colors)
+          if (commits === 0) color.setHex(0x161b22);
+          else if (commits <= 2) color.setHex(0x0e4429);
+          else if (commits <= 4) color.setHex(0x006d32);
+          else if (commits <= 6) color.setHex(0x26a641);
+          else color.setHex(0x39d353);
+          
+          skylineMesh.setColorAt(i, color);
+        }
+        skylineMesh.instanceMatrix.needsUpdate = true;
+        skylineMesh.instanceColor.needsUpdate = true;
       }
 
       if (phaseRef.current === "spinning") {
