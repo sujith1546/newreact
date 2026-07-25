@@ -1,10 +1,200 @@
 import React from 'react';
-import Experience from '../Experience';
+import ScrollReveal from '../../components/ScrollReveal';
+import { Briefcase, Loader2, Calendar } from 'lucide-react';
+import useRealtimeData from '../../hooks/useRealtimeData';
 
 export default function DesktopExperience() {
+  const { data: experiences, loading } = useRealtimeData('experience', { orderColumn: 'display_order', ascending: true });
+
   return (
-    <div className="desktop-page-experience">
-      <Experience />
-    </div>
+    <ScrollReveal>
+      <style>{`
+        .exp-page {
+          width: 100%;
+          box-sizing: border-box;
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+        }
+        .exp-header h1 {
+          font-size: 28px;
+          font-weight: 700;
+          color: var(--text-primary);
+          margin: 0 0 5px;
+        }
+        .exp-header p {
+          font-size: 13.5px;
+          color: var(--text-secondary);
+          margin: 0;
+        }
+        
+        .empty-state-card {
+          width: 100%;
+          box-sizing: border-box;
+          background: var(--bg-secondary);
+          border: 1px dashed #d1d5db;
+          border-radius: 16px;
+          padding: 60px 20px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          gap: 16px;
+        }
+        
+        .empty-icon-wrap {
+          width: 56px;
+          height: 56px;
+          border-radius: 50%;
+          background: #f3f4f6;
+          color: #9ca3af;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        
+        .empty-title {
+          font-size: 16px;
+          font-weight: 600;
+          color: var(--text-primary);
+          margin: 0;
+        }
+        
+        .empty-desc {
+          font-size: 14px;
+          color: var(--text-secondary);
+          max-width: 550px;
+          line-height: 1.6;
+          margin: 0;
+        }
+
+        .timeline {
+          position: relative;
+          padding-left: 24px;
+          margin-top: 10px;
+        }
+        .timeline::before {
+          content: '';
+          position: absolute;
+          top: 0; left: 6px; bottom: 0;
+          width: 2px;
+          background: var(--border-color);
+          border-radius: 2px;
+        }
+        .timeline-item {
+          position: relative;
+          margin-bottom: 32px;
+        }
+        .timeline-item:last-child {
+          margin-bottom: 0;
+        }
+        .timeline-dot {
+          position: absolute;
+          top: 4px; left: -23px;
+          width: 10px; height: 10px;
+          border-radius: 50%;
+          background: var(--primary-blue);
+          border: 2px solid var(--bg-primary);
+          box-sizing: content-box;
+        }
+        .timeline-content {
+          background: var(--bg-secondary);
+          border: 1px solid var(--border-color);
+          border-radius: 16px;
+          padding: 20px;
+        }
+        .timeline-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 12px;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+        .timeline-title h3 {
+          margin: 0 0 4px;
+          font-size: 18px;
+          font-weight: 700;
+          color: var(--text-primary);
+        }
+        .timeline-title p {
+          margin: 0;
+          font-size: 14px;
+          font-weight: 500;
+          color: var(--text-secondary);
+        }
+        .timeline-date {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 12px;
+          font-weight: 600;
+          color: var(--text-muted);
+          background: var(--bg-primary);
+          padding: 4px 10px;
+          border-radius: 20px;
+          border: 1px solid var(--border-color);
+        }
+        .timeline-bullets {
+          margin: 0; padding-left: 18px;
+          color: var(--text-secondary);
+          font-size: 14px;
+          line-height: 1.6;
+        }
+        .timeline-bullets li {
+          margin-bottom: 6px;
+        }
+      `}</style>
+      
+      <div className="exp-page">
+        <div className="exp-header">
+          <h1>Experience</h1>
+          <p>My professional journey so far</p>
+        </div>
+
+        {loading ? (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '60px' }}>
+            <Loader2 className="spin" size={32} color="var(--primary-blue)" />
+          </div>
+        ) : experiences.length === 0 ? (
+          <div className="empty-state-card">
+            <div className="empty-icon-wrap">
+              <Briefcase size={24} />
+            </div>
+            <h2 className="empty-title">Seeking Opportunities</h2>
+            <p className="empty-desc">
+              I am currently a fresher, eagerly building my technical foundation through personal projects and continuous learning. I am actively looking for opportunities to apply my skills in a real-world environment.
+            </p>
+          </div>
+        ) : (
+          <div className="timeline">
+            {experiences.map((exp) => (
+              <div key={exp.id} className="timeline-item">
+                <div className="timeline-dot" />
+                <div className="timeline-content">
+                  <div className="timeline-header">
+                    <div className="timeline-title">
+                      <h3>{exp.role}</h3>
+                      <p>{exp.company} {exp.is_education ? '(Education)' : ''}</p>
+                    </div>
+                    <div className="timeline-date">
+                      <Calendar size={14} />
+                      {exp.start_date} — {exp.end_date || 'Present'}
+                    </div>
+                  </div>
+                  {exp.description_bullets && exp.description_bullets.length > 0 && (
+                    <ul className="timeline-bullets">
+                      {exp.description_bullets.map((bullet, i) => (
+                        <li key={i}>{bullet}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </ScrollReveal>
   );
 }
