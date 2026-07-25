@@ -753,7 +753,7 @@ export default function DesktopEducation() {
             {/* Closing Summary Arrow Flow */}
             <div className="edu-closing-summary" style={{ marginTop: 'auto', paddingTop: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <p className="section-subtitle" style={{ color: '#6b7280', fontSize: '13px', marginBottom: '8px', textAlign: 'center', fontWeight: 'normal' }}>Your journey at a glance</p>
-              <EducationArrowFlow activeIndex={activeIndex} />
+              <EducationArrowFlow stages={timelineData} activeIndex={activeIndex} onSelectStage={handleCardClick} />
             </div>
           </>
         )}
