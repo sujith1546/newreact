@@ -1,11 +1,11 @@
 import React, { Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
-import { ThemeProvider } from './context/ThemeContext';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { IslandProvider } from './context/IslandContext';
 import { HelmetProvider } from 'react-helmet-async';
 import { AnimatePresence, MotionConfig } from 'framer-motion';
-import { useTheme } from './context/ThemeContext';
-import MainLayout from './pages/MainLayout';
+import DesktopLayout from './pages/desktop/DesktopLayout';
+import MobileLayout from './pages/mobile/MobileLayout';
 import DynamicIsland from './components/DynamicIsland';
 import DevToolsDetector from './components/DevToolsDetector';
 import { AuthProvider } from './context/AuthContext';
@@ -21,9 +21,22 @@ import { prefetchTable } from "./hooks/useRealtimeData";
 
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 const AdminLogin = React.lazy(() => import('./pages/AdminLogin'));
+const AdminLayout = React.lazy(() => import('./pages/AdminLayout'));
 const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
 const AdminMfaSetup = React.lazy(() => import('./pages/AdminMfaSetup'));
 const ResumePreview = React.lazy(() => import('./pages/ResumePreview'));
+
+function DynamicMainLayout() {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 900);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return isMobile ? <MobileLayout /> : <DesktopLayout />;
+}
 
 // Wrapper for AnimatePresence to access useLocation
 function AnimatedRoutes() {
@@ -48,11 +61,22 @@ function AnimatedRoutes() {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<MainLayout />} />
+        <Route path="/" element={<DynamicMainLayout />}>
+          <Route index element={null} />
+          <Route path="home" element={null} />
+          <Route path="about" element={null} />
+          <Route path="skills" element={null} />
+          <Route path="projects" element={null} />
+          <Route path="education" element={null} />
+          <Route path="experience" element={null} />
+          <Route path="certifications" element={null} />
+          <Route path="contact" element={null} />
+        </Route>
         <Route path="/resume-preview" element={<ResumePreview />} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route element={<ProtectedRoute />}>
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/dashboard" element={<AdminLayout />} />
+          <Route path="/admin/dashboard/:tab" element={<AdminLayout />} />
           <Route path="/admin/mfa-setup" element={<AdminMfaSetup />} />
         </Route>
         <Route path="*" element={<NotFound />} />
@@ -81,7 +105,6 @@ function AppContent() {
 
         // Stage 1: Always fetch global required data
         const corePromises = [
-          prefetchTable('profile', { single: true, orderColumn: 'id', ascending: true }),
           prefetchTable('site_settings', { single: true, filter: { column: 'id', value: 1 } })
         ];
 
@@ -157,6 +180,9 @@ export default function App() {
     let presenceChannel;
 
     const broadcastPresence = async () => {
+      if (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')) {
+        return;
+      }
       try {
         let lat, lng;
         const cachedLoc = sessionStorage.getItem('visitor_location');
@@ -199,6 +225,10 @@ export default function App() {
         }
 
         if (lat && lng) {
+          const existing = supabase.getChannels().find(c => c.topic === 'realtime:visitor_presence' || c.topic === 'visitor_presence');
+          if (existing) {
+            supabase.removeChannel(existing);
+          }
           presenceChannel = supabase.channel('visitor_presence');
           presenceChannel.subscribe(async (status) => {
             if (status === 'SUBSCRIBED') {
