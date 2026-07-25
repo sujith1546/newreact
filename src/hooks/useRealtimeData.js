@@ -137,7 +137,10 @@ export default function useRealtimeData(table, options = {}) {
       if (isMounted) {
         if (fetchError) {
           setError(fetchError);
-          setData(single ? null : []);
+          // BUG FIX: Do NOT wipe existing cache if offline revalidation fails
+          if (globalDataCache[cacheKey] === undefined) {
+            setData(single ? null : []);
+          }
         } else {
           setData(result);
         }
