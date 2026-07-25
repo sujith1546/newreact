@@ -51,6 +51,7 @@ function AnimatedRoutes() {
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<MainLayout />}>
           <Route index element={null} />
+          <Route path="home" element={null} />
           <Route path="about" element={null} />
           <Route path="skills" element={null} />
           <Route path="projects" element={null} />
