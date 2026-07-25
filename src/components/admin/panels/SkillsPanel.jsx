@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabaseClient';
 import { Loader2, ChevronRight, ChevronDown, Star, Edit3, Trash2, Briefcase, Layers, X, Plus } from 'lucide-react';
-import { styles, MODAL_STYLES } from '../shared/constants';
+import { styles, MODAL_STYLES, SKILL_CATEGORIES, SKILL_LEVELS } from '../shared/constants';
 import { PanelCard, EmptyState, StatCard } from '../shared/components';
 
 export default function SkillsPanel() {
@@ -73,8 +73,8 @@ export default function SkillsPanel() {
       years_experience: parseInt(formData.years_experience) || 0,
       project_count: parseInt(formData.project_count) || 0,
       order_index: parseInt(formData.order_index) || 0,
-      related_tools: formData.related_tools.filter(t => t.trim()),
-      projects: formData.projects.filter(p => p.trim()),
+      related_tools: formData.related_tools.filter(t => t && t.trim()),
+      projects: formData.projects.filter(p => p && p.trim()),
     };
 
     if (editingSkill) {
@@ -104,8 +104,13 @@ export default function SkillsPanel() {
     return '#ef4444';
   };
 
+  const allCategories = Array.from(new Set([
+    ...SKILL_CATEGORIES,
+    ...skills.map(s => s.category).filter(Boolean)
+  ]));
+
   const filteredSkills = skills.filter(s => s.name.toLowerCase().includes(searchQuery.toLowerCase()));
-  const groupedSkills = SKILL_CATEGORIES.reduce((acc, cat) => {
+  const groupedSkills = allCategories.reduce((acc, cat) => {
     acc[cat] = filteredSkills.filter(s => s.category === cat);
     return acc;
   }, {});
@@ -141,7 +146,7 @@ export default function SkillsPanel() {
           {[
             { label: 'Total Skills', val: skills.length, color: '#3b82f6' },
             { label: 'Featured Skills', val: skills.filter(s => s.is_featured).length, color: '#f59e0b' },
-            { label: 'Avg Proficiency', val: Math.round(skills.reduce((a, b) => a + b.proficiency_level, 0) / (skills.length || 1)) + '%', color: '#10b981' },
+            { label: 'Avg Proficiency', val: Math.round(skills.reduce((a, b) => a + (b.proficiency_level || 0), 0) / (skills.length || 1)) + '%', color: '#10b981' },
           ].map(s => (
             <div key={s.label} style={{ padding: '14px 20px', borderRight: '1px solid var(--border-color)' }}>
               <p style={{ margin: 0, fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{s.label}</p>
@@ -164,16 +169,17 @@ export default function SkillsPanel() {
           <EmptyState icon="ti-star" title="No skills yet" description="Click '+ Add Skill' to build your inventory." />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 28, padding: '20px 22px' }}>
-            {SKILL_CATEGORIES.map(cat => {
+            {allCategories.map(cat => {
               const catSkills = groupedSkills[cat] || [];
               if (catSkills.length === 0) return null;
               const isCollapsed = collapsedCats[cat];
+              const displayCatName = cat.replace(/_/g, ' ');
 
               return (
                 <div key={cat}>
                   <div onClick={() => toggleCategory(cat)} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', userSelect: 'none', marginBottom: 14, paddingBottom: 10, borderBottom: '2px solid var(--border-color)' }}>
                     {isCollapsed ? <ChevronRight size={15} color="var(--text-muted)" /> : <ChevronDown size={15} color="var(--primary-blue)" />}
-                    <h3 style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', textTransform: 'capitalize', letterSpacing: '0.2px' }}>{cat}</h3>
+                    <h3 style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', textTransform: 'capitalize', letterSpacing: '0.2px' }}>{displayCatName}</h3>
                     <span style={{ padding: '2px 8px', borderRadius: 12, background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-muted)', fontSize: 10, fontWeight: 700 }}>{catSkills.length}</span>
                   </div>
 
@@ -246,7 +252,7 @@ export default function SkillsPanel() {
                 <div>
                   <label style={labelStyle}>Category <span style={{ color: '#ef4444' }}>*</span></label>
                   <select style={inputStyle} value={formData.category} onChange={e => setFormData({ ...formData, category: e.target.value })}>
-                    {SKILL_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                    {allCategories.map(c => <option key={c} value={c}>{c.replace(/_/g, ' ')}</option>)}
                   </select>
                 </div>
               </div>
@@ -350,4 +356,3 @@ export default function SkillsPanel() {
     </>
   );
 }
-

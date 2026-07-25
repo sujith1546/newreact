@@ -97,19 +97,27 @@ export default function AdminDashboard() {
                     key={item.key}
                     onClick={() => setActiveTab(item.key)}
                     className={`admin-nav-btn${isActive ? ' active' : ''}`}
-                    style={{ color: isActive ? item.color : undefined }}
+                    style={{
+                      background: isActive ? `${item.color}14` : 'transparent',
+                      color: isActive ? item.color : undefined,
+                      borderLeft: isActive ? `3px solid ${item.color}` : '3px solid transparent'
+                    }}
                   >
                     <div
                       className="admin-nav-icon-wrap"
-                      style={{ background: isActive ? `${item.color}1a` : 'transparent' }}
+                      style={{ background: isActive ? `${item.color}22` : 'transparent' }}
                     >
                       <i
                         className={`ti ${item.icon}`}
                         style={{ fontSize: 15, color: isActive ? item.color : 'var(--text-muted)' }}
                       />
                     </div>
-                    <span>{item.label}</span>
-                    {item.key === 'messages' && <UnreadBadge />}
+                    <span style={{ flex: 1, textAlign: 'left' }}>{item.label}</span>
+                    {item.key === 'messages' && (
+                      <div style={{ marginLeft: 'auto' }}>
+                        <UnreadBadge />
+                      </div>
+                    )}
                   </button>
                 );
               })}
@@ -119,13 +127,13 @@ export default function AdminDashboard() {
 
         {/* Sidebar Footer */}
         <div className="admin-sidebar-footer">
-          <div className="admin-user-info">
+          <div className="admin-user-info" style={{ minWidth: 0, flex: 1, marginRight: 8 }}>
             <div className="admin-avatar">
               {user?.email?.[0]?.toUpperCase() || 'A'}
             </div>
-            <div className="admin-user-meta">
-              <p className="admin-user-email">{user?.email || 'admin@portfolio'}</p>
-              <p className="admin-user-role">Super Admin</p>
+            <div className="admin-user-meta" style={{ minWidth: 0, flex: 1, overflow: 'hidden' }}>
+              <p className="admin-user-email" style={{ margin: 0, fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.email || 'admin@portfolio'}</p>
+              <p className="admin-user-role" style={{ margin: 0, fontSize: 10, color: 'var(--text-muted)' }}>Super Admin</p>
             </div>
           </div>
 

@@ -38,6 +38,23 @@ export const NAV_GROUPS = [
 
 export const ALL_NAV_ITEMS = NAV_GROUPS.flatMap(g => g.items);
 
+export const SKILL_CATEGORIES = [
+  'languages',
+  'frameworks',
+  'developer_tools',
+  'libraries_ml',
+  'cloud_databases',
+  'other'
+];
+
+export const SKILL_LEVELS = [
+  'Beginner',
+  'Intermediate',
+  'Advanced',
+  'Expert',
+  'Master'
+];
+
 export const styles = {
   btn: {
     padding: '8px 16px',
