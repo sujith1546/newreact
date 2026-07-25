@@ -1,10 +1,10 @@
 import React from 'react';
-import About from '../../../pages/About';
+import MobileAbout from '../../../pages/mobile/MobileAbout';
 
 export default function MobileAboutView() {
   return (
     <div className="mobile-about-view">
-      <About />
+      <MobileAbout />
     </div>
   );
 }

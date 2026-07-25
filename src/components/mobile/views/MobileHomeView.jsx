@@ -1,10 +1,10 @@
 import React from 'react';
-import Home from '../../../pages/Home';
+import MobileDashboard from '../../MobileDashboard';
 
-export default function MobileHomeView() {
+export default function MobileHomeView({ onNavClick }) {
   return (
     <div className="mobile-home-view">
-      <Home />
+      <MobileDashboard onNavClick={onNavClick} />
     </div>
   );
 }
