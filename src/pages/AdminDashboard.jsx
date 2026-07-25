@@ -137,15 +137,25 @@ export default function AdminDashboard() {
 
       {/* ─── Main Content ─── */}
       <main className="admin-main">
-        {/* Top Header */}
+        {/* Advanced Top Navigation Bar */}
         <header className="admin-header">
-          <div>
-            <h1 className="admin-header-title">
-              {activeNavItem?.label || 'Dashboard'}
-            </h1>
+          <div className="admin-header-title-wrap">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{ 
+                width: 28, height: 28, borderRadius: 8, 
+                background: `${activeNavItem?.color || '#3b82f6'}1a`, 
+                display: 'flex', alignItems: 'center', justifyContent: 'center' 
+              }}>
+                <i className={`ti ${activeNavItem?.icon || 'ti-dashboard'}`} style={{ fontSize: 15, color: activeNavItem?.color || '#3b82f6' }} />
+              </div>
+              <h1 className="admin-header-title">
+                {activeNavItem?.label || 'Dashboard'}
+              </h1>
+            </div>
             {lastLogin && (
               <p className="admin-header-sub">
-                Last login: {new Date(lastLogin.logged_in_at).toLocaleString()} ({lastLogin.ip_address})
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
+                Last active session: {new Date(lastLogin.logged_in_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })} ({lastLogin.ip_address})
               </p>
             )}
           </div>
@@ -153,13 +163,16 @@ export default function AdminDashboard() {
           <div className="admin-header-actions">
             <button
               onClick={toggleTheme}
-              className="admin-icon-btn"
-              title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+              className="admin-topbar-pill-btn"
+              title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
             >
-              <i className={theme === 'dark' ? 'ti ti-sun' : 'ti ti-moon'} style={{ fontSize: 15 }} />
+              <i className={theme === 'dark' ? 'ti ti-sun' : 'ti ti-moon'} style={{ fontSize: 15, color: theme === 'dark' ? '#f59e0b' : '#6366f1' }} />
+              <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
             </button>
-            <a href="/" target="_blank" className="admin-icon-btn" title="View live site">
-              <Eye size={15} />
+
+            <a href="/" target="_blank" rel="noreferrer" className="admin-topbar-pill-btn" title="View live portfolio site">
+              <Eye size={15} color="var(--primary-blue)" />
+              <span>Live Site</span>
             </a>
           </div>
         </header>
