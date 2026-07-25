@@ -2,24 +2,34 @@ import React, { useState, useRef, useEffect, Suspense, lazy } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileText, Mail, Briefcase, Check } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
-import MobileBottomNav from '../../components/MobileBottomNav';
-import DarkModeToggle from '../../components/DarkModeToggle';
-import SettingsDropdown from '../../components/SettingsDropdown';
-import MobileStatusPanel from '../../components/MobileStatusPanel';
-import ParticleCanvas from '../../components/ParticleCanvas';
+import Sidebar from '../components/Sidebar';
+import WelcomeModal from '../components/WelcomeModal';
+import MobileBottomNav from '../components/MobileBottomNav';
+import DarkModeToggle from '../components/DarkModeToggle';
+import SettingsDropdown from '../components/SettingsDropdown';
+import SettingsSidebar from '../components/SettingsSidebar';
+import TimezoneStatus from '../components/TimezoneStatus';
+import ChatBot from '../components/ChatBot';
+import CommandPalette from '../components/CommandPalette';
+import PerformanceHUD from '../components/PerformanceHUD';
+import LiveStateInspector from '../components/LiveStateInspector';
+import MobileStatusPanel from '../components/MobileStatusPanel';
 
-import Home from '../Home';
-const About = lazy(() => import('../About'));
-const Skills = lazy(() => import('../Skills'));
-const Projects = lazy(() => import('../Projects'));
-const Education = lazy(() => import('../Education'));
-const Experience = lazy(() => import('../Experience'));
-const Certifications = lazy(() => import('../Certifications'));
-const Contact = lazy(() => import('../Contact'));
+import Home from './Home';
+const About = lazy(() => import('./About'));
+const Skills = lazy(() => import('./Skills'));
+const Projects = lazy(() => import('./Projects'));
+const Education = lazy(() => import('./Education'));
+const Experience = lazy(() => import('./Experience'));
+const Certifications = lazy(() => import('./Certifications'));
+const Contact = lazy(() => import('./Contact'));
 
-import { usePersona } from '../../context/PersonaContext';
-import useRealtimeData from '../../hooks/useRealtimeData';
-import { trackPageView } from '../../lib/analyticsTracker';
+import ParticleCanvas from '../components/ParticleCanvas';
+import SectionSpotlight from '../components/SectionSpotlight';
+import { useTheme } from '../context/ThemeContext';
+import { usePersona } from '../context/PersonaContext';
+import useRealtimeData from '../hooks/useRealtimeData';
+import { trackPageView } from '../lib/analyticsTracker';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const SECTIONS_DEF = [
@@ -54,13 +64,7 @@ const mobilePageVariants = {
   exit: { opacity: 0 },
 };
 
-const mobileTransition = {
-  type:     'tween',
-  ease:     NAV_EASE,
-  duration: NAV_DURATION,
-};
-
-export default function MobileLayout() {
+export default function DesktopLayout() {
   const { data: dbSettings } = useRealtimeData('site_settings', { single: true, filter: { column: 'id', value: 1 } });
   const { getSectionOrder } = usePersona();
   const location = useLocation();
@@ -81,12 +85,21 @@ export default function MobileLayout() {
   };
   const activeSection = getSectionFromPath(location.pathname);
 
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
   const [isStatusOpen, setIsStatusOpen] = useState(false);
   const [slideDirection, setSlideDirection] = useState(0);
   const [isNavActive, setIsNavActive] = useState(false);
   const [emailCopied, setEmailCopied] = useState(false);
+  const [spotlightSection, setSpotlightSection] = useState(null);
+  const [spotlightKeyword, setSpotlightKeyword] = useState('');
   const scrollRef = useRef(null);
   const navTimerRef = useRef(null);
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth <= 900);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   useEffect(() => {
     if (location.pathname === '/') {
@@ -97,6 +110,26 @@ export default function MobileLayout() {
   useEffect(() => {
     trackPageView(`/${activeSection}`);
   }, [activeSection]);
+
+  useEffect(() => {
+    const onNavigate = (e) => {
+      const { section, highlight } = e.detail || {};
+      if (section) {
+        if (section !== 'resume') handleNavClick(section);
+        if (highlight) {
+          const kw = e.detail?.keyword || '';
+          setSpotlightSection(null);
+          setSpotlightKeyword('');
+          setTimeout(() => {
+            setSpotlightSection(section);
+            setSpotlightKeyword(kw);
+          }, 150);
+        }
+      }
+    };
+    window.addEventListener('navigate-section', onNavigate);
+    return () => window.removeEventListener('navigate-section', onNavigate);
+  }, []);
 
   const handleNavClick = (id) => {
     if (id === activeSection) return;
@@ -128,6 +161,7 @@ export default function MobileLayout() {
   const touchStartRef = useRef(null);
 
   const handleTouchStart = (e) => {
+    if (!isMobile) return;
     touchStartRef.current = {
       x:    e.touches[0].clientX,
       y:    e.touches[0].clientY,
@@ -136,7 +170,7 @@ export default function MobileLayout() {
   };
 
   const handleTouchEnd = (e) => {
-    if (!touchStartRef.current) return;
+    if (!isMobile || !touchStartRef.current) return;
     const dx = e.changedTouches[0].clientX - touchStartRef.current.x;
     const dy = e.changedTouches[0].clientY - touchStartRef.current.y;
     const dt = Date.now() - touchStartRef.current.time;
@@ -166,11 +200,16 @@ export default function MobileLayout() {
 
   const ActiveComponent = SECTIONS.find(s => s.id === activeSection)?.Component ?? Home;
 
+  const mobileTransition = {
+    type:     'tween',
+    ease:     NAV_EASE,
+    duration: NAV_DURATION,
+  };
+
   return (
-    <div className="layout mobile-layout-root">
-      {/* Navigation Progress Bar */}
+    <div className="layout">
       <AnimatePresence>
-        {isNavActive && (
+        {isMobile && isNavActive && (
           <motion.div
             className="nav-progress-bar"
             key="nav-progress"
@@ -185,7 +224,6 @@ export default function MobileLayout() {
         )}
       </AnimatePresence>
 
-      {/* Mobile Top Header */}
       <header className="mobile-top-header">
         <div className="mh-left">
           <div className="mh-beacon-wrap">
@@ -232,12 +270,17 @@ export default function MobileLayout() {
               <span>{cta.label}</span>
             </motion.button>
           </AnimatePresence>
-          <DarkModeToggle />
-          <SettingsDropdown />
+          {isMobile && (
+            <>
+              <DarkModeToggle />
+              <SettingsDropdown />
+            </>
+          )}
         </div>
       </header>
 
       <ParticleCanvas />
+      <Sidebar activeSection={activeSection} onNavClick={handleNavClick} />
 
       <main
         className="main-content"
@@ -246,25 +289,28 @@ export default function MobileLayout() {
         onTouchEnd={handleTouchEnd}
       >
         <div className="scroll-container">
-          <AnimatePresence mode="sync" initial={false} custom={slideDirection}>
+          <AnimatePresence mode={isMobile ? "sync" : "wait"} initial={false} custom={slideDirection}>
             <motion.div
               key={activeSection}
               id={activeSection}
               custom={slideDirection}
-              variants={mobilePageVariants}
-              initial="initial"
-              animate="animate"
-              exit="exit"
-              transition={mobileTransition}
+
+              variants={isMobile ? mobilePageVariants : undefined}
+              initial={isMobile ? 'initial' : { opacity: 0 }}
+              animate={isMobile ? 'animate' : { opacity: 1 }}
+              exit={isMobile ? 'exit' : { opacity: 0 }}
+
+              transition={isMobile ? mobileTransition : { duration: 0.25, ease: 'easeInOut' }}
+
               style={{
-                width: 'calc(100% - 24px)',
-                height: 'calc(100% - 24px)',
-                position: 'absolute',
-                top: '12px',
-                left: '12px',
-                willChange: 'transform',
-                backfaceVisibility: 'hidden',
-                WebkitBackfaceVisibility: 'hidden',
+                width:                     isMobile ? 'calc(100% - 24px)' : '100%',
+                height:                    isMobile ? 'calc(100% - 24px)' : 'auto',
+                position:                  isMobile ? 'absolute' : 'relative',
+                top:                       isMobile ? '12px' : 0,
+                left:                      isMobile ? '12px' : 0,
+                willChange:                'transform',
+                backfaceVisibility:        'hidden',
+                WebkitBackfaceVisibility:  'hidden',
               }}
               className={`text-content
                 ${activeSection === 'home' ? ' home-content' : ''}
@@ -283,8 +329,23 @@ export default function MobileLayout() {
         </div>
       </main>
 
-      <MobileStatusPanel isOpen={isStatusOpen} onClose={() => setIsStatusOpen(false)} />
-      <MobileBottomNav activeSection={activeSection} onNavClick={handleNavClick} />
+      <WelcomeModal onNavClick={handleNavClick} />
+
+      <SectionSpotlight
+        section={spotlightSection}
+        keyword={spotlightKeyword}
+        onDismiss={() => { setSpotlightSection(null); setSpotlightKeyword(''); }}
+      />
+
+      {!isMobile && <TimezoneStatus />}
+      <ChatBot />
+      <CommandPalette />
+      <SettingsSidebar />
+      <PerformanceHUD />
+      <LiveStateInspector />
+
+      {isMobile && <MobileStatusPanel isOpen={isStatusOpen} onClose={() => setIsStatusOpen(false)} />}
+      {isMobile && <MobileBottomNav activeSection={activeSection} onNavClick={handleNavClick} />}
     </div>
   );
 }
