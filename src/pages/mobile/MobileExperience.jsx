@@ -1,3 +1,3 @@
-import DesktopExperience from '../desktop/DesktopExperience';
+import Experience from '../Experience';
 
-export default DesktopExperience;
+export default Experience;

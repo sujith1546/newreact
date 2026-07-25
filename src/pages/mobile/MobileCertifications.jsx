@@ -1,3 +1,3 @@
-import DesktopCertifications from '../desktop/DesktopCertifications';
+import Certifications from '../Certifications';
 
-export default DesktopCertifications;
+export default Certifications;

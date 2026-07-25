@@ -1,3 +1,3 @@
-import DesktopContact from '../desktop/DesktopContact';
+import Contact from '../Contact';
 
-export default DesktopContact;
+export default Contact;

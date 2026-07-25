@@ -1,3 +1,3 @@
-import DesktopAbout from '../desktop/DesktopAbout';
+import About from '../About';
 
-export default DesktopAbout;
+export default About;

@@ -1,3 +1,3 @@
-import DesktopSkills from '../desktop/DesktopSkills';
+import Skills from '../Skills';
 
-export default DesktopSkills;
+export default Skills;

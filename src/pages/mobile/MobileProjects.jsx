@@ -1,3 +1,3 @@
-import DesktopProjects from '../desktop/DesktopProjects';
+import Projects from '../Projects';
 
-export default DesktopProjects;
+export default Projects;

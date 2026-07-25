@@ -1,3 +1,3 @@
-import DesktopEducation from '../desktop/DesktopEducation';
+import Education from '../Education';
 
-export default DesktopEducation;
+export default Education;
