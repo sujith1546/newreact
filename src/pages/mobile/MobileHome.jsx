@@ -1,10 +1,10 @@
 import React from 'react';
-import Home from '../Home';
+import MobileDashboard from '../../components/MobileDashboard';
 
-export default function MobileHome() {
+export default function MobileHome({ onNavClick }) {
   return (
-    <div className="mobile-page-home">
-      <Home />
+    <div className="home-content home-pane" style={{ height: '100%', width: '100%' }}>
+      <MobileDashboard onNavClick={onNavClick} />
     </div>
   );
 }
