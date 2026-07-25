@@ -1,12 +1,30 @@
 import React, { Suspense, useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
-import { ThemeProvider } from './context/ThemeContext';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { IslandProvider } from './context/IslandContext';
 import { HelmetProvider } from 'react-helmet-async';
 import { AnimatePresence, MotionConfig } from 'framer-motion';
-import { useTheme } from './context/ThemeContext';
 import MainLayout from './pages/MainLayout';
 import MobileLayout from './components/mobile/MobileLayout';
+import DynamicIsland from './components/DynamicIsland';
+import DevToolsDetector from './components/DevToolsDetector';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import { MaintenanceGate } from './components/MaintenanceMode';
+import SEOHelmet from './components/SEOHelmet';
+import AnnouncementBanner from './components/AnnouncementBanner';
+import { trackPageView } from './lib/analyticsTracker';
+import { supabase } from './lib/supabaseClient';
+import { PersonaProvider } from "./context/PersonaContext";
+import SplashScreen from "./components/SplashScreen";
+import { prefetchTable } from "./hooks/useRealtimeData";
+
+const NotFound = React.lazy(() => import('./pages/NotFound'));
+const AdminLogin = React.lazy(() => import('./pages/AdminLogin'));
+const AdminLayout = React.lazy(() => import('./pages/AdminLayout'));
+const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
+const AdminMfaSetup = React.lazy(() => import('./pages/AdminMfaSetup'));
+const ResumePreview = React.lazy(() => import('./pages/ResumePreview'));
 
 function DynamicMainLayout() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
