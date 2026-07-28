@@ -562,98 +562,98 @@ export default function Home({ onNavClick }) {
 
       {/* Desktop grid view */}
       <div className="home-grid">
-          <div className="hero-info">
-            {(settings === null || settings.is_available_for_hire) && (
-              <div className="fc-badge">
-                <div className="fc-badge-dot-wrap">
-                  <div className="fc-badge-dot" />
-                </div>
-                Available for Opportunities
+        <div className="hero-info">
+          {(settings === null || settings.is_available_for_hire) && (
+            <div className="fc-badge">
+              <div className="fc-badge-dot-wrap">
+                <div className="fc-badge-dot" />
               </div>
-            )}
+              Available for Opportunities
+            </div>
+          )}
 
-            <div>
-              <div className="hero-greeting">{getGreeting()}</div>
-              <h1 className="hero-title-main">{nameText}</h1>
-              
-              <div className="hero-typewriter-container">
-                <DesktopTypewriter />
-              </div>
-              
-              <p className="hero-subtitle-text" dangerouslySetInnerHTML={{ __html: settings?.hero_headline || "A passionate <strong>B.Tech Graduate from VIT (8.7 CGPA)</strong>, actively exploring the boundaries between complex data logic and seamless web experiences." }} />
+          <div>
+            <div className="hero-greeting">{getGreeting()}</div>
+            <h1 className="hero-title-main">{nameText}</h1>
+
+            <div className="hero-typewriter-container">
+              <DesktopTypewriter />
             </div>
 
-            <div className="home-quick-actions">
-              <button className="qa-card" onClick={() => onNavClick?.('skills')}>
-                <div className="qa-icon-wrap"><Code size={16} /></div>
-                <div className="qa-title">
-                  Core Skills <ArrowRight size={14} className="qa-arrow" />
-                </div>
-              </button>
-              <button className="qa-card" onClick={() => onNavClick?.('projects')}>
-                <div className="qa-icon-wrap"><Briefcase size={16} /></div>
-                <div className="qa-title">
-                  Projects <ArrowRight size={14} className="qa-arrow" />
-                </div>
-              </button>
-              <button className="qa-card" onClick={() => onNavClick?.('contact')}>
-                <div className="qa-icon-wrap"><Mail size={16} /></div>
-                <div className="qa-title">
-                  Contact Me <ArrowRight size={14} className="qa-arrow" />
-                </div>
-              </button>
-            </div>
-            </div>
-          
-          <div className="home-image-side">
-            <img src="/IMG_0322.jpg" alt="Sujith Thota" className="hero-img-new" />
+            <p className="hero-subtitle-text" dangerouslySetInnerHTML={{ __html: settings?.hero_headline || "A passionate <strong>B.Tech Graduate from VIT (8.7 CGPA)</strong>, actively exploring the boundaries between complex data logic and seamless web experiences." }} />
+          </div>
+
+          <div className="home-quick-actions">
+            <button className="qa-card" onClick={() => onNavClick?.('skills')}>
+              <div className="qa-icon-wrap"><Code size={16} /></div>
+              <div className="qa-title">
+                Core Skills <ArrowRight size={14} className="qa-arrow" />
+              </div>
+            </button>
+            <button className="qa-card" onClick={() => onNavClick?.('projects')}>
+              <div className="qa-icon-wrap"><Briefcase size={16} /></div>
+              <div className="qa-title">
+                Projects <ArrowRight size={14} className="qa-arrow" />
+              </div>
+            </button>
+            <button className="qa-card" onClick={() => onNavClick?.('contact')}>
+              <div className="qa-icon-wrap"><Mail size={16} /></div>
+              <div className="qa-title">
+                Contact Me <ArrowRight size={14} className="qa-arrow" />
+              </div>
+            </button>
           </div>
         </div>
 
-        {/* Currently Working On Widget — only shown on desktop when set */}
-        {!isMobile && settings?.current_project && (
-          <div style={{
-            marginTop: 28, padding: '16px 20px', borderRadius: 18,
-            background: 'linear-gradient(135deg, color-mix(in srgb, #f59e0b 8%, var(--bg-secondary)), var(--bg-secondary))',
-            border: '1px solid color-mix(in srgb, #f59e0b 25%, var(--border-color))',
-            display: 'flex', alignItems: 'center', gap: 16, maxWidth: 700,
-          }}>
-            <div style={{ padding: 10, background: 'color-mix(in srgb, #f59e0b 15%, transparent)', borderRadius: 12, color: '#f59e0b', flexShrink: 0 }}>
-              <Zap size={20} />
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 }}>Currently Building</div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{settings.current_project}</div>
-              <div style={{ marginTop: 8, height: 4, background: 'var(--border-color)', borderRadius: 4, overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${settings.current_project_pct ?? 0}%`, background: 'linear-gradient(90deg, #f59e0b, #ef4444)', borderRadius: 4, transition: 'width 0.6s ease' }} />
-              </div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>{settings.current_project_status} · {settings.current_project_pct ?? 0}% complete</div>
-            </div>
-          </div>
-        )}
+        <div className="home-image-side">
+          <img src="/IMG_0322.jpg" alt="Sujith Thota" className="hero-img-new" />
+        </div>
+      </div>
 
-        {/* Availability Badge */}
-        {!isMobile && settings?.availability_status && settings.availability_status !== 'In a Role' && (
-          <div style={{
-            marginTop: 16, display: 'inline-flex', alignItems: 'center', gap: 8,
-            padding: '8px 16px', borderRadius: 999,
-            background: 'color-mix(in srgb, #10b981 10%, var(--bg-secondary))',
-            border: '1px solid color-mix(in srgb, #10b981 30%, var(--border-color))',
-          }}>
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#10b981', animation: 'status-pulse 2s infinite', display: 'inline-block' }} />
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#10b981' }}>{settings.availability_status}</span>
-            {settings.availability_from && (
-              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>· from {new Date(settings.availability_from).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
-            )}
+      {/* Currently Working On Widget — only shown on desktop when set */}
+      {!isMobile && settings?.current_project && (
+        <div style={{
+          marginTop: 28, padding: '16px 20px', borderRadius: 18,
+          background: 'linear-gradient(135deg, color-mix(in srgb, #f59e0b 8%, var(--bg-secondary)), var(--bg-secondary))',
+          border: '1px solid color-mix(in srgb, #f59e0b 25%, var(--border-color))',
+          display: 'flex', alignItems: 'center', gap: 16, maxWidth: 700,
+        }}>
+          <div style={{ padding: 10, background: 'color-mix(in srgb, #f59e0b 15%, transparent)', borderRadius: 12, color: '#f59e0b', flexShrink: 0 }}>
+            <Zap size={20} />
           </div>
-        )}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 }}>Currently Building</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{settings.current_project}</div>
+            <div style={{ marginTop: 8, height: 4, background: 'var(--border-color)', borderRadius: 4, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${settings.current_project_pct ?? 0}%`, background: 'linear-gradient(90deg, #f59e0b, #ef4444)', borderRadius: 4, transition: 'width 0.6s ease' }} />
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>{settings.current_project_status} · {settings.current_project_pct ?? 0}% complete</div>
+          </div>
+        </div>
+      )}
 
-        {/* GitHub Activity Heatmap — Desktop only */}
-        {!isMobile && (
-          <div style={{ marginTop: 32 }}>
-            <GitHubActivity />
-          </div>
-        )}
+      {/* Availability Badge */}
+      {!isMobile && settings?.availability_status && settings.availability_status !== 'In a Role' && (
+        <div style={{
+          marginTop: 16, display: 'inline-flex', alignItems: 'center', gap: 8,
+          padding: '8px 16px', borderRadius: 999,
+          background: 'color-mix(in srgb, #10b981 10%, var(--bg-secondary))',
+          border: '1px solid color-mix(in srgb, #10b981 30%, var(--border-color))',
+        }}>
+          <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#10b981', animation: 'status-pulse 2s infinite', display: 'inline-block' }} />
+          <span style={{ fontSize: 13, fontWeight: 600, color: '#10b981' }}>{settings.availability_status}</span>
+          {settings.availability_from && (
+            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>· from {new Date(settings.availability_from).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+          )}
+        </div>
+      )}
+
+      {/* GitHub Activity Heatmap — Desktop only */}
+      {!isMobile && (
+        <div style={{ marginTop: 32 }}>
+          <GitHubActivity />
+        </div>
+      )}
 
     </ScrollReveal>
   );
