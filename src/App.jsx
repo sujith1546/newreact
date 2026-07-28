@@ -51,30 +51,33 @@ function AnimatedRoutes() {
   }, [location.pathname]);
 
   return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<DynamicMainLayout />}>
-          <Route index element={null} />
-          <Route path="home" element={null} />
-          <Route path="about" element={null} />
-          <Route path="skills" element={null} />
-          <Route path="projects" element={null} />
-          <Route path="blog" element={null} />
-          <Route path="education" element={null} />
-          <Route path="experience" element={null} />
-          <Route path="certifications" element={null} />
-          <Route path="contact" element={null} />
-        </Route>
-        <Route path="/resume-preview" element={<ResumePreview />} />
-        <Route path="/admin/login" element={<AdminLogin />} />
-        <Route element={<ProtectedRoute />}>
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/dashboard/:tab" element={<AdminDashboard />} />
-          <Route path="/admin/mfa-setup" element={<AdminMfaSetup />} />
-        </Route>
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </AnimatePresence>
+    <>
+      <SEOHelmet />
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={<DynamicMainLayout />}>
+            <Route index element={null} />
+            <Route path="home" element={null} />
+            <Route path="about" element={null} />
+            <Route path="skills" element={null} />
+            <Route path="projects" element={null} />
+            <Route path="blog" element={null} />
+            <Route path="education" element={null} />
+            <Route path="experience" element={null} />
+            <Route path="certifications" element={null} />
+            <Route path="contact" element={null} />
+          </Route>
+          <Route path="/resume-preview" element={<ResumePreview />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/dashboard/:tab" element={<AdminDashboard />} />
+            <Route path="/admin/mfa-setup" element={<AdminMfaSetup />} />
+          </Route>
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </AnimatePresence>
+    </>
   );
 }
 
@@ -149,7 +152,6 @@ function AppContent() {
       
       {showContent && (
         <>
-          <SEOHelmet />
           <AnnouncementBanner />
           <IslandProvider>
             <DynamicIsland />
