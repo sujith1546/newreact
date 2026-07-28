@@ -18,8 +18,9 @@ export function useMessages() {
 
     load();
 
+    const channelName = `messages_admin_${Math.random().toString(36).substring(7)}`;
     channel = supabase
-      .channel('messages_admin')
+      .channel(channelName)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_messages' }, (payload) => {
         setMessages((prev) => {
           if (payload.eventType === 'INSERT') return [payload.new, ...prev];
@@ -55,8 +56,9 @@ export function useUnreadCount() {
 
     load();
 
+    const channelName = `messages_unread_badge_${Math.random().toString(36).substring(7)}`;
     channel = supabase
-      .channel('messages_unread_badge')
+      .channel(channelName)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'contact_messages' }, load)
       .subscribe();
 

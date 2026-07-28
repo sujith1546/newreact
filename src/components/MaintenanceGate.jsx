@@ -46,8 +46,9 @@ export function useMaintenanceStatus() {
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
+    const channelName = `site_settings_maint_${Math.random().toString(36).substring(7)}`;
     channel = supabase
-      .channel('site_settings_maintenance')
+      .channel(channelName)
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'site_settings' },
