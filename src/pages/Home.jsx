@@ -563,7 +563,14 @@ export default function Home({ onNavClick }) {
       {/* Desktop grid view */}
       <div className="home-grid">
           <div className="hero-info">
-
+            {(settings === null || settings.is_available_for_hire) && (
+              <div className="fc-badge">
+                <div className="fc-badge-dot-wrap">
+                  <div className="fc-badge-dot" />
+                </div>
+                Available for Opportunities
+              </div>
+            )}
 
             <div>
               <div className="hero-greeting">{getGreeting()}</div>
@@ -624,7 +631,6 @@ export default function Home({ onNavClick }) {
             </div>
           </div>
         )}
-
 
 
         {/* GitHub Activity Heatmap — Desktop only */}

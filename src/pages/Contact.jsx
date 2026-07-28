@@ -817,21 +817,7 @@ END:VCARD`;
                 <p className="mc-page-sub">Have a question or want to work together?</p>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
-                {/* Availability badge */}
-                {settings?.availability_status && settings.availability_status !== 'In a Role' && (
-                  <div style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 7,
-                    padding: '5px 14px', borderRadius: 999,
-                    background: 'color-mix(in srgb, #10b981 10%, var(--bg-secondary))',
-                    border: '1px solid color-mix(in srgb, #10b981 30%, var(--border-color))',
-                  }}>
-                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#10b981', animation: 'status-pulse 2s infinite', display: 'inline-block' }} />
-                    <span style={{ fontSize: 12, fontWeight: 700, color: '#10b981' }}>{settings.availability_status}</span>
-                    {settings.availability_from && (
-                      <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>· from {new Date(settings.availability_from).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
-                    )}
-                  </div>
-                )}
+
                 {/* Compact chip — no longer a full-width button */}
                 <button className="mc-card-chip" onClick={() => setIsContactCardOpen(true)}>
                   <ContactIcon size={12} />
