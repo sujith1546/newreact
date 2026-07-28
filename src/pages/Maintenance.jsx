@@ -9,8 +9,9 @@ export default function Maintenance({ status: propStatus }) {
   const [now, setNow] = useState(Date.now());
   const [reloadScheduled, setReloadScheduled] = useState(false);
 
-  // Time tracking
+  // Time tracking & Document Title
   useEffect(() => {
+    document.title = "Site Maintenance | Sujith Thota";
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);

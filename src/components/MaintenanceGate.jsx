@@ -186,6 +186,21 @@ export function MaintenanceGate({ children }) {
   // IMPORTANT: Always allow access to admin routes so the login page isn't blocked!
   const isAdminRoute = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
 
+  useEffect(() => {
+    if (status.loading || session === undefined || typeof window === 'undefined') return;
+
+    const isMaintRoute = window.location.pathname === '/maintenance';
+    const isCurrentAdminRoute = window.location.pathname.startsWith('/admin');
+
+    if (status.enabled && !isAdmin && !hasBypassToken && !isCurrentAdminRoute) {
+      if (!isMaintRoute) {
+        window.history.replaceState(null, '', '/maintenance');
+      }
+    } else if (!status.enabled && isMaintRoute) {
+      window.history.replaceState(null, '', '/home');
+    }
+  }, [status.enabled, status.loading, session, isAdmin, hasBypassToken]);
+
   if (status.loading || session === undefined) return null; // avoid a flash of the wrong screen
 
   if (status.enabled && !isAdmin && !hasBypassToken && !isAdminRoute) {
