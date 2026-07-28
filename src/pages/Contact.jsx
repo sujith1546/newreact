@@ -379,17 +379,17 @@ END:VCARD`;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            align-items: center;
-            height: calc(100vh - 80px);
+            height: calc(100vh - 40px);
+            margin: 20px auto 0;
             overflow: hidden;
           }
-          .contact-plain-header { width: 100%; text-align: left; }
+          .contact-plain-header { width: 100%; text-align: left; flex-shrink: 0; }
           .fc-wrapper {
-            flex: none;
+            flex: 1;
+            min-height: 0;
+            max-height: 740px;
             grid-template-columns: 1fr 1.3fr;
             width: 100%;
-            height: 100%;
-            max-height: 760px;
           }
         }
 
@@ -404,7 +404,7 @@ END:VCARD`;
         .fc-right-col { display: flex; flex-direction: column; min-width: 0; background: #222222; justify-content: space-between; }
         .fc-info-panel {
           background: #0a0a0a;
-          padding: 1.5rem 2.5rem; color: #fff;
+          padding: 2rem 2.5rem; color: #fff;
           display: flex; flex-direction: column; justify-content: space-between;
           position: relative; overflow: hidden;
         }
@@ -526,8 +526,8 @@ END:VCARD`;
 
         /* ===== COMPACT LAPTOP FIX (Max Height 850px) ===== */
         @media (min-width: 901px) and (max-height: 850px) {
-          .contact-page-wrap { max-width: 1000px; height: calc(100vh - 80px); overflow: hidden; }
-          .fc-info-panel, .fc-form-panel { padding: 1rem 1.5rem; }
+          .contact-page-wrap { max-width: 1000px; height: calc(100vh - 40px); }
+          .fc-info-panel, .fc-form-panel { padding: 1.25rem 1.5rem; }
           .fc-title { font-size: 22px; margin: 0 0 4px; }
           .fc-subtitle { font-size: 13px; margin: 0 0 8px; }
           .fc-terminal-line { margin: 0 0 8px 0; padding: 4px 10px; font-size: 11px; }
