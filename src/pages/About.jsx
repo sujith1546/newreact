@@ -66,7 +66,16 @@ export default function About() {
           width: 100%;
           display: flex;
           flex-direction: column;
-          gap: 10px;
+          gap: 12px;
+        }
+
+        @media (min-width: 901px) {
+          .about-page {
+            height: calc(100vh - 120px);
+            justify-content: space-between;
+            overflow: hidden;
+            gap: 0;
+          }
         }
 
         /* Header */
@@ -74,13 +83,13 @@ export default function About() {
           margin-bottom: 0px;
         }
         .about-header h1 {
-          font-size: 22px;
+          font-size: 26px;
           font-weight: 700;
           color: var(--text-primary);
-          margin: 0 0 1px;
+          margin: 0 0 3px;
         }
         .about-header p {
-          font-size: 12px;
+          font-size: 13px;
           color: var(--text-secondary);
           margin: 0;
         }
@@ -89,13 +98,14 @@ export default function About() {
         .about-bio-card {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
-          border-radius: 12px;
-          padding: 12px 16px;
+          border-radius: 14px;
+          padding: 14px 20px;
           display: flex;
           align-items: flex-start;
-          gap: 14px;
+          gap: 16px;
           box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
         }
+
 
         .about-bio-avatar {
           width: 48px;
@@ -165,13 +175,14 @@ export default function About() {
         .career-path-card {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
-          border-radius: 12px;
-          padding: 10px 16px;
+          border-radius: 14px;
+          padding: 14px 20px;
           display: flex;
           flex-direction: column;
-          gap: 6px;
+          gap: 8px;
           box-shadow: 0 2px 10px rgba(0,0,0,0.02);
         }
+
 
 
         .career-path-header {
@@ -310,12 +321,12 @@ export default function About() {
         .stats-section-wrapper {
           display: flex;
           flex-direction: column;
-          gap: 6px;
+          gap: 8px;
         }
 
         /* Section Titles */
         .about-section-title {
-          font-size: 13.5px;
+          font-size: 14px;
           font-weight: 700;
           color: var(--text-primary);
           margin: 0;
@@ -324,8 +335,8 @@ export default function About() {
           gap: 6px;
         }
         .title-icon-badge {
-          width: 22px;
-          height: 22px;
+          width: 24px;
+          height: 24px;
           border-radius: 6px;
           background: color-mix(in srgb, var(--primary-blue) 12%, transparent);
           color: var(--primary-blue);
@@ -338,18 +349,18 @@ export default function About() {
         .stats-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          gap: 8px;
+          gap: 10px;
         }
         .stat-card {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
-          border-radius: 10px;
-          padding: 8px 12px;
+          border-radius: 12px;
+          padding: 10px 14px;
           display: flex;
           flex-direction: column;
           align-items: center;
           text-align: center;
-          gap: 2px;
+          gap: 3px;
           transition: transform 0.2s, box-shadow 0.2s;
         }
         .stat-card:hover {
@@ -357,13 +368,13 @@ export default function About() {
           box-shadow: 0 4px 14px rgba(0,0,0,0.03);
         }
         .stat-value {
-          font-size: 16.5px;
+          font-size: 17.5px;
           font-weight: 700;
           color: var(--text-primary);
           margin: 0;
         }
         .stat-label {
-          font-size: 10.5px;
+          font-size: 11px;
           font-weight: 500;
           color: var(--text-secondary);
           margin: 0;
@@ -373,14 +384,15 @@ export default function About() {
         .cta-section {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
-          border-radius: 12px;
-          padding: 12px 16px;
+          border-radius: 14px;
+          padding: 14px 20px;
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 10px;
           margin-top: 0px;
           box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
         }
+
 
 
         .cta-top-row {
