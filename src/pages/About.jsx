@@ -92,41 +92,44 @@ export default function About() {
           margin: 0;
         }
 
-        /* Redesigned Bio Card */
+        /* Unified Bio Card */
         .about-bio-card {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
-          border-radius: 16px;
-          padding: 20px 24px;
+          border-radius: 20px;
+          padding: 24px 28px;
           display: flex;
-          align-items: center;
-          gap: 20px;
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
+          align-items: flex-start;
+          gap: 22px;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
         }
         .about-bio-avatar {
-          width: 60px;
-          height: 60px;
+          width: 64px;
+          height: 64px;
           border-radius: 50%;
           object-fit: cover;
-          border: 2px solid var(--primary-blue);
-          box-shadow: 0 0 12px color-mix(in srgb, var(--primary-blue) 30%, transparent);
+          border: 2px solid var(--border-color);
+          box-shadow: 0 0 16px color-mix(in srgb, var(--primary-blue) 25%, transparent);
           flex-shrink: 0;
+          margin-top: 2px;
         }
         .about-bio-content {
           display: flex;
           flex-direction: column;
-          gap: 6px;
+          gap: 10px;
+          flex: 1;
         }
         .about-bio-title {
-          font-size: 16px;
+          font-size: 17px;
           font-weight: 700;
           color: var(--text-primary);
           margin: 0;
-          line-height: 1.3;
+          line-height: 1.35;
+          letter-spacing: -0.2px;
         }
         .about-bio-title span {
-          color: var(--primary-blue);
-          font-weight: 600;
+          color: var(--text-secondary);
+          font-weight: 500;
         }
         .about-bio-text {
           font-size: 13.5px;
@@ -135,34 +138,35 @@ export default function About() {
           margin: 0;
         }
 
-        /* Unified Contact Links */
+        /* Unified Contact Links inside card */
         .contact-row {
           display: flex;
           gap: 10px;
           flex-wrap: wrap;
+          margin-top: 6px;
         }
         .contact-chip {
           display: inline-flex;
           align-items: center;
           gap: 8px;
-          font-size: 13px;
-          font-weight: 500;
+          font-size: 12.5px;
+          font-weight: 600;
           color: var(--text-secondary);
-          background: var(--bg-secondary);
+          background: var(--bg-primary);
           border: 1px solid var(--border-color);
-          padding: 8px 16px;
-          border-radius: 999px;
+          padding: 7px 16px;
+          border-radius: 12px;
           text-decoration: none;
           transition: all 0.2s ease;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
         }
         .contact-chip:hover {
-          background: var(--bg-primary);
+          background: var(--bg-secondary);
           color: var(--primary-blue);
           border-color: var(--primary-blue);
           transform: translateY(-2px);
-          box-shadow: 0 4px 12px color-mix(in srgb, var(--primary-blue) 20%, transparent);
+          box-shadow: 0 4px 12px color-mix(in srgb, var(--primary-blue) 25%, transparent);
         }
+
 
         /* Horizontal Career Path Timeline */
         .career-path-card {
@@ -511,33 +515,31 @@ export default function About() {
           <p>Passionate developer crafting intelligent digital experiences</p>
         </motion.div>
 
-        {/* Intro / Bio Card */}
+        {/* Intro / Bio Card with Integrated Contact Chips */}
         <motion.div className="about-bio-card" variants={itemVariants}>
           <img src="/profile_photo.png" alt="Thota Sujith Reddy" className="about-bio-avatar" />
           <div className="about-bio-content">
             <h2 className="about-bio-title">
-              Thota Sujith Reddy — <span>B.Tech Computer Science at VIT Vellore (8.7 CGPA)</span>
+              Hi, I'm Sujith — <span>a B.Tech student at VIT Vellore (8.7 CGPA) specializing in Data Science.</span>
             </h2>
             <p className="about-bio-text">
-              Currently pursuing Computer Science &amp; Engineering with a specialization in <strong>Data Science</strong>. 
-              I bridge the gap between complex backend data structures and sleek, responsive frontend user interfaces, 
-              striving to build applications that are as intelligent as they are beautiful.
+              Currently pursuing Computer Science &amp; Engineering with a specialization in Data Science. 
+              I bridge complex backend data structures with sleek, responsive interfaces — building applications that are as intelligent as they are beautiful.
             </p>
+            <div className="contact-row">
+              <a href="mailto:sujithreddy1546@gmail.com" className="contact-chip">
+                <Mail size={14} /> Email
+              </a>
+              <a href="https://linkedin.com/in/thota-sujith-reddy" target="_blank" rel="noreferrer" className="contact-chip">
+                <FaLinkedin size={14} /> LinkedIn
+              </a>
+              <a href="https://github.com/sujith1546" target="_blank" rel="noreferrer" className="contact-chip">
+                <FaGithub size={14} /> GitHub
+              </a>
+            </div>
           </div>
         </motion.div>
 
-        {/* Contact Links (Unified Chips) */}
-        <motion.div className="contact-row" variants={itemVariants}>
-          <a href="mailto:sujithreddy1546@gmail.com" className="contact-chip">
-            <Mail size={15} /> sujithreddy1546@gmail.com
-          </a>
-          <a href="https://linkedin.com/in/thota-sujith-reddy" target="_blank" rel="noreferrer" className="contact-chip">
-            <FaLinkedin size={15} /> LinkedIn
-          </a>
-          <a href="https://github.com/sujith1546" target="_blank" rel="noreferrer" className="contact-chip">
-            <FaGithub size={15} /> GitHub
-          </a>
-        </motion.div>
 
         {/* Horizontal Career Path Timeline */}
         <motion.div className="career-path-card" variants={itemVariants}>
