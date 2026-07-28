@@ -402,8 +402,8 @@ export default function SystemDiagnostics({ open, onClose }) {
               display: grid;
               grid-template-columns: 1fr 1fr;
               gap: 10px;
-              margin-bottom: 14px;
             }
+
 
             .sd-card {
               border: 1px solid var(--border-color);
@@ -621,16 +621,8 @@ export default function SystemDiagnostics({ open, onClose }) {
                     </p>
                   </InfoCard>
                 </div>
-
-                <motion.button
-                  variants={cardAnim}
-                  className="sd-cta-btn"
-                  onClick={() => window.open(REPO_URL, "_blank")}
-                >
-                  Inspect source code
-                  <IconArrowRight size={15} stroke={2.2} />
-                </motion.button>
               </div>
+
             </motion.div>
           </motion.div>
         </motion.div>
