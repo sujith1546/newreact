@@ -2,20 +2,13 @@ import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Coffee, BookOpen, Dumbbell, Compass, Gamepad2, Mail, 
-  Terminal, Layers, Target, Award, Download, ArrowRight, 
-  BarChart2, Loader2, CheckCircle, MapPin, GraduationCap, Briefcase
+  Mail, Terminal, Layers, Target, Award, Download, ArrowRight, 
+  BarChart2, Loader2, CheckCircle, GraduationCap
 } from 'lucide-react';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { ScrollReveal } from '../components';
 import Testimonials from '../components/portfolio/Testimonials';
 
-const HOBBIES = [
-  { label: 'Strategic Thinking', value: 'Chess Enthusiast', icon: Gamepad2 },
-  { label: 'Continuous Learning', value: 'Avid Reader', icon: BookOpen },
-  { label: 'Physical Health', value: 'Fitness & Sports', icon: Dumbbell },
-  { label: 'Exploration', value: 'Traveling', icon: Compass }
-];
 
 const TIMELINE_NODES = [
   { id: 'gudivada', label: 'Gudivada', sub: 'Schooling', tooltip: 'Early Schooling & Foundations' },
@@ -568,31 +561,7 @@ export default function About() {
           </div>
         </motion.div>
 
-        {/* Hobbies Section Title */}
-        <motion.h2 className="about-section-title" variants={itemVariants}>
-          <div className="title-icon-badge">
-            <Coffee size={16} />
-          </div>
-          Beyond the Code
-        </motion.h2>
 
-        {/* Hobbies Grid */}
-        <motion.div className="hobbies-grid" variants={containerVariants}>
-          {HOBBIES.map(hobby => {
-            const Icon = hobby.icon;
-            return (
-              <motion.div key={hobby.label} className="hobby-card" variants={itemVariants}>
-                <div className="hobby-icon">
-                  <Icon size={19} strokeWidth={2} />
-                </div>
-                <div className="hobby-info">
-                  <p className="hobby-value">{hobby.value}</p>
-                  <p className="hobby-label">{hobby.label}</p>
-                </div>
-              </motion.div>
-            );
-          })}
-        </motion.div>
 
         {/* Stats Title */}
         <motion.h2 className="about-section-title" variants={itemVariants}>
