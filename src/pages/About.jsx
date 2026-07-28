@@ -66,7 +66,7 @@ export default function About() {
           width: 100%;
           display: flex;
           flex-direction: column;
-          gap: 16px;
+          gap: 10px;
         }
 
         /* Header */
@@ -74,13 +74,13 @@ export default function About() {
           margin-bottom: 0px;
         }
         .about-header h1 {
-          font-size: 24px;
+          font-size: 22px;
           font-weight: 700;
           color: var(--text-primary);
-          margin: 0 0 2px;
+          margin: 0 0 1px;
         }
         .about-header p {
-          font-size: 12.5px;
+          font-size: 12px;
           color: var(--text-secondary);
           margin: 0;
         }
@@ -89,24 +89,25 @@ export default function About() {
         .about-bio-card {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
-          border-radius: 14px;
-          padding: 18px 22px;
+          border-radius: 12px;
+          padding: 12px 16px;
           display: flex;
           align-items: flex-start;
-          gap: 16px;
+          gap: 14px;
           box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
         }
 
         .about-bio-avatar {
-          width: 52px;
-          height: 52px;
+          width: 48px;
+          height: 48px;
           border-radius: 50%;
           object-fit: cover;
           border: 2px solid var(--border-color);
-          box-shadow: 0 0 12px color-mix(in srgb, var(--primary-blue) 25%, transparent);
+          box-shadow: 0 0 10px color-mix(in srgb, var(--primary-blue) 25%, transparent);
           flex-shrink: 0;
           margin-top: 2px;
         }
+
         .about-bio-content {
           display: flex;
           flex-direction: column;
@@ -164,13 +165,14 @@ export default function About() {
         .career-path-card {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
-          border-radius: 14px;
-          padding: 18px 22px;
+          border-radius: 12px;
+          padding: 10px 16px;
           display: flex;
           flex-direction: column;
-          gap: 10px;
+          gap: 6px;
           box-shadow: 0 2px 10px rgba(0,0,0,0.02);
         }
+
 
         .career-path-header {
           display: flex;
@@ -308,12 +310,12 @@ export default function About() {
         .stats-section-wrapper {
           display: flex;
           flex-direction: column;
-          gap: 10px;
+          gap: 6px;
         }
 
         /* Section Titles */
         .about-section-title {
-          font-size: 14px;
+          font-size: 13.5px;
           font-weight: 700;
           color: var(--text-primary);
           margin: 0;
@@ -322,8 +324,8 @@ export default function About() {
           gap: 6px;
         }
         .title-icon-badge {
-          width: 24px;
-          height: 24px;
+          width: 22px;
+          height: 22px;
           border-radius: 6px;
           background: color-mix(in srgb, var(--primary-blue) 12%, transparent);
           color: var(--primary-blue);
@@ -336,18 +338,18 @@ export default function About() {
         .stats-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          gap: 10px;
+          gap: 8px;
         }
         .stat-card {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
-          border-radius: 12px;
-          padding: 12px 14px;
+          border-radius: 10px;
+          padding: 8px 12px;
           display: flex;
           flex-direction: column;
           align-items: center;
           text-align: center;
-          gap: 4px;
+          gap: 2px;
           transition: transform 0.2s, box-shadow 0.2s;
         }
         .stat-card:hover {
@@ -355,13 +357,13 @@ export default function About() {
           box-shadow: 0 4px 14px rgba(0,0,0,0.03);
         }
         .stat-value {
-          font-size: 18px;
+          font-size: 16.5px;
           font-weight: 700;
           color: var(--text-primary);
           margin: 0;
         }
         .stat-label {
-          font-size: 11px;
+          font-size: 10.5px;
           font-weight: 500;
           color: var(--text-secondary);
           margin: 0;
@@ -371,14 +373,15 @@ export default function About() {
         .cta-section {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
-          border-radius: 14px;
-          padding: 18px 22px;
+          border-radius: 12px;
+          padding: 12px 16px;
           display: flex;
           flex-direction: column;
-          gap: 14px;
+          gap: 8px;
           margin-top: 0px;
           box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
         }
+
 
         .cta-top-row {
           display: flex;
@@ -527,20 +530,21 @@ export default function About() {
           transform: translateY(-2px);
         }
 
+        @media (min-width: 901px) {
+          .about-testimonials-container {
+            display: none;
+          }
+        }
+
         /* Responsive */
         @media (max-width: 900px) {
-          .hobbies-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-          .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-          .cta-section { flex-direction: column; text-align: center; gap: 16px; padding: 20px; }
-          .cta-text p { max-width: 100%; }
+          .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+          .cta-section { padding: 14px; gap: 10px; }
           .about-bio-card { flex-direction: column; text-align: center; align-items: center; }
           .timeline-nodes-row { overflow-x: auto; padding-bottom: 8px; }
           .timeline-line { display: none; }
         }
 
-        @media (max-width: 600px) {
-          .hobbies-grid { grid-template-columns: 1fr; }
-        }
       `}</style>
 
       <motion.div 
@@ -732,9 +736,10 @@ export default function About() {
         )}
 
         {/* Testimonials Section */}
-        <div style={{ marginTop: 8 }}>
+        <div className="about-testimonials-container">
           <Testimonials />
         </div>
+
 
       </motion.div>
     </ScrollReveal>
