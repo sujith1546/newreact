@@ -54,10 +54,10 @@ function ProgressRing({ percent, color, size = 80 }) {
 }
 
 function SkillsRadarChart({ categories }) {
-  const SIZE = 440;
+  const SIZE = 340;
   const CX = SIZE / 2;
   const CY = SIZE / 2;
-  const R = 160;
+  const R = 120;
   const LEVELS = 5;
   const n = categories.length;
   if (n < 3) return null;
@@ -127,7 +127,7 @@ function SkillsRadarChart({ categories }) {
         {/* Category labels */}
         {categories.map((cat, i) => {
           const angle = i * angleStep;
-          const labelR = R + 34;
+          const labelR = R + 28;
           const p = getPoint(angle, labelR);
           const isLeft = p.x < CX - 10;
           const isRight = p.x > CX + 10;
@@ -280,56 +280,54 @@ export default function Skills() {
           width: 100%;
           display: flex;
           flex-direction: column;
-          gap: 24px;
+          gap: 12px;
         }
-        .skills-header { margin-bottom: 4px; }
+        .skills-header { margin-bottom: 0px; }
         .skills-header h1 {
-          font-size: 28px; font-weight: 700;
-          color: var(--text-primary); margin: 0 0 5px;
+          font-size: 26px; font-weight: 700;
+          color: var(--text-primary); margin: 0 0 3px;
         }
         .skills-header p {
-          font-size: 13.5px; color: var(--text-secondary); margin: 0;
+          font-size: 13px; color: var(--text-secondary); margin: 0;
         }
 
         /* ============ DESKTOP GRID (unchanged) ============ */
         .skills-grid {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
-          gap: 20px;
+          gap: 12px;
         }
         .skill-category-card {
           background: var(--bg-secondary);
-          border: 1px solid #e5e7eb;
-          border-radius: 16px; padding: 24px;
+          border: 1px solid var(--border-color);
+          border-radius: 14px; padding: 14px 18px;
           box-shadow: 0 2px 10px rgba(0,0,0,0.02);
           transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
           display: flex; flex-direction: column;
         }
         .skill-category-card:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 8px 24px rgba(0,0,0,0.06);
-          border-color: #d1d5db;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(0,0,0,0.05);
         }
-        .skill-category-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+        .skill-category-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
         .skill-category-icon {
-          width: 44px; height: 44px; border-radius: 12px;
-          background: #f3f4f6; color: #111827;
+          width: 36px; height: 36px; border-radius: 10px;
+          background: var(--bg-primary); color: var(--text-primary);
           display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
-        .skill-category-title { font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0; }
-        .skill-pills { display: flex; flex-wrap: wrap; gap: 10px; }
+        .skill-category-title { font-size: 14.5px; font-weight: 700; color: var(--text-primary); margin: 0; }
+        .skill-pills { display: flex; flex-wrap: wrap; gap: 8px; }
         .skill-pill {
-          display: inline-block; font-size: 12px; font-weight: 600;
-          background: #f9fafb; color: #4b5563;
-          border: 1px solid #e5e7eb; padding: 6px 14px;
+          display: inline-block; font-size: 11.5px; font-weight: 600;
+          background: var(--bg-primary); color: var(--text-secondary);
+          border: 1px solid var(--border-color); padding: 4px 12px;
           border-radius: 999px; transition: all .2s ease; cursor: crosshair;
         }
-        .skill-pill:hover { background: #111827; color: #fff; border-color: #111827; }
-        [data-theme="dark"] .skill-category-card { border-color: #374151; }
-        [data-theme="dark"] .skill-category-card:hover { border-color: #4b5563; }
-        [data-theme="dark"] .skill-category-icon { background: #374151; color: #f3f4f6; }
-        [data-theme="dark"] .skill-pill { background: rgba(255,255,255,.03); color: #d1d5db; border-color: #374151; }
-        [data-theme="dark"] .skill-pill:hover { background: #f3f4f6; color: #111827; border-color: #f3f4f6; }
+        .skill-pill:hover { background: var(--text-primary); color: var(--bg-primary); border-color: var(--text-primary); }
+        [data-theme="dark"] .skill-category-card { border-color: var(--border-color); }
+        [data-theme="dark"] .skill-category-icon { background: var(--bg-primary); color: var(--text-primary); }
+        [data-theme="dark"] .skill-pill { background: var(--bg-primary); color: var(--text-secondary); border-color: var(--border-color); }
+        [data-theme="dark"] .skill-pill:hover { background: var(--text-primary); color: var(--bg-primary); border-color: var(--text-primary); }
 
         /* ============ MOBILE — category card grid ============ */
         @media (max-width: 900px) {
@@ -610,10 +608,10 @@ export default function Skills() {
               display: 'flex', 
               justifyContent: 'space-between', 
               alignItems: 'center', 
-              marginTop: '16px', 
-              marginBottom: '28px',
+              marginTop: '8px', 
+              marginBottom: '14px',
               flexWrap: 'wrap',
-              gap: '12px'
+              gap: '8px'
             }}
           >
             <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
