@@ -114,8 +114,20 @@ export default function GitHubActivity({ isDark = false }) {
     >
       <style>{`
         @keyframes shimmer { 0% { background-position: 100% 0 } 100% { background-position: -100% 0 } }
-        .gh-cell { border-radius: 3px; cursor: default; transition: transform 0.1s; }
-        .gh-cell:hover { transform: scale(1.3); z-index: 1; position: relative; }
+        .gh-cell {
+          width: 12px;
+          height: 12px;
+          border-radius: 3px;
+          cursor: pointer;
+          position: relative;
+          z-index: 1;
+          transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s ease;
+        }
+        .gh-cell:hover {
+          transform: scale(1.25);
+          z-index: 10;
+          box-shadow: 0 0 0 1.5px var(--primary-blue);
+        }
       `}</style>
 
       {/* Header */}
@@ -144,9 +156,10 @@ export default function GitHubActivity({ isDark = false }) {
       </div>
 
       {/* Heatmap */}
-      <div style={{ overflowX: 'auto' }}>
+      <div style={{ overflowX: 'auto', padding: '6px 4px', margin: '-4px' }}>
         {/* Month labels */}
         <div style={{ display: 'flex', gap: 3, marginBottom: 4, paddingLeft: 16 }}>
+
           {weeks.map((_, w) => (
             <div key={w} style={{ width: 12, fontSize: 9, color: 'var(--text-muted)', flexShrink: 0, fontWeight: 500 }}>
               {monthLabels[w]}
@@ -168,7 +181,7 @@ export default function GitHubActivity({ isDark = false }) {
                   key={d}
                   className="gh-cell"
                   title={`${count} contribution${count !== 1 ? 's' : ''}`}
-                  style={{ width: 12, height: 12, background: getColor(count, isDark), borderRadius: 3 }}
+                  style={{ background: getColor(count, isDark) }}
                 />
               ))}
             </div>
