@@ -20,6 +20,8 @@ import { supabase } from './lib/supabaseClient';
 import { PersonaProvider } from "./context/PersonaContext";
 import { prefetchTable } from "./hooks/useRealtimeData";
 
+import PWAInstallPrompt from './components/widgets/PWAInstallPrompt';
+
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 const AdminLogin = React.lazy(() => import('./pages/AdminLogin'));
 const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
@@ -156,6 +158,7 @@ function AppContent() {
           <IslandProvider>
             <DynamicIsland />
             <DevToolsDetector />
+            <PWAInstallPrompt />
             <BrowserRouter>
               <Suspense fallback={<Loader />}>
                 <MaintenanceGate>

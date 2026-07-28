@@ -59,6 +59,8 @@ const NAV_ITEMS_DEF = [
   { label: 'CONTACT', id: 'contact' },
 ];
 
+import LivePresenceBadge from '../widgets/LivePresenceBadge';
+
 export default function Sidebar({ activeSection, onNavClick }) {
   const { data: dbSettings } = useRealtimeData('site_settings', { single: true, filter: { column: 'id', value: 1 } });
   const { getSectionOrder } = usePersona();
@@ -218,6 +220,10 @@ export default function Sidebar({ activeSection, onNavClick }) {
         <MapPin size={13} />
         Vellore, India · {localTime}
       </p>
+
+      <div style={{ marginTop: '6px', marginBottom: '4px', display: 'flex', justifyContent: 'center' }}>
+        <LivePresenceBadge />
+      </div>
 
       <ul>
         {NAV_ITEMS.map(({ label, id }) => (

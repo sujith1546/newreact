@@ -4,10 +4,42 @@ import { VitePWA } from 'vite-plugin-pwa';
 export default defineConfig({
   plugins: [
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       injectRegister: 'auto',
       devOptions: {
         enabled: true
+      },
+      workbox: {
+        navigateFallback: '/offline.html',
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB limit
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,jpg}'],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/.*(supabase|api).*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'api-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 // 1 day
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'image-cache',
+              expiration: {
+                maxEntries: 60,
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+              }
+            }
+          }
+        ]
       },
       manifest: {
         name: 'Sujith Thota Portfolio',
@@ -16,17 +48,24 @@ export default defineConfig({
         theme_color: '#0b0d10',
         background_color: '#0b0d10',
         display: 'standalone',
+        start_url: '/',
         orientation: 'portrait',
         icons: [
           {
-            src: '/profile_photo.png',
+            src: '/icons/icon-192x192.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: '/profile_photo.png',
+            src: '/icons/icon-512x512.png',
             sizes: '512x512',
             type: 'image/png'
+          },
+          {
+            src: '/icons/maskable-icon-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable'
           }
         ]
       }

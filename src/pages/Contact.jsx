@@ -1,13 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence, useAnimation, useMotionValue, useTransform } from "framer-motion";
-import { Mail, Phone, ArrowRight, Check, CheckCircle, Loader2, Send, Copy, ChevronRight, ChevronDown, MapPin, Clock, FileText, X, Contact as ContactIcon, ChevronLeft, Calendar, Download, HelpCircle, Globe, User } from "lucide-react";
-import { FaGithub, FaLinkedin, FaInstagram, FaWhatsapp } from "react-icons/fa";
+import { Mail, Phone, ArrowRight, Check, Loader2, Send, Copy, ChevronRight, MapPin, Clock, FileText, X, Contact as ContactIcon, ChevronLeft, Calendar } from "lucide-react";
+import { FaGithub, FaLinkedin } from "react-icons/fa";
 import { ScrollReveal } from '../components';
 import { useIsland } from '../context/IslandContext';
 import { supabase } from '../lib/supabaseClient';
 import useRealtimeData from '../hooks/useRealtimeData';
-
 const getSessionToken = () => {
   if (typeof window === 'undefined') return '';
   let token = sessionStorage.getItem('x-portfolio-session');
@@ -36,7 +35,7 @@ const SwipeToSend = ({ onSend, status, isFormValid, triggerValidation }) => {
     const knobWidth = 44;
     const padding = 12; // 6px each side
     const maxDrag = containerWidth - knobWidth - padding;
-
+    
     if (info.offset.x >= maxDrag * 0.75) {
       if (!isFormValid) {
         controls.start({ x: 0, transition: { type: 'spring', stiffness: 400, damping: 15 } });
@@ -62,8 +61,8 @@ const SwipeToSend = ({ onSend, status, isFormValid, triggerValidation }) => {
   const textOpacity = useTransform(x, [0, 120], [1, 0]);
 
   return (
-    <div
-      className="swipe-send-container"
+    <div 
+      className="swipe-send-container" 
       ref={containerRef}
       onTouchStart={(e) => e.stopPropagation()}
       onTouchMove={(e) => e.stopPropagation()}
@@ -113,7 +112,7 @@ export default function Contact() {
       vx: (Math.random() - 0.5) * 6,
       vy: Math.random() * 4 + 2,
       size: Math.random() * 8 + 4,
-      color: ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#ec4899'][Math.floor(Math.random() * 6)],
+      color: ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444','#ec4899'][Math.floor(Math.random() * 6)],
       rotation: Math.random() * 360,
       vr: (Math.random() - 0.5) * 10,
     }));
@@ -145,43 +144,6 @@ export default function Contact() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
   const [emailCopied, setEmailCopied] = useState(false);
   const [isContactCardOpen, setIsContactCardOpen] = useState(false);
-  const [localTime, setLocalTime] = useState("");
-  const [openFaq, setOpenFaq] = useState(null);
-
-  useEffect(() => {
-    const updateTime = () => {
-      const now = new Date();
-      const options = { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
-      setLocalTime(now.toLocaleTimeString('en-US', options));
-    };
-    updateTime();
-    const timer = setInterval(updateTime, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const toggleFaq = (index) => {
-    setOpenFaq(prev => (prev === index ? null : index));
-  };
-
-  const handleDownloadClick = (e) => {
-    e.preventDefault();
-    triggerIsland({
-      title: 'Downloading Resume',
-      subtitle: 'PDF formatting in progress...',
-      icon: <Download size={18} />,
-      color: '#3b82f6',
-      duration: 3000
-    });
-    setTimeout(() => {
-      const link = document.createElement('a');
-      link.href = '/resume.pdf';
-      link.download = 'Thota_Sujith_Reddy_Resume.pdf';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }, 800);
-  };
-
 
   const handleSaveContact = () => {
     const vCard = `BEGIN:VCARD
@@ -203,7 +165,7 @@ END:VCARD`;
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-
+    
     triggerIsland({
       title: 'Contact Saved',
       subtitle: 'vCard downloaded successfully',
@@ -221,11 +183,11 @@ END:VCARD`;
 
   const validateField = (name, value) => {
     let error = "";
-
+    
     // 1. Basic empty check
     if (!value.trim()) {
       error = `${name.charAt(0).toUpperCase() + name.slice(1)} is required.`;
-    }
+    } 
     // 2. Length limits (anti-spam)
     else if (name === "name" && value.length > 60) {
       error = "Name is too long (max 60 chars).";
@@ -260,7 +222,7 @@ END:VCARD`;
 
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
-
+    
     // HONEYPOT TRAP
     if (form._catch) {
       // Bot detected! Submit it to the API to silently swallow and log it
@@ -278,7 +240,7 @@ END:VCARD`;
       } catch (e) {
         // Silently fail
       }
-
+      
       setStatus("sent");
       triggerIsland({
         title: 'Security Alert',
@@ -289,7 +251,7 @@ END:VCARD`;
       setTimeout(() => { setStatus("idle"); setForm({ name: "", email: "", message: "", _catch: "" }); }, 3000);
       return;
     }
-
+    
     // Validate all fields using the updated robust validator
     let hasErrors = false;
     const newErrors = {};
@@ -303,9 +265,9 @@ END:VCARD`;
     });
 
     setTouched({ name: true, email: true, message: true });
-    if (hasErrors) {
-      setErrors(prev => ({ ...prev, ...newErrors }));
-      return;
+    if (hasErrors) { 
+      setErrors(prev => ({ ...prev, ...newErrors })); 
+      return; 
     }
 
     // Client-side Rate Limiting (prevent spamming API)
@@ -316,7 +278,7 @@ END:VCARD`;
     }
 
     setStatus("sending");
-
+    
     try {
       // Send to backend API for robust processing (rate-limit, spam score, email, DB insert)
       const res = await fetch('/api/contact', {
@@ -351,7 +313,7 @@ END:VCARD`;
       setForm({ name: "", email: "", message: "", _catch: "" });
       setTouched({ name: false, email: false, message: false });
       setTimeout(() => setStatus("idle"), 5000);
-
+      
     } catch (err) {
       console.error(err);
       setStatus("idle");
@@ -369,194 +331,58 @@ END:VCARD`;
     <ScrollReveal>
       <style>{`
         /* ===== SHARED ===== */
-        .contact-page-wrap { width: 100%; max-width: 1100px; box-sizing: border-box; }
-        .contact-plain-header { margin-bottom: 32px; width: 100%; text-align: left; flex-shrink: 0; }
-        .contact-plain-header h1 { font-size: 28px; font-weight: 700; color: var(--text-primary); margin: 0 0 8px 0; }
-        .contact-plain-header p { font-size: 14.5px; color: var(--text-secondary); margin: 0; line-height: 1.5; }
-
-        @media (min-width: 901px) {
-          .contact-page-wrap {
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            height: calc(100vh - 120px);
-            margin: 0 auto;
-            overflow: hidden;
-          }
-          .fc-wrapper {
-            flex: 1;
-            min-height: 0;
-            max-height: 740px;
-            grid-template-columns: 1fr 1.3fr;
-            width: 100%;
-          }
-        }
+        .contact-page-wrap { width: 100%; max-width: 820px; box-sizing: border-box; }
+        .contact-plain-header { margin-bottom: 8px; }
+        .contact-plain-header h1 { font-size: 28px; font-weight: 700; color: var(--text-primary); margin: 0 0 6px; }
+        .contact-plain-header p { color: var(--text-secondary); margin: 0; font-size: 14.5px; }
 
         /* ===== DESKTOP ===== */
         .fc-wrapper {
           border-radius: 20px; overflow: hidden;
-          display: grid; grid-template-columns: 1fr 1.3fr;
-          border: 1px solid var(--border-color); width: 100%;
-          box-sizing: border-box;
-          box-shadow: 0 12px 40px rgba(0,0,0,0.04);
+          display: grid; grid-template-columns: 320px 1fr;
+          border: 1px solid #ececec; width: 100%;
+          box-sizing: border-box; min-height: 380px;
         }
-        .fc-right-col { display: flex; flex-direction: column; min-width: 0; background: #222222; justify-content: space-between; }
+        .fc-right-col { display: flex; flex-direction: column; min-width: 0; background: #fcfcfb; }
         .fc-info-panel {
-          background: #0a0a0a;
-          padding: 2rem 2.5rem; color: #fff;
+          background: linear-gradient(135deg, #0d0d0d, #1a1a1a);
+          padding: 2rem 1.75rem; color: #fff;
           display: flex; flex-direction: column; justify-content: space-between;
           position: relative; overflow: hidden;
         }
-        .fc-dotgrid { position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,0.06) 1.5px, transparent 1.5px); background-size: 22px 22px; pointer-events: none; }
-        .fc-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.15); border-radius: 999px; padding: 4px 12px; font-size: 12px; font-weight: 600; color: #e5e5e5; margin-bottom: 12px; width: fit-content; }
-        .fc-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #ffffff; box-shadow: 0 0 8px rgba(255,255,255,0.6); flex-shrink: 0; animation: pulseDot 2s infinite ease-in-out; }
-        .fc-title { font-size: 28px; font-weight: 700; line-height: 1.25; margin: 0 0 6px; color: #ffffff; }
-        .fc-subtitle { font-size: 15px; color: #a3a3a3; line-height: 1.5; margin: 0 0 12px; }
-        
-        .fc-terminal-line {
-          font-family: var(--font-mono, monospace);
-          font-size: 11px; color: #737373;
-          margin: 0 0 20px 0;
-          display: flex; align-items: center; gap: 6px;
-          background: transparent;
-          padding: 12px 0; border-radius: 0;
-          border: none;
-          border-top: 1px solid rgba(255,255,255,0.08);
-          border-bottom: 1px solid rgba(255,255,255,0.08);
-        }
-
-        .fc-info-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; border-radius: 8px; padding: 4px 8px; margin-left: -8px; transition: background 0.2s; text-decoration: none; }
+        .fc-dotgrid { position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,0.13) 1.2px, transparent 1.2px); background-size: 20px 20px; pointer-events: none; }
+        .fc-glow { position: absolute; top: -60px; right: -60px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.10), transparent 70%); pointer-events: none; }
+        .fc-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 999px; padding: 5px 12px; font-size: 11.5px; color: #ccc; margin-bottom: 20px; width: fit-content; }
+        .fc-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; flex-shrink: 0; }
+        .fc-title { font-size: 26px; font-weight: 700; line-height: 1.25; margin: 0 0 12px; color: #fff; }
+        .fc-subtitle { font-size: 13px; color: #aaa; line-height: 1.65; margin: 0 0 28px; }
+        .fc-info-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; border-radius: 8px; padding: 6px 8px; margin-left: -8px; transition: background 0.2s; text-decoration: none; }
         .fc-info-row:hover { background: rgba(255,255,255,0.06); }
-        .fc-info-row:hover .fc-info-text { color: #ffffff; }
-        .fc-info-icon { border: none; background: transparent; display: flex; align-items: center; justify-content: center; color: #e5e5e5; flex-shrink: 0; }
-        .fc-info-text { font-size: 14px; color: #ffffff; font-weight: 500; }
-        .fc-info-sub { font-size: 11.5px; color: #737373; margin-top: 2px; }
-
-        .fc-social-panel-row {
-          display: flex; gap: 10px; margin-top: 10px; padding-top: 10px;
-          border-top: 1px solid rgba(255,255,255,0.08);
-        }
-        .fc-social-chip {
-          width: 42px; height: 42px; border-radius: 8px;
-          background: transparent; border: 1px solid rgba(255,255,255,0.15);
-          display: flex; align-items: center; justify-content: center;
-          color: #e5e5e5; text-decoration: none; transition: all 0.2s ease;
-        }
-        .fc-social-chip:hover {
-          background: #ffffff; color: #0a0a0a; border-color: #ffffff;
-          transform: translateY(-1px);
-        }
-
-        /* Merged Action Grid Inside Left Card */
-        .fc-action-mini-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 8px;
-          margin-top: 10px;
-          padding-top: 10px;
-          border-top: 1px solid rgba(255,255,255,0.08);
-        }
-        .fc-mini-chip {
-          display: flex; align-items: center; justify-content: center; gap: 8px;
-          padding: 8px 12px; border-radius: 8px;
-          background: transparent; border: 1px solid rgba(255,255,255,0.15);
-          color: #e5e5e5; font-size: 13px; font-weight: 600; text-decoration: none;
-          cursor: pointer; transition: all 0.2s ease; outline: none;
-        }
-        .fc-mini-chip:hover {
-          background: #ffffff; color: #0a0a0a; border-color: #ffffff;
-          transform: translateY(-1px);
-        }
-
-        .fc-form-panel { padding: 2rem 2.5rem; display: flex; flex-direction: column; gap: 14px; flex-grow: 1; justify-content: flex-start; }
+        .fc-info-row:hover .fc-info-text { color: #fff; }
+        .fc-info-icon { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; }
+        .fc-info-text { font-size: 13px; color: #ccc; }
+        .fc-form-panel { padding: 2rem 1.75rem; display: flex; flex-direction: column; gap: 20px; flex-grow: 1; }
         .fc-field { display: flex; flex-direction: column; gap: 6px; }
-        .fc-field-header { display: flex; justify-content: space-between; align-items: center; }
-        .fc-field label { font-size: 13px; font-weight: 400; color: #a3a3a3; text-transform: none; letter-spacing: 0; }
-        .fc-char-count { font-size: 12px; font-weight: 600; color: #737373; }
-        .fc-char-count.warning { color: #f59e0b; }
-        .fc-char-count.limit { color: #ef4444; }
-
-        .fc-input { background: transparent; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 12px 14px; font-size: 14px; color: #ffffff; outline: none; transition: border-color 0.2s; }
-        .fc-input:focus { border-color: #ffffff; }
+        .fc-field label { font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+        .fc-input { background: #fff; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 14px; font-size: 13.5px; color: var(--text-primary); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+        .fc-input:focus { border-color: var(--primary-blue); box-shadow: 0 0 0 3px rgba(0,123,255,0.08); }
         .fc-input.error { border-color: #ef4444 !important; }
-        
-        /* High Contrast Submit Button */
-        .fc-submit-btn {
-          height: 48px; border-radius: 8px;
-          background: #000000;
-          color: #ffffff !important;
-          font-size: 14px; font-weight: 600; border: none; cursor: pointer;
-          display: flex; align-items: center; justify-content: center;
-          transition: all 0.2s ease;
-          margin-top: 12px;
-        }
-        .fc-submit-btn span { color: inherit !important; }
-        .fc-submit-btn:hover {
-          background: #ffffff;
-          color: #000000 !important;
-          border: 1px solid #000000;
-          transform: translateY(-2px);
-        }
+        .fc-submit-btn { height: 44px; border-radius: 8px; background: #111827; color: #fff; font-size: 13.5px; font-weight: 600; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s, transform 0.1s; }
+        .fc-submit-btn:hover { background: #1f2937; }
         .fc-submit-btn:active { transform: scale(0.98); }
         .fc-submit-btn:disabled { opacity: 0.7; cursor: not-allowed; }
-
-        /* Integrated FAQ inside Right Panel */
-        .fc-panel-faq {
-          margin-top: 4px;
-          display: flex; flex-direction: column; gap: 12px;
-        }
-        .fc-faq-item {
-          background: transparent;
-          border: 1px solid rgba(255,255,255,0.15);
-          border-radius: 6px;
-          overflow: hidden;
-        }
-        .fc-faq-q {
-          padding: 12px 14px;
-          display: flex; align-items: center; justify-content: space-between;
-          font-size: 14px; font-weight: 500; color: #ffffff;
-          cursor: pointer; user-select: none;
-        }
-        .fc-faq-q:hover { color: #ffffff; }
-        .fc-faq-a {
-          padding: 0 12px 8px 12px;
-          font-size: 13px; color: var(--text-secondary); line-height: 1.45;
-        }
-
-        /* ===== COMPACT LAPTOP FIX (Max Height 850px) ===== */
-        @media (min-width: 901px) and (max-height: 850px) {
-          .contact-page-wrap { max-width: 1000px; height: calc(100vh - 40px); }
-          .fc-info-panel, .fc-form-panel { padding: 1.25rem 1.5rem; }
-          .fc-title { font-size: 22px; margin: 0 0 4px; }
-          .fc-subtitle { font-size: 13px; margin: 0 0 8px; }
-          .fc-terminal-line { margin: 0 0 8px 0; padding: 4px 10px; font-size: 11px; }
-          .fc-info-row { padding: 4px; margin-bottom: 2px; }
-          .fc-info-icon { width: 30px; height: 30px; }
-          .fc-info-text { font-size: 13px; }
-          .fc-social-panel-row { margin-top: 6px; padding-top: 6px; gap: 6px; }
-          .fc-social-chip { width: 34px; height: 34px; }
-          .fc-action-mini-grid { margin-top: 6px; padding-top: 6px; gap: 6px; }
-          .fc-mini-chip { padding: 6px 10px; font-size: 11px; gap: 4px; }
-          .fc-form-panel { gap: 6px; }
-          .fc-field { gap: 4px; }
-          .fc-input { padding: 8px 12px; font-size: 13px; }
-          .fc-submit-btn { height: 38px; font-size: 14px; margin-top: 2px; }
-          .fc-panel-faq { gap: 2px; margin-top: 2px; padding-top: 2px; }
-          .fc-faq-q { padding: 6px 10px; font-size: 12px; }
-          .fc-faq-a { padding: 0 10px 6px 10px; font-size: 11px; }
-        }
-
         .fc-success { display: flex; flex-direction: column; align-items: center; justify-content: center; flex-grow: 1; padding: 2rem; text-align: center; }
         .fc-success-circle { width: 60px; height: 60px; border-radius: 50%; background: #d1fae5; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
         .fc-success-title { font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0 0 4px; }
         .fc-success-sub { font-size: 13px; color: var(--text-secondary); margin: 0; }
         .fc-error-text { font-size: 11.5px; color: #ef4444; margin: 0; }
-        [data-theme="dark"] .fc-wrapper { border-color: var(--border-color); }
-        [data-theme="dark"] .fc-right-col { background: var(--bg-secondary); }
-        [data-theme="dark"] .fc-input { background: var(--bg-primary); border-color: var(--border-color); }
+        [data-theme="dark"] .fc-wrapper { border-color: #374151; }
+        [data-theme="dark"] .fc-right-col { background: #252525; }
+        [data-theme="dark"] .fc-input { background: #1e1e1e; border-color: #374151; }
         [data-theme="dark"] .fc-input:focus { border-color: var(--primary-blue); }
+        [data-theme="dark"] .fc-submit-btn { background: var(--primary-blue); }
+        [data-theme="dark"] .fc-submit-btn:hover { opacity: 0.9; background: var(--primary-blue); }
         [data-theme="dark"] .fc-success-circle { background: #064e3b; }
-
 
         /* ===== MOBILE REDESIGN ===== */
         @media (max-width: 900px) {
@@ -900,84 +726,33 @@ END:VCARD`;
           }
         `}</style>
 
-      <>
-        {!isMobile && (
-          <div className="contact-plain-header">
-            <h1>Get in Touch</h1>
-            <p>Have a question or want to work together?</p>
-          </div>
-        )}
-        <div className="contact-page-wrap">
-          {!isMobile ? (
+      <div className="contact-page-wrap">
+        {!isMobile ? (
+          <>
+            <div className="contact-plain-header">
+              <h1>Get in Touch</h1>
+              <p>Have a question or want to work together?</p>
+            </div>
             <div className="fc-wrapper">
               <div className="fc-info-panel">
                 <div className="fc-dotgrid" />
                 <div className="fc-glow" />
                 <div>
-                  <div className="fc-badge"><span className="fc-badge-dot" /> Available for opportunities</div>
+                  <div className="fc-badge"><span className="fc-badge-dot" /> Available</div>
                   <h2 className="fc-title">Let's Connect</h2>
-                  <p className="fc-subtitle">Currently seeking graduate software engineer roles, Data Science projects, and engineering collaborations.</p>
-                  <p className="fc-terminal-line">
-                    <span style={{ fontWeight: 700 }}>&gt;_</span> usually replies within 24h_
-                  </p>
+                  <p className="fc-subtitle">I'm currently seeking new graduate developer roles and project collaborations.</p>
                 </div>
                 <div>
-                  <div className="fc-info-row">
-                    <div className="fc-info-icon"><Clock size={20} /></div>
-                    <div>
-                      <div className="fc-info-text">Vellore, India (IST)</div>
-                      <div className="fc-info-sub">{localTime || '3:15 PM'}</div>
-                    </div>
-                  </div>
                   <a href={`mailto:${email}`} className="fc-info-row" style={{ textDecoration: 'none' }}>
-                    <div className="fc-info-icon"><Mail size={20} /></div>
-                    <div>
-                      <div className="fc-info-text">{email}</div>
-                      <div className="fc-info-sub">Primary Email</div>
-                    </div>
+                    <div className="fc-info-icon"><Mail size={16} /></div>
+                    <span className="fc-info-text">{email}</span>
                   </a>
                   <a href={`tel:${phone}`} className="fc-info-row" style={{ textDecoration: 'none' }}>
-                    <div className="fc-info-icon"><Phone size={20} /></div>
-                    <div>
-                      <div className="fc-info-text">{phone}</div>
-                      <div className="fc-info-sub">Direct Call</div>
-                    </div>
+                    <div className="fc-info-icon"><Phone size={16} /></div>
+                    <span className="fc-info-text">{phone}</span>
                   </a>
-
-                  {/* Direct Social Links Panel */}
-                  <div className="fc-social-panel-row">
-                    <a href="https://github.com/sujith1546" target="_blank" rel="noreferrer" className="fc-social-chip" title="GitHub">
-                      <FaGithub size={20} />
-                    </a>
-                    <a href="https://www.linkedin.com/in/thota-sujith-reddy" target="_blank" rel="noreferrer" className="fc-social-chip" title="LinkedIn">
-                      <FaLinkedin size={20} />
-                    </a>
-                    <a href="https://instagram.com" target="_blank" rel="noreferrer" className="fc-social-chip" title="Instagram">
-                      <FaInstagram size={20} />
-                    </a>
-                    <a href={`mailto:${email}`} className="fc-social-chip" title="Direct Mail">
-                      <Mail size={20} />
-                    </a>
-                  </div>
-
-                  {/* Merged 2x2 Action Grid inside Left Card */}
-                  <div className="fc-action-mini-grid">
-                    <a href={`mailto:${email}?subject=Schedule%20a%20Call`} className="fc-mini-chip">
-                      <Calendar size={16} /> Schedule
-                    </a>
-                    <a href="/resume.pdf" onClick={handleDownloadClick} className="fc-mini-chip">
-                      <Download size={16} /> Resume
-                    </a>
-                    <a href={`mailto:${email}`} className="fc-mini-chip">
-                      <Mail size={16} /> Email
-                    </a>
-                    <button onClick={handleSaveContact} className="fc-mini-chip">
-                      <User size={16} /> vCard
-                    </button>
-                  </div>
                 </div>
               </div>
-
               <div className="fc-right-col">
                 <AnimatePresence mode="wait" initial={false}>
                   {status === "sent" ? (
@@ -989,88 +764,39 @@ END:VCARD`;
                         initial={{ scale: 0 }} animate={{ scale: 1 }}
                         transition={{ delay: 0.1, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                       >
-                        <CheckCircle size={32} color="#16a34a" strokeWidth={2.5} />
+                        <Check size={30} color="#16a34a" strokeWidth={2.5} />
                       </motion.div>
-                      <p className="fc-success-title">Message Sent Successfully!</p>
-                      <p className="fc-success-sub">Thanks for reaching out! I'll get back to you within 24 hours.</p>
+                      <p className="fc-success-title">Message sent!</p>
+                      <p className="fc-success-sub">I'll get back to you within a day.</p>
                     </motion.div>
                   ) : (
                     <motion.form key="form" className="fc-form-panel" onSubmit={handleSubmit}
                       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                     >
-                      {/* Honeypot field */}
-                      <input type="text" name="_catch" style={{ display: 'none' }} value={form._catch} onChange={handleChange} tabIndex="-1" autoComplete="off" />
-
                       <div className="fc-field">
                         <label htmlFor="fc-name">Your name</label>
                         <input id="fc-name" name="name" className={`fc-input${touched.name && errors.name ? ' error' : ''}`}
                           placeholder="Thota Sujith Reddy" value={form.name} onChange={handleChange} onBlur={handleBlur} />
                         {touched.name && errors.name && <span className="fc-error-text">{errors.name}</span>}
                       </div>
-
                       <div className="fc-field">
                         <label htmlFor="fc-email">Your email</label>
                         <input id="fc-email" name="email" type="email" className={`fc-input${touched.email && errors.email ? ' error' : ''}`}
                           placeholder="sujithreddy1546@gmail.com" value={form.email} onChange={handleChange} onBlur={handleBlur} />
                         {touched.email && errors.email && <span className="fc-error-text">{errors.email}</span>}
                       </div>
-
                       <div className="fc-field">
-                        <div className="fc-field-header">
-                          <label htmlFor="fc-message">Message</label>
-                          <span className={`fc-char-count ${form.message.length >= 500 ? 'limit' : form.message.length >= 400 ? 'warning' : ''}`}>
-                            {form.message.length}/500
-                          </span>
-                        </div>
+                        <label htmlFor="fc-message">Message</label>
                         <textarea id="fc-message" name="message" className={`fc-input${touched.message && errors.message ? ' error' : ''}`}
-                          rows={2} maxLength={500} placeholder="Tell me about your project or role..."
-                          value={form.message} onChange={handleChange} onBlur={handleBlur} style={{ resize: 'none' }} />
+                          rows={4} placeholder="Tell me what you'd like to discuss..."
+                          value={form.message} onChange={handleChange} onBlur={handleBlur} />
                         {touched.message && errors.message && <span className="fc-error-text">{errors.message}</span>}
                       </div>
-                      {/* Integrated Compact FAQ List inside Form Card (Moved ABOVE submit button) */}
-                      <div className="fc-panel-faq">
-                        <div className="fc-faq-item">
-                          <div className="fc-faq-q" onClick={() => toggleFaq(0)}>
-                            <span>Open to remote/relocation?</span>
-                            <ChevronDown size={18} style={{ transform: openFaq === 0 ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
-                          </div>
-                          {openFaq === 0 && (
-                            <div className="fc-faq-a">
-                              Yes! Fully open to full-time remote roles and on-site relocation globally.
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="fc-faq-item">
-                          <div className="fc-faq-q" onClick={() => toggleFaq(1)}>
-                            <span>Notice period / availability?</span>
-                            <ChevronDown size={18} style={{ transform: openFaq === 1 ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
-                          </div>
-                          {openFaq === 1 && (
-                            <div className="fc-faq-a">
-                              Immediate availability for graduate positions, software engineering, and Data Science roles.
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="fc-faq-item">
-                          <div className="fc-faq-q" onClick={() => toggleFaq(2)}>
-                            <span>Preferred contact method?</span>
-                            <ChevronDown size={18} style={{ transform: openFaq === 2 ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
-                          </div>
-                          {openFaq === 2 && (
-                            <div className="fc-faq-a">
-                              Email is fastest ({email}). Or schedule a call above.
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
                       <button type="submit" className="fc-submit-btn" disabled={status === "sending"}>
                         <AnimatePresence mode="wait" initial={false}>
                           {status === "sending"
-                            ? <motion.span key="l" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ display: 'flex', alignItems: 'center', gap: 10 }}><Loader2 size={18} className="spin" style={{ animation: 'spin 1s linear infinite' }} /> Sending...</motion.span>
-                            : <motion.span key="i" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>Send message <ArrowRight size={18} /></motion.span>}
+                            ? <motion.span key="l" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Loader2 size={16} /> Sending...</motion.span>
+                            : <motion.span key="i" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>Send message <ArrowRight size={15} /></motion.span>}
                         </AnimatePresence>
                       </button>
                     </motion.form>
@@ -1078,7 +804,7 @@ END:VCARD`;
                 </AnimatePresence>
               </div>
             </div>
-
+          </>
         ) : (
           <motion.div className="mc-outer-container"
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
@@ -1121,7 +847,7 @@ END:VCARD`;
               ) : (
                 <motion.div key="form" className="mc-form-container" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                   <h2 className="mc-form-title"><Send size={18} color="var(--primary-blue)" /> Send a Message</h2>
-
+                  
                   {/* Honeypot field - Invisible to humans, bots will fill it */}
                   <input type="text" name="_catch" style={{ display: 'none' }} value={form._catch} onChange={handleChange} tabIndex="-1" autoComplete="off" />
 
@@ -1143,10 +869,10 @@ END:VCARD`;
                     {touched.message && errors.message && <span className="mc-error-msg">{errors.message}</span>}
                   </div>
 
-                  <SwipeToSend
-                    onSend={handleSubmit}
-                    status={status}
-                    isFormValid={form.name.trim() !== "" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email) && form.message.trim() !== ""}
+                  <SwipeToSend 
+                    onSend={handleSubmit} 
+                    status={status} 
+                    isFormValid={form.name.trim() !== "" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email) && form.message.trim() !== ""} 
                     triggerValidation={() => {
                       const newErrors = {};
                       if (!form.name.trim()) newErrors.name = "Name is required.";
@@ -1155,7 +881,7 @@ END:VCARD`;
                       if (!form.message.trim()) newErrors.message = "Message is required.";
                       setTouched({ name: true, email: true, message: true });
                       setErrors(prev => ({ ...prev, ...newErrors }));
-                    }}
+                    }} 
                   />
                 </motion.div>
               )}
@@ -1182,7 +908,6 @@ END:VCARD`;
           </motion.div>
         )}
       </div>
-      </>
 
       {/* ── CONTACT CARD SHEET ── */}
       {typeof document !== 'undefined' && createPortal(
