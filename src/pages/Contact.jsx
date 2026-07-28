@@ -378,14 +378,16 @@ END:VCARD`;
           .contact-page-wrap {
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            height: calc(100vh - 100px);
-            overflow: hidden;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 120px);
           }
+          .contact-plain-header { width: 100%; text-align: left; }
           .fc-wrapper {
-            flex: 1;
+            flex: none;
             grid-template-columns: 1fr 1.3fr;
             min-height: 0;
+            height: auto;
           }
         }
 
@@ -523,7 +525,7 @@ END:VCARD`;
 
         /* ===== COMPACT LAPTOP FIX (Max Height 850px) ===== */
         @media (min-width: 901px) and (max-height: 850px) {
-          .contact-page-wrap { max-width: 1000px; height: calc(100vh - 80px); }
+          .contact-page-wrap { max-width: 1000px; min-height: calc(100vh - 80px); }
           .fc-info-panel, .fc-form-panel { padding: 1rem 1.5rem; }
           .fc-title { font-size: 22px; margin: 0 0 4px; }
           .fc-subtitle { font-size: 13px; margin: 0 0 8px; }
