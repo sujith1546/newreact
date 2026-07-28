@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Mail, Terminal, Layers, Target, Award, Download, ArrowRight, 
-  BarChart2, Loader2, CheckCircle, GraduationCap
+  BarChart2, Loader2, CheckCircle, GraduationCap, Calendar
 } from 'lucide-react';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { ScrollReveal } from '../components';
@@ -358,69 +358,158 @@ export default function About() {
           margin: 0;
         }
 
-        /* CTA Section */
+        /* Redesigned CTA Section */
         .cta-section {
-          background: linear-gradient(145deg, color-mix(in srgb, var(--primary-blue) 8%, var(--bg-secondary)), var(--bg-secondary));
-          border: 1px solid color-mix(in srgb, var(--primary-blue) 25%, var(--border-color));
+          background: var(--bg-secondary);
+          border: 1px solid var(--border-color);
           border-radius: 14px;
-          padding: 12px 18px;
+          padding: 18px 20px;
           display: flex;
-          align-items: center;
-          justify-content: space-between;
+          flex-direction: column;
+          gap: 12px;
           margin-top: 0px;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
         }
-        .cta-text h3 {
-          font-size: 15px;
+
+        .cta-top-row {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 12px;
+        }
+
+        .cta-header-group h3 {
+          font-size: 16px;
           font-weight: 700;
           color: var(--text-primary);
-          margin: 0 0 2px 0;
+          margin: 0 0 4px 0;
         }
-        .cta-text p {
-          font-size: 12px;
+
+        .cta-header-group p {
+          font-size: 12.5px;
           color: var(--text-secondary);
           margin: 0;
-          max-width: 440px;
-          line-height: 1.4;
+          line-height: 1.45;
         }
-        .cta-buttons {
-          display: flex;
-          gap: 8px;
+
+        .cta-availability-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 4px 10px;
+          border-radius: 999px;
+          background: rgba(16, 185, 129, 0.08);
+          border: 1px solid rgba(16, 185, 129, 0.25);
+          color: #10b981;
+          font-size: 11px;
+          font-weight: 600;
+          white-space: nowrap;
+          flex-shrink: 0;
         }
-        .cta-btn-primary {
+        [data-theme="dark"] .cta-availability-badge {
+          background: rgba(16, 185, 129, 0.15);
+          color: #34d399;
+          border-color: rgba(52, 211, 153, 0.3);
+        }
+
+        .cta-green-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          background: #10b981;
+          box-shadow: 0 0 8px #10b981;
+          animation: pulseDot 2s infinite ease-in-out;
+        }
+        @keyframes pulseDot {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
+        .cta-response-time {
+          font-family: var(--font-mono, monospace);
+          font-size: 11.5px;
+          color: var(--text-muted);
+          margin: 4px 0 0 0;
           display: flex;
           align-items: center;
-          gap: 5px;
-          background: var(--primary-blue);
-          color: #fff;
-          font-size: 12px;
-          font-weight: 600;
-          padding: 7px 14px;
-          border-radius: 8px;
-          text-decoration: none;
-          transition: all 0.2s;
+          gap: 4px;
         }
-        .cta-btn-primary:hover {
-          transform: translateY(-1px);
-          color: #fff;
-        }
-        .cta-btn-secondary {
+
+        .cta-interest-tags {
           display: flex;
-          align-items: center;
-          gap: 5px;
-          background: var(--bg-secondary);
-          color: var(--text-primary);
-          font-size: 12px;
-          font-weight: 600;
-          padding: 7px 14px;
-          border-radius: 8px;
+          flex-wrap: wrap;
+          gap: 6px;
+          margin-top: 2px;
+        }
+
+        .cta-tag-chip {
           border: 1px solid var(--border-color);
-          text-decoration: none;
-          transition: all 0.2s;
+          background: var(--bg-primary);
+          color: var(--text-secondary);
+          padding: 3px 10px;
+          border-radius: 6px;
+          font-size: 11px;
+          font-weight: 500;
         }
-        .cta-btn-secondary:hover {
+
+        /* 4-Column Action Grid */
+        .cta-action-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 8px;
+          margin-top: 4px;
+        }
+
+        .cta-action-tile {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 5px;
+          padding: 10px 8px;
+          background: var(--bg-primary);
+          border: 1px solid var(--border-color);
+          border-radius: 12px;
+          text-decoration: none;
+          color: var(--text-primary);
+          transition: all 0.2s ease;
+        }
+
+        .cta-action-tile:hover {
+          background: var(--bg-secondary);
           border-color: var(--primary-blue);
           color: var(--primary-blue);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px color-mix(in srgb, var(--primary-blue) 20%, transparent);
         }
+
+        .cta-tile-icon {
+          color: var(--primary-blue);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: transform 0.2s ease;
+        }
+
+        .cta-action-tile:hover .cta-tile-icon {
+          transform: scale(1.1);
+        }
+
+        .cta-tile-label {
+          font-size: 12px;
+          font-weight: 600;
+          text-align: center;
+        }
+
+        @media (max-width: 768px) {
+          .cta-action-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+          .cta-top-row {
+            flex-direction: column-reverse;
+          }
+        }
+
 
         .cta-btn-secondary:hover {
           border-color: var(--primary-blue);
@@ -543,21 +632,49 @@ export default function About() {
           </motion.div>
         </motion.div>
 
-        {/* Call to Action Banner */}
+        {/* Redesigned Call to Action Banner */}
         <motion.div className="cta-section" variants={itemVariants}>
-          <div className="cta-text">
-            <h3>Let's build something great.</h3>
-            <p>I'm always open to discussing Data Science, Machine Learning architecture, or exciting new engineering opportunities.</p>
+          <div className="cta-top-row">
+            <div className="cta-header-group">
+              <h3>Let's build something great.</h3>
+              <p>I'm always open to discussing Data Science, Machine Learning architecture, or exciting new engineering opportunities.</p>
+              <p className="cta-response-time">
+                <span style={{ color: 'var(--primary-blue)', fontWeight: 700 }}>&gt;_</span> usually responds within 24h
+              </p>
+            </div>
+            <div className="cta-availability-badge">
+              <span className="cta-green-dot" />
+              Available for opportunities
+            </div>
           </div>
-          <div className="cta-buttons">
-            <a href="#contact" onClick={handleGetInTouch} className="cta-btn-primary">
-              Get in Touch <ArrowRight size={16} />
+
+          <div className="cta-interest-tags">
+            <span className="cta-tag-chip">Data science</span>
+            <span className="cta-tag-chip">Machine learning</span>
+            <span className="cta-tag-chip">Full-stack</span>
+            <span className="cta-tag-chip">Internships</span>
+          </div>
+
+          <div className="cta-action-grid">
+            <a href="mailto:sujithreddy1546@gmail.com" className="cta-action-tile">
+              <div className="cta-tile-icon"><Mail size={16} /></div>
+              <span className="cta-tile-label">Email</span>
             </a>
-            <a href="/resume.pdf" className="cta-btn-secondary" onClick={handleDownloadClick}>
-              <Download size={16} /> Resume
+            <a href="mailto:sujithreddy1546@gmail.com?subject=Schedule%20a%20Call" onClick={handleGetInTouch} className="cta-action-tile">
+              <div className="cta-tile-icon"><Calendar size={16} /></div>
+              <span className="cta-tile-label">Schedule call</span>
+            </a>
+            <a href="/resume.pdf" onClick={handleDownloadClick} className="cta-action-tile">
+              <div className="cta-tile-icon"><Download size={16} /></div>
+              <span className="cta-tile-label">Resume</span>
+            </a>
+            <a href="https://github.com/sujith1546" target="_blank" rel="noreferrer" className="cta-action-tile">
+              <div className="cta-tile-icon"><FaGithub size={16} /></div>
+              <span className="cta-tile-label">GitHub</span>
             </a>
           </div>
         </motion.div>
+
 
         {/* Glassmorphism Download Toast */}
         {createPortal(
