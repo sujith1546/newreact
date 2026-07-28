@@ -378,12 +378,14 @@ END:VCARD`;
           .contact-page-wrap {
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: space-between;
+            height: calc(100vh - 100px);
+            overflow: hidden;
           }
           .fc-wrapper {
             flex: 1;
             grid-template-columns: 1fr 1.3fr;
-            min-height: auto;
+            min-height: 0;
           }
         }
 
@@ -398,7 +400,7 @@ END:VCARD`;
         .fc-right-col { display: flex; flex-direction: column; min-width: 0; background: var(--bg-secondary); justify-content: space-between; }
         .fc-info-panel {
           background: linear-gradient(145deg, #0b0f19, #111827);
-          padding: 2.5rem 3rem; color: #fff;
+          padding: 1.5rem 2.5rem; color: #fff;
           display: flex; flex-direction: column; justify-content: space-between;
           position: relative; overflow: hidden;
         }
@@ -412,22 +414,22 @@ END:VCARD`;
         .fc-terminal-line {
           font-family: var(--font-mono, monospace);
           font-size: 13px; color: #6b7280;
-          margin: 0 0 20px 0;
+          margin: 0 0 10px 0;
           display: flex; align-items: center; gap: 6px;
           background: rgba(255,255,255,0.04);
           padding: 6px 12px; border-radius: 6px;
           border: 1px solid rgba(255,255,255,0.06);
         }
 
-        .fc-info-row { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; border-radius: 8px; padding: 6px 10px; margin-left: -10px; transition: background 0.2s; text-decoration: none; }
+        .fc-info-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; border-radius: 8px; padding: 4px 8px; margin-left: -8px; transition: background 0.2s; text-decoration: none; }
         .fc-info-row:hover { background: rgba(255,255,255,0.06); }
         .fc-info-row:hover .fc-info-text { color: #fff; }
-        .fc-info-icon { width: 40px; height: 40px; border-radius: 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; color: #3b82f6; flex-shrink: 0; }
+        .fc-info-icon { width: 36px; height: 36px; border-radius: 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; color: #3b82f6; flex-shrink: 0; }
         .fc-info-text { font-size: 15px; color: #d1d5db; font-weight: 500; }
         .fc-info-sub { font-size: 12.5px; color: #9ca3af; margin-top: 2px; }
 
         .fc-social-panel-row {
-          display: flex; gap: 10px; margin-top: 16px; padding-top: 16px;
+          display: flex; gap: 10px; margin-top: 10px; padding-top: 10px;
           border-top: 1px solid rgba(255,255,255,0.08);
         }
         .fc-social-chip {
@@ -445,14 +447,14 @@ END:VCARD`;
         .fc-action-mini-grid {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
-          gap: 10px;
-          margin-top: 16px;
-          padding-top: 16px;
+          gap: 8px;
+          margin-top: 10px;
+          padding-top: 10px;
           border-top: 1px solid rgba(255,255,255,0.08);
         }
         .fc-mini-chip {
           display: flex; align-items: center; justify-content: center; gap: 8px;
-          padding: 10px 14px; border-radius: 8px;
+          padding: 8px 12px; border-radius: 8px;
           background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
           color: #d1d5db; font-size: 13px; font-weight: 600; text-decoration: none;
           cursor: pointer; transition: all 0.2s ease; outline: none;
@@ -462,28 +464,28 @@ END:VCARD`;
           transform: translateY(-1px);
         }
 
-        .fc-form-panel { padding: 2.5rem 3rem; display: flex; flex-direction: column; gap: 20px; flex-grow: 1; justify-content: space-between; }
-        .fc-field { display: flex; flex-direction: column; gap: 8px; }
+        .fc-form-panel { padding: 1.5rem 2.5rem; display: flex; flex-direction: column; gap: 12px; flex-grow: 1; justify-content: space-between; }
+        .fc-field { display: flex; flex-direction: column; gap: 6px; }
         .fc-field-header { display: flex; justify-content: space-between; align-items: center; }
         .fc-field label { font-size: 13px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
         .fc-char-count { font-size: 12px; font-weight: 600; color: var(--text-muted); }
         .fc-char-count.warning { color: #f59e0b; }
         .fc-char-count.limit { color: #ef4444; }
 
-        .fc-input { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px 18px; font-size: 15px; color: var(--text-primary); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+        .fc-input { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 16px; font-size: 15px; color: var(--text-primary); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
         .fc-input:focus { border-color: var(--primary-blue); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
         .fc-input.error { border-color: #ef4444 !important; }
         
         /* High Contrast Submit Button */
         .fc-submit-btn {
-          height: 52px; border-radius: 8px;
+          height: 44px; border-radius: 8px;
           background: var(--primary-blue, #2563eb);
           color: #ffffff !important;
-          font-size: 16px; font-weight: 700; border: none; cursor: pointer;
+          font-size: 15px; font-weight: 700; border: none; cursor: pointer;
           display: flex; align-items: center; justify-content: center;
           box-shadow: 0 4px 14px rgba(37,99,235,0.3);
           transition: all 0.2s ease;
-          margin-top: 8px;
+          margin-top: 4px;
         }
         .fc-submit-btn span { color: #ffffff !important; }
         .fc-submit-btn:hover {
@@ -496,10 +498,10 @@ END:VCARD`;
 
         /* Integrated FAQ inside Right Panel */
         .fc-panel-faq {
-          margin-top: 8px;
-          padding-top: 8px;
+          margin-top: 4px;
+          padding-top: 4px;
           border-top: 1px solid var(--border-color);
-          display: flex; flex-direction: column; gap: 8px;
+          display: flex; flex-direction: column; gap: 4px;
         }
         .fc-faq-item {
           background: var(--bg-primary);
@@ -508,14 +510,14 @@ END:VCARD`;
           overflow: hidden;
         }
         .fc-faq-q {
-          padding: 12px 16px;
+          padding: 8px 12px;
           display: flex; align-items: center; justify-content: space-between;
           font-size: 14px; font-weight: 600; color: var(--text-primary);
           cursor: pointer; user-select: none;
         }
         .fc-faq-q:hover { color: var(--primary-blue); }
         .fc-faq-a {
-          padding: 0 16px 12px 16px;
+          padding: 0 12px 8px 12px;
           font-size: 13px; color: var(--text-secondary); line-height: 1.45;
         }
 
@@ -996,7 +998,7 @@ END:VCARD`;
                           </span>
                         </div>
                         <textarea id="fc-message" name="message" className={`fc-input${touched.message && errors.message ? ' error' : ''}`}
-                          rows={3} maxLength={500} placeholder="Tell me about your project or role..."
+                          rows={2} maxLength={500} placeholder="Tell me about your project or role..."
                           value={form.message} onChange={handleChange} onBlur={handleBlur} style={{ resize: 'none' }} />
                         {touched.message && errors.message && <span className="fc-error-text">{errors.message}</span>}
                       </div>
