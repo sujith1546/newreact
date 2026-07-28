@@ -370,17 +370,17 @@ END:VCARD`;
       <style>{`
         /* ===== SHARED ===== */
         .contact-page-wrap { width: 100%; max-width: 1100px; box-sizing: border-box; }
-        .contact-plain-header { margin-bottom: 0px; width: 100%; text-align: left; flex-shrink: 0; }
-        .contact-plain-header h1 { font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0 0 2px; }
-        .contact-plain-header p { font-size: 12.5px; color: var(--text-secondary); margin: 0; }
+        .contact-plain-header { margin-bottom: 32px; width: 100%; text-align: left; flex-shrink: 0; }
+        .contact-plain-header h1 { font-size: 28px; font-weight: 700; color: var(--text-primary); margin: 0 0 8px 0; }
+        .contact-plain-header p { font-size: 14.5px; color: var(--text-secondary); margin: 0; line-height: 1.5; }
 
         @media (min-width: 901px) {
           .contact-page-wrap {
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            height: calc(100vh - 40px);
-            margin: 20px auto 0;
+            justify-content: flex-start;
+            height: calc(100vh - 120px);
+            margin: 0 auto;
             overflow: hidden;
           }
           .fc-wrapper {
@@ -900,13 +900,15 @@ END:VCARD`;
           }
         `}</style>
 
-      <div className="contact-page-wrap">
-        {!isMobile ? (
-          <>
-            <div className="contact-plain-header">
-              <h1>Get in Touch</h1>
-              <p>Have a question or want to work together?</p>
-            </div>
+      <>
+        {!isMobile && (
+          <div className="contact-plain-header">
+            <h1>Get in Touch</h1>
+            <p>Have a question or want to work together?</p>
+          </div>
+        )}
+        <div className="contact-page-wrap">
+          {!isMobile ? (
             <div className="fc-wrapper">
               <div className="fc-info-panel">
                 <div className="fc-dotgrid" />
@@ -1076,8 +1078,6 @@ END:VCARD`;
                 </AnimatePresence>
               </div>
             </div>
-          </>
-
 
         ) : (
           <motion.div className="mc-outer-container"
@@ -1182,6 +1182,7 @@ END:VCARD`;
           </motion.div>
         )}
       </div>
+      </>
 
       {/* ── CONTACT CARD SHEET ── */}
       {typeof document !== 'undefined' && createPortal(
