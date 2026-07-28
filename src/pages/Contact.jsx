@@ -369,122 +369,122 @@ END:VCARD`;
     <ScrollReveal>
       <style>{`
         /* ===== SHARED ===== */
-        .contact-page-wrap { width: 100%; max-width: 820px; box-sizing: border-box; }
-        .contact-plain-header { margin-bottom: 8px; }
-        .contact-plain-header h1 { font-size: 28px; font-weight: 700; color: var(--text-primary); margin: 0 0 6px; }
-        .contact-plain-header p { color: var(--text-secondary); margin: 0; font-size: 14.5px; }
+        .contact-page-wrap { width: 100%; max-width: 820px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; }
+        .contact-plain-header { margin-bottom: 0px; }
+        .contact-plain-header h1 { font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0 0 2px; }
+        .contact-plain-header p { color: var(--text-secondary); margin: 0; font-size: 12.5px; }
 
         /* ===== DESKTOP ===== */
         .fc-wrapper {
-          border-radius: 20px; overflow: hidden;
-          display: grid; grid-template-columns: 330px 1fr;
+          border-radius: 14px; overflow: hidden;
+          display: grid; grid-template-columns: 320px 1fr;
           border: 1px solid var(--border-color); width: 100%;
-          box-sizing: border-box; min-height: 440px;
+          box-sizing: border-box; min-height: 280px;
           box-shadow: 0 8px 30px rgba(0,0,0,0.03);
         }
         .fc-right-col { display: flex; flex-direction: column; min-width: 0; background: var(--bg-secondary); }
         .fc-info-panel {
           background: linear-gradient(145deg, #0b0f19, #111827);
-          padding: 2rem 1.75rem; color: #fff;
+          padding: 1.15rem 1.25rem; color: #fff;
           display: flex; flex-direction: column; justify-content: space-between;
           position: relative; overflow: hidden;
         }
         .fc-dotgrid { position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,0.12) 1.2px, transparent 1.2px); background-size: 18px 18px; pointer-events: none; }
         .fc-glow { position: absolute; top: -60px; right: -60px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, rgba(59,130,246,0.15), transparent 70%); pointer-events: none; }
-        .fc-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25); border-radius: 999px; padding: 4px 12px; font-size: 11px; font-weight: 600; color: #34d399; margin-bottom: 16px; width: fit-content; }
-        .fc-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981; flex-shrink: 0; animation: pulseDot 2s infinite ease-in-out; }
-        .fc-title { font-size: 24px; font-weight: 700; line-height: 1.25; margin: 0 0 8px; color: #fff; }
-        .fc-subtitle { font-size: 12.5px; color: #9ca3af; line-height: 1.5; margin: 0 0 16px; }
+        .fc-badge { display: inline-flex; align-items: center; gap: 5px; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25); border-radius: 999px; padding: 3px 10px; font-size: 10.5px; font-weight: 600; color: #34d399; margin-bottom: 8px; width: fit-content; }
+        .fc-badge-dot { width: 5px; height: 5px; border-radius: 50%; background: #10b981; box-shadow: 0 0 6px #10b981; flex-shrink: 0; animation: pulseDot 2s infinite ease-in-out; }
+        .fc-title { font-size: 20px; font-weight: 700; line-height: 1.25; margin: 0 0 4px; color: #fff; }
+        .fc-subtitle { font-size: 11.5px; color: #9ca3af; line-height: 1.4; margin: 0 0 8px; }
         
         .fc-terminal-line {
           font-family: var(--font-mono, monospace);
-          font-size: 11.5px; color: #6b7280;
-          margin: 0 0 20px 0;
-          display: flex; align-items: center; gap: 5px;
+          font-size: 10.5px; color: #6b7280;
+          margin: 0 0 10px 0;
+          display: flex; align-items: center; gap: 4px;
           background: rgba(255,255,255,0.04);
-          padding: 6px 10px; border-radius: 6px;
+          padding: 4px 8px; border-radius: 6px;
           border: 1px solid rgba(255,255,255,0.06);
         }
 
-        .fc-info-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; border-radius: 10px; padding: 7px 10px; margin-left: -10px; transition: background 0.2s; text-decoration: none; }
+        .fc-info-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; border-radius: 8px; padding: 4px 6px; margin-left: -6px; transition: background 0.2s; text-decoration: none; }
         .fc-info-row:hover { background: rgba(255,255,255,0.06); }
         .fc-info-row:hover .fc-info-text { color: #fff; }
-        .fc-info-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; color: #3b82f6; flex-shrink: 0; }
-        .fc-info-text { font-size: 12.5px; color: #d1d5db; font-weight: 500; }
-        .fc-info-sub { font-size: 10.5px; color: #9ca3af; margin-top: 1px; }
+        .fc-info-icon { width: 28px; height: 28px; border-radius: 6px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; color: #3b82f6; flex-shrink: 0; }
+        .fc-info-text { font-size: 11.5px; color: #d1d5db; font-weight: 500; }
+        .fc-info-sub { font-size: 10px; color: #9ca3af; margin-top: 0px; }
 
         .fc-social-panel-row {
-          display: flex; gap: 8px; margin-top: 16px; padding-top: 14px;
+          display: flex; gap: 6px; margin-top: 10px; padding-top: 8px;
           border-top: 1px solid rgba(255,255,255,0.08);
         }
         .fc-social-chip {
-          width: 34px; height: 34px; border-radius: 8px;
+          width: 30px; height: 30px; border-radius: 6px;
           background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
           display: flex; align-items: center; justify-content: center;
           color: #9ca3af; text-decoration: none; transition: all 0.2s ease;
         }
         .fc-social-chip:hover {
           background: var(--primary-blue, #2563eb); color: #fff; border-color: var(--primary-blue, #2563eb);
-          transform: translateY(-2px);
+          transform: translateY(-1px);
         }
 
-        .fc-form-panel { padding: 1.75rem 1.75rem; display: flex; flex-direction: column; gap: 16px; flex-grow: 1; }
-        .fc-field { display: flex; flex-direction: column; gap: 5px; }
+        .fc-form-panel { padding: 1.15rem 1.25rem; display: flex; flex-direction: column; gap: 10px; flex-grow: 1; }
+        .fc-field { display: flex; flex-direction: column; gap: 4px; }
         .fc-field-header { display: flex; justify-content: space-between; align-items: center; }
-        .fc-field label { font-size: 11.5px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
-        .fc-char-count { font-size: 11px; font-weight: 600; color: var(--text-muted); }
+        .fc-field label { font-size: 11px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+        .fc-char-count { font-size: 10.5px; font-weight: 600; color: var(--text-muted); }
         .fc-char-count.warning { color: #f59e0b; }
         .fc-char-count.limit { color: #ef4444; }
 
-        .fc-input { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 14px; font-size: 13.5px; color: var(--text-primary); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+        .fc-input { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 6px; padding: 7px 11px; font-size: 12.5px; color: var(--text-primary); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
         .fc-input:focus { border-color: var(--primary-blue); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
         .fc-input.error { border-color: #ef4444 !important; }
         
         /* High Contrast Submit Button */
         .fc-submit-btn {
-          height: 46px; border-radius: 10px;
+          height: 38px; border-radius: 8px;
           background: var(--primary-blue, #2563eb);
           color: #ffffff !important;
-          font-size: 14px; font-weight: 700; border: none; cursor: pointer;
+          font-size: 13px; font-weight: 700; border: none; cursor: pointer;
           display: flex; align-items: center; justify-content: center;
-          box-shadow: 0 4px 14px rgba(37,99,235,0.3);
+          box-shadow: 0 4px 12px rgba(37,99,235,0.25);
           transition: all 0.2s ease;
-          margin-top: 4px;
+          margin-top: 2px;
         }
         .fc-submit-btn:hover {
           background: #1d4ed8;
           transform: translateY(-1px);
-          box-shadow: 0 6px 18px rgba(37,99,235,0.4);
+          box-shadow: 0 5px 15px rgba(37,99,235,0.35);
         }
         .fc-submit-btn:active { transform: scale(0.98); }
         .fc-submit-btn:disabled { opacity: 0.7; cursor: not-allowed; }
 
         /* Other Ways to Reach Me Section */
         .contact-reach-section {
-          margin-top: 24px;
+          margin-top: 4px;
           display: flex;
           flex-direction: column;
-          gap: 12px;
+          gap: 6px;
         }
         .reach-section-title {
-          font-size: 15px; font-weight: 700; color: var(--text-primary);
-          display: flex; align-items: center; gap: 8px; margin: 0;
+          font-size: 13px; font-weight: 700; color: var(--text-primary);
+          display: flex; align-items: center; gap: 6px; margin: 0;
         }
         .reach-action-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          gap: 10px;
+          gap: 8px;
         }
         .reach-action-card {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
-          border-radius: 12px;
-          padding: 12px 10px;
+          border-radius: 8px;
+          padding: 8px 8px;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          gap: 6px;
+          gap: 4px;
           text-decoration: none;
           color: var(--text-primary);
           transition: all 0.2s ease;
@@ -492,52 +492,53 @@ END:VCARD`;
         }
         .reach-action-card:hover {
           border-color: var(--primary-blue);
-          transform: translateY(-2px);
-          box-shadow: 0 4px 14px color-mix(in srgb, var(--primary-blue) 18%, transparent);
+          transform: translateY(-1px);
+          box-shadow: 0 3px 10px color-mix(in srgb, var(--primary-blue) 18%, transparent);
         }
         .reach-card-icon {
-          width: 32px; height: 32px; border-radius: 8px;
+          width: 26px; height: 26px; border-radius: 6px;
           background: color-mix(in srgb, var(--primary-blue) 12%, transparent);
           color: var(--primary-blue);
           display: flex; align-items: center; justify-content: center;
         }
         .reach-card-label {
-          font-size: 12px; font-weight: 600; text-align: center;
+          font-size: 11px; font-weight: 600; text-align: center;
         }
 
         /* FAQ Accordion Section */
         .contact-faq-section {
-          margin-top: 24px;
+          margin-top: 4px;
           display: flex;
           flex-direction: column;
-          gap: 12px;
+          gap: 6px;
         }
         .faq-card {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
-          border-radius: 12px;
+          border-radius: 8px;
           overflow: hidden;
           transition: border-color 0.2s ease;
         }
         .faq-card.open { border-color: var(--primary-blue); }
         .faq-header {
-          padding: 12px 16px;
+          padding: 8px 12px;
           display: flex;
           align-items: center;
           justify-content: space-between;
           cursor: pointer;
-          font-size: 13.5px;
+          font-size: 12px;
           font-weight: 600;
           color: var(--text-primary);
           user-select: none;
         }
         .faq-header:hover { color: var(--primary-blue); }
         .faq-body {
-          padding: 0 16px 14px 16px;
-          font-size: 12.5px;
+          padding: 0 12px 8px 12px;
+          font-size: 11px;
           color: var(--text-secondary);
-          line-height: 1.5;
+          line-height: 1.4;
         }
+
 
         .fc-success { display: flex; flex-direction: column; align-items: center; justify-content: center; flex-grow: 1; padding: 2rem; text-align: center; }
         .fc-success-circle { width: 60px; height: 60px; border-radius: 50%; background: #d1fae5; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
