@@ -62,12 +62,9 @@ export default function WelcomeModal({ onNavClick }) {
 
   useEffect(() => {
     if (localStorage.getItem("welcome_dismissed_forever") === "true") return;
-    // Only trigger on the Home page ('/') — never interrupt direct page visits like /about, /projects, etc.
-    if (location.pathname !== '/' && location.pathname !== '') return;
-    // Only trigger once per browser session
-    if (sessionStorage.getItem("welcome_shown_this_session") === "true") return;
+    // Only trigger on the Home page ('/' or '/home')
+    if (location.pathname !== '/' && location.pathname !== '' && location.pathname !== '/home') return;
 
-    sessionStorage.setItem("welcome_shown_this_session", "true");
     setIsOpen(true);
   }, [location.pathname]);
 

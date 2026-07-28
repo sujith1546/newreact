@@ -102,6 +102,13 @@ export default function PortfolioLayout() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
+  // Always reset to home page on initial website load / browser refresh
+  useEffect(() => {
+    if (location.pathname !== '/' && location.pathname !== '/home') {
+      navigate('/home', { replace: true });
+    }
+  }, []);
+
   useEffect(() => {
     if (location.pathname === '/') {
       navigate('/home', { replace: true });
