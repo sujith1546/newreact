@@ -521,7 +521,28 @@ END:VCARD`;
           font-size: 13px; color: var(--text-secondary); line-height: 1.45;
         }
 
-
+        /* ===== COMPACT LAPTOP FIX (Max Height 850px) ===== */
+        @media (min-width: 901px) and (max-height: 850px) {
+          .contact-page-wrap { max-width: 1000px; height: calc(100vh - 80px); }
+          .fc-info-panel, .fc-form-panel { padding: 1rem 1.5rem; }
+          .fc-title { font-size: 22px; margin: 0 0 4px; }
+          .fc-subtitle { font-size: 13px; margin: 0 0 8px; }
+          .fc-terminal-line { margin: 0 0 8px 0; padding: 4px 10px; font-size: 11px; }
+          .fc-info-row { padding: 4px; margin-bottom: 2px; }
+          .fc-info-icon { width: 30px; height: 30px; }
+          .fc-info-text { font-size: 13px; }
+          .fc-social-panel-row { margin-top: 6px; padding-top: 6px; gap: 6px; }
+          .fc-social-chip { width: 34px; height: 34px; }
+          .fc-action-mini-grid { margin-top: 6px; padding-top: 6px; gap: 6px; }
+          .fc-mini-chip { padding: 6px 10px; font-size: 11px; gap: 4px; }
+          .fc-form-panel { gap: 6px; }
+          .fc-field { gap: 4px; }
+          .fc-input { padding: 8px 12px; font-size: 13px; }
+          .fc-submit-btn { height: 38px; font-size: 14px; margin-top: 2px; }
+          .fc-panel-faq { gap: 2px; margin-top: 2px; padding-top: 2px; }
+          .fc-faq-q { padding: 6px 10px; font-size: 12px; }
+          .fc-faq-a { padding: 0 10px 6px 10px; font-size: 11px; }
+        }
 
         .fc-success { display: flex; flex-direction: column; align-items: center; justify-content: center; flex-grow: 1; padding: 2rem; text-align: center; }
         .fc-success-circle { width: 60px; height: 60px; border-radius: 50%; background: #d1fae5; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
