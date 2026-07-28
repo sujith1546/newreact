@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { X } from "lucide-react";
 import { FaEnvelope, FaLinkedin, FaInstagram } from "react-icons/fa";
 
@@ -57,10 +58,18 @@ export default function WelcomeModal({ onNavClick }) {
   const [tipsPaused, setTipsPaused] = useState(false);
   const cardRef = useRef(null);
   const { visitCount, isFirstVisit } = useVisitInfo();
+  const location = useLocation();
+
   useEffect(() => {
     if (localStorage.getItem("welcome_dismissed_forever") === "true") return;
+    // Only trigger on the Home page ('/') — never interrupt direct page visits like /about, /projects, etc.
+    if (location.pathname !== '/' && location.pathname !== '') return;
+    // Only trigger once per browser session
+    if (sessionStorage.getItem("welcome_shown_this_session") === "true") return;
+
+    sessionStorage.setItem("welcome_shown_this_session", "true");
     setIsOpen(true);
-  }, []);
+  }, [location.pathname]);
 
   // Typewriter typing & erasing effect (matches home page logic)
   useEffect(() => {
