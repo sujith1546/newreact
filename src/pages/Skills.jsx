@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronRight, ChevronDown, Star, Layers, Clock, Briefcase, ChevronLeft, Loader2 } from 'lucide-react';
 import { ScrollReveal, SkillTooltip } from '../components';
 import { categoryIconMap } from '../components/ui/skillIcons';
+import useRealtimeData from '../hooks/useRealtimeData';
 
 const categoryMeta = {
   languages: { id: "languages", title: "Languages", icon: "code" },
@@ -483,7 +484,6 @@ export default function Skills() {
             <p>No skills found in the database. Please add them in the Admin Dashboard.</p>
           </div>
         ) : !isMobile ? (
-          /* ── DESKTOP unchanged ── */
           <motion.div className="skills-grid" variants={containerVariants}>
             {skillCategories.map(category => {
               const Icon = categoryIconMap[category.id] || categoryIconMap.languages;
@@ -513,7 +513,6 @@ export default function Skills() {
             })}
           </motion.div>
         ) : (
-          /* ── MOBILE: compact category grid — NO page scroll ── */
           <div className="skills-mobile-grid">
             {skillCategories.map((category, idx) => {
               const Icon = categoryIconMap[category.id] || categoryIconMap.languages;

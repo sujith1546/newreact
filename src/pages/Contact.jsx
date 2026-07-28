@@ -690,7 +690,6 @@ END:VCARD`;
               <h1>Get in Touch</h1>
               <p>Have a question or want to work together?</p>
             </div>
-            /* ── DESKTOP unchanged ── */
             <div className="fc-wrapper">
               <div className="fc-info-panel">
                 <div className="fc-dotgrid" />
@@ -764,7 +763,6 @@ END:VCARD`;
             </div>
           </>
         ) : (
-          /* ── MOBILE — Redesigned Premium UI ── */
           <motion.div className="mc-outer-container"
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
