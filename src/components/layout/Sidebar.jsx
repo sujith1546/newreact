@@ -10,6 +10,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { usePersona } from '../../context/PersonaContext';
 import useRealtimeData from '../../hooks/useRealtimeData';
 import { useIsland } from '../../context/IslandContext';
+import SystemDiagnostics from '../dev/SystemDiagnostics';
 
 function GmailIcon({ size = 20 }) {
   return (
@@ -78,9 +79,22 @@ export default function Sidebar({ activeSection, onNavClick }) {
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isDiagnosticsOpen, setIsDiagnosticsOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const isMainPage = location.pathname === '/';
+
+  // Keyboard shortcut: Ctrl+D or Cmd+D to toggle System Diagnostics
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'd') {
+        e.preventDefault();
+        setIsDiagnosticsOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Secret 5-click admin login trigger
   const [clickCount, setClickCount] = useState(0);
@@ -488,7 +502,24 @@ export default function Sidebar({ activeSection, onNavClick }) {
         <a className="social-icon-box" href="https://www.instagram.com/sujith_1546/" target="_blank" rel="noopener noreferrer" title="Instagram">
           <InstagramIcon size={20} />
         </a>
+        <button
+          className="social-icon-box"
+          onClick={() => setIsDiagnosticsOpen(true)}
+          title="System diagnostics"
+          aria-label="System diagnostics"
+          style={{
+            cursor: 'pointer',
+            position: 'relative',
+            padding: 0,
+            outline: 'none',
+          }}
+        >
+          <Cpu size={18} />
+          <span className="sidebar-diag-dot" />
+        </button>
       </div>
+
+      <SystemDiagnostics open={isDiagnosticsOpen} onClose={() => setIsDiagnosticsOpen(false)} />
 
       {/* Build Tag Footer */}
       <div className="sidebar-build-tag">
