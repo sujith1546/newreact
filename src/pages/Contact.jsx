@@ -399,7 +399,7 @@ END:VCARD`;
           box-sizing: border-box;
           box-shadow: 0 12px 40px rgba(0,0,0,0.04);
         }
-        .fc-right-col { display: flex; flex-direction: column; min-width: 0; background: var(--bg-secondary); justify-content: space-between; }
+        .fc-right-col { display: flex; flex-direction: column; min-width: 0; background: #222222; justify-content: space-between; }
         .fc-info-panel {
           background: #0a0a0a;
           padding: 1.5rem 2.5rem; color: #fff;
@@ -414,20 +414,22 @@ END:VCARD`;
         
         .fc-terminal-line {
           font-family: var(--font-mono, monospace);
-          font-size: 13px; color: #6b7280;
-          margin: 0 0 10px 0;
+          font-size: 11px; color: #737373;
+          margin: 0 0 20px 0;
           display: flex; align-items: center; gap: 6px;
-          background: rgba(255,255,255,0.04);
-          padding: 6px 12px; border-radius: 6px;
-          border: 1px solid rgba(255,255,255,0.06);
+          background: transparent;
+          padding: 12px 0; border-radius: 0;
+          border: none;
+          border-top: 1px solid rgba(255,255,255,0.08);
+          border-bottom: 1px solid rgba(255,255,255,0.08);
         }
 
-        .fc-info-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; border-radius: 8px; padding: 4px 8px; margin-left: -8px; transition: background 0.2s; text-decoration: none; }
+        .fc-info-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; border-radius: 8px; padding: 4px 8px; margin-left: -8px; transition: background 0.2s; text-decoration: none; }
         .fc-info-row:hover { background: rgba(255,255,255,0.06); }
         .fc-info-row:hover .fc-info-text { color: #ffffff; }
-        .fc-info-icon { width: 36px; height: 36px; border-radius: 8px; background: transparent; border: 1px solid rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; color: #e5e5e5; flex-shrink: 0; }
-        .fc-info-text { font-size: 15px; color: #ffffff; font-weight: 500; }
-        .fc-info-sub { font-size: 12.5px; color: #737373; margin-top: 2px; }
+        .fc-info-icon { border: none; background: transparent; display: flex; align-items: center; justify-content: center; color: #e5e5e5; flex-shrink: 0; }
+        .fc-info-text { font-size: 14px; color: #ffffff; font-weight: 500; }
+        .fc-info-sub { font-size: 11.5px; color: #737373; margin-top: 2px; }
 
         .fc-social-panel-row {
           display: flex; gap: 10px; margin-top: 10px; padding-top: 10px;
@@ -465,33 +467,33 @@ END:VCARD`;
           transform: translateY(-1px);
         }
 
-        .fc-form-panel { padding: 1.5rem 2.5rem; display: flex; flex-direction: column; gap: 12px; flex-grow: 1; justify-content: space-between; }
+        .fc-form-panel { padding: 2rem 2.5rem; display: flex; flex-direction: column; gap: 14px; flex-grow: 1; justify-content: flex-start; }
         .fc-field { display: flex; flex-direction: column; gap: 6px; }
         .fc-field-header { display: flex; justify-content: space-between; align-items: center; }
-        .fc-field label { font-size: 13px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
-        .fc-char-count { font-size: 12px; font-weight: 600; color: var(--text-muted); }
+        .fc-field label { font-size: 13px; font-weight: 400; color: #a3a3a3; text-transform: none; letter-spacing: 0; }
+        .fc-char-count { font-size: 12px; font-weight: 600; color: #737373; }
         .fc-char-count.warning { color: #f59e0b; }
         .fc-char-count.limit { color: #ef4444; }
 
-        .fc-input { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 16px; font-size: 15px; color: var(--text-primary); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
-        .fc-input:focus { border-color: var(--primary-blue); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        .fc-input { background: transparent; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 12px 14px; font-size: 14px; color: #ffffff; outline: none; transition: border-color 0.2s; }
+        .fc-input:focus { border-color: #ffffff; }
         .fc-input.error { border-color: #ef4444 !important; }
         
         /* High Contrast Submit Button */
         .fc-submit-btn {
-          height: 44px; border-radius: 8px;
-          background: #0a0a0a;
+          height: 48px; border-radius: 8px;
+          background: #000000;
           color: #ffffff !important;
-          font-size: 15px; font-weight: 700; border: none; cursor: pointer;
+          font-size: 14px; font-weight: 600; border: none; cursor: pointer;
           display: flex; align-items: center; justify-content: center;
           transition: all 0.2s ease;
-          margin-top: 4px;
+          margin-top: 12px;
         }
         .fc-submit-btn span { color: inherit !important; }
         .fc-submit-btn:hover {
           background: #ffffff;
-          color: #0a0a0a !important;
-          border: 1px solid #0a0a0a;
+          color: #000000 !important;
+          border: 1px solid #000000;
           transform: translateY(-2px);
         }
         .fc-submit-btn:active { transform: scale(0.98); }
@@ -500,23 +502,21 @@ END:VCARD`;
         /* Integrated FAQ inside Right Panel */
         .fc-panel-faq {
           margin-top: 4px;
-          padding-top: 4px;
-          border-top: 1px solid var(--border-color);
-          display: flex; flex-direction: column; gap: 4px;
+          display: flex; flex-direction: column; gap: 12px;
         }
         .fc-faq-item {
-          background: var(--bg-primary);
-          border: 1px solid var(--border-color);
-          border-radius: 8px;
+          background: transparent;
+          border: 1px solid rgba(255,255,255,0.15);
+          border-radius: 6px;
           overflow: hidden;
         }
         .fc-faq-q {
-          padding: 8px 12px;
+          padding: 12px 14px;
           display: flex; align-items: center; justify-content: space-between;
-          font-size: 14px; font-weight: 600; color: var(--text-primary);
+          font-size: 14px; font-weight: 500; color: #ffffff;
           cursor: pointer; user-select: none;
         }
-        .fc-faq-q:hover { color: var(--primary-blue); }
+        .fc-faq-q:hover { color: #ffffff; }
         .fc-faq-a {
           padding: 0 12px 8px 12px;
           font-size: 13px; color: var(--text-secondary); line-height: 1.45;
@@ -915,7 +915,7 @@ END:VCARD`;
                   <h2 className="fc-title">Let's Connect</h2>
                   <p className="fc-subtitle">Currently seeking graduate software engineer roles, Data Science projects, and engineering collaborations.</p>
                   <p className="fc-terminal-line">
-                    <span style={{ fontWeight: 700 }}>&gt;_</span> usually replies within 24h
+                    <span style={{ fontWeight: 700 }}>&gt;_</span> usually replies within 24h_
                   </p>
                 </div>
                 <div>
@@ -999,14 +999,14 @@ END:VCARD`;
                       <input type="text" name="_catch" style={{ display: 'none' }} value={form._catch} onChange={handleChange} tabIndex="-1" autoComplete="off" />
 
                       <div className="fc-field">
-                        <label htmlFor="fc-name">Your Name</label>
+                        <label htmlFor="fc-name">Your name</label>
                         <input id="fc-name" name="name" className={`fc-input${touched.name && errors.name ? ' error' : ''}`}
                           placeholder="Thota Sujith Reddy" value={form.name} onChange={handleChange} onBlur={handleBlur} />
                         {touched.name && errors.name && <span className="fc-error-text">{errors.name}</span>}
                       </div>
 
                       <div className="fc-field">
-                        <label htmlFor="fc-email">Your Email</label>
+                        <label htmlFor="fc-email">Your email</label>
                         <input id="fc-email" name="email" type="email" className={`fc-input${touched.email && errors.email ? ' error' : ''}`}
                           placeholder="sujithreddy1546@gmail.com" value={form.email} onChange={handleChange} onBlur={handleBlur} />
                         {touched.email && errors.email && <span className="fc-error-text">{errors.email}</span>}
