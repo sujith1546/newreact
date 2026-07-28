@@ -66,22 +66,14 @@ export default function About() {
           width: 100%;
           display: flex;
           flex-direction: column;
-          gap: 12px;
-        }
-
-        @media (min-width: 901px) {
-          .about-page {
-            height: calc(100vh - 120px);
-            justify-content: space-between;
-            overflow: hidden;
-            gap: 0;
-          }
+          gap: 16px;
         }
 
         /* Header */
         .about-header {
-          margin-bottom: 0px;
+          margin-bottom: 2px;
         }
+
         .about-header h1 {
           font-size: 26px;
           font-weight: 700;
@@ -98,22 +90,21 @@ export default function About() {
         .about-bio-card {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
-          border-radius: 14px;
-          padding: 14px 20px;
+          border-radius: 16px;
+          padding: 18px 22px;
           display: flex;
           align-items: flex-start;
-          gap: 16px;
+          gap: 18px;
           box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
         }
 
-
         .about-bio-avatar {
-          width: 48px;
-          height: 48px;
+          width: 54px;
+          height: 54px;
           border-radius: 50%;
           object-fit: cover;
           border: 2px solid var(--border-color);
-          box-shadow: 0 0 10px color-mix(in srgb, var(--primary-blue) 25%, transparent);
+          box-shadow: 0 0 12px color-mix(in srgb, var(--primary-blue) 25%, transparent);
           flex-shrink: 0;
           margin-top: 2px;
         }
@@ -175,13 +166,14 @@ export default function About() {
         .career-path-card {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
-          border-radius: 14px;
-          padding: 14px 20px;
+          border-radius: 16px;
+          padding: 18px 22px;
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 10px;
           box-shadow: 0 2px 10px rgba(0,0,0,0.02);
         }
+
 
 
 
@@ -321,7 +313,7 @@ export default function About() {
         .stats-section-wrapper {
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 10px;
         }
 
         /* Section Titles */
@@ -354,13 +346,13 @@ export default function About() {
         .stat-card {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
-          border-radius: 12px;
-          padding: 10px 14px;
+          border-radius: 14px;
+          padding: 14px;
           display: flex;
           flex-direction: column;
           align-items: center;
           text-align: center;
-          gap: 3px;
+          gap: 4px;
           transition: transform 0.2s, box-shadow 0.2s;
         }
         .stat-card:hover {
@@ -368,7 +360,7 @@ export default function About() {
           box-shadow: 0 4px 14px rgba(0,0,0,0.03);
         }
         .stat-value {
-          font-size: 17.5px;
+          font-size: 19px;
           font-weight: 700;
           color: var(--text-primary);
           margin: 0;
@@ -384,14 +376,15 @@ export default function About() {
         .cta-section {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
-          border-radius: 14px;
-          padding: 14px 20px;
+          border-radius: 16px;
+          padding: 20px 22px;
           display: flex;
           flex-direction: column;
-          gap: 10px;
+          gap: 14px;
           margin-top: 0px;
           box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
         }
+
 
 
 
@@ -542,20 +535,15 @@ export default function About() {
           transform: translateY(-2px);
         }
 
-        @media (min-width: 901px) {
-          .about-testimonials-container {
-            display: none;
-          }
-        }
-
         /* Responsive */
         @media (max-width: 900px) {
-          .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-          .cta-section { padding: 14px; gap: 10px; }
+          .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+          .cta-section { padding: 16px; gap: 12px; }
           .about-bio-card { flex-direction: column; text-align: center; align-items: center; }
           .timeline-nodes-row { overflow-x: auto; padding-bottom: 8px; }
           .timeline-line { display: none; }
         }
+
 
       `}</style>
 
