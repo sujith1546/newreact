@@ -91,11 +91,17 @@ export default function TimezoneStatus() {
         .timezone-status-wrapper {
           position: fixed;
           top: 20px;
-          right: 28px;
+          right: 32px;
           z-index: 2000;
           display: flex;
           align-items: center;
           gap: 8px;
+        }
+
+        @media (max-width: 900px) {
+          .timezone-status-wrapper {
+            display: none !important;
+          }
         }
 
 

@@ -199,7 +199,7 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 20px;
+  padding: 64px 40px 40px 40px;
 }
 
 /* ============================================
@@ -215,7 +215,7 @@ body {
 .text-content.home-content {
   max-width: 1200px;
   width: 95%;
-  margin: auto; /* Vertically and horizontally centers inside the flex scroll-container */
+  margin: 10px auto auto; /* Vertically and horizontally centers with generous top clearance */
   padding: 20px;
   display: flex;
   justify-content: center;
