@@ -66,7 +66,7 @@ export default function About() {
           width: 100%;
           display: flex;
           flex-direction: column;
-          gap: 10px;
+          gap: 16px;
         }
 
         /* Header */
@@ -90,12 +90,13 @@ export default function About() {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
           border-radius: 14px;
-          padding: 14px 18px;
+          padding: 18px 22px;
           display: flex;
           align-items: flex-start;
           gap: 16px;
           box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
         }
+
         .about-bio-avatar {
           width: 52px;
           height: 52px;
@@ -164,12 +165,13 @@ export default function About() {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
           border-radius: 14px;
-          padding: 12px 18px;
+          padding: 18px 22px;
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 10px;
           box-shadow: 0 2px 10px rgba(0,0,0,0.02);
         }
+
         .career-path-header {
           display: flex;
           align-items: center;
@@ -302,6 +304,13 @@ export default function About() {
           transform: translateX(-50%) translateY(0);
         }
 
+        /* Stats Section Wrapper */
+        .stats-section-wrapper {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+
         /* Section Titles */
         .about-section-title {
           font-size: 14px;
@@ -332,13 +341,13 @@ export default function About() {
         .stat-card {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
-          border-radius: 14px;
-          padding: 10px 14px;
+          border-radius: 12px;
+          padding: 12px 14px;
           display: flex;
           flex-direction: column;
           align-items: center;
           text-align: center;
-          gap: 3px;
+          gap: 4px;
           transition: transform 0.2s, box-shadow 0.2s;
         }
         .stat-card:hover {
@@ -363,10 +372,10 @@ export default function About() {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
           border-radius: 14px;
-          padding: 18px 20px;
+          padding: 18px 22px;
           display: flex;
           flex-direction: column;
-          gap: 12px;
+          gap: 14px;
           margin-top: 0px;
           box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
         }
@@ -382,13 +391,13 @@ export default function About() {
           font-size: 16px;
           font-weight: 700;
           color: var(--text-primary);
-          margin: 0 0 4px 0;
+          margin: 0 0 6px 0;
         }
 
         .cta-header-group p {
           font-size: 12.5px;
           color: var(--text-secondary);
-          margin: 0;
+          margin: 0 0 8px 0;
           line-height: 1.45;
         }
 
@@ -429,7 +438,7 @@ export default function About() {
           font-family: var(--font-mono, monospace);
           font-size: 11.5px;
           color: var(--text-muted);
-          margin: 4px 0 0 0;
+          margin: 6px 0 0 0;
           display: flex;
           align-items: center;
           gap: 4px;
@@ -438,7 +447,7 @@ export default function About() {
         .cta-interest-tags {
           display: flex;
           flex-wrap: wrap;
-          gap: 6px;
+          gap: 8px;
           margin-top: 2px;
         }
 
@@ -446,7 +455,7 @@ export default function About() {
           border: 1px solid var(--border-color);
           background: var(--bg-primary);
           color: var(--text-secondary);
-          padding: 3px 10px;
+          padding: 4px 11px;
           border-radius: 6px;
           font-size: 11px;
           font-weight: 500;
@@ -456,9 +465,10 @@ export default function About() {
         .cta-action-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          gap: 8px;
+          gap: 10px;
           margin-top: 4px;
         }
+
 
         .cta-action-tile {
           display: flex;
@@ -600,37 +610,39 @@ export default function About() {
 
 
 
-        {/* Stats Title */}
-        <motion.h2 className="about-section-title" variants={itemVariants}>
-          <div className="title-icon-badge">
-            <BarChart2 size={16} />
-          </div>
-          By the Numbers
-        </motion.h2>
+        {/* Stats Section Wrapper */}
+        <div className="stats-section-wrapper">
+          <motion.h2 className="about-section-title" variants={itemVariants}>
+            <div className="title-icon-badge">
+              <BarChart2 size={16} />
+            </div>
+            By the Numbers
+          </motion.h2>
 
-        {/* Quick Stats Grid */}
-        <motion.div className="stats-grid" variants={containerVariants}>
-          <motion.div className="stat-card" variants={itemVariants}>
-            <Terminal size={24} color="#3b82f6" />
-            <p className="stat-value">3.5+</p>
-            <p className="stat-label">Years Coding</p>
+          <motion.div className="stats-grid" variants={containerVariants}>
+            <motion.div className="stat-card" variants={itemVariants}>
+              <Terminal size={22} color="#3b82f6" />
+              <p className="stat-value">3.5+</p>
+              <p className="stat-label">Years Coding</p>
+            </motion.div>
+            <motion.div className="stat-card" variants={itemVariants}>
+              <Layers size={22} color="#10b981" />
+              <p className="stat-value">10+</p>
+              <p className="stat-label">Projects Shipped</p>
+            </motion.div>
+            <motion.div className="stat-card" variants={itemVariants}>
+              <Target size={22} color="#f59e0b" />
+              <p className="stat-value">200+</p>
+              <p className="stat-label">DSA Solved</p>
+            </motion.div>
+            <motion.div className="stat-card" variants={itemVariants}>
+              <Award size={22} color="#8b5cf6" />
+              <p className="stat-value">8.7</p>
+              <p className="stat-label">CGPA</p>
+            </motion.div>
           </motion.div>
-          <motion.div className="stat-card" variants={itemVariants}>
-            <Layers size={24} color="#10b981" />
-            <p className="stat-value">10+</p>
-            <p className="stat-label">Projects Shipped</p>
-          </motion.div>
-          <motion.div className="stat-card" variants={itemVariants}>
-            <Target size={24} color="#f59e0b" />
-            <p className="stat-value">200+</p>
-            <p className="stat-label">DSA Solved</p>
-          </motion.div>
-          <motion.div className="stat-card" variants={itemVariants}>
-            <Award size={24} color="#8b5cf6" />
-            <p className="stat-value">8.7</p>
-            <p className="stat-label">CGPA</p>
-          </motion.div>
-        </motion.div>
+        </div>
+
 
         {/* Redesigned Call to Action Banner */}
         <motion.div className="cta-section" variants={itemVariants}>
