@@ -401,17 +401,16 @@ END:VCARD`;
         }
         .fc-right-col { display: flex; flex-direction: column; min-width: 0; background: var(--bg-secondary); justify-content: space-between; }
         .fc-info-panel {
-          background: linear-gradient(145deg, #0b0f19, #111827);
+          background: #0a0a0a;
           padding: 1.5rem 2.5rem; color: #fff;
           display: flex; flex-direction: column; justify-content: space-between;
           position: relative; overflow: hidden;
         }
-        .fc-dotgrid { position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,0.12) 1.5px, transparent 1.5px); background-size: 22px 22px; pointer-events: none; }
-        .fc-glow { position: absolute; top: -60px; right: -60px; width: 300px; height: 300px; border-radius: 50%; background: radial-gradient(circle, rgba(59,130,246,0.15), transparent 70%); pointer-events: none; }
-        .fc-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25); border-radius: 999px; padding: 4px 12px; font-size: 12px; font-weight: 600; color: #34d399; margin-bottom: 12px; width: fit-content; }
-        .fc-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981; flex-shrink: 0; animation: pulseDot 2s infinite ease-in-out; }
-        .fc-title { font-size: 28px; font-weight: 700; line-height: 1.25; margin: 0 0 6px; color: #fff; }
-        .fc-subtitle { font-size: 15px; color: #9ca3af; line-height: 1.5; margin: 0 0 12px; }
+        .fc-dotgrid { position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,0.06) 1.5px, transparent 1.5px); background-size: 22px 22px; pointer-events: none; }
+        .fc-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.15); border-radius: 999px; padding: 4px 12px; font-size: 12px; font-weight: 600; color: #e5e5e5; margin-bottom: 12px; width: fit-content; }
+        .fc-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #ffffff; box-shadow: 0 0 8px rgba(255,255,255,0.6); flex-shrink: 0; animation: pulseDot 2s infinite ease-in-out; }
+        .fc-title { font-size: 28px; font-weight: 700; line-height: 1.25; margin: 0 0 6px; color: #ffffff; }
+        .fc-subtitle { font-size: 15px; color: #a3a3a3; line-height: 1.5; margin: 0 0 12px; }
         
         .fc-terminal-line {
           font-family: var(--font-mono, monospace);
@@ -425,10 +424,10 @@ END:VCARD`;
 
         .fc-info-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; border-radius: 8px; padding: 4px 8px; margin-left: -8px; transition: background 0.2s; text-decoration: none; }
         .fc-info-row:hover { background: rgba(255,255,255,0.06); }
-        .fc-info-row:hover .fc-info-text { color: #fff; }
-        .fc-info-icon { width: 36px; height: 36px; border-radius: 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; color: #3b82f6; flex-shrink: 0; }
-        .fc-info-text { font-size: 15px; color: #d1d5db; font-weight: 500; }
-        .fc-info-sub { font-size: 12.5px; color: #9ca3af; margin-top: 2px; }
+        .fc-info-row:hover .fc-info-text { color: #ffffff; }
+        .fc-info-icon { width: 36px; height: 36px; border-radius: 8px; background: transparent; border: 1px solid rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; color: #e5e5e5; flex-shrink: 0; }
+        .fc-info-text { font-size: 15px; color: #ffffff; font-weight: 500; }
+        .fc-info-sub { font-size: 12.5px; color: #737373; margin-top: 2px; }
 
         .fc-social-panel-row {
           display: flex; gap: 10px; margin-top: 10px; padding-top: 10px;
@@ -436,12 +435,12 @@ END:VCARD`;
         }
         .fc-social-chip {
           width: 42px; height: 42px; border-radius: 8px;
-          background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+          background: transparent; border: 1px solid rgba(255,255,255,0.15);
           display: flex; align-items: center; justify-content: center;
-          color: #9ca3af; text-decoration: none; transition: all 0.2s ease;
+          color: #e5e5e5; text-decoration: none; transition: all 0.2s ease;
         }
         .fc-social-chip:hover {
-          background: var(--primary-blue, #2563eb); color: #fff; border-color: var(--primary-blue, #2563eb);
+          background: #ffffff; color: #0a0a0a; border-color: #ffffff;
           transform: translateY(-1px);
         }
 
@@ -457,12 +456,12 @@ END:VCARD`;
         .fc-mini-chip {
           display: flex; align-items: center; justify-content: center; gap: 8px;
           padding: 8px 12px; border-radius: 8px;
-          background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
-          color: #d1d5db; font-size: 13px; font-weight: 600; text-decoration: none;
+          background: transparent; border: 1px solid rgba(255,255,255,0.15);
+          color: #e5e5e5; font-size: 13px; font-weight: 600; text-decoration: none;
           cursor: pointer; transition: all 0.2s ease; outline: none;
         }
         .fc-mini-chip:hover {
-          background: rgba(255,255,255,0.12); color: #fff; border-color: var(--primary-blue, #2563eb);
+          background: #ffffff; color: #0a0a0a; border-color: #ffffff;
           transform: translateY(-1px);
         }
 
@@ -481,19 +480,19 @@ END:VCARD`;
         /* High Contrast Submit Button */
         .fc-submit-btn {
           height: 44px; border-radius: 8px;
-          background: var(--primary-blue, #2563eb);
+          background: #0a0a0a;
           color: #ffffff !important;
           font-size: 15px; font-weight: 700; border: none; cursor: pointer;
           display: flex; align-items: center; justify-content: center;
-          box-shadow: 0 4px 14px rgba(37,99,235,0.3);
           transition: all 0.2s ease;
           margin-top: 4px;
         }
-        .fc-submit-btn span { color: #ffffff !important; }
+        .fc-submit-btn span { color: inherit !important; }
         .fc-submit-btn:hover {
-          background: #1d4ed8;
+          background: #ffffff;
+          color: #0a0a0a !important;
+          border: 1px solid #0a0a0a;
           transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(37,99,235,0.4);
         }
         .fc-submit-btn:active { transform: scale(0.98); }
         .fc-submit-btn:disabled { opacity: 0.7; cursor: not-allowed; }
@@ -916,7 +915,7 @@ END:VCARD`;
                   <h2 className="fc-title">Let's Connect</h2>
                   <p className="fc-subtitle">Currently seeking graduate software engineer roles, Data Science projects, and engineering collaborations.</p>
                   <p className="fc-terminal-line">
-                    <span style={{ color: '#3b82f6', fontWeight: 700 }}>&gt;_</span> usually replies within 24h
+                    <span style={{ fontWeight: 700 }}>&gt;_</span> usually replies within 24h
                   </p>
                 </div>
                 <div>
@@ -961,16 +960,16 @@ END:VCARD`;
                   {/* Merged 2x2 Action Grid inside Left Card */}
                   <div className="fc-action-mini-grid">
                     <a href={`mailto:${email}?subject=Schedule%20a%20Call`} className="fc-mini-chip">
-                      <Calendar size={16} color="#3b82f6" /> Schedule
+                      <Calendar size={16} /> Schedule
                     </a>
                     <a href="/resume.pdf" onClick={handleDownloadClick} className="fc-mini-chip">
-                      <Download size={16} color="#10b981" /> Resume
+                      <Download size={16} /> Resume
                     </a>
                     <a href={`mailto:${email}`} className="fc-mini-chip">
-                      <Mail size={16} color="#f59e0b" /> Email
+                      <Mail size={16} /> Email
                     </a>
                     <button onClick={handleSaveContact} className="fc-mini-chip">
-                      <User size={16} color="#8b5cf6" /> vCard
+                      <User size={16} /> vCard
                     </button>
                   </div>
                 </div>
@@ -1067,8 +1066,8 @@ END:VCARD`;
                       <button type="submit" className="fc-submit-btn" disabled={status === "sending"}>
                         <AnimatePresence mode="wait" initial={false}>
                           {status === "sending"
-                            ? <motion.span key="l" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#ffffff' }}><Loader2 size={18} className="spin" style={{ animation: 'spin 1s linear infinite' }} /> Sending...</motion.span>
-                            : <motion.span key="i" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#ffffff' }}>Send message <ArrowRight size={18} /></motion.span>}
+                            ? <motion.span key="l" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ display: 'flex', alignItems: 'center', gap: 10 }}><Loader2 size={18} className="spin" style={{ animation: 'spin 1s linear infinite' }} /> Sending...</motion.span>
+                            : <motion.span key="i" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>Send message <ArrowRight size={18} /></motion.span>}
                         </AnimatePresence>
                       </button>
                     </motion.form>
