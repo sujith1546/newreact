@@ -306,39 +306,6 @@ export default function TimezoneStatus() {
           <span className="cmdk-hint-kbd">K</span>
         </button>
 
-        <div className="timezone-pill-container">
-          <div className="timezone-pill">
-            <div className={`status-dot ${isAwake ? 'awake' : 'sleeping'}`}></div>
-            <span className={`tz-globe-icon ${isAwake ? 'awake' : 'sleeping'}`}>
-              <Globe size={15} strokeWidth={2.5} />
-            </span>
-            <span>{isAwake ? 'Available' : 'Away'}</span>
-          </div>
-
-          <div className="timezone-card">
-            <div className="tc-header">
-              <Globe size={18} strokeWidth={2.5} />
-              <span>Best time to reach me</span>
-            </div>
-            
-            <div className="tc-location">
-              You're in <strong>{visitorCity} {visitorTzAbbr ? `(${visitorTzAbbr})` : ''}</strong>
-            </div>
-            
-            <div className="tc-availability">
-              {isIST ? (
-                <span>I'm usually online <strong>9:30 AM – 11:30 PM</strong> IST</span>
-              ) : (
-                <span>I'm usually online <strong>{localStart} – {localEnd}</strong> your time</span>
-              )}
-            </div>
-            
-            <div className={`tc-status ${isAwake ? 'awake' : 'sleeping'}`}>
-              <div className={`status-dot ${isAwake ? 'awake' : 'sleeping'}`}></div>
-              <span>{isAwake ? 'Likely awake right now' : 'Might be sleeping right now'}</span>
-            </div>
-          </div>
-        </div>
 
         <button className="globe-btn" onClick={() => setIsGlobeOpen(true)} title="View Globe" aria-label="Open Globe Locator">
           <Globe size={16} strokeWidth={2.5} />
