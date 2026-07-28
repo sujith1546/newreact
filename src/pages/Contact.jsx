@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence, useAnimation, useMotionValue, useTransform } from "framer-motion";
-import { Mail, Phone, ArrowRight, Check, Loader2, Send, Copy, ChevronRight, MapPin, Clock, FileText, X, Contact as ContactIcon, ChevronLeft, Calendar } from "lucide-react";
-import { FaGithub, FaLinkedin } from "react-icons/fa";
+import { Mail, Phone, ArrowRight, Check, CheckCircle, Loader2, Send, Copy, ChevronRight, ChevronDown, MapPin, Clock, FileText, X, Contact as ContactIcon, ChevronLeft, Calendar, Download, HelpCircle, Globe, User } from "lucide-react";
+import { FaGithub, FaLinkedin, FaInstagram, FaWhatsapp } from "react-icons/fa";
 import { ScrollReveal } from '../components';
 import { useIsland } from '../context/IslandContext';
 import { supabase } from '../lib/supabaseClient';
 import useRealtimeData from '../hooks/useRealtimeData';
+
 const getSessionToken = () => {
   if (typeof window === 'undefined') return '';
   let token = sessionStorage.getItem('x-portfolio-session');
@@ -144,6 +145,43 @@ export default function Contact() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
   const [emailCopied, setEmailCopied] = useState(false);
   const [isContactCardOpen, setIsContactCardOpen] = useState(false);
+  const [localTime, setLocalTime] = useState("");
+  const [openFaq, setOpenFaq] = useState(null);
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      const options = { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+      setLocalTime(now.toLocaleTimeString('en-US', options));
+    };
+    updateTime();
+    const timer = setInterval(updateTime, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const toggleFaq = (index) => {
+    setOpenFaq(prev => (prev === index ? null : index));
+  };
+
+  const handleDownloadClick = (e) => {
+    e.preventDefault();
+    triggerIsland({
+      title: 'Downloading Resume',
+      subtitle: 'PDF formatting in progress...',
+      icon: <Download size={18} />,
+      color: '#3b82f6',
+      duration: 3000
+    });
+    setTimeout(() => {
+      const link = document.createElement('a');
+      link.href = '/resume.pdf';
+      link.download = 'Thota_Sujith_Reddy_Resume.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }, 800);
+  };
+
 
   const handleSaveContact = () => {
     const vCard = `BEGIN:VCARD
@@ -339,50 +377,179 @@ END:VCARD`;
         /* ===== DESKTOP ===== */
         .fc-wrapper {
           border-radius: 20px; overflow: hidden;
-          display: grid; grid-template-columns: 320px 1fr;
-          border: 1px solid #ececec; width: 100%;
-          box-sizing: border-box; min-height: 380px;
+          display: grid; grid-template-columns: 330px 1fr;
+          border: 1px solid var(--border-color); width: 100%;
+          box-sizing: border-box; min-height: 440px;
+          box-shadow: 0 8px 30px rgba(0,0,0,0.03);
         }
-        .fc-right-col { display: flex; flex-direction: column; min-width: 0; background: #fcfcfb; }
+        .fc-right-col { display: flex; flex-direction: column; min-width: 0; background: var(--bg-secondary); }
         .fc-info-panel {
-          background: linear-gradient(135deg, #0d0d0d, #1a1a1a);
+          background: linear-gradient(145deg, #0b0f19, #111827);
           padding: 2rem 1.75rem; color: #fff;
           display: flex; flex-direction: column; justify-content: space-between;
           position: relative; overflow: hidden;
         }
-        .fc-dotgrid { position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,0.13) 1.2px, transparent 1.2px); background-size: 20px 20px; pointer-events: none; }
-        .fc-glow { position: absolute; top: -60px; right: -60px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.10), transparent 70%); pointer-events: none; }
-        .fc-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 999px; padding: 5px 12px; font-size: 11.5px; color: #ccc; margin-bottom: 20px; width: fit-content; }
-        .fc-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; flex-shrink: 0; }
-        .fc-title { font-size: 26px; font-weight: 700; line-height: 1.25; margin: 0 0 12px; color: #fff; }
-        .fc-subtitle { font-size: 13px; color: #aaa; line-height: 1.65; margin: 0 0 28px; }
-        .fc-info-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; border-radius: 8px; padding: 6px 8px; margin-left: -8px; transition: background 0.2s; text-decoration: none; }
+        .fc-dotgrid { position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,0.12) 1.2px, transparent 1.2px); background-size: 18px 18px; pointer-events: none; }
+        .fc-glow { position: absolute; top: -60px; right: -60px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, rgba(59,130,246,0.15), transparent 70%); pointer-events: none; }
+        .fc-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25); border-radius: 999px; padding: 4px 12px; font-size: 11px; font-weight: 600; color: #34d399; margin-bottom: 16px; width: fit-content; }
+        .fc-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981; flex-shrink: 0; animation: pulseDot 2s infinite ease-in-out; }
+        .fc-title { font-size: 24px; font-weight: 700; line-height: 1.25; margin: 0 0 8px; color: #fff; }
+        .fc-subtitle { font-size: 12.5px; color: #9ca3af; line-height: 1.5; margin: 0 0 16px; }
+        
+        .fc-terminal-line {
+          font-family: var(--font-mono, monospace);
+          font-size: 11.5px; color: #6b7280;
+          margin: 0 0 20px 0;
+          display: flex; align-items: center; gap: 5px;
+          background: rgba(255,255,255,0.04);
+          padding: 6px 10px; border-radius: 6px;
+          border: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .fc-info-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; border-radius: 10px; padding: 7px 10px; margin-left: -10px; transition: background 0.2s; text-decoration: none; }
         .fc-info-row:hover { background: rgba(255,255,255,0.06); }
         .fc-info-row:hover .fc-info-text { color: #fff; }
-        .fc-info-icon { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; }
-        .fc-info-text { font-size: 13px; color: #ccc; }
-        .fc-form-panel { padding: 2rem 1.75rem; display: flex; flex-direction: column; gap: 20px; flex-grow: 1; }
-        .fc-field { display: flex; flex-direction: column; gap: 6px; }
-        .fc-field label { font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
-        .fc-input { background: #fff; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 14px; font-size: 13.5px; color: var(--text-primary); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
-        .fc-input:focus { border-color: var(--primary-blue); box-shadow: 0 0 0 3px rgba(0,123,255,0.08); }
+        .fc-info-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; color: #3b82f6; flex-shrink: 0; }
+        .fc-info-text { font-size: 12.5px; color: #d1d5db; font-weight: 500; }
+        .fc-info-sub { font-size: 10.5px; color: #9ca3af; margin-top: 1px; }
+
+        .fc-social-panel-row {
+          display: flex; gap: 8px; margin-top: 16px; padding-top: 14px;
+          border-top: 1px solid rgba(255,255,255,0.08);
+        }
+        .fc-social-chip {
+          width: 34px; height: 34px; border-radius: 8px;
+          background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+          display: flex; align-items: center; justify-content: center;
+          color: #9ca3af; text-decoration: none; transition: all 0.2s ease;
+        }
+        .fc-social-chip:hover {
+          background: var(--primary-blue, #2563eb); color: #fff; border-color: var(--primary-blue, #2563eb);
+          transform: translateY(-2px);
+        }
+
+        .fc-form-panel { padding: 1.75rem 1.75rem; display: flex; flex-direction: column; gap: 16px; flex-grow: 1; }
+        .fc-field { display: flex; flex-direction: column; gap: 5px; }
+        .fc-field-header { display: flex; justify-content: space-between; align-items: center; }
+        .fc-field label { font-size: 11.5px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+        .fc-char-count { font-size: 11px; font-weight: 600; color: var(--text-muted); }
+        .fc-char-count.warning { color: #f59e0b; }
+        .fc-char-count.limit { color: #ef4444; }
+
+        .fc-input { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; padding: 10px 14px; font-size: 13.5px; color: var(--text-primary); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+        .fc-input:focus { border-color: var(--primary-blue); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
         .fc-input.error { border-color: #ef4444 !important; }
-        .fc-submit-btn { height: 44px; border-radius: 8px; background: #111827; color: #fff; font-size: 13.5px; font-weight: 600; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s, transform 0.1s; }
-        .fc-submit-btn:hover { background: #1f2937; }
+        
+        /* High Contrast Submit Button */
+        .fc-submit-btn {
+          height: 46px; border-radius: 10px;
+          background: var(--primary-blue, #2563eb);
+          color: #ffffff !important;
+          font-size: 14px; font-weight: 700; border: none; cursor: pointer;
+          display: flex; align-items: center; justify-content: center;
+          box-shadow: 0 4px 14px rgba(37,99,235,0.3);
+          transition: all 0.2s ease;
+          margin-top: 4px;
+        }
+        .fc-submit-btn:hover {
+          background: #1d4ed8;
+          transform: translateY(-1px);
+          box-shadow: 0 6px 18px rgba(37,99,235,0.4);
+        }
         .fc-submit-btn:active { transform: scale(0.98); }
         .fc-submit-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+
+        /* Other Ways to Reach Me Section */
+        .contact-reach-section {
+          margin-top: 24px;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        .reach-section-title {
+          font-size: 15px; font-weight: 700; color: var(--text-primary);
+          display: flex; align-items: center; gap: 8px; margin: 0;
+        }
+        .reach-action-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 10px;
+        }
+        .reach-action-card {
+          background: var(--bg-secondary);
+          border: 1px solid var(--border-color);
+          border-radius: 12px;
+          padding: 12px 10px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          text-decoration: none;
+          color: var(--text-primary);
+          transition: all 0.2s ease;
+          cursor: pointer;
+        }
+        .reach-action-card:hover {
+          border-color: var(--primary-blue);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 14px color-mix(in srgb, var(--primary-blue) 18%, transparent);
+        }
+        .reach-card-icon {
+          width: 32px; height: 32px; border-radius: 8px;
+          background: color-mix(in srgb, var(--primary-blue) 12%, transparent);
+          color: var(--primary-blue);
+          display: flex; align-items: center; justify-content: center;
+        }
+        .reach-card-label {
+          font-size: 12px; font-weight: 600; text-align: center;
+        }
+
+        /* FAQ Accordion Section */
+        .contact-faq-section {
+          margin-top: 24px;
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+        .faq-card {
+          background: var(--bg-secondary);
+          border: 1px solid var(--border-color);
+          border-radius: 12px;
+          overflow: hidden;
+          transition: border-color 0.2s ease;
+        }
+        .faq-card.open { border-color: var(--primary-blue); }
+        .faq-header {
+          padding: 12px 16px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          cursor: pointer;
+          font-size: 13.5px;
+          font-weight: 600;
+          color: var(--text-primary);
+          user-select: none;
+        }
+        .faq-header:hover { color: var(--primary-blue); }
+        .faq-body {
+          padding: 0 16px 14px 16px;
+          font-size: 12.5px;
+          color: var(--text-secondary);
+          line-height: 1.5;
+        }
+
         .fc-success { display: flex; flex-direction: column; align-items: center; justify-content: center; flex-grow: 1; padding: 2rem; text-align: center; }
         .fc-success-circle { width: 60px; height: 60px; border-radius: 50%; background: #d1fae5; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
         .fc-success-title { font-size: 18px; font-weight: 700; color: var(--text-primary); margin: 0 0 4px; }
         .fc-success-sub { font-size: 13px; color: var(--text-secondary); margin: 0; }
         .fc-error-text { font-size: 11.5px; color: #ef4444; margin: 0; }
-        [data-theme="dark"] .fc-wrapper { border-color: #374151; }
-        [data-theme="dark"] .fc-right-col { background: #252525; }
-        [data-theme="dark"] .fc-input { background: #1e1e1e; border-color: #374151; }
+        [data-theme="dark"] .fc-wrapper { border-color: var(--border-color); }
+        [data-theme="dark"] .fc-right-col { background: var(--bg-secondary); }
+        [data-theme="dark"] .fc-input { background: var(--bg-primary); border-color: var(--border-color); }
         [data-theme="dark"] .fc-input:focus { border-color: var(--primary-blue); }
-        [data-theme="dark"] .fc-submit-btn { background: var(--primary-blue); }
-        [data-theme="dark"] .fc-submit-btn:hover { opacity: 0.9; background: var(--primary-blue); }
         [data-theme="dark"] .fc-success-circle { background: #064e3b; }
+
 
         /* ===== MOBILE REDESIGN ===== */
         @media (max-width: 900px) {
@@ -738,21 +905,54 @@ END:VCARD`;
                 <div className="fc-dotgrid" />
                 <div className="fc-glow" />
                 <div>
-                  <div className="fc-badge"><span className="fc-badge-dot" /> Available</div>
+                  <div className="fc-badge"><span className="fc-badge-dot" /> Available for opportunities</div>
                   <h2 className="fc-title">Let's Connect</h2>
-                  <p className="fc-subtitle">I'm currently seeking new graduate developer roles and project collaborations.</p>
+                  <p className="fc-subtitle">Currently seeking graduate software engineer roles, Data Science projects, and engineering collaborations.</p>
+                  <p className="fc-terminal-line">
+                    <span style={{ color: '#3b82f6', fontWeight: 700 }}>&gt;_</span> usually replies within 24h
+                  </p>
                 </div>
                 <div>
+                  <div className="fc-info-row">
+                    <div className="fc-info-icon"><Clock size={15} /></div>
+                    <div>
+                      <div className="fc-info-text">Vellore, India (IST)</div>
+                      <div className="fc-info-sub">{localTime || '3:15 PM'}</div>
+                    </div>
+                  </div>
                   <a href={`mailto:${email}`} className="fc-info-row" style={{ textDecoration: 'none' }}>
-                    <div className="fc-info-icon"><Mail size={16} /></div>
-                    <span className="fc-info-text">{email}</span>
+                    <div className="fc-info-icon"><Mail size={15} /></div>
+                    <div>
+                      <div className="fc-info-text">{email}</div>
+                      <div className="fc-info-sub">Primary Email</div>
+                    </div>
                   </a>
                   <a href={`tel:${phone}`} className="fc-info-row" style={{ textDecoration: 'none' }}>
-                    <div className="fc-info-icon"><Phone size={16} /></div>
-                    <span className="fc-info-text">{phone}</span>
+                    <div className="fc-info-icon"><Phone size={15} /></div>
+                    <div>
+                      <div className="fc-info-text">{phone}</div>
+                      <div className="fc-info-sub">Direct Call</div>
+                    </div>
                   </a>
+
+                  {/* Direct Social Links Panel */}
+                  <div className="fc-social-panel-row">
+                    <a href="https://github.com/sujith1546" target="_blank" rel="noreferrer" className="fc-social-chip" title="GitHub">
+                      <FaGithub size={16} />
+                    </a>
+                    <a href="https://www.linkedin.com/in/thota-sujith-reddy" target="_blank" rel="noreferrer" className="fc-social-chip" title="LinkedIn">
+                      <FaLinkedin size={16} />
+                    </a>
+                    <a href="https://instagram.com" target="_blank" rel="noreferrer" className="fc-social-chip" title="Instagram">
+                      <FaInstagram size={16} />
+                    </a>
+                    <a href={`mailto:${email}`} className="fc-social-chip" title="Direct Mail">
+                      <Mail size={16} />
+                    </a>
+                  </div>
                 </div>
               </div>
+
               <div className="fc-right-col">
                 <AnimatePresence mode="wait" initial={false}>
                   {status === "sent" ? (
@@ -764,39 +964,50 @@ END:VCARD`;
                         initial={{ scale: 0 }} animate={{ scale: 1 }}
                         transition={{ delay: 0.1, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                       >
-                        <Check size={30} color="#16a34a" strokeWidth={2.5} />
+                        <CheckCircle size={32} color="#16a34a" strokeWidth={2.5} />
                       </motion.div>
-                      <p className="fc-success-title">Message sent!</p>
-                      <p className="fc-success-sub">I'll get back to you within a day.</p>
+                      <p className="fc-success-title">Message Sent Successfully!</p>
+                      <p className="fc-success-sub">Thanks for reaching out! I'll get back to you within 24 hours.</p>
                     </motion.div>
                   ) : (
                     <motion.form key="form" className="fc-form-panel" onSubmit={handleSubmit}
                       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                     >
+                      {/* Honeypot field */}
+                      <input type="text" name="_catch" style={{ display: 'none' }} value={form._catch} onChange={handleChange} tabIndex="-1" autoComplete="off" />
+
                       <div className="fc-field">
-                        <label htmlFor="fc-name">Your name</label>
+                        <label htmlFor="fc-name">Your Name</label>
                         <input id="fc-name" name="name" className={`fc-input${touched.name && errors.name ? ' error' : ''}`}
                           placeholder="Thota Sujith Reddy" value={form.name} onChange={handleChange} onBlur={handleBlur} />
                         {touched.name && errors.name && <span className="fc-error-text">{errors.name}</span>}
                       </div>
+
                       <div className="fc-field">
-                        <label htmlFor="fc-email">Your email</label>
+                        <label htmlFor="fc-email">Your Email</label>
                         <input id="fc-email" name="email" type="email" className={`fc-input${touched.email && errors.email ? ' error' : ''}`}
                           placeholder="sujithreddy1546@gmail.com" value={form.email} onChange={handleChange} onBlur={handleBlur} />
                         {touched.email && errors.email && <span className="fc-error-text">{errors.email}</span>}
                       </div>
+
                       <div className="fc-field">
-                        <label htmlFor="fc-message">Message</label>
+                        <div className="fc-field-header">
+                          <label htmlFor="fc-message">Message</label>
+                          <span className={`fc-char-count ${form.message.length >= 500 ? 'limit' : form.message.length >= 400 ? 'warning' : ''}`}>
+                            {form.message.length}/500
+                          </span>
+                        </div>
                         <textarea id="fc-message" name="message" className={`fc-input${touched.message && errors.message ? ' error' : ''}`}
-                          rows={4} placeholder="Tell me what you'd like to discuss..."
-                          value={form.message} onChange={handleChange} onBlur={handleBlur} />
+                          rows={4} maxLength={500} placeholder="Tell me about your project, role, or opportunity..."
+                          value={form.message} onChange={handleChange} onBlur={handleBlur} style={{ resize: 'none' }} />
                         {touched.message && errors.message && <span className="fc-error-text">{errors.message}</span>}
                       </div>
+
                       <button type="submit" className="fc-submit-btn" disabled={status === "sending"}>
                         <AnimatePresence mode="wait" initial={false}>
                           {status === "sending"
-                            ? <motion.span key="l" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Loader2 size={16} /> Sending...</motion.span>
-                            : <motion.span key="i" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>Send message <ArrowRight size={15} /></motion.span>}
+                            ? <motion.span key="l" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Loader2 size={16} className="spin" style={{ animation: 'spin 1s linear infinite' }} /> Sending message...</motion.span>
+                            : <motion.span key="i" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>Send message <ArrowRight size={16} /></motion.span>}
                         </AnimatePresence>
                       </button>
                     </motion.form>
@@ -804,7 +1015,78 @@ END:VCARD`;
                 </AnimatePresence>
               </div>
             </div>
+
+            {/* Other Ways to Reach Me Section */}
+            <div className="contact-reach-section">
+              <h3 className="reach-section-title">
+                <Globe size={18} color="var(--primary-blue)" />
+                Other Ways to Reach Me
+              </h3>
+              <div className="reach-action-grid">
+                <a href={`mailto:${email}?subject=Schedule%20a%20Call`} className="reach-action-card">
+                  <div className="reach-card-icon"><Calendar size={18} /></div>
+                  <span className="reach-card-label">Schedule Call</span>
+                </a>
+                <a href="/resume.pdf" onClick={handleDownloadClick} className="reach-action-card">
+                  <div className="reach-card-icon"><Download size={18} /></div>
+                  <span className="reach-card-label">Resume</span>
+                </a>
+                <a href={`mailto:${email}`} className="reach-action-card">
+                  <div className="reach-card-icon"><Mail size={18} /></div>
+                  <span className="reach-card-label">Direct Email</span>
+                </a>
+                <button onClick={handleSaveContact} className="reach-action-card" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', outline: 'none' }}>
+                  <div className="reach-card-icon"><User size={18} /></div>
+                  <span className="reach-card-label">Save vCard</span>
+                </button>
+              </div>
+            </div>
+
+            {/* FAQ Accordion Section */}
+            <div className="contact-faq-section">
+              <h3 className="reach-section-title">
+                <HelpCircle size={18} color="var(--primary-blue)" />
+                Frequently Asked Questions
+              </h3>
+              
+              <div className={`faq-card ${openFaq === 0 ? 'open' : ''}`}>
+                <div className="faq-header" onClick={() => toggleFaq(0)}>
+                  <span>Are you open to remote or relocation opportunities?</span>
+                  <ChevronDown size={16} style={{ transform: openFaq === 0 ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
+                </div>
+                {openFaq === 0 && (
+                  <div className="faq-body">
+                    Yes! I am fully open to full-time remote roles, hybrid engineering positions, and on-site relocation opportunities globally for Software Engineering and Data Science roles.
+                  </div>
+                )}
+              </div>
+
+              <div className={`faq-card ${openFaq === 1 ? 'open' : ''}`}>
+                <div className="faq-header" onClick={() => toggleFaq(1)}>
+                  <span>What is your notice period or availability?</span>
+                  <ChevronDown size={16} style={{ transform: openFaq === 1 ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
+                </div>
+                {openFaq === 1 && (
+                  <div className="faq-body">
+                    I am available immediately for graduate full-time positions, software development roles, and Data Science internships.
+                  </div>
+                )}
+              </div>
+
+              <div className={`faq-card ${openFaq === 2 ? 'open' : ''}`}>
+                <div className="faq-header" onClick={() => toggleFaq(2)}>
+                  <span>What is your preferred mode of contact?</span>
+                  <ChevronDown size={16} style={{ transform: openFaq === 2 ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
+                </div>
+                {openFaq === 2 && (
+                  <div className="faq-body">
+                    Email is the fastest way to reach me (<a href={`mailto:${email}`} style={{ color: 'var(--primary-blue)', textDecoration: 'none' }}>{email}</a>). You can also schedule a call directly above or connect on LinkedIn.
+                  </div>
+                )}
+              </div>
+            </div>
           </>
+
         ) : (
           <motion.div className="mc-outer-container"
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
