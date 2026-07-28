@@ -65,6 +65,8 @@ const mobilePageVariants = {
   exit: { opacity: 0 },
 };
 
+let hasHandledInitialRefresh = false;
+
 export default function PortfolioLayout() {
   const { data: dbSettings } = useRealtimeData('site_settings', { single: true, filter: { column: 'id', value: 1 } });
   const { getSectionOrder } = usePersona();
@@ -100,6 +102,19 @@ export default function PortfolioLayout() {
     const onResize = () => setIsMobile(window.innerWidth <= 900);
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  // Intelligently redirect to home page ONLY on full browser refresh (F5/Reload)
+  useEffect(() => {
+    if (!hasHandledInitialRefresh) {
+      hasHandledInitialRefresh = true;
+      const navEntry = performance.getEntriesByType?.('navigation')?.[0];
+      const isReload = navEntry?.type === 'reload';
+
+      if (isReload && location.pathname !== '/' && location.pathname !== '/home') {
+        navigate('/home', { replace: true });
+      }
+    }
   }, []);
 
   useEffect(() => {
