@@ -2,11 +2,10 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Terminal, X, Wifi, Gauge, Layers, SlidersHorizontal } from "lucide-react";
-import { FaGithub } from "react-icons/fa";
 import { useTheme } from "../../context/ThemeContext";
 
-const GITHUB_REPO_URL = "https://github.com/sujith1546/newreact";
 const BUILD_VERSION = "v1.4.2";
+
 const CORE_STACK = [
   { name: "React", version: "18.2" },
   { name: "Vite", version: "6.0" },
@@ -538,16 +537,7 @@ export default function SystemDiagnostics({ open, onClose }) {
               </p>
             </div>
 
-            {/* View source on GitHub link */}
-            <a
-              href={GITHUB_REPO_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="sd-github-btn"
-            >
-              <FaGithub size={14} />
-              View source on GitHub
-            </a>
+
           </motion.div>
         </motion.div>
       )}
