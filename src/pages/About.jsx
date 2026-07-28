@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, Coffee, BookOpen, Dumbbell, Compass, Gamepad2, Mail, Terminal, Layers, Target, Award, Download, ArrowRight, BarChart2, Loader2, CheckCircle } from 'lucide-react';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { ScrollReveal } from '../components';
+import Testimonials from '../components/portfolio/Testimonials';
 
 const HOBBIES = [
   { label: 'Strategic Thinking', value: 'Chess Enthusiast', icon: Gamepad2 },
@@ -628,6 +629,11 @@ export default function About() {
           </AnimatePresence>,
           document.body
         )}
+
+        {/* Testimonials */}
+        <div style={{ marginTop: 12 }}>
+          <Testimonials />
+        </div>
 
       </motion.div>
     </ScrollReveal>

@@ -53,10 +53,138 @@ function ProgressRing({ percent, color, size = 80 }) {
   );
 }
 
+function SkillsRadarChart({ categories }) {
+  const SIZE = 440;
+  const CX = SIZE / 2;
+  const CY = SIZE / 2;
+  const R = 160;
+  const LEVELS = 5;
+  const n = categories.length;
+  if (n < 3) return null;
+
+  const angleStep = (2 * Math.PI) / n;
+  const getPoint = (angle, r) => ({
+    x: CX + r * Math.cos(angle - Math.PI / 2),
+    y: CY + r * Math.sin(angle - Math.PI / 2),
+  });
+
+  // Average proficiency per category (0-100)
+  const values = categories.map(cat => {
+    const pcts = cat.skills.map(s => s.percent ?? 0).filter(p => p > 0);
+    return pcts.length ? pcts.reduce((a, b) => a + b, 0) / pcts.length : 0;
+  });
+
+  // Data polygon points
+  const dataPoints = categories.map((_, i) => {
+    const angle = i * angleStep;
+    const r = (values[i] / 100) * R;
+    return getPoint(angle, r);
+  });
+  const dataPath = dataPoints.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ') + ' Z';
+
+  const CATEGORY_COLORS = ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444'];
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`}>
+        {/* Concentric level polygons */}
+        {Array.from({ length: LEVELS }, (_, lvl) => {
+          const r = (R * (lvl + 1)) / LEVELS;
+          const pts = Array.from({ length: n }, (_, i) => {
+            const p = getPoint(i * angleStep, r);
+            return `${p.x.toFixed(1)},${p.y.toFixed(1)}`;
+          }).join(' ');
+          return (
+            <polygon key={lvl} points={pts}
+              fill="none" stroke="var(--border-color)" strokeWidth={1}
+              opacity={lvl === LEVELS - 1 ? 0.8 : 0.4}
+            />
+          );
+        })}
+
+        {/* Axis lines */}
+        {categories.map((_, i) => {
+          const outer = getPoint(i * angleStep, R);
+          return <line key={i} x1={CX} y1={CY} x2={outer.x} y2={outer.y} stroke="var(--border-color)" strokeWidth={1} opacity={0.6} />;
+        })}
+
+        {/* Data polygon */}
+        <path d={dataPath}
+          fill={`rgba(59,130,246,0.15)`}
+          stroke="var(--primary-blue)"
+          strokeWidth={2.5}
+          strokeLinejoin="round"
+        />
+
+        {/* Data points */}
+        {dataPoints.map((p, i) => (
+          <circle key={i} cx={p.x} cy={p.y} r={5}
+            fill={CATEGORY_COLORS[i % CATEGORY_COLORS.length]}
+            stroke="white" strokeWidth={2}
+          />
+        ))}
+
+        {/* Category labels */}
+        {categories.map((cat, i) => {
+          const angle = i * angleStep;
+          const labelR = R + 34;
+          const p = getPoint(angle, labelR);
+          const isLeft = p.x < CX - 10;
+          const isRight = p.x > CX + 10;
+          return (
+            <g key={i}>
+              <text
+                x={p.x} y={p.y}
+                textAnchor={isLeft ? 'end' : isRight ? 'start' : 'middle'}
+                dominantBaseline="middle"
+                fontSize={12} fontWeight={700}
+                fill="var(--text-primary)"
+              >
+                {cat.title}
+              </text>
+              <text
+                x={p.x} y={p.y + 14}
+                textAnchor={isLeft ? 'end' : isRight ? 'start' : 'middle'}
+                dominantBaseline="middle"
+                fontSize={10} fontWeight={500}
+                fill="var(--text-muted)"
+              >
+                {Math.round(values[i])}%
+              </text>
+            </g>
+          );
+        })}
+
+        {/* Level labels */}
+        {Array.from({ length: LEVELS }, (_, lvl) => {
+          const r = (R * (lvl + 1)) / LEVELS;
+          const p = getPoint(0, r);
+          return (
+            <text key={lvl} x={p.x + 5} y={p.y} fontSize={9} fill="var(--text-muted)" dominantBaseline="middle">
+              {Math.round(((lvl + 1) / LEVELS) * 100)}
+            </text>
+          );
+        })}
+      </svg>
+
+      {/* Legend */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center', marginTop: 16 }}>
+        {categories.map((cat, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-secondary)' }}>
+            <div style={{ width: 10, height: 10, borderRadius: '50%', background: CATEGORY_COLORS[i % CATEGORY_COLORS.length], flexShrink: 0 }} />
+            {cat.title} — {cat.skills.length} skill{cat.skills.length !== 1 ? 's' : ''}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Skills() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
   const [activeCategory, setActiveCategory] = useState(null);  // category object
   const [activeSkill,    setActiveSkill]    = useState(null);  // skill object
+  const [desktopView, setDesktopView] = useState('grid'); // 'grid' | 'radar'
   const [hasCatScrolled,  setHasCatScrolled]  = useState(false);
   const [isCatScrollable, setIsCatScrollable] = useState(false);
   const [hasSkillScrolled,  setHasSkillScrolled]  = useState(false);
@@ -470,9 +598,22 @@ export default function Skills() {
       `}</style>
 
       <motion.div className="skills-page" variants={!isMobile ? containerVariants : undefined} initial={!isMobile ? "hidden" : undefined} animate={!isMobile ? "visible" : undefined}>
-        <motion.div className="skills-header" variants={!isMobile ? itemVariants : undefined}>
-          <h1>Skills &amp; Expertise</h1>
-          <p>Tap any category to explore</p>
+        <motion.div className="skills-header" variants={!isMobile ? itemVariants : undefined} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+          <div>
+            <h1>Skills &amp; Expertise</h1>
+            <p>Tap any category to explore</p>
+          </div>
+          {!isMobile && skillCategories.length > 0 && (
+            <div style={{ display: 'flex', gap: 0, border: '1px solid var(--border-color)', borderRadius: 10, overflow: 'hidden' }}>
+              {['grid', 'radar'].map(v => (
+                <button key={v} onClick={() => setDesktopView(v)} style={{
+                  padding: '7px 18px', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600, textTransform: 'capitalize',
+                  background: desktopView === v ? 'var(--primary-blue)' : 'var(--bg-secondary)',
+                  color: desktopView === v ? '#fff' : 'var(--text-muted)', transition: 'all 0.15s',
+                }}>{v === 'grid' ? '⊞ Grid' : '◎ Radar'}</button>
+              ))}
+            </div>
+          )}
         </motion.div>
 
         {loading ? (
@@ -483,6 +624,13 @@ export default function Skills() {
           <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
             <p>No skills found in the database. Please add them in the Admin Dashboard.</p>
           </div>
+        ) : !isMobile && desktopView === 'radar' ? (
+          /* ── RADAR CHART VIEW ── */
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
+            style={{ display: 'flex', justifyContent: 'center', padding: '20px 0 40px' }}
+          >
+            <SkillsRadarChart categories={skillCategories} />
+          </motion.div>
         ) : !isMobile ? (
           <motion.div className="skills-grid" variants={containerVariants}>
             {skillCategories.map(category => {

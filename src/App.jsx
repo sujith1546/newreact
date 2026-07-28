@@ -59,6 +59,7 @@ function AnimatedRoutes() {
           <Route path="about" element={null} />
           <Route path="skills" element={null} />
           <Route path="projects" element={null} />
+          <Route path="blog" element={null} />
           <Route path="education" element={null} />
           <Route path="experience" element={null} />
           <Route path="certifications" element={null} />

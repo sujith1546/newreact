@@ -3,7 +3,7 @@ import { supabase } from '../../../lib/supabaseClient';
 import useRealtimeData from '../../../hooks/useRealtimeData';
 import { logAuditEvent } from '../../../lib/auditLogger';
 import { MaintenanceSettingsPanel } from '../../MaintenanceGate';
-import { Loader2, Check, Settings, Layers, Briefcase, Award, Sparkles, Bell, MessageSquare, User, Type, FileText, Globe, Image, Link, Mail, Upload } from 'lucide-react';
+import { Loader2, Check, Settings, Layers, Briefcase, Award, Sparkles, Bell, MessageSquare, User, Type, FileText, Globe, Image, Link, Mail, Upload, Zap, Calendar, Clock } from 'lucide-react';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PremiumToggle, PremiumInput } from '../shared/components';
@@ -128,6 +128,76 @@ export default function SettingsPanel() {
               checked={settings?.is_available_for_hire ?? false} 
               onChange={val => handleToggleChange('is_available_for_hire', val)} 
             />
+          </div>
+        </section>
+
+        {/* Section: Currently Working On */}
+        <section style={{ background: 'var(--bg-primary)', padding: 24, borderRadius: 20, border: '1px solid var(--border-color)', boxShadow: '0 8px 30px rgba(0,0,0,0.04)' }}>
+          <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ padding: 8, background: 'color-mix(in srgb, #f59e0b 10%, transparent)', borderRadius: 10, color: '#f59e0b' }}><Zap size={18} /></div>
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Currently Working On</h3>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
+            <PremiumInput
+              label="Project Name" icon={FileText}
+              value={settings?.current_project || ''}
+              onChange={e => handleInputChange('current_project', e.target.value)}
+              onBlur={e => handleInputBlur('current_project', e.target.value)}
+              placeholder="e.g. AI Portfolio Chatbot"
+            />
+            <div>
+              <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginLeft: 4, marginBottom: 6, display: 'block' }}>Status</label>
+              <select
+                value={settings?.current_project_status || 'In Progress'}
+                onChange={e => { handleInputChange('current_project_status', e.target.value); updateSetting('current_project_status', e.target.value); }}
+                style={{ width: '100%', padding: '10px 14px', borderRadius: 12, border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: 14, outline: 'none', cursor: 'pointer' }}
+              >
+                {['Planning', 'In Progress', 'Testing', 'Deployed', 'On Hold'].map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+            <div>
+              <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginLeft: 4, marginBottom: 6, display: 'block' }}>Completion % (0–100)</label>
+              <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                <input
+                  type="range" min={0} max={100} step={5}
+                  value={settings?.current_project_pct ?? 0}
+                  onChange={e => handleInputChange('current_project_pct', Number(e.target.value))}
+                  onMouseUp={e => handleInputBlur('current_project_pct', Number(e.target.value))}
+                  style={{ flex: 1 }}
+                />
+                <span style={{ fontSize: 14, fontWeight: 700, color: '#f59e0b', minWidth: 36 }}>{settings?.current_project_pct ?? 0}%</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Section: Availability Status */}
+        <section style={{ background: 'var(--bg-primary)', padding: 24, borderRadius: 20, border: '1px solid var(--border-color)', boxShadow: '0 8px 30px rgba(0,0,0,0.04)' }}>
+          <div style={{ marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ padding: 8, background: 'color-mix(in srgb, #10b981 10%, transparent)', borderRadius: 10, color: '#10b981' }}><Calendar size={18} /></div>
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Availability Status</h3>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
+            <div>
+              <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginLeft: 4, marginBottom: 6, display: 'block' }}>Status Badge</label>
+              <select
+                value={settings?.availability_status || 'Available'}
+                onChange={e => { handleInputChange('availability_status', e.target.value); updateSetting('availability_status', e.target.value); }}
+                style={{ width: '100%', padding: '10px 14px', borderRadius: 12, border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: 14, outline: 'none', cursor: 'pointer' }}
+              >
+                {['Available', 'Open to Part-time', 'In a Role', 'Busy', 'Actively Looking'].map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+            <div>
+              <label style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginLeft: 4, marginBottom: 6, display: 'block' }}>Available From (optional)</label>
+              <input
+                type="date"
+                value={settings?.availability_from || ''}
+                onChange={e => handleInputChange('availability_from', e.target.value)}
+                onBlur={e => handleInputBlur('availability_from', e.target.value)}
+                style={{ width: '100%', padding: '10px 14px', borderRadius: 12, border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
+              />
+            </div>
           </div>
         </section>
 

@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect, Suspense, lazy } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useRef, useEffect, Suspense, lazy, useCallback } from 'react';
+import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
 import { FileText, Mail, Briefcase, Check } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
 import {
@@ -18,6 +18,7 @@ import {
   ParticleCanvas,
   SectionSpotlight
 } from '../components';
+import ErrorBoundary from '../components/ui/ErrorBoundary';
 
 import Home from './Home';
 const About = lazy(() => import('./About'));
@@ -27,6 +28,7 @@ const Education = lazy(() => import('./Education'));
 const Experience = lazy(() => import('./Experience'));
 const Certifications = lazy(() => import('./Certifications'));
 const Contact = lazy(() => import('./Contact'));
+const Blog = lazy(() => import('./Blog'));
 import { useTheme } from '../context/ThemeContext';
 import { usePersona } from '../context/PersonaContext';
 import useRealtimeData from '../hooks/useRealtimeData';
@@ -38,6 +40,7 @@ const SECTIONS_DEF = [
   { id: 'about',          Component: About          },
   { id: 'skills',         Component: Skills         },
   { id: 'projects',       Component: Projects       },
+  { id: 'blog',           Component: Blog           },
   { id: 'education',      Component: Education      },
   { id: 'experience',     Component: Experience     },
   { id: 'certifications', Component: Certifications },
@@ -49,6 +52,7 @@ const SECTION_LABELS = {
   about: 'About Me',
   skills: 'Skills & Expertise',
   projects: 'Featured Projects',
+  blog: 'Blog & Articles',
   education: 'Education',
   experience: 'Experience',
   certifications: 'Certifications',
@@ -97,6 +101,31 @@ export default function PortfolioLayout() {
   const [spotlightKeyword, setSpotlightKeyword] = useState('');
   const scrollRef = useRef(null);
   const navTimerRef = useRef(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  // Cursor glow effect (desktop only)
+  useEffect(() => {
+    if (isMobile) return;
+    const handleMouseMove = (e) => {
+      document.documentElement.style.setProperty('--cursor-x', `${e.clientX}px`);
+      document.documentElement.style.setProperty('--cursor-y', `${e.clientY}px`);
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, [isMobile]);
+
+  // Scroll progress
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = el;
+      const total = scrollHeight - clientHeight;
+      setScrollProgress(total > 0 ? scrollTop / total : 0);
+    };
+    el.addEventListener('scroll', handleScroll, { passive: true });
+    return () => el.removeEventListener('scroll', handleScroll);
+  }, [activeSection]);
 
   useEffect(() => {
     const onResize = () => setIsMobile(window.innerWidth <= 900);
@@ -207,6 +236,7 @@ export default function PortfolioLayout() {
     about:          { label: 'Resume',     icon: FileText,   action: () => window.dispatchEvent(new CustomEvent('open-resume')), style: 'ghost' },
     skills:         { label: 'Resume',     icon: FileText,   action: () => window.dispatchEvent(new CustomEvent('open-resume')), style: 'ghost' },
     projects:       { label: 'GitHub',     icon: FaGithub,   action: () => window.open('https://github.com/sujith1546', '_blank'), style: 'ghost' },
+    blog:           { label: 'GitHub',     icon: FaGithub,   action: () => window.open('https://github.com/sujith1546', '_blank'), style: 'ghost' },
     education:      { label: 'Resume',     icon: FileText,   action: () => window.dispatchEvent(new CustomEvent('open-resume')), style: 'ghost' },
     experience:     { label: 'Resume',     icon: FileText,   action: () => window.dispatchEvent(new CustomEvent('open-resume')), style: 'ghost' },
     certifications: { label: 'Resume',     icon: FileText,   action: () => window.dispatchEvent(new CustomEvent('open-resume')), style: 'ghost' },
@@ -224,6 +254,16 @@ export default function PortfolioLayout() {
 
   return (
     <div className="layout">
+      {/* Desktop Scroll Progress Bar */}
+      {!isMobile && scrollProgress > 0 && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, zIndex: 9999,
+          height: 2, background: 'linear-gradient(90deg, var(--primary-blue), #8b5cf6)',
+          width: `${scrollProgress * 100}%`,
+          transition: 'width 0.1s linear',
+          boxShadow: '0 0 8px var(--primary-blue)',
+        }} />
+      )}
       <AnimatePresence>
         {isMobile && isNavActive && (
           <motion.div
@@ -330,16 +370,19 @@ export default function PortfolioLayout() {
               }}
               className={`text-content
                 ${activeSection === 'home' ? ' home-content' : ''}
-                ${['contact','education','about','skills','experience','projects','certifications'].includes(activeSection) ? ' wide-content' : ''}
+                ${['contact','education','about','skills','experience','projects','certifications','blog'].includes(activeSection) ? ' wide-content' : ''}
               `}
             >
-              <Suspense fallback={
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', width: '100%' }}>
-                  <div className="spinner"></div>
-                </div>
-              }>
-                <ActiveComponent onNavClick={handleNavClick} />
-              </Suspense>
+              <ErrorBoundary>
+                <Suspense fallback={
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', width: '100%', flexDirection: 'column', gap: 16 }}>
+                    <div className="spinner" />
+                    <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>Loading...</span>
+                  </div>
+                }>
+                  <ActiveComponent onNavClick={handleNavClick} />
+                </Suspense>
+              </ErrorBoundary>
             </motion.div>
           </AnimatePresence>
         </div>

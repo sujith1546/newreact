@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { ScrollReveal, MobileDashboard } from '../components';
-import { Code, Briefcase, Mail, FileText, Sparkles, ArrowRight } from 'lucide-react';
+import { Code, Briefcase, Mail, FileText, Sparkles, ArrowRight, Zap, Calendar } from 'lucide-react';
 import useGlitchText from '../hooks/useGlitchText';
 import useRealtimeData from '../hooks/useRealtimeData';
+import GitHubActivity from '../components/widgets/GitHubActivity';
 
 export default function Home({ onNavClick }) {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
@@ -602,12 +603,58 @@ export default function Home({ onNavClick }) {
                 </div>
               </button>
             </div>
-          </div>
+            </div>
           
           <div className="home-image-side">
             <img src="/IMG_0322.jpg" alt="Sujith Thota" className="hero-img-new" />
           </div>
         </div>
+
+        {/* Currently Working On Widget — only shown on desktop when set */}
+        {!isMobile && settings?.current_project && (
+          <div style={{
+            marginTop: 28, padding: '16px 20px', borderRadius: 18,
+            background: 'linear-gradient(135deg, color-mix(in srgb, #f59e0b 8%, var(--bg-secondary)), var(--bg-secondary))',
+            border: '1px solid color-mix(in srgb, #f59e0b 25%, var(--border-color))',
+            display: 'flex', alignItems: 'center', gap: 16, maxWidth: 700,
+          }}>
+            <div style={{ padding: 10, background: 'color-mix(in srgb, #f59e0b 15%, transparent)', borderRadius: 12, color: '#f59e0b', flexShrink: 0 }}>
+              <Zap size={20} />
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 }}>Currently Building</div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{settings.current_project}</div>
+              <div style={{ marginTop: 8, height: 4, background: 'var(--border-color)', borderRadius: 4, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${settings.current_project_pct ?? 0}%`, background: 'linear-gradient(90deg, #f59e0b, #ef4444)', borderRadius: 4, transition: 'width 0.6s ease' }} />
+              </div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>{settings.current_project_status} · {settings.current_project_pct ?? 0}% complete</div>
+            </div>
+          </div>
+        )}
+
+        {/* Availability Badge */}
+        {!isMobile && settings?.availability_status && settings.availability_status !== 'In a Role' && (
+          <div style={{
+            marginTop: 16, display: 'inline-flex', alignItems: 'center', gap: 8,
+            padding: '8px 16px', borderRadius: 999,
+            background: 'color-mix(in srgb, #10b981 10%, var(--bg-secondary))',
+            border: '1px solid color-mix(in srgb, #10b981 30%, var(--border-color))',
+          }}>
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#10b981', animation: 'status-pulse 2s infinite', display: 'inline-block' }} />
+            <span style={{ fontSize: 13, fontWeight: 600, color: '#10b981' }}>{settings.availability_status}</span>
+            {settings.availability_from && (
+              <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>· from {new Date(settings.availability_from).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+            )}
+          </div>
+        )}
+
+        {/* GitHub Activity Heatmap — Desktop only */}
+        {!isMobile && (
+          <div style={{ marginTop: 32 }}>
+            <GitHubActivity />
+          </div>
+        )}
+
     </ScrollReveal>
   );
 }

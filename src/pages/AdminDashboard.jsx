@@ -21,6 +21,8 @@ import AuditHealthPanel from '../components/admin/panels/AuditHealthPanel';
 import CopilotPanel from '../components/admin/panels/CopilotPanel';
 import AiChatsPanel from '../components/admin/panels/AiChatsPanel';
 import AnalyticsPanel from '../components/admin/panels/AnalyticsPanel';
+import BlogPanel from '../components/admin/panels/BlogPanel';
+import TestimonialsPanel from '../components/admin/panels/TestimonialsPanel';
 
 import { NAV_GROUPS, ALL_NAV_ITEMS, styles } from '../components/admin/shared/constants';
 import { useDashboardStats } from '../components/admin/shared/useDashboardStats';
@@ -192,6 +194,8 @@ function AdminDashboardDesktop() {
           <div>
             {activeTab === "messages"       && <MessagesAdmin />}
             {activeTab === "projects"       && <ProjectsPanel />}
+            {activeTab === "blog"           && <BlogPanel />}
+            {activeTab === "testimonials"   && <TestimonialsPanel />}
             {activeTab === "updates"        && <UpdatesPanel />}
             {activeTab === "chats"          && <AiChatsPanel />}
             {activeTab === "settings"       && <SettingsPanel />}

@@ -51,6 +51,7 @@ const NAV_ITEMS_DEF = [
   { label: 'ABOUT', id: 'about' },
   { label: 'SKILLS', id: 'skills' },
   { label: 'PROJECTS', id: 'projects' },
+  { label: 'BLOG', id: 'blog' },
   { label: 'EDUCATION', id: 'education' },
   { label: 'EXPERIENCE', id: 'experience' },
   { label: 'CERTIFICATIONS', id: 'certifications' },
@@ -66,6 +67,7 @@ export default function Sidebar({ activeSection, onNavClick }) {
     if (item.id === 'certifications' && dbSettings?.feature_certifications === false) return false;
     return true;
   });
+  
   
   const NAV_ITEMS = getSectionOrder(baseItems);
 

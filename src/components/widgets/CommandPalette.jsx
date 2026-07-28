@@ -10,11 +10,13 @@ const NAV_ITEMS = [
   { id: "about", label: "Go to About", section: "about", icon: "user" },
   { id: "skills", label: "Go to Skills", section: "skills", icon: "bolt" },
   { id: "projects", label: "Go to Projects", section: "projects", icon: "folder" },
+  { id: "blog", label: "Go to Blog", section: "blog", icon: "pencil" },
   { id: "education", label: "Go to Education", section: "education", icon: "book" },
   { id: "experience", label: "Go to Experience", section: "experience", icon: "briefcase" },
   { id: "certifications", label: "Go to Certifications", section: "certifications", icon: "badge" },
   { id: "contact", label: "Go to Contact", section: "contact", icon: "mail" },
 ].map((i) => ({ ...i, group: "Navigation" }));
+
 
 const STATIC_PROJECTS = [
   {

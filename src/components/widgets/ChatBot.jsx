@@ -23,11 +23,13 @@ function generateUUID() {
 
 const SUGGESTED_QUESTIONS = [
   "What projects have you built?",
-  "What's your CGPA?",
-  "Are you open to hiring?",
+  "Tell me about your ML experience",
   "What's your strongest skill?",
+  "Are you available for hire?",
   "How can I contact you?",
-  "Tell me about your ML experience"
+  "What's your GitHub activity like?",
+  "Tell me about your education",
+  "What are you currently building?"
 ];
 
 const WELCOME_MESSAGE = {
@@ -474,7 +476,7 @@ export default function ChatBot() {
       if (navMatch && aiAutoNav) {
         const targetSection = navMatch[1].toLowerCase();
         const keyword = navMatch[2] ? navMatch[2].trim() : targetSection;
-        const validSections = ['home','about','skills','projects','education','experience','certifications','contact'];
+        const validSections = ['home','about','skills','projects','blog','education','experience','certifications','contact'];
 
         if (targetSection === 'resume') {
           setTimeout(() => {

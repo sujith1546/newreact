@@ -1,11 +1,12 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence, useAnimation, useMotionValue, useTransform } from "framer-motion";
-import { Mail, Phone, ArrowRight, Check, Loader2, Send, Copy, ChevronRight, MapPin, Clock, FileText, X, Contact as ContactIcon, ChevronLeft } from "lucide-react";
+import { Mail, Phone, ArrowRight, Check, Loader2, Send, Copy, ChevronRight, MapPin, Clock, FileText, X, Contact as ContactIcon, ChevronLeft, Calendar } from "lucide-react";
 import { FaGithub, FaLinkedin } from "react-icons/fa";
 import { ScrollReveal } from '../components';
 import { useIsland } from '../context/IslandContext';
 import { supabase } from '../lib/supabaseClient';
+import useRealtimeData from '../hooks/useRealtimeData';
 const getSessionToken = () => {
   if (typeof window === 'undefined') return '';
   let token = sessionStorage.getItem('x-portfolio-session');
@@ -95,6 +96,46 @@ export default function Contact() {
   const email = "sujithreddy1546@gmail.com";
   const phone = "+91 8501889996";
   const { triggerIsland } = useIsland();
+  const { data: settings } = useRealtimeData('site_settings', { single: true, filter: { column: 'id', value: 1 } });
+
+  // Canvas-based confetti burst 🎉
+  const launchConfetti = useCallback(() => {
+    const canvas = document.createElement('canvas');
+    canvas.className = 'confetti-canvas';
+    document.body.appendChild(canvas);
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const ctx = canvas.getContext('2d');
+    const particles = Array.from({ length: 120 }, () => ({
+      x: Math.random() * canvas.width,
+      y: Math.random() * -100,
+      vx: (Math.random() - 0.5) * 6,
+      vy: Math.random() * 4 + 2,
+      size: Math.random() * 8 + 4,
+      color: ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444','#ec4899'][Math.floor(Math.random() * 6)],
+      rotation: Math.random() * 360,
+      vr: (Math.random() - 0.5) * 10,
+    }));
+    let frame;
+    const animate = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      let alive = false;
+      particles.forEach(p => {
+        p.x += p.vx; p.y += p.vy; p.vy += 0.08; p.rotation += p.vr;
+        if (p.y < canvas.height + 20) alive = true;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.rotation * Math.PI) / 180);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.5);
+        ctx.restore();
+      });
+      if (alive) frame = requestAnimationFrame(animate);
+      else { cancelAnimationFrame(frame); document.body.removeChild(canvas); }
+    };
+    animate();
+    setTimeout(() => { cancelAnimationFrame(frame); if (canvas.parentNode) document.body.removeChild(canvas); }, 4000);
+  }, []);
 
   const [form, setForm] = useState({ name: "", email: "", message: "", _catch: "" });
   const [errors, setErrors] = useState({ name: "", email: "", message: "" });
@@ -260,6 +301,8 @@ END:VCARD`;
 
       localStorage.setItem("lastContactSent", Date.now().toString());
       setStatus("sent");
+      // 🎉 Confetti celebration
+      launchConfetti();
       triggerIsland({
         title: 'Message Sent',
         subtitle: "I'll get back to you shortly",
@@ -774,6 +817,21 @@ END:VCARD`;
                 <p className="mc-page-sub">Have a question or want to work together?</p>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+                {/* Availability badge */}
+                {settings?.availability_status && settings.availability_status !== 'In a Role' && (
+                  <div style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 7,
+                    padding: '5px 14px', borderRadius: 999,
+                    background: 'color-mix(in srgb, #10b981 10%, var(--bg-secondary))',
+                    border: '1px solid color-mix(in srgb, #10b981 30%, var(--border-color))',
+                  }}>
+                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#10b981', animation: 'status-pulse 2s infinite', display: 'inline-block' }} />
+                    <span style={{ fontSize: 12, fontWeight: 700, color: '#10b981' }}>{settings.availability_status}</span>
+                    {settings.availability_from && (
+                      <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>· from {new Date(settings.availability_from).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+                    )}
+                  </div>
+                )}
                 {/* Compact chip — no longer a full-width button */}
                 <button className="mc-card-chip" onClick={() => setIsContactCardOpen(true)}>
                   <ContactIcon size={12} />
@@ -781,6 +839,7 @@ END:VCARD`;
                 </button>
               </div>
             </div>
+
 
             {/* Form / Success - No Glass Cards to save vertical space */}
             <AnimatePresence mode="wait" initial={false}>
