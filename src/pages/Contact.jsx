@@ -369,10 +369,10 @@ END:VCARD`;
     <ScrollReveal>
       <style>{`
         /* ===== SHARED ===== */
-        .contact-page-wrap { width: 100%; max-width: 840px; box-sizing: border-box; }
-        .contact-plain-header { margin-bottom: 2px; }
-        .contact-plain-header h1 { font-size: 24px; font-weight: 700; color: var(--text-primary); margin: 0 0 2px; }
-        .contact-plain-header p { color: var(--text-secondary); margin: 0; font-size: 12.5px; }
+        .contact-page-wrap { width: 100%; max-width: 1100px; box-sizing: border-box; }
+        .contact-plain-header { margin-bottom: 8px; }
+        .contact-plain-header h1 { font-size: 28px; font-weight: 800; color: var(--text-primary); margin: 0 0 4px; }
+        .contact-plain-header p { color: var(--text-secondary); margin: 0; font-size: 15px; }
 
         @media (min-width: 901px) {
           .contact-page-wrap {
@@ -382,56 +382,56 @@ END:VCARD`;
           }
           .fc-wrapper {
             flex: 1;
-            grid-template-columns: 1.15fr 1.35fr;
+            grid-template-columns: 1fr 1.3fr;
             min-height: auto;
           }
         }
 
         /* ===== DESKTOP ===== */
         .fc-wrapper {
-          border-radius: 14px; overflow: hidden;
-          display: grid; grid-template-columns: 1.15fr 1.35fr;
+          border-radius: 20px; overflow: hidden;
+          display: grid; grid-template-columns: 1fr 1.3fr;
           border: 1px solid var(--border-color); width: 100%;
           box-sizing: border-box;
-          box-shadow: 0 8px 30px rgba(0,0,0,0.03);
+          box-shadow: 0 12px 40px rgba(0,0,0,0.04);
         }
         .fc-right-col { display: flex; flex-direction: column; min-width: 0; background: var(--bg-secondary); justify-content: space-between; }
         .fc-info-panel {
           background: linear-gradient(145deg, #0b0f19, #111827);
-          padding: 1.15rem 1.25rem; color: #fff;
+          padding: 2.5rem 3rem; color: #fff;
           display: flex; flex-direction: column; justify-content: space-between;
           position: relative; overflow: hidden;
         }
-        .fc-dotgrid { position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,0.12) 1.2px, transparent 1.2px); background-size: 18px 18px; pointer-events: none; }
-        .fc-glow { position: absolute; top: -60px; right: -60px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, rgba(59,130,246,0.15), transparent 70%); pointer-events: none; }
-        .fc-badge { display: inline-flex; align-items: center; gap: 5px; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25); border-radius: 999px; padding: 3px 10px; font-size: 10.5px; font-weight: 600; color: #34d399; margin-bottom: 6px; width: fit-content; }
-        .fc-badge-dot { width: 5px; height: 5px; border-radius: 50%; background: #10b981; box-shadow: 0 0 6px #10b981; flex-shrink: 0; animation: pulseDot 2s infinite ease-in-out; }
-        .fc-title { font-size: 19px; font-weight: 700; line-height: 1.25; margin: 0 0 3px; color: #fff; }
-        .fc-subtitle { font-size: 11px; color: #9ca3af; line-height: 1.35; margin: 0 0 6px; }
+        .fc-dotgrid { position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,0.12) 1.5px, transparent 1.5px); background-size: 22px 22px; pointer-events: none; }
+        .fc-glow { position: absolute; top: -60px; right: -60px; width: 300px; height: 300px; border-radius: 50%; background: radial-gradient(circle, rgba(59,130,246,0.15), transparent 70%); pointer-events: none; }
+        .fc-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25); border-radius: 999px; padding: 4px 12px; font-size: 12px; font-weight: 600; color: #34d399; margin-bottom: 12px; width: fit-content; }
+        .fc-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981; flex-shrink: 0; animation: pulseDot 2s infinite ease-in-out; }
+        .fc-title { font-size: 28px; font-weight: 700; line-height: 1.25; margin: 0 0 6px; color: #fff; }
+        .fc-subtitle { font-size: 15px; color: #9ca3af; line-height: 1.5; margin: 0 0 12px; }
         
         .fc-terminal-line {
           font-family: var(--font-mono, monospace);
-          font-size: 10px; color: #6b7280;
-          margin: 0 0 8px 0;
-          display: flex; align-items: center; gap: 4px;
+          font-size: 13px; color: #6b7280;
+          margin: 0 0 20px 0;
+          display: flex; align-items: center; gap: 6px;
           background: rgba(255,255,255,0.04);
-          padding: 3px 8px; border-radius: 5px;
+          padding: 6px 12px; border-radius: 6px;
           border: 1px solid rgba(255,255,255,0.06);
         }
 
-        .fc-info-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; border-radius: 6px; padding: 4px 6px; margin-left: -6px; transition: background 0.2s; text-decoration: none; }
+        .fc-info-row { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; border-radius: 8px; padding: 6px 10px; margin-left: -10px; transition: background 0.2s; text-decoration: none; }
         .fc-info-row:hover { background: rgba(255,255,255,0.06); }
         .fc-info-row:hover .fc-info-text { color: #fff; }
-        .fc-info-icon { width: 26px; height: 26px; border-radius: 6px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; color: #3b82f6; flex-shrink: 0; }
-        .fc-info-text { font-size: 11px; color: #d1d5db; font-weight: 500; }
-        .fc-info-sub { font-size: 9.5px; color: #9ca3af; margin-top: 0px; }
+        .fc-info-icon { width: 40px; height: 40px; border-radius: 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; color: #3b82f6; flex-shrink: 0; }
+        .fc-info-text { font-size: 15px; color: #d1d5db; font-weight: 500; }
+        .fc-info-sub { font-size: 12.5px; color: #9ca3af; margin-top: 2px; }
 
         .fc-social-panel-row {
-          display: flex; gap: 6px; margin-top: 6px; padding-top: 6px;
+          display: flex; gap: 10px; margin-top: 16px; padding-top: 16px;
           border-top: 1px solid rgba(255,255,255,0.08);
         }
         .fc-social-chip {
-          width: 28px; height: 28px; border-radius: 6px;
+          width: 42px; height: 42px; border-radius: 8px;
           background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
           display: flex; align-items: center; justify-content: center;
           color: #9ca3af; text-decoration: none; transition: all 0.2s ease;
@@ -445,16 +445,16 @@ END:VCARD`;
         .fc-action-mini-grid {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
-          gap: 6px;
-          margin-top: 8px;
-          padding-top: 8px;
+          gap: 10px;
+          margin-top: 16px;
+          padding-top: 16px;
           border-top: 1px solid rgba(255,255,255,0.08);
         }
         .fc-mini-chip {
-          display: flex; align-items: center; justify-content: center; gap: 5px;
-          padding: 5px 8px; border-radius: 6px;
+          display: flex; align-items: center; justify-content: center; gap: 8px;
+          padding: 10px 14px; border-radius: 8px;
           background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
-          color: #d1d5db; font-size: 10.5px; font-weight: 600; text-decoration: none;
+          color: #d1d5db; font-size: 13px; font-weight: 600; text-decoration: none;
           cursor: pointer; transition: all 0.2s ease; outline: none;
         }
         .fc-mini-chip:hover {
@@ -462,61 +462,61 @@ END:VCARD`;
           transform: translateY(-1px);
         }
 
-        .fc-form-panel { padding: 1.1rem 1.2rem; display: flex; flex-direction: column; gap: 8px; flex-grow: 1; justify-content: space-between; }
-        .fc-field { display: flex; flex-direction: column; gap: 3px; }
+        .fc-form-panel { padding: 2.5rem 3rem; display: flex; flex-direction: column; gap: 20px; flex-grow: 1; justify-content: space-between; }
+        .fc-field { display: flex; flex-direction: column; gap: 8px; }
         .fc-field-header { display: flex; justify-content: space-between; align-items: center; }
-        .fc-field label { font-size: 10.5px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
-        .fc-char-count { font-size: 10px; font-weight: 600; color: var(--text-muted); }
+        .fc-field label { font-size: 13px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+        .fc-char-count { font-size: 12px; font-weight: 600; color: var(--text-muted); }
         .fc-char-count.warning { color: #f59e0b; }
         .fc-char-count.limit { color: #ef4444; }
 
-        .fc-input { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 10px; font-size: 12px; color: var(--text-primary); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+        .fc-input { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px 18px; font-size: 15px; color: var(--text-primary); outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
         .fc-input:focus { border-color: var(--primary-blue); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
         .fc-input.error { border-color: #ef4444 !important; }
         
         /* High Contrast Submit Button */
         .fc-submit-btn {
-          height: 38px; border-radius: 6px;
+          height: 52px; border-radius: 8px;
           background: var(--primary-blue, #2563eb);
           color: #ffffff !important;
-          font-size: 13px; font-weight: 700; border: none; cursor: pointer;
+          font-size: 16px; font-weight: 700; border: none; cursor: pointer;
           display: flex; align-items: center; justify-content: center;
-          box-shadow: 0 3px 10px rgba(37,99,235,0.25);
+          box-shadow: 0 4px 14px rgba(37,99,235,0.3);
           transition: all 0.2s ease;
-          margin-top: 6px;
+          margin-top: 8px;
         }
         .fc-submit-btn span { color: #ffffff !important; }
         .fc-submit-btn:hover {
           background: #1d4ed8;
-          transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(37,99,235,0.35);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(37,99,235,0.4);
         }
         .fc-submit-btn:active { transform: scale(0.98); }
         .fc-submit-btn:disabled { opacity: 0.7; cursor: not-allowed; }
 
         /* Integrated FAQ inside Right Panel */
         .fc-panel-faq {
-          margin-top: 6px;
-          padding-top: 6px;
+          margin-top: 8px;
+          padding-top: 8px;
           border-top: 1px solid var(--border-color);
-          display: flex; flex-direction: column; gap: 4px;
+          display: flex; flex-direction: column; gap: 8px;
         }
         .fc-faq-item {
           background: var(--bg-primary);
           border: 1px solid var(--border-color);
-          border-radius: 6px;
+          border-radius: 8px;
           overflow: hidden;
         }
         .fc-faq-q {
-          padding: 5px 8px;
+          padding: 12px 16px;
           display: flex; align-items: center; justify-content: space-between;
-          font-size: 11px; font-weight: 600; color: var(--text-primary);
+          font-size: 14px; font-weight: 600; color: var(--text-primary);
           cursor: pointer; user-select: none;
         }
         .fc-faq-q:hover { color: var(--primary-blue); }
         .fc-faq-a {
-          padding: 0 8px 5px 8px;
-          font-size: 10.5px; color: var(--text-secondary); line-height: 1.35;
+          padding: 0 16px 12px 16px;
+          font-size: 13px; color: var(--text-secondary); line-height: 1.45;
         }
 
 
@@ -896,21 +896,21 @@ END:VCARD`;
                 </div>
                 <div>
                   <div className="fc-info-row">
-                    <div className="fc-info-icon"><Clock size={15} /></div>
+                    <div className="fc-info-icon"><Clock size={20} /></div>
                     <div>
                       <div className="fc-info-text">Vellore, India (IST)</div>
                       <div className="fc-info-sub">{localTime || '3:15 PM'}</div>
                     </div>
                   </div>
                   <a href={`mailto:${email}`} className="fc-info-row" style={{ textDecoration: 'none' }}>
-                    <div className="fc-info-icon"><Mail size={15} /></div>
+                    <div className="fc-info-icon"><Mail size={20} /></div>
                     <div>
                       <div className="fc-info-text">{email}</div>
                       <div className="fc-info-sub">Primary Email</div>
                     </div>
                   </a>
                   <a href={`tel:${phone}`} className="fc-info-row" style={{ textDecoration: 'none' }}>
-                    <div className="fc-info-icon"><Phone size={15} /></div>
+                    <div className="fc-info-icon"><Phone size={20} /></div>
                     <div>
                       <div className="fc-info-text">{phone}</div>
                       <div className="fc-info-sub">Direct Call</div>
@@ -920,32 +920,32 @@ END:VCARD`;
                   {/* Direct Social Links Panel */}
                   <div className="fc-social-panel-row">
                     <a href="https://github.com/sujith1546" target="_blank" rel="noreferrer" className="fc-social-chip" title="GitHub">
-                      <FaGithub size={14} />
+                      <FaGithub size={20} />
                     </a>
                     <a href="https://www.linkedin.com/in/thota-sujith-reddy" target="_blank" rel="noreferrer" className="fc-social-chip" title="LinkedIn">
-                      <FaLinkedin size={14} />
+                      <FaLinkedin size={20} />
                     </a>
                     <a href="https://instagram.com" target="_blank" rel="noreferrer" className="fc-social-chip" title="Instagram">
-                      <FaInstagram size={14} />
+                      <FaInstagram size={20} />
                     </a>
                     <a href={`mailto:${email}`} className="fc-social-chip" title="Direct Mail">
-                      <Mail size={14} />
+                      <Mail size={20} />
                     </a>
                   </div>
 
                   {/* Merged 2x2 Action Grid inside Left Card */}
                   <div className="fc-action-mini-grid">
                     <a href={`mailto:${email}?subject=Schedule%20a%20Call`} className="fc-mini-chip">
-                      <Calendar size={12} color="#3b82f6" /> Schedule
+                      <Calendar size={16} color="#3b82f6" /> Schedule
                     </a>
                     <a href="/resume.pdf" onClick={handleDownloadClick} className="fc-mini-chip">
-                      <Download size={12} color="#10b981" /> Resume
+                      <Download size={16} color="#10b981" /> Resume
                     </a>
                     <a href={`mailto:${email}`} className="fc-mini-chip">
-                      <Mail size={12} color="#f59e0b" /> Email
+                      <Mail size={16} color="#f59e0b" /> Email
                     </a>
                     <button onClick={handleSaveContact} className="fc-mini-chip">
-                      <User size={12} color="#8b5cf6" /> vCard
+                      <User size={16} color="#8b5cf6" /> vCard
                     </button>
                   </div>
                 </div>
@@ -1005,7 +1005,7 @@ END:VCARD`;
                         <div className="fc-faq-item">
                           <div className="fc-faq-q" onClick={() => toggleFaq(0)}>
                             <span>Open to remote/relocation?</span>
-                            <ChevronDown size={14} style={{ transform: openFaq === 0 ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
+                            <ChevronDown size={18} style={{ transform: openFaq === 0 ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
                           </div>
                           {openFaq === 0 && (
                             <div className="fc-faq-a">
@@ -1017,7 +1017,7 @@ END:VCARD`;
                         <div className="fc-faq-item">
                           <div className="fc-faq-q" onClick={() => toggleFaq(1)}>
                             <span>Notice period / availability?</span>
-                            <ChevronDown size={14} style={{ transform: openFaq === 1 ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
+                            <ChevronDown size={18} style={{ transform: openFaq === 1 ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
                           </div>
                           {openFaq === 1 && (
                             <div className="fc-faq-a">
@@ -1029,7 +1029,7 @@ END:VCARD`;
                         <div className="fc-faq-item">
                           <div className="fc-faq-q" onClick={() => toggleFaq(2)}>
                             <span>Preferred contact method?</span>
-                            <ChevronDown size={14} style={{ transform: openFaq === 2 ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
+                            <ChevronDown size={18} style={{ transform: openFaq === 2 ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }} />
                           </div>
                           {openFaq === 2 && (
                             <div className="fc-faq-a">
@@ -1042,8 +1042,8 @@ END:VCARD`;
                       <button type="submit" className="fc-submit-btn" disabled={status === "sending"}>
                         <AnimatePresence mode="wait" initial={false}>
                           {status === "sending"
-                            ? <motion.span key="l" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#ffffff' }}><Loader2 size={15} className="spin" style={{ animation: 'spin 1s linear infinite' }} /> Sending...</motion.span>
-                            : <motion.span key="i" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#ffffff' }}>Send message <ArrowRight size={15} /></motion.span>}
+                            ? <motion.span key="l" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#ffffff' }}><Loader2 size={18} className="spin" style={{ animation: 'spin 1s linear infinite' }} /> Sending...</motion.span>
+                            : <motion.span key="i" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#ffffff' }}>Send message <ArrowRight size={18} /></motion.span>}
                         </AnimatePresence>
                       </button>
                     </motion.form>
