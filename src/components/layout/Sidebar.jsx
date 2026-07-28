@@ -59,10 +59,11 @@ const NAV_ITEMS_DEF = [
   { label: 'CONTACT', id: 'contact' },
 ];
 
-import LivePresenceBadge from '../widgets/LivePresenceBadge';
+import { useSupabasePresence } from '../../hooks/useSupabasePresence';
 
 export default function Sidebar({ activeSection, onNavClick }) {
   const { data: dbSettings } = useRealtimeData('site_settings', { single: true, filter: { column: 'id', value: 1 } });
+  const { visitorCount, isConnected } = useSupabasePresence();
   const { getSectionOrder } = usePersona();
   
   const baseItems = NAV_ITEMS_DEF.filter(item => {
@@ -216,14 +217,30 @@ export default function Sidebar({ activeSection, onNavClick }) {
         </div>
       </div>
       <h2>Sujith Thota</h2>
-      <p className="sidebar-title" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "5px" }}>
+      <p className="sidebar-title" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "5px", flexWrap: "wrap" }}>
         <MapPin size={13} />
-        Vellore, India · {localTime}
+        <span>Vellore, India · {localTime}</span>
+        {isConnected && visitorCount !== null && visitorCount > 0 && (
+          <span 
+            title="Live count of active visitors/tabs connected to this portfolio"
+            style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
+          >
+            <span>·</span>
+            <span
+              style={{
+                width: '5px',
+                height: '5px',
+                borderRadius: '50%',
+                background: '#10b981',
+                boxShadow: '0 0 4px rgba(16, 185, 129, 0.4)',
+                display: 'inline-block'
+              }}
+            />
+            <span style={{ color: '#10b981', fontWeight: 600 }}>{visitorCount}</span>
+            <span>online</span>
+          </span>
+        )}
       </p>
-
-      <div style={{ marginTop: '6px', marginBottom: '4px', display: 'flex', justifyContent: 'center' }}>
-        <LivePresenceBadge />
-      </div>
 
       <ul>
         {NAV_ITEMS.map(({ label, id }) => (
