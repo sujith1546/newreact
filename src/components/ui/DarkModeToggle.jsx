@@ -1,133 +1,125 @@
 import { useTheme } from '../../context/ThemeContext';
 import { Sun, Moon } from 'lucide-react';
-import { motion } from 'framer-motion';
-
-const sunPath = "M 12 8 C 14.2 8 16 9.8 16 12 C 16 14.2 14.2 16 12 16 C 9.8 16 8 14.2 8 12 C 8 9.8 9.8 8 12 8 Z M12 2v2 M12 20v2 M4.93 4.93l1.41 1.41 M17.66 17.66l1.41 1.41 M2 12h2 M20 12h2 M6.34 17.66l-1.41 1.41 M19.07 4.93l-1.41 1.41";
-const moonPath = "M 12 3 C 16.97 3 21 7.03 21 12 C 21 16.97 16.97 21 12 21 C 14.5 17.5 16 14.5 16 12 C 16 9.5 14.5 6.5 12 3 Z M12 2v0 M12 20v0 M4.93 4.93l0 0 M17.66 17.66l0 0 M2 12h0 M20 12h0 M6.34 17.66l0 0 M19.07 4.93l0 0";
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function DarkModeToggle() {
   const { theme, toggleTheme } = useTheme();
-  
+  const isDark = theme === 'dark';
+
   return (
     <>
       <style>{`
         .theme-toggle-pill {
           position: relative;
-          width: 68px;
-          height: 34px;
-          border-radius: 17px;
-          border-radius: 17px;
-          background: rgba(243, 244, 246, 0.85); /* Slightly off-white to stand out */
+          width: 62px;
+          height: 32px;
+          border-radius: 999px;
+          background: rgba(243, 244, 246, 0.85);
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
           border: 1px solid rgba(0, 0, 0, 0.1);
-          box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 4px;
+          padding: 3px;
           cursor: pointer;
           z-index: 2000;
           transition: all 0.3s ease;
+          user-select: none;
         }
+
         [data-theme="dark"] .theme-toggle-pill {
-          background: rgba(30, 30, 30, 0.5);
-          border-color: rgba(255,255,255,0.08);
-          box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+          background: rgba(30, 30, 30, 0.65);
+          border-color: rgba(255, 255, 255, 0.1);
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
         }
 
         .theme-toggle-pill:hover {
           transform: translateY(-2px);
-          box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
         }
+
         [data-theme="dark"] .theme-toggle-pill:hover {
-          box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.35);
         }
 
-        .theme-toggle-slider {
-          position: absolute;
-          width: 28px;
-          height: 28px;
-          background: #ffffff;
-          border-radius: 50%;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.05);
-          transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        .theme-toggle-track-icon {
+          width: 26px;
+          height: 26px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           z-index: 1;
-        }
-        [data-theme="dark"] .theme-toggle-slider {
-          background: #333333;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-          border: 1px solid rgba(255,255,255,0.05);
-        }
-        
-        .slider-light {
-          transform: translateX(0);
-        }
-        .slider-dark {
-          transform: translateX(32px);
+          color: #9ca3af;
+          transition: opacity 0.3s ease;
         }
 
-        .theme-toggle-icon {
-          width: 28px;
-          height: 28px;
+        .theme-toggle-knob {
+          position: absolute;
+          top: 2px;
+          left: 2px;
+          width: 26px;
+          height: 26px;
+          border-radius: 50%;
+          background: #ffffff;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
           display: flex;
           align-items: center;
           justify-content: center;
           z-index: 2;
-          color: #9ca3af;
-          transition: color 0.3s ease;
-        }
-        
-        /* Light mode active icon (Sun) */
-        .theme-toggle-pill:not([data-theme="dark"]) .theme-toggle-icon.active {
-          color: var(--primary-blue);
-        }
-        
-        /* Dark mode active icon (Moon) */
-        [data-theme="dark"] .theme-toggle-pill .theme-toggle-icon.active {
-          color: #eab308; /* Yellow 500 */
+          transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), background 0.3s ease;
         }
 
-        @media (max-width: 900px) {
-          .theme-toggle-pill { top: 16px; right: 16px; }
-        }
-
-        .slider-icon-inner {
-          width: 100%;
-          height: 100%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: var(--primary-blue);
-          transition: color 0.4s ease;
-        }
-        [data-theme="dark"] .slider-icon-inner {
-          color: #eab308;
+        [data-theme="dark"] .theme-toggle-knob {
+          transform: translateX(30px);
+          background: #262626;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.08);
         }
       `}</style>
-      
+
       <div 
         className="theme-toggle-pill" 
         onClick={toggleTheme} 
-        title="Toggle Theme"
+        title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+        aria-label="Toggle dark mode"
         id="darkModeToggle"
       >
-        <div className={`theme-toggle-slider ${theme === 'dark' ? 'slider-dark' : 'slider-light'}`}>
-          <div className="slider-icon-inner">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transition: 'transform 0.4s ease', transform: theme === 'dark' ? 'rotate(360deg)' : 'rotate(0deg)' }}>
-              <motion.path
-                initial={{ d: sunPath }}
-                animate={{ d: theme === 'dark' ? moonPath : sunPath }}
-                transition={{ duration: 0.4, ease: 'easeInOut' }}
-              />
-            </svg>
-          </div>
+        {/* Track icons (subtle visual cues on left & right) */}
+        <div className="theme-toggle-track-icon" style={{ opacity: isDark ? 0.35 : 0 }}>
+          <Sun size={12} strokeWidth={2.2} />
         </div>
-        <div className={`theme-toggle-icon ${theme === 'light' ? 'active' : ''}`}>
-          <Sun size={11} strokeWidth={2.5} />
+        <div className="theme-toggle-track-icon" style={{ opacity: isDark ? 0 : 0.35 }}>
+          <Moon size={12} strokeWidth={2.2} />
         </div>
-        <div className={`theme-toggle-icon ${theme === 'dark' ? 'active' : ''}`}>
-          <Moon size={11} strokeWidth={2.5} />
+
+        {/* Sliding Knob containing active icon with scale/rotate transition */}
+        <div className="theme-toggle-knob">
+          <AnimatePresence mode="wait" initial={false}>
+            {isDark ? (
+              <motion.div
+                key="moon"
+                initial={{ scale: 0.4, rotate: -90, opacity: 0 }}
+                animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                exit={{ scale: 0.4, rotate: 90, opacity: 0 }}
+                transition={{ duration: 0.22, ease: 'easeOut' }}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#eab308' }}
+              >
+                <Moon size={13} strokeWidth={2.5} fill="#eab308" fillOpacity={0.25} />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="sun"
+                initial={{ scale: 0.4, rotate: 90, opacity: 0 }}
+                animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                exit={{ scale: 0.4, rotate: -90, opacity: 0 }}
+                transition={{ duration: 0.22, ease: 'easeOut' }}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0284c7' }}
+              >
+                <Sun size={13} strokeWidth={2.5} />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </>
