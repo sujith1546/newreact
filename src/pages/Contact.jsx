@@ -36,7 +36,7 @@ const SwipeToSend = ({ onSend, status, isFormValid, triggerValidation }) => {
     const knobWidth = 44;
     const padding = 12; // 6px each side
     const maxDrag = containerWidth - knobWidth - padding;
-    
+
     if (info.offset.x >= maxDrag * 0.75) {
       if (!isFormValid) {
         controls.start({ x: 0, transition: { type: 'spring', stiffness: 400, damping: 15 } });
@@ -62,8 +62,8 @@ const SwipeToSend = ({ onSend, status, isFormValid, triggerValidation }) => {
   const textOpacity = useTransform(x, [0, 120], [1, 0]);
 
   return (
-    <div 
-      className="swipe-send-container" 
+    <div
+      className="swipe-send-container"
       ref={containerRef}
       onTouchStart={(e) => e.stopPropagation()}
       onTouchMove={(e) => e.stopPropagation()}
@@ -113,7 +113,7 @@ export default function Contact() {
       vx: (Math.random() - 0.5) * 6,
       vy: Math.random() * 4 + 2,
       size: Math.random() * 8 + 4,
-      color: ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444','#ec4899'][Math.floor(Math.random() * 6)],
+      color: ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#ef4444', '#ec4899'][Math.floor(Math.random() * 6)],
       rotation: Math.random() * 360,
       vr: (Math.random() - 0.5) * 10,
     }));
@@ -203,7 +203,7 @@ END:VCARD`;
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    
+
     triggerIsland({
       title: 'Contact Saved',
       subtitle: 'vCard downloaded successfully',
@@ -221,11 +221,11 @@ END:VCARD`;
 
   const validateField = (name, value) => {
     let error = "";
-    
+
     // 1. Basic empty check
     if (!value.trim()) {
       error = `${name.charAt(0).toUpperCase() + name.slice(1)} is required.`;
-    } 
+    }
     // 2. Length limits (anti-spam)
     else if (name === "name" && value.length > 60) {
       error = "Name is too long (max 60 chars).";
@@ -260,7 +260,7 @@ END:VCARD`;
 
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
-    
+
     // HONEYPOT TRAP
     if (form._catch) {
       // Bot detected! Submit it to the API to silently swallow and log it
@@ -278,7 +278,7 @@ END:VCARD`;
       } catch (e) {
         // Silently fail
       }
-      
+
       setStatus("sent");
       triggerIsland({
         title: 'Security Alert',
@@ -289,7 +289,7 @@ END:VCARD`;
       setTimeout(() => { setStatus("idle"); setForm({ name: "", email: "", message: "", _catch: "" }); }, 3000);
       return;
     }
-    
+
     // Validate all fields using the updated robust validator
     let hasErrors = false;
     const newErrors = {};
@@ -303,9 +303,9 @@ END:VCARD`;
     });
 
     setTouched({ name: true, email: true, message: true });
-    if (hasErrors) { 
-      setErrors(prev => ({ ...prev, ...newErrors })); 
-      return; 
+    if (hasErrors) {
+      setErrors(prev => ({ ...prev, ...newErrors }));
+      return;
     }
 
     // Client-side Rate Limiting (prevent spamming API)
@@ -316,7 +316,7 @@ END:VCARD`;
     }
 
     setStatus("sending");
-    
+
     try {
       // Send to backend API for robust processing (rate-limit, spam score, email, DB insert)
       const res = await fetch('/api/contact', {
@@ -351,7 +351,7 @@ END:VCARD`;
       setForm({ name: "", email: "", message: "", _catch: "" });
       setTouched({ name: false, email: false, message: false });
       setTimeout(() => setStatus("idle"), 5000);
-      
+
     } catch (err) {
       console.error(err);
       setStatus("idle");
@@ -380,14 +380,16 @@ END:VCARD`;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            min-height: calc(100vh - 120px);
+            height: calc(100vh - 80px);
+            overflow: hidden;
           }
           .contact-plain-header { width: 100%; text-align: left; }
           .fc-wrapper {
             flex: none;
             grid-template-columns: 1fr 1.3fr;
-            min-height: 0;
-            height: auto;
+            width: 100%;
+            height: 100%;
+            max-height: 760px;
           }
         }
 
@@ -524,7 +526,7 @@ END:VCARD`;
 
         /* ===== COMPACT LAPTOP FIX (Max Height 850px) ===== */
         @media (min-width: 901px) and (max-height: 850px) {
-          .contact-page-wrap { max-width: 1000px; min-height: calc(100vh - 80px); }
+          .contact-page-wrap { max-width: 1000px; height: calc(100vh - 80px); overflow: hidden; }
           .fc-info-panel, .fc-form-panel { padding: 1rem 1.5rem; }
           .fc-title { font-size: 22px; margin: 0 0 4px; }
           .fc-subtitle { font-size: 13px; margin: 0 0 8px; }
@@ -1120,7 +1122,7 @@ END:VCARD`;
               ) : (
                 <motion.div key="form" className="mc-form-container" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                   <h2 className="mc-form-title"><Send size={18} color="var(--primary-blue)" /> Send a Message</h2>
-                  
+
                   {/* Honeypot field - Invisible to humans, bots will fill it */}
                   <input type="text" name="_catch" style={{ display: 'none' }} value={form._catch} onChange={handleChange} tabIndex="-1" autoComplete="off" />
 
@@ -1142,10 +1144,10 @@ END:VCARD`;
                     {touched.message && errors.message && <span className="mc-error-msg">{errors.message}</span>}
                   </div>
 
-                  <SwipeToSend 
-                    onSend={handleSubmit} 
-                    status={status} 
-                    isFormValid={form.name.trim() !== "" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email) && form.message.trim() !== ""} 
+                  <SwipeToSend
+                    onSend={handleSubmit}
+                    status={status}
+                    isFormValid={form.name.trim() !== "" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email) && form.message.trim() !== ""}
                     triggerValidation={() => {
                       const newErrors = {};
                       if (!form.name.trim()) newErrors.name = "Name is required.";
@@ -1154,7 +1156,7 @@ END:VCARD`;
                       if (!form.message.trim()) newErrors.message = "Message is required.";
                       setTouched({ name: true, email: true, message: true });
                       setErrors(prev => ({ ...prev, ...newErrors }));
-                    }} 
+                    }}
                   />
                 </motion.div>
               )}
