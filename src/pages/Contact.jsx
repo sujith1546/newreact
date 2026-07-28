@@ -376,16 +376,14 @@ END:VCARD`;
 
         @media (min-width: 901px) {
           .contact-page-wrap {
-            height: calc(100vh - 120px);
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            overflow: hidden;
+            justify-content: center;
           }
           .fc-wrapper {
             flex: 1;
             grid-template-columns: 1.15fr 1.35fr;
-            min-height: 0 !important;
+            min-height: auto;
           }
         }
 
@@ -478,15 +476,16 @@ END:VCARD`;
         
         /* High Contrast Submit Button */
         .fc-submit-btn {
-          height: 36px; border-radius: 6px;
+          height: 38px; border-radius: 6px;
           background: var(--primary-blue, #2563eb);
           color: #ffffff !important;
-          font-size: 12.5px; font-weight: 700; border: none; cursor: pointer;
+          font-size: 13px; font-weight: 700; border: none; cursor: pointer;
           display: flex; align-items: center; justify-content: center;
           box-shadow: 0 3px 10px rgba(37,99,235,0.25);
           transition: all 0.2s ease;
-          margin-top: 2px;
+          margin-top: 6px;
         }
+        .fc-submit-btn span { color: #ffffff !important; }
         .fc-submit-btn:hover {
           background: #1d4ed8;
           transform: translateY(-1px);
@@ -1001,16 +1000,7 @@ END:VCARD`;
                           value={form.message} onChange={handleChange} onBlur={handleBlur} style={{ resize: 'none' }} />
                         {touched.message && errors.message && <span className="fc-error-text">{errors.message}</span>}
                       </div>
-
-                      <button type="submit" className="fc-submit-btn" disabled={status === "sending"}>
-                        <AnimatePresence mode="wait" initial={false}>
-                          {status === "sending"
-                            ? <motion.span key="l" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Loader2 size={15} className="spin" style={{ animation: 'spin 1s linear infinite' }} /> Sending...</motion.span>
-                            : <motion.span key="i" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>Send message <ArrowRight size={15} /></motion.span>}
-                        </AnimatePresence>
-                      </button>
-
-                      {/* Integrated Compact FAQ List inside Form Card */}
+                      {/* Integrated Compact FAQ List inside Form Card (Moved ABOVE submit button) */}
                       <div className="fc-panel-faq">
                         <div className="fc-faq-item">
                           <div className="fc-faq-q" onClick={() => toggleFaq(0)}>
@@ -1048,6 +1038,14 @@ END:VCARD`;
                           )}
                         </div>
                       </div>
+
+                      <button type="submit" className="fc-submit-btn" disabled={status === "sending"}>
+                        <AnimatePresence mode="wait" initial={false}>
+                          {status === "sending"
+                            ? <motion.span key="l" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#ffffff' }}><Loader2 size={15} className="spin" style={{ animation: 'spin 1s linear infinite' }} /> Sending...</motion.span>
+                            : <motion.span key="i" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#ffffff' }}>Send message <ArrowRight size={15} /></motion.span>}
+                        </AnimatePresence>
+                      </button>
                     </motion.form>
                   )}
                 </AnimatePresence>
