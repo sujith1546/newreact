@@ -66,22 +66,22 @@ export default function About() {
           width: 100%;
           display: flex;
           flex-direction: column;
-          gap: 16px;
+          gap: 8px;
         }
 
         /* Header */
         .about-header {
-          margin-bottom: 2px;
+          margin-bottom: 0px;
         }
 
         .about-header h1 {
-          font-size: 26px;
+          font-size: 24px;
           font-weight: 700;
           color: var(--text-primary);
-          margin: 0 0 3px;
+          margin: 0 0 2px;
         }
         .about-header p {
-          font-size: 13px;
+          font-size: 12.5px;
           color: var(--text-secondary);
           margin: 0;
         }
@@ -90,24 +90,25 @@ export default function About() {
         .about-bio-card {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
-          border-radius: 16px;
-          padding: 18px 22px;
+          border-radius: 12px;
+          padding: 11px 16px;
           display: flex;
           align-items: flex-start;
-          gap: 18px;
+          gap: 14px;
           box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
         }
 
         .about-bio-avatar {
-          width: 54px;
-          height: 54px;
+          width: 46px;
+          height: 46px;
           border-radius: 50%;
           object-fit: cover;
           border: 2px solid var(--border-color);
-          box-shadow: 0 0 12px color-mix(in srgb, var(--primary-blue) 25%, transparent);
+          box-shadow: 0 0 10px color-mix(in srgb, var(--primary-blue) 25%, transparent);
           flex-shrink: 0;
-          margin-top: 2px;
+          margin-top: 1px;
         }
+
 
         .about-bio-content {
           display: flex;
@@ -166,13 +167,14 @@ export default function About() {
         .career-path-card {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
-          border-radius: 16px;
-          padding: 18px 22px;
+          border-radius: 12px;
+          padding: 9px 16px;
           display: flex;
           flex-direction: column;
-          gap: 10px;
+          gap: 5px;
           box-shadow: 0 2px 10px rgba(0,0,0,0.02);
         }
+
 
 
 
@@ -313,12 +315,12 @@ export default function About() {
         .stats-section-wrapper {
           display: flex;
           flex-direction: column;
-          gap: 10px;
+          gap: 5px;
         }
 
         /* Section Titles */
         .about-section-title {
-          font-size: 14px;
+          font-size: 13.5px;
           font-weight: 700;
           color: var(--text-primary);
           margin: 0;
@@ -327,8 +329,8 @@ export default function About() {
           gap: 6px;
         }
         .title-icon-badge {
-          width: 24px;
-          height: 24px;
+          width: 22px;
+          height: 22px;
           border-radius: 6px;
           background: color-mix(in srgb, var(--primary-blue) 12%, transparent);
           color: var(--primary-blue);
@@ -341,18 +343,18 @@ export default function About() {
         .stats-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          gap: 10px;
+          gap: 8px;
         }
         .stat-card {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
-          border-radius: 14px;
-          padding: 14px;
+          border-radius: 10px;
+          padding: 7px 10px;
           display: flex;
           flex-direction: column;
           align-items: center;
           text-align: center;
-          gap: 4px;
+          gap: 2px;
           transition: transform 0.2s, box-shadow 0.2s;
         }
         .stat-card:hover {
@@ -360,65 +362,62 @@ export default function About() {
           box-shadow: 0 4px 14px rgba(0,0,0,0.03);
         }
         .stat-value {
-          font-size: 19px;
+          font-size: 16.5px;
           font-weight: 700;
           color: var(--text-primary);
           margin: 0;
         }
         .stat-label {
-          font-size: 11px;
+          font-size: 10.5px;
           font-weight: 500;
           color: var(--text-secondary);
           margin: 0;
         }
 
-        /* Redesigned CTA Section */
+        /* Compact Redesigned CTA Section */
         .cta-section {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
-          border-radius: 16px;
-          padding: 20px 22px;
+          border-radius: 12px;
+          padding: 10px 14px;
           display: flex;
           flex-direction: column;
-          gap: 14px;
+          gap: 6px;
           margin-top: 0px;
           box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
         }
-
-
-
 
         .cta-top-row {
           display: flex;
           align-items: flex-start;
           justify-content: space-between;
-          gap: 12px;
+          gap: 10px;
         }
 
         .cta-header-group h3 {
-          font-size: 16px;
+          font-size: 14.5px;
           font-weight: 700;
           color: var(--text-primary);
-          margin: 0 0 6px 0;
+          margin: 0 0 2px 0;
         }
 
         .cta-header-group p {
-          font-size: 12.5px;
+          font-size: 11.5px;
           color: var(--text-secondary);
-          margin: 0 0 8px 0;
-          line-height: 1.45;
+          margin: 0;
+          line-height: 1.35;
         }
 
         .cta-availability-badge {
           display: inline-flex;
           align-items: center;
-          gap: 6px;
-          padding: 4px 10px;
+          gap: 5px;
+          padding: 3px 8px;
           border-radius: 999px;
           background: rgba(16, 185, 129, 0.08);
           border: 1px solid rgba(16, 185, 129, 0.25);
           color: #10b981;
-          font-size: 11px;
+          font-size: 10.5px;
           font-weight: 600;
           white-space: nowrap;
           flex-shrink: 0;
@@ -430,11 +429,11 @@ export default function About() {
         }
 
         .cta-green-dot {
-          width: 6px;
-          height: 6px;
+          width: 5px;
+          height: 5px;
           border-radius: 50%;
           background: #10b981;
-          box-shadow: 0 0 8px #10b981;
+          box-shadow: 0 0 6px #10b981;
           animation: pulseDot 2s infinite ease-in-out;
         }
         @keyframes pulseDot {
@@ -444,9 +443,9 @@ export default function About() {
 
         .cta-response-time {
           font-family: var(--font-mono, monospace);
-          font-size: 11.5px;
+          font-size: 10.5px;
           color: var(--text-muted);
-          margin: 6px 0 0 0;
+          margin: 2px 0 0 0;
           display: flex;
           align-items: center;
           gap: 4px;
@@ -455,43 +454,69 @@ export default function About() {
         .cta-interest-tags {
           display: flex;
           flex-wrap: wrap;
-          gap: 8px;
-          margin-top: 2px;
+          gap: 5px;
+          margin-top: 0px;
         }
 
         .cta-tag-chip {
           border: 1px solid var(--border-color);
           background: var(--bg-primary);
           color: var(--text-secondary);
-          padding: 4px 11px;
-          border-radius: 6px;
-          font-size: 11px;
+          padding: 2px 8px;
+          border-radius: 5px;
+          font-size: 10.5px;
           font-weight: 500;
         }
 
-        /* 4-Column Action Grid */
+        /* Compact 4-Column Action Grid */
         .cta-action-grid {
           display: grid;
           grid-template-columns: repeat(4, 1fr);
-          gap: 10px;
-          margin-top: 4px;
+          gap: 6px;
+          margin-top: 2px;
         }
-
 
         .cta-action-tile {
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          gap: 5px;
-          padding: 10px 8px;
+          gap: 3px;
+          padding: 6px 4px;
           background: var(--bg-primary);
           border: 1px solid var(--border-color);
-          border-radius: 12px;
+          border-radius: 8px;
           text-decoration: none;
           color: var(--text-primary);
           transition: all 0.2s ease;
         }
+
+        .cta-action-tile:hover {
+          background: var(--bg-secondary);
+          border-color: var(--primary-blue);
+          color: var(--primary-blue);
+          transform: translateY(-1px);
+          box-shadow: 0 3px 10px color-mix(in srgb, var(--primary-blue) 20%, transparent);
+        }
+
+        .cta-tile-icon {
+          color: var(--primary-blue);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: transform 0.2s ease;
+        }
+
+        .cta-action-tile:hover .cta-tile-icon {
+          transform: scale(1.1);
+        }
+
+        .cta-tile-label {
+          font-size: 11px;
+          font-weight: 600;
+          text-align: center;
+        }
+
 
         .cta-action-tile:hover {
           background: var(--bg-secondary);
@@ -673,22 +698,23 @@ export default function About() {
 
           <div className="cta-action-grid">
             <a href="mailto:sujithreddy1546@gmail.com" className="cta-action-tile">
-              <div className="cta-tile-icon"><Mail size={16} /></div>
+              <div className="cta-tile-icon"><Mail size={14} /></div>
               <span className="cta-tile-label">Email</span>
             </a>
             <a href="mailto:sujithreddy1546@gmail.com?subject=Schedule%20a%20Call" onClick={handleGetInTouch} className="cta-action-tile">
-              <div className="cta-tile-icon"><Calendar size={16} /></div>
+              <div className="cta-tile-icon"><Calendar size={14} /></div>
               <span className="cta-tile-label">Schedule call</span>
             </a>
             <a href="/resume.pdf" onClick={handleDownloadClick} className="cta-action-tile">
-              <div className="cta-tile-icon"><Download size={16} /></div>
+              <div className="cta-tile-icon"><Download size={14} /></div>
               <span className="cta-tile-label">Resume</span>
             </a>
             <a href="https://github.com/sujith1546" target="_blank" rel="noreferrer" className="cta-action-tile">
-              <div className="cta-tile-icon"><FaGithub size={16} /></div>
+              <div className="cta-tile-icon"><FaGithub size={14} /></div>
               <span className="cta-tile-label">GitHub</span>
             </a>
           </div>
+
         </motion.div>
 
 
