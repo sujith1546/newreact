@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { ScrollReveal, MobileDashboard } from '../components';
-import { Code, Briefcase, Mail, FileText, Sparkles, ArrowRight, Zap, Calendar } from 'lucide-react';
+import { Code, Briefcase, Mail, ArrowRight, Zap, Send, Atom, Smartphone, Download, RefreshCw, X, Loader2 } from 'lucide-react';
 import useGlitchText from '../hooks/useGlitchText';
 import useRealtimeData from '../hooks/useRealtimeData';
+import { useSmartUpdate } from '../hooks/useSmartUpdate';
 
 export default function Home({ onNavClick }) {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
@@ -74,17 +75,256 @@ export default function Home({ onNavClick }) {
     );
   }
 
+  // ── Right Panel: embedded chat state ─────────────────────────────────────
+  const [chatInput, setChatInput] = useState('');
+  const [chatMessages, setChatMessages] = useState([
+    { role: 'assistant', content: "Hi! 👋 I'm Sujith's AI assistant. Ask me anything about his skills, projects, or availability!" }
+  ]);
+  const [chatLoading, setChatLoading] = useState(false);
+  const chatEndRef = useRef(null);
+  const { showToast, countdown, reload, dismiss, cancelCountdown, needRefresh } = useSmartUpdate();
+  const [showInstall, setShowInstall] = useState(true);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+
+  useEffect(() => {
+    const handler = (e) => { e.preventDefault(); setDeferredPrompt(e); };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages, chatLoading]);
+
+  const sendPanelChat = async () => {
+    const text = chatInput.trim();
+    if (!text || chatLoading) return;
+    setChatInput('');
+    setChatMessages(prev => [...prev, { role: 'user', content: text }]);
+    setChatLoading(true);
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, history: chatMessages.slice(-6).map(m => ({ role: m.role, content: m.content })) })
+      });
+      if (!res.ok || !res.body) throw new Error('API error');
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let full = '';
+      setChatMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        chunk.split('\n').forEach(line => {
+          if (line.startsWith('data: ')) {
+            try { const d = JSON.parse(line.slice(6)); if (d.delta) full += d.delta; } catch {}
+          }
+        });
+        setChatMessages(prev => prev.map((m, i) => i === prev.length - 1 ? { ...m, content: full } : m));
+      }
+    } catch {
+      setChatMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, something went wrong. Please try again!' }]);
+    }
+    setChatLoading(false);
+  };
+
+  const handleInstallClick = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      setDeferredPrompt(null);
+      setShowInstall(false);
+    }
+  };
+
   return (
-    <ScrollReveal className="home-content home-pane" style={{ height: 'calc(100vh - 138px)', overflow: 'hidden', display: 'flex', alignItems: 'center', boxSizing: 'border-box' }}>
+    <ScrollReveal className="home-content home-pane" style={{ height: 'calc(100vh - 138px)', overflow: 'hidden', display: 'flex', alignItems: 'stretch', boxSizing: 'border-box', gap: 0 }}>
       <style>{`
         /* Desktop styles (Default) */
+        .home-content .home-outer {
+          display: flex;
+          width: 100%;
+          height: 100%;
+          gap: 20px;
+          align-items: stretch;
+        }
+        .home-content .home-left {
+          flex: 0 0 65%;
+          display: flex;
+          align-items: center;
+        }
         .home-content .home-grid {
           display: grid;
           grid-template-columns: 1.1fr 0.9fr;
-          gap: 60px;
+          gap: 40px;
           align-items: center;
           width: 100%;
         }
+        /* Right AI Panel */
+        .home-content .home-right-panel {
+          flex: 0 0 35%;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          height: 100%;
+          padding: 6px 0;
+          box-sizing: border-box;
+          overflow: hidden;
+        }
+        .home-content .hrp-notifications {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          flex-shrink: 0;
+        }
+        .home-content .hrp-notif-card {
+          background: var(--bg-secondary);
+          border: 1px solid var(--border-color);
+          border-radius: 12px;
+          padding: 12px 14px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .home-content .hrp-notif-card.update {
+          border-color: color-mix(in srgb, var(--primary-blue) 30%, var(--border-color));
+          background: color-mix(in srgb, var(--primary-blue) 5%, var(--bg-secondary));
+        }
+        .home-content .hrp-notif-card.install {
+          border-color: color-mix(in srgb, #10b981 30%, var(--border-color));
+          background: color-mix(in srgb, #10b981 5%, var(--bg-secondary));
+        }
+        @keyframes slideInRight {
+          from { opacity: 0; transform: translateX(20px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+        .home-content .hrp-notif-icon {
+          width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+          display: flex; align-items: center; justify-content: center;
+        }
+        .home-content .hrp-notif-icon.blue { background: color-mix(in srgb, var(--primary-blue) 12%, transparent); color: var(--primary-blue); }
+        .home-content .hrp-notif-icon.green { background: color-mix(in srgb, #10b981 12%, transparent); color: #10b981; }
+        .home-content .hrp-notif-info { flex: 1; min-width: 0; }
+        .home-content .hrp-notif-title { font-size: 12.5px; font-weight: 700; color: var(--text-primary); margin: 0; }
+        .home-content .hrp-notif-sub { font-size: 11px; color: var(--text-secondary); margin: 2px 0 0; }
+        .home-content .hrp-notif-actions { display: flex; gap: 6px; flex-shrink: 0; }
+        .home-content .hrp-notif-btn {
+          padding: 5px 10px; border-radius: 6px;
+          font-size: 11.5px; font-weight: 700; cursor: pointer;
+          border: none; transition: all 0.15s ease;
+        }
+        .home-content .hrp-notif-btn.primary { background: var(--text-primary); color: var(--bg-primary); }
+        .home-content .hrp-notif-btn.primary:hover { opacity: 0.85; }
+        .home-content .hrp-notif-btn.ghost {
+          background: transparent; color: var(--text-secondary);
+          border: 1px solid var(--border-color); width: 28px; height: 28px;
+          padding: 0; display: flex; align-items: center; justify-content: center; border-radius: 6px;
+        }
+        /* Embedded Chat Panel */
+        .home-content .hrp-chat {
+          flex: 1;
+          min-height: 0;
+          background: var(--bg-secondary);
+          border: 1px solid var(--border-color);
+          border-radius: 16px;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        }
+        [data-theme="dark"] .home-content .hrp-chat { box-shadow: 0 4px 20px rgba(0,0,0,0.25); }
+        .home-content .hrp-chat-header {
+          padding: 12px 16px;
+          background: var(--text-primary);
+          display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+          border-radius: 16px 16px 0 0;
+        }
+        .home-content .hrp-chat-header-avatar {
+          width: 32px; height: 32px; border-radius: 50%;
+          background: var(--bg-secondary); display: flex; align-items: center;
+          justify-content: center; color: var(--text-primary); flex-shrink: 0;
+        }
+        .home-content .hrp-chat-title { font-size: 13px; font-weight: 700; color: var(--bg-primary); margin: 0; }
+        .home-content .hrp-chat-status {
+          font-size: 10.5px; color: var(--bg-primary); opacity: 0.7;
+          display: flex; align-items: center; gap: 4px; margin-top: 2px;
+        }
+        .home-content .hrp-chat-dot {
+          width: 6px; height: 6px; border-radius: 50%; background: #4ade80;
+          animation: statusPulse 2s infinite;
+        }
+        @keyframes statusPulse {
+          0%, 100% { opacity: 1; } 50% { opacity: 0.4; }
+        }
+        .home-content .hrp-messages {
+          flex: 1; overflow-y: auto; padding: 12px 14px;
+          display: flex; flex-direction: column; gap: 10px;
+          scroll-behavior: smooth;
+        }
+        .home-content .hrp-messages::-webkit-scrollbar { width: 3px; }
+        .home-content .hrp-messages::-webkit-scrollbar-thumb { background: rgba(128,128,128,0.25); border-radius: 2px; }
+        .home-content .hrp-msg { display: flex; gap: 7px; align-items: flex-end; }
+        .home-content .hrp-msg.user { flex-direction: row-reverse; }
+        .home-content .hrp-msg-avatar {
+          width: 24px; height: 24px; border-radius: 50%;
+          background: var(--text-primary); color: var(--bg-primary);
+          display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+          font-size: 10px;
+        }
+        .home-content .hrp-msg-avatar.user { background: color-mix(in srgb, var(--primary-blue) 15%, var(--bg-primary)); color: var(--primary-blue); }
+        .home-content .hrp-bubble {
+          max-width: 78%; padding: 9px 12px; border-radius: 14px 14px 14px 2px;
+          font-size: 12px; line-height: 1.5; color: var(--text-primary);
+          background: var(--bg-primary); border: 1px solid var(--border-color);
+        }
+        .home-content .hrp-msg.user .hrp-bubble {
+          background: var(--text-primary); color: var(--bg-primary);
+          border-color: transparent; border-radius: 14px 14px 2px 14px;
+        }
+        .home-content .hrp-typing {
+          display: flex; gap: 4px; align-items: center;
+          padding: 9px 12px;
+          background: var(--bg-primary);
+          border: 1px solid var(--border-color);
+          border-radius: 14px 14px 14px 2px;
+          width: fit-content;
+        }
+        .home-content .hrp-typing span {
+          width: 5px; height: 5px; border-radius: 50%;
+          background: var(--text-secondary); animation: typingBounce 1.2s infinite;
+        }
+        .home-content .hrp-typing span:nth-child(2) { animation-delay: 0.2s; }
+        .home-content .hrp-typing span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typingBounce {
+          0%, 60%, 100% { transform: translateY(0); }
+          30% { transform: translateY(-5px); }
+        }
+        .home-content .hrp-input-row {
+          padding: 10px 12px;
+          border-top: 1px solid var(--border-color);
+          display: flex; gap: 8px; align-items: center; flex-shrink: 0;
+        }
+        .home-content .hrp-input {
+          flex: 1; border: 1px solid var(--border-color);
+          border-radius: 10px; padding: 8px 12px;
+          font-size: 12px; background: var(--bg-primary);
+          color: var(--text-primary); outline: none;
+          transition: border-color 0.2s;
+        }
+        .home-content .hrp-input:focus { border-color: var(--primary-blue); }
+        .home-content .hrp-input::placeholder { color: var(--text-muted); }
+        .home-content .hrp-send {
+          width: 34px; height: 34px; border-radius: 10px;
+          background: var(--text-primary); border: none;
+          color: var(--bg-primary); cursor: pointer; flex-shrink: 0;
+          display: flex; align-items: center; justify-content: center;
+          transition: opacity 0.2s;
+        }
+        .home-content .hrp-send:disabled { opacity: 0.45; cursor: default; }
+        .home-content .hrp-send:not(:disabled):hover { opacity: 0.85; }
         
         .home-content .hero-info {
           display: flex;
@@ -558,8 +798,12 @@ export default function Home({ onNavClick }) {
         }
       `}</style>
 
-      {/* Desktop grid view */}
-      <div className="home-grid">
+      {/* Desktop: outer split wrapper */}
+      <div className="home-outer">
+
+        {/* LEFT 65% — hero content */}
+        <div className="home-left">
+        <div className="home-grid">
           <div className="hero-info">
             {(settings === null || settings.is_available_for_hire) && (
               <div className="fc-badge">
@@ -607,28 +851,105 @@ export default function Home({ onNavClick }) {
             <img src="/IMG_0322.jpg" alt="Sujith Thota" className="hero-img-new" />
           </div>
         </div>
+        </div>{/* end home-left */}
 
-        {/* Currently Working On Widget — only shown on desktop when set */}
-        {!isMobile && settings?.current_project && (
-          <div style={{
-            marginTop: 28, padding: '16px 20px', borderRadius: 18,
-            background: 'linear-gradient(135deg, color-mix(in srgb, #f59e0b 8%, var(--bg-secondary)), var(--bg-secondary))',
-            border: '1px solid color-mix(in srgb, #f59e0b 25%, var(--border-color))',
-            display: 'flex', alignItems: 'center', gap: 16, maxWidth: 700,
-          }}>
-            <div style={{ padding: 10, background: 'color-mix(in srgb, #f59e0b 15%, transparent)', borderRadius: 12, color: '#f59e0b', flexShrink: 0 }}>
-              <Zap size={20} />
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 3 }}>Currently Building</div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{settings.current_project}</div>
-              <div style={{ marginTop: 8, height: 4, background: 'var(--border-color)', borderRadius: 4, overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${settings.current_project_pct ?? 0}%`, background: 'linear-gradient(90deg, #f59e0b, #ef4444)', borderRadius: 4, transition: 'width 0.6s ease' }} />
+        {/* RIGHT 35% — AI Panel */}
+        <div className="home-right-panel">
+
+          {/* ── Notifications ─────────────────────────── */}
+          <div className="hrp-notifications">
+            {/* Update available */}
+            {(showToast) && (
+              <div className="hrp-notif-card update">
+                <div className="hrp-notif-icon blue"><RefreshCw size={15} /></div>
+                <div className="hrp-notif-info">
+                  <p className="hrp-notif-title">
+                    {countdown !== null ? `Updating in ${countdown}s…` : 'New version available'}
+                  </p>
+                  <p className="hrp-notif-sub">Reload to apply latest updates</p>
+                </div>
+                <div className="hrp-notif-actions">
+                  {countdown !== null ? (
+                    <button className="hrp-notif-btn primary" onClick={cancelCountdown}>Cancel</button>
+                  ) : (
+                    <>
+                      <button className="hrp-notif-btn primary" onClick={reload}>Reload</button>
+                      <button className="hrp-notif-btn ghost" onClick={dismiss}><X size={12} /></button>
+                    </>
+                  )}
+                </div>
               </div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>{settings.current_project_status} · {settings.current_project_pct ?? 0}% complete</div>
+            )}
+            {/* Install App */}
+            {showInstall && (
+              <div className="hrp-notif-card install">
+                <div className="hrp-notif-icon green"><Smartphone size={15} /></div>
+                <div className="hrp-notif-info">
+                  <p className="hrp-notif-title">Install App Experience</p>
+                  <p className="hrp-notif-sub">Add to home screen for offline access</p>
+                </div>
+                <div className="hrp-notif-actions">
+                  <button className="hrp-notif-btn primary" style={{ background: '#10b981', color: '#fff' }} onClick={handleInstallClick}>
+                    <Download size={11} style={{ display: 'inline', marginRight: 4, verticalAlign: 'middle' }} />Install
+                  </button>
+                  <button className="hrp-notif-btn ghost" onClick={() => setShowInstall(false)}><X size={12} /></button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ── Embedded Atom AI Chat ─────────────────── */}
+          <div className="hrp-chat">
+            {/* Header */}
+            <div className="hrp-chat-header">
+              <div className="hrp-chat-header-avatar"><Atom size={16} /></div>
+              <div>
+                <p className="hrp-chat-title">Atom AI</p>
+                <div className="hrp-chat-status">
+                  <span className="hrp-chat-dot" />
+                  <span>Ask me anything about Sujith</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Messages */}
+            <div className="hrp-messages">
+              {chatMessages.map((msg, i) => (
+                <div key={i} className={`hrp-msg ${msg.role}`}>
+                  <div className={`hrp-msg-avatar ${msg.role === 'user' ? 'user' : ''}`}>
+                    {msg.role === 'user' ? 'U' : <Atom size={12} />}
+                  </div>
+                  <div className="hrp-bubble">{msg.content}</div>
+                </div>
+              ))}
+              {chatLoading && (
+                <div className="hrp-msg assistant">
+                  <div className="hrp-msg-avatar"><Atom size={12} /></div>
+                  <div className="hrp-typing">
+                    <span /><span /><span />
+                  </div>
+                </div>
+              )}
+              <div ref={chatEndRef} />
+            </div>
+
+            {/* Input */}
+            <div className="hrp-input-row">
+              <input
+                className="hrp-input"
+                placeholder="Ask about skills, projects…"
+                value={chatInput}
+                onChange={e => setChatInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && sendPanelChat()}
+              />
+              <button className="hrp-send" onClick={sendPanelChat} disabled={!chatInput.trim() || chatLoading}>
+                {chatLoading ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Send size={14} />}
+              </button>
             </div>
           </div>
-        )}
+
+        </div>{/* end home-right-panel */}
+      </div>{/* end home-outer */}
 
 
     </ScrollReveal>

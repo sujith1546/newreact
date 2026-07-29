@@ -8,6 +8,10 @@ export default function PWAInstallPrompt() {
   const [isIOS, setIsIOS] = useState(false);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
+  // On desktop home, the right panel handles all notifications — no floating banners needed
+  const isDesktopHome = window.innerWidth > 900 &&
+    (window.location.hash === '#/home' || window.location.pathname === '/home' ||
+     window.location.hash === '' || window.location.pathname === '/');
 
   const {
     showToast,
@@ -55,6 +59,9 @@ export default function PWAInstallPrompt() {
   const handleDismissInstall = () => {
     setIsDismissed(true);
   };
+
+  // On desktop at home route, floating banners are shown in the right panel — skip here
+  if (isDesktopHome) return null;
 
   return (
     <AnimatePresence>
