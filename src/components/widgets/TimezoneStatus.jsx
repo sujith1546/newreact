@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Globe, X } from 'lucide-react';
-import GlobeCanvas from './GlobeCanvas';
 import DarkModeToggle from '../ui/DarkModeToggle';
 import SettingsDropdown from '../ui/SettingsDropdown';
 import UpdatesDropdown from './UpdatesDropdown';
@@ -9,7 +7,7 @@ import { useSupabasePresence } from '../../hooks/useSupabasePresence';
 import { useTheme } from '../../context/ThemeContext';
 
 export default function TimezoneStatus() {
-  const { visitorCount, presenceMarkers } = useSupabasePresence();
+  const { visitorCount } = useSupabasePresence();
   const { theme } = useTheme();
   const [visitorCity, setVisitorCity] = useState('');
   const [visitorTzAbbr, setVisitorTzAbbr] = useState('');
