@@ -1,326 +1,364 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Globe, X } from 'lucide-react';
+import GlobeCanvas from './GlobeCanvas';
 import DarkModeToggle from '../ui/DarkModeToggle';
 import SettingsDropdown from '../ui/SettingsDropdown';
 import UpdatesDropdown from './UpdatesDropdown';
 import { useSupabasePresence } from '../../hooks/useSupabasePresence';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function TimezoneStatus() {
-  const { visitorCount, isConnected } = useSupabasePresence();
+  const { visitorCount, presenceMarkers } = useSupabasePresence();
+  const { theme } = useTheme();
   const [visitorCity, setVisitorCity] = useState('');
   const [visitorTzAbbr, setVisitorTzAbbr] = useState('');
   const [localStart, setLocalStart] = useState('');
   const [localEnd, setLocalEnd] = useState('');
   const [isAwake, setIsAwake] = useState(true);
   const [isIST, setIsIST] = useState(false);
+  const [isGlobeOpen, setIsGlobeOpen] = useState(false);
 
   useEffect(() => {
     try {
       // 1. Get timezone ID (e.g. America/New_York)
       const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const isInd = tz === 'Asia/Kolkata' || tz === 'Asia/Calcutta';
-      setIsIST(isInd);
+      
+      // If the user is already in India, we can just say they are in IST
+      if (tz === 'Asia/Calcutta' || tz === 'Asia/Kolkata') {
+        setIsIST(true);
+      }
+      
+      // Format city name nicely
+      const city = tz.split('/').pop().replace(/_/g, ' ');
+      setVisitorCity(city);
 
-      // Extract city approximation from timezone ID
-      const parts = tz.split('/');
-      const rawCity = parts[parts.length - 1].replace(/_/g, ' ');
-      setVisitorCity(rawCity);
+      // Get abbreviation (e.g. EDT)
+      const date = new Date();
+      const formatter = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'short' });
+      const parts = formatter.formatToParts(date);
+      const tzName = parts.find(p => p.type === 'timeZoneName')?.value || '';
+      setVisitorTzAbbr(tzName);
 
-      // 2. Format current time in user's timezone to get short abbreviation
-      const now = new Date();
-      const formatter = new Intl.DateTimeFormat('en-US', {
-        timeZoneName: 'short',
-        timeZone: tz,
-      });
-      const tzPart = formatter.formatToParts(now).find((p) => p.type === 'timeZoneName');
-      setVisitorTzAbbr(tzPart ? tzPart.value : '');
-
-      // 3. Calculate visitor's current local time range string (e.g. "2:00 PM - 3:00 PM")
-      const hour = now.getHours();
-
-      // Check if visitor is awake (assume awake between 7:00 AM and 11:00 PM)
-      setIsAwake(hour >= 7 && hour < 23);
-
-      const formatHour = (h) => {
-        const period = h >= 12 ? 'PM' : 'AM';
-        const displayH = h % 12 === 0 ? 12 : h % 12;
-        return `${displayH}:00 ${period}`;
+      // Convert 9:30 AM to 11:30 PM IST to Local Time
+      const getLocalTimeForIST = (hours, minutes) => {
+        const now = new Date();
+        const options = { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' };
+        const istDateString = new Intl.DateTimeFormat('en-US', options).format(now);
+        const [month, day, year] = istDateString.split('/');
+        
+        // Construct ISO string assuming it's in IST (+05:30)
+        const isoString = `${year}-${month}-${day}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:00+05:30`;
+        const dateObj = new Date(isoString);
+        
+        return new Intl.DateTimeFormat('en-US', { timeZone: tz, hour: 'numeric', minute: '2-digit', hour12: true }).format(dateObj);
       };
 
-      setLocalStart(formatHour(hour));
-      setLocalEnd(formatHour((hour + 1) % 24));
-    } catch {
-      setVisitorCity('Your Location');
-      setVisitorTzAbbr('Local');
+      setLocalStart(getLocalTimeForIST(9, 30)); // 9:30 AM IST
+      setLocalEnd(getLocalTimeForIST(23, 30));  // 11:30 PM IST
+
+      // Check if currently awake
+      const checkAwake = () => {
+        try {
+          const formatter = new Intl.DateTimeFormat('en-US', {
+            timeZone: 'Asia/Kolkata',
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: false
+          });
+          const parts = formatter.formatToParts(new Date());
+          const currentHours = parseInt(parts.find(p => p.type === 'hour').value, 10);
+          const currentMinutes = parseInt(parts.find(p => p.type === 'minute').value, 10);
+          const timeInMinutes = currentHours * 60 + currentMinutes;
+          
+          const startMinutes = 9 * 60 + 30; // 570 (9:30 AM)
+          const endMinutes = 23 * 60 + 30;  // 1410 (11:30 PM)
+          
+          setIsAwake(timeInMinutes >= startMinutes && timeInMinutes <= endMinutes);
+        } catch (err) {
+          console.error("Failed to parse IST time:", err);
+          setIsAwake(true); // fallback to true
+        }
+      };
+
+      checkAwake();
+      const interval = setInterval(checkAwake, 60000);
+      return () => clearInterval(interval);
+    } catch (e) {
+      console.error("Timezone logic failed", e);
     }
   }, []);
 
   return (
     <>
       <style>{`
-        .tz-status-bar {
+        .timezone-status-wrapper {
           position: fixed;
-          top: 18px;
+          top: 20px;
           right: 28px;
-          z-index: 1900;
+          z-index: 2000;
           display: flex;
           align-items: center;
-          gap: 12px;
-          padding: 6px 14px;
-          border-radius: 100px;
-          background: var(--bg-secondary, rgba(255, 255, 255, 0.7));
-          border: 1px solid var(--border-color, rgba(128, 128, 128, 0.15));
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-          user-select: none;
+          gap: 8px;
         }
 
-        [data-theme="dark"] .tz-status-bar {
-          background: rgba(18, 18, 18, 0.65);
-          border-color: rgba(255, 255, 255, 0.08);
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-        }
 
-        .tz-status-bar:hover {
-          border-color: rgba(139, 92, 246, 0.3);
-          box-shadow: 0 6px 24px rgba(139, 92, 246, 0.12);
-        }
-
-        /* Online presence pill */
-        .online-presence-pill {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          padding: 3px 8px;
-          border-radius: 100px;
-          background: rgba(34, 197, 94, 0.1);
-          border: 1px solid rgba(34, 197, 94, 0.25);
-          font-size: 11px;
-          font-weight: 600;
-          color: #16a34a;
-        }
-
-        [data-theme="dark"] .online-presence-pill {
-          background: rgba(34, 197, 94, 0.12);
-          border-color: rgba(34, 197, 94, 0.3);
-          color: #4ade80;
-        }
-
-        .online-presence-dot {
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background: #22c55e;
-          box-shadow: 0 0 8px #22c55e;
-          position: relative;
-          flex-shrink: 0;
-        }
-
-        .online-presence-dot::after {
-          content: '';
-          position: absolute;
-          inset: -3px;
-          border-radius: 50%;
-          background: rgba(34, 197, 94, 0.4);
-          animation: tz-dot-pulse 2s cubic-bezier(0, 0, 0.2, 1) infinite;
-        }
-
-        @keyframes tz-dot-pulse {
-          0% { transform: scale(0.8); opacity: 0.8; }
-          100% { transform: scale(2.4); opacity: 0; }
-        }
-
-        .online-presence-count {
-          font-weight: 700;
-          font-variant-numeric: tabular-nums;
-        }
-
-        .online-presence-label {
-          font-size: 11px;
-          opacity: 0.85;
-          white-space: nowrap;
-        }
-
-        /* Pulsing indicator */
-        .tz-indicator-wrapper {
-          position: relative;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 8px;
-          height: 8px;
-          flex-shrink: 0;
-        }
-
-        .tz-indicator-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          background: #22c55e;
-          box-shadow: 0 0 10px rgba(34, 197, 94, 0.6);
-        }
-
-        .tz-indicator-dot.sleeping {
-          background: #f59e0b;
-          box-shadow: 0 0 10px rgba(245, 158, 11, 0.6);
-        }
-
-        .tz-indicator-ping {
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          border-radius: 50%;
-          background: #22c55e;
-          opacity: 0.75;
-          animation: tz-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
-        }
-
-        .tz-indicator-dot.sleeping + .tz-indicator-ping {
-          background: #f59e0b;
-        }
-
-        @keyframes tz-ping {
-          75%, 100% {
-            transform: scale(2.4);
-            opacity: 0;
-          }
-        }
-
-        /* Text styling */
-        .tz-info-group {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          font-size: 11.5px;
-          font-weight: 500;
-          color: var(--text-secondary, #475569);
-          white-space: nowrap;
-        }
-
-        [data-theme="dark"] .tz-info-group {
-          color: #cbd5e1;
-        }
-
-        .tz-city-name {
-          font-weight: 600;
-          color: var(--text-primary, #0f172a);
-        }
-
-        [data-theme="dark"] .tz-city-name {
-          color: #f8fafc;
-        }
-
-        .tz-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          padding: 1px 6px;
-          border-radius: 100px;
-          background: var(--bg-tertiary, rgba(0, 0, 0, 0.04));
-          border: 1px solid var(--border-color, rgba(0, 0, 0, 0.06));
-          font-size: 10px;
-          font-weight: 600;
-          letter-spacing: 0.02em;
-          color: var(--text-secondary, #64748b);
-        }
-
-        [data-theme="dark"] .tz-badge {
-          background: rgba(255, 255, 255, 0.05);
-          border-color: rgba(255, 255, 255, 0.08);
-          color: #94a3b8;
-        }
-
-        .tz-divider {
-          width: 1px;
-          height: 12px;
-          background: var(--border-color, rgba(128, 128, 128, 0.2));
-          flex-shrink: 0;
-        }
 
         .cmdk-hint-pill {
+          height: 34px;
+          border-radius: 17px;
+          background: rgba(243, 244, 246, 0.85);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(0, 0, 0, 0.1);
+          box-shadow: 0 4px 15px rgba(0,0,0,0.08);
           display: flex;
           align-items: center;
-          gap: 3px;
-          padding: 4px 8px;
-          border-radius: 8px;
-          background: var(--bg-tertiary, rgba(0, 0, 0, 0.04));
-          border: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
-          color: var(--text-muted, #64748b);
-          font-size: 11px;
-          font-weight: 600;
+          gap: 4px;
+          padding: 0 10px;
           cursor: pointer;
-          transition: all 0.2s ease;
-          outline: none;
+          font-family: inherit;
+          transition: all 0.3s ease;
         }
 
         [data-theme="dark"] .cmdk-hint-pill {
-          background: rgba(255, 255, 255, 0.04);
-          border-color: rgba(255, 255, 255, 0.08);
-          color: #94a3b8;
+          background: rgba(30, 30, 30, 0.5);
+          border-color: rgba(255,255,255,0.08);
+          box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
         .cmdk-hint-pill:hover {
-          border-color: rgba(139, 92, 246, 0.4);
-          color: #8b5cf6;
-          background: rgba(139, 92, 246, 0.06);
-          transform: translateY(-1px);
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+          border-color: #3b82f6;
+        }
+        [data-theme="dark"] .cmdk-hint-pill:hover {
+          box-shadow: 0 8px 25px rgba(0,0,0,0.3);
         }
 
         .cmdk-hint-kbd {
-          font-family: inherit;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
           font-size: 10px;
           font-weight: 700;
+          color: var(--text-primary);
+          background: rgba(128, 128, 128, 0.12);
+          border-radius: 4px;
+          min-width: 18px;
+          width: auto;
+          padding: 0 5px;
+          height: 18px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          box-sizing: border-box;
         }
 
-        @media (max-width: 768px) {
-          .tz-info-group .tz-time-details,
-          .tz-divider {
-            display: none;
-          }
-          .cmdk-hint-pill {
-            display: none;
-          }
+        .timezone-pill {
+          height: 34px;
+          border-radius: 17px;
+          background: rgba(243, 244, 246, 0.85);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(0, 0, 0, 0.1);
+          box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 0 12px;
+          cursor: pointer;
+          font-size: 13px;
+          font-weight: 500;
+          color: var(--text-primary);
+          transition: all 0.3s ease;
+        }
+
+        [data-theme="dark"] .timezone-pill {
+          background: rgba(30, 30, 30, 0.5);
+          border-color: rgba(255,255,255,0.08);
+          box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .timezone-pill:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        [data-theme="dark"] .timezone-pill:hover {
+          box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .status-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          flex-shrink: 0;
+          transition: all 0.3s ease;
+        }
+        .status-dot.awake {
+          background-color: #16a34a;
+          box-shadow: 0 0 8px rgba(22, 163, 74, 0.4);
+          animation: dotPulse 2s infinite;
+        }
+
+        @keyframes dotPulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.5); }
+          50% { box-shadow: 0 0 0 4px rgba(22, 163, 74, 0); }
+        }
+
+        .tz-globe-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #16a34a;
+          transition: color 0.3s ease;
+        }
+        .tz-globe-icon.sleeping {
+          color: #9ca3af;
+        }
+        .tz-globe-icon.awake {
+          animation: globeSpin 6s linear infinite;
+        }
+        @keyframes globeSpin {
+          0%   { transform: rotate(0deg) scale(1);    }
+          25%  { transform: rotate(0deg) scale(1.12); }
+          50%  { transform: rotate(0deg) scale(1);    }
+          75%  { transform: rotate(0deg) scale(1.08); }
+          100% { transform: rotate(0deg) scale(1);    }
+        }
+
+        .timezone-card {
+          position: absolute;
+          top: calc(100% + 12px);
+          right: 0;
+          width: 340px;
+          background: var(--bg-secondary, #ffffff);
+          border-radius: 12px;
+          padding: 20px;
+          box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+          border: 1px solid var(--border-color, rgba(128,128,128,0.2));
+          opacity: 0;
+          visibility: hidden;
+          transform: translateY(-10px);
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          text-align: left;
+        }
+        [data-theme="dark"] .timezone-card {
+          box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+        }
+
+        .timezone-pill-container {
+          position: relative;
+        }
+
+        .timezone-pill-container:hover .timezone-card {
+          opacity: 1;
+          visibility: visible;
+          transform: translateY(0);
+        }
+
+        .tc-header {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-weight: 600;
+          color: var(--text-primary);
+          margin-bottom: 16px;
+          font-size: 16px;
+        }
+        .tc-header svg {
+          color: #16a34a;
+        }
+        .tc-location {
+          font-size: 14.5px;
+          color: var(--text-secondary);
+          margin-bottom: 6px;
+        }
+        .tc-location strong {
+          color: var(--text-primary);
+          font-weight: 600;
+        }
+        .tc-availability {
+          font-size: 14.5px;
+          color: var(--text-secondary);
+          margin-bottom: 16px;
+        }
+        .tc-availability strong {
+          color: var(--text-primary);
+          font-weight: 600;
+        }
+        .tc-status {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 14px;
+          font-weight: 500;
+        }
+        .online-presence-pill {
+          height: 34px;
+          border-radius: 17px;
+          background: rgba(243, 244, 246, 0.85);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(16, 185, 129, 0.25);
+          box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 0 12px;
+          font-size: 12.5px;
+          font-weight: 600;
+          color: var(--text-primary);
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          cursor: default;
+        }
+
+        [data-theme="dark"] .online-presence-pill {
+          background: rgba(30, 30, 30, 0.5);
+          border-color: rgba(16, 185, 129, 0.3);
+          box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .online-presence-pill:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(16, 185, 129, 0.25);
+          border-color: #10b981;
+        }
+
+        .online-presence-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background: #10b981;
+          box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
+          animation: onlinePulse 2s infinite;
+        }
+
+        @keyframes onlinePulse {
+          0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+          50% { transform: scale(1.15); box-shadow: 0 0 0 4px rgba(16, 185, 129, 0); }
+        }
+
+        .online-presence-count {
+          color: #10b981;
+          font-weight: 700;
+          font-size: 13px;
+        }
+
+        .online-presence-label {
+          color: var(--text-secondary);
+          font-size: 11.5px;
+          font-weight: 500;
         }
       `}</style>
 
-      <div className="tz-status-bar" role="status" aria-label="Location and time status">
-        {/* Status Dot */}
-        <div className="tz-indicator-wrapper" title={isAwake ? "Sujith is awake and active" : "Sujith is away / sleeping"}>
-          <div className={`tz-indicator-dot ${!isAwake ? 'sleeping' : ''}`} />
-          <div className="tz-indicator-ping" />
-        </div>
-
-        {/* Location & Time Info */}
-        <div className="tz-info-group">
-          <span className="tz-city-name">{visitorCity || 'India'}</span>
-
-          {visitorTzAbbr && (
-            <span className="tz-badge">
-              {visitorTzAbbr}
-            </span>
-          )}
-
-          {isIST && (
-            <span className="tz-badge" style={{ background: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6', borderColor: 'rgba(139, 92, 246, 0.2)' }}>
-              Same Timezone
-            </span>
-          )}
-
-          {localStart && localEnd && (
-            <span className="tz-time-details" style={{ opacity: 0.8 }}>
-              • {localStart} - {localEnd}
-            </span>
-          )}
-        </div>
-
-        <div className="tz-divider" />
-
-        {/* Live Visitor Count Pill */}
-        <div className="online-presence-pill" title={`${visitorCount || 1} active live visitor session(s)`}>
-          <div className="online-presence-dot" />
-          <div style={{ display: 'inline-flex', overflow: 'hidden', height: '16px', alignItems: 'center' }}>
+      <div className="timezone-status-wrapper">
+        <div className="online-presence-pill" title="Live count of active unique visitor sessions connected to this portfolio">
+          <motion.span
+            className="online-presence-dot"
+            animate={{ scale: [1, 1.25, 1] }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            key={`dot-${visitorCount}`}
+          />
+          <div style={{ display: 'inline-flex', overflow: 'hidden', height: '18px', alignItems: 'center' }}>
             <AnimatePresence mode="popLayout" initial={false}>
               <motion.span
                 key={visitorCount || 1}
@@ -348,11 +386,41 @@ export default function TimezoneStatus() {
           <span className="cmdk-hint-kbd">K</span>
         </button>
 
+        <button className="globe-btn" onClick={() => setIsGlobeOpen(true)} title="View Globe" aria-label="Open Globe Locator">
+          <Globe size={16} strokeWidth={2.5} />
+        </button>
+
         <UpdatesDropdown />
 
         <DarkModeToggle />
         <SettingsDropdown />
       </div>
+
+      <AnimatePresence>
+        {isGlobeOpen && (
+          <motion.div
+            key="globe-locator-overlay"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.3 }}
+            style={{ position: 'fixed', inset: 0, zIndex: 999999, backgroundColor: theme === 'dark' ? '#030509' : '#f9fafb', display: 'flex', flexDirection: 'column' }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', borderBottom: '1px solid var(--border-color)', zIndex: 10 }}>
+              <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>Live 3D Visitor Globe</span>
+              <button
+                onClick={() => setIsGlobeOpen(false)}
+                style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '50%', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)', cursor: 'pointer' }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div style={{ flex: 1, position: 'relative' }}>
+              <GlobeCanvas variant="compact" markers={presenceMarkers} theme={theme} interactive />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
