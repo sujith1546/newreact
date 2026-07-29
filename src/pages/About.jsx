@@ -151,9 +151,13 @@ function CareerTimeline() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, amount: 0.6 });
   const [selectedNode, setSelectedNode] = useState(null);
+  const [hoveredNode, setHoveredNode] = useState(null);
+
+  const hoveredIndex = hoveredNode ? TL_NODES.findIndex(n => n.id === hoveredNode.id) : 0;
+  const leftPercent = (hoveredIndex / (TL_NODES.length - 1)) * 90 + 5;
 
   return (
-    <div ref={ref} style={{ padding: '4px 0 0' }}>
+    <div ref={ref} style={{ padding: '24px 0 0', position: 'relative' }}>
       <style>{`
         @keyframes pulseRing {
           0% { transform: scale(1); opacity: 0.8; }
@@ -177,6 +181,58 @@ function CareerTimeline() {
           box-sizing: border-box; color: var(--text-primary); position: relative;
         }
       `}</style>
+
+      {/* Hover Tooltip Popover */}
+      <AnimatePresence>
+        {hoveredNode && (
+          <motion.div
+            key={`hover-${hoveredNode.id}`}
+            initial={{ opacity: 0, y: 8, scale: 0.94 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 6, scale: 0.94 }}
+            transition={{ type: 'spring', damping: 24, stiffness: 350 }}
+            style={{
+              position: 'absolute',
+              top: -110,
+              left: `${leftPercent}%`,
+              transform: 'translateX(-50%)',
+              zIndex: 50,
+              width: 240,
+              pointerEvents: 'none',
+            }}
+          >
+            <div style={{
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--border-color)',
+              borderRadius: 14,
+              padding: '12px 14px',
+              boxShadow: '0 12px 30px rgba(0,0,0,0.25), 0 0 0 1px color-mix(in srgb, var(--primary-blue) 20%, transparent)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              position: 'relative'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 999, background: hoveredNode.badgeBg, color: hoveredNode.badgeColor }}>
+                  {hoveredNode.badge}
+                </span>
+                <span style={{ fontSize: 10.5, color: 'var(--text-muted)', fontWeight: 600 }}>{hoveredNode.period}</span>
+              </div>
+              <p style={{ margin: '4px 0 2px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
+                {hoveredNode.label} <span style={{ color: 'var(--primary-blue)', fontWeight: 600 }}>· {hoveredNode.sub}</span>
+              </p>
+              <p style={{ margin: 0, fontSize: 11.5, color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                {hoveredNode.description}
+              </p>
+              
+              {/* Downward Arrow indicator */}
+              <div style={{
+                position: 'absolute', bottom: -5, left: '50%', transform: 'translateX(-50%) rotate(45deg)',
+                width: 9, height: 9, background: 'var(--bg-secondary)', borderRight: '1px solid var(--border-color)', borderBottom: '1px solid var(--border-color)'
+              }} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Line + Dots row */}
       <div style={{ position: 'relative', display: 'flex', alignItems: 'center', marginBottom: 8 }}>
@@ -202,7 +258,13 @@ function CareerTimeline() {
             const delay = 0.25 + i * 0.16;
             return (
               <div key={node.id} style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-                <button className="tl-node-btn" onClick={() => setSelectedNode(node)} title={`Click to view ${node.label} details`}>
+                <button
+                  className="tl-node-btn"
+                  onClick={() => setSelectedNode(node)}
+                  onMouseEnter={() => setHoveredNode(node)}
+                  onMouseLeave={() => setHoveredNode(null)}
+                  title={`Click to view ${node.label} details`}
+                >
                   <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {node.active && (
                       <span style={{
@@ -247,6 +309,8 @@ function CareerTimeline() {
               transition={{ delay, duration: 0.3 }}
               style={{ flex: 1, textAlign: 'center', cursor: 'pointer' }}
               onClick={() => setSelectedNode(node)}
+              onMouseEnter={() => setHoveredNode(node)}
+              onMouseLeave={() => setHoveredNode(null)}
             >
               <p style={{
                 fontSize: 12.5, fontWeight: 700, margin: '0 0 2px',
