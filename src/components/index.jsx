@@ -13,7 +13,6 @@ export { default as SEOHelmet } from './layout/SEOHelmet';
 export { default as DynamicIsland } from './layout/DynamicIsland';
 
 // 2. Interactive Widgets & Overlays
-export { default as GlobeLocator } from './widgets/GlobeLocator';
 export { default as ChatBot } from './widgets/ChatBot';
 export { default as CommandPalette } from './widgets/CommandPalette';
 export { default as SectionSpotlight } from './widgets/SectionSpotlight';

@@ -1,42 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabaseClient';
-import { Loader2, Globe, Sparkles, TrendingUp, Users, Compass, Laptop, Smartphone, Play, Pause, RotateCcw } from 'lucide-react';
+import { Loader2, TrendingUp, Sparkles } from 'lucide-react';
 import { PanelCard } from '../shared/components';
-import GlobeCanvas from '../../widgets/GlobeCanvas';
-import { useSupabasePresence } from '../../../hooks/useSupabasePresence';
-import { useTheme } from '../../../context/ThemeContext';
 
 export default function AnalyticsPanel() {
-  const { presenceMarkers, aggregatedByCountry, visitorCount } = useSupabasePresence();
-  const { theme } = useTheme();
-
   const [analytics, setAnalytics] = useState([]);
   const [events, setEvents]       = useState([]);
   const [sessions, setSessions]   = useState([]);
   const [loading, setLoading]     = useState(true);
   const [tab, setTab]             = useState('overview');
-  const [selectedTooltip, setSelectedTooltip] = useState(null);
-
-  // 24-Hour Playback Scrubber State
-  const [scrubberHour, setScrubberHour] = useState(24); // 24 = Live mode
-  const [isPlaying, setIsPlaying]       = useState(false);
 
   useEffect(() => {
     fetchData();
   }, []);
-
-  useEffect(() => {
-    let interval;
-    if (isPlaying) {
-      interval = setInterval(() => {
-        setScrubberHour((prev) => {
-          if (prev >= 24) return 0;
-          return prev + 1;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isPlaying]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -87,89 +63,6 @@ export default function AnalyticsPanel() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      {/* Unified 3D Real-time Visitor Globe Widget */}
-      <div style={{
-        padding: '22px 24px', background: 'var(--bg-secondary)', borderRadius: '18px',
-        border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '18px',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.06)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-              <Globe size={18} color="var(--primary-blue)" />
-              <h3 style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-                Live 3D Presence Map &amp; Solar Terminator
-              </h3>
-            </div>
-            <p style={{ color: 'var(--text-muted)', fontSize: '13px', margin: 0 }}>
-              Driven by native Supabase Presence primitives with subsolar 60s solar terminator shading.
-            </p>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <span style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--primary-blue)', background: 'color-mix(in srgb, var(--primary-blue) 10%, transparent)', padding: '4px 10px', borderRadius: 999 }}>
-              🟢 {visitorCount} Active Presence {visitorCount === 1 ? 'Session' : 'Sessions'}
-            </span>
-          </div>
-        </div>
-
-        {/* 3D Globe Canvas Viewport */}
-        <div style={{ width: '100%', height: '260px', position: 'relative', borderRadius: '14px', overflow: 'hidden', background: 'var(--bg-primary)', border: '1px solid var(--border-color)' }}>
-          <GlobeCanvas
-            variant="analytics"
-            markers={presenceMarkers}
-            theme={theme}
-            interactive={true}
-            onMarkerClick={setSelectedTooltip}
-          />
-
-          {/* Admin Non-PII Hover Tooltip Overlay */}
-          {selectedTooltip && (
-            <div style={{
-              position: 'absolute', top: 16, right: 16, zIndex: 10,
-              background: 'var(--bg-secondary)', border: '1px solid var(--border-color)',
-              padding: '10px 14px', borderRadius: 12, boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-              display: 'flex', flexDirection: 'column', gap: 4, minWidth: 160
-            }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--primary-blue)', textTransform: 'uppercase' }}>Visitor Metadata</span>
-              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{selectedTooltip.country || 'Global'}</span>
-              <span style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>Device: {selectedTooltip.deviceType || 'desktop'}</span>
-            </div>
-          )}
-        </div>
-
-        {/* 24-Hour Playback Scrubber Control */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'var(--bg-primary)', padding: '10px 16px', borderRadius: 12, border: '1px solid var(--border-color)' }}>
-          <button
-            onClick={() => setIsPlaying(p => !p)}
-            style={{ background: 'var(--primary-blue)', border: 'none', borderRadius: '50%', width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: 'pointer', flexShrink: 0 }}
-          >
-            {isPlaying ? <Pause size={14} /> : <Play size={14} style={{ marginLeft: 2 }} />}
-          </button>
-
-          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', width: 85, flexShrink: 0 }}>
-            {scrubberHour === 24 ? '🔴 Live Mode' : `${scrubberHour.toString().padStart(2, '0')}:00 UTC`}
-          </span>
-
-          <input
-            type="range"
-            min="0"
-            max="24"
-            value={scrubberHour}
-            onChange={(e) => { setIsPlaying(false); setScrubberHour(parseInt(e.target.value)); }}
-            style={{ flex: 1, accentColor: 'var(--primary-blue)', cursor: 'pointer' }}
-          />
-
-          <button
-            onClick={() => { setIsPlaying(false); setScrubberHour(24); }}
-            title="Reset to Live Mode"
-            style={{ background: 'transparent', border: '1px solid var(--border-color)', borderRadius: 6, padding: '4px 8px', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', cursor: 'pointer' }}
-          >
-            Reset
-          </button>
-        </div>
-      </div>
-
       <PanelCard
         title="Analytics &amp; Visitor Intelligence"
         action={{ label: 'Refresh', icon: 'ti-refresh', onClick: fetchData }}
