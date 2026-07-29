@@ -28,6 +28,28 @@ const TYPE_META = {
   },
 };
 
+const FALLBACK_RELEASES = [
+  {
+    version: "v2.4.0",
+    label: "AI Assistant & Real-Time Presence",
+    date: "Jul 29, 2026",
+    items: [
+      { type: "feature", title: "Atom AI Assistant", body: "Interactive Groq LLM assistant with portfolio RAG knowledge base." },
+      { type: "feature", title: "Real-Time Active Visitors", body: "50ms WebSocket session presence counter with smooth number morphing." },
+      { type: "perf", title: "Bundle Optimization", body: "Reduced main bundle size down to 485kB with 3.5s build speed." },
+    ]
+  },
+  {
+    version: "v2.3.0",
+    label: "PWA & Accessibility Upgrades",
+    date: "Jul 25, 2026",
+    items: [
+      { type: "feature", title: "PWA Offline Capability", body: "Full offline caching with auto-update prompts and tab synchronization." },
+      { type: "fix", title: "Mobile Layout & Spacing", body: "Fixed top bar overlap and standardized 32px global top section padding." },
+    ]
+  }
+];
+
 export default function WhatsNewPanel({ open, onClose }) {
   const [updates, setUpdates] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -46,15 +68,22 @@ export default function WhatsNewPanel({ open, onClose }) {
     async function fetchUpdates() {
       if (open && updates.length === 0) {
         setLoading(true);
-        const { data, error } = await supabase.from('updates').select('*').order('created_at', { ascending: false });
-        if (!error && data) {
-          setUpdates(data);
-          if (data.length > 0) {
-            localStorage.setItem('lastReadUpdate', data[0].version);
-            setReadVersion(data[0].version);
+        try {
+          const { data, error } = await supabase.from('updates').select('*').order('created_at', { ascending: false });
+          if (!error && data && data.length > 0) {
+            setUpdates(data);
+            if (data.length > 0) {
+              localStorage.setItem('lastReadUpdate', data[0].version || '');
+              setReadVersion(data[0].version || '');
+            }
+          } else {
+            setUpdates(FALLBACK_RELEASES);
           }
+        } catch {
+          setUpdates(FALLBACK_RELEASES);
+        } finally {
+          setLoading(false);
         }
-        setLoading(false);
       }
     }
     fetchUpdates();
@@ -144,10 +173,8 @@ export default function WhatsNewPanel({ open, onClose }) {
                   >
                     {tab.label}
                     {isActive && (
-                      <motion.div
-                        layoutId="whats-new-tab-underline"
+                      <div
                         className="wn-tab-underline"
-                        transition={{ type: "spring", stiffness: 500, damping: 40 }}
                       />
                     )}
                   </button>
