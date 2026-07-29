@@ -429,15 +429,29 @@ export default function About({ onNavClick }) {
           min-height: 0;
         }
 
+        @media (min-width: 901px) {
+          #about {
+            height: calc(100vh - 84px);
+            max-height: calc(100vh - 84px);
+            overflow: hidden;
+          }
+          .ab-page {
+            height: 100%;
+            max-height: 100%;
+            overflow: hidden;
+            justify-content: space-between;
+          }
+        }
+
         /* ── Page shell: fills remaining flex space, no overflow hidden ── */
         .ab-page {
           width: 100%;
           flex: 1;
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 6px;
           box-sizing: border-box;
-          padding-bottom: 8px;
+          padding-bottom: 0px;
           min-height: 0;
         }
 
