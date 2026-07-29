@@ -141,8 +141,6 @@ const TL_NODES = [
     period: 'Future Roadmap',
     badge: 'Open to Roles',
     badgeBg: 'rgba(245,158,11,0.12)',
-    badgeColor: '#f59e0b',
-    description: 'Actively seeking Full-time Data Science, Machine Learning Engineering, and Full-Stack Development opportunities.',
     highlights: ['Available for full-time software engineering roles', 'Targeting high-impact Data Science & AI teams', 'Eager to build production-grade AI solutions']
   },
 ];
@@ -150,7 +148,6 @@ const TL_NODES = [
 function CareerTimeline() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, amount: 0.6 });
-  const [selectedNode, setSelectedNode] = useState(null);
   const [hoveredNode, setHoveredNode] = useState(null);
 
   const hoveredIndex = hoveredNode ? TL_NODES.findIndex(n => n.id === hoveredNode.id) : 0;
@@ -169,17 +166,6 @@ function CareerTimeline() {
           outline: none; transition: transform 0.2s;
         }
         .tl-node-btn:hover { transform: translateY(-2px); }
-        .tl-modal-backdrop {
-          position: fixed; inset: 0; background: rgba(0,0,0,0.65);
-          backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-          z-index: 999999; display: flex; align-items: center; justify-content: center; padding: 20px;
-        }
-        .tl-modal-card {
-          width: 100%; max-width: 440px; background: var(--bg-secondary);
-          border: 1px solid var(--border-color); border-radius: 20px;
-          padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-          box-sizing: border-box; color: var(--text-primary); position: relative;
-        }
       `}</style>
 
       {/* Hover Tooltip Popover */}
@@ -260,10 +246,9 @@ function CareerTimeline() {
               <div key={node.id} style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
                 <button
                   className="tl-node-btn"
-                  onClick={() => setSelectedNode(node)}
                   onMouseEnter={() => setHoveredNode(node)}
                   onMouseLeave={() => setHoveredNode(null)}
-                  title={`Click to view ${node.label} details`}
+                  title={`${node.label} - ${node.sub}`}
                 >
                   <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {node.active && (
@@ -307,8 +292,7 @@ function CareerTimeline() {
               initial={{ opacity: 0, y: 6 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ delay, duration: 0.3 }}
-              style={{ flex: 1, textAlign: 'center', cursor: 'pointer' }}
-              onClick={() => setSelectedNode(node)}
+              style={{ flex: 1, textAlign: 'center', cursor: 'default' }}
               onMouseEnter={() => setHoveredNode(node)}
               onMouseLeave={() => setHoveredNode(null)}
             >
@@ -325,69 +309,6 @@ function CareerTimeline() {
           );
         })}
       </div>
-
-      {/* Interactive Detail Modal Popover */}
-      <AnimatePresence>
-        {selectedNode && (
-          <div className="tl-modal-backdrop" onClick={() => setSelectedNode(null)}>
-            <motion.div
-              className="tl-modal-card"
-              onClick={e => e.stopPropagation()}
-              initial={{ opacity: 0, scale: 0.94, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.94, y: 10 }}
-              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                <span
-                  style={{
-                    fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
-                    background: selectedNode.badgeBg, color: selectedNode.badgeColor,
-                    border: `1px solid ${selectedNode.badgeColor}30`
-                  }}
-                >
-                  {selectedNode.badge}
-                </span>
-                <span style={{ fontSize: 11.5, color: 'var(--text-muted)', fontWeight: 600 }}>
-                  {selectedNode.period}
-                </span>
-              </div>
-
-              <h2 style={{ fontSize: 20, fontWeight: 800, margin: '0 0 4px', color: 'var(--text-primary)' }}>
-                {selectedNode.label}
-              </h2>
-              <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--primary-blue)', margin: '0 0 12px' }}>
-                {selectedNode.sub}
-              </p>
-
-              <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, margin: '0 0 16px' }}>
-                {selectedNode.description}
-              </p>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 20 }}>
-                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Key Highlights:</span>
-                {selectedNode.highlights.map((h, idx) => (
-                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, color: 'var(--text-primary)' }}>
-                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--primary-blue)', flexShrink: 0 }} />
-                    <span>{h}</span>
-                  </div>
-                ))}
-              </div>
-
-              <button
-                onClick={() => setSelectedNode(null)}
-                style={{
-                  width: '100%', padding: '10px', borderRadius: 10,
-                  background: 'var(--primary-blue)', color: '#fff', border: 'none',
-                  fontSize: 13, fontWeight: 700, cursor: 'pointer'
-                }}
-              >
-                Close Details
-              </button>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
@@ -694,9 +615,8 @@ export default function About({ onNavClick }) {
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.4, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
         >
-          <p className="ab-section-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <p className="ab-section-label">
             <span>Career path and milestones</span>
-            <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)' }}>💡 Click stage for details</span>
           </p>
           <CareerTimeline />
         </motion.div>
