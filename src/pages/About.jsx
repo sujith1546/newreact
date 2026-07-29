@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import {
   Mail, Download, CheckCircle, Loader2, Zap, GraduationCap, Calendar,
-  Terminal, Layers, Target, Award, Code2, ArrowRight,
+  Terminal, Layers, Target, Award, Code2, ArrowRight, Copy, Check,
 } from 'lucide-react';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { ScrollReveal } from '../components';
@@ -320,6 +320,15 @@ export default function About({ onNavClick }) {
   const inView = useInView(pageRef, { once: true, amount: 0.1 });
   const daysCoding = useDaysCoding('2021-06-01');
   const [toast, setToast] = useState(null);
+  const [copiedEmail, setCopiedEmail] = useState(false);
+
+  const handleCopyEmail = () => {
+    try {
+      navigator.clipboard.writeText('sujithreddy1546@gmail.com');
+      setCopiedEmail(true);
+      setTimeout(() => setCopiedEmail(false), 2200);
+    } catch { /* fallback */ }
+  };
 
   const handleDownload = (e) => {
     e.preventDefault();
@@ -631,22 +640,33 @@ export default function About({ onNavClick }) {
           <GitHubActivity hideCommits={true} />
         </motion.div>
 
-        {/* ══════════ ROW 3: CTA + Action Buttons ══════════ */}
+        {/* ══════════ ROW 3: Advanced CTA + Action Buttons ══════════ */}
         <motion.div
           className="ab-row3"
           initial={{ opacity: 0, y: 10 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.4, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
         >
-          {/* Left: CTA text */}
+          {/* Left: CTA text + Live status pill */}
           <div className="ab-cta-left">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700,
+                color: '#10b981', background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)',
+                padding: '3px 10px', borderRadius: 999, letterSpacing: '0.02em'
+              }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
+                Open for Full-Time Roles &amp; AI Projects
+              </span>
+              <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>⚡ Avg response &lt; 2 hrs</span>
+            </div>
             <h2 className="ab-cta-title">Let's build something great.</h2>
             <p className="ab-cta-sub">
               I'm always open to discussing Data Science, Machine Learning architecture, or exciting new engineering opportunities.
             </p>
           </div>
 
-          {/* Right: Get in Touch + Resume buttons matching reference */}
+          {/* Right: Get in Touch + Resume + Copy Email buttons */}
           <div className="ab-actions-grid">
             <button
               className="ab-btn-primary"
@@ -657,6 +677,10 @@ export default function About({ onNavClick }) {
             <a href="/resume.pdf" className="ab-btn-secondary" onClick={handleDownload}>
               <Download size={14} style={{ color: 'var(--primary-blue)' }} /> Resume
             </a>
+            <button className="ab-btn-secondary" onClick={handleCopyEmail} title="Copy email address">
+              {copiedEmail ? <Check size={14} style={{ color: '#10b981' }} /> : <Copy size={14} style={{ color: 'var(--text-muted)' }} />}
+              {copiedEmail ? 'Copied!' : 'Copy Email'}
+            </button>
           </div>
         </motion.div>
 
