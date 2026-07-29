@@ -216,20 +216,20 @@ export default function Updates() {
   const effectiveUnread = unreadCount - readIds.size;
 
   return (
-    <div style={{ width: "100%", flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
+    <div style={{ width: "100%", flex: 1, display: "flex", flexDirection: "column", minHeight: 0, height: 0 }}>
       <style>{`
         #updates,
         #updates > .text-content.wide-content,
         #updates > .text-content.wide-content > .reveal {
-          display: flex; flex-direction: column; flex: 1; min-height: 0;
+          display: flex; flex-direction: column; flex: 1; min-height: 0; height: 100%;
         }
         .up-page-container {
-          width: 100%; flex: 1; display: flex; flex-direction: column; min-height: 0;
-          box-sizing: border-box;
+          width: 100%; flex: 1; display: flex; flex-direction: column;
+          min-height: 0; height: 100%; box-sizing: border-box;
           font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
         .up-card {
-          width: 100%; flex: 1; min-height: 0;
+          width: 100%; flex: 1; min-height: 0; height: 0;
           background: var(--bg-secondary); border: 1px solid var(--border-color);
           border-radius: 16px; padding: 20px 24px;
           box-sizing: border-box; display: flex; flex-direction: column;
@@ -307,11 +307,15 @@ export default function Updates() {
 
         /* ── Timeline ── */
         .up-timeline-wrapper {
-          position: relative; flex: 1; min-height: 0; overflow-y: auto;
+          position: relative; flex: 1; min-height: 0; height: 0;
+          overflow-y: auto; overflow-x: hidden;
           padding-left: 32px; padding-right: 10px; padding-bottom: 24px;
+          padding-top: 4px;
         }
         .up-timeline-wrapper::-webkit-scrollbar { width: 4px; }
+        .up-timeline-wrapper::-webkit-scrollbar-track { background: transparent; }
         .up-timeline-wrapper::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        .up-timeline-wrapper::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
         .up-timeline-line {
           position: absolute; left: 16px; top: 8px; bottom: 24px;
           width: 2px; background: var(--border-color);
