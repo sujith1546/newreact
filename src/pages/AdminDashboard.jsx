@@ -131,13 +131,13 @@ function AdminDashboardDesktop() {
 
         {/* Sidebar Footer */}
         <div className="admin-sidebar-footer">
-          <div className="admin-user-info" style={{ minWidth: 0, flex: 1, marginRight: 8 }}>
-            <div className="admin-avatar">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flex: 1 }}>
+            <div className="admin-user-avatar">
               {user?.email?.[0]?.toUpperCase() || 'A'}
             </div>
-            <div className="admin-user-meta" style={{ minWidth: 0, flex: 1, overflow: 'hidden' }}>
-              <p className="admin-user-email" style={{ margin: 0, fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.email || 'admin@portfolio'}</p>
-              <p className="admin-user-role" style={{ margin: 0, fontSize: 10, color: 'var(--text-muted)' }}>Super Admin</p>
+            <div style={{ minWidth: 0, flex: 1, overflow: 'hidden' }}>
+              <p className="admin-user-email">{user?.email || 'admin@portfolio'}</p>
+              <p className="admin-user-status" style={{ margin: 0, fontSize: 10 }}>● Super Admin</p>
             </div>
           </div>
 
@@ -150,36 +150,39 @@ function AdminDashboardDesktop() {
       {/* ─── Main Content ─── */}
       <main className="admin-main">
         {/* Advanced Top Navigation Bar */}
-        <header className="admin-header">
+        <header className="admin-topbar">
           <div className="admin-header-title-wrap">
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <div style={{ 
-                width: 28, height: 28, borderRadius: 8, 
+                width: 32, height: 32, borderRadius: 10, 
                 background: `${activeNavItem?.color || '#3b82f6'}1a`, 
+                border: `1px solid ${activeNavItem?.color || '#3b82f6'}33`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center' 
               }}>
-                <i className={`ti ${activeNavItem?.icon || 'ti-dashboard'}`} style={{ fontSize: 15, color: activeNavItem?.color || '#3b82f6' }} />
+                <i className={`ti ${activeNavItem?.icon || 'ti-dashboard'}`} style={{ fontSize: 16, color: activeNavItem?.color || '#3b82f6' }} />
               </div>
-              <h1 className="admin-header-title">
-                {activeNavItem?.label || 'Dashboard'}
-              </h1>
+              <div>
+                <h1 className="admin-header-title" style={{ fontSize: 16, fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
+                  {activeNavItem?.label || 'Dashboard'}
+                </h1>
+                {lastLogin && (
+                  <p className="admin-header-sub" style={{ margin: '2px 0 0', fontSize: 11, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
+                    Last active: {new Date(lastLogin.logged_in_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+                  </p>
+                )}
+              </div>
             </div>
-            {lastLogin && (
-              <p className="admin-header-sub">
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
-                Last active session: {new Date(lastLogin.logged_in_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })} ({lastLogin.ip_address})
-              </p>
-            )}
           </div>
 
-          <div className="admin-header-actions">
+          <div className="admin-header-actions" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <button
               onClick={toggleTheme}
               className="admin-topbar-pill-btn"
               title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
             >
               <i className={theme === 'dark' ? 'ti ti-sun' : 'ti ti-moon'} style={{ fontSize: 15, color: theme === 'dark' ? '#f59e0b' : '#6366f1' }} />
-              <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+              <span>{theme === 'dark' ? 'Light' : 'Dark'}</span>
             </button>
 
             <a href="/" target="_blank" rel="noreferrer" className="admin-topbar-pill-btn" title="View live portfolio site">
