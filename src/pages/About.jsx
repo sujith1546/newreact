@@ -360,7 +360,26 @@ export default function About({ onNavClick }) {
           height: 100%;
         }
 
-        /* ── Page shell: fills remaining flex space cleanly ── */
+        @media (min-width: 901px) {
+          #about {
+            height: calc(100vh - 80px);
+            max-height: calc(100vh - 80px);
+            overflow: hidden;
+          }
+          .ab-page {
+            height: 100%;
+            max-height: 100%;
+            overflow: hidden;
+            justify-content: space-between;
+            gap: 4px;
+          }
+          .ab-bio-card { padding: 10px 14px; }
+          .ab-row2 { padding: 8px 14px; }
+          .ab-row3 { padding: 12px 20px; }
+          .ab-github-wrapper { flex: 1; min-height: 0; overflow: hidden; }
+        }
+
+        /* ── Page shell ── */
         .ab-page {
           width: 100%;
           flex: 1;
