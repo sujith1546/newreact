@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { ScrollReveal, MobileDashboard } from '../components';
-import { Code, Briefcase, Mail, ArrowRight, Zap, Send, Atom, Smartphone, Download, RefreshCw, X, Loader2 } from 'lucide-react';
+import { Code, Briefcase, Mail, ArrowRight, Zap, Smartphone, Download, RefreshCw, X, MapPin, GraduationCap, Star, ExternalLink } from 'lucide-react';
 import useGlitchText from '../hooks/useGlitchText';
 import useRealtimeData from '../hooks/useRealtimeData';
 import { useSmartUpdate } from '../hooks/useSmartUpdate';
@@ -75,14 +75,8 @@ export default function Home({ onNavClick }) {
     );
   }
 
-  // ── Right Panel: embedded chat state ─────────────────────────────────────
-  const [chatInput, setChatInput] = useState('');
-  const [chatMessages, setChatMessages] = useState([
-    { role: 'assistant', content: "Hi! 👋 I'm Sujith's AI assistant. Ask me anything about his skills, projects, or availability!" }
-  ]);
-  const [chatLoading, setChatLoading] = useState(false);
-  const chatEndRef = useRef(null);
-  const { showToast, countdown, reload, dismiss, cancelCountdown, needRefresh } = useSmartUpdate();
+  // ── Right Panel state ────────────────────────────────────────────────────
+  const { showToast, countdown, reload, dismiss, cancelCountdown } = useSmartUpdate();
   const [showInstall, setShowInstall] = useState(true);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
 
@@ -91,44 +85,6 @@ export default function Home({ onNavClick }) {
     window.addEventListener('beforeinstallprompt', handler);
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
-
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [chatMessages, chatLoading]);
-
-  const sendPanelChat = async () => {
-    const text = chatInput.trim();
-    if (!text || chatLoading) return;
-    setChatInput('');
-    setChatMessages(prev => [...prev, { role: 'user', content: text }]);
-    setChatLoading(true);
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, history: chatMessages.slice(-6).map(m => ({ role: m.role, content: m.content })) })
-      });
-      if (!res.ok || !res.body) throw new Error('API error');
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let full = '';
-      setChatMessages(prev => [...prev, { role: 'assistant', content: '' }]);
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const chunk = decoder.decode(value, { stream: true });
-        chunk.split('\n').forEach(line => {
-          if (line.startsWith('data: ')) {
-            try { const d = JSON.parse(line.slice(6)); if (d.delta) full += d.delta; } catch {}
-          }
-        });
-        setChatMessages(prev => prev.map((m, i) => i === prev.length - 1 ? { ...m, content: full } : m));
-      }
-    } catch {
-      setChatMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, something went wrong. Please try again!' }]);
-    }
-    setChatLoading(false);
-  };
 
   const handleInstallClick = async () => {
     if (deferredPrompt) {
@@ -151,28 +107,40 @@ export default function Home({ onNavClick }) {
           align-items: stretch;
         }
         .home-content .home-left {
-          flex: 0 0 65%;
+          flex: 0 0 62%;
           display: flex;
           align-items: center;
+          padding-right: 24px;
+        }
+        /* Vertical divider */
+        .home-content .home-divider {
+          width: 1px;
+          align-self: stretch;
+          background: var(--border-color);
+          flex-shrink: 0;
+          margin: 12px 0;
         }
         .home-content .home-grid {
           display: grid;
-          grid-template-columns: 1.1fr 0.9fr;
-          gap: 40px;
+          grid-template-columns: 1fr 1fr;
+          gap: 32px;
           align-items: center;
           width: 100%;
         }
-        /* Right AI Panel */
+        /* Right Info Panel */
         .home-content .home-right-panel {
-          flex: 0 0 35%;
+          flex: 1;
           display: flex;
           flex-direction: column;
-          gap: 10px;
+          gap: 12px;
           height: 100%;
-          padding: 6px 0;
+          padding: 12px 0 12px 24px;
           box-sizing: border-box;
-          overflow: hidden;
+          overflow-y: auto;
+          overflow-x: hidden;
         }
+        .home-content .home-right-panel::-webkit-scrollbar { width: 3px; }
+        .home-content .home-right-panel::-webkit-scrollbar-thumb { background: rgba(128,128,128,0.2); border-radius: 2px; }
         .home-content .hrp-notifications {
           display: flex;
           flex-direction: column;
@@ -853,6 +821,9 @@ export default function Home({ onNavClick }) {
         </div>
         </div>{/* end home-left */}
 
+        {/* Vertical divider */}
+        <div className="home-divider" />
+
         {/* RIGHT 35% — AI Panel */}
         <div className="home-right-panel">
 
@@ -898,54 +869,86 @@ export default function Home({ onNavClick }) {
             )}
           </div>
 
-          {/* ── Embedded Atom AI Chat ─────────────────── */}
-          <div className="hrp-chat">
-            {/* Header */}
-            <div className="hrp-chat-header">
-              <div className="hrp-chat-header-avatar"><Atom size={16} /></div>
-              <div>
-                <p className="hrp-chat-title">Atom AI</p>
-                <div className="hrp-chat-status">
-                  <span className="hrp-chat-dot" />
-                  <span>Ask me anything about Sujith</span>
-                </div>
-              </div>
-            </div>
+          {/* ── Info Cards ─────────────────────────── */}
 
-            {/* Messages */}
-            <div className="hrp-messages">
-              {chatMessages.map((msg, i) => (
-                <div key={i} className={`hrp-msg ${msg.role}`}>
-                  <div className={`hrp-msg-avatar ${msg.role === 'user' ? 'user' : ''}`}>
-                    {msg.role === 'user' ? 'U' : <Atom size={12} />}
-                  </div>
-                  <div className="hrp-bubble">{msg.content}</div>
+          {/* Profile Quick Info */}
+          <div style={{
+            background: 'var(--bg-secondary)', border: '1px solid var(--border-color)',
+            borderRadius: 14, padding: '16px', display: 'flex', flexDirection: 'column', gap: 12,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <img src="/IMG_0322.jpg" alt="Sujith Thota" style={{ width: 44, height: 44, borderRadius: 12, objectFit: 'cover', border: '1px solid var(--border-color)', flexShrink: 0 }} />
+              <div>
+                <p style={{ margin: 0, fontSize: 14, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>Sujith Thota</p>
+                <p style={{ margin: '2px 0 0', fontSize: 11, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <MapPin size={10} /> Vellore, India
+                </p>
+              </div>
+              {(settings === null || settings?.is_available_for_hire) && (
+                <span style={{ marginLeft: 'auto', display: 'inline-flex', alignItems: 'center', gap: 5, background: 'color-mix(in srgb, #10b981 12%, transparent)', color: '#10b981', border: '1px solid color-mix(in srgb, #10b981 25%, transparent)', borderRadius: 20, padding: '3px 9px', fontSize: 10.5, fontWeight: 700, flexShrink: 0 }}>
+                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#10b981', display: 'inline-block' }} /> Open
+                </span>
+              )}
+            </div>
+            {/* Stats row */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+              {[{ label: 'CGPA', value: '8.7' }, { label: 'Projects', value: '10+' }, { label: 'Tech', value: '15+' }].map(s => (
+                <div key={s.label} style={{ textAlign: 'center', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 10, padding: '8px 4px' }}>
+                  <p style={{ margin: 0, fontSize: 18, fontWeight: 800, color: 'var(--primary-blue)', lineHeight: 1.1 }}>{s.value}</p>
+                  <p style={{ margin: '2px 0 0', fontSize: 9, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s.label}</p>
                 </div>
               ))}
-              {chatLoading && (
-                <div className="hrp-msg assistant">
-                  <div className="hrp-msg-avatar"><Atom size={12} /></div>
-                  <div className="hrp-typing">
-                    <span /><span /><span />
-                  </div>
-                </div>
-              )}
-              <div ref={chatEndRef} />
             </div>
+            {/* Education */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', background: 'var(--bg-primary)', borderRadius: 10, border: '1px solid var(--border-color)' }}>
+              <GraduationCap size={14} style={{ color: 'var(--primary-blue)', flexShrink: 0 }} />
+              <div>
+                <p style={{ margin: 0, fontSize: 11.5, fontWeight: 700, color: 'var(--text-primary)' }}>B.Tech CSE · VIT Vellore</p>
+                <p style={{ margin: 0, fontSize: 10, color: 'var(--text-muted)' }}>2021 – 2025 · CGPA 8.7</p>
+              </div>
+            </div>
+          </div>
 
-            {/* Input */}
-            <div className="hrp-input-row">
-              <input
-                className="hrp-input"
-                placeholder="Ask about skills, projects…"
-                value={chatInput}
-                onChange={e => setChatInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && sendPanelChat()}
-              />
-              <button className="hrp-send" onClick={sendPanelChat} disabled={!chatInput.trim() || chatLoading}>
-                {chatLoading ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Send size={14} />}
-              </button>
+          {/* Tech Highlights */}
+          <div style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 14, padding: '14px 16px' }}>
+            <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Tech Stack</p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {['React', 'Python', 'FastAPI', 'Supabase', 'TensorFlow', 'Node.js', 'SQL', 'Groq AI'].map(tech => (
+                <span key={tech} style={{ padding: '4px 10px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 20, fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)' }}>{tech}</span>
+              ))}
             </div>
+          </div>
+
+          {/* Currently Building */}
+          {settings?.current_project && (
+            <div style={{ background: 'linear-gradient(135deg, color-mix(in srgb, #f59e0b 8%, var(--bg-secondary)), var(--bg-secondary))', border: '1px solid color-mix(in srgb, #f59e0b 25%, var(--border-color))', borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+              <div style={{ padding: 8, background: 'color-mix(in srgb, #f59e0b 15%, transparent)', borderRadius: 10, color: '#f59e0b', flexShrink: 0 }}><Zap size={14} /></div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ margin: '0 0 2px', fontSize: 10, fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: 0.5 }}>Currently Building</p>
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{settings.current_project}</p>
+                <div style={{ marginTop: 8, height: 3, background: 'var(--border-color)', borderRadius: 4, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${settings.current_project_pct ?? 0}%`, background: 'linear-gradient(90deg, #f59e0b, #ef4444)', borderRadius: 4, transition: 'width 0.6s ease' }} />
+                </div>
+                <p style={{ margin: '4px 0 0', fontSize: 10, color: 'var(--text-muted)' }}>{settings.current_project_status} · {settings.current_project_pct ?? 0}% complete</p>
+              </div>
+            </div>
+          )}
+
+          {/* Quick Links */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            {[
+              { label: 'GitHub', href: 'https://github.com/sujith1546', color: 'var(--text-primary)' },
+              { label: 'LinkedIn', href: 'https://linkedin.com/in/sujith-thota', color: '#0a66c2' },
+              { label: 'Projects', nav: 'projects', color: 'var(--primary-blue)' },
+              { label: 'Contact', nav: 'contact', color: '#10b981' },
+            ].map(link => (
+              <button key={link.label}
+                onClick={() => link.nav ? onNavClick?.(link.nav) : window.open(link.href, '_blank')}
+                style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 10, padding: '9px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', transition: 'all 0.15s', fontSize: 12, fontWeight: 700, color: link.color }}
+              >
+                {link.label} <ExternalLink size={11} style={{ opacity: 0.5 }} />
+              </button>
+            ))}
           </div>
 
         </div>{/* end home-right-panel */}
