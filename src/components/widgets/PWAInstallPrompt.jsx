@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RefreshCw, X, Download, Share, Smartphone } from 'lucide-react';
+import { RefreshCw, X, Download, Share, Smartphone, Check } from 'lucide-react';
 import { useSmartUpdate } from '../../hooks/useSmartUpdate';
 
 export default function PWAInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isIOS, setIsIOS] = useState(false);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
 
   const {
@@ -18,15 +19,19 @@ export default function PWAInstallPrompt() {
   } = useSmartUpdate();
 
   useEffect(() => {
-    // Detect iOS Safari
+    // Detect iOS Safari & Standalone (Installed) Mode
     const ua = window.navigator.userAgent;
     const isIOSDevice = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
-    const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+    const isStandaloneMode = window.navigator.standalone ||
+      window.matchMedia('(display-mode: standalone)').matches ||
+      document.referrer.includes('android-app://');
 
-    if (isIOSDevice && !isStandalone) {
-      setIsIOS(true);
-      setShowInstallPrompt(true);
+    if (isStandaloneMode) {
+      setIsInstalled(true);
     } else {
+      if (isIOSDevice) {
+        setIsIOS(true);
+      }
       setShowInstallPrompt(true);
     }
 
@@ -37,15 +42,30 @@ export default function PWAInstallPrompt() {
       setShowInstallPrompt(true);
     };
 
+    // Listen for appinstalled event
+    const handleAppInstalled = () => {
+      setIsInstalled(true);
+      setShowInstallPrompt(false);
+      setDeferredPrompt(null);
+    };
+
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
   }, []);
 
   const handleInstallClick = async () => {
     if (deferredPrompt) {
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') setShowInstallPrompt(false);
+      if (outcome === 'accepted') {
+        setIsInstalled(true);
+        setShowInstallPrompt(false);
+      }
       setDeferredPrompt(null);
     } else {
       alert("To install Sujith's Portfolio:\nClick the Install icon in your browser's address bar (top right) or open your browser menu and select 'Install Sujith Portfolio'.");
@@ -58,7 +78,7 @@ export default function PWAInstallPrompt() {
 
   return (
     <AnimatePresence>
-      {/* Smart PWA Update Toast (Top-Right: top: 94px; right: 28px, slide-in from x: 50) */}
+      {/* Smart PWA Update Toast (Top-Right) */}
       {showToast && (
         <motion.div
           initial={{ opacity: 0, x: 50, scale: 0.95 }}
@@ -147,8 +167,95 @@ export default function PWAInstallPrompt() {
         </motion.div>
       )}
 
-      {/* PWA Install Banner — beside Atom AI FAB (bottom-right, same level) */}
-      {showInstallPrompt && !showToast && !isDismissed && (
+      {/* App Installed Success Modal / Card (When App is Installed) */}
+      {isInstalled && !isDismissed && !showToast && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.9, y: 20 }}
+          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+          style={{
+            position: 'fixed',
+            bottom: '18px',
+            right: '92px',
+            zIndex: 9998,
+          }}
+        >
+          <div style={{
+            background: 'var(--bg-secondary)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '20px',
+            padding: '24px 28px',
+            width: '320px',
+            boxShadow: '0 12px 36px rgba(0,0,0,0.22)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
+            position: 'relative',
+          }}>
+            {/* Close button */}
+            <button
+              onClick={handleDismissInstall}
+              style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text-muted)',
+                cursor: 'pointer',
+                padding: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <X size={18} />
+            </button>
+
+            {/* Green check squircle box */}
+            <div style={{
+              width: 56,
+              height: 56,
+              borderRadius: '16px',
+              background: 'rgba(16, 185, 129, 0.15)',
+              border: '1px solid rgba(16, 185, 129, 0.3)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#10b981',
+              marginBottom: '16px',
+            }}>
+              <Check size={30} strokeWidth={3} />
+            </div>
+
+            {/* Title */}
+            <h3 style={{
+              margin: '0 0 8px',
+              fontSize: '20px',
+              fontWeight: 800,
+              color: 'var(--text-primary)',
+              letterSpacing: '-0.01em',
+            }}>
+              App installed
+            </h3>
+
+            {/* Subtitle */}
+            <p style={{
+              margin: 0,
+              fontSize: '13.5px',
+              color: 'var(--text-secondary)',
+              lineHeight: '1.5',
+            }}>
+              Sujith's portfolio is now on your home screen.
+            </p>
+          </div>
+        </motion.div>
+      )}
+
+      {/* PWA Install Banner — beside Atom AI FAB (When NOT installed) */}
+      {!isInstalled && showInstallPrompt && !showToast && !isDismissed && (
         <motion.div
           initial={{ opacity: 0, x: 50, scale: 0.95 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
@@ -249,3 +356,4 @@ export default function PWAInstallPrompt() {
     </AnimatePresence>
   );
 }
+
