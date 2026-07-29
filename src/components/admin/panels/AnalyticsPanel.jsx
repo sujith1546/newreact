@@ -1,40 +1,55 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabaseClient';
-import { Loader2, Globe, Sparkles } from 'lucide-react';
-import { styles, MODAL_STYLES } from '../shared/constants';
-import { PanelCard, EmptyState, StatCard } from '../shared/components';
+import { Loader2, Globe, Sparkles, TrendingUp, Users, Compass, Laptop, Smartphone } from 'lucide-react';
+import { PanelCard } from '../shared/components';
 import GlobeLocator from '../../widgets/GlobeLocator';
 
 export default function AnalyticsPanel() {
   const [analytics, setAnalytics] = useState([]);
   const [events, setEvents]       = useState([]);
+  const [sessions, setSessions]   = useState([]);
   const [loading, setLoading]     = useState(true);
   const [tab, setTab]             = useState('overview');
   const [visitorMarkers, setVisitorMarkers] = useState([]);
+  const [activeHoverPoint, setActiveHoverPoint] = useState(null);
 
   useEffect(() => {
     fetchData();
 
-    // Setup Supabase Realtime presence for Visitor Globe
-    const existingChannel = supabase.getChannels().find(c => c.topic === 'realtime:visitor_presence' || c.topic === 'visitor_presence');
-    if (existingChannel) {
-      supabase.removeChannel(existingChannel);
-    }
+    // 1. Listen to Supabase Realtime Broadcast channel for lightweight globe pings
+    const channel = supabase.channel('visitor_events');
 
-    const channel = supabase.channel('visitor_presence');
-    
     channel
-      .on('presence', { event: 'sync' }, () => {
-        const state = channel.presenceState();
-        const markers = [];
-        for (const id in state) {
-          state[id].forEach((presence) => {
-            if (presence.lat && presence.lng) {
-              markers.push({ location: [presence.lat, presence.lng], size: 0.1 });
+      .on('broadcast', { event: 'visitor_ping' }, (payload) => {
+        if (payload?.payload?.lat && payload?.payload?.lng) {
+          const newPing = {
+            location: [payload.payload.lat, payload.payload.lng],
+            size: 0.12,
+            country: payload.payload.country || 'Global',
+            deviceType: payload.payload.deviceType || 'desktop',
+            page: payload.payload.page || '/',
+            timestamp: payload.payload.timestamp || new Date().toISOString(),
+          };
+
+          setVisitorMarkers((prev) => {
+            // Cluster markers within ~0.5 degrees
+            const existingIdx = prev.findIndex(
+              (m) =>
+                Math.abs(m.location[0] - newPing.location[0]) < 0.5 &&
+                Math.abs(m.location[1] - newPing.location[1]) < 0.5
+            );
+            if (existingIdx >= 0) {
+              const updated = [...prev];
+              updated[existingIdx] = {
+                ...updated[existingIdx],
+                count: (updated[existingIdx].count || 1) + 1,
+                size: Math.min(0.25, (updated[existingIdx].size || 0.12) + 0.03),
+              };
+              return updated;
             }
+            return [...prev, { ...newPing, count: 1 }];
           });
         }
-        setVisitorMarkers(markers);
       })
       .subscribe();
 
@@ -45,16 +60,18 @@ export default function AnalyticsPanel() {
 
   const fetchData = async () => {
     setLoading(true);
-    const [anaRes, evRes] = await Promise.all([
+    const [anaRes, evRes, sessRes] = await Promise.all([
       supabase.from('portfolio_analytics').select('*').order('created_at', { ascending: false }).limit(200),
       supabase.from('recruiter_events').select('*').order('created_at', { ascending: false }).limit(50),
+      supabase.from('visitor_sessions').select('*').order('created_at', { ascending: false }).limit(300),
     ]);
     if (!anaRes.error && anaRes.data) setAnalytics(anaRes.data);
     if (!evRes.error  && evRes.data)  setEvents(evRes.data);
+    if (!sessRes.error && sessRes.data) setSessions(sessRes.data);
     setLoading(false);
   };
 
-  /* ── derived metrics ── */
+  /* ── Derived metrics ── */
   const pageCounts = analytics.reduce((acc, r) => {
     acc[r.page_path] = (acc[r.page_path] || 0) + 1;
     return acc;
@@ -62,17 +79,25 @@ export default function AnalyticsPanel() {
   const sortedPages = Object.entries(pageCounts).sort((a,b) => b[1]-a[1]);
   const maxCount    = sortedPages[0]?.[1] || 1;
 
-  // daily visits last 7 days
-  const dayLabels = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(); d.setDate(d.getDate() - (6-i));
-    return d.toLocaleDateString('en-US', { weekday: 'short' });
+  // 30-day daily trend aggregation
+  const days30 = Array.from({ length: 14 }, (_, i) => {
+    const d = new Date(); d.setDate(d.getDate() - (13-i));
+    return d;
   });
-  const dayCounts = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(); d.setDate(d.getDate() - (6-i));
+
+  const trendData = days30.map((d) => {
     const ds = d.toDateString();
-    return analytics.filter(r => new Date(r.created_at).toDateString() === ds).length;
+    const count = analytics.filter(r => new Date(r.created_at).toDateString() === ds).length;
+    return { day: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), count };
   });
-  const maxDay = Math.max(...dayCounts, 1);
+  const maxTrend = Math.max(...trendData.map(t => t.count), 1);
+
+  // Referrer Breakdown
+  const referrerCounts = (sessions.length > 0 ? sessions : analytics).reduce((acc, r) => {
+    const b = r.referrer_bucket || (r.referrer?.includes('linkedin') ? 'linkedin' : r.referrer?.includes('github') ? 'github' : 'direct');
+    acc[b] = (acc[b] || 0) + 1;
+    return acc;
+  }, {});
 
   if (loading) return (
     <PanelCard title="Analytics Hub">
@@ -82,33 +107,51 @@ export default function AnalyticsPanel() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      {/* 3D Real-time Visitor Globe Widget with automatic WebGL teardown on unmount */}
-      <div style={{ padding: '20px', background: 'var(--card-bg, var(--bg-secondary))', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
+      {/* 3D Real-time Visitor Globe Widget with Clustering & Tooltips */}
+      <div style={{
+        padding: '22px 24px', background: 'var(--bg-secondary)', borderRadius: '18px',
+        border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.06)'
+      }}>
         <div style={{ flex: 1, minWidth: '240px' }}>
-          <h3 style={{ fontSize: '18px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-primary)', margin: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
             <Globe size={18} color="var(--primary-blue)" />
-            Live Visitor Map
-          </h3>
-          <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginTop: '6px', margin: 0 }}>
-            Real-time 3D visualization of active visitors browsing your portfolio across the globe.
-            Active users: <span style={{ color: '#10b981', fontWeight: 600 }}>{visitorMarkers.length}</span>
+            <h3 style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+              Live Visitor Globe &amp; Presence Map
+            </h3>
+          </div>
+          <p style={{ color: 'var(--text-muted)', fontSize: '13px', margin: '0 0 12px', lineHeight: '1.5' }}>
+            Anonymized 3D visualization using city/region centroid snapping. Hover or click markers to inspect cluster details.
           </p>
+
+          <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12.5px', color: 'var(--text-primary)', fontWeight: 600 }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
+              <span>Active Clusters: <strong>{visitorMarkers.length}</strong></span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12.5px', color: 'var(--text-muted)' }}>
+              <Compass size={14} />
+              <span>Coarse Centroid Resolution</span>
+            </div>
+          </div>
         </div>
-        <div style={{ width: '140px', height: '140px', flexShrink: 0 }}>
-          <VisitorGlobe markers={visitorMarkers} />
+
+        <div style={{ width: '150px', height: '150px', flexShrink: 0, position: 'relative' }}>
+          <GlobeLocator markers={visitorMarkers} />
         </div>
       </div>
 
       <PanelCard
-        title="Analytics Hub"
+        title="Analytics &amp; Visitor Intelligence"
         action={{ label: 'Refresh', icon: 'ti-refresh', onClick: fetchData }}
         headerElement={
           <div style={{ display: 'flex', gap: 4, background: 'var(--bg-primary)', borderRadius: 8, padding: 3, border: '1px solid var(--border-color)' }}>
-            {['overview','pages','events'].map(t => (
+            {['overview','referrers','pages','events'].map(t => (
               <button key={t} onClick={() => setTab(t)} style={{
                 padding: '5px 12px', borderRadius: 6, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600, fontFamily: 'var(--app-font)',
                 background: tab === t ? 'var(--primary-blue)' : 'transparent',
                 color: tab === t ? '#fff' : 'var(--text-muted)',
+                transition: 'all 0.15s ease',
               }}>{t.charAt(0).toUpperCase()+t.slice(1)}</button>
             ))}
           </div>
@@ -116,12 +159,13 @@ export default function AnalyticsPanel() {
       >
         <div style={{ padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 24 }}>
 
-          {/* KPI strip */}
+          {/* KPI Cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 14 }}>
-            {[{ label: 'Total Views', value: analytics.length, color: '#007bff' },
-              { label: 'Recruiter Events', value: events.length, color: '#28a745' },
-              { label: 'Unique Pages', value: sortedPages.length, color: '#6366f1' },
-              { label: 'Downloads/Clicks', value: events.filter(e => e.event_type?.includes('DOWNLOAD') || e.event_type?.includes('CLICK')).length, color: '#ff9800' },
+            {[
+              { label: 'Total Page Views', value: analytics.length, color: '#3b82f6' },
+              { label: 'Recruiter Events', value: events.length, color: '#10b981' },
+              { label: 'Unique Sessions', value: sessions.length || sortedPages.length, color: '#8b5cf6' },
+              { label: 'Interactive Clicks', value: events.filter(e => e.event_type?.includes('DOWNLOAD') || e.event_type?.includes('CLICK')).length, color: '#f59e0b' },
             ].map(k => (
               <div key={k.label} style={{ background: 'var(--bg-primary)', border: `1px solid var(--border-color)`, borderTop: `3px solid ${k.color}`, borderRadius: 12, padding: '14px 16px' }}>
                 <p style={{ margin: 0, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.6px', color: 'var(--text-muted)' }}>{k.label}</p>
@@ -132,20 +176,26 @@ export default function AnalyticsPanel() {
 
           {tab === 'overview' && (
             <>
-              {/* 7-day bar chart */}
-              <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 12, padding: '18px 20px' }}>
-                <p style={{ margin: '0 0 16px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>Daily Visitors — Last 7 Days</p>
-                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 100 }}>
-                  {dayLabels.map((day, i) => (
-                    <div key={day} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                      <span style={{ fontSize: 10, color: 'var(--primary-blue)', fontWeight: 700 }}>{dayCounts[i] || ''}</span>
+              {/* 14-Day Historical Trend Bar Chart */}
+              <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 14, padding: '18px 20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                  <p style={{ margin: 0, fontSize: 13.5, fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <TrendingUp size={15} color="var(--primary-blue)" />
+                    14-Day Traffic Trend
+                  </p>
+                  <span style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>Anonymized daily volume</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 110 }}>
+                  {trendData.map((td) => (
+                    <div key={td.day} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                      <span style={{ fontSize: 10, color: 'var(--primary-blue)', fontWeight: 700 }}>{td.count || ''}</span>
                       <div style={{
-                        width: '100%', background: `var(--primary-blue)`,
-                        height: `${Math.round((dayCounts[i]/maxDay)*80)+4}px`,
-                        borderRadius: '4px 4px 0 0', opacity: dayCounts[i] === 0 ? 0.15 : 0.85,
-                        transition: 'height 0.6s ease',
+                        width: '100%', background: 'linear-gradient(to top, var(--primary-blue), #6366f1)',
+                        height: `${Math.round((td.count/maxTrend)*85)+4}px`,
+                        borderRadius: '4px 4px 0 0', opacity: td.count === 0 ? 0.18 : 0.9,
+                        transition: 'height 0.5s ease',
                       }} />
-                      <span style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600 }}>{day}</span>
+                      <span style={{ fontSize: 9.5, color: 'var(--text-muted)', fontWeight: 600 }}>{td.day}</span>
                     </div>
                   ))}
                 </div>
@@ -153,11 +203,11 @@ export default function AnalyticsPanel() {
 
               {/* Recent activity */}
               <div>
-                <p style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>Recent Activity Feed</p>
-                {analytics.slice(0,8).map((r,i) => (
+                <p style={{ margin: '0 0 12px', fontSize: 13.5, fontWeight: 700, color: 'var(--text-primary)' }}>Recent Visitor Activity Feed</p>
+                {analytics.slice(0, 8).map((r, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: '1px solid var(--border-color)' }}>
-                    <div style={{ width: 32, height: 32, borderRadius: 8, background: '#007bff18', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                      <i className="ti ti-eye" style={{ fontSize: 14, color: '#007bff' }} />
+                    <div style={{ width: 32, height: 32, borderRadius: 8, background: 'color-mix(in srgb, var(--primary-blue) 12%, transparent)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <i className="ti ti-eye" style={{ fontSize: 14, color: 'var(--primary-blue)' }} />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{r.page_path || '/'}</p>
@@ -171,18 +221,38 @@ export default function AnalyticsPanel() {
             </>
           )}
 
+          {tab === 'referrers' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <p style={{ margin: 0, fontSize: 13.5, fontWeight: 700, color: 'var(--text-primary)' }}>Referrer Traffic Breakdown</p>
+              {Object.entries(referrerCounts).map(([source, count]) => {
+                const total = analytics.length || 1;
+                const pct = Math.round((count / total) * 100);
+                return (
+                  <div key={source} style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 12, padding: '12px 16px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 13 }}>
+                      <span style={{ fontWeight: 700, color: 'var(--text-primary)', textTransform: 'capitalize' }}>{source}</span>
+                      <span style={{ fontWeight: 700, color: 'var(--primary-blue)' }}>{count} visits ({pct}%)</span>
+                    </div>
+                    <div style={{ width: '100%', height: 6, background: 'var(--border-color)', borderRadius: 99, overflow: 'hidden' }}>
+                      <div style={{ width: `${pct}%`, height: '100%', background: 'var(--primary-blue)', borderRadius: 99 }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
           {tab === 'pages' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <p style={{ margin: '0 0 4px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>Top Visited Pages</p>
-              {sortedPages.length === 0 && <div className="admin-empty" style={{ padding: '30px 0' }}><p>No data yet.</p></div>}
+              <p style={{ margin: '0 0 4px', fontSize: 13.5, fontWeight: 700, color: 'var(--text-primary)' }}>Top Visited Pages</p>
               {sortedPages.map(([path, count]) => (
                 <div key={path}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: 12 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: 12.5 }}>
                     <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{path}</span>
-                    <span style={{ fontWeight: 700, color: '#007bff' }}>{count} visit{count !== 1 ? 's' : ''}</span>
+                    <span style={{ fontWeight: 700, color: 'var(--primary-blue)' }}>{count} visit{count !== 1 ? 's' : ''}</span>
                   </div>
                   <div style={{ width: '100%', height: 6, background: 'var(--border-color)', borderRadius: 99, overflow: 'hidden' }}>
-                    <div style={{ width: `${Math.round((count/maxCount)*100)}%`, height: '100%', background: '#007bff', borderRadius: 99 }} />
+                    <div style={{ width: `${Math.round((count/maxCount)*100)}%`, height: '100%', background: 'var(--primary-blue)', borderRadius: 99 }} />
                   </div>
                 </div>
               ))}
@@ -191,12 +261,11 @@ export default function AnalyticsPanel() {
 
           {tab === 'events' && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <p style={{ margin: '0 0 4px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>Recruiter Event Feed</p>
-              {events.length === 0 && <div className="admin-empty" style={{ padding: '30px 0' }}><p>No recruiter events logged yet.</p></div>}
+              <p style={{ margin: '0 0 4px', fontSize: 13.5, fontWeight: 700, color: 'var(--text-primary)' }}>Recruiter Event Feed</p>
               {events.map(ev => (
                 <div key={ev.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 10 }}>
-                  <div style={{ width: 34, height: 34, borderRadius: 9, background: '#28a74518', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <Sparkles size={15} color="#28a745" />
+                  <div style={{ width: 34, height: 34, borderRadius: 9, background: 'rgba(16,185,129,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Sparkles size={15} color="#10b981" />
                   </div>
                   <div style={{ flex: 1 }}>
                     <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{ev.event_type}</p>

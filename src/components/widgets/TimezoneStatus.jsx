@@ -349,10 +349,10 @@ export default function TimezoneStatus() {
       `}</style>
 
       <div className="timezone-status-wrapper">
-        <div className="online-presence-pill" title="Live count of active visitors connected to this portfolio">
+        <div className="online-presence-pill" title="Live count of active unique visitor sessions connected to this portfolio">
           <span className="online-presence-dot" />
           <span className="online-presence-count">{visitorCount && visitorCount > 0 ? visitorCount : 1}</span>
-          <span className="online-presence-label">online</span>
+          <span className="online-presence-label">{visitorCount === 1 ? 'active session' : 'active sessions'}</span>
         </div>
 
         <button 

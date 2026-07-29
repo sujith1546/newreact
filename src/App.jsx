@@ -176,79 +176,64 @@ function AppContent() {
 
 export default function App() {
   useEffect(() => {
-    let presenceChannel;
+    let broadcastChannel;
 
     const broadcastPresence = async () => {
       if (typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')) {
         return;
       }
       try {
-        let lat, lng;
+        let geoData;
         const cachedLoc = sessionStorage.getItem('visitor_location');
         if (cachedLoc) {
-          const parsed = JSON.parse(cachedLoc);
-          lat = parsed.lat;
-          lng = parsed.lng;
+          geoData = JSON.parse(cachedLoc);
         } else {
-          // Fallback chain for IP Geolocation APIs to prevent rate-limit (429) & CORS errors
           try {
-            const res = await fetch('https://get.geojs.io/v1/ip/geo.json');
-            if (!res.ok) throw new Error('geojs failed');
-            const data = await res.json();
-            if (data && data.latitude && data.longitude) {
-              lat = parseFloat(data.latitude);
-              lng = parseFloat(data.longitude);
-            } else {
-              throw new Error('invalid geojs data');
-            }
-          } catch (err1) {
-            try {
-              const res2 = await fetch('https://freeipapi.com/api/json');
-              if (!res2.ok) throw new Error('freeipapi failed');
-              const data2 = await res2.json();
-              if (data2 && data2.latitude && data2.longitude) {
-                lat = parseFloat(data2.latitude);
-                lng = parseFloat(data2.longitude);
-              } else {
-                throw new Error('invalid freeipapi data');
+            const res = await fetch('/api/geo', {
+              headers: { 'Content-Type': 'application/json' },
+            });
+            if (res.ok) {
+              const data = await res.json();
+              if (data && !data.isBot && data.lat && data.lng) {
+                geoData = { lat: data.lat, lng: data.lng, country: data.country, region: data.region, deviceType: data.deviceType };
+                sessionStorage.setItem('visitor_location', JSON.stringify(geoData));
               }
-            } catch (err2) {
-              // If all APIs fail, gracefully skip instead of throwing red console errors
-              console.warn('Visitor location APIs unavailable, skipping globe presence broadcast.');
             }
-          }
-
-          if (lat && lng) {
-            sessionStorage.setItem('visitor_location', JSON.stringify({ lat, lng }));
+          } catch {
+            // Fallback coarse location if offline/local dev
+            geoData = { lat: 20.5937, lng: 78.9629, country: 'India', region: 'Asia-South', deviceType: 'desktop' };
           }
         }
 
-        if (lat && lng) {
-          const existing = supabase.getChannels().find(c => c.topic === 'realtime:visitor_presence' || c.topic === 'visitor_presence');
-          if (existing) {
-            supabase.removeChannel(existing);
-          }
-          presenceChannel = supabase.channel('visitor_presence');
-          presenceChannel.subscribe(async (status) => {
+        if (geoData && geoData.lat && geoData.lng) {
+          // Use Broadcast channel for lightweight fire-and-forget ping events
+          broadcastChannel = supabase.channel('visitor_events');
+          broadcastChannel.subscribe((status) => {
             if (status === 'SUBSCRIBED') {
-              await presenceChannel.track({
-                lat,
-                lng,
-                online_at: new Date().toISOString()
+              broadcastChannel.send({
+                type: 'broadcast',
+                event: 'visitor_ping',
+                payload: {
+                  lat: geoData.lat,
+                  lng: geoData.lng,
+                  country: geoData.country || 'Global',
+                  deviceType: geoData.deviceType || 'desktop',
+                  page: window.location.pathname,
+                  timestamp: new Date().toISOString(),
+                },
               });
             }
           });
         }
-      } catch (e) {
-        // Silently ignore if adblocker or fetch fails
+      } catch {
+        /* silent fallback */
       }
     };
     
-    // Delay broadcast slightly to not block initial render
-    setTimeout(broadcastPresence, 2000);
+    setTimeout(broadcastPresence, 1500);
 
     return () => {
-      if (presenceChannel) supabase.removeChannel(presenceChannel);
+      if (broadcastChannel) supabase.removeChannel(broadcastChannel);
     };
   }, []);
 
