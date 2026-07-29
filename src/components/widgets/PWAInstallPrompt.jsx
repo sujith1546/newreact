@@ -19,12 +19,14 @@ export default function PWAInstallPrompt() {
   } = useSmartUpdate();
 
   useEffect(() => {
-    // Detect iOS Safari & Standalone (Installed) Mode
+    // Check localStorage & Standalone Mode
+    const savedInstalled = localStorage.getItem('pwa_installed') === 'true';
     const ua = window.navigator.userAgent;
     const isIOSDevice = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
     const isStandaloneMode = window.navigator.standalone ||
       window.matchMedia('(display-mode: standalone)').matches ||
-      document.referrer.includes('android-app://');
+      document.referrer.includes('android-app://') ||
+      savedInstalled;
 
     if (isStandaloneMode) {
       setIsInstalled(true);
@@ -44,6 +46,7 @@ export default function PWAInstallPrompt() {
 
     // Listen for appinstalled event
     const handleAppInstalled = () => {
+      localStorage.setItem('pwa_installed', 'true');
       setIsInstalled(true);
       setShowInstallPrompt(false);
       setDeferredPrompt(null);
@@ -59,6 +62,8 @@ export default function PWAInstallPrompt() {
   }, []);
 
   const handleInstallClick = async () => {
+    localStorage.setItem('pwa_installed', 'true');
+    setIsInstalled(true);
     if (deferredPrompt) {
       deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
@@ -67,8 +72,6 @@ export default function PWAInstallPrompt() {
         setShowInstallPrompt(false);
       }
       setDeferredPrompt(null);
-    } else {
-      alert("To install Sujith's Portfolio:\nClick the Install icon in your browser's address bar (top right) or open your browser menu and select 'Install Sujith Portfolio'.");
     }
   };
 
