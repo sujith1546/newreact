@@ -115,8 +115,9 @@ export default function GitHubActivity({ isDark = false, hideCommits = false }) 
       <style>{`
         @keyframes shimmer { 0% { background-position: 100% 0 } 100% { background-position: -100% 0 } }
         .gh-cell {
-          width: 12px;
-          height: 12px;
+          width: 100%;
+          aspect-ratio: 1;
+          max-height: 14px;
           border-radius: 3px;
           cursor: pointer;
           position: relative;
@@ -124,7 +125,7 @@ export default function GitHubActivity({ isDark = false, hideCommits = false }) 
           transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.15s ease;
         }
         .gh-cell:hover {
-          transform: scale(1.25);
+          transform: scale(1.3);
           z-index: 10;
           box-shadow: 0 0 0 1.5px var(--primary-blue);
         }
@@ -155,37 +156,38 @@ export default function GitHubActivity({ isDark = false, hideCommits = false }) 
         </div>
       </div>
 
-      {/* Heatmap */}
-      <div style={{ overflowX: 'auto', padding: '6px 4px', margin: '-4px' }}>
+      {/* Heatmap (100% Full Width Grid) */}
+      <div style={{ width: '100%', overflowX: 'auto', padding: '6px 4px', margin: '-4px' }}>
         {/* Month labels */}
-        <div style={{ display: 'flex', gap: 3, marginBottom: 4, paddingLeft: 16 }}>
-
+        <div style={{ display: 'flex', width: '100%', gap: '2px', marginBottom: 4, paddingLeft: 24 }}>
           {weeks.map((_, w) => (
-            <div key={w} style={{ width: 12, fontSize: 9, color: 'var(--text-muted)', flexShrink: 0, fontWeight: 500 }}>
+            <div key={w} style={{ flex: 1, minWidth: 8, fontSize: 9, color: 'var(--text-muted)', fontWeight: 500, overflow: 'visible', whiteSpace: 'nowrap' }}>
               {monthLabels[w]}
             </div>
           ))}
         </div>
-        <div style={{ display: 'flex', gap: 3 }}>
+        <div style={{ display: 'flex', width: '100%', gap: '2px' }}>
           {/* Day labels */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 3, marginRight: 4 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginRight: 6, flexShrink: 0 }}>
             {['Mon', '', 'Wed', '', 'Fri', '', ''].map((d, i) => (
-              <div key={i} style={{ height: 12, fontSize: 9, color: 'var(--text-muted)', fontWeight: 500, lineHeight: '12px' }}>{d}</div>
+              <div key={i} style={{ height: 13, fontSize: 9, color: 'var(--text-muted)', fontWeight: 500, lineHeight: '13px' }}>{d}</div>
             ))}
           </div>
           {/* Grid */}
-          {weeks.map((week, w) => (
-            <div key={w} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              {week.map((count, d) => (
-                <div
-                  key={d}
-                  className="gh-cell"
-                  title={`${count} contribution${count !== 1 ? 's' : ''}`}
-                  style={{ background: getColor(count, isDark) }}
-                />
-              ))}
-            </div>
-          ))}
+          <div style={{ display: 'flex', flex: 1, width: '100%', gap: '3px', justifyContent: 'space-between' }}>
+            {weeks.map((week, w) => (
+              <div key={w} style={{ display: 'flex', flex: 1, flexDirection: 'column', gap: '3px' }}>
+                {week.map((count, d) => (
+                  <div
+                    key={d}
+                    className="gh-cell"
+                    title={`${count} contribution${count !== 1 ? 's' : ''}`}
+                    style={{ background: getColor(count, isDark) }}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
