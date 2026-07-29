@@ -156,8 +156,8 @@ export default function PWAInstallPrompt() {
           transition={{ duration: 0.25 }}
           style={{
             position: 'fixed',
-            bottom: '24px',
-            left: '24px',
+            bottom: '96px',
+            right: '28px',
             zIndex: 9998,
             background: 'var(--bg-secondary)',
             border: '1px solid var(--border-color)',
