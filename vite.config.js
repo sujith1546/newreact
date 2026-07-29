@@ -7,7 +7,7 @@ export default defineConfig({
       registerType: 'prompt',
       injectRegister: 'auto',
       devOptions: {
-        enabled: true
+        enabled: false
       },
       workbox: {
         navigateFallback: '/index.html',

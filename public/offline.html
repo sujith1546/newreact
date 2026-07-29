@@ -4,6 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Offline | Sujith Thota Portfolio</title>
+  <script>
+    // Auto-redirect to main app if internet is connected
+    if (navigator.onLine) {
+      window.location.href = '/';
+    }
+    window.addEventListener('online', function() {
+      window.location.href = '/';
+    });
+  </script>
   <style>
     :root {
       --bg: #0b0d10;
