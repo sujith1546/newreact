@@ -35,13 +35,13 @@ export function useSupabasePresence() {
     const deviceId = getDeviceSessionId();
     let channel;
 
+    // Ultra-fast 50ms evaluation for instant UI updates when peers join or leave
     const updateCountFromPresence = () => {
       if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
       syncTimeoutRef.current = setTimeout(() => {
         try {
           if (!channel) return;
           const state = channel.presenceState();
-          // Count unique device session keys currently connected to WebSocket
           const uniqueDevices = Object.keys(state);
           const count = Math.max(1, uniqueDevices.length);
           setVisitorCount(count);
@@ -49,7 +49,7 @@ export function useSupabasePresence() {
         } catch (err) {
           console.warn('Error reading presence state:', err);
         }
-      }, 300); // 300ms smooth debounce
+      }, 50); // 50ms ultra-fast response
     };
 
     try {
@@ -91,21 +91,30 @@ export function useSupabasePresence() {
           setIsConnected(false);
         }
       });
+
+      // Untrack immediately when tab/window is closing for instant leave signal
+      const handleBeforeUnload = () => {
+        if (channel) {
+          try { channel.untrack(); } catch { /* ignore */ }
+        }
+      };
+      window.addEventListener('beforeunload', handleBeforeUnload);
+
+      return () => {
+        window.removeEventListener('beforeunload', handleBeforeUnload);
+        if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
+        if (channel) {
+          try {
+            channel.untrack();
+            supabase.removeChannel(channel);
+          } catch {
+            /* ignore cleanup error */
+          }
+        }
+      };
     } catch (err) {
       console.warn('Presence initialization error:', err);
     }
-
-    return () => {
-      if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
-      if (channel) {
-        try {
-          channel.untrack();
-          supabase.removeChannel(channel);
-        } catch {
-          /* ignore cleanup error */
-        }
-      }
-    };
   }, []);
 
   return { visitorCount, isConnected };
