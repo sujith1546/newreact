@@ -294,253 +294,205 @@ export default function Home({ onNavClick }) {
         .home-content .hrp-send:disabled { opacity: 0.45; cursor: default; }
         .home-content .hrp-send:not(:disabled):hover { opacity: 0.85; }
         
-        .home-content .hero-info {
+        /* ── Hero Redesign ────────────────────────────── */
+        .home-content .hero-wrap {
           display: flex;
           flex-direction: column;
-          gap: 20px;
+          width: 100%;
+          gap: 0;
         }
 
-        .home-content .hero-greeting {
-          font-size: 13.5px;
-          font-weight: 600;
-          color: var(--text-secondary);
-          letter-spacing: 0.06em;
-          text-transform: uppercase;
-          margin-bottom: 4px;
-        }
-
-        .home-content h1.hero-title-main {
-          font-size: 56px;
-          font-weight: 800;
-          color: var(--text-primary);
-          line-height: 1.1;
-          margin: 0;
-          letter-spacing: -0.02em;
-        }
-        
-        .home-content .hero-typewriter-container {
-          height: 36px;
+        /* Top row: avatar + identity */
+        .home-content .hero-top {
           display: flex;
           align-items: center;
-          gap: 12px;
-          margin-top: 12px;
+          gap: 28px;
+          margin-bottom: 24px;
+        }
+
+        /* Avatar with glowing ring */
+        .home-content .hero-avatar-wrap {
+          position: relative;
+          flex-shrink: 0;
+        }
+        .home-content .hero-avatar {
+          width: 96px;
+          height: 96px;
+          border-radius: 24px;
+          object-fit: cover;
+          border: 2px solid var(--border-color);
+          display: block;
+        }
+        .home-content .hero-avatar-online {
+          position: absolute;
+          bottom: -4px;
+          right: -4px;
+          width: 18px;
+          height: 18px;
+          border-radius: 50%;
+          background: #10b981;
+          border: 2.5px solid var(--bg-primary);
+          animation: onlinePulse 2.4s ease-in-out infinite;
+        }
+        @keyframes onlinePulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.5); }
+          50% { box-shadow: 0 0 0 5px rgba(16,185,129,0); }
+        }
+        .home-content .hero-identity {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        .home-content .hero-greeting {
+          font-size: 12px;
+          font-weight: 700;
+          color: var(--text-muted);
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+        }
+        .home-content .hero-name-row {
+          display: flex;
+          align-items: baseline;
+          gap: 0;
+          flex-wrap: wrap;
+        }
+        .home-content h1.hero-title-main {
+          font-size: 38px;
+          font-weight: 900;
+          line-height: 1.05;
+          margin: 0;
+          letter-spacing: -0.03em;
+          background: linear-gradient(135deg, var(--text-primary) 40%, color-mix(in srgb, var(--primary-blue) 60%, var(--text-primary)));
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+        .home-content .hero-role-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: color-mix(in srgb, var(--primary-blue) 10%, var(--bg-secondary));
+          border: 1px solid color-mix(in srgb, var(--primary-blue) 20%, var(--border-color));
+          color: var(--primary-blue);
+          border-radius: 20px;
+          padding: 3px 10px;
+          font-size: 11px;
+          font-weight: 700;
+          margin-top: 4px;
+          width: fit-content;
+        }
+
+        /* Typewriter */
+        .home-content .hero-typewriter-container {
+          height: 34px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
           color: var(--text-secondary);
-          font-size: 16px;
+          font-size: 13.5px;
           font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
-          padding: 8px 16px;
+          padding: 6px 14px;
           border-radius: 8px;
           width: fit-content;
+          margin-bottom: 4px;
         }
-
         .home-content .typing-cursor {
           display: inline-block;
-          width: 8px;
-          height: 16px;
+          width: 7px;
+          height: 14px;
           background: var(--primary-blue);
-          margin-left: 4px;
+          margin-left: 2px;
           vertical-align: middle;
           animation: blink 1s step-end infinite;
         }
-        
+
+        /* Bio text */
         .home-content p.hero-subtitle-text {
-          font-size: 16px;
+          font-size: 14px;
           color: var(--text-secondary);
-          line-height: 1.6;
-          max-width: 480px;
-          margin: 16px 0 0;
+          line-height: 1.65;
+          margin: 10px 0 0;
+          max-width: 100%;
         }
 
-        .home-content .fc-badge {
+        /* CTA pill row */
+        .home-content .hero-cta-row {
+          display: flex;
+          gap: 8px;
+          flex-wrap: wrap;
+          margin-top: 22px;
+        }
+        .home-content .hero-cta {
           display: inline-flex;
           align-items: center;
-          gap: 10px;
-          background: var(--bg-secondary);
-          border: 1px solid var(--border-color);
-          border-radius: 8px;
-          padding: 6px 14px;
-          font-size: 12.5px;
-          font-weight: 600;
-          color: var(--text-primary);
-          width: fit-content;
-          margin-bottom: 12px;
-          position: relative;
-          overflow: hidden;
-          transition: all 0.35s cubic-bezier(0.16,1,0.3,1);
-          box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-          cursor: default;
+          gap: 6px;
+          padding: 9px 18px;
+          border-radius: 10px;
+          font-size: 13px;
+          font-weight: 700;
+          cursor: pointer;
+          border: none;
+          transition: all 0.18s cubic-bezier(0.16,1,0.3,1);
+          text-decoration: none;
         }
-        .home-content .fc-badge:hover {
-          border-color: rgba(16,185,129,0.5);
-          box-shadow: 0 4px 20px rgba(16,185,129,0.15), 0 0 0 1px rgba(16,185,129,0.1);
+        .home-content .hero-cta.primary {
+          background: var(--text-primary);
+          color: var(--bg-primary);
+        }
+        .home-content .hero-cta.primary:hover {
+          opacity: 0.88;
+          transform: translateY(-1px);
+        }
+        .home-content .hero-cta.outline {
+          background: transparent;
+          color: var(--text-primary);
+          border: 1px solid var(--border-color);
+        }
+        .home-content .hero-cta.outline:hover {
+          border-color: var(--primary-blue);
+          color: var(--primary-blue);
           transform: translateY(-1px);
         }
 
-        .home-content .fc-badge::before {
-          content: '';
-          position: absolute;
-          top: 0; left: -100%;
-          width: 50%;
-          height: 100%;
-          background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.6), transparent);
-          transform: skewX(-20deg);
-          animation: shine 5s infinite;
-          pointer-events: none;
-        }
-        [data-theme="dark"] .home-content .fc-badge::before {
-          background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
-        }
-
-        @keyframes shine {
-          0% { left: -100%; }
-          15% { left: 200%; }
-          100% { left: 200%; }
-        }
-        
-        .home-content .fc-badge-dot-wrap {
-          position: relative;
-          width: 12px;
-          height: 12px;
+        /* Stats strip */
+        .home-content .hero-stats {
           display: flex;
           align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-        }
-
-        /* Glowing core dot */
-        .home-content .fc-badge-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          background: #10b981;
-          box-shadow: 0 0 6px 2px rgba(16,185,129,0.6), 0 0 12px 4px rgba(16,185,129,0.25);
-          position: relative;
-          z-index: 3;
-          animation: dotGlow 2.4s ease-in-out infinite;
-        }
-        @keyframes dotGlow {
-          0%, 100% { box-shadow: 0 0 6px 2px rgba(16,185,129,0.6), 0 0 12px 4px rgba(16,185,129,0.25); }
-          50%       { box-shadow: 0 0 8px 3px rgba(16,185,129,0.9), 0 0 20px 6px rgba(16,185,129,0.4); }
-        }
-
-        /* Ring 1 — fastest */
-        .home-content .fc-badge-dot-wrap::before {
-          content: '';
-          position: absolute;
-          width: 100%; height: 100%;
-          border-radius: 50%;
-          border: 1.5px solid rgba(16,185,129,0.7);
-          animation: sonarRing 2.4s cubic-bezier(0,0,0.2,1) infinite;
-          z-index: 2;
-        }
-        /* Ring 2 — slower, delayed */
-        .home-content .fc-badge-dot-wrap::after {
-          content: '';
-          position: absolute;
-          width: 100%; height: 100%;
-          border-radius: 50%;
-          border: 1px solid rgba(16,185,129,0.45);
-          animation: sonarRing 2.4s cubic-bezier(0,0,0.2,1) 0.8s infinite;
-          z-index: 1;
-        }
-        @keyframes sonarRing {
-          0%   { transform: scale(1);   opacity: 0.85; }
-          70%  { transform: scale(3.8); opacity: 0; }
-          100% { transform: scale(3.8); opacity: 0; }
-        }
-
-        .home-content .home-quick-actions {
-          display: flex;
-          gap: 12px;
-          margin-top: 32px;
-          flex-wrap: wrap;
-        }
-
-        .home-content .qa-card {
-          flex: 1;
-          min-width: 130px;
+          gap: 0;
+          margin-top: 28px;
+          padding: 14px 18px;
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
-          border-radius: 12px;
-          padding: 16px;
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          position: relative;
-          overflow: hidden;
-          text-align: left;
+          border-radius: 14px;
         }
-        .home-content .qa-card:hover {
-          border-color: var(--primary-blue);
-          transform: translateY(-2px);
-          box-shadow: 0 10px 20px -10px rgba(0,0,0,0.1);
+        .home-content .hero-stat-item {
+          flex: 1;
+          text-align: center;
         }
-        [data-theme="dark"] .home-content .qa-card:hover {
-          box-shadow: 0 10px 20px -10px rgba(0,0,0,0.5);
+        .home-content .hero-stat-item:not(:last-child) {
+          border-right: 1px solid var(--border-color);
         }
-        
-        .home-content .qa-icon-wrap {
-          width: 34px;
-          height: 34px;
-          border-radius: 8px;
-          background: var(--bg-primary);
-          border: 1px solid var(--border-color);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: var(--text-primary);
-          transition: all 0.2s ease;
-        }
-        .home-content .qa-card:hover .qa-icon-wrap {
-          background: var(--primary-blue);
-          border-color: var(--primary-blue);
-          color: white;
-        }
-
-        .home-content .qa-title {
-          font-size: 13.5px;
-          font-weight: 600;
-          color: var(--text-primary);
-          margin: 0;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-        }
-        
-        .home-content .qa-arrow {
-          opacity: 0;
-          transform: translateX(-5px);
-          transition: all 0.2s ease;
+        .home-content .hero-stat-val {
+          font-size: 22px;
+          font-weight: 900;
           color: var(--primary-blue);
+          line-height: 1.1;
+          letter-spacing: -0.02em;
         }
-        .home-content .qa-card:hover .qa-arrow {
-          opacity: 1;
-          transform: translateX(0);
+        .home-content .hero-stat-lbl {
+          font-size: 10px;
+          font-weight: 700;
+          color: var(--text-muted);
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          margin-top: 2px;
         }
 
-        .home-content .home-image-side {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-        .home-content .hero-img-new {
-          width: 100%;
-          max-width: 380px;
-          aspect-ratio: 1;
-          border-radius: 24px;
-          object-fit: cover;
-          border: 1px solid var(--border-color);
-          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
-          transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        [data-theme="dark"] .home-content .hero-img-new {
-          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-        }
-        .home-content .hero-img-new:hover {
-          transform: scale(1.02);
+        /* Available badge (keep for compat) */
+        .home-content .fc-badge {
+          display: none; /* replaced by avatar-online dot + role-badge */
         }
 
         /* ============================================
@@ -769,56 +721,67 @@ export default function Home({ onNavClick }) {
       {/* Desktop: outer split wrapper */}
       <div className="home-outer">
 
-        {/* LEFT 65% — hero content */}
+        {/* LEFT 62% — redesigned hero */}
         <div className="home-left">
-        <div className="home-grid">
-          <div className="hero-info">
-            {(settings === null || settings.is_available_for_hire) && (
-              <div className="fc-badge">
-                <div className="fc-badge-dot-wrap">
-                  <div className="fc-badge-dot" />
-                </div>
-                Available for Opportunities
-              </div>
-            )}
+          <div className="hero-wrap">
 
-            <div>
-              <div className="hero-greeting">{getGreeting()}</div>
-              <h1 className="hero-title-main">{nameText}</h1>
-              
-              <div className="hero-typewriter-container">
-                <DesktopTypewriter />
+            {/* Top: avatar + identity */}
+            <div className="hero-top">
+              <div className="hero-avatar-wrap">
+                <img src="/IMG_0322.jpg" alt="Sujith Thota" className="hero-avatar" />
+                {(settings === null || settings?.is_available_for_hire) && (
+                  <span className="hero-avatar-online" title="Available for opportunities" />
+                )}
               </div>
-              
-              <p className="hero-subtitle-text" dangerouslySetInnerHTML={{ __html: settings?.hero_headline || "A passionate <strong>B.Tech Graduate from VIT (8.7 CGPA)</strong>, actively exploring the boundaries between complex data logic and seamless web experiences." }} />
+              <div className="hero-identity">
+                <div className="hero-greeting">{getGreeting()} 👋</div>
+                <h1 className="hero-title-main">{nameText}</h1>
+                <div className="hero-role-badge">
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'currentColor', display: 'inline-block', opacity: 0.7 }} />
+                  Data Science &amp; Full-Stack Developer
+                </div>
+              </div>
             </div>
 
-            <div className="home-quick-actions">
-              <button className="qa-card" onClick={() => onNavClick?.('skills')}>
-                <div className="qa-icon-wrap"><Code size={16} /></div>
-                <div className="qa-title">
-                  Core Skills <ArrowRight size={14} className="qa-arrow" />
-                </div>
+            {/* Typewriter */}
+            <div className="hero-typewriter-container">
+              <DesktopTypewriter />
+            </div>
+
+            {/* Bio */}
+            <p className="hero-subtitle-text"
+              dangerouslySetInnerHTML={{ __html: settings?.hero_headline ||
+                "A passionate <strong>B.Tech Graduate from VIT (8.7 CGPA)</strong>, actively exploring the boundaries between complex data logic and seamless web experiences."
+              }}
+            />
+
+            {/* CTA pill row */}
+            <div className="hero-cta-row">
+              <button className="hero-cta primary" onClick={() => onNavClick?.('skills')}>
+                <Code size={14} /> Core Skills
               </button>
-              <button className="qa-card" onClick={() => onNavClick?.('projects')}>
-                <div className="qa-icon-wrap"><Briefcase size={16} /></div>
-                <div className="qa-title">
-                  Projects <ArrowRight size={14} className="qa-arrow" />
-                </div>
+              <button className="hero-cta outline" onClick={() => onNavClick?.('projects')}>
+                <Briefcase size={14} /> Projects
               </button>
-              <button className="qa-card" onClick={() => onNavClick?.('contact')}>
-                <div className="qa-icon-wrap"><Mail size={16} /></div>
-                <div className="qa-title">
-                  Contact Me <ArrowRight size={14} className="qa-arrow" />
-                </div>
+              <button className="hero-cta outline" onClick={() => onNavClick?.('contact')}>
+                <Mail size={14} /> Contact
+              </button>
+              <button className="hero-cta outline" onClick={triggerResume}>
+                <ArrowRight size={14} /> Resume
               </button>
             </div>
+
+            {/* Stats strip */}
+            <div className="hero-stats">
+              {[{ val: '8.7', lbl: 'CGPA' }, { val: '10+', lbl: 'Projects' }, { val: '1+', lbl: 'Years Exp.' }, { val: '15+', lbl: 'Technologies' }].map(s => (
+                <div key={s.lbl} className="hero-stat-item">
+                  <div className="hero-stat-val">{s.val}</div>
+                  <div className="hero-stat-lbl">{s.lbl}</div>
+                </div>
+              ))}
             </div>
-          
-          <div className="home-image-side">
-            <img src="/IMG_0322.jpg" alt="Sujith Thota" className="hero-img-new" />
+
           </div>
-        </div>
         </div>{/* end home-left */}
 
         {/* Vertical divider */}
