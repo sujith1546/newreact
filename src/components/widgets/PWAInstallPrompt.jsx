@@ -147,43 +147,60 @@ export default function PWAInstallPrompt() {
         </motion.div>
       )}
 
-      {/* PWA Install Banner */}
+      {/* PWA Install Banner — stacked above Atom AI FAB (bottom-right) */}
       {showInstallPrompt && !showToast && !isDismissed && (
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 30 }}
-          transition={{ duration: 0.25 }}
-          style={{
-            position: 'fixed',
-            bottom: '96px',
-            right: '28px',
-            zIndex: 9998,
+          initial={{ opacity: 0, x: 50, scale: 0.95 }}
+          animate={{ opacity: 1, x: 0, scale: 1 }}
+          exit={{ opacity: 0, x: 50, scale: 0.95 }}
+          transition={{ type: 'spring', damping: 24, stiffness: 300, delay: 0.3 }}
+          style={{ position: 'fixed', bottom: '92px', right: '28px', zIndex: 9998 }}
+        >
+          {/* Card */}
+          <div style={{
             background: 'var(--bg-secondary)',
             border: '1px solid var(--border-color)',
-            borderRadius: '12px',
-            padding: '14px 18px',
-            maxWidth: '380px',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+            borderRadius: '14px',
+            padding: '14px 16px',
+            maxWidth: '300px',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.14)',
             display: 'flex',
-            alignItems: 'flex-start',
-            gap: '12px',
-          }}
-        >
-          <div style={{ color: 'var(--text-primary)', marginTop: '2px', display: 'flex' }}>
-            <Smartphone size={20} />
-          </div>
-          <div style={{ flex: 1 }}>
-            <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
-              Install App Experience
-            </p>
-            <p style={{ margin: '3px 0 8px', fontSize: '11.5px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
-              {isIOS ? (
-                <>Tap <Share size={12} style={{ verticalAlign: 'middle', display: 'inline' }} /> <strong>Share</strong>, then select <strong>"Add to Home Screen"</strong> for instant offline access.</>
-              ) : (
-                'Add this portfolio to your home screen for quick offline access.'
-              )}
-            </p>
+            flexDirection: 'column',
+            gap: '10px',
+            position: 'relative',
+          }}>
+            {/* Header row */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: '10px', flexShrink: 0,
+                background: 'color-mix(in srgb, var(--primary-blue) 10%, transparent)',
+                border: '1px solid color-mix(in srgb, var(--primary-blue) 20%, transparent)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'var(--primary-blue)',
+              }}>
+                <Smartphone size={18} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <p style={{ margin: 0, fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                  Install App Experience
+                </p>
+                <p style={{ margin: '3px 0 0', fontSize: '11.5px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                  {isIOS ? (
+                    <>Tap <Share size={11} style={{ verticalAlign: 'middle', display: 'inline' }} /> Share → <strong>Add to Home Screen</strong></>
+                  ) : (
+                    'Add this portfolio to your home screen for quick offline access.'
+                  )}
+                </p>
+              </div>
+              <button
+                onClick={handleDismissInstall}
+                style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '2px', flexShrink: 0 }}
+              >
+                <X size={14} />
+              </button>
+            </div>
+
+            {/* Install button */}
             {!isIOS && (
               <button
                 onClick={handleInstallClick}
@@ -191,32 +208,42 @@ export default function PWAInstallPrompt() {
                   background: 'var(--text-primary)',
                   color: 'var(--bg-primary)',
                   border: 'none',
-                  padding: '6px 14px',
-                  borderRadius: '6px',
-                  fontSize: '12px',
-                  fontWeight: 600,
+                  padding: '8px 14px',
+                  borderRadius: '8px',
+                  fontSize: '12.5px',
+                  fontWeight: 700,
                   cursor: 'pointer',
                   display: 'inline-flex',
                   alignItems: 'center',
+                  justifyContent: 'center',
                   gap: '6px',
+                  width: '100%',
                 }}
               >
-                <Download size={14} /> Install App
+                <Download size={13} /> Install App
               </button>
             )}
+
+            {/* Caret arrow pointing down toward Atom AI button */}
+            <div style={{
+              position: 'absolute',
+              bottom: '-8px',
+              right: '19px',
+              width: 0, height: 0,
+              borderLeft: '8px solid transparent',
+              borderRight: '8px solid transparent',
+              borderTop: '8px solid var(--border-color)',
+            }} />
+            <div style={{
+              position: 'absolute',
+              bottom: '-7px',
+              right: '19px',
+              width: 0, height: 0,
+              borderLeft: '8px solid transparent',
+              borderRight: '8px solid transparent',
+              borderTop: '8px solid var(--bg-secondary)',
+            }} />
           </div>
-          <button
-            onClick={handleDismissInstall}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: 'var(--text-muted)',
-              cursor: 'pointer',
-              padding: '2px',
-            }}
-          >
-            <X size={16} />
-          </button>
         </motion.div>
       )}
     </AnimatePresence>
