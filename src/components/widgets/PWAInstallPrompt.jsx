@@ -170,89 +170,74 @@ export default function PWAInstallPrompt() {
         </motion.div>
       )}
 
-      {/* App Installed Success Modal / Card (When App is Installed) */}
+      {/* App Installed Success Modal / Card (When App is Installed - Exact same size & position) */}
       {isInstalled && !isDismissed && !showToast && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          style={{
-            position: 'fixed',
-            bottom: '18px',
-            right: '92px',
-            zIndex: 9998,
-          }}
+          initial={{ opacity: 0, x: 50, scale: 0.95 }}
+          animate={{ opacity: 1, x: 0, scale: 1 }}
+          exit={{ opacity: 0, x: 50, scale: 0.95 }}
+          transition={{ type: 'spring', damping: 24, stiffness: 300, delay: 0.3 }}
+          style={{ position: 'fixed', bottom: '18px', right: '92px', zIndex: 9998 }}
         >
+          {/* Card */}
           <div style={{
             background: 'var(--bg-secondary)',
             border: '1px solid var(--border-color)',
-            borderRadius: '20px',
-            padding: '24px 28px',
-            width: '320px',
-            boxShadow: '0 12px 36px rgba(0,0,0,0.22)',
+            borderRadius: '14px',
+            padding: '14px 16px',
+            maxWidth: '300px',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.14)',
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'center',
-            textAlign: 'center',
+            gap: '10px',
             position: 'relative',
           }}>
-            {/* Close button */}
-            <button
-              onClick={handleDismissInstall}
-              style={{
-                position: 'absolute',
-                top: '16px',
-                right: '16px',
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--text-muted)',
-                cursor: 'pointer',
-                padding: '4px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <X size={18} />
-            </button>
-
-            {/* Green check squircle box */}
-            <div style={{
-              width: 56,
-              height: 56,
-              borderRadius: '16px',
-              background: 'rgba(16, 185, 129, 0.15)',
-              border: '1px solid rgba(16, 185, 129, 0.3)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: '#10b981',
-              marginBottom: '16px',
-            }}>
-              <Check size={30} strokeWidth={3} />
+            {/* Header row */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: '10px', flexShrink: 0,
+                background: 'rgba(16, 185, 129, 0.15)',
+                border: '1px solid rgba(16, 185, 129, 0.3)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#10b981',
+              }}>
+                <Check size={20} strokeWidth={2.5} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <p style={{ margin: 0, fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                  App installed
+                </p>
+                <p style={{ margin: '3px 0 0', fontSize: '11.5px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                  Sujith's portfolio is now on your home screen.
+                </p>
+              </div>
+              <button
+                onClick={handleDismissInstall}
+                style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '2px', flexShrink: 0 }}
+              >
+                <X size={14} />
+              </button>
             </div>
 
-            {/* Title */}
-            <h3 style={{
-              margin: '0 0 8px',
-              fontSize: '20px',
-              fontWeight: 800,
-              color: 'var(--text-primary)',
-              letterSpacing: '-0.01em',
-            }}>
-              App installed
-            </h3>
-
-            {/* Subtitle */}
-            <p style={{
-              margin: 0,
-              fontSize: '13.5px',
-              color: 'var(--text-secondary)',
-              lineHeight: '1.5',
-            }}>
-              Sujith's portfolio is now on your home screen.
-            </p>
+            {/* Caret arrow pointing right toward Atom AI button */}
+            <div style={{
+              position: 'absolute',
+              right: '-8px',
+              bottom: '19px',
+              width: 0, height: 0,
+              borderTop: '8px solid transparent',
+              borderBottom: '8px solid transparent',
+              borderLeft: '8px solid var(--border-color)',
+            }} />
+            <div style={{
+              position: 'absolute',
+              right: '-7px',
+              bottom: '19px',
+              width: 0, height: 0,
+              borderTop: '8px solid transparent',
+              borderBottom: '8px solid transparent',
+              borderLeft: '8px solid var(--bg-secondary)',
+            }} />
           </div>
         </motion.div>
       )}
