@@ -1,62 +1,42 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabaseClient';
-import { Loader2, Globe, Sparkles, TrendingUp, Users, Compass, Laptop, Smartphone } from 'lucide-react';
+import { Loader2, Globe, Sparkles, TrendingUp, Users, Compass, Laptop, Smartphone, Play, Pause, RotateCcw } from 'lucide-react';
 import { PanelCard } from '../shared/components';
-import GlobeLocator from '../../widgets/GlobeLocator';
+import GlobeCanvas from '../../widgets/GlobeCanvas';
+import { useSupabasePresence } from '../../../hooks/useSupabasePresence';
+import { useTheme } from '../../../context/ThemeContext';
 
 export default function AnalyticsPanel() {
+  const { presenceMarkers, aggregatedByCountry, visitorCount } = useSupabasePresence();
+  const { theme } = useTheme();
+
   const [analytics, setAnalytics] = useState([]);
   const [events, setEvents]       = useState([]);
   const [sessions, setSessions]   = useState([]);
   const [loading, setLoading]     = useState(true);
   const [tab, setTab]             = useState('overview');
-  const [visitorMarkers, setVisitorMarkers] = useState([]);
-  const [activeHoverPoint, setActiveHoverPoint] = useState(null);
+  const [selectedTooltip, setSelectedTooltip] = useState(null);
+
+  // 24-Hour Playback Scrubber State
+  const [scrubberHour, setScrubberHour] = useState(24); // 24 = Live mode
+  const [isPlaying, setIsPlaying]       = useState(false);
 
   useEffect(() => {
     fetchData();
-
-    // 1. Listen to Supabase Realtime Broadcast channel for lightweight globe pings
-    const channel = supabase.channel('visitor_events');
-
-    channel
-      .on('broadcast', { event: 'visitor_ping' }, (payload) => {
-        if (payload?.payload?.lat && payload?.payload?.lng) {
-          const newPing = {
-            location: [payload.payload.lat, payload.payload.lng],
-            size: 0.12,
-            country: payload.payload.country || 'Global',
-            deviceType: payload.payload.deviceType || 'desktop',
-            page: payload.payload.page || '/',
-            timestamp: payload.payload.timestamp || new Date().toISOString(),
-          };
-
-          setVisitorMarkers((prev) => {
-            // Cluster markers within ~0.5 degrees
-            const existingIdx = prev.findIndex(
-              (m) =>
-                Math.abs(m.location[0] - newPing.location[0]) < 0.5 &&
-                Math.abs(m.location[1] - newPing.location[1]) < 0.5
-            );
-            if (existingIdx >= 0) {
-              const updated = [...prev];
-              updated[existingIdx] = {
-                ...updated[existingIdx],
-                count: (updated[existingIdx].count || 1) + 1,
-                size: Math.min(0.25, (updated[existingIdx].size || 0.12) + 0.03),
-              };
-              return updated;
-            }
-            return [...prev, { ...newPing, count: 1 }];
-          });
-        }
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, []);
+
+  useEffect(() => {
+    let interval;
+    if (isPlaying) {
+      interval = setInterval(() => {
+        setScrubberHour((prev) => {
+          if (prev >= 24) return 0;
+          return prev + 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isPlaying]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -79,13 +59,13 @@ export default function AnalyticsPanel() {
   const sortedPages = Object.entries(pageCounts).sort((a,b) => b[1]-a[1]);
   const maxCount    = sortedPages[0]?.[1] || 1;
 
-  // 30-day daily trend aggregation
-  const days30 = Array.from({ length: 14 }, (_, i) => {
+  // 14-day daily trend aggregation
+  const days14 = Array.from({ length: 14 }, (_, i) => {
     const d = new Date(); d.setDate(d.getDate() - (13-i));
     return d;
   });
 
-  const trendData = days30.map((d) => {
+  const trendData = days14.map((d) => {
     const ds = d.toDateString();
     const count = analytics.filter(r => new Date(r.created_at).toDateString() === ds).length;
     return { day: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }), count };
@@ -107,37 +87,86 @@ export default function AnalyticsPanel() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-      {/* 3D Real-time Visitor Globe Widget with Clustering & Tooltips */}
+      {/* Unified 3D Real-time Visitor Globe Widget */}
       <div style={{
         padding: '22px 24px', background: 'var(--bg-secondary)', borderRadius: '18px',
-        border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap',
+        border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '18px',
         boxShadow: '0 4px 20px rgba(0,0,0,0.06)'
       }}>
-        <div style={{ flex: 1, minWidth: '240px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-            <Globe size={18} color="var(--primary-blue)" />
-            <h3 style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-              Live Visitor Globe &amp; Presence Map
-            </h3>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+              <Globe size={18} color="var(--primary-blue)" />
+              <h3 style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                Live 3D Presence Map &amp; Solar Terminator
+              </h3>
+            </div>
+            <p style={{ color: 'var(--text-muted)', fontSize: '13px', margin: 0 }}>
+              Driven by native Supabase Presence primitives with subsolar 60s solar terminator shading.
+            </p>
           </div>
-          <p style={{ color: 'var(--text-muted)', fontSize: '13px', margin: '0 0 12px', lineHeight: '1.5' }}>
-            Anonymized 3D visualization using city/region centroid snapping. Hover or click markers to inspect cluster details.
-          </p>
 
-          <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12.5px', color: 'var(--text-primary)', fontWeight: 600 }}>
-              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
-              <span>Active Clusters: <strong>{visitorMarkers.length}</strong></span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12.5px', color: 'var(--text-muted)' }}>
-              <Compass size={14} />
-              <span>Coarse Centroid Resolution</span>
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--primary-blue)', background: 'color-mix(in srgb, var(--primary-blue) 10%, transparent)', padding: '4px 10px', borderRadius: 999 }}>
+              🟢 {visitorCount} Active Presence {visitorCount === 1 ? 'Session' : 'Sessions'}
+            </span>
           </div>
         </div>
 
-        <div style={{ width: '150px', height: '150px', flexShrink: 0, position: 'relative' }}>
-          <GlobeLocator markers={visitorMarkers} />
+        {/* 3D Globe Canvas Viewport */}
+        <div style={{ width: '100%', height: '260px', position: 'relative', borderRadius: '14px', overflow: 'hidden', background: 'var(--bg-primary)', border: '1px solid var(--border-color)' }}>
+          <GlobeCanvas
+            variant="analytics"
+            markers={presenceMarkers}
+            theme={theme}
+            interactive={true}
+            onMarkerClick={setSelectedTooltip}
+          />
+
+          {/* Admin Non-PII Hover Tooltip Overlay */}
+          {selectedTooltip && (
+            <div style={{
+              position: 'absolute', top: 16, right: 16, zIndex: 10,
+              background: 'var(--bg-secondary)', border: '1px solid var(--border-color)',
+              padding: '10px 14px', borderRadius: 12, boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+              display: 'flex', flexDirection: 'column', gap: 4, minWidth: 160
+            }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--primary-blue)', textTransform: 'uppercase' }}>Visitor Metadata</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>{selectedTooltip.country || 'Global'}</span>
+              <span style={{ fontSize: 11.5, color: 'var(--text-muted)' }}>Device: {selectedTooltip.deviceType || 'desktop'}</span>
+            </div>
+          )}
+        </div>
+
+        {/* 24-Hour Playback Scrubber Control */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'var(--bg-primary)', padding: '10px 16px', borderRadius: 12, border: '1px solid var(--border-color)' }}>
+          <button
+            onClick={() => setIsPlaying(p => !p)}
+            style={{ background: 'var(--primary-blue)', border: 'none', borderRadius: '50%', width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', cursor: 'pointer', flexShrink: 0 }}
+          >
+            {isPlaying ? <Pause size={14} /> : <Play size={14} style={{ marginLeft: 2 }} />}
+          </button>
+
+          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', width: 85, flexShrink: 0 }}>
+            {scrubberHour === 24 ? '🔴 Live Mode' : `${scrubberHour.toString().padStart(2, '0')}:00 UTC`}
+          </span>
+
+          <input
+            type="range"
+            min="0"
+            max="24"
+            value={scrubberHour}
+            onChange={(e) => { setIsPlaying(false); setScrubberHour(parseInt(e.target.value)); }}
+            style={{ flex: 1, accentColor: 'var(--primary-blue)', cursor: 'pointer' }}
+          />
+
+          <button
+            onClick={() => { setIsPlaying(false); setScrubberHour(24); }}
+            title="Reset to Live Mode"
+            style={{ background: 'transparent', border: '1px solid var(--border-color)', borderRadius: 6, padding: '4px 8px', fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', cursor: 'pointer' }}
+          >
+            Reset
+          </button>
         </div>
       </div>
 

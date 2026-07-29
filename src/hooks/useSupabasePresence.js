@@ -3,7 +3,6 @@ import { supabase } from '../lib/supabaseClient';
 
 const BOT_REGEX = /bot|crawler|spider|lighthouse|bytespider|googlebot|bingbot|yandex/i;
 
-// Use localStorage so all tabs in the same browser share ONE unique device session ID
 function getDeviceSessionId() {
   if (typeof window === 'undefined') return 'device_ssr';
   let did = localStorage.getItem('x-visitor-device-id');
@@ -17,10 +16,13 @@ function getDeviceSessionId() {
 export function useSupabasePresence() {
   const [visitorCount, setVisitorCount] = useState(1);
   const [isConnected, setIsConnected] = useState(false);
+  const [presenceMarkers, setPresenceMarkers] = useState([]);
+  const [aggregatedByCountry, setAggregatedByCountry] = useState({});
+  const [isAggregatedOnly, setIsAggregatedOnly] = useState(false);
   const syncTimeoutRef = useRef(null);
 
   useEffect(() => {
-    // 1. Client Bot Filtering
+    // Client-side Bot Filter
     if (typeof navigator !== 'undefined' && BOT_REGEX.test(navigator.userAgent || '')) {
       setIsConnected(false);
       setVisitorCount(1);
@@ -35,21 +37,51 @@ export function useSupabasePresence() {
     const deviceId = getDeviceSessionId();
     let channel;
 
-    // Ultra-fast 50ms evaluation for instant UI updates when peers join or leave
-    const updateCountFromPresence = () => {
+    const processPresenceState = () => {
       if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
       syncTimeoutRef.current = setTimeout(() => {
         try {
           if (!channel) return;
           const state = channel.presenceState();
-          const uniqueDevices = Object.keys(state);
-          const count = Math.max(1, uniqueDevices.length);
+          const uniqueKeys = Object.keys(state);
+          const rawCount = uniqueKeys.length;
+          const count = Math.max(1, rawCount);
           setVisitorCount(count);
           setIsConnected(true);
+
+          // Marker Cap & Degrade Path (> 150 fallback)
+          const isHighTraffic = rawCount > 150;
+          setIsAggregatedOnly(isHighTraffic);
+
+          const markers = [];
+          const countryAgg = {};
+
+          Object.entries(state).forEach(([key, presences]) => {
+            if (!presences || presences.length === 0) return;
+            const latest = presences[presences.length - 1];
+            const country = latest.country || 'Global';
+
+            // Country-level aggregation
+            countryAgg[country] = (countryAgg[country] || 0) + 1;
+
+            if (latest.lat && latest.lng && !isHighTraffic) {
+              markers.push({
+                key,
+                lat: latest.lat,
+                lng: latest.lng,
+                country,
+                deviceType: latest.deviceType || 'desktop',
+                last_seen: latest.last_seen || new Date().toISOString(),
+              });
+            }
+          });
+
+          setPresenceMarkers(markers);
+          setAggregatedByCountry(countryAgg);
         } catch (err) {
-          console.warn('Error reading presence state:', err);
+          console.warn('Error processing presence state:', err);
         }
-      }, 50); // 50ms ultra-fast response
+      }, 50); // 50ms fast response
     };
 
     try {
@@ -64,25 +96,45 @@ export function useSupabasePresence() {
       channel = supabase.channel('portfolio_presence', {
         config: {
           presence: {
-            key: deviceId, // Shared across all tabs on the same device
+            key: deviceId,
           },
         },
       });
 
-      // Register presence listeners before subscribe
       channel
-        .on('presence', { event: 'sync' }, updateCountFromPresence)
-        .on('presence', { event: 'join' }, updateCountFromPresence)
-        .on('presence', { event: 'leave' }, updateCountFromPresence);
+        .on('presence', { event: 'sync' }, processPresenceState)
+        .on('presence', { event: 'join' }, processPresenceState)
+        .on('presence', { event: 'leave' }, processPresenceState);
 
       channel.subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
           setIsConnected(true);
           try {
+            // Read coarse location once from sessionStorage or fetch /api/geo
+            let geo = { lat: 20.5937, lng: 78.9629, country: 'India', deviceType: 'desktop' };
+            const cached = sessionStorage.getItem('visitor_location');
+            if (cached) {
+              try { geo = JSON.parse(cached); } catch { /* fallback */ }
+            } else {
+              try {
+                const res = await fetch('/api/geo');
+                if (res.ok) {
+                  const data = await res.json();
+                  if (data && data.lat && data.lng) {
+                    geo = { lat: data.lat, lng: data.lng, country: data.country || 'India', deviceType: data.deviceType || 'desktop' };
+                    sessionStorage.setItem('visitor_location', JSON.stringify(geo));
+                  }
+                }
+              } catch { /* fallback */ }
+            }
+
+            // Single track call on join to prevent fan-out storms
             await channel.track({
-              online_at: new Date().toISOString(),
-              device_id: deviceId,
-              page: window.location.pathname,
+              lat: geo.lat,
+              lng: geo.lng,
+              country: geo.country || 'India',
+              deviceType: geo.deviceType || 'desktop',
+              last_seen: new Date().toISOString(),
             });
           } catch (trackErr) {
             console.warn('Presence track warning:', trackErr);
@@ -92,7 +144,6 @@ export function useSupabasePresence() {
         }
       });
 
-      // Untrack immediately when tab/window is closing for instant leave signal
       const handleBeforeUnload = () => {
         if (channel) {
           try { channel.untrack(); } catch { /* ignore */ }
@@ -107,9 +158,7 @@ export function useSupabasePresence() {
           try {
             channel.untrack();
             supabase.removeChannel(channel);
-          } catch {
-            /* ignore cleanup error */
-          }
+          } catch { /* ignore */ }
         }
       };
     } catch (err) {
@@ -117,5 +166,11 @@ export function useSupabasePresence() {
     }
   }, []);
 
-  return { visitorCount, isConnected };
+  return {
+    visitorCount,
+    isConnected,
+    presenceMarkers,
+    aggregatedByCountry,
+    isAggregatedOnly,
+  };
 }

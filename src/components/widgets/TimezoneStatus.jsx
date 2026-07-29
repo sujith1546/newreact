@@ -1,14 +1,16 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Globe } from 'lucide-react';
-const GlobeLocator = lazy(() => import('./GlobeLocator'));
+import { Globe, X } from 'lucide-react';
+import GlobeCanvas from './GlobeCanvas';
 import DarkModeToggle from '../ui/DarkModeToggle';
 import SettingsDropdown from '../ui/SettingsDropdown';
 import UpdatesDropdown from './UpdatesDropdown';
 import { useSupabasePresence } from '../../hooks/useSupabasePresence';
+import { useTheme } from '../../context/ThemeContext';
 
 export default function TimezoneStatus() {
-  const { visitorCount, isConnected } = useSupabasePresence();
+  const { visitorCount, presenceMarkers } = useSupabasePresence();
+  const { theme } = useTheme();
   const [visitorCity, setVisitorCity] = useState('');
   const [visitorTzAbbr, setVisitorTzAbbr] = useState('');
   const [localStart, setLocalStart] = useState('');
@@ -401,12 +403,21 @@ export default function TimezoneStatus() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            style={{ position: 'fixed', inset: 0, zIndex: 999999, backgroundColor: '#030509' }}
+            transition={{ duration: 0.3 }}
+            style={{ position: 'fixed', inset: 0, zIndex: 999999, backgroundColor: theme === 'dark' ? '#030509' : '#f9fafb', display: 'flex', flexDirection: 'column' }}
           >
-            <Suspense fallback={<div style={{ width: '100%', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><div className="spinner"></div></div>}>
-              <GlobeLocator onClose={() => setIsGlobeOpen(false)} />
-            </Suspense>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', borderBottom: '1px solid var(--border-color)', zIndex: 10 }}>
+              <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>Live 3D Visitor Globe</span>
+              <button
+                onClick={() => setIsGlobeOpen(false)}
+                style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '50%', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-primary)', cursor: 'pointer' }}
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div style={{ flex: 1, position: 'relative' }}>
+              <GlobeCanvas variant="compact" markers={presenceMarkers} theme={theme} interactive />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
