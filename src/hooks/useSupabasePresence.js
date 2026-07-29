@@ -64,6 +64,12 @@ export function useSupabasePresence() {
     };
 
     try {
+      // Remove any pre-existing channel for this topic to prevent "cannot add presence callbacks after subscribe" error
+      const existing = supabase.getChannels().find(c => c.topic === 'realtime:portfolio_presence' || c.topic === 'portfolio_presence');
+      if (existing) {
+        supabase.removeChannel(existing);
+      }
+
       channel = supabase.channel('portfolio_presence', {
         config: {
           presence: {

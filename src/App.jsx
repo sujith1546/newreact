@@ -198,6 +198,9 @@ export default function App() {
                 geoData = { lat: data.lat, lng: data.lng, country: data.country, region: data.region, deviceType: data.deviceType };
                 sessionStorage.setItem('visitor_location', JSON.stringify(geoData));
               }
+            } else {
+              geoData = { lat: 20.5937, lng: 78.9629, country: 'India', region: 'Asia-South', deviceType: 'desktop' };
+              sessionStorage.setItem('visitor_location', JSON.stringify(geoData));
             }
           } catch {
             // Fallback coarse location if offline/local dev
