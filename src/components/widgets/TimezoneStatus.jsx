@@ -59,6 +59,10 @@ export default function TimezoneStatus() {
     <>
       <style>{`
         .tz-status-bar {
+          position: fixed;
+          top: 18px;
+          right: 28px;
+          z-index: 1900;
           display: flex;
           align-items: center;
           gap: 12px;
