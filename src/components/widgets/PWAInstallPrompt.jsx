@@ -42,11 +42,14 @@ export default function PWAInstallPrompt() {
   }, []);
 
   const handleInstallClick = async () => {
-    if (!deferredPrompt) return;
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') setShowInstallPrompt(false);
-    setDeferredPrompt(null);
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') setShowInstallPrompt(false);
+      setDeferredPrompt(null);
+    } else {
+      alert("To install Sujith's Portfolio:\nClick the Install icon in your browser's address bar (top right) or open your browser menu and select 'Install Sujith Portfolio'.");
+    }
   };
 
   const handleDismissInstall = () => {
@@ -181,7 +184,7 @@ export default function PWAInstallPrompt() {
                 'Add this portfolio to your home screen for quick offline access.'
               )}
             </p>
-            {!isIOS && deferredPrompt && (
+            {!isIOS && (
               <button
                 onClick={handleInstallClick}
                 style={{
