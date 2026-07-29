@@ -18,13 +18,6 @@ export default function PWAInstallPrompt() {
   } = useSmartUpdate();
 
   useEffect(() => {
-    // Check if dismissed recently (within 24h)
-    const dismissedAt = localStorage.getItem('pwa_prompt_dismissed');
-    if (dismissedAt) {
-      const hours = (Date.now() - parseInt(dismissedAt, 10)) / (1000 * 60 * 60);
-      if (hours < 24) setIsDismissed(true);
-    }
-
     // Detect iOS Safari
     const ua = window.navigator.userAgent;
     const isIOSDevice = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
@@ -32,6 +25,8 @@ export default function PWAInstallPrompt() {
 
     if (isIOSDevice && !isStandalone) {
       setIsIOS(true);
+      setShowInstallPrompt(true);
+    } else {
       setShowInstallPrompt(true);
     }
 
@@ -56,7 +51,6 @@ export default function PWAInstallPrompt() {
 
   const handleDismissInstall = () => {
     setIsDismissed(true);
-    localStorage.setItem('pwa_prompt_dismissed', Date.now().toString());
   };
 
   return (
