@@ -3,20 +3,20 @@ import { supabase } from '../lib/supabaseClient';
 
 const BOT_REGEX = /bot|crawler|spider|lighthouse|bytespider|googlebot|bingbot|yandex/i;
 
-function getVisitorSessionId() {
-  if (typeof window === 'undefined') return 'session_ssr';
-  let sid = sessionStorage.getItem('x-visitor-session-id');
-  if (!sid) {
-    sid = `sess_${Math.random().toString(36).substring(2, 9)}_${Date.now()}`;
-    sessionStorage.setItem('x-visitor-session-id', sid);
+// Use localStorage so all tabs in the same browser share ONE unique device session ID
+function getDeviceSessionId() {
+  if (typeof window === 'undefined') return 'device_ssr';
+  let did = localStorage.getItem('x-visitor-device-id');
+  if (!did) {
+    did = `dev_${Math.random().toString(36).substring(2, 9)}_${Date.now()}`;
+    localStorage.setItem('x-visitor-device-id', did);
   }
-  return sid;
+  return did;
 }
 
 export function useSupabasePresence() {
   const [visitorCount, setVisitorCount] = useState(1);
   const [isConnected, setIsConnected] = useState(false);
-  const heartbeatRef = useRef(null);
   const syncTimeoutRef = useRef(null);
 
   useEffect(() => {
@@ -32,40 +32,31 @@ export function useSupabasePresence() {
       return;
     }
 
-    const sessionId = getVisitorSessionId();
+    const deviceId = getDeviceSessionId();
     let channel;
 
-    const updateCountFromState = (presenceState) => {
-      try {
-        const now = Date.now();
-        const activeKeys = new Set();
-
-        Object.entries(presenceState).forEach(([key, presences]) => {
-          if (!presences || presences.length === 0) return;
-          const latest = presences[presences.length - 1];
-
-          // If last_seen is present, prune if inactive for >60s
-          if (latest && latest.last_seen) {
-            const age = now - new Date(latest.last_seen).getTime();
-            if (age <= 60000) {
-              activeKeys.add(key);
-            }
-          } else {
-            activeKeys.add(key);
-          }
-        });
-
-        const totalActive = Math.max(1, activeKeys.size);
-        setVisitorCount(totalActive);
-        setIsConnected(true);
-      } catch (err) {
-        console.warn('Error updating presence count:', err);
-      }
+    const updateCountFromPresence = () => {
+      if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
+      syncTimeoutRef.current = setTimeout(() => {
+        try {
+          if (!channel) return;
+          const state = channel.presenceState();
+          // Count unique device session keys currently connected to WebSocket
+          const uniqueDevices = Object.keys(state);
+          const count = Math.max(1, uniqueDevices.length);
+          setVisitorCount(count);
+          setIsConnected(true);
+        } catch (err) {
+          console.warn('Error reading presence state:', err);
+        }
+      }, 300); // 300ms smooth debounce
     };
 
     try {
-      // Remove any pre-existing channel for this topic to prevent "cannot add presence callbacks after subscribe" error
-      const existing = supabase.getChannels().find(c => c.topic === 'realtime:portfolio_presence' || c.topic === 'portfolio_presence');
+      // Clear any pre-existing channel for this topic
+      const existing = supabase.getChannels().find(
+        (c) => c.topic === 'realtime:portfolio_presence' || c.topic === 'portfolio_presence'
+      );
       if (existing) {
         supabase.removeChannel(existing);
       }
@@ -73,46 +64,29 @@ export function useSupabasePresence() {
       channel = supabase.channel('portfolio_presence', {
         config: {
           presence: {
-            key: sessionId,
+            key: deviceId, // Shared across all tabs on the same device
           },
         },
       });
 
-      // Handle presence state syncs, joins, and leaves
-      const handlePresenceChange = () => {
-        if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
-        syncTimeoutRef.current = setTimeout(() => {
-          const state = channel.presenceState();
-          updateCountFromState(state);
-        }, 300);
-      };
-
+      // Register presence listeners before subscribe
       channel
-        .on('presence', { event: 'sync' }, handlePresenceChange)
-        .on('presence', { event: 'join' }, handlePresenceChange)
-        .on('presence', { event: 'leave' }, handlePresenceChange);
+        .on('presence', { event: 'sync' }, updateCountFromPresence)
+        .on('presence', { event: 'join' }, updateCountFromPresence)
+        .on('presence', { event: 'leave' }, updateCountFromPresence);
 
-      // Subscribe and start 15s Heartbeat
       channel.subscribe(async (status) => {
         if (status === 'SUBSCRIBED') {
           setIsConnected(true);
-          const sendHeartbeat = async () => {
-            try {
-              await channel.track({
-                last_seen: new Date().toISOString(),
-                page: window.location.pathname,
-                session_id: sessionId,
-              });
-            } catch (e) {
-              /* ignore transient heartbeat error */
-            }
-          };
-
-          // Initial track
-          await sendHeartbeat();
-
-          // Continuous 15-second heartbeat so active users are never falsely pruned
-          heartbeatRef.current = setInterval(sendHeartbeat, 15000);
+          try {
+            await channel.track({
+              online_at: new Date().toISOString(),
+              device_id: deviceId,
+              page: window.location.pathname,
+            });
+          } catch (trackErr) {
+            console.warn('Presence track warning:', trackErr);
+          }
         } else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') {
           setIsConnected(false);
         }
@@ -122,13 +96,14 @@ export function useSupabasePresence() {
     }
 
     return () => {
-      if (heartbeatRef.current) clearInterval(heartbeatRef.current);
       if (syncTimeoutRef.current) clearTimeout(syncTimeoutRef.current);
       if (channel) {
         try {
           channel.untrack();
           supabase.removeChannel(channel);
-        } catch { /* ignore cleanup error */ }
+        } catch {
+          /* ignore cleanup error */
+        }
       }
     };
   }, []);
