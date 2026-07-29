@@ -68,6 +68,7 @@ function AnimatedRoutes() {
             <Route path="experience" element={null} />
             <Route path="certifications" element={null} />
             <Route path="contact" element={null} />
+            <Route path="updates" element={null} />
           </Route>
           <Route path="/resume-preview" element={<ResumePreview />} />
           <Route path="/admin/login" element={<AdminLogin />} />

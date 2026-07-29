@@ -1,36 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Download, RefreshCw, X, Share, Smartphone } from 'lucide-react';
-import { useRegisterSW } from 'virtual:pwa-register/react';
+import { RefreshCw, X, Download, Share, Smartphone } from 'lucide-react';
+import { useSmartUpdate } from '../../hooks/useSmartUpdate';
 
 export default function PWAInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isIOS, setIsIOS] = useState(false);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
-  const [showUpdatePrompt, setShowUpdatePrompt] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
 
-  // SW Registration with registerType: 'prompt'
   const {
-    needRefresh: [needRefresh, setNeedRefresh],
-    updateServiceWorker,
-  } = useRegisterSW({
-    onRegistered(r) {
-      console.log('SW Registered:', r);
-    },
-    onRegisterError(error) {
-      console.error('SW Registration error:', error);
-    },
-  });
+    showToast,
+    countdown,
+    reload,
+    dismiss,
+    cancelCountdown,
+  } = useSmartUpdate();
 
   useEffect(() => {
-    // Check if dismissed recently (e.g., within 24h)
+    // Check if dismissed recently (within 24h)
     const dismissedAt = localStorage.getItem('pwa_prompt_dismissed');
     if (dismissedAt) {
-      const hoursSinceDismissed = (Date.now() - parseInt(dismissedAt, 10)) / (1000 * 60 * 60);
-      if (hoursSinceDismissed < 24) {
-        setIsDismissed(true);
-      }
+      const hours = (Date.now() - parseInt(dismissedAt, 10)) / (1000 * 60 * 60);
+      if (hours < 24) setIsDismissed(true);
     }
 
     // Detect iOS Safari
@@ -51,53 +43,35 @@ export default function PWAInstallPrompt() {
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    };
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
   }, []);
-
-  useEffect(() => {
-    if (needRefresh) {
-      setShowUpdatePrompt(true);
-    }
-  }, [needRefresh]);
 
   const handleInstallClick = async () => {
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      setShowInstallPrompt(false);
-    }
+    if (outcome === 'accepted') setShowInstallPrompt(false);
     setDeferredPrompt(null);
   };
 
-  const handleDismiss = () => {
+  const handleDismissInstall = () => {
     setIsDismissed(true);
     localStorage.setItem('pwa_prompt_dismissed', Date.now().toString());
   };
 
-  const handleDismissUpdate = () => {
-    setShowUpdatePrompt(false);
-    setNeedRefresh(false);
-  };
-
-  if (isDismissed && !showUpdatePrompt) return null;
-
   return (
     <AnimatePresence>
-      {/* New Version Update Toast */}
-      {showUpdatePrompt && (
+      {/* Smart PWA Update Toast (Top-Right: top: 94px; right: 28px, slide-in from x: 50) */}
+      {showToast && (
         <motion.div
-          initial={{ opacity: 0, y: 30, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 30, scale: 0.95 }}
-          transition={{ duration: 0.25 }}
+          initial={{ opacity: 0, x: 50, scale: 0.95 }}
+          animate={{ opacity: 1, x: 0, scale: 1 }}
+          exit={{ opacity: 0, x: 50, scale: 0.95 }}
+          transition={{ type: 'spring', damping: 24, stiffness: 300 }}
           style={{
             position: 'fixed',
-            bottom: '24px',
-            right: '24px',
+            top: '94px',
+            right: '28px',
             zIndex: 9999,
             background: 'var(--bg-secondary)',
             border: '1px solid var(--border-color)',
@@ -115,49 +89,69 @@ export default function PWAInstallPrompt() {
           </div>
           <div style={{ flex: 1 }}>
             <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
-              New version available
+              {countdown !== null ? `Updating in ${countdown}s…` : 'New version available'}
             </p>
             <p style={{ margin: '2px 0 0', fontSize: '11.5px', color: 'var(--text-secondary)' }}>
-              Reload to update portfolio app.
+              {countdown !== null ? 'Applying latest updates automatically' : 'Reload to update portfolio app.'}
             </p>
           </div>
           <div style={{ display: 'flex', gap: '6px' }}>
-            <button
-              onClick={() => updateServiceWorker(true)}
-              style={{
-                background: 'var(--text-primary)',
-                color: 'var(--bg-primary)',
-                border: 'none',
-                padding: '6px 12px',
-                borderRadius: '6px',
-                fontSize: '12px',
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
-            >
-              Reload
-            </button>
-            <button
-              onClick={handleDismissUpdate}
-              style={{
-                background: 'transparent',
-                border: '1px solid var(--border-color)',
-                color: 'var(--text-secondary)',
-                padding: '6px 8px',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-              }}
-            >
-              <X size={14} />
-            </button>
+            {countdown !== null ? (
+              <button
+                onClick={cancelCountdown}
+                style={{
+                  background: 'rgba(239, 68, 68, 0.12)',
+                  color: '#ef4444',
+                  border: '1px solid rgba(239, 68, 68, 0.25)',
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={reload}
+                  style={{
+                    background: 'var(--text-primary)',
+                    color: 'var(--bg-primary)',
+                    border: 'none',
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Reload
+                </button>
+                <button
+                  onClick={dismiss}
+                  style={{
+                    background: 'transparent',
+                    border: '1px solid var(--border-color)',
+                    color: 'var(--text-secondary)',
+                    padding: '6px 8px',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  <X size={14} />
+                </button>
+              </>
+            )}
           </div>
         </motion.div>
       )}
 
-      {/* PWA Install Banner (Android / Chromium & iOS Safari) */}
-      {showInstallPrompt && !showUpdatePrompt && !isDismissed && (
+      {/* PWA Install Banner */}
+      {showInstallPrompt && !showToast && !isDismissed && (
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -215,7 +209,7 @@ export default function PWAInstallPrompt() {
             )}
           </div>
           <button
-            onClick={handleDismiss}
+            onClick={handleDismissInstall}
             style={{
               background: 'transparent',
               border: 'none',

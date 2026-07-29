@@ -1,773 +1,709 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Mail, Terminal, Layers, Target, Award, Download, ArrowRight, 
-  BarChart2, Loader2, CheckCircle, GraduationCap, Calendar
+import { motion, AnimatePresence, useInView } from 'framer-motion';
+import {
+  Mail, Download, CheckCircle, Loader2, Zap, GraduationCap, Calendar,
+  Terminal, Layers, Target, Award, Code2, ArrowRight,
 } from 'lucide-react';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { ScrollReveal } from '../components';
-import Testimonials from '../components/portfolio/Testimonials';
+import GitHubActivity from '../components/widgets/GitHubActivity';
 
+/* ─── Count-up hook using rAF ─── */
+function useCountUp(target, duration = 1000, decimals = 0, trigger = true) {
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    if (!trigger) return;
+    let raf;
+    const start = performance.now();
+    const tick = (now) => {
+      const t = Math.min((now - start) / duration, 1);
+      const v = target * (1 - Math.pow(1 - t, 3));
+      setVal(parseFloat(v.toFixed(decimals)));
+      if (t < 1) raf = requestAnimationFrame(tick);
+      else setVal(target);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, duration, decimals, trigger]);
+  return val;
+}
 
-const TIMELINE_NODES = [
-  { id: 'gudivada', label: 'Gudivada', sub: 'Schooling', tooltip: 'Early Schooling & Foundations' },
-  { id: 'vijayawada', label: 'Vijayawada', sub: 'Intermediate', tooltip: 'Intermediate Education (PCM)' },
-  { id: 'vit', label: 'VIT Vellore', sub: 'B.Tech CS (8.7 CGPA)', tooltip: 'B.Tech Computer Science (8.7 CGPA)' },
-  { id: 'ds', label: 'Data Science', sub: 'Specialization', tooltip: 'Specialization: ML, Neural Networks & Big Data', highlight: true },
-  { id: 'next', label: "What's Next?", sub: 'Opportunities', tooltip: 'Seeking exciting engineering opportunities!', next: true }
+/* ─── Live days-coding ─── */
+function useDaysCoding(start = '2021-06-01') {
+  const [d, setD] = useState(0);
+  useEffect(() => {
+    const s = new Date(start);
+    const upd = () => setD(Math.floor((Date.now() - s) / 86400000));
+    upd();
+    const t = setInterval(upd, 60000);
+    return () => clearInterval(t);
+  }, [start]);
+  return d;
+}
+
+/* ─── Skill Badges ─── */
+const BADGES = [
+  { label: 'Python',       color: '#3b82f6',  bg: '#eff6ff' },
+  { label: 'TensorFlow',   color: '#374151',  bg: '#f3f4f6' },
+  { label: 'React',        color: '#0ea5e9',  bg: '#f0f9ff' },
+  { label: 'FastAPI',      color: '#059669',  bg: '#f0fdf4' },
+  { label: 'SQL',          color: '#d97706',  bg: '#fffbeb' },
 ];
 
-const containerVariants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
-};
+/* ─── Stats ─── */
+function StatCard({ target, suffix = '', label, decimals = 0, trigger, delay = 0 }) {
+  const val = useCountUp(target, 1000, decimals, trigger);
+  const display = decimals > 0 ? val.toFixed(decimals) : Math.floor(val);
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={trigger ? { opacity: 1, scale: 1 } : {}}
+      transition={{ duration: 0.35, delay, ease: [0.16, 1, 0.3, 1] }}
+      style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        justifyContent: 'center', gap: 4, textAlign: 'center',
+        padding: '14px 10px',
+        background: 'var(--bg-secondary)',
+        border: '1px solid var(--border-color)',
+        borderRadius: 14,
+      }}
+    >
+      <span style={{ fontSize: 26, fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>
+        {display}{suffix}
+      </span>
+      <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 500 }}>{label}</span>
+    </motion.div>
+  );
+}
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 15 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } },
-};
+/* ─── Career Timeline ─── */
+const TL_NODES = [
+  {
+    id: 'a',
+    label: 'Gudivada',
+    sub: 'Schooling',
+    done: true,
+    active: false,
+    period: '2017 – 2019',
+    badge: 'Foundation',
+    badgeBg: 'rgba(16,185,129,0.12)',
+    badgeColor: '#10b981',
+    description: 'Completed secondary schooling with strong academic foundation in Mathematics, Science, and Analytical Problem Solving.',
+    highlights: ['Top academic ranker in Science & Mathematics', 'Formed core interest in computers & logic', 'Participated in regional math olympiads']
+  },
+  {
+    id: 'b',
+    label: 'Vijayawada',
+    sub: 'Intermediate',
+    done: true,
+    active: false,
+    period: '2019 – 2021',
+    badge: 'Score: 98%',
+    badgeBg: 'rgba(59,130,246,0.12)',
+    badgeColor: '#3b82f6',
+    description: 'Senior Secondary Education focusing on Physics, Chemistry, and Higher Mathematics (MPC stream).',
+    highlights: ['Achieved 98% distinction mark', 'Mastered advanced calculus & linear algebra', 'Prepared for competitive engineering exams']
+  },
+  {
+    id: 'c',
+    label: 'VIT Vellore',
+    sub: 'B.Tech CS',
+    done: true,
+    active: false,
+    period: '2021 – 2025',
+    badge: 'CGPA: 8.7',
+    badgeBg: 'rgba(139,92,246,0.12)',
+    badgeColor: '#8b5cf6',
+    description: 'B.Tech Computer Science Engineering at VIT Vellore. Building deep understanding in software engineering and algorithms.',
+    highlights: ['8.7 Cumulative Grade Point Average', 'Core CS: Operating Systems, DBMS, DSA, Networks', 'Built multiple full-stack & AI projects']
+  },
+  {
+    id: 'd',
+    label: 'Data Science',
+    sub: 'Specialization',
+    done: true,
+    active: true,
+    period: 'Current Focus',
+    badge: 'Active Phase',
+    badgeBg: 'rgba(59,130,246,0.2)',
+    badgeColor: '#3b82f6',
+    description: 'Specialization in Machine Learning, Deep Learning, Statistical Data Mining, and Applied AI Systems.',
+    highlights: ['Proficient in TensorFlow, PyTorch & Python ML stack', 'Worked on computer vision & NLP models', 'Deploying scalable ML models & REST APIs']
+  },
+  {
+    id: 'e',
+    label: "What's next?",
+    sub: 'Opportunities',
+    done: false,
+    active: false,
+    muted: true,
+    period: 'Future Roadmap',
+    badge: 'Open to Roles',
+    badgeBg: 'rgba(245,158,11,0.12)',
+    badgeColor: '#f59e0b',
+    description: 'Actively seeking Full-time Data Science, Machine Learning Engineering, and Full-Stack Development opportunities.',
+    highlights: ['Available for full-time software engineering roles', 'Targeting high-impact Data Science & AI teams', 'Eager to build production-grade AI solutions']
+  },
+];
 
-export default function About() {
-  const [toastStatus, setToastStatus] = useState(null); // null, 'packaging', 'ready'
+function CareerTimeline() {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, amount: 0.6 });
+  const [selectedNode, setSelectedNode] = useState(null);
 
-  const handleDownloadClick = (e) => {
+  return (
+    <div ref={ref} style={{ padding: '4px 0 0' }}>
+      <style>{`
+        @keyframes pulseRing {
+          0% { transform: scale(1); opacity: 0.8; }
+          100% { transform: scale(1.8); opacity: 0; }
+        }
+        .tl-node-btn {
+          background: none; border: none; padding: 0; cursor: pointer;
+          display: flex; flex-direction: column; align-items: center; width: 100%;
+          outline: none; transition: transform 0.2s;
+        }
+        .tl-node-btn:hover { transform: translateY(-2px); }
+        .tl-modal-backdrop {
+          position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+          backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+          z-index: 999999; display: flex; align-items: center; justify-content: center; padding: 20px;
+        }
+        .tl-modal-card {
+          width: 100%; max-width: 440px; background: var(--bg-secondary);
+          border: 1px solid var(--border-color); border-radius: 20px;
+          padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+          box-sizing: border-box; color: var(--text-primary); position: relative;
+        }
+      `}</style>
+
+      {/* Line + Dots row */}
+      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+        {/* Background track */}
+        <div style={{
+          position: 'absolute', left: '5%', right: '5%', height: 2,
+          background: 'var(--border-color)', borderRadius: 2,
+        }} />
+        {/* Animated progress fill — scaleX draw-on */}
+        <motion.div
+          style={{
+            position: 'absolute', left: '5%', right: '5%', height: 2,
+            background: 'var(--primary-blue)',
+            borderRadius: 2, transformOrigin: 'left center',
+          }}
+          initial={{ scaleX: 0 }}
+          animate={inView ? { scaleX: 0.78 } : { scaleX: 0 }}
+          transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+        />
+        {/* Dots */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', position: 'relative', zIndex: 2 }}>
+          {TL_NODES.map((node, i) => {
+            const delay = 0.25 + i * 0.16;
+            return (
+              <div key={node.id} style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+                <button className="tl-node-btn" onClick={() => setSelectedNode(node)} title={`Click to view ${node.label} details`}>
+                  <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {node.active && (
+                      <span style={{
+                        position: 'absolute', width: 22, height: 22, borderRadius: '50%',
+                        background: 'rgba(59,130,246,0.3)', animation: 'pulseRing 1.8s ease-out infinite'
+                      }} />
+                    )}
+                    <motion.div
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={inView ? { scale: 1, opacity: 1 } : {}}
+                      transition={{ delay, type: 'spring', stiffness: 350, damping: 22 }}
+                      style={{
+                        width: node.active ? 15 : 13,
+                        height: node.active ? 15 : 13,
+                        borderRadius: '50%',
+                        background: node.active
+                          ? 'var(--primary-blue)'
+                          : 'var(--bg-secondary)',
+                        border: node.muted
+                          ? '2px solid var(--border-color)'
+                          : `2.5px solid ${node.done || node.active ? 'var(--primary-blue)' : 'var(--border-color)'}`,
+                        boxShadow: node.active ? '0 0 12px rgba(59,130,246,0.6)' : 'none',
+                      }}
+                    />
+                  </div>
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Labels row */}
+      <div style={{ display: 'flex' }}>
+        {TL_NODES.map((node, i) => {
+          const delay = 0.32 + i * 0.14;
+          return (
+            <motion.div
+              key={node.id}
+              initial={{ opacity: 0, y: 6 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ delay, duration: 0.3 }}
+              style={{ flex: 1, textAlign: 'center', cursor: 'pointer' }}
+              onClick={() => setSelectedNode(node)}
+            >
+              <p style={{
+                fontSize: 12.5, fontWeight: 700, margin: '0 0 2px',
+                color: node.active ? 'var(--primary-blue)' : node.muted ? 'var(--text-muted)' : 'var(--text-primary)',
+              }}>
+                {node.label}
+              </p>
+              <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: 0 }}>
+                {node.sub}
+              </p>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* Interactive Detail Modal Popover */}
+      <AnimatePresence>
+        {selectedNode && (
+          <div className="tl-modal-backdrop" onClick={() => setSelectedNode(null)}>
+            <motion.div
+              className="tl-modal-card"
+              onClick={e => e.stopPropagation()}
+              initial={{ opacity: 0, scale: 0.94, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.94, y: 10 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <span
+                  style={{
+                    fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 999,
+                    background: selectedNode.badgeBg, color: selectedNode.badgeColor,
+                    border: `1px solid ${selectedNode.badgeColor}30`
+                  }}
+                >
+                  {selectedNode.badge}
+                </span>
+                <span style={{ fontSize: 11.5, color: 'var(--text-muted)', fontWeight: 600 }}>
+                  {selectedNode.period}
+                </span>
+              </div>
+
+              <h2 style={{ fontSize: 20, fontWeight: 800, margin: '0 0 4px', color: 'var(--text-primary)' }}>
+                {selectedNode.label}
+              </h2>
+              <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--primary-blue)', margin: '0 0 12px' }}>
+                {selectedNode.sub}
+              </p>
+
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, margin: '0 0 16px' }}>
+                {selectedNode.description}
+              </p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 20 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Key Highlights:</span>
+                {selectedNode.highlights.map((h, idx) => (
+                  <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, color: 'var(--text-primary)' }}>
+                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--primary-blue)', flexShrink: 0 }} />
+                    <span>{h}</span>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={() => setSelectedNode(null)}
+                style={{
+                  width: '100%', padding: '10px', borderRadius: 10,
+                  background: 'var(--primary-blue)', color: '#fff', border: 'none',
+                  fontSize: 13, fontWeight: 700, cursor: 'pointer'
+                }}
+              >
+                Close Details
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+
+/* ═══════════════════════════ MAIN ═══════════════════════════ */
+export default function About({ onNavClick }) {
+  const pageRef = useRef(null);
+  const inView = useInView(pageRef, { once: true, amount: 0.1 });
+  const daysCoding = useDaysCoding('2021-06-01');
+  const [toast, setToast] = useState(null);
+
+  const handleDownload = (e) => {
     e.preventDefault();
-    if (toastStatus) return; // prevent spam clicking
-
-    setToastStatus('packaging');
-    
+    if (toast) return;
+    setToast('packaging');
     setTimeout(() => {
-      setToastStatus('ready');
-      
-      const link = document.createElement('a');
-      link.href = '/resume.pdf';
-      link.download = 'resume.pdf';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      setTimeout(() => setToastStatus(null), 3000);
-    }, 1800);
-  };
-
-  const handleGetInTouch = (e) => {
-    e.preventDefault();
-    const event = new CustomEvent('trigger-chatbot', { 
-      detail: { query: 'How can I contact you?' } 
-    });
-    window.dispatchEvent(event);
+      setToast('done');
+      const a = Object.assign(document.createElement('a'), { href: '/resume.pdf', download: 'Sujith_Resume.pdf' });
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(() => setToast(null), 3000);
+    }, 1600);
   };
 
   return (
     <ScrollReveal>
       <style>{`
-        .about-page {
+        /* ── Height propagation chain for non-scrollable desktop fit ──
+           Layout chain: .text-content.wide-content > div.reveal > .ab-page
+           Each must be display:flex + flex:1 so that .ab-page flex:1 reaches
+           the actual viewport height set by .main-content / scroll-container.
+        */
+        #about,
+        #about > .text-content.wide-content,
+        #about > .text-content.wide-content > .reveal {
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+          min-height: 0;
+        }
+
+        /* ── Page shell: fills remaining flex space, no overflow hidden ── */
+        .ab-page {
           width: 100%;
+          flex: 1;
           display: flex;
           flex-direction: column;
           gap: 8px;
+          box-sizing: border-box;
+          padding-bottom: 8px;
+          min-height: 0;
         }
 
-        /* Header */
-        .about-header {
-          margin-bottom: 0px;
+        .ab-header-row {
+          display: flex; align-items: center; justify-content: space-between;
+          flex-shrink: 0; margin-bottom: 2px;
+        }
+        .ab-header-row h1 {
+          font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 0;
+        }
+        .ab-header-row p {
+          font-size: 12.5px; color: var(--text-secondary); margin: 2px 0 0;
         }
 
-        .about-header h1 {
-          font-size: 24px;
-          font-weight: 700;
-          color: var(--text-primary);
-          margin: 0 0 2px;
-        }
-        .about-header p {
-          font-size: 12.5px;
-          color: var(--text-secondary);
-          margin: 0;
-        }
-
-        /* Unified Bio Card */
-        .about-bio-card {
-          background: var(--bg-secondary);
-          border: 1px solid var(--border-color);
-          border-radius: 12px;
-          padding: 11px 16px;
-          display: flex;
-          align-items: flex-start;
-          gap: 14px;
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.02);
-        }
-
-        .about-bio-avatar {
-          width: 46px;
-          height: 46px;
-          border-radius: 50%;
-          object-fit: cover;
-          border: 2px solid var(--border-color);
-          box-shadow: 0 0 10px color-mix(in srgb, var(--primary-blue) 25%, transparent);
-          flex-shrink: 0;
-          margin-top: 1px;
-        }
-
-
-        .about-bio-content {
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-          flex: 1;
-        }
-        .about-bio-title {
-          font-size: 15px;
-          font-weight: 700;
-          color: var(--text-primary);
-          margin: 0;
-          line-height: 1.3;
-          letter-spacing: -0.2px;
-        }
-        .about-bio-title span {
-          color: var(--text-secondary);
-          font-weight: 500;
-        }
-        .about-bio-text {
-          font-size: 12.5px;
-          line-height: 1.45;
-          color: var(--text-secondary);
-          margin: 0;
-        }
-
-        /* Unified Contact Links inside card */
-        .contact-row {
-          display: flex;
-          gap: 8px;
-          flex-wrap: wrap;
-          margin-top: 4px;
-        }
-        .contact-chip {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          font-size: 12px;
-          font-weight: 600;
-          color: var(--text-secondary);
-          background: var(--bg-primary);
-          border: 1px solid var(--border-color);
-          padding: 5px 12px;
-          border-radius: 10px;
-          text-decoration: none;
-          transition: all 0.2s ease;
-        }
-        .contact-chip:hover {
-          background: var(--bg-secondary);
-          color: var(--primary-blue);
-          border-color: var(--primary-blue);
-          transform: translateY(-1px);
-        }
-
-        /* Horizontal Career Path Timeline */
-        .career-path-card {
-          background: var(--bg-secondary);
-          border: 1px solid var(--border-color);
-          border-radius: 12px;
-          padding: 9px 16px;
-          display: flex;
-          flex-direction: column;
-          gap: 5px;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.02);
-        }
-
-
-
-
-
-        .career-path-header {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          font-size: 13px;
-          font-weight: 700;
-          color: var(--text-primary);
-          margin: 0;
-        }
-        .timeline-track-container {
-          position: relative;
-          padding: 4px 0 2px;
-        }
-        .timeline-line {
-          position: absolute;
-          top: 12px;
-          left: 30px;
-          right: 30px;
-          height: 2px;
-          background: var(--border-color);
-          z-index: 1;
-        }
-        .timeline-line-progress {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 75%;
-          height: 100%;
-          background: linear-gradient(90deg, var(--primary-blue), #10b981);
-          border-radius: 2px;
-        }
-        .timeline-nodes-row {
-          position: relative;
-          z-index: 2;
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-        }
-        .timeline-node-item {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          position: relative;
-          cursor: help;
-          flex: 1;
-        }
-        
-        .timeline-dot {
-          width: 14px;
-          height: 14px;
-          border-radius: 50%;
-          background: var(--bg-secondary);
-          border: 2.5px solid var(--primary-blue);
-          box-shadow: 0 0 0 2px var(--bg-secondary);
-          transition: all 0.25s ease;
-          margin-bottom: 6px;
-        }
-        .timeline-node-item:hover .timeline-dot {
-          transform: scale(1.25);
-        }
-        .timeline-dot.active {
-          width: 16px;
-          height: 16px;
-          background: var(--primary-blue);
-          border: 2px solid #ffffff;
-          box-shadow: 0 0 0 2.5px var(--primary-blue);
-          margin-top: -1px;
-          margin-bottom: 5px;
-        }
-        .timeline-dot.pending {
-          width: 15px;
-          height: 15px;
-          background: transparent;
-          border: 2px dashed #10b981;
-          margin-top: -0.5px;
-          margin-bottom: 5.5px;
-          animation: timelinePulse 2s ease-in-out infinite;
-        }
-        @keyframes timelinePulse {
-          0%, 100% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.15); opacity: 0.6; }
-        }
-
-        .timeline-node-label {
-          font-size: 12px;
-          font-weight: 600;
-          color: var(--text-primary);
-          text-align: center;
-          margin: 0;
-          transition: color 0.2s ease;
-        }
-        .timeline-node-label.active {
-          color: var(--primary-blue);
-          font-weight: 700;
-        }
-        .timeline-node-label.pending {
-          color: var(--text-muted);
-          font-style: italic;
-        }
-        .timeline-node-sub {
-          font-size: 10.5px;
-          color: var(--text-muted);
-          text-align: center;
-          margin: 1px 0 0 0;
-        }
-
-
-        /* Tooltip */
-        .timeline-tooltip {
-          position: absolute;
-          bottom: calc(100% + 10px);
-          left: 50%;
-          transform: translateX(-50%) translateY(8px);
-          opacity: 0;
-          pointer-events: none;
-          background: rgba(17, 24, 39, 0.95);
-          backdrop-filter: blur(8px);
-          color: #fff;
-          padding: 6px 12px;
-          border-radius: 8px;
-          font-size: 11.5px;
-          font-weight: 500;
-          white-space: nowrap;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-          transition: all 0.25s ease;
-          z-index: 10;
-        }
-        .timeline-node-item:hover .timeline-tooltip {
-          opacity: 1;
-          transform: translateX(-50%) translateY(0);
-        }
-
-        /* Stats Section Wrapper */
-        .stats-section-wrapper {
-          display: flex;
-          flex-direction: column;
-          gap: 5px;
-        }
-
-        /* Section Titles */
-        .about-section-title {
-          font-size: 13.5px;
-          font-weight: 700;
-          color: var(--text-primary);
-          margin: 0;
-          display: flex;
-          align-items: center;
-          gap: 6px;
-        }
-        .title-icon-badge {
-          width: 22px;
-          height: 22px;
-          border-radius: 6px;
-          background: color-mix(in srgb, var(--primary-blue) 12%, transparent);
-          color: var(--primary-blue);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        /* Stats Grid */
-        .stats-grid {
+        /* ── ROW 1: Bio card + Stats ── */
+        .ab-row1 {
           display: grid;
-          grid-template-columns: repeat(4, 1fr);
+          grid-template-columns: 1fr 240px;
+          gap: 8px;
+          flex-shrink: 0;
+        }
+
+        /* Bio card */
+        .ab-bio-card {
+          background: var(--bg-secondary);
+          border: 1px solid var(--border-color);
+          border-radius: 16px;
+          padding: 12px 16px;
+          display: flex;
+          gap: 12px;
+          align-items: flex-start;
+        }
+        .ab-avatar {
+          width: 52px; height: 52px; border-radius: 50%;
+          object-fit: cover; flex-shrink: 0;
+          border: 2px solid var(--border-color);
+          box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-blue) 12%, transparent);
+        }
+        .ab-bio-body { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+        .ab-bio-name {
+          font-size: 14.5px; font-weight: 700;
+          color: var(--text-primary); margin: 0; line-height: 1.4;
+        }
+        .ab-bio-desc {
+          font-size: 12.5px; line-height: 1.5;
+          color: var(--text-secondary); margin: 0;
+        }
+        .ab-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+        .ab-badge {
+          display: inline-flex; padding: 3px 10px; border-radius: 999px;
+          font-size: 11.5px; font-weight: 600; cursor: default;
+          transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .ab-badge:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .ab-chips { display: flex; gap: 7px; flex-wrap: wrap; }
+        .ab-chip {
+          display: inline-flex; align-items: center; gap: 5px;
+          padding: 5px 12px; border-radius: 10px;
+          border: 1px solid var(--border-color); background: var(--bg-primary);
+          font-size: 12px; font-weight: 600; color: var(--text-secondary);
+          text-decoration: none; transition: all 0.18s;
+        }
+        .ab-chip:hover {
+          border-color: var(--primary-blue); color: var(--primary-blue);
+          background: color-mix(in srgb, var(--primary-blue) 5%, transparent);
+        }
+
+        /* Stats 2x2 grid */
+        .ab-stats-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          grid-template-rows: 1fr 1fr;
           gap: 8px;
         }
-        .stat-card {
+
+        /* ── ROW 2: Timeline ── */
+        .ab-row2 {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
-          border-radius: 10px;
-          padding: 7px 10px;
+          border-radius: 16px;
+          padding: 10px 16px;
+          flex-shrink: 0;
+        }
+        .ab-section-label {
+          font-size: 13px; font-weight: 700;
+          color: var(--text-secondary); margin: 0 0 12px;
+          display: flex; align-items: center; gap: 6px;
+        }
+
+        /* ── ROW 3: CTA + Actions (Exact Reference Design) ── */
+        .ab-row3 {
           display: flex;
-          flex-direction: column;
           align-items: center;
-          text-align: center;
-          gap: 2px;
-          transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .stat-card:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 14px rgba(0,0,0,0.03);
-        }
-        .stat-value {
-          font-size: 16.5px;
-          font-weight: 700;
-          color: var(--text-primary);
-          margin: 0;
-        }
-        .stat-label {
-          font-size: 10.5px;
-          font-weight: 500;
-          color: var(--text-secondary);
-          margin: 0;
-        }
-
-        /* Compact Redesigned CTA Section */
-        .cta-section {
-          background: var(--bg-secondary);
-          border: 1px solid var(--border-color);
-          border-radius: 12px;
-          padding: 10px 14px;
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-          margin-top: 0px;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
-        }
-
-        .cta-top-row {
-          display: flex;
-          align-items: flex-start;
           justify-content: space-between;
+          gap: 20px;
+          background: color-mix(in srgb, var(--primary-blue) 4%, var(--bg-secondary));
+          border: 1px solid color-mix(in srgb, var(--primary-blue) 15%, var(--border-color));
+          border-radius: 16px;
+          padding: 20px 28px;
+          flex-shrink: 0;
+          box-sizing: border-box;
+        }
+        .ab-cta-left { display: flex; flex-direction: column; gap: 4px; max-width: 540px; }
+        .ab-cta-title {
+          font-size: 16.5px; font-weight: 800;
+          color: var(--text-primary); margin: 0;
+          letter-spacing: -0.01em;
+        }
+        .ab-cta-sub {
+          font-size: 13px; color: var(--text-secondary); margin: 0; line-height: 1.5;
+        }
+        .ab-actions-grid {
+          display: flex;
+          align-items: center;
           gap: 10px;
         }
-
-        .cta-header-group h3 {
-          font-size: 14.5px;
-          font-weight: 700;
-          color: var(--text-primary);
-          margin: 0 0 2px 0;
+        .ab-btn-primary {
+          display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+          padding: 10px 20px; border-radius: 8px;
+          background: var(--text-primary); color: var(--bg-primary);
+          border: none; font-size: 13px; font-weight: 700; cursor: pointer;
+          transition: all 0.2s ease; text-decoration: none; white-space: nowrap;
         }
-
-        .cta-header-group p {
-          font-size: 11.5px;
-          color: var(--text-secondary);
-          margin: 0;
-          line-height: 1.35;
-        }
-
-        .cta-availability-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 5px;
-          padding: 3px 8px;
-          border-radius: 999px;
-          background: rgba(16, 185, 129, 0.08);
-          border: 1px solid rgba(16, 185, 129, 0.25);
-          color: #10b981;
-          font-size: 10.5px;
-          font-weight: 600;
-          white-space: nowrap;
-          flex-shrink: 0;
-        }
-        [data-theme="dark"] .cta-availability-badge {
-          background: rgba(16, 185, 129, 0.15);
-          color: #34d399;
-          border-color: rgba(52, 211, 153, 0.3);
-        }
-
-        .cta-green-dot {
-          width: 5px;
-          height: 5px;
-          border-radius: 50%;
-          background: #10b981;
-          box-shadow: 0 0 6px #10b981;
-          animation: pulseDot 2s infinite ease-in-out;
-        }
-        @keyframes pulseDot {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.5; transform: scale(1.2); }
-        }
-
-        .cta-response-time {
-          font-family: var(--font-mono, monospace);
-          font-size: 10.5px;
-          color: var(--text-muted);
-          margin: 2px 0 0 0;
-          display: flex;
-          align-items: center;
-          gap: 4px;
-        }
-
-        .cta-interest-tags {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 5px;
-          margin-top: 0px;
-        }
-
-        .cta-tag-chip {
-          border: 1px solid var(--border-color);
-          background: var(--bg-primary);
-          color: var(--text-secondary);
-          padding: 2px 8px;
-          border-radius: 5px;
-          font-size: 10.5px;
-          font-weight: 500;
-        }
-
-        /* Compact 4-Column Action Grid */
-        .cta-action-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 6px;
-          margin-top: 2px;
-        }
-
-        .cta-action-tile {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          gap: 3px;
-          padding: 6px 4px;
-          background: var(--bg-primary);
-          border: 1px solid var(--border-color);
-          border-radius: 8px;
-          text-decoration: none;
-          color: var(--text-primary);
-          transition: all 0.2s ease;
-        }
-
-        .cta-action-tile:hover {
-          background: var(--bg-secondary);
-          border-color: var(--primary-blue);
-          color: var(--primary-blue);
+        .ab-btn-primary:hover {
+          opacity: 0.9;
           transform: translateY(-1px);
-          box-shadow: 0 3px 10px color-mix(in srgb, var(--primary-blue) 20%, transparent);
         }
-
-        .cta-tile-icon {
-          color: var(--primary-blue);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: transform 0.2s ease;
+        .ab-btn-secondary {
+          display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+          padding: 10px 18px; border-radius: 8px;
+          background: var(--bg-primary); color: var(--text-primary);
+          border: 1px solid var(--border-color); font-size: 13px; font-weight: 600;
+          cursor: pointer; transition: all 0.2s ease; text-decoration: none; white-space: nowrap;
         }
-
-        .cta-action-tile:hover .cta-tile-icon {
-          transform: scale(1.1);
-        }
-
-        .cta-tile-label {
-          font-size: 11px;
-          font-weight: 600;
-          text-align: center;
-        }
-
-
-        .cta-action-tile:hover {
-          background: var(--bg-secondary);
+        .ab-btn-secondary:hover {
           border-color: var(--primary-blue);
+          background: color-mix(in srgb, var(--primary-blue) 6%, transparent);
+          transform: translateY(-1px);
+        }
+
+        /* Days badge */
+        .ab-days-badge {
+          display: inline-flex; align-items: center; gap: 4px;
+          padding: 2px 9px; border-radius: 999px; font-size: 10.5px; font-weight: 600;
+          background: color-mix(in srgb, var(--primary-blue) 8%, transparent);
+          border: 1px solid color-mix(in srgb, var(--primary-blue) 20%, transparent);
           color: var(--primary-blue);
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px color-mix(in srgb, var(--primary-blue) 20%, transparent);
         }
 
-        .cta-tile-icon {
-          color: var(--primary-blue);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: transform 0.2s ease;
+        /* ── GitHub activity: fill remaining space ── */
+        .ab-github-wrapper {
+          flex: 1;
+          min-height: 0;
+          overflow: hidden;
+        }
+        .ab-github-wrapper > * {
+          height: 100%;
         }
 
-        .cta-action-tile:hover .cta-tile-icon {
-          transform: scale(1.1);
+        /* ── Dark theme overrides ── */
+        [data-theme="dark"] .ab-badge {
+          filter: brightness(0.85) saturate(0.8);
         }
 
-        .cta-tile-label {
-          font-size: 12px;
-          font-weight: 600;
-          text-align: center;
-        }
-
-        @media (max-width: 768px) {
-          .cta-action-grid {
-            grid-template-columns: repeat(2, 1fr);
-          }
-          .cta-top-row {
-            flex-direction: column-reverse;
-          }
-        }
-
-
-        .cta-btn-secondary:hover {
-          border-color: var(--primary-blue);
-          color: var(--primary-blue);
-          transform: translateY(-2px);
-        }
-
-        /* Responsive */
+        /* ── Mobile: allow natural scroll ── */
         @media (max-width: 900px) {
-          .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-          .cta-section { padding: 16px; gap: 12px; }
-          .about-bio-card { flex-direction: column; text-align: center; align-items: center; }
-          .timeline-nodes-row { overflow-x: auto; padding-bottom: 8px; }
-          .timeline-line { display: none; }
+          #about,
+          #about > .text-content.wide-content,
+          #about > .text-content.wide-content > .reveal {
+            display: block;
+            flex: none;
+            min-height: unset;
+          }
+          .ab-page {
+            flex: none;
+            min-height: unset;
+            padding-bottom: 32px;
+          }
+          .ab-github-wrapper { flex: none; overflow: visible; }
+          .ab-github-wrapper > * { height: auto; }
+          .ab-row1 { grid-template-columns: 1fr; }
+          .ab-stats-grid { grid-template-columns: repeat(4, 1fr); }
+          .ab-row3 { flex-direction: column; align-items: stretch; gap: 14px; padding: 18px 20px; }
+          .ab-actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+          .ab-btn-primary, .ab-btn-secondary { padding: 10px 14px; font-size: 12.5px; }
         }
-
-
       `}</style>
 
-      <motion.div 
-        className="about-page"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        {/* Header */}
-        <motion.div className="about-header" variants={itemVariants}>
-          <h1>About Me</h1>
-          <p>Passionate developer crafting intelligent digital experiences</p>
-        </motion.div>
+      <div className="ab-page" ref={pageRef}>
 
-        {/* Intro / Bio Card with Integrated Contact Chips */}
-        <motion.div className="about-bio-card" variants={itemVariants}>
-          <img src="/profile_photo.png" alt="Thota Sujith Reddy" className="about-bio-avatar" />
-          <div className="about-bio-content">
-            <h2 className="about-bio-title">
-              Hi, I'm Sujith — <span>a B.Tech student at VIT Vellore (8.7 CGPA) specializing in Data Science.</span>
-            </h2>
-            <p className="about-bio-text">
-              Currently pursuing Computer Science &amp; Engineering with a specialization in Data Science. 
-              I bridge complex backend data structures with sleek, responsive interfaces — building applications that are as intelligent as they are beautiful.
-            </p>
-            <div className="contact-row">
-              <a href="mailto:sujithreddy1546@gmail.com" className="contact-chip">
-                <Mail size={14} /> Email
-              </a>
-              <a href="https://linkedin.com/in/thota-sujith-reddy" target="_blank" rel="noreferrer" className="contact-chip">
-                <FaLinkedin size={14} /> LinkedIn
-              </a>
-              <a href="https://github.com/sujith1546" target="_blank" rel="noreferrer" className="contact-chip">
-                <FaGithub size={14} /> GitHub
-              </a>
-            </div>
-          </div>
-        </motion.div>
-
-
-        {/* Horizontal Career Path Timeline */}
-        <motion.div className="career-path-card" variants={itemVariants}>
-          <div className="career-path-header">
-            <GraduationCap size={18} color="var(--primary-blue)" />
-            <span>Career Path &amp; Milestones</span>
-          </div>
-
-          <div className="timeline-track-container">
-            <div className="timeline-line">
-              <div className="timeline-line-progress" />
-            </div>
-
-            <div className="timeline-nodes-row">
-              {TIMELINE_NODES.map((node) => (
-                <div key={node.id} className="timeline-node-item">
-                  <div className={`timeline-dot ${node.highlight ? 'active' : ''} ${node.next ? 'pending' : ''}`} />
-                  <p className={`timeline-node-label ${node.highlight ? 'active' : ''} ${node.next ? 'pending' : ''}`}>
-                    {node.label}
-                  </p>
-                  <p className="timeline-node-sub">{node.sub}</p>
-                  <div className="timeline-tooltip">{node.tooltip}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-
-
-
-        {/* Stats Section Wrapper */}
-        <div className="stats-section-wrapper">
-          <motion.h2 className="about-section-title" variants={itemVariants}>
-            <div className="title-icon-badge">
-              <BarChart2 size={16} />
-            </div>
-            By the Numbers
-          </motion.h2>
-
-          <motion.div className="stats-grid" variants={containerVariants}>
-            <motion.div className="stat-card" variants={itemVariants}>
-              <Terminal size={22} color="#3b82f6" />
-              <p className="stat-value">3.5+</p>
-              <p className="stat-label">Years Coding</p>
-            </motion.div>
-            <motion.div className="stat-card" variants={itemVariants}>
-              <Layers size={22} color="#10b981" />
-              <p className="stat-value">10+</p>
-              <p className="stat-label">Projects Shipped</p>
-            </motion.div>
-            <motion.div className="stat-card" variants={itemVariants}>
-              <Target size={22} color="#f59e0b" />
-              <p className="stat-value">200+</p>
-              <p className="stat-label">DSA Solved</p>
-            </motion.div>
-            <motion.div className="stat-card" variants={itemVariants}>
-              <Award size={22} color="#8b5cf6" />
-              <p className="stat-value">8.7</p>
-              <p className="stat-label">CGPA</p>
-            </motion.div>
-          </motion.div>
-        </div>
-
-
-        {/* Redesigned Call to Action Banner */}
-        <motion.div className="cta-section" variants={itemVariants}>
-          <div className="cta-top-row">
-            <div className="cta-header-group">
-              <h3>Let's build something great.</h3>
-              <p>I'm always open to discussing Data Science, Machine Learning architecture, or exciting new engineering opportunities.</p>
-              <p className="cta-response-time">
-                <span style={{ color: 'var(--primary-blue)', fontWeight: 700 }}>&gt;_</span> usually responds within 24h
-              </p>
-            </div>
-            <div className="cta-availability-badge">
-              <span className="cta-green-dot" />
-              Available for opportunities
-            </div>
-          </div>
-
-          <div className="cta-interest-tags">
-            <span className="cta-tag-chip">Data science</span>
-            <span className="cta-tag-chip">Machine learning</span>
-            <span className="cta-tag-chip">Full-stack</span>
-            <span className="cta-tag-chip">Internships</span>
-          </div>
-
-          <div className="cta-action-grid">
-            <a href="mailto:sujithreddy1546@gmail.com" className="cta-action-tile">
-              <div className="cta-tile-icon"><Mail size={14} /></div>
-              <span className="cta-tile-label">Email</span>
-            </a>
-            <a href="mailto:sujithreddy1546@gmail.com?subject=Schedule%20a%20Call" onClick={handleGetInTouch} className="cta-action-tile">
-              <div className="cta-tile-icon"><Calendar size={14} /></div>
-              <span className="cta-tile-label">Schedule call</span>
-            </a>
-            <a href="/resume.pdf" onClick={handleDownloadClick} className="cta-action-tile">
-              <div className="cta-tile-icon"><Download size={14} /></div>
-              <span className="cta-tile-label">Resume</span>
-            </a>
-            <a href="https://github.com/sujith1546" target="_blank" rel="noreferrer" className="cta-action-tile">
-              <div className="cta-tile-icon"><FaGithub size={14} /></div>
-              <span className="cta-tile-label">GitHub</span>
-            </a>
-          </div>
-
-        </motion.div>
-
-
-        {/* Glassmorphism Download Toast */}
-        {createPortal(
-          <AnimatePresence>
-            {toastStatus && (
-              <motion.div
-                initial={{ opacity: 0, x: 20, scale: 0.95 }}
-                animate={{ opacity: 1, x: 0, scale: 1 }}
-                exit={{ opacity: 0, x: 20, scale: 0.95 }}
-                transition={{ duration: 0.3, type: "spring", stiffness: 200, damping: 20 }}
-                style={{
-                  position: 'fixed',
-                  top: '80px',
-                  right: '32px',
-                  zIndex: 99999,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  background: toastStatus === 'packaging' ? 'rgba(17, 24, 39, 0.92)' : 'rgba(16, 185, 129, 0.92)',
-                  backdropFilter: 'blur(var(--glass-blur, 12px))',
-                  WebkitbackdropFilter: 'blur(var(--glass-blur, 12px))',
-                  color: '#fff',
-                  padding: '12px 20px',
-                  borderRadius: '12px',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.15), inset 0 1px 1px rgba(255,255,255,0.1)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                }}
-              >
-                {toastStatus === 'packaging' ? (
-                  <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}>
-                    <Loader2 size={18} />
-                  </motion.div>
-                ) : (
-                  <CheckCircle size={18} />
+        {/* ══════════ ROW 1: Bio + Stats ══════════ */}
+        <div className="ab-row1">
+          {/* Bio card */}
+          <motion.div
+            className="ab-bio-card"
+            initial={{ opacity: 0, y: 12 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <img
+              src="/profile_photo.png"
+              alt="Sujith"
+              className="ab-avatar"
+              onError={e => { e.target.style.display = 'none'; }}
+            />
+            <div className="ab-bio-body">
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
+                <h1 className="ab-bio-name">
+                  Hi, I'm Sujith — a B.Tech student at VIT Vellore (8.7 CGPA) specializing in Data Science.
+                </h1>
+                {daysCoding > 0 && (
+                  <div className="ab-days-badge" style={{ flexShrink: 0 }}>
+                    <Zap size={10} /> {daysCoding.toLocaleString()}d
+                  </div>
                 )}
-                <span style={{ fontSize: '13.5px', fontWeight: 500, letterSpacing: '0.2px' }}>
-                  {toastStatus === 'packaging' ? 'Packaging Artifacts...' : 'Download Complete'}
-                </span>
-              </motion.div>
-            )}
-          </AnimatePresence>,
-          document.body
-        )}
+              </div>
+              <p className="ab-bio-desc">
+                Bridging complex backend data structures with sleek, responsive interfaces.
+              </p>
 
-        {/* Testimonials Section */}
-        <div className="about-testimonials-container">
-          <Testimonials />
+              {/* Skill badges */}
+              <div className="ab-badges">
+                {BADGES.map(b => (
+                  <span
+                    key={b.label}
+                    className="ab-badge"
+                    style={{ background: b.bg, color: b.color, border: `1px solid ${b.color}25` }}
+                  >
+                    {b.label}
+                  </span>
+                ))}
+              </div>
+
+
+            </div>
+          </motion.div>
+
+          {/* Stats 2×2 */}
+          <div className="ab-stats-grid">
+            <StatCard target={3.5} suffix=""  label="Years coding" decimals={1} trigger={inView} delay={0.05} />
+            <StatCard target={10}  suffix=""  label="Projects"     trigger={inView} delay={0.12} />
+            <StatCard target={200} suffix=""  label="DSA solved"   trigger={inView} delay={0.18} />
+            <StatCard target={8.7} suffix=""  label="CGPA"         decimals={1} trigger={inView} delay={0.24} />
+          </div>
         </div>
 
+        {/* ══════════ ROW 2: Career Timeline ══════════ */}
+        <motion.div
+          className="ab-row2"
+          initial={{ opacity: 0, y: 10 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.4, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <p className="ab-section-label" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span>Career path and milestones</span>
+            <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--text-muted)' }}>💡 Click stage for details</span>
+          </p>
+          <CareerTimeline />
+        </motion.div>
 
-      </motion.div>
+        {/* ══════════ GitHub Activity Heatmap ══════════ */}
+        <motion.div
+          className="ab-github-wrapper"
+          initial={{ opacity: 0, y: 10 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.4, delay: 0.14, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <GitHubActivity hideCommits={true} />
+        </motion.div>
+
+        {/* ══════════ ROW 3: CTA + Action Buttons ══════════ */}
+        <motion.div
+          className="ab-row3"
+          initial={{ opacity: 0, y: 10 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.4, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
+        >
+          {/* Left: CTA text */}
+          <div className="ab-cta-left">
+            <h2 className="ab-cta-title">Let's build something great.</h2>
+            <p className="ab-cta-sub">
+              I'm always open to discussing Data Science, Machine Learning architecture, or exciting new engineering opportunities.
+            </p>
+          </div>
+
+          {/* Right: Get in Touch + Resume buttons matching reference */}
+          <div className="ab-actions-grid">
+            <button
+              className="ab-btn-primary"
+              onClick={() => onNavClick ? onNavClick('contact') : (window.location.href = 'mailto:sujithreddy1546@gmail.com')}
+            >
+              Get in Touch <ArrowRight size={14} />
+            </button>
+            <a href="/resume.pdf" className="ab-btn-secondary" onClick={handleDownload}>
+              <Download size={14} style={{ color: 'var(--primary-blue)' }} /> Resume
+            </a>
+          </div>
+        </motion.div>
+
+      </div>
+
+      {/* Toast */}
+      {createPortal(
+        <AnimatePresence>
+          {toast && (
+            <motion.div
+              initial={{ opacity: 0, x: 20, scale: 0.95 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: 20, scale: 0.95 }}
+              transition={{ type: 'spring', stiffness: 240, damping: 22 }}
+              style={{
+                position: 'fixed', top: 80, right: 32, zIndex: 99999,
+                display: 'flex', alignItems: 'center', gap: 10,
+                background: toast === 'packaging' ? 'rgba(17,24,39,.95)' : 'rgba(16,185,129,.95)',
+                backdropFilter: 'blur(12px)', color: '#fff',
+                padding: '11px 18px', borderRadius: 12,
+                boxShadow: '0 8px 32px rgba(0,0,0,.2)',
+              }}
+            >
+              {toast === 'packaging'
+                ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}><Loader2 size={16} /></motion.div>
+                : <CheckCircle size={16} />}
+              <span style={{ fontSize: 13, fontWeight: 600 }}>
+                {toast === 'packaging' ? 'Preparing resume...' : 'Downloaded!'}
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </ScrollReveal>
   );
 }

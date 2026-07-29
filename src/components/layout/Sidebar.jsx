@@ -220,44 +220,21 @@ export default function Sidebar({ activeSection, onNavClick }) {
       <p className="sidebar-title" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "5px", flexWrap: "wrap" }}>
         <MapPin size={13} />
         <span>Vellore, India · {localTime}</span>
-        {isConnected && visitorCount !== null && visitorCount > 0 && (
-          <span 
-            title="Live count of active visitors/tabs connected to this portfolio"
-            style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}
-          >
-            <span>·</span>
-            <span
-              style={{
-                width: '5px',
-                height: '5px',
-                borderRadius: '50%',
-                background: '#10b981',
-                boxShadow: '0 0 4px rgba(16, 185, 129, 0.4)',
-                display: 'inline-block'
-              }}
-            />
-            <span style={{ color: '#10b981', fontWeight: 600 }}>{visitorCount}</span>
-            <span>online</span>
-          </span>
-        )}
       </p>
 
       <ul>
         {NAV_ITEMS.map(({ label, id }) => (
           <li key={id}>
-            {isMainPage ? (
-              <a
-                href={`#${id}`}
-                className={activeSection === id ? 'active' : ''}
-                onClick={(e) => { e.preventDefault(); onNavClick(id); }}
-              >
-                {label}
-              </a>
-            ) : (
-              <Link to="/" onClick={() => setTimeout(() => onNavClick?.(id), 100)}>
-                {label}
-              </Link>
-            )}
+            <a
+              href={`/${id}`}
+              className={activeSection === id ? 'active' : ''}
+              onClick={(e) => {
+                e.preventDefault();
+                onNavClick(id);
+              }}
+            >
+              {label}
+            </a>
           </li>
         ))}
       </ul>

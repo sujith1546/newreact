@@ -9,47 +9,48 @@ export default function DynamicIsland() {
     <div 
       style={{
         position: 'fixed',
-        top: '16px',
+        top: '18px',
         left: '50%',
         transform: 'translateX(-50%)',
-        zIndex: 9999,
+        zIndex: 99999,
         pointerEvents: 'none',
         display: 'flex',
         justifyContent: 'center',
-        width: '100%'
+        width: 'auto'
       }}
     >
       <AnimatePresence>
         {islandState.isOpen && (
           <motion.div
-            initial={{ width: 120, height: 32, opacity: 0, scale: 0.8 }}
-            animate={{ width: 'auto', height: 48, opacity: 1, scale: 1 }}
-            exit={{ width: 120, height: 32, opacity: 0, scale: 0.8 }}
-            transition={{ type: 'spring', damping: 20, stiffness: 300, mass: 0.8 }}
+            initial={{ opacity: 0, scale: 0.8, y: -12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: -12 }}
+            transition={{ type: 'spring', damping: 22, stiffness: 350, mass: 0.7 }}
             style={{
-              background: '#000',
-              borderRadius: '24px',
+              background: '#090a0f',
+              borderRadius: '999px',
               display: 'flex',
               alignItems: 'center',
-              padding: '0 16px',
+              padding: '10px 22px',
               gap: '12px',
-              boxShadow: '0 10px 40px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1)',
-              border: '1px solid rgba(255,255,255,0.05)',
+              boxShadow: '0 12px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.12)',
               pointerEvents: 'auto',
-              overflow: 'hidden',
-              minWidth: '180px'
+              whiteSpace: 'nowrap',
+              minHeight: '46px',
+              boxSizing: 'border-box'
             }}
           >
             {islandState.icon && (
               <motion.div
                 initial={{ scale: 0, rotate: -45 }}
                 animate={{ scale: 1, rotate: 0 }}
-                transition={{ type: 'spring', delay: 0.1 }}
+                transition={{ type: 'spring', delay: 0.08 }}
                 style={{
-                  color: islandState.color,
+                  color: islandState.color || '#10b981',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  flexShrink: 0
                 }}
               >
                 {islandState.icon}
@@ -57,26 +58,27 @@ export default function DynamicIsland() {
             )}
             
             <motion.div 
-              initial={{ opacity: 0, x: 10 }}
+              initial={{ opacity: 0, x: 8 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.15 }}
+              transition={{ delay: 0.1 }}
               style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
             >
               <span style={{ 
-                color: '#fff', 
-                fontSize: '13px', 
-                fontWeight: 600, 
-                lineHeight: 1.1,
+                color: '#ffffff', 
+                fontSize: '13.5px', 
+                fontWeight: 700, 
+                lineHeight: 1.2,
                 letterSpacing: '-0.01em'
               }}>
                 {islandState.title}
               </span>
               {islandState.subtitle && (
                 <span style={{ 
-                  color: 'rgba(255,255,255,0.6)', 
-                  fontSize: '11px', 
+                  color: 'rgba(255,255,255,0.72)', 
+                  fontSize: '11.5px', 
                   fontWeight: 500,
-                  marginTop: '2px'
+                  marginTop: '1px',
+                  lineHeight: 1.2
                 }}>
                   {islandState.subtitle}
                 </span>

@@ -54,10 +54,10 @@ function ProgressRing({ percent, color, size = 80 }) {
 }
 
 function SkillsRadarChart({ categories }) {
-  const SIZE = 340;
+  const SIZE = 440;
   const CX = SIZE / 2;
   const CY = SIZE / 2;
-  const R = 120;
+  const R = 160;
   const LEVELS = 5;
   const n = categories.length;
   if (n < 3) return null;
@@ -127,7 +127,7 @@ function SkillsRadarChart({ categories }) {
         {/* Category labels */}
         {categories.map((cat, i) => {
           const angle = i * angleStep;
-          const labelR = R + 28;
+          const labelR = R + 34;
           const p = getPoint(angle, labelR);
           const isLeft = p.x < CX - 10;
           const isRight = p.x > CX + 10;
@@ -219,7 +219,17 @@ export default function Skills() {
           });
         });
 
-        // Convert to array matching the old format
+        // Ensure 'exploring' category is always present with upcoming technologies
+        if (!grouped['exploring'] || grouped['exploring'].length === 0) {
+          grouped['exploring'] = [
+            { id: 'exp-1', name: 'Rust & WASM', icon: 'code', level: 'Learning', percent: 45, years: '0.5 yrs', projectCount: 2, description: 'High-performance systems programming and WebAssembly for browser performance.' },
+            { id: 'exp-2', name: 'LLM Agents & AutoGen', icon: 'rocket', level: 'Learning', percent: 60, years: '0.8 yrs', projectCount: 3, description: 'Multi-agent orchestration, tool use, and structured outputs with Groq & LangChain.' },
+            { id: 'exp-3', name: 'Vector DBs (Pinecone/Qdrant)', icon: 'database', level: 'Learning', percent: 55, years: '0.6 yrs', projectCount: 2, description: 'High-dimensional vector embeddings, similarity search, and RAG architectures.' },
+            { id: 'exp-4', name: 'MLOps & Kubeflow', icon: 'ml', level: 'Learning', percent: 40, years: '0.4 yrs', projectCount: 1, description: 'Automated model deployment, tracking, and continuous monitoring pipelines.' },
+          ];
+        }
+
+        // Convert to array matching the format
         const finalCategories = Object.keys(grouped).map(catKey => {
           const meta = categoryMeta[catKey] || { id: catKey, title: catKey.charAt(0).toUpperCase() + catKey.slice(1), icon: 'code' };
           return {
@@ -278,54 +288,56 @@ export default function Skills() {
         /* ============ SHARED PAGE SHELL ============ */
         .skills-page {
           width: 100%;
+          height: 100%;
+          overflow: hidden;
           display: flex;
           flex-direction: column;
-          gap: 12px;
-        }
-        .skills-header { margin-bottom: 0px; }
-        .skills-header h1 {
-          font-size: 26px; font-weight: 700;
-          color: var(--text-primary); margin: 0 0 3px;
-        }
-        .skills-header p {
-          font-size: 13px; color: var(--text-secondary); margin: 0;
+          gap: 14px;
+          box-sizing: border-box;
         }
 
-        /* ============ DESKTOP GRID (unchanged) ============ */
+        /* ============ DESKTOP GRID ============ */
         .skills-grid {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
-          gap: 12px;
+          grid-template-rows: 1fr 1fr 1fr;
+          gap: 16px;
+          flex: 1;
+          min-height: 0;
         }
         .skill-category-card {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
-          border-radius: 14px; padding: 14px 18px;
+          border-radius: 16px; padding: 16px 20px;
           box-shadow: 0 2px 10px rgba(0,0,0,0.02);
           transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
           display: flex; flex-direction: column;
+          justify-content: center;
+          min-height: 0;
         }
         .skill-category-card:hover {
           transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+          box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+          border-color: var(--primary-blue);
         }
-        .skill-category-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .skill-category-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
         .skill-category-icon {
-          width: 36px; height: 36px; border-radius: 10px;
-          background: var(--bg-primary); color: var(--text-primary);
+          width: 38px; height: 38px; border-radius: 10px;
+          background: rgba(128,128,128,0.08); color: var(--text-primary);
           display: flex; align-items: center; justify-content: center; flex-shrink: 0;
         }
-        .skill-category-title { font-size: 14.5px; font-weight: 700; color: var(--text-primary); margin: 0; }
+        .skill-category-title { font-size: 15px; font-weight: 700; color: var(--text-primary); margin: 0; }
         .skill-pills { display: flex; flex-wrap: wrap; gap: 8px; }
         .skill-pill {
-          display: inline-block; font-size: 11.5px; font-weight: 600;
+          display: inline-block; font-size: 12px; font-weight: 600;
           background: var(--bg-primary); color: var(--text-secondary);
-          border: 1px solid var(--border-color); padding: 4px 12px;
+          border: 1px solid var(--border-color); padding: 5px 12px;
           border-radius: 999px; transition: all .2s ease; cursor: crosshair;
         }
         .skill-pill:hover { background: var(--text-primary); color: var(--bg-primary); border-color: var(--text-primary); }
         [data-theme="dark"] .skill-category-card { border-color: var(--border-color); }
-        [data-theme="dark"] .skill-category-icon { background: var(--bg-primary); color: var(--text-primary); }
+        [data-theme="dark"] .skill-category-card:hover { border-color: var(--primary-blue); }
+        [data-theme="dark"] .skill-category-icon { background: rgba(255,255,255,0.06); color: var(--text-primary); }
         [data-theme="dark"] .skill-pill { background: var(--bg-primary); color: var(--text-secondary); border-color: var(--border-color); }
         [data-theme="dark"] .skill-pill:hover { background: var(--text-primary); color: var(--bg-primary); border-color: var(--text-primary); }
 
@@ -595,11 +607,7 @@ export default function Skills() {
         }
       `}</style>
 
-      <motion.div className="skills-page" variants={!isMobile ? containerVariants : undefined} initial={!isMobile ? "hidden" : undefined} animate={!isMobile ? "visible" : undefined}>
-        <motion.div className="skills-header" variants={!isMobile ? itemVariants : undefined}>
-          <h1>Skills &amp; Expertise</h1>
-          <p>Explore technical competencies and proficiency levels</p>
-        </motion.div>
+      <motion.div className="skills-page" style={{ height: !isMobile ? '100%' : 'auto', overflow: !isMobile ? 'hidden' : 'visible' }} variants={!isMobile ? containerVariants : undefined} initial={!isMobile ? "hidden" : undefined} animate={!isMobile ? "visible" : undefined}>
 
         {!isMobile && skillCategories.length > 0 && (
           <motion.div 
@@ -608,10 +616,10 @@ export default function Skills() {
               display: 'flex', 
               justifyContent: 'space-between', 
               alignItems: 'center', 
-              marginTop: '8px', 
-              marginBottom: '14px',
+              marginTop: '0px', 
+              marginBottom: '10px',
               flexWrap: 'wrap',
-              gap: '8px'
+              gap: '12px'
             }}
           >
             <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '8px' }}>

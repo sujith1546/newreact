@@ -4,8 +4,11 @@ import { Globe } from 'lucide-react';
 const GlobeLocator = lazy(() => import('./GlobeLocator'));
 import DarkModeToggle from '../ui/DarkModeToggle';
 import SettingsDropdown from '../ui/SettingsDropdown';
+import UpdatesDropdown from './UpdatesDropdown';
+import { useSupabasePresence } from '../../hooks/useSupabasePresence';
 
 export default function TimezoneStatus() {
+  const { visitorCount, isConnected } = useSupabasePresence();
   const [visitorCity, setVisitorCity] = useState('');
   const [visitorTzAbbr, setVisitorTzAbbr] = useState('');
   const [localStart, setLocalStart] = useState('');
@@ -287,13 +290,71 @@ export default function TimezoneStatus() {
           font-size: 14px;
           font-weight: 500;
         }
-        .tc-status.awake { color: #16a34a; }
-        .tc-status.sleeping { color: #6b7280; }
-        
+        .online-presence-pill {
+          height: 34px;
+          border-radius: 17px;
+          background: rgba(243, 244, 246, 0.85);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border: 1px solid rgba(16, 185, 129, 0.25);
+          box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 0 12px;
+          font-size: 12.5px;
+          font-weight: 600;
+          color: var(--text-primary);
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          cursor: default;
+        }
 
+        [data-theme="dark"] .online-presence-pill {
+          background: rgba(30, 30, 30, 0.5);
+          border-color: rgba(16, 185, 129, 0.3);
+          box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .online-presence-pill:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(16, 185, 129, 0.25);
+          border-color: #10b981;
+        }
+
+        .online-presence-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 50%;
+          background: #10b981;
+          box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
+          animation: onlinePulse 2s infinite;
+        }
+
+        @keyframes onlinePulse {
+          0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+          50% { transform: scale(1.15); box-shadow: 0 0 0 4px rgba(16, 185, 129, 0); }
+        }
+
+        .online-presence-count {
+          color: #10b981;
+          font-weight: 700;
+          font-size: 13px;
+        }
+
+        .online-presence-label {
+          color: var(--text-secondary);
+          font-size: 11.5px;
+          font-weight: 500;
+        }
       `}</style>
 
       <div className="timezone-status-wrapper">
+        <div className="online-presence-pill" title="Live count of active visitors connected to this portfolio">
+          <span className="online-presence-dot" />
+          <span className="online-presence-count">{visitorCount && visitorCount > 0 ? visitorCount : 1}</span>
+          <span className="online-presence-label">online</span>
+        </div>
+
         <button 
           className="cmdk-hint-pill"
           onClick={() => window.dispatchEvent(new CustomEvent("toggle-command-palette"))}
@@ -303,10 +364,11 @@ export default function TimezoneStatus() {
           <span className="cmdk-hint-kbd">K</span>
         </button>
 
-
         <button className="globe-btn" onClick={() => setIsGlobeOpen(true)} title="View Globe" aria-label="Open Globe Locator">
           <Globe size={16} strokeWidth={2.5} />
         </button>
+
+        <UpdatesDropdown />
 
         <DarkModeToggle />
         <SettingsDropdown />

@@ -192,6 +192,22 @@ body {
   transition: background 0.3s ease;
   display: flex;
   flex-direction: column;
+  position: relative; /* needed for ::before positioning */
+}
+
+/* ── Hairline divider below the top utility bar (Ctrl K / theme / settings) ──
+   Sits at top: 66px = 20px (bar top) + 34px (bar height) + 12px (breathing room).
+   Spans the full content column. Adapts to dark/light via --border-color.         */
+.main-content::before {
+  content: '';
+  position: fixed;
+  top: 66px;
+  left: 300px;   /* right edge of sidebar */
+  right: 0;
+  height: 1px;
+  background: var(--border-color);
+  z-index: 1500; /* above page content, below fixed utility bar (z:2000) */
+  pointer-events: none;
 }
 
 .scroll-container {
@@ -199,7 +215,13 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 20px;
+  padding: 78px 20px 20px 20px;
+}
+
+@media (max-width: 900px) {
+  .scroll-container {
+    padding: 12px;
+  }
 }
 
 /* ============================================
@@ -473,7 +495,7 @@ body {
 .social-icon-box {
   width: 34px;
   height: 34px;
-  border-radius: 8px;
+  border-radius: 50%;
   background: transparent;
   border: 1px solid var(--border-color);
   display: flex;
@@ -1174,7 +1196,7 @@ body {
   animation: fadeInUp 0.6s ease backwards;
 }
 
-.cert-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+.cert-card:hover { transform: none; box-shadow: var(--shadow-lg); }
 
 .cert-logo { width: 60px; height: 60px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center; background: #f8f9fa; border-radius: 8px; padding: 8px; }
 .cert-logo i { font-size: 32px; }
@@ -2070,6 +2092,11 @@ html {
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;
+  }
+
+  /* Hide utility-bar divider on mobile — sidebar is hidden, layout is vertical */
+  .main-content::before {
+    display: none;
   }
 
   /* Disable vertical scrolling on the education page container on mobile */

@@ -29,6 +29,7 @@ const Experience = lazy(() => import('./Experience'));
 const Certifications = lazy(() => import('./Certifications'));
 const Contact = lazy(() => import('./Contact'));
 const Blog = lazy(() => import('./Blog'));
+const Updates = lazy(() => import('./Updates'));
 import { useTheme } from '../context/ThemeContext';
 import { usePersona } from '../context/PersonaContext';
 import useRealtimeData from '../hooks/useRealtimeData';
@@ -45,6 +46,7 @@ const SECTIONS_DEF = [
   { id: 'experience',     Component: Experience     },
   { id: 'certifications', Component: Certifications },
   { id: 'contact',        Component: Contact        },
+  { id: 'updates',        Component: Updates        },
 ];
 
 const SECTION_LABELS = {
@@ -57,6 +59,50 @@ const SECTION_LABELS = {
   experience: 'Experience',
   certifications: 'Certifications',
   contact: 'Contact',
+  updates: 'Updates',
+};
+
+const SECTION_HEADERS = {
+  home: {
+    title: 'Home',
+    subtitle: 'Data Science Specialist & Full-Stack Developer',
+  },
+  about: {
+    title: 'About Me',
+    subtitle: 'Passionate developer crafting intelligent digital experiences',
+  },
+  skills: {
+    title: 'Skills & Expertise',
+    subtitle: 'Technical competencies and proficiency levels',
+  },
+  projects: {
+    title: 'Featured Projects',
+    subtitle: 'Showcase of intelligent digital applications & systems',
+  },
+  blog: {
+    title: 'Blog & Articles',
+    subtitle: 'Technical writings, tutorials, and insights',
+  },
+  education: {
+    title: 'Education',
+    subtitle: 'My academic journey — from foundation to university',
+  },
+  experience: {
+    title: 'Experience',
+    subtitle: 'Professional background, internships, and project roles',
+  },
+  certifications: {
+    title: 'Certifications',
+    subtitle: 'Verified technical achievements and credentials',
+  },
+  contact: {
+    title: 'Contact',
+    subtitle: 'Get in touch for opportunities, projects, or collaboration',
+  },
+  updates: {
+    title: 'System Updates & Changelog',
+    subtitle: 'Latest feature releases, improvements, and bug fixes',
+  },
 };
 
 const NAV_DURATION = 0.45;
@@ -360,7 +406,7 @@ export default function PortfolioLayout() {
 
               style={{
                 width:                     isMobile ? 'calc(100% - 24px)' : '100%',
-                height:                    isMobile ? 'calc(100% - 24px)' : 'auto',
+                height:                    '100%',
                 position:                  isMobile ? 'absolute' : 'relative',
                 top:                       isMobile ? '12px' : 0,
                 left:                      isMobile ? '12px' : 0,
@@ -370,7 +416,7 @@ export default function PortfolioLayout() {
               }}
               className={`text-content
                 ${activeSection === 'home' ? ' home-content' : ''}
-                ${['contact','education','about','skills','experience','projects','certifications','blog'].includes(activeSection) ? ' wide-content' : ''}
+                ${['contact','education','about','skills','experience','projects','certifications','blog','updates'].includes(activeSection) ? ' wide-content' : ''}
               `}
             >
               <ErrorBoundary>
@@ -395,6 +441,38 @@ export default function PortfolioLayout() {
         keyword={spotlightKeyword}
         onDismiss={() => { setSpotlightSection(null); setSpotlightKeyword(''); }}
       />
+
+      {!isMobile && SECTION_HEADERS[activeSection] && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '14px',
+            left: '320px',
+            zIndex: 1900,
+            display: 'flex',
+            flexDirection: 'column',
+            pointerEvents: 'none',
+          }}
+        >
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeSection}
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 4 }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+              style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}
+            >
+              <span style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.2px', lineHeight: 1.2 }}>
+                {SECTION_HEADERS[activeSection].title}
+              </span>
+              <span style={{ fontSize: '11.5px', fontWeight: 500, color: 'var(--text-secondary)', lineHeight: 1.2 }}>
+                {SECTION_HEADERS[activeSection].subtitle}
+              </span>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      )}
 
       {!isMobile && <TimezoneStatus />}
       <ChatBot />

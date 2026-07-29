@@ -4,7 +4,6 @@ import { ScrollReveal, MobileDashboard } from '../components';
 import { Code, Briefcase, Mail, FileText, Sparkles, ArrowRight, Zap, Calendar } from 'lucide-react';
 import useGlitchText from '../hooks/useGlitchText';
 import useRealtimeData from '../hooks/useRealtimeData';
-import GitHubActivity from '../components/widgets/GitHubActivity';
 
 export default function Home({ onNavClick }) {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
@@ -38,23 +37,22 @@ export default function Home({ onNavClick }) {
     useEffect(() => {
       const currentRole = roles[roleIndex];
       let timer;
-      if (isDeleting) {
-        timer = setTimeout(() => {
-          setText(currentRole.substring(0, text.length - 1));
-          if (text.length === 0) {
-            setIsDeleting(false);
-            setRoleIndex((roleIndex + 1) % roles.length);
-          }
-        }, 30);
+
+      if (!isDeleting && text === currentRole) {
+        timer = setTimeout(() => setIsDeleting(true), 2500);
+      } else if (isDeleting && text === '') {
+        setIsDeleting(false);
+        setRoleIndex((prev) => (prev + 1) % roles.length);
       } else {
-        const humanize = Math.random() * 70 + 40;
+        const speed = isDeleting ? 25 : Math.random() * 40 + 50;
         timer = setTimeout(() => {
-          setText(currentRole.substring(0, currentRole.length + 1)); // Fix: use currentRole length
-          if (text.length === currentRole.length) {
-            timer = setTimeout(() => setIsDeleting(true), 3000);
-          }
-        }, humanize);
+          const nextText = isDeleting
+            ? currentRole.substring(0, text.length - 1)
+            : currentRole.substring(0, text.length + 1);
+          setText(nextText);
+        }, speed);
       }
+
       return () => clearTimeout(timer);
     }, [text, isDeleting, roleIndex]);
 
@@ -77,7 +75,7 @@ export default function Home({ onNavClick }) {
   }
 
   return (
-    <ScrollReveal className="home-content home-pane">
+    <ScrollReveal className="home-content home-pane" style={{ height: 'calc(100vh - 138px)', overflow: 'hidden', display: 'flex', alignItems: 'center', boxSizing: 'border-box' }}>
       <style>{`
         /* Desktop styles (Default) */
         .home-content .home-grid {
@@ -632,13 +630,6 @@ export default function Home({ onNavClick }) {
           </div>
         )}
 
-
-        {/* GitHub Activity Heatmap — Desktop only */}
-        {!isMobile && (
-          <div style={{ marginTop: 32 }}>
-            <GitHubActivity />
-          </div>
-        )}
 
     </ScrollReveal>
   );

@@ -71,7 +71,7 @@ function useGitHubData() {
   return data;
 }
 
-export default function GitHubActivity({ isDark = false }) {
+export default function GitHubActivity({ isDark = false, hideCommits = false }) {
   const { activity, commits, streak, total, loading } = useGitHubData();
 
   // Build 52-week grid (most recent last)
@@ -110,7 +110,7 @@ export default function GitHubActivity({ isDark = false }) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-      style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 20, padding: 24, overflow: 'hidden' }}
+      style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 16, padding: 18, overflow: 'hidden', height: '100%', display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}
     >
       <style>{`
         @keyframes shimmer { 0% { background-position: 100% 0 } 100% { background-position: -100% 0 } }
@@ -190,7 +190,7 @@ export default function GitHubActivity({ isDark = false }) {
       </div>
 
       {/* Recent commits */}
-      {commits.length > 0 && (
+      {!hideCommits && commits.length > 0 && (
         <div style={{ marginTop: 18, paddingTop: 16, borderTop: '1px solid var(--border-color)' }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.5 }}>Recent Commits</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

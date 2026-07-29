@@ -1003,11 +1003,6 @@ export default function Education() {
       `}</style>
 
       <div className="edu-page">
-        {/* Header */}
-        <div className="edu-header">
-          <h1>Education</h1>
-          <p>My academic journey — from foundation to university</p>
-        </div>
 
         {/* Horizontal Progress Rail */}
         {loading ? (
