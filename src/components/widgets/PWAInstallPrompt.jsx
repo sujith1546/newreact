@@ -147,14 +147,14 @@ export default function PWAInstallPrompt() {
         </motion.div>
       )}
 
-      {/* PWA Install Banner — stacked above Atom AI FAB (bottom-right) */}
+      {/* PWA Install Banner — beside Atom AI FAB (bottom-right, same level) */}
       {showInstallPrompt && !showToast && !isDismissed && (
         <motion.div
           initial={{ opacity: 0, x: 50, scale: 0.95 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
           exit={{ opacity: 0, x: 50, scale: 0.95 }}
           transition={{ type: 'spring', damping: 24, stiffness: 300, delay: 0.3 }}
-          style={{ position: 'fixed', bottom: '92px', right: '28px', zIndex: 9998 }}
+          style={{ position: 'fixed', bottom: '18px', right: '92px', zIndex: 9998 }}
         >
           {/* Card */}
           <div style={{
@@ -224,24 +224,24 @@ export default function PWAInstallPrompt() {
               </button>
             )}
 
-            {/* Caret arrow pointing down toward Atom AI button */}
+            {/* Caret arrow pointing right toward Atom AI button */}
             <div style={{
               position: 'absolute',
-              bottom: '-8px',
-              right: '19px',
+              right: '-8px',
+              bottom: '19px',
               width: 0, height: 0,
-              borderLeft: '8px solid transparent',
-              borderRight: '8px solid transparent',
-              borderTop: '8px solid var(--border-color)',
+              borderTop: '8px solid transparent',
+              borderBottom: '8px solid transparent',
+              borderLeft: '8px solid var(--border-color)',
             }} />
             <div style={{
               position: 'absolute',
-              bottom: '-7px',
-              right: '19px',
+              right: '-7px',
+              bottom: '19px',
               width: 0, height: 0,
-              borderLeft: '8px solid transparent',
-              borderRight: '8px solid transparent',
-              borderTop: '8px solid var(--bg-secondary)',
+              borderTop: '8px solid transparent',
+              borderBottom: '8px solid transparent',
+              borderLeft: '8px solid var(--bg-secondary)',
             }} />
           </div>
         </motion.div>
