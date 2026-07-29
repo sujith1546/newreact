@@ -427,32 +427,21 @@ export default function About({ onNavClick }) {
           flex-direction: column;
           flex: 1;
           min-height: 0;
+          height: 100%;
         }
 
-        @media (min-width: 901px) {
-          #about {
-            height: calc(100vh - 84px);
-            max-height: calc(100vh - 84px);
-            overflow: hidden;
-          }
-          .ab-page {
-            height: 100%;
-            max-height: 100%;
-            overflow: hidden;
-            justify-content: space-between;
-          }
-        }
-
-        /* ── Page shell: fills remaining flex space, no overflow hidden ── */
+        /* ── Page shell: fills remaining flex space cleanly ── */
         .ab-page {
           width: 100%;
           flex: 1;
           display: flex;
           flex-direction: column;
+          justify-content: space-between;
           gap: 6px;
           box-sizing: border-box;
           padding-bottom: 0px;
           min-height: 0;
+          height: 100%;
         }
 
         .ab-header-row {
