@@ -350,9 +350,29 @@ export default function TimezoneStatus() {
 
       <div className="timezone-status-wrapper">
         <div className="online-presence-pill" title="Live count of active unique visitor sessions connected to this portfolio">
-          <span className="online-presence-dot" />
-          <span className="online-presence-count">{visitorCount && visitorCount > 0 ? visitorCount : 1}</span>
-          <span className="online-presence-label">{visitorCount === 1 ? 'active session' : 'active sessions'}</span>
+          <motion.span
+            className="online-presence-dot"
+            animate={{ scale: [1, 1.25, 1] }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
+            key={`dot-${visitorCount}`}
+          />
+          <div style={{ display: 'inline-flex', overflow: 'hidden', height: '18px', alignItems: 'center' }}>
+            <AnimatePresence mode="popLayout" initial={false}>
+              <motion.span
+                key={visitorCount || 1}
+                initial={{ y: 12, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -12, opacity: 0 }}
+                transition={{ type: 'spring', damping: 20, stiffness: 300 }}
+                className="online-presence-count"
+              >
+                {visitorCount && visitorCount > 0 ? visitorCount : 1}
+              </motion.span>
+            </AnimatePresence>
+          </div>
+          <span className="online-presence-label">
+            {visitorCount === 1 ? 'active session' : 'active sessions'}
+          </span>
         </div>
 
         <button 
