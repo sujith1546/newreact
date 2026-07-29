@@ -147,14 +147,14 @@ export default function PWAInstallPrompt() {
         </motion.div>
       )}
 
-      {/* PWA Install Banner — bottom-left of main content, after sidebar */}
+      {/* PWA Install Banner — beside Atom AI FAB (bottom-right, same level) */}
       {showInstallPrompt && !showToast && !isDismissed && (
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 20 }}
-          transition={{ type: 'spring', damping: 22, stiffness: 280, delay: 0.6 }}
-          style={{ position: 'fixed', bottom: '24px', left: '300px', zIndex: 9998 }}
+          initial={{ opacity: 0, x: 50, scale: 0.95 }}
+          animate={{ opacity: 1, x: 0, scale: 1 }}
+          exit={{ opacity: 0, x: 50, scale: 0.95 }}
+          transition={{ type: 'spring', damping: 24, stiffness: 300, delay: 0.3 }}
+          style={{ position: 'fixed', bottom: '18px', right: '92px', zIndex: 9998 }}
         >
           {/* Card */}
           <div style={{
@@ -162,11 +162,12 @@ export default function PWAInstallPrompt() {
             border: '1px solid var(--border-color)',
             borderRadius: '14px',
             padding: '14px 16px',
-            maxWidth: '320px',
+            maxWidth: '300px',
             boxShadow: '0 8px 32px rgba(0,0,0,0.14)',
             display: 'flex',
             flexDirection: 'column',
             gap: '10px',
+            position: 'relative',
           }}>
             {/* Header row */}
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
@@ -222,6 +223,26 @@ export default function PWAInstallPrompt() {
                 <Download size={13} /> Install App
               </button>
             )}
+
+            {/* Caret arrow pointing right toward Atom AI button */}
+            <div style={{
+              position: 'absolute',
+              right: '-8px',
+              bottom: '19px',
+              width: 0, height: 0,
+              borderTop: '8px solid transparent',
+              borderBottom: '8px solid transparent',
+              borderLeft: '8px solid var(--border-color)',
+            }} />
+            <div style={{
+              position: 'absolute',
+              right: '-7px',
+              bottom: '19px',
+              width: 0, height: 0,
+              borderTop: '8px solid transparent',
+              borderBottom: '8px solid transparent',
+              borderLeft: '8px solid var(--bg-secondary)',
+            }} />
           </div>
         </motion.div>
       )}
