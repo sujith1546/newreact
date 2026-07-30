@@ -854,70 +854,7 @@ export default function About({ onNavClick }) {
 
 
 
-        {/* ══════════ ROW 3: Advanced CTA + Action Buttons ══════════ */}
-        <motion.div
-          className="ab-row3"
-          initial={{ opacity: 0, y: 10 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.4, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
-        >
-          {/* Left: CTA text */}
-          <div className="ab-cta-left">
-            <h2 className="ab-cta-title">Let's build something great.</h2>
-            <p className="ab-cta-sub">
-              I'm always open to discussing Data Science, Machine Learning architecture, or exciting new engineering opportunities.
-            </p>
-          </div>
 
-          {/* Right: Action Buttons + Quick Social Connect Pills */}
-          <div className="ab-actions-grid">
-            <button
-              className="ab-btn-primary"
-              onClick={() => onNavClick ? onNavClick('contact') : (window.location.href = 'mailto:sujithreddy1546@gmail.com')}
-            >
-              Get in Touch <ArrowRight size={14} className="ab-btn-arrow" />
-            </button>
-            <a href="/resume.pdf" className="ab-btn-secondary" onClick={handleDownload}>
-              <Download size={14} style={{ color: 'var(--primary-blue)' }} /> Resume
-            </a>
-            <button className="ab-btn-secondary" onClick={handleCopyEmail} title="Copy sujithreddy1546@gmail.com">
-              {copiedEmail ? <Check size={14} style={{ color: '#10b981' }} /> : <Copy size={14} style={{ color: 'var(--text-muted)' }} />}
-              <span>{copiedEmail ? 'Copied!' : 'Copy Email'}</span>
-            </button>
-
-            {/* Quick Social Connect Group */}
-            <div className="ab-social-icons-group">
-              <a
-                href="https://github.com/sujith1546"
-                target="_blank"
-                rel="noreferrer"
-                className="ab-social-icon-btn"
-                title="GitHub Profile"
-                aria-label="GitHub Profile"
-              >
-                <FaGithub size={15} />
-              </a>
-              <a
-                href="https://linkedin.com/in/sujith-thota"
-                target="_blank"
-                rel="noreferrer"
-                className="ab-social-icon-btn"
-                title="LinkedIn Profile"
-                aria-label="LinkedIn Profile"
-              >
-                <FaLinkedin size={15} />
-              </a>
-              <a
-                href="mailto:sujithreddy1546@gmail.com"
-                className="ab-social-icon-btn"
-                title="Direct Email"
-                aria-label="Direct Email"
-              >
-                <Mail size={15} />
-              </a>
-            </div>
-          </div>
-        </motion.div>
 
       </div>
 
