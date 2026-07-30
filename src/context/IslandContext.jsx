@@ -1,8 +1,11 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
+import { useSupabasePresence } from '../hooks/useSupabasePresence';
 
 const IslandContext = createContext();
 
 export function IslandProvider({ children }) {
+  const { visitorCount: realtimeVisitorCount } = useSupabasePresence();
+
   const [islandState, setIslandState] = useState({
     isOpen: false,
     title: '',
@@ -13,19 +16,22 @@ export function IslandProvider({ children }) {
   });
 
   const [isHudOpen, setIsHudOpen] = useState(false);
-  const [visitorCount, setVisitorCount] = useState(4);
+  const [visitorCount, setVisitorCount] = useState(1);
   const [isEqualizerActive, setIsEqualizerActive] = useState(false);
 
   const queueRef = useRef([]);
   const isProcessingRef = useRef(false);
   const timerRef = useRef(null);
 
-  // BroadcastChannel for Live Visitor Counting across tabs
+  // Sync real-time Supabase presence viewer count
   useEffect(() => {
-    // Random base active viewers count (e.g. 3-6)
-    const baseCount = Math.floor(Math.random() * 4) + 3;
-    setVisitorCount(baseCount);
+    if (realtimeVisitorCount && realtimeVisitorCount > 0) {
+      setVisitorCount(realtimeVisitorCount);
+    }
+  }, [realtimeVisitorCount]);
 
+  // BroadcastChannel for Live Visitor Counting fallback across tabs
+  useEffect(() => {
     let bc;
     try {
       if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
@@ -34,7 +40,7 @@ export function IslandProvider({ children }) {
 
         bc.onmessage = (e) => {
           if (e.data?.type === 'VISITOR_PING') {
-            setVisitorCount((prev) => Math.min(prev + 1, 12));
+            setVisitorCount((prev) => Math.max(prev, 1));
           }
         };
       }

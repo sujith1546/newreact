@@ -213,7 +213,7 @@ export default function DynamicIsland() {
                   <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '11.5px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Users size={13} style={{ color: '#10b981' }} /> Active Viewers
                   </span>
-                  <span style={{ color: '#10b981', fontSize: '11px', fontWeight: 700 }}>🟢 {visitorCount} viewing live</span>
+                  <span style={{ color: '#10b981', fontSize: '11px', fontWeight: 700 }}>🟢 {visitorCount} {visitorCount === 1 ? 'active session' : 'active sessions'}</span>
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.04)', padding: '8px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
