@@ -1,7 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useIsland } from '../../context/IslandContext';
-import { Sparkles, Command, FileText, Sun, Moon, Check, Activity, ShieldCheck, Zap, X } from 'lucide-react';
+import { Sparkles, Command, FileText, Sun, Moon, ShieldCheck, Zap, X } from 'lucide-react';
+
+const SPRING_TRANSITION = {
+  type: 'spring',
+  stiffness: 380,
+  damping: 28,
+  mass: 0.7,
+};
 
 export default function DynamicIsland() {
   const { islandState, triggerIsland, isHudOpen, toggleHud, closeHud } = useIsland();
@@ -88,7 +95,7 @@ export default function DynamicIsland() {
       <motion.div
         ref={hudRef}
         layout
-        transition={{ type: 'spring', damping: 26, stiffness: 380, mass: 0.6 }}
+        transition={SPRING_TRANSITION}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={() => {
@@ -109,26 +116,27 @@ export default function DynamicIsland() {
           cursor: 'pointer',
           whiteSpace: 'nowrap',
           overflow: 'hidden',
-          padding: isHudOpen ? '18px 22px' : isNotificationActive ? '10px 22px' : isHovered ? '8px 18px' : '0 10px',
+          padding: isHudOpen ? '16px 20px' : isNotificationActive ? '10px 20px' : isHovered ? '8px 18px' : '0 10px',
           height: isHudOpen ? 'auto' : isNotificationActive ? '46px' : '32px',
           width: isHudOpen ? '320px' : 'auto',
-          minWidth: isHudOpen ? '320px' : isNotificationActive ? '280px' : isHovered ? '190px' : '32px',
+          minWidth: isHudOpen ? '320px' : isNotificationActive ? '270px' : isHovered ? '190px' : '32px',
           boxSizing: 'border-box'
         }}
       >
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="popLayout" initial={false}>
           {/* Stage 3: Full Interactive Telemetry HUD Mode */}
           {isHudOpen ? (
             <motion.div
               key="hud-mode"
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.18 }}
-              style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '14px', whiteSpace: 'normal' }}
+              layout
+              initial={{ opacity: 0, scale: 0.92, y: -4 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.92, y: -4 }}
+              transition={SPRING_TRANSITION}
+              style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '12px', whiteSpace: 'normal' }}
             >
               {/* HUD Header */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
                   <span style={{ color: '#ffffff', fontSize: '13px', fontWeight: 700, letterSpacing: '0.02em' }}>
@@ -161,7 +169,7 @@ export default function DynamicIsland() {
               </div>
 
               {/* Quick Action Control Buttons */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', paddingTop: '4px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', paddingTop: '2px' }}>
                 <button
                   onClick={handleOpenCommandSearch}
                   style={{
@@ -233,17 +241,18 @@ export default function DynamicIsland() {
             /* Stage 2: Active System Notification Event Mode */
             <motion.div
               key="notification-state"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.15 }}
+              layout
+              initial={{ opacity: 0, scale: 0.9, y: -4 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: -4 }}
+              transition={SPRING_TRANSITION}
               style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%' }}
             >
               {islandState.icon && (
                 <motion.div
-                  initial={{ scale: 0, rotate: -45 }}
+                  initial={{ scale: 0, rotate: -30 }}
                   animate={{ scale: 1, rotate: 0 }}
-                  transition={{ type: 'spring', delay: 0.06 }}
+                  transition={SPRING_TRANSITION}
                   style={{
                     color: islandState.color || '#10b981',
                     display: 'flex',
@@ -283,10 +292,11 @@ export default function DynamicIsland() {
             /* Hovered Idle State */
             <motion.div
               key="hover-state"
-              initial={{ opacity: 0, x: -4 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 4 }}
-              transition={{ duration: 0.12 }}
+              layout
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.14 }}
               style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
             >
               <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 6px #10b981' }} />
@@ -298,10 +308,11 @@ export default function DynamicIsland() {
             /* Stage 1: Compact Camera Cutout Notch Idle Dot */
             <motion.div
               key="notch-state"
-              initial={{ opacity: 0, scale: 0.6 }}
+              layout
+              initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.6 }}
-              transition={{ duration: 0.12 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.14 }}
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}
             >
               <div style={{ width: '9px', height: '9px', borderRadius: '50%', background: '#1e293b', border: '1.5px solid #334155' }} />
