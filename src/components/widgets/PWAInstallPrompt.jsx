@@ -256,7 +256,7 @@ export default function PWAInstallPrompt() {
               </button>
             )}
 
-            {/* Glowing 3px Gradient Progress Bar along card bottom */}
+            {/* 3px Progress Bar along card bottom */}
             <div
               style={{
                 position: 'absolute',
@@ -264,8 +264,8 @@ export default function PWAInstallPrompt() {
                 left: 0,
                 height: '3px',
                 width: `${(timeLeft / 5.0) * 100}%`,
-                background: 'linear-gradient(90deg, #3b82f6, #8b5cf6, #10b981)',
-                boxShadow: isHovered ? '0 0 12px #8b5cf6' : '0 0 8px rgba(59,130,246,0.6)',
+                background: 'var(--primary-blue, #3b82f6)',
+                boxShadow: isHovered ? '0 0 12px rgba(59,130,246,0.8)' : '0 0 8px rgba(59,130,246,0.5)',
                 transition: isHovered ? 'none' : 'width 0.1s linear',
                 borderRadius: '0 0 14px 14px',
               }}
