@@ -97,14 +97,21 @@ body {
   backdrop-filter: blur(var(--glass-blur, 12px));
   -webkit-backdrop-filter: blur(var(--glass-blur, 12px));
   border-right: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 30px;
+  padding: 20px 24px;
   text-align: center;
   box-shadow: 5px 0 15px rgba(0,0,0,0.05);
   overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   transition: background 0.3s ease, border-color 0.3s ease;
   display: flex;
   flex-direction: column;
   height: 100%;
+  box-sizing: border-box;
+}
+
+.sidebar::-webkit-scrollbar {
+  display: none;
 }
 
 [data-theme="dark"] .sidebar {
@@ -114,8 +121,8 @@ body {
 }
 
 .sidebar img {
-  width: 100px !important;
-  height: 100px !important;
+  width: 90px !important;
+  height: 90px !important;
   border-radius: 50% !important;
   aspect-ratio: 1 / 1 !important;
   clip-path: circle(50% at 50% 50%) !important;
@@ -134,22 +141,22 @@ body {
 }
 
 .sidebar h2 {
-  font-size: 20px;
+  font-size: 19px;
   color: var(--text-primary);
   font-weight: 700;
-  margin-top: 15px;
+  margin-top: 10px;
 }
 
 .sidebar-title {
-  font-size: 13px;
+  font-size: 12.5px;
   color: #777777;
-  margin: 2px 0 10px;
+  margin: 2px 0 8px;
 }
 
 .sidebar > p {
   color: var(--text-secondary);
-  font-size: 14px;
-  min-height: 20px;
+  font-size: 13.5px;
+  min-height: 18px;
 }
 
 .typing-cursor::after {
@@ -165,11 +172,11 @@ body {
 
 .sidebar ul {
   list-style: none;
-  margin-top: 20px;
+  margin-top: 14px;
 }
 
 .sidebar ul li {
-  margin: 15px 0;
+  margin: 10px 0;
 }
 
 .sidebar ul li a {
@@ -1643,12 +1650,12 @@ button.btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
 /* Sidebar Avatar Double-Click Tooltip & Desktop Modal styling */
 .sidebar-avatar-container {
   position: relative;
-  width: 100px !important;
-  height: 100px !important;
+  width: 90px !important;
+  height: 90px !important;
   border-radius: 50% !important;
   aspect-ratio: 1 / 1 !important;
   flex-shrink: 0 !important;
-  margin: 0 auto 15px;
+  margin: 0 auto 10px;
   cursor: pointer;
   overflow: hidden !important;
   clip-path: circle(50% at 50% 50%) !important;
