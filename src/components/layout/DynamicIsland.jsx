@@ -5,9 +5,15 @@ import { Sparkles, Command, FileText, Sun, Moon, ShieldCheck, Zap, X, Users, Vol
 
 const SPRING_TRANSITION = {
   type: 'spring',
-  stiffness: 360,
-  damping: 25,
-  mass: 0.6,
+  stiffness: 440,
+  damping: 28,
+  mass: 0.55,
+};
+
+const FADE_BLUR_VARIANTS = {
+  initial: { opacity: 0, scale: 0.88, filter: 'blur(6px)', y: -2 },
+  animate: { opacity: 1, scale: 1, filter: 'blur(0px)', y: 0 },
+  exit: { opacity: 0, scale: 0.88, filter: 'blur(6px)', y: 2 },
 };
 
 const WaveformBars = () => {
@@ -52,8 +58,7 @@ export default function DynamicIsland() {
     isHudOpen,
     toggleHud,
     closeHud,
-    visitorCount,
-    isEqualizerActive
+    visitorCount
   } = useIsland();
 
   const [isHovered, setIsHovered] = useState(false);
@@ -140,6 +145,7 @@ export default function DynamicIsland() {
         ref={hudRef}
         layout
         transition={SPRING_TRANSITION}
+        whileTap={{ scale: 0.96 }}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={() => {
@@ -150,9 +156,11 @@ export default function DynamicIsland() {
         style={{
           background: '#07090e',
           borderRadius: isHudOpen ? '22px' : '999px',
-          border: '1px solid #2a2c33',
-          boxShadow: isHudOpen || isNotificationActive
-            ? '0 20px 50px rgba(0,0,0,0.65)'
+          border: '1px solid rgba(255, 255, 255, 0.12)',
+          boxShadow: isHudOpen
+            ? '0 24px 60px rgba(0,0,0,0.75), 0 0 30px rgba(59,130,246,0.18)'
+            : isNotificationActive
+            ? '0 20px 50px rgba(0,0,0,0.65), 0 0 20px rgba(16,185,129,0.2)'
             : '0 6px 22px rgba(0,0,0,0.4)',
           display: 'flex',
           flexDirection: 'column',
@@ -166,7 +174,8 @@ export default function DynamicIsland() {
           width: isHudOpen ? '320px' : 'auto',
           minWidth: isHudOpen ? '320px' : isNotificationActive ? '270px' : isHovered ? '190px' : '32px',
           boxSizing: 'border-box',
-          position: 'relative'
+          position: 'relative',
+          willChange: 'width, height, border-radius'
         }}
       >
         <AnimatePresence mode="popLayout" initial={false}>
@@ -175,9 +184,10 @@ export default function DynamicIsland() {
             <motion.div
               key="hud-mode"
               layout
-              initial={{ opacity: 0, scale: 0.92, y: -4 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.92, y: -4 }}
+              variants={FADE_BLUR_VARIANTS}
+              initial="initial"
+              animate="animate"
+              exit="exit"
               transition={SPRING_TRANSITION}
               style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '12px', whiteSpace: 'normal' }}
             >
@@ -288,9 +298,10 @@ export default function DynamicIsland() {
             <motion.div
               key="notification-state"
               layout
-              initial={{ opacity: 0, scale: 0.9, y: -4 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: -4 }}
+              variants={FADE_BLUR_VARIANTS}
+              initial="initial"
+              animate="animate"
+              exit="exit"
               transition={SPRING_TRANSITION}
               style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '4px' }}
             >
@@ -353,10 +364,11 @@ export default function DynamicIsland() {
             <motion.div
               key="hover-state"
               layout
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.14 }}
+              variants={FADE_BLUR_VARIANTS}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={SPRING_TRANSITION}
               style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
             >
               <WaveformBars />
@@ -369,10 +381,11 @@ export default function DynamicIsland() {
             <motion.div
               key="notch-state"
               layout
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ duration: 0.14 }}
+              variants={FADE_BLUR_VARIANTS}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={SPRING_TRANSITION}
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
               <WaveformBars />
