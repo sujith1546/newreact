@@ -4,6 +4,7 @@ import { ScrollReveal, MobileDashboard } from '../components';
 import { Code, Briefcase, Mail, FileText, Sparkles, ArrowRight, Zap, Calendar } from 'lucide-react';
 import useGlitchText from '../hooks/useGlitchText';
 import useRealtimeData from '../hooks/useRealtimeData';
+import HeroSection from '../components/HeroSection';
 
 export default function Home({ onNavClick }) {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
@@ -75,7 +76,7 @@ export default function Home({ onNavClick }) {
   }
 
   return (
-    <ScrollReveal className="home-content home-pane" style={{ height: 'calc(100vh - 138px)', overflow: 'hidden', display: 'flex', alignItems: 'center', boxSizing: 'border-box' }}>
+    <div className="home-content home-pane active-reveal" style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '24px', boxSizing: 'border-box' }}>
       <style>{`
         /* Desktop styles (Default) */
         .home-content .home-grid {
@@ -148,15 +149,17 @@ export default function Home({ onNavClick }) {
           display: inline-flex;
           align-items: center;
           gap: 10px;
+          height: 34px;
+          box-sizing: border-box;
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
           border-radius: 8px;
-          padding: 6px 14px;
+          padding: 0 14px;
           font-size: 12.5px;
           font-weight: 600;
           color: var(--text-primary);
           width: fit-content;
-          margin-bottom: 12px;
+          margin: 0;
           position: relative;
           overflow: hidden;
           transition: all 0.35s cubic-bezier(0.16,1,0.3,1);
@@ -559,59 +562,34 @@ export default function Home({ onNavClick }) {
       `}</style>
 
       {/* Desktop grid view */}
-      <div className="home-grid">
-          <div className="hero-info">
-            {(settings === null || settings.is_available_for_hire) && (
-              <div className="fc-badge">
-                <div className="fc-badge-dot-wrap">
-                  <div className="fc-badge-dot" />
-                </div>
-                Available for Opportunities
-              </div>
-            )}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', width: '100%' }}>
+        <HeroSection name={nameText} photoUrl="/IMG_0322.jpg" onNavClick={onNavClick} settings={settings} />
 
-            <div>
-              <div className="hero-greeting">{getGreeting()}</div>
-              <h1 className="hero-title-main">{nameText}</h1>
-              
-              <div className="hero-typewriter-container">
-                <DesktopTypewriter />
-              </div>
-              
-              <p className="hero-subtitle-text" dangerouslySetInnerHTML={{ __html: settings?.hero_headline || "A passionate <strong>B.Tech Graduate from VIT (8.7 CGPA)</strong>, actively exploring the boundaries between complex data logic and seamless web experiences." }} />
+        <div className="home-quick-actions" style={{ marginTop: 0, justifyContent: 'flex-start', maxWidth: '600px' }}>
+          <button className="qa-card" onClick={() => onNavClick?.('skills')}>
+            <div className="qa-icon-wrap"><Code size={16} /></div>
+            <div className="qa-title">
+              Core Skills <ArrowRight size={14} className="qa-arrow" />
             </div>
-
-            <div className="home-quick-actions">
-              <button className="qa-card" onClick={() => onNavClick?.('skills')}>
-                <div className="qa-icon-wrap"><Code size={16} /></div>
-                <div className="qa-title">
-                  Core Skills <ArrowRight size={14} className="qa-arrow" />
-                </div>
-              </button>
-              <button className="qa-card" onClick={() => onNavClick?.('projects')}>
-                <div className="qa-icon-wrap"><Briefcase size={16} /></div>
-                <div className="qa-title">
-                  Projects <ArrowRight size={14} className="qa-arrow" />
-                </div>
-              </button>
-              <button className="qa-card" onClick={() => onNavClick?.('contact')}>
-                <div className="qa-icon-wrap"><Mail size={16} /></div>
-                <div className="qa-title">
-                  Contact Me <ArrowRight size={14} className="qa-arrow" />
-                </div>
-              </button>
+          </button>
+          <button className="qa-card" onClick={() => onNavClick?.('projects')}>
+            <div className="qa-icon-wrap"><Briefcase size={16} /></div>
+            <div className="qa-title">
+              Projects <ArrowRight size={14} className="qa-arrow" />
             </div>
+          </button>
+          <button className="qa-card" onClick={() => onNavClick?.('contact')}>
+            <div className="qa-icon-wrap"><Mail size={16} /></div>
+            <div className="qa-title">
+              Contact Me <ArrowRight size={14} className="qa-arrow" />
             </div>
-          
-          <div className="home-image-side">
-            <img src="/IMG_0322.jpg" alt="Sujith Thota" className="hero-img-new" />
-          </div>
-        </div>
+          </button>
+      </div>
 
         {/* Currently Working On Widget — only shown on desktop when set */}
         {!isMobile && settings?.current_project && (
           <div style={{
-            marginTop: 28, padding: '16px 20px', borderRadius: 18,
+            padding: '16px 20px', borderRadius: 18,
             background: 'linear-gradient(135deg, color-mix(in srgb, #f59e0b 8%, var(--bg-secondary)), var(--bg-secondary))',
             border: '1px solid color-mix(in srgb, #f59e0b 25%, var(--border-color))',
             display: 'flex', alignItems: 'center', gap: 16, maxWidth: 700,
@@ -630,7 +608,7 @@ export default function Home({ onNavClick }) {
           </div>
         )}
 
-
-    </ScrollReveal>
+      </div>
+    </div>
   );
 }

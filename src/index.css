@@ -195,6 +195,13 @@ body {
   position: relative; /* needed for ::before positioning */
 }
 
+/* Disable vertical scrollbar on .main-content when viewing About page on desktop */
+@media (min-width: 901px) {
+  .main-content:has(#about) {
+    overflow-y: hidden !important;
+  }
+}
+
 /* ── Hairline divider below the top utility bar (Ctrl K / theme / settings) ──
    Sits at top: 66px = 20px (bar top) + 34px (bar height) + 12px (breathing room).
    Spans the full content column. Adapts to dark/light via --border-color.         */

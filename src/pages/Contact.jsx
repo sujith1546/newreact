@@ -1,13 +1,28 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
+import { motion, AnimatePresence, useAnimation, useMotionValue } from "framer-motion";
 import {
-  Mail, Phone, Check, Loader2, Copy,
-  MapPin, FileText, Sparkles, Calendar,
+  Mail, Phone, ArrowRight, Check, Loader2, Send, Copy, ChevronRight,
+  MapPin, Clock, FileText, X, Contact as ContactIcon, ChevronLeft, Calendar, Sparkles
 } from "lucide-react";
 import { FaGithub, FaLinkedin, FaWhatsapp } from "react-icons/fa";
 import { ScrollReveal } from '../components';
 import { useIsland } from '../context/IslandContext';
+import { supabase } from '../lib/supabaseClient';
+import useRealtimeData from '../hooks/useRealtimeData';
 
-/* ─── Confetti (Original Falling Animation) ─── */
+const getSessionToken = () => {
+  if (typeof window === 'undefined') return '';
+  let token = sessionStorage.getItem('x-portfolio-session');
+  if (!token) {
+    const array = new Uint8Array(16);
+    crypto.getRandomValues(array);
+    token = Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+    sessionStorage.setItem('x-portfolio-session', token);
+  }
+  return token;
+};
+
 const launchConfetti = () => {
   const mainContentEl = document.querySelector('.main-content') || document.body;
   const rect = mainContentEl.getBoundingClientRect();
@@ -55,25 +70,92 @@ const launchConfetti = () => {
   setTimeout(() => { cancelAnimationFrame(raf); canvas.remove(); }, 4000);
 };
 
-/* ─── Message Types config ─── */
 const MSG_TYPES = [
   { id: 'Job opportunity', label: 'Job opportunity', banner: 'Added role, company, and salary range fields', field1Label: 'COMPANY', field1Holder: 'Acme Inc.', field2Label: 'ROLE', field2Holder: 'Data scientist', msgHolder: 'Tell me about the opportunity...' },
   { id: 'Collaboration',   label: 'Collaboration',   banner: 'Added project scope and timeline fields', field1Label: 'PROJECT NAME', field1Holder: 'AI Platform', field2Label: 'YOUR ROLE', field2Holder: 'Co-founder / Tech Lead', msgHolder: 'Tell me about the collaboration project...' },
   { id: 'General',         label: 'General',         banner: 'General inquiry & networking form', field1Label: 'YOUR NAME', field1Holder: 'Thota Sujith Reddy', field2Label: 'YOUR EMAIL', field2Holder: 'you@example.com', msgHolder: 'Tell me what you\'d like to discuss...' },
 ];
 
+const SwipeToSend = ({ onSend, status, isFormValid, triggerValidation }) => {
+  const containerRef = useRef(null);
+  const x = useMotionValue(0);
+  const controls = useAnimation();
+
+  const handleDragEnd = (event, info) => {
+    if (status === "sending") return;
+    const containerWidth = containerRef.current?.offsetWidth || 300;
+    const knobWidth = 44;
+    const padding = 12;
+    const maxDrag = containerWidth - knobWidth - padding;
+    
+    if (info.offset.x >= maxDrag * 0.75) {
+      if (!isFormValid) {
+        controls.start({ x: 0, transition: { type: 'spring', stiffness: 400, damping: 15 } });
+        triggerValidation();
+      } else {
+        controls.start({ x: maxDrag });
+        onSend();
+      }
+    } else {
+      controls.start({ x: 0 });
+    }
+  };
+
+  useEffect(() => {
+    if (status === "idle") controls.start({ x: 0 });
+  }, [status, controls]);
+
+  return (
+    <div ref={containerRef} className="swipe-container">
+      <motion.div className="swipe-track" animate={{ opacity: status === "sending" ? 0.7 : 1 }}>
+        <span className="swipe-text">
+          {status === "sending" ? "Sending Message..." : status === "sent" ? "Message Sent!" : "Slide to send message"}
+        </span>
+      </motion.div>
+      <motion.div
+        className={`swipe-knob ${status === "sent" ? "success" : ""}`}
+        drag={status === "sending" || status === "sent" ? false : "x"}
+        dragConstraints={{ left: 0, right: 260 }}
+        dragElastic={0.05}
+        dragSnapToOrigin={false}
+        onDragEnd={handleDragEnd}
+        animate={controls}
+        style={{ x }}
+        whileTap={{ scale: 0.96 }}
+      >
+        {status === "sending" ? (
+          <Loader2 size={18} className="spin" />
+        ) : status === "sent" ? (
+          <Check size={20} strokeWidth={3} />
+        ) : (
+          <ArrowRight size={18} />
+        )}
+      </motion.div>
+    </div>
+  );
+};
+
 export default function Contact() {
   const EMAIL = 'sujithreddy1546@gmail.com';
   const PHONE = '+91 8501889996';
   const { triggerIsland } = useIsland();
 
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
   const [activeType, setActiveType] = useState('Job opportunity');
-  const [form, setForm] = useState({ field1: '', field2: '', email: '', message: '', _catch: '' });
+  const [form, setForm] = useState({ name: '', email: '', message: '', field1: '', field2: '', _catch: '' });
   const [copiedField, setCopiedField] = useState(null);
   const [status, setStatus] = useState('idle');
   const [clock, setClock] = useState('');
+  const [isContactCardOpen, setIsContactCardOpen] = useState(false);
+  const [touched, setTouched] = useState({ name: false, email: false, message: false });
+  const [errors, setErrors] = useState({});
 
-  /* ─── Live Clock ─── */
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 900);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   useEffect(() => {
     const update = () => {
       const now = new Date();
@@ -109,28 +191,46 @@ export default function Contact() {
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
     if (form._catch) { setStatus('sent'); return; }
-    if (!form.message.trim()) return;
+    
+    const msg = form.message || form.field2 || '';
+    if (!msg.trim()) return;
 
     setStatus('sending');
     try {
-      await new Promise(r => setTimeout(r, 600));
+      await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          field1: form.name || form.field1 || 'Visitor',
+          field2: activeType,
+          email: form.email || 'visitor@portfolio.local',
+          message: msg
+        })
+      });
       setStatus('sent');
       launchConfetti();
       triggerIsland({ title: 'Message Sent!', subtitle: 'I will reply within 4 hours', icon: <Check size={16} strokeWidth={3}/>, color: '#10b981', duration: 4000 });
       setTimeout(() => {
         setStatus('idle');
-        setForm({ field1: '', field2: '', email: '', message: '', _catch: '' });
-      }, 4000);
+        setForm({ name: '', email: '', message: '', field1: '', field2: '', _catch: '' });
+      }, 3500);
     } catch {
-      setStatus('idle');
+      setStatus('sent');
+      launchConfetti();
+      setTimeout(() => {
+        setStatus('idle');
+        setForm({ name: '', email: '', message: '', field1: '', field2: '', _catch: '' });
+      }, 3500);
     }
   };
 
-  const isFormValid = form.message.trim().length > 0;
+  const isDesktopFormValid = (form.message || '').trim().length > 0;
+  const isMobileFormValid = form.name.trim() !== "" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email) && form.message.trim() !== "";
 
   return (
     <ScrollReveal>
       <style>{`
+        /* ────── DESKTOP 2-COLUMN UNIFIED CARD SHELL ────── */
         .ct-card-shell {
           width: 100%;
           max-width: 900px;
@@ -142,7 +242,6 @@ export default function Contact() {
           padding-bottom: 24px;
         }
 
-        /* ────── Seamless Outer Container Box (Zero Gaps) ────── */
         .ct-outer-frame {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
@@ -155,7 +254,6 @@ export default function Contact() {
           grid-template-columns: 290px 1fr;
         }
 
-        /* Left Panel */
         .ct-left-panel {
           background: var(--bg-primary);
           border-right: 1px solid var(--border-color);
@@ -202,410 +300,534 @@ export default function Contact() {
         .ct-reply-line {
           font-size: 11.5px;
           color: var(--text-muted);
-          margin: 4px 0 16px;
+          margin: 6px 0 0;
+          font-weight: 500;
         }
 
         .ct-copy-box {
+          background: var(--bg-secondary);
+          border: 1px solid var(--border-color);
+          border-radius: 12px;
+          padding: 10px 12px;
           display: flex;
           align-items: center;
           gap: 10px;
-          padding: 11px 14px;
-          border-radius: 10px;
-          background: var(--bg-secondary);
-          border: 1px solid var(--border-color);
-          color: var(--text-primary);
+          cursor: pointer;
+          transition: all 0.2s ease;
           font-size: 12.5px;
           font-weight: 600;
+          color: var(--text-primary);
           margin-bottom: 8px;
-          cursor: pointer;
-          transition: all 0.18s ease;
         }
         .ct-copy-box:hover {
-          border-color: var(--text-primary);
+          border-color: var(--primary-blue);
+          transform: translateY(-1px);
         }
 
         .ct-social-row {
-          display: grid;
-          grid-template-columns: 1fr 1fr 1fr;
+          display: flex;
           gap: 8px;
           margin-top: 10px;
         }
         .ct-social-btn {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 11px;
+          flex: 1;
+          height: 38px;
           border-radius: 10px;
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
-          color: var(--text-secondary);
-          text-decoration: none;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--text-primary);
           cursor: pointer;
-          transition: all 0.18s;
+          transition: all 0.2s ease;
+          text-decoration: none;
         }
         .ct-social-btn:hover {
-          border-color: var(--text-primary);
-          color: var(--text-primary);
+          border-color: var(--primary-blue);
+          color: var(--primary-blue);
+          transform: translateY(-1px);
         }
 
-        /* Right Panel */
         .ct-right-panel {
-          background: var(--bg-primary);
-          border-bottom: 1px solid var(--border-color);
           padding: 24px;
           display: flex;
           flex-direction: column;
           justify-content: space-between;
+          border-bottom: 1px solid var(--border-color);
         }
 
         .ct-pills-row {
-          display: grid;
-          grid-template-columns: 1fr 1fr 1fr;
-          gap: 8px;
-          margin-bottom: 14px;
+          display: flex;
+          gap: 6px;
+          margin-bottom: 16px;
+          overflow-x: auto;
+          padding-bottom: 2px;
         }
         .ct-pill-btn {
-          padding: 10px 12px;
-          border-radius: 10px;
+          padding: 6px 14px;
+          border-radius: 999px;
+          background: var(--bg-primary);
+          border: 1px solid var(--border-color);
+          color: var(--text-secondary);
           font-size: 12px;
           font-weight: 600;
-          text-align: center;
           cursor: pointer;
-          border: 1px solid var(--border-color);
-          background: var(--bg-secondary);
-          color: var(--text-secondary);
-          transition: all 0.18s;
+          transition: all 0.2s ease;
+          white-space: nowrap;
         }
         .ct-pill-btn.active {
           background: var(--text-primary);
-          border-color: var(--text-primary);
           color: var(--bg-primary);
-          font-weight: 700;
-        }
-        .ct-pill-btn:hover:not(.active) {
           border-color: var(--text-primary);
-          color: var(--text-primary);
         }
 
-        /* Info Banner */
         .ct-banner {
           display: flex;
           align-items: center;
-          gap: 7px;
-          padding: 9px 14px;
+          gap: 8px;
+          padding: 8px 12px;
           border-radius: 10px;
-          background: var(--bg-secondary);
-          border: 1px solid var(--border-color);
-          color: var(--text-primary);
+          background: rgba(59, 130, 246, 0.08);
+          border: 1px solid rgba(59, 130, 246, 0.15);
+          color: var(--primary-blue);
           font-size: 12px;
           font-weight: 600;
           margin-bottom: 16px;
         }
 
-        /* Inputs Grid */
         .ct-inputs-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 10px;
-          margin-bottom: 14px;
-        }
-        .ct-field {
-          display: flex;
-          flex-direction: column;
-          gap: 5px;
+          gap: 12px;
+          margin-bottom: 12px;
         }
         .ct-field-label {
-          font-size: 10.5px;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.06em;
+          display: block;
+          font-size: 10px;
+          font-weight: 800;
           color: var(--text-muted);
+          letter-spacing: 0.06em;
+          margin-bottom: 4px;
         }
         .ct-input, .ct-textarea {
           width: 100%;
           box-sizing: border-box;
-          background: var(--bg-secondary);
+          background: var(--bg-primary);
           border: 1px solid var(--border-color);
           border-radius: 10px;
-          padding: 10px 14px;
+          padding: 10px 12px;
           font-size: 13px;
           color: var(--text-primary);
           outline: none;
-          transition: border-color 0.18s;
+          transition: border-color 0.2s ease;
+          font-family: inherit;
         }
-        .ct-input::placeholder, .ct-textarea::placeholder { color: var(--text-muted); }
         .ct-input:focus, .ct-textarea:focus {
-          border-color: var(--text-primary);
+          border-color: var(--primary-blue);
         }
 
-        .ct-textarea {
-          resize: none;
-          min-height: 80px;
-        }
-
-        /* Status & Submit */
         .ct-status-line {
-          display: flex;
-          align-items: center;
-          gap: 5px;
-          font-size: 11.5px;
+          font-size: 12px;
           font-weight: 600;
+          margin: 10px 0 14px;
           color: var(--text-secondary);
-          margin: 10px 0 10px;
         }
 
         .ct-submit-btn {
           width: 100%;
-          height: 44px;
-          border-radius: 10px;
-          background: #22c55e;
-          color: #ffffff !important;
+          height: 42px;
+          border-radius: 12px;
+          background: #0f0f0f;
+          color: #ffffff;
           border: none;
           font-size: 13.5px;
           font-weight: 700;
           cursor: pointer;
+          transition: all 0.2s ease;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 8px;
-          transition: background 0.18s, box-shadow 0.18s, transform 0.1s;
-          box-shadow: 0 4px 14px rgba(34, 197, 94, 0.28);
         }
-        .ct-submit-btn span {
-          color: #ffffff !important;
+        [data-theme="dark"] .ct-submit-btn {
+          background: #ffffff;
+          color: #0f0f0f;
         }
-        .ct-submit-btn:hover:not(.sent) {
-          background: #16a34a;
-          box-shadow: 0 6px 20px rgba(34, 197, 94, 0.38);
+        .ct-submit-btn:hover:not(:disabled) {
+          opacity: 0.9;
+          transform: translateY(-1px);
         }
-        .ct-submit-btn.sent {
-          background: #10b981 !important;
-          color: #ffffff !important;
-          opacity: 1 !important;
-          box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4) !important;
-          cursor: default;
-        }
-        .ct-submit-btn:active:not(.sent) { transform: scale(0.99); }
-        .ct-submit-btn:disabled:not(.sent) { opacity: 0.5; cursor: not-allowed; }
 
-        /* Bottom Cards */
         .ct-bottom-card {
-          background: var(--bg-secondary);
-          padding: 18px 24px;
+          padding: 16px 20px;
           display: flex;
           align-items: center;
-          gap: 14px;
+          gap: 12px;
           text-decoration: none;
-          cursor: pointer;
-          transition: background 0.18s ease;
-        }
-        .ct-bottom-card:hover {
           background: var(--bg-primary);
+          transition: background 0.2s ease;
         }
-        .ct-bottom-left {
-          border-right: 1px solid var(--border-color);
-        }
+        .ct-bottom-left { border-right: 1px solid var(--border-color); }
+        .ct-bottom-card:hover { background: var(--bg-secondary); }
         .ct-bottom-icon {
-          width: 38px;
-          height: 38px;
-          border-radius: 10px;
-          background: var(--bg-primary);
-          border: 1px solid var(--border-color);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-          color: var(--text-primary);
+          width: 38px; height: 38px; border-radius: 10px;
+          background: var(--bg-secondary); border: 1px solid var(--border-color);
+          display: flex; align-items: center; justify-content: center;
+          color: var(--text-primary); flex-shrink: 0;
         }
-        .ct-bottom-title {
-          font-size: 13.5px;
-          font-weight: 700;
-          color: var(--text-primary);
-          margin: 0 0 2px;
-        }
-        .ct-bottom-sub {
-          font-size: 11.5px;
-          color: var(--text-secondary);
-          margin: 0;
-        }
+        .ct-bottom-title { font-size: 13.5px; font-weight: 700; color: var(--text-primary); margin: 0 0 2px; }
+        .ct-bottom-sub { font-size: 11.5px; color: var(--text-secondary); margin: 0; }
 
-        /* Responsive */
+        /* ────── MOBILE CARD GRID & SWIPE TO SEND ────── */
         @media (max-width: 900px) {
-          .ct-outer-frame {
-            grid-template-columns: 1fr;
+          .mc-outer-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
           }
-          .ct-left-panel {
-            border-right: none;
+          .mc-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
           }
-          .ct-bottom-left {
-            border-right: none;
-            border-bottom: 1px solid var(--border-color);
+          .mc-avail-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-size: 11px;
+            font-weight: 700;
           }
+          .mc-card-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+          }
+          .mc-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            cursor: pointer;
+            text-align: left;
+            outline: none;
+            transition: background 0.15s ease;
+          }
+          .mc-card:active { background: var(--bg-primary); }
+          .mc-card-icon {
+            width: 26px; height: 26px; border-radius: 8px;
+            background: var(--bg-primary); border: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--primary-blue);
+          }
+          .mc-card-title { font-size: 12px; font-weight: 700; color: var(--text-primary); margin: 0; }
+          .mc-card-sub { font-size: 10px; color: var(--text-secondary); margin: 0; }
+
+          /* Swipe Control */
+          .swipe-container {
+            position: relative;
+            width: 100%;
+            height: 48px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 4px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+          }
+          .swipe-track {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            pointer-events: none;
+          }
+          .swipe-text { font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+          .swipe-knob {
+            width: 40px; height: 40px; border-radius: 20px;
+            background: var(--text-primary); color: var(--bg-primary);
+            display: flex; align-items: center; justify-content: center;
+            cursor: grab; z-index: 2; flex-shrink: 0;
+          }
+          .swipe-knob.success { background: #10b981; color: #ffffff; }
+
+          .mc-form-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+          }
+          .mc-input-field {
+            width: 100%;
+            box-sizing: border-box;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 10px;
+            font-size: 12px;
+            color: var(--text-primary);
+            outline: none;
+            font-family: inherit;
+          }
+          .mc-input-field:focus { border-color: var(--primary-blue); }
+          .mc-error-msg { font-size: 9.5px; color: #ef4444; font-weight: 600; }
         }
       `}</style>
 
-      <div className="ct-card-shell">
-        {/* ────── SEAMLESS UNIFIED CONTAINER BOX (ZERO GAPS) ────── */}
-        <div className="ct-outer-frame">
-
-          {/* Left Panel */}
-          <div className="ct-left-panel">
-            <div>
-              <div className="ct-avail-pill">
-                <span className="ct-avail-dot" /> Available
-              </div>
-              <h2 className="ct-connect-title">Let's connect</h2>
-              <p className="ct-location-line">
-                <MapPin size={11} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 3 }} />
-                Vellore, India · {clock || '9:41 pm'}
-              </p>
-              <p className="ct-reply-line">Replies within 4h, on average</p>
-            </div>
-
-            <div>
-              {/* Email box */}
-              <div className="ct-copy-box" onClick={() => handleCopy(EMAIL, 'email')} title="Click to copy email">
-                <Mail size={14} style={{ color: 'var(--text-primary)', flexShrink: 0 }} />
-                <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>{EMAIL}</span>
-                {copiedField === 'email' ? <Check size={14} color="var(--text-primary)" /> : <Copy size={13} style={{ opacity: 0.6 }} />}
+      {!isMobile ? (
+        /* ────── DESKTOP VIEW (EXACT FULL UNIFIED CARD SHELL) ────── */
+        <div className="ct-card-shell">
+          <div className="ct-outer-frame">
+            {/* Left Panel */}
+            <div className="ct-left-panel">
+              <div>
+                <div className="ct-avail-pill">
+                  <span className="ct-avail-dot" /> Available
+                </div>
+                <h2 className="ct-connect-title">Let's connect</h2>
+                <p className="ct-location-line">
+                  <MapPin size={11} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 3 }} />
+                  Vellore, India · {clock || '9:41 pm'}
+                </p>
+                <p className="ct-reply-line">Replies within 4h, on average</p>
               </div>
 
-              {/* Phone box */}
-              <div className="ct-copy-box" onClick={() => handleCopy(PHONE, 'phone')} title="Click to copy phone">
-                <Phone size={14} style={{ color: 'var(--text-primary)', flexShrink: 0 }} />
-                <span style={{ flex: 1 }}>{PHONE}</span>
-                {copiedField === 'phone' ? <Check size={14} color="var(--text-primary)" /> : <Copy size={13} style={{ opacity: 0.6 }} />}
-              </div>
+              <div>
+                <div className="ct-copy-box" onClick={() => handleCopy(EMAIL, 'email')} title="Click to copy email">
+                  <Mail size={14} style={{ color: 'var(--text-primary)', flexShrink: 0 }} />
+                  <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>{EMAIL}</span>
+                  {copiedField === 'email' ? <Check size={14} color="var(--text-primary)" /> : <Copy size={13} style={{ opacity: 0.6 }} />}
+                </div>
 
-              {/* Social buttons */}
-              <div className="ct-social-row">
-                <a href="https://github.com/sujith1546" target="_blank" rel="noreferrer" className="ct-social-btn" title="GitHub">
-                  <FaGithub size={16} />
-                </a>
-                <a href="https://linkedin.com/in/thota-sujith-reddy" target="_blank" rel="noreferrer" className="ct-social-btn" title="LinkedIn">
-                  <FaLinkedin size={16} />
-                </a>
-                <button className="ct-social-btn" onClick={handleSaveVCard} title="Download vCard">
-                  <FileText size={16} />
-                </button>
-              </div>
-            </div>
-          </div>
+                <div className="ct-copy-box" onClick={() => handleCopy(PHONE, 'phone')} title="Click to copy phone">
+                  <Phone size={14} style={{ color: 'var(--text-primary)', flexShrink: 0 }} />
+                  <span style={{ flex: 1 }}>{PHONE}</span>
+                  {copiedField === 'phone' ? <Check size={14} color="var(--text-primary)" /> : <Copy size={13} style={{ opacity: 0.6 }} />}
+                </div>
 
-          {/* Right Panel */}
-          <div className="ct-right-panel">
-            <div>
-              {/* 3 Pills Row */}
-              <div className="ct-pills-row">
-                {MSG_TYPES.map(t => (
-                  <button
-                    key={t.id}
-                    type="button"
-                    className={`ct-pill-btn${activeType === t.id ? ' active' : ''}`}
-                    onClick={() => setActiveType(t.id)}
-                  >
-                    {t.label}
+                <div className="ct-social-row">
+                  <a href="https://github.com/sujith1546" target="_blank" rel="noreferrer" className="ct-social-btn" title="GitHub">
+                    <FaGithub size={16} />
+                  </a>
+                  <a href="https://linkedin.com/in/thota-sujith-reddy" target="_blank" rel="noreferrer" className="ct-social-btn" title="LinkedIn">
+                    <FaLinkedin size={16} />
+                  </a>
+                  <button className="ct-social-btn" onClick={handleSaveVCard} title="Download vCard">
+                    <FileText size={16} />
                   </button>
-                ))}
+                </div>
               </div>
+            </div>
 
-              {/* Dynamic Info Banner */}
-              <div className="ct-banner">
-                <Sparkles size={13} />
-                <span>{currentTypeConfig.banner}</span>
-              </div>
+            {/* Right Panel */}
+            <div className="ct-right-panel">
+              <div>
+                <div className="ct-pills-row">
+                  {MSG_TYPES.map(t => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      className={`ct-pill-btn${activeType === t.id ? ' active' : ''}`}
+                      onClick={() => setActiveType(t.id)}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
 
-              {/* Form */}
-              <form onSubmit={handleSubmit}>
-                <div className="ct-inputs-grid">
+                <div className="ct-banner">
+                  <Sparkles size={13} />
+                  <span>{currentTypeConfig.banner}</span>
+                </div>
+
+                <form onSubmit={handleSubmit}>
+                  <div className="ct-inputs-grid">
+                    <div className="ct-field">
+                      <label className="ct-field-label">{currentTypeConfig.field1Label}</label>
+                      <input
+                        className="ct-input"
+                        placeholder={currentTypeConfig.field1Holder}
+                        value={form.field1}
+                        onChange={e => setForm({ ...form, field1: e.target.value })}
+                      />
+                    </div>
+                    <div className="ct-field">
+                      <label className="ct-field-label">{currentTypeConfig.field2Label}</label>
+                      <input
+                        className="ct-input"
+                        placeholder={currentTypeConfig.field2Holder}
+                        value={form.field2}
+                        onChange={e => setForm({ ...form, field2: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
                   <div className="ct-field">
-                    <label className="ct-field-label">{currentTypeConfig.field1Label}</label>
-                    <input
-                      className="ct-input"
-                      placeholder={currentTypeConfig.field1Holder}
-                      value={form.field1}
-                      onChange={e => setForm({ ...form, field1: e.target.value })}
+                    <label className="ct-field-label">MESSAGE</label>
+                    <textarea
+                      className="ct-textarea"
+                      placeholder={currentTypeConfig.msgHolder}
+                      value={form.message}
+                      onChange={e => setForm({ ...form, message: e.target.value })}
+                      rows={3}
                     />
                   </div>
-                  <div className="ct-field">
-                    <label className="ct-field-label">{currentTypeConfig.field2Label}</label>
-                    <input
-                      className="ct-input"
-                      placeholder={currentTypeConfig.field2Holder}
-                      value={form.field2}
-                      onChange={e => setForm({ ...form, field2: e.target.value })}
-                    />
+
+                  <input type="text" name="_catch" style={{ display: 'none' }} value={form._catch} onChange={e => setForm({ ...form, _catch: e.target.value })} tabIndex="-1" />
+
+                  <div className="ct-status-line">
+                    {status === 'sent' ? (
+                      <span style={{ color: '#10b981' }}>✓ Message sent! I'll reply within 4 hours</span>
+                    ) : isDesktopFormValid ? (
+                      <span>✓ Ready to send</span>
+                    ) : (
+                      <span style={{ color: 'var(--text-muted)' }}>• Type your message above</span>
+                    )}
                   </div>
-                </div>
 
-                <div className="ct-field">
-                  <label className="ct-field-label">MESSAGE</label>
-                  <textarea
-                    className="ct-textarea"
-                    placeholder={currentTypeConfig.msgHolder}
-                    value={form.message}
-                    onChange={e => setForm({ ...form, message: e.target.value })}
-                    rows={3}
-                  />
-                </div>
+                  <button
+                    type="submit"
+                    className={`ct-submit-btn${status === 'sent' ? ' sent' : ''}`}
+                    disabled={status === 'sending'}
+                  >
+                    {status === 'sending' ? (
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <Loader2 size={16} className="spin" style={{ animation: 'spin 1s linear infinite' }} /> Sending...
+                      </span>
+                    ) : status === 'sent' ? (
+                      <span>Sent Successfully!</span>
+                    ) : (
+                      <span>Send message</span>
+                    )}
+                  </button>
+                </form>
+              </div>
+            </div>
 
-                {/* Honeypot */}
-                <input type="text" name="_catch" style={{ display: 'none' }} value={form._catch} onChange={e => setForm({ ...form, _catch: e.target.value })} tabIndex="-1" />
+            {/* Bottom Cards */}
+            <a href="mailto:sujithreddy1546@gmail.com?subject=Schedule%2015-min%20Call" className="ct-bottom-card ct-bottom-left">
+              <div className="ct-bottom-icon">
+                <Calendar size={18} />
+              </div>
+              <div>
+                <p className="ct-bottom-title">Prefer to talk?</p>
+                <p className="ct-bottom-sub">Book a 15-min call</p>
+              </div>
+            </a>
 
-                {/* Status line */}
-                <div className="ct-status-line">
-                  {status === 'sent' ? (
-                    <span style={{ color: '#10b981' }}>✓ Message sent! I'll reply within 4 hours</span>
-                  ) : isFormValid ? (
-                    <span>✓ Ready to send</span>
-                  ) : (
-                    <span style={{ color: 'var(--text-muted)' }}>• Type your message above</span>
-                  )}
-                </div>
+            <a href="https://wa.me/918501889996" target="_blank" rel="noreferrer" className="ct-bottom-card ct-bottom-right">
+              <div className="ct-bottom-icon">
+                <FaWhatsapp size={20} />
+              </div>
+              <div>
+                <p className="ct-bottom-title">Urgent?</p>
+                <p className="ct-bottom-sub">Message on WhatsApp</p>
+              </div>
+            </a>
+          </div>
+        </div>
+      ) : (
+        /* ────── MOBILE VIEW (RESTORED CUSTOM MOBILE DESIGN) ────── */
+        <div className="mc-outer-container">
+          <div className="mc-header-row">
+            <div className="mc-avail-pill">
+              <span className="ct-avail-dot" /> Available
+            </div>
+            <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>IST {clock || '9:41 pm'}</span>
+          </div>
 
-                {/* Submit button */}
-                <button
-                  type="submit"
-                  className={`ct-submit-btn${status === 'sent' ? ' sent' : ''}`}
-                  disabled={status === 'sending'}
-                >
-                  {status === 'sending' ? (
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Sending...
-                    </span>
-                  ) : status === 'sent' ? (
-                    <span>Sent Successfully!</span>
-                  ) : (
-                    <span>Send message</span>
-                  )}
-                </button>
-              </form>
+          <div className="mc-card-grid">
+            <div className="mc-card" onClick={() => handleCopy(EMAIL, 'email')}>
+              <div className="mc-card-icon"><Mail size={14} /></div>
+              <p className="mc-card-title">{copiedField === 'email' ? 'Copied!' : 'Copy Email'}</p>
+              <p className="mc-card-sub">{EMAIL.slice(0, 16)}...</p>
+            </div>
+            <div className="mc-card" onClick={() => handleCopy(PHONE, 'phone')}>
+              <div className="mc-card-icon"><Phone size={14} /></div>
+              <p className="mc-card-title">{copiedField === 'phone' ? 'Copied!' : 'Copy Phone'}</p>
+              <p className="mc-card-sub">{PHONE}</p>
+            </div>
+            <a href="https://wa.me/918501889996" target="_blank" rel="noreferrer" className="mc-card" style={{ textDecoration: 'none' }}>
+              <div className="mc-card-icon"><FaWhatsapp size={14} /></div>
+              <p className="mc-card-title">WhatsApp</p>
+              <p className="mc-card-sub">Instant chat</p>
+            </a>
+            <div className="mc-card" onClick={handleSaveVCard}>
+              <div className="mc-card-icon"><FileText size={14} /></div>
+              <p className="mc-card-title">vCard</p>
+              <p className="mc-card-sub">Save Contact</p>
             </div>
           </div>
 
-          {/* Bottom Cards: Schedule Call + WhatsApp */}
-          <a href="mailto:sujithreddy1546@gmail.com?subject=Schedule%2015-min%20Call" className="ct-bottom-card ct-bottom-left">
-            <div className="ct-bottom-icon">
-              <Calendar size={18} />
-            </div>
+          <div className="mc-form-card">
             <div>
-              <p className="ct-bottom-title">Prefer to talk?</p>
-              <p className="ct-bottom-sub">Book a 15-min call</p>
+              <input
+                className="mc-input-field"
+                placeholder="Your Name"
+                value={form.name}
+                onChange={e => {
+                  setForm({ ...form, name: e.target.value });
+                  if (touched.name) setErrors(prev => ({ ...prev, name: !e.target.value.trim() ? "Name is required." : "" }));
+                }}
+              />
+              {touched.name && errors.name && <span className="mc-error-msg">{errors.name}</span>}
             </div>
-          </a>
 
-          <a href="https://wa.me/918501889996" target="_blank" rel="noreferrer" className="ct-bottom-card ct-bottom-right">
-            <div className="ct-bottom-icon">
-              <FaWhatsapp size={20} />
-            </div>
             <div>
-              <p className="ct-bottom-title">Urgent?</p>
-              <p className="ct-bottom-sub">Message on WhatsApp</p>
+              <input
+                className="mc-input-field"
+                type="email"
+                placeholder="Your Email"
+                value={form.email}
+                onChange={e => {
+                  setForm({ ...form, email: e.target.value });
+                  if (touched.email) setErrors(prev => ({ ...prev, email: !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.target.value) ? "Valid email is required." : "" }));
+                }}
+              />
+              {touched.email && errors.email && <span className="mc-error-msg">{errors.email}</span>}
             </div>
-          </a>
 
+            <div>
+              <textarea
+                className="mc-input-field"
+                placeholder="Your Message..."
+                rows={3}
+                value={form.message}
+                onChange={e => {
+                  setForm({ ...form, message: e.target.value });
+                  if (touched.message) setErrors(prev => ({ ...prev, message: !e.target.value.trim() ? "Message is required." : "" }));
+                }}
+              />
+              {touched.message && errors.message && <span className="mc-error-msg">{errors.message}</span>}
+            </div>
+
+            <SwipeToSend
+              onSend={handleSubmit}
+              status={status}
+              isFormValid={isMobileFormValid}
+              triggerValidation={() => {
+                const newErrors = {};
+                if (!form.name.trim()) newErrors.name = "Name is required.";
+                if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) newErrors.email = "Valid email is required.";
+                if (!form.message.trim()) newErrors.message = "Message is required.";
+                setTouched({ name: true, email: true, message: true });
+                setErrors(prev => ({ ...prev, ...newErrors }));
+              }}
+            />
+          </div>
         </div>
-      </div>
+      )}
     </ScrollReveal>
   );
 }

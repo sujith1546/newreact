@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import DarkModeToggle from '../ui/DarkModeToggle';
 import SettingsDropdown from '../ui/SettingsDropdown';
 import UpdatesDropdown from './UpdatesDropdown';
+import GetInTouchDropdown from './GetInTouchDropdown';
 import { useSupabasePresence } from '../../hooks/useSupabasePresence';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -346,6 +347,59 @@ export default function TimezoneStatus() {
           font-size: 11.5px;
           font-weight: 500;
         }
+
+        .top-get-in-touch-btn {
+          height: 34px;
+          border-radius: 10px;
+          background: #0f0f0f !important;
+          color: #ffffff !important;
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 0 14px;
+          cursor: pointer;
+          font-family: inherit;
+          font-size: 13px;
+          font-weight: 600;
+          letter-spacing: -0.01em;
+          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+          white-space: nowrap;
+        }
+
+        .top-get-in-touch-btn svg {
+          color: #ffffff !important;
+          transition: transform 0.2s ease;
+        }
+
+        .top-get-in-touch-btn:hover {
+          transform: translateY(-1.5px);
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+          background: #1f1f23 !important;
+          border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .top-get-in-touch-btn:hover svg {
+          transform: translate(2px, -2px);
+        }
+
+        .top-get-in-touch-btn:active {
+          transform: scale(0.97);
+        }
+
+        [data-theme="dark"] .top-get-in-touch-btn {
+          background: #0f0f0f !important;
+          color: #ffffff !important;
+          border-color: rgba(255, 255, 255, 0.2);
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+        }
+
+        [data-theme="dark"] .top-get-in-touch-btn:hover {
+          background: #1f1f23 !important;
+          border-color: rgba(255, 255, 255, 0.35);
+          box-shadow: 0 6px 22px rgba(0, 0, 0, 0.6);
+        }
       `}</style>
 
       <div className="timezone-status-wrapper">
@@ -388,6 +442,7 @@ export default function TimezoneStatus() {
 
         <DarkModeToggle />
         <SettingsDropdown />
+        <GetInTouchDropdown />
       </div>
     </>
   );

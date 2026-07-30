@@ -49,13 +49,13 @@ function EntryCard({ entry, index, isNew }) {
       <motion.div
         style={{
           position: "absolute",
-          left: -22,
-          top: 18,
+          left: -13,
+          top: 20,
           width: 12,
           height: 12,
           borderRadius: "50%",
           background: ts.dot,
-          boxShadow: `0 0 0 3px var(--bg-secondary), 0 0 10px ${ts.glow}`,
+          boxShadow: `0 0 0 3px var(--bg-secondary), 0 0 12px ${ts.glow}`,
           zIndex: 2,
           transform: "translateX(-50%)",
         }}
@@ -361,8 +361,8 @@ export default function Updates() {
             <div style={{
               position: "absolute", left: 14, top: 8, bottom: 24,
               width: 2,
-              background: "linear-gradient(to bottom, var(--primary-blue), var(--border-color) 60%, transparent)",
-              opacity: 0.45,
+              background: "linear-gradient(180deg, var(--primary-blue) 0%, color-mix(in srgb, var(--primary-blue) 45%, var(--border-color)) 60%, var(--border-color) 100%)",
+              boxShadow: "0 0 8px color-mix(in srgb, var(--primary-blue) 20%, transparent)",
               borderRadius: 2,
             }} />
 
@@ -370,7 +370,7 @@ export default function Updates() {
               [0, 1, 2].map(i => (
                 <div key={i} style={{ position: "relative", marginBottom: 16, width: "100%" }}>
                   <div style={{
-                    position: "absolute", left: -22, top: 18, width: 12, height: 12,
+                    position: "absolute", left: -13, top: 18, width: 12, height: 12,
                     borderRadius: "50%", background: "var(--border-color)",
                     transform: "translateX(-50%)",
                   }} />

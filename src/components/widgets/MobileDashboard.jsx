@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import { motion } from 'framer-motion';
-import { MapPin, Loader2, ArrowDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MapPin, Loader2, ArrowDown, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import useGlitchText from '../../hooks/useGlitchText';
 import useRealtimeData from '../../hooks/useRealtimeData';
+import { useLocalTime } from '../../hooks/useLocalTime';
 
 /* ── Count-up hook ─────────────────────────────────────────── */
 function useCountUp(target, duration = 900) {
@@ -42,6 +43,7 @@ export default function MobileDashboard({ onNavClick }) {
     filter: { column: 'id', value: 1 }
   });
 
+  const localTime = useLocalTime();
   const cgpa  = useCountUp('8.7');
   const certs = useCountUp('15');
   const projs = useCountUp('5');
@@ -225,9 +227,15 @@ export default function MobileDashboard({ onNavClick }) {
             <p className="hd-role">Data Science · Full Stack Dev</p>
             <p className="hd-location"><MapPin size={10} /> VIT University</p>
             {(settings === null || settings.is_available_for_hire) && (
-              <div className="hd-avail">
-                <div className="hd-avail-dot" />
-                Available for opportunities
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginTop: '2px' }}>
+                <div className="hd-avail" style={{ marginTop: 0 }}>
+                  <div className="hd-avail-dot" />
+                  Available for opportunities
+                </div>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '9px', fontWeight: 600, color: 'var(--text-muted)' }}>
+                  <Clock size={10} style={{ color: 'var(--primary-blue)' }} />
+                  <span>{localTime} IST local time</span>
+                </div>
               </div>
             )}
           </div>

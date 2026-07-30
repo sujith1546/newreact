@@ -4,7 +4,7 @@ export function useLocalTime() {
   const [time, setTime] = useState(() => formatTime());
 
   useEffect(() => {
-    const interval = setInterval(() => setTime(formatTime()), 1000 * 30);
+    const interval = setInterval(() => setTime(formatTime()), 1000);
     return () => clearInterval(interval);
   }, []);
 

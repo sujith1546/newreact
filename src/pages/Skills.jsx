@@ -36,9 +36,10 @@ const levelColor = {
 const levelDot = { Advanced: '#16a34a', Intermediate: '#eab308', Learning: '#6366f1' };
 
 function ProgressRing({ percent, color, size = 80 }) {
+  const validPercent = Math.min(Math.max(Number(percent) || 0, 0), 100);
   const r = (size - 10) / 2;
   const circ = 2 * Math.PI * r;
-  const offset = circ - (percent / 100) * circ;
+  const offset = circ - (validPercent / 100) * circ;
   return (
     <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
       <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="var(--border-color)" strokeWidth={7} />
@@ -54,10 +55,10 @@ function ProgressRing({ percent, color, size = 80 }) {
 }
 
 function SkillsRadarChart({ categories }) {
-  const SIZE = 440;
+  const SIZE = 480;
   const CX = SIZE / 2;
   const CY = SIZE / 2;
-  const R = 160;
+  const R = 155;
   const LEVELS = 5;
   const n = categories.length;
   if (n < 3) return null;
@@ -332,7 +333,7 @@ export default function Skills() {
           display: inline-block; font-size: 12px; font-weight: 600;
           background: var(--bg-primary); color: var(--text-secondary);
           border: 1px solid var(--border-color); padding: 5px 12px;
-          border-radius: 999px; transition: all .2s ease; cursor: crosshair;
+          border-radius: 999px; transition: all .2s ease; cursor: pointer;
         }
         .skill-pill:hover { background: var(--text-primary); color: var(--bg-primary); border-color: var(--text-primary); }
         [data-theme="dark"] .skill-category-card { border-color: var(--border-color); }
@@ -827,7 +828,7 @@ export default function Skills() {
                               <div className="sk-skill-row-icon">{skill.name.slice(0,2).toUpperCase()}</div>
                               <div className="sk-skill-row-text">
                                 <h4>{skill.name}</h4>
-                                <p>{skill.description ? skill.description.slice(0, 48) + '...' : ''}</p>
+                                <p>{skill.description ? (skill.description.length > 48 ? skill.description.slice(0, 48) + '...' : skill.description) : ''}</p>
                               </div>
                             </div>
                             <div className="sk-skill-row-right">
@@ -906,7 +907,7 @@ export default function Skills() {
                       <div className="sk-meta-list">
                         <div className="sk-meta-row">
                           <Clock size={13} />
-                          <span><strong>{activeSkill.years}y</strong> experience</span>
+                          <span><strong>{String(activeSkill.years || '0').replace(/(\s*yrs?)+$/i, '')} yrs</strong> experience</span>
                         </div>
                         <div className="sk-meta-row">
                           <Briefcase size={13} />
@@ -934,7 +935,7 @@ export default function Skills() {
                       <div>
                         <p className="sk-section-label">Ecosystem</p>
                         <div className="sk-tags">
-                          {activeSkill.relatedTools.map(t => <span key={t} className="sk-tag">{t}</span>)}
+                          {activeSkill.relatedTools.map((t, idx) => <span key={`${t}-${idx}`} className="sk-tag">{t}</span>)}
                         </div>
                       </div>
                     )}
@@ -943,8 +944,8 @@ export default function Skills() {
                       <div>
                         <p className="sk-section-label">Used in</p>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                          {activeSkill.projects.map(p => (
-                            <div key={p} className="sk-project-row">
+                          {activeSkill.projects.map((p, idx) => (
+                            <div key={`${p}-${idx}`} className="sk-project-row">
                               <Layers size={14} />{p}
                             </div>
                           ))}

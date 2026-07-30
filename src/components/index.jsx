@@ -17,6 +17,7 @@ export { default as ChatBot } from './widgets/ChatBot';
 export { default as CommandPalette } from './widgets/CommandPalette';
 export { default as SectionSpotlight } from './widgets/SectionSpotlight';
 export { default as TimezoneStatus } from './widgets/TimezoneStatus';
+export { default as GetInTouchDropdown } from './widgets/GetInTouchDropdown';
 export { default as WelcomeModal } from './widgets/WelcomeModal';
 export { default as QRModal } from './widgets/QRModal';
 export { default as ResumeQuickLook } from './widgets/ResumeQuickLook';

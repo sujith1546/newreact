@@ -3,12 +3,11 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import {
   Mail, Download, CheckCircle, Loader2, Zap, GraduationCap, Calendar,
-  Terminal, Layers, Target, Award, Code2, ArrowRight, Copy, Check,
+  Terminal, Layers, Target, Award, Code2, ArrowRight, Copy, Check, Clock,
 } from 'lucide-react';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { ScrollReveal } from '../components';
-import GitHubActivity from '../components/widgets/GitHubActivity';
-
+import { useLocalTime } from '../hooks/useLocalTime';
 /* ─── Count-up hook using rAF ─── */
 function useCountUp(target, duration = 1000, decimals = 0, trigger = true) {
   const [val, setVal] = useState(0);
@@ -52,7 +51,7 @@ const BADGES = [
 ];
 
 /* ─── Stats ─── */
-function StatCard({ target, suffix = '', label, decimals = 0, trigger, delay = 0 }) {
+function StatCard({ target, suffix = '', label, decimals = 0, trigger, delay = 0, icon: Icon, color = 'var(--primary-blue)' }) {
   const val = useCountUp(target, 1000, decimals, trigger);
   const display = decimals > 0 ? val.toFixed(decimals) : Math.floor(val);
   return (
@@ -60,19 +59,19 @@ function StatCard({ target, suffix = '', label, decimals = 0, trigger, delay = 0
       initial={{ opacity: 0, scale: 0.9 }}
       animate={trigger ? { opacity: 1, scale: 1 } : {}}
       transition={{ duration: 0.35, delay, ease: [0.16, 1, 0.3, 1] }}
-      style={{
-        display: 'flex', flexDirection: 'column', alignItems: 'center',
-        justifyContent: 'center', gap: 4, textAlign: 'center',
-        padding: '14px 10px',
-        background: 'var(--bg-secondary)',
-        border: '1px solid var(--border-color)',
-        borderRadius: 14,
-      }}
+      className="ab-stat-card"
     >
-      <span style={{ fontSize: 26, fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>
-        {display}{suffix}
-      </span>
-      <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 500 }}>{label}</span>
+      <div className="ab-stat-top">
+        {Icon && (
+          <div className="ab-stat-icon-box" style={{ background: `${color}14`, color: color, borderColor: `${color}28` }}>
+            <Icon size={14} />
+          </div>
+        )}
+        <span className="ab-stat-value">
+          {display}{suffix}
+        </span>
+      </div>
+      <span className="ab-stat-label">{label}</span>
     </motion.div>
   );
 }
@@ -87,10 +86,10 @@ const TL_NODES = [
     active: false,
     period: '2017 – 2019',
     badge: 'Foundation',
-    badgeBg: 'rgba(16,185,129,0.12)',
-    badgeColor: '#10b981',
-    description: 'Completed secondary schooling with strong academic foundation in Mathematics, Science, and Analytical Problem Solving.',
-    highlights: ['Top academic ranker in Science & Mathematics', 'Formed core interest in computers & logic', 'Participated in regional math olympiads']
+    badgeBg: 'rgba(99,102,241,0.12)',
+    badgeColor: '#6366f1',
+    badgeBorder: 'rgba(99,102,241,0.25)',
+    description: 'Academic foundation in Mathematics, Science, and Analytical Problem Solving.',
   },
   {
     id: 'b',
@@ -100,10 +99,10 @@ const TL_NODES = [
     active: false,
     period: '2019 – 2021',
     badge: 'Score: 98%',
-    badgeBg: 'rgba(59,130,246,0.12)',
-    badgeColor: '#3b82f6',
-    description: 'Senior Secondary Education focusing on Physics, Chemistry, and Higher Mathematics (MPC stream).',
-    highlights: ['Achieved 98% distinction mark', 'Mastered advanced calculus & linear algebra', 'Prepared for competitive engineering exams']
+    badgeBg: 'rgba(14,165,233,0.12)',
+    badgeColor: '#0ea5e9',
+    badgeBorder: 'rgba(14,165,233,0.25)',
+    description: 'Senior Secondary MPC stream (Mathematics, Physics, Chemistry) achieving a 98% distinction mark.',
   },
   {
     id: 'c',
@@ -113,10 +112,10 @@ const TL_NODES = [
     active: false,
     period: '2021 – 2025',
     badge: 'CGPA: 8.7',
-    badgeBg: 'rgba(139,92,246,0.12)',
-    badgeColor: '#8b5cf6',
-    description: 'B.Tech Computer Science Engineering at VIT Vellore. Building deep understanding in software engineering and algorithms.',
-    highlights: ['8.7 Cumulative Grade Point Average', 'Core CS: Operating Systems, DBMS, DSA, Networks', 'Built multiple full-stack & AI projects']
+    badgeBg: 'rgba(16,185,129,0.12)',
+    badgeColor: '#10b981',
+    badgeBorder: 'rgba(16,185,129,0.25)',
+    description: 'Computer Science Engineering degree at VIT Vellore covering Data Structures, Algorithms, OS, DBMS & Networks.',
   },
   {
     id: 'd',
@@ -126,14 +125,14 @@ const TL_NODES = [
     active: true,
     period: 'Current Focus',
     badge: 'Active Phase',
-    badgeBg: 'rgba(59,130,246,0.2)',
+    badgeBg: 'rgba(59,130,246,0.15)',
     badgeColor: '#3b82f6',
-    description: 'Specialization in Machine Learning, Deep Learning, Statistical Data Mining, and Applied AI Systems.',
-    highlights: ['Proficient in TensorFlow, PyTorch & Python ML stack', 'Worked on computer vision & NLP models', 'Deploying scalable ML models & REST APIs']
+    badgeBorder: 'rgba(59,130,246,0.3)',
+    description: 'Focused on Applied AI, Machine Learning, Deep Learning (TensorFlow/PyTorch), and building scalable REST APIs.',
   },
   {
     id: 'e',
-    label: "What's next?",
+    label: "What's Next?",
     sub: 'Opportunities',
     done: false,
     active: false,
@@ -141,21 +140,26 @@ const TL_NODES = [
     period: 'Future Roadmap',
     badge: 'Open to Roles',
     badgeBg: 'rgba(245,158,11,0.12)',
-    highlights: ['Available for full-time software engineering roles', 'Targeting high-impact Data Science & AI teams', 'Eager to build production-grade AI solutions']
+    badgeColor: '#f59e0b',
+    badgeBorder: 'rgba(245,158,11,0.25)',
+    description: 'Open to full-time Software Engineering, AI, and Data Science roles.',
   },
 ];
 
 function CareerTimeline() {
   const ref = useRef(null);
-  const inView = useInView(ref, { once: true, amount: 0.6 });
+  const inView = useInView(ref, { once: true, amount: 0.3 });
   const [hoveredNode, setHoveredNode] = useState(null);
 
-  const hoveredIndex = hoveredNode ? TL_NODES.findIndex(n => n.id === hoveredNode.id) : 0;
-  const leftPercent = (hoveredIndex / (TL_NODES.length - 1)) * 90 + 5;
-
   return (
-    <div ref={ref} style={{ padding: '24px 0 0', position: 'relative' }}>
+    <div ref={ref} style={{ padding: '28px 0 0', position: 'relative', overflow: 'visible' }}>
       <style>{`
+        @keyframes railPulseStream {
+          0% { left: -10%; opacity: 0; }
+          20% { opacity: 1; }
+          80% { opacity: 1; }
+          100% { left: 110%; opacity: 0; }
+        }
         @keyframes pulseRing {
           0% { transform: scale(1); opacity: 0.8; }
           100% { transform: scale(1.8); opacity: 0; }
@@ -165,94 +169,137 @@ function CareerTimeline() {
           display: flex; flex-direction: column; align-items: center; width: 100%;
           outline: none; transition: transform 0.2s;
         }
-        .tl-node-btn:hover { transform: translateY(-2px); }
+        .tl-node-btn:hover, .tl-node-btn:focus-visible { transform: translateY(-2px); }
+        @media (prefers-reduced-motion: reduce) {
+          .tl-node-pulse { animation: none !important; }
+          .tl-rail-pulse-beam { animation: none !important; display: none !important; }
+        }
       `}</style>
 
-      {/* Hover Tooltip Popover */}
-      <AnimatePresence>
-        {hoveredNode && (
-          <motion.div
-            key={`hover-${hoveredNode.id}`}
-            initial={{ opacity: 0, y: 8, scale: 0.94 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 6, scale: 0.94 }}
-            transition={{ type: 'spring', damping: 24, stiffness: 350 }}
-            style={{
-              position: 'absolute',
-              top: -110,
-              left: `${leftPercent}%`,
-              transform: 'translateX(-50%)',
-              zIndex: 50,
-              width: 240,
-              pointerEvents: 'none',
-            }}
-          >
-            <div style={{
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--border-color)',
-              borderRadius: 14,
-              padding: '12px 14px',
-              boxShadow: '0 12px 30px rgba(0,0,0,0.25), 0 0 0 1px color-mix(in srgb, var(--primary-blue) 20%, transparent)',
-              backdropFilter: 'blur(16px)',
-              WebkitBackdropFilter: 'blur(16px)',
-              position: 'relative'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 999, background: hoveredNode.badgeBg, color: hoveredNode.badgeColor }}>
-                  {hoveredNode.badge}
-                </span>
-                <span style={{ fontSize: 10.5, color: 'var(--text-muted)', fontWeight: 600 }}>{hoveredNode.period}</span>
-              </div>
-              <p style={{ margin: '4px 0 2px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
-                {hoveredNode.label} <span style={{ color: 'var(--primary-blue)', fontWeight: 600 }}>· {hoveredNode.sub}</span>
-              </p>
-              <p style={{ margin: 0, fontSize: 11.5, color: 'var(--text-secondary)', lineHeight: 1.4 }}>
-                {hoveredNode.description}
-              </p>
-              
-              {/* Downward Arrow indicator */}
-              <div style={{
-                position: 'absolute', bottom: -5, left: '50%', transform: 'translateX(-50%) rotate(45deg)',
-                width: 9, height: 9, background: 'var(--bg-secondary)', borderRight: '1px solid var(--border-color)', borderBottom: '1px solid var(--border-color)'
-              }} />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Line + Dots row */}
-      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', marginBottom: 12, overflow: 'visible' }}>
         {/* Background track */}
         <div style={{
-          position: 'absolute', left: '5%', right: '5%', height: 2,
-          background: 'var(--border-color)', borderRadius: 2,
+          position: 'absolute', left: '10%', right: '10%', height: 3,
+          background: 'var(--border-color)', borderRadius: 3,
+          boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.06)'
         }} />
-        {/* Animated progress fill — scaleX draw-on */}
+        
+        {/* Animated Multi-Color Gradient Progress Fill with Neon Backdrop Glow */}
         <motion.div
           style={{
-            position: 'absolute', left: '5%', right: '5%', height: 2,
-            background: 'var(--primary-blue)',
-            borderRadius: 2, transformOrigin: 'left center',
+            position: 'absolute', left: '10%', right: '10%', height: 3,
+            background: 'linear-gradient(90deg, #6366f1 0%, #0ea5e9 33%, #10b981 66%, #3b82f6 100%)',
+            boxShadow: '0 0 10px rgba(59,130,246,0.5), 0 0 20px rgba(16,185,129,0.3)',
+            borderRadius: 3, transformOrigin: 'left center',
+            overflow: 'hidden'
           }}
           initial={{ scaleX: 0 }}
           animate={inView ? { scaleX: 0.78 } : { scaleX: 0 }}
-          transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-        />
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+        >
+          {/* Active Data Flow Light Beam */}
+          <div className="tl-rail-pulse-beam" style={{
+            position: 'absolute', top: 0, bottom: 0, width: 60,
+            background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.9) 50%, transparent 100%)',
+            animation: 'railPulseStream 2.6s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            pointerEvents: 'none'
+          }} />
+        </motion.div>
+
         {/* Dots */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', position: 'relative', zIndex: 2 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', position: 'relative', zIndex: 2, overflow: 'visible' }}>
           {TL_NODES.map((node, i) => {
+            const isHovered = hoveredNode?.id === node.id;
             const delay = 0.25 + i * 0.16;
+
+            // Alignment styles based on node position in timeline
+            let popoverStyle = { left: '50%', transform: 'translateX(-50%)' };
+            let tailStyle = { left: '50%' };
+            if (i === 0) {
+              popoverStyle = { left: '-8px', transform: 'translateX(0%)' };
+              tailStyle = { left: '18px' };
+            } else if (i === TL_NODES.length - 1) {
+              popoverStyle = { right: '-8px', left: 'auto', transform: 'translateX(0%)' };
+              tailStyle = { right: '18px', left: 'auto' };
+            }
+
             return (
-              <div key={node.id} style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+              <div key={node.id} style={{ flex: 1, display: 'flex', justifyContent: 'center', position: 'relative', overflow: 'visible' }}>
+                {/* Popover anchored directly above this specific node */}
+                <AnimatePresence>
+                  {isHovered && (
+                    <motion.div
+                      key={`popover-${node.id}`}
+                      initial={{ opacity: 0, y: 6, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 4, scale: 0.95 }}
+                      transition={{ duration: 0.18, ease: 'easeOut' }}
+                      style={{
+                        position: 'absolute',
+                        bottom: 'calc(100% + 14px)',
+                        zIndex: 100,
+                        width: 240,
+                        pointerEvents: 'none',
+                        ...popoverStyle,
+                      }}
+                    >
+                      <div style={{
+                        background: 'var(--bg-secondary)',
+                        border: '1px solid var(--border-color)',
+                        borderRadius: 14,
+                        padding: '12px 14px',
+                        boxShadow: '0 12px 30px rgba(0,0,0,0.22), 0 0 0 1px color-mix(in srgb, var(--primary-blue) 15%, transparent)',
+                        backdropFilter: 'blur(14px) saturate(160%)',
+                        WebkitBackdropFilter: 'blur(14px) saturate(160%)',
+                        position: 'relative'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                          <span style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 5,
+                            fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
+                            background: node.badgeBg, color: node.badgeColor, border: `1px solid ${node.badgeBorder}`
+                          }}>
+                            {node.active && (
+                              <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 6px #10b981' }} />
+                            )}
+                            {node.badge}
+                          </span>
+                          <span style={{ fontSize: 10.5, color: 'var(--text-muted)', fontWeight: 600 }}>{node.period}</span>
+                        </div>
+                        <p style={{ margin: '4px 0 2px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
+                          {node.label} <span style={{ color: 'var(--primary-blue)', fontWeight: 600 }}>· {node.sub}</span>
+                        </p>
+                        <p style={{ margin: 0, fontSize: 11.5, color: 'var(--text-secondary)', lineHeight: 1.45 }}>
+                          {node.description}
+                        </p>
+                        
+                        {/* Downward Arrow Tail */}
+                        <div style={{
+                          position: 'absolute', bottom: -5,
+                          transform: 'translateX(-50%) rotate(45deg)',
+                          width: 9, height: 9,
+                          background: 'var(--bg-secondary)',
+                          borderRight: '1px solid var(--border-color)',
+                          borderBottom: '1px solid var(--border-color)',
+                          ...tailStyle
+                        }} />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 <button
                   className="tl-node-btn"
                   onMouseEnter={() => setHoveredNode(node)}
                   onMouseLeave={() => setHoveredNode(null)}
-                  title={`${node.label} - ${node.sub}`}
+                  onFocus={() => setHoveredNode(node)}
+                  onBlur={() => setHoveredNode(null)}
+                  aria-label={`${node.label} ${node.sub} - ${node.period}`}
                 >
                   <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {node.active && (
-                      <span style={{
+                      <span className="tl-node-pulse" style={{
                         position: 'absolute', width: 22, height: 22, borderRadius: '50%',
                         background: 'rgba(59,130,246,0.3)', animation: 'pulseRing 1.8s ease-out infinite'
                       }} />
@@ -262,16 +309,23 @@ function CareerTimeline() {
                       animate={inView ? { scale: 1, opacity: 1 } : {}}
                       transition={{ delay, type: 'spring', stiffness: 350, damping: 22 }}
                       style={{
-                        width: node.active ? 15 : 13,
-                        height: node.active ? 15 : 13,
+                        width: node.active ? 16 : 14,
+                        height: node.active ? 16 : 14,
                         borderRadius: '50%',
                         background: node.active
-                          ? 'var(--primary-blue)'
+                          ? 'linear-gradient(135deg, #3b82f6 0%, #10b981 100%)'
+                          : isHovered
+                          ? node.badgeColor
                           : 'var(--bg-secondary)',
                         border: node.muted
                           ? '2px solid var(--border-color)'
-                          : `2.5px solid ${node.done || node.active ? 'var(--primary-blue)' : 'var(--border-color)'}`,
-                        boxShadow: node.active ? '0 0 12px rgba(59,130,246,0.6)' : 'none',
+                          : `2.5px solid ${node.done || node.active ? node.badgeColor : 'var(--border-color)'}`,
+                        boxShadow: isHovered
+                          ? `0 0 14px ${node.badgeColor}`
+                          : node.active
+                          ? '0 0 12px rgba(59,130,246,0.6)'
+                          : 'none',
+                        transition: 'all 0.25s ease'
                       }}
                     />
                   </div>
@@ -282,7 +336,7 @@ function CareerTimeline() {
         </div>
       </div>
 
-      {/* Labels row */}
+      {/* Labels & Badges row */}
       <div style={{ display: 'flex' }}>
         {TL_NODES.map((node, i) => {
           const delay = 0.32 + i * 0.14;
@@ -292,9 +346,12 @@ function CareerTimeline() {
               initial={{ opacity: 0, y: 6 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
               transition={{ delay, duration: 0.3 }}
-              style={{ flex: 1, textAlign: 'center', cursor: 'default' }}
+              style={{ flex: 1, textAlign: 'center', cursor: 'default', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
               onMouseEnter={() => setHoveredNode(node)}
               onMouseLeave={() => setHoveredNode(null)}
+              onFocus={() => setHoveredNode(node)}
+              onBlur={() => setHoveredNode(null)}
+              tabIndex={0}
             >
               <p style={{
                 fontSize: 12.5, fontWeight: 700, margin: '0 0 2px',
@@ -302,9 +359,25 @@ function CareerTimeline() {
               }}>
                 {node.label}
               </p>
-              <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: 0 }}>
+              <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '0 0 4px', fontWeight: 500 }}>
                 {node.sub}
               </p>
+              <span style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600, marginBottom: 5 }}>
+                {node.period}
+              </span>
+              <span style={{
+                display: 'inline-flex', alignItems: 'center', gap: 4,
+                fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
+                background: node.badgeBg, color: node.badgeColor, border: `1px solid ${node.badgeBorder}`
+              }}>
+                {node.active && (
+                  <span style={{
+                    width: 5, height: 5, borderRadius: '50%', background: '#10b981',
+                    boxShadow: '0 0 6px #10b981', display: 'inline-block'
+                  }} />
+                )}
+                {node.badge}
+              </span>
             </motion.div>
           );
         })}
@@ -319,6 +392,7 @@ export default function About({ onNavClick }) {
   const pageRef = useRef(null);
   const inView = useInView(pageRef, { once: true, amount: 0.1 });
   const daysCoding = useDaysCoding('2021-06-01');
+  const localTime = useLocalTime();
   const [toast, setToast] = useState(null);
   const [copiedEmail, setCopiedEmail] = useState(false);
 
@@ -350,47 +424,37 @@ export default function About({ onNavClick }) {
            Each must be display:flex + flex:1 so that .ab-page flex:1 reaches
            the actual viewport height set by .main-content / scroll-container.
         */
-        #about,
-        #about > .text-content.wide-content,
-        #about > .text-content.wide-content > .reveal {
+        #about {
           display: flex;
           flex-direction: column;
-          flex: 1;
+          flex: 1 1 0%;
           min-height: 0;
-          height: 100%;
         }
 
         @media (min-width: 901px) {
           #about {
-            height: calc(100vh - 80px);
-            max-height: calc(100vh - 80px);
-            overflow: hidden;
+            height: auto !important;
+            flex: 1 1 0% !important;
+            overflow: visible;
           }
           .ab-page {
-            height: 100%;
-            max-height: 100%;
-            overflow: hidden;
-            justify-content: space-between;
-            gap: 4px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow: visible;
           }
-          .ab-bio-card { padding: 10px 14px; }
-          .ab-row2 { padding: 8px 14px; }
-          .ab-row3 { padding: 12px 20px; }
-          .ab-github-wrapper { flex: 1; min-height: 0; overflow: hidden; }
+          .ab-row2 { padding: 18px 22px 20px; }
+          .ab-row3 { padding: 18px 24px; }
         }
 
         /* ── Page shell ── */
         .ab-page {
           width: 100%;
-          flex: 1;
           display: flex;
           flex-direction: column;
-          justify-content: space-between;
-          gap: 6px;
+          gap: 20px;
           box-sizing: border-box;
-          padding-bottom: 0px;
-          min-height: 0;
-          height: 100%;
+          padding-bottom: 24px;
         }
 
         .ab-header-row {
@@ -404,65 +468,145 @@ export default function About({ onNavClick }) {
           font-size: 12.5px; color: var(--text-secondary); margin: 2px 0 0;
         }
 
-        /* ── ROW 1: Bio card + Stats ── */
-        .ab-row1 {
-          display: grid;
-          grid-template-columns: 1fr 240px;
-          gap: 8px;
+        /* ── Profile Card ── */
+        .ab-profile-card {
+          position: relative;
+          background: var(--bg-secondary);
+          border: 1px solid var(--border-color);
+          border-radius: 20px;
+          padding: 24px;
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+          overflow: hidden;
+          width: 100%;
           flex-shrink: 0;
         }
 
-        /* Bio card */
-        .ab-bio-card {
-          background: var(--bg-secondary);
-          border: 1px solid var(--border-color);
-          border-radius: 16px;
-          padding: 12px 16px;
-          display: flex;
-          gap: 12px;
-          align-items: flex-start;
-        }
-        .ab-avatar {
-          width: 52px; height: 52px; border-radius: 50%;
-          object-fit: cover; flex-shrink: 0;
-          border: 2px solid var(--border-color);
-          box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-blue) 12%, transparent);
-        }
-        .ab-bio-body { flex: 1; display: flex; flex-direction: column; gap: 8px; }
-        .ab-bio-name {
-          font-size: 14.5px; font-weight: 700;
-          color: var(--text-primary); margin: 0; line-height: 1.4;
-        }
-        .ab-bio-desc {
-          font-size: 12.5px; line-height: 1.5;
-          color: var(--text-secondary); margin: 0;
-        }
-        .ab-badges { display: flex; gap: 6px; flex-wrap: wrap; }
-        .ab-badge {
-          display: inline-flex; padding: 3px 10px; border-radius: 999px;
-          font-size: 11.5px; font-weight: 600; cursor: default;
-          transition: transform 0.15s, box-shadow 0.15s;
-        }
-        .ab-badge:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        .ab-chips { display: flex; gap: 7px; flex-wrap: wrap; }
-        .ab-chip {
-          display: inline-flex; align-items: center; gap: 5px;
-          padding: 5px 12px; border-radius: 10px;
-          border: 1px solid var(--border-color); background: var(--bg-primary);
-          font-size: 12px; font-weight: 600; color: var(--text-secondary);
-          text-decoration: none; transition: all 0.18s;
-        }
-        .ab-chip:hover {
-          border-color: var(--primary-blue); color: var(--primary-blue);
-          background: color-mix(in srgb, var(--primary-blue) 5%, transparent);
+        .ab-top-accent-stripe {
+          position: absolute; top: 0; left: 0; right: 0; height: 3.5px;
+          background: linear-gradient(90deg, #3b82f6, #22c55e);
         }
 
-        /* Stats 2x2 grid */
-        .ab-stats-grid {
+        .ab-card-top {
+          display: flex;
+          align-items: flex-start;
+          gap: 18px;
+          width: 100%;
+        }
+
+        .ab-avatar-initials {
+          width: 58px; height: 58px; border-radius: 50%;
+          background: linear-gradient(135deg, #3b82f6 0%, #22c55e 100%);
+          color: #ffffff; font-size: 20px; font-weight: 800;
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
+          box-shadow: 0 4px 14px rgba(59,130,246,0.22);
+          letter-spacing: 0.5px;
+        }
+
+        .ab-bio-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+        .ab-bio-header-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+
+        .ab-bio-name {
+          font-size: 15.5px; font-weight: 700;
+          color: var(--text-primary); margin: 0; line-height: 1.45; letter-spacing: -0.01em;
+        }
+        .ab-blue-highlight { color: var(--primary-blue); font-weight: 700; }
+
+        .ab-bio-desc-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+          margin-top: 2px;
+        }
+        .ab-bio-desc {
+          font-size: 13.5px; line-height: 1.5;
+          color: var(--text-secondary); margin: 0; flex: 1;
+        }
+
+        .ab-days-badge {
+          display: inline-flex; align-items: center; gap: 5px;
+          padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700;
+          background: color-mix(in srgb, var(--primary-blue) 10%, transparent);
+          border: 1px solid color-mix(in srgb, var(--primary-blue) 25%, transparent);
+          color: var(--primary-blue); flex-shrink: 0;
+        }
+        .ab-zap-pulse { color: #f59e0b; }
+
+        .ab-badges {
+          display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end;
+          align-items: center; flex-shrink: 0; margin-left: auto;
+        }
+        .ab-badge {
+          display: inline-flex; padding: 4px 12px; border-radius: 999px;
+          font-size: 11.5px; font-weight: 700; cursor: default;
+          transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .ab-badge:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+
+        /* Unified Stat Bar */
+        .ab-unified-stat-bar {
           display: grid;
-          grid-template-columns: 1fr 1fr;
-          grid-template-rows: 1fr 1fr;
-          gap: 8px;
+          grid-template-columns: repeat(4, 1fr);
+          background: var(--bg-primary);
+          border: 1px solid var(--border-color);
+          border-radius: 14px;
+          padding: 16px 0;
+          width: 100%;
+        }
+
+        .ab-stat-col {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 3px;
+          border-right: 1px solid var(--border-color);
+          padding: 0 12px;
+          text-align: center;
+        }
+
+        .ab-stat-col--last {
+          border-right: none;
+        }
+
+        .ab-stat-num {
+          font-size: 24px;
+          font-weight: 800;
+          color: var(--text-primary);
+          line-height: 1;
+          letter-spacing: -0.02em;
+        }
+
+        .ab-stat-lbl {
+          font-size: 10.5px;
+          font-weight: 700;
+          color: var(--text-muted);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+
+        @media (max-width: 640px) {
+          .ab-card-top { gap: 12px; }
+          .ab-avatar-initials { width: 48px; height: 48px; font-size: 17px; }
+          .ab-unified-stat-bar {
+            grid-template-columns: repeat(2, 1fr);
+            row-gap: 14px;
+            padding: 16px 0;
+          }
+          .ab-stat-col {
+            border-right: 1px solid var(--border-color);
+          }
+          .ab-stat-col:nth-child(2n) {
+            border-right: none;
+          }
+          .ab-stat-col:nth-child(1), .ab-stat-col:nth-child(2) {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 14px;
+          }
         }
 
         /* ── ROW 2: Timeline ── */
@@ -470,8 +614,11 @@ export default function About({ onNavClick }) {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
           border-radius: 16px;
-          padding: 10px 16px;
+          padding: 14px 20px 16px;
           flex-shrink: 0;
+          overflow: visible;
+          position: relative;
+          z-index: 10;
         }
         .ab-section-label {
           font-size: 13px; font-weight: 700;
@@ -479,55 +626,109 @@ export default function About({ onNavClick }) {
           display: flex; align-items: center; gap: 6px;
         }
 
-        /* ── ROW 3: CTA + Actions (Exact Reference Design) ── */
+        /* ── ROW 3: Advanced CTA + Action Buttons ── */
         .ab-row3 {
+          position: relative;
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: 20px;
+          gap: 24px;
           background: color-mix(in srgb, var(--primary-blue) 4%, var(--bg-secondary));
-          border: 1px solid color-mix(in srgb, var(--primary-blue) 15%, var(--border-color));
-          border-radius: 16px;
-          padding: 20px 28px;
+          border: 1px solid color-mix(in srgb, var(--primary-blue) 18%, var(--border-color));
+          border-radius: 20px;
+          padding: 24px 30px;
           flex-shrink: 0;
           box-sizing: border-box;
+          overflow: hidden;
+          box-shadow: 0 4px 24px rgba(0,0,0,0.03);
+          transition: border-color 0.25s ease, box-shadow 0.25s ease;
         }
-        .ab-cta-left { display: flex; flex-direction: column; gap: 4px; max-width: 540px; }
+        .ab-row3:hover {
+          border-color: color-mix(in srgb, var(--primary-blue) 35%, var(--border-color));
+          box-shadow: 0 10px 32px rgba(0,0,0,0.06);
+        }
+        .ab-cta-top-accent {
+          position: absolute; top: 0; left: 0; right: 0; height: 3.5px;
+          background: linear-gradient(90deg, #3b82f6 0%, #10b981 50%, #8b5cf6 100%);
+        }
+        .ab-cta-left { display: flex; flex-direction: column; gap: 6px; max-width: 560px; }
+        
+        .ab-cta-badges-row {
+          display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 2px;
+        }
+        .ab-cta-status-pill {
+          display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700;
+          color: #10b981; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25);
+          padding: 4px 11px; border-radius: 8px; letter-spacing: 0.02em;
+        }
+        .ab-cta-time-pill {
+          display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700;
+          color: var(--primary-blue); background: color-mix(in srgb, var(--primary-blue) 10%, transparent);
+          border: 1px solid color-mix(in srgb, var(--primary-blue) 25%, transparent);
+          padding: 4px 11px; border-radius: 8px;
+        }
+        .ab-cta-resp-pill {
+          display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600;
+          color: var(--text-muted);
+        }
+
         .ab-cta-title {
-          font-size: 16.5px; font-weight: 800;
+          font-size: 18px; font-weight: 800;
           color: var(--text-primary); margin: 0;
-          letter-spacing: -0.01em;
+          letter-spacing: -0.015em;
         }
         .ab-cta-sub {
-          font-size: 13px; color: var(--text-secondary); margin: 0; line-height: 1.5;
+          font-size: 13.5px; color: var(--text-secondary); margin: 0; line-height: 1.5;
         }
+
         .ab-actions-grid {
           display: flex;
           align-items: center;
           gap: 10px;
+          flex-shrink: 0;
+        }
+        .ab-social-icons-group {
+          display: flex; align-items: center; gap: 6px; margin-left: 4px;
+        }
+        .ab-social-icon-btn {
+          width: 36px; height: 36px; border-radius: 10px;
+          display: flex; align-items: center; justify-content: center;
+          background: var(--bg-primary); color: var(--text-secondary);
+          border: 1px solid var(--border-color); text-decoration: none;
+          transition: all 0.2s ease;
+        }
+        .ab-social-icon-btn:hover {
+          color: var(--primary-blue); border-color: var(--primary-blue);
+          transform: translateY(-2px);
+          background: color-mix(in srgb, var(--primary-blue) 8%, transparent);
         }
         .ab-btn-primary {
           display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-          padding: 10px 20px; border-radius: 8px;
+          padding: 10.5px 22px; border-radius: 10px;
           background: var(--text-primary); color: var(--bg-primary);
-          border: none; font-size: 13px; font-weight: 700; cursor: pointer;
+          border: none; font-size: 13.5px; font-weight: 700; cursor: pointer;
           transition: all 0.2s ease; text-decoration: none; white-space: nowrap;
+          box-shadow: 0 4px 14px rgba(0,0,0,0.1);
         }
         .ab-btn-primary:hover {
-          opacity: 0.9;
-          transform: translateY(-1px);
+          opacity: 0.92; transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(0,0,0,0.15);
         }
+        .ab-btn-arrow { transition: transform 0.2s ease; }
+        .ab-btn-primary:hover .ab-btn-arrow { transform: translateX(3px); }
+
         .ab-btn-secondary {
-          display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-          padding: 10px 18px; border-radius: 8px;
+          display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+          padding: 10.5px 18px; border-radius: 10px;
           background: var(--bg-primary); color: var(--text-primary);
           border: 1px solid var(--border-color); font-size: 13px; font-weight: 600;
           cursor: pointer; transition: all 0.2s ease; text-decoration: none; white-space: nowrap;
         }
         .ab-btn-secondary:hover {
           border-color: var(--primary-blue);
+          color: var(--primary-blue);
           background: color-mix(in srgb, var(--primary-blue) 6%, transparent);
-          transform: translateY(-1px);
+          transform: translateY(-2px);
         }
 
         /* Days badge */
@@ -580,61 +781,74 @@ export default function About({ onNavClick }) {
 
       <div className="ab-page" ref={pageRef}>
 
-        {/* ══════════ ROW 1: Bio + Stats ══════════ */}
-        <div className="ab-row1">
-          {/* Bio card */}
-          <motion.div
-            className="ab-bio-card"
-            initial={{ opacity: 0, y: 12 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <img
-              src="/profile_photo.png"
-              alt="Sujith"
-              className="ab-avatar"
-              onError={e => { e.target.style.display = 'none'; }}
-            />
+        {/* ══════════ Profile Card ══════════ */}
+        <motion.div
+          className="ab-profile-card"
+          initial={{ opacity: 0, y: 12 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <div className="ab-top-accent-stripe" />
+          
+          <div className="ab-card-top">
+            <div className="ab-avatar-initials">ST</div>
+
             <div className="ab-bio-body">
-              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
+              <div className="ab-bio-header-row">
                 <h1 className="ab-bio-name">
-                  Hi, I'm Sujith — a B.Tech student at VIT Vellore (8.7 CGPA) specializing in Data Science.
+                  Hi, I'm Sujith — a B.Tech student at{' '}
+                  <span className="ab-blue-highlight">VIT Vellore (8.7 CGPA)</span> specializing in{' '}
+                  <span className="ab-blue-highlight">Data Science</span>.
                 </h1>
                 {daysCoding > 0 && (
-                  <div className="ab-days-badge" style={{ flexShrink: 0 }}>
-                    <Zap size={10} /> {daysCoding.toLocaleString()}d
+                  <div className="ab-days-badge">
+                    <Zap size={11} className="ab-zap-pulse" />
+                    <span>{daysCoding.toLocaleString()}d</span>
                   </div>
                 )}
               </div>
-              <p className="ab-bio-desc">
-                Bridging complex backend data structures with sleek, responsive interfaces.
-              </p>
 
-              {/* Skill badges */}
-              <div className="ab-badges">
-                {BADGES.map(b => (
-                  <span
-                    key={b.label}
-                    className="ab-badge"
-                    style={{ background: b.bg, color: b.color, border: `1px solid ${b.color}25` }}
-                  >
-                    {b.label}
-                  </span>
-                ))}
+              <div className="ab-bio-desc-row">
+                <p className="ab-bio-desc">
+                  Bridging complex backend data structures with sleek, responsive interfaces.
+                </p>
+
+                {/* Right-aligned Tech Skill Badges */}
+                <div className="ab-badges">
+                  {BADGES.map(b => (
+                    <span
+                      key={b.label}
+                      className="ab-badge"
+                      style={{ background: b.bg, color: b.color, border: `1px solid ${b.color}25` }}
+                    >
+                      {b.label}
+                    </span>
+                  ))}
+                </div>
               </div>
-
-
             </div>
-          </motion.div>
-
-          {/* Stats 2×2 */}
-          <div className="ab-stats-grid">
-            <StatCard target={3.5} suffix=""  label="Years coding" decimals={1} trigger={inView} delay={0.05} />
-            <StatCard target={10}  suffix=""  label="Projects"     trigger={inView} delay={0.12} />
-            <StatCard target={200} suffix=""  label="DSA solved"   trigger={inView} delay={0.18} />
-            <StatCard target={8.7} suffix=""  label="CGPA"         decimals={1} trigger={inView} delay={0.24} />
           </div>
-        </div>
+
+          {/* Unified Stat Bar */}
+          <div className="ab-unified-stat-bar">
+            <div className="ab-stat-col">
+              <span className="ab-stat-num">{useCountUp(3.5, 1000, 1, inView).toFixed(1)}</span>
+              <span className="ab-stat-lbl">Years Coding</span>
+            </div>
+            <div className="ab-stat-col">
+              <span className="ab-stat-num">{Math.floor(useCountUp(10, 1000, 0, inView))}</span>
+              <span className="ab-stat-lbl">Projects</span>
+            </div>
+            <div className="ab-stat-col">
+              <span className="ab-stat-num">{Math.floor(useCountUp(200, 1000, 0, inView))}</span>
+              <span className="ab-stat-lbl">DSA Solved</span>
+            </div>
+            <div className="ab-stat-col ab-stat-col--last">
+              <span className="ab-stat-num">{useCountUp(8.7, 1000, 1, inView).toFixed(1)}</span>
+              <span className="ab-stat-lbl">CGPA</span>
+            </div>
+          </div>
+        </motion.div>
 
         {/* ══════════ ROW 2: Career Timeline ══════════ */}
         <motion.div
@@ -649,15 +863,7 @@ export default function About({ onNavClick }) {
           <CareerTimeline />
         </motion.div>
 
-        {/* ══════════ GitHub Activity Heatmap ══════════ */}
-        <motion.div
-          className="ab-github-wrapper"
-          initial={{ opacity: 0, y: 10 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.4, delay: 0.14, ease: [0.16, 1, 0.3, 1] }}
-        >
-          <GitHubActivity hideCommits={true} />
-        </motion.div>
+
 
         {/* ══════════ ROW 3: Advanced CTA + Action Buttons ══════════ */}
         <motion.div
@@ -666,40 +872,63 @@ export default function About({ onNavClick }) {
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.4, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
         >
-          {/* Left: CTA text + Live status pill */}
+          <div className="ab-cta-top-accent" />
+
+          {/* Left: CTA text */}
           <div className="ab-cta-left">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
-              <span style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 700,
-                color: '#10b981', background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)',
-                padding: '3px 10px', borderRadius: 999, letterSpacing: '0.02em'
-              }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
-                Open for Full-Time Roles &amp; AI Projects
-              </span>
-              <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>⚡ Avg response &lt; 2 hrs</span>
-            </div>
             <h2 className="ab-cta-title">Let's build something great.</h2>
             <p className="ab-cta-sub">
               I'm always open to discussing Data Science, Machine Learning architecture, or exciting new engineering opportunities.
             </p>
           </div>
 
-          {/* Right: Get in Touch + Resume + Copy Email buttons */}
+          {/* Right: Action Buttons + Quick Social Connect Pills */}
           <div className="ab-actions-grid">
             <button
               className="ab-btn-primary"
               onClick={() => onNavClick ? onNavClick('contact') : (window.location.href = 'mailto:sujithreddy1546@gmail.com')}
             >
-              Get in Touch <ArrowRight size={14} />
+              Get in Touch <ArrowRight size={14} className="ab-btn-arrow" />
             </button>
             <a href="/resume.pdf" className="ab-btn-secondary" onClick={handleDownload}>
               <Download size={14} style={{ color: 'var(--primary-blue)' }} /> Resume
             </a>
-            <button className="ab-btn-secondary" onClick={handleCopyEmail} title="Copy email address">
+            <button className="ab-btn-secondary" onClick={handleCopyEmail} title="Copy sujithreddy1546@gmail.com">
               {copiedEmail ? <Check size={14} style={{ color: '#10b981' }} /> : <Copy size={14} style={{ color: 'var(--text-muted)' }} />}
-              {copiedEmail ? 'Copied!' : 'Copy Email'}
+              <span>{copiedEmail ? 'Copied!' : 'Copy Email'}</span>
             </button>
+
+            {/* Quick Social Connect Group */}
+            <div className="ab-social-icons-group">
+              <a
+                href="https://github.com/sujith1546"
+                target="_blank"
+                rel="noreferrer"
+                className="ab-social-icon-btn"
+                title="GitHub Profile"
+                aria-label="GitHub Profile"
+              >
+                <FaGithub size={15} />
+              </a>
+              <a
+                href="https://linkedin.com/in/sujith-thota"
+                target="_blank"
+                rel="noreferrer"
+                className="ab-social-icon-btn"
+                title="LinkedIn Profile"
+                aria-label="LinkedIn Profile"
+              >
+                <FaLinkedin size={15} />
+              </a>
+              <a
+                href="mailto:sujithreddy1546@gmail.com"
+                className="ab-social-icon-btn"
+                title="Direct Email"
+                aria-label="Direct Email"
+              >
+                <Mail size={15} />
+              </a>
+            </div>
           </div>
         </motion.div>
 
