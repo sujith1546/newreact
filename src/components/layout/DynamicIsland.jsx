@@ -5,9 +5,44 @@ import { Sparkles, Command, FileText, Sun, Moon, ShieldCheck, Zap, X, Users, Vol
 
 const SPRING_TRANSITION = {
   type: 'spring',
-  stiffness: 380,
-  damping: 28,
-  mass: 0.7,
+  stiffness: 360,
+  damping: 25,
+  mass: 0.6,
+};
+
+const WaveformBars = () => {
+  const bars = [
+    { height: 6, delay: 0 },
+    { height: 10, delay: 0.15 },
+    { height: 14, delay: 0.3 },
+    { height: 8, delay: 0.45 },
+  ];
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2px', height: '14px' }}>
+      {bars.map((bar, i) => (
+        <motion.span
+          key={i}
+          animate={{ scaleY: [0.5, 1, 0.5] }}
+          transition={{
+            duration: 1,
+            repeat: Infinity,
+            repeatType: 'mirror',
+            ease: 'easeInOut',
+            delay: bar.delay,
+          }}
+          style={{
+            width: '2px',
+            height: `${bar.height}px`,
+            backgroundColor: '#e8e8ec',
+            borderRadius: '1px',
+            display: 'inline-block',
+            transformOrigin: 'center',
+          }}
+        />
+      ))}
+    </div>
+  );
 };
 
 export default function DynamicIsland() {
@@ -115,9 +150,10 @@ export default function DynamicIsland() {
         style={{
           background: '#07090e',
           borderRadius: isHudOpen ? '22px' : '999px',
+          border: '1px solid #2a2c33',
           boxShadow: isHudOpen || isNotificationActive
-            ? '0 20px 50px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.14)'
-            : '0 6px 22px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1)',
+            ? '0 20px 50px rgba(0,0,0,0.65)'
+            : '0 6px 22px rgba(0,0,0,0.4)',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -128,7 +164,7 @@ export default function DynamicIsland() {
           padding: isHudOpen ? '16px 20px' : isNotificationActive ? '10px 20px' : isHovered ? '8px 18px' : '0 10px',
           height: isHudOpen ? 'auto' : isNotificationActive ? '48px' : '32px',
           width: isHudOpen ? '320px' : 'auto',
-          minWidth: isHudOpen ? '320px' : isNotificationActive ? '270px' : isHovered ? '200px' : '36px',
+          minWidth: isHudOpen ? '320px' : isNotificationActive ? '270px' : isHovered ? '190px' : '32px',
           boxSizing: 'border-box',
           position: 'relative'
         }}
@@ -146,9 +182,9 @@ export default function DynamicIsland() {
               style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '12px', whiteSpace: 'normal' }}
             >
               {/* HUD Header */}
-              <div style={{ display: 'flex', alignItems: 'center', justify: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
+                  <WaveformBars />
                   <span style={{ color: '#ffffff', fontSize: '13px', fontWeight: 700, letterSpacing: '0.02em' }}>
                     Sujith Thota · System HUD
                   </span>
@@ -248,7 +284,7 @@ export default function DynamicIsland() {
               </div>
             </motion.div>
           ) : isNotificationActive ? (
-            /* Stage 2: Active System Notification / Multi-Step Progress Event Mode */
+            /* Stage 2: Active System Notification Event Mode */
             <motion.div
               key="notification-state"
               layout
@@ -312,30 +348,6 @@ export default function DynamicIsland() {
                 </div>
               )}
             </motion.div>
-          ) : isEqualizerActive ? (
-            /* Audio Equalizer Active Mode */
-            <motion.div
-              key="equalizer-state"
-              layout
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.14 }}
-              style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0 4px' }}
-            >
-              <Volume2 size={14} style={{ color: '#3b82f6' }} />
-              <span style={{ color: '#ffffff', fontSize: '11.5px', fontWeight: 700 }}>Audio Active</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '2px', height: '12px' }}>
-                {[1, 2, 3, 4].map((bar) => (
-                  <motion.span
-                    key={bar}
-                    animate={{ height: ['4px', '12px', '4px'] }}
-                    transition={{ duration: 0.6, repeat: Infinity, delay: bar * 0.12 }}
-                    style={{ width: '3px', background: '#3b82f6', borderRadius: '2px' }}
-                  />
-                ))}
-              </div>
-            </motion.div>
           ) : isHovered ? (
             /* Hovered Idle State */
             <motion.div
@@ -347,13 +359,13 @@ export default function DynamicIsland() {
               transition={{ duration: 0.14 }}
               style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
             >
-              <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 6px #10b981' }} />
+              <WaveformBars />
               <span style={{ color: '#ffffff', fontSize: '11.5px', fontWeight: 700, letterSpacing: '0.02em' }}>
-                🟢 Live: {visitorCount} viewing · Telemetry
+                Available for roles
               </span>
             </motion.div>
           ) : (
-            /* Stage 1: Compact Camera Cutout Notch Idle Dot */
+            /* Stage 1: Compact Waveform Icon Idle State */
             <motion.div
               key="notch-state"
               layout
@@ -361,10 +373,9 @@ export default function DynamicIsland() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
               transition={{ duration: 0.14 }}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
-              <div style={{ width: '9px', height: '9px', borderRadius: '50%', background: '#1e293b', border: '1.5px solid #334155' }} />
-              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 4px #10b981' }} />
+              <WaveformBars />
             </motion.div>
           )}
         </AnimatePresence>
