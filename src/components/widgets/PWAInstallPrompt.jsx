@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RefreshCw, X, Download, Share, Smartphone } from 'lucide-react';
+import { RefreshCw, X, Download, Share, Smartphone, Clock, PauseCircle } from 'lucide-react';
 import { useSmartUpdate } from '../../hooks/useSmartUpdate';
 
 export default function PWAInstallPrompt() {
@@ -220,9 +220,35 @@ export default function PWAInstallPrompt() {
                     'Add this portfolio to your home screen for quick offline access.'
                   )}
                 </p>
-                <p style={{ margin: '4px 0 0', fontSize: '10.5px', fontWeight: 600, color: isHovered ? '#8b5cf6' : 'var(--text-muted)' }}>
-                  {isHovered ? '⏸️ Paused while inspecting' : `⏱️ Auto-dismissing in ${Math.ceil(timeLeft)}s…`}
-                </p>
+                <div
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    marginTop: '6px',
+                    padding: '3px 8px',
+                    borderRadius: '100px',
+                    fontSize: '10.5px',
+                    fontWeight: 600,
+                    background: isHovered
+                      ? 'color-mix(in srgb, var(--primary-blue, #3b82f6) 12%, transparent)'
+                      : 'color-mix(in srgb, var(--text-muted) 10%, transparent)',
+                    color: isHovered ? 'var(--primary-blue, #3b82f6)' : 'var(--text-secondary)',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  {isHovered ? (
+                    <>
+                      <PauseCircle size={12} style={{ flexShrink: 0 }} />
+                      <span>Paused on hover</span>
+                    </>
+                  ) : (
+                    <>
+                      <Clock size={12} style={{ flexShrink: 0 }} />
+                      <span>Auto-dismissing in {Math.ceil(timeLeft)}s</span>
+                    </>
+                  )}
+                </div>
               </div>
               <button
                 onClick={handleDismissInstall}
