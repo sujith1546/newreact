@@ -5,9 +5,9 @@ import { Sparkles, Command, FileText, Sun, Moon, ShieldCheck, Zap, X, Users, Vol
 
 const SPRING_TRANSITION = {
   type: 'spring',
-  stiffness: 440,
-  damping: 28,
-  mass: 0.55,
+  stiffness: 360,
+  damping: 25,
+  mass: 0.6,
 };
 
 const FADE_BLUR_VARIANTS = {
@@ -16,38 +16,65 @@ const FADE_BLUR_VARIANTS = {
   exit: { opacity: 0, scale: 0.88, filter: 'blur(6px)', y: 2 },
 };
 
-const WaveformBars = () => {
-  const bars = [
-    { height: 6, delay: 0 },
-    { height: 10, delay: 0.15 },
-    { height: 14, delay: 0.3 },
-    { height: 8, delay: 0.45 },
-  ];
+const BARS_CONFIG = [
+  { x: 0.5, min: 3, max: 10, duration: 1600, delay: 0, color: '#e8e8ec' },
+  { x: 6, min: 3, max: 12, duration: 1400, delay: 180, color: '#5DCAA5' },
+  { x: 11.5, min: 3, max: 9, duration: 1800, delay: 360, color: '#e8e8ec' },
+  { x: 17, min: 3, max: 11, duration: 1500, delay: 540, color: '#e8e8ec' },
+];
+
+const WaveformSVG = ({ isSettled = false }) => {
+  const [heights, setHeights] = useState(BARS_CONFIG.map((b) => b.min));
+  const animFrameRef = useRef(null);
+
+  useEffect(() => {
+    if (isSettled) {
+      setHeights(BARS_CONFIG.map((b) => b.min));
+      return;
+    }
+
+    let startTime = null;
+
+    const animate = (timestamp) => {
+      if (!startTime) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+
+      const newHeights = BARS_CONFIG.map((bar) => {
+        const local = ((elapsed + bar.delay) % (bar.duration * 2)) / bar.duration;
+        const phase = local <= 1 ? local : 2 - local;
+        const eased = 0.5 - 0.5 * Math.cos(phase * Math.PI);
+        return bar.min + eased * (bar.max - bar.min);
+      });
+
+      setHeights(newHeights);
+      animFrameRef.current = requestAnimationFrame(animate);
+    };
+
+    animFrameRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+    };
+  }, [isSettled]);
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '2px', height: '14px' }}>
-      {bars.map((bar, i) => (
-        <motion.span
-          key={i}
-          animate={{ scaleY: [0.5, 1, 0.5] }}
-          transition={{
-            duration: 1,
-            repeat: Infinity,
-            repeatType: 'mirror',
-            ease: 'easeInOut',
-            delay: bar.delay,
-          }}
-          style={{
-            width: '2px',
-            height: `${bar.height}px`,
-            backgroundColor: '#e8e8ec',
-            borderRadius: '1px',
-            display: 'inline-block',
-            transformOrigin: 'center',
-          }}
-        />
-      ))}
-    </div>
+    <svg width="20" height="16" viewBox="0 0 20 16" fill="none" style={{ display: 'block', flexShrink: 0 }}>
+      {BARS_CONFIG.map((bar, i) => {
+        const h = heights[i] || bar.min;
+        const y = 8 - h / 2;
+        return (
+          <rect
+            key={i}
+            x={bar.x}
+            y={y}
+            width="2"
+            height={h}
+            rx="1"
+            fill={bar.color}
+          />
+        );
+      })}
+    </svg>
   );
 };
 
@@ -156,7 +183,7 @@ export default function DynamicIsland() {
         style={{
           background: '#07090e',
           borderRadius: isHudOpen ? '22px' : '999px',
-          border: '1px solid rgba(255, 255, 255, 0.12)',
+          border: '1px solid #2a2c33',
           boxShadow: isHudOpen
             ? '0 24px 60px rgba(0,0,0,0.75), 0 0 30px rgba(59,130,246,0.18)'
             : isNotificationActive
@@ -194,7 +221,7 @@ export default function DynamicIsland() {
               {/* HUD Header */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <WaveformBars />
+                  <WaveformSVG isSettled={true} />
                   <span style={{ color: '#ffffff', fontSize: '13px', fontWeight: 700, letterSpacing: '0.02em' }}>
                     Sujith Thota · System HUD
                   </span>
@@ -371,13 +398,13 @@ export default function DynamicIsland() {
               transition={SPRING_TRANSITION}
               style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
             >
-              <WaveformBars />
+              <WaveformSVG isSettled={false} />
               <span style={{ color: '#ffffff', fontSize: '11.5px', fontWeight: 700, letterSpacing: '0.02em' }}>
                 Available for roles
               </span>
             </motion.div>
           ) : (
-            /* Stage 1: Compact Waveform Icon Idle State */
+            /* Stage 1: Compact Waveform SVG Idle State */
             <motion.div
               key="notch-state"
               layout
@@ -388,7 +415,7 @@ export default function DynamicIsland() {
               transition={SPRING_TRANSITION}
               style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
-              <WaveformBars />
+              <WaveformSVG isSettled={false} />
             </motion.div>
           )}
         </AnimatePresence>
