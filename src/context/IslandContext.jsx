@@ -9,17 +9,48 @@ export function IslandProvider({ children }) {
     subtitle: '',
     icon: null,
     color: '#10b981',
+    progress: null, // null or 0..100
   });
 
   const [isHudOpen, setIsHudOpen] = useState(false);
+  const [visitorCount, setVisitorCount] = useState(4);
+  const [isEqualizerActive, setIsEqualizerActive] = useState(false);
+
   const queueRef = useRef([]);
   const isProcessingRef = useRef(false);
   const timerRef = useRef(null);
 
+  // BroadcastChannel for Live Visitor Counting across tabs
+  useEffect(() => {
+    // Random base active viewers count (e.g. 3-6)
+    const baseCount = Math.floor(Math.random() * 4) + 3;
+    setVisitorCount(baseCount);
+
+    let bc;
+    try {
+      if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+        bc = new BroadcastChannel('portfolio_live_visitors');
+        bc.postMessage({ type: 'VISITOR_PING', timestamp: Date.now() });
+
+        bc.onmessage = (e) => {
+          if (e.data?.type === 'VISITOR_PING') {
+            setVisitorCount((prev) => Math.min(prev + 1, 12));
+          }
+        };
+      }
+    } catch (err) {
+      console.log('BroadcastChannel fallback:', err);
+    }
+
+    return () => {
+      try { bc?.close(); } catch (e) {}
+    };
+  }, []);
+
   const processNextInQueue = useCallback(() => {
     if (queueRef.current.length === 0) {
       isProcessingRef.current = false;
-      setIslandState((prev) => ({ ...prev, isOpen: false }));
+      setIslandState((prev) => ({ ...prev, isOpen: false, progress: null }));
       return;
     }
 
@@ -32,6 +63,7 @@ export function IslandProvider({ children }) {
       subtitle: current.subtitle || '',
       icon: current.icon || null,
       color: current.color || '#10b981',
+      progress: current.progress ?? null,
     });
 
     if (timerRef.current) clearTimeout(timerRef.current);
@@ -44,8 +76,26 @@ export function IslandProvider({ children }) {
     }
   }, []);
 
-  const triggerIsland = useCallback(({ title, subtitle, icon, color = '#10b981', duration = 3200 }) => {
-    queueRef.current.push({ title, subtitle, icon, color, duration });
+  const triggerIsland = useCallback(({ title, subtitle, icon, color = '#10b981', duration = 3200, progress = null }) => {
+    queueRef.current.push({ title, subtitle, icon, color, duration, progress });
+    if (!isProcessingRef.current) {
+      processNextInQueue();
+    }
+  }, [processNextInQueue]);
+
+  // Multi-step progress sequences (e.g. Submitting -> Encrypting -> Sent)
+  const triggerStepProgress = useCallback((steps) => {
+    if (!steps || steps.length === 0) return;
+    steps.forEach((step) => {
+      queueRef.current.push({
+        title: step.title,
+        subtitle: step.subtitle || '',
+        icon: step.icon || null,
+        color: step.color || '#10b981',
+        duration: step.duration || 1800,
+        progress: step.progress ?? null,
+      });
+    });
     if (!isProcessingRef.current) {
       processNextInQueue();
     }
@@ -55,7 +105,7 @@ export function IslandProvider({ children }) {
     if (timerRef.current) clearTimeout(timerRef.current);
     queueRef.current = [];
     isProcessingRef.current = false;
-    setIslandState((prev) => ({ ...prev, isOpen: false }));
+    setIslandState((prev) => ({ ...prev, isOpen: false, progress: null }));
   }, []);
 
   const toggleHud = useCallback(() => {
@@ -67,7 +117,18 @@ export function IslandProvider({ children }) {
   }, []);
 
   return (
-    <IslandContext.Provider value={{ islandState, triggerIsland, closeIsland, isHudOpen, toggleHud, closeHud }}>
+    <IslandContext.Provider value={{
+      islandState,
+      triggerIsland,
+      triggerStepProgress,
+      closeIsland,
+      isHudOpen,
+      toggleHud,
+      closeHud,
+      visitorCount,
+      isEqualizerActive,
+      setIsEqualizerActive
+    }}>
       {children}
     </IslandContext.Provider>
   );

@@ -318,6 +318,14 @@ export default function ChatBot() {
       const sessionToken = getSessionToken();
       const currentContext = window.location.hash || window.location.pathname || 'homepage';
       
+      triggerIsland({
+        title: '⚡ Gemini 2.5 Flash',
+        subtitle: 'Embedding Query (200+ Term KB)...',
+        icon: <Sparkles size={15} />,
+        color: '#3b82f6',
+        duration: 2500
+      });
+
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 

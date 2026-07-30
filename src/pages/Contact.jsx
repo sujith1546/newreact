@@ -138,7 +138,7 @@ const SwipeToSend = ({ onSend, status, isFormValid, triggerValidation }) => {
 export default function Contact() {
   const EMAIL = 'sujithreddy1546@gmail.com';
   const PHONE = '+91 8501889996';
-  const { triggerIsland } = useIsland();
+  const { triggerIsland, triggerStepProgress } = useIsland();
 
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
   const [activeType, setActiveType] = useState('Job opportunity');
@@ -196,6 +196,13 @@ export default function Contact() {
     if (!msg.trim()) return;
 
     setStatus('sending');
+
+    triggerStepProgress([
+      { title: 'Submitting Message...', subtitle: 'Connecting to mail server', icon: <Send size={15} />, color: '#3b82f6', duration: 1400, progress: 35 },
+      { title: 'Encrypting Payload...', subtitle: 'PII protection enabled', icon: <Sparkles size={15} />, color: '#8b5cf6', duration: 1400, progress: 75 },
+      { title: 'Message Sent!', subtitle: 'Directly delivered to Sujith', icon: <Check size={16} strokeWidth={3} />, color: '#10b981', duration: 4000, progress: 100 }
+    ]);
+
     try {
       await fetch('/api/contact', {
         method: 'POST',
@@ -209,7 +216,6 @@ export default function Contact() {
       });
       setStatus('sent');
       launchConfetti();
-      triggerIsland({ title: 'Message Sent!', subtitle: 'I will reply within 4 hours', icon: <Check size={16} strokeWidth={3}/>, color: '#10b981', duration: 4000 });
       setTimeout(() => {
         setStatus('idle');
         setForm({ name: '', email: '', message: '', field1: '', field2: '', _catch: '' });

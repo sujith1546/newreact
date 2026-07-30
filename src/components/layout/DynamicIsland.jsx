@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useIsland } from '../../context/IslandContext';
-import { Sparkles, Command, FileText, Sun, Moon, ShieldCheck, Zap, X } from 'lucide-react';
+import { Sparkles, Command, FileText, Sun, Moon, ShieldCheck, Zap, X, Users, Volume2 } from 'lucide-react';
 
 const SPRING_TRANSITION = {
   type: 'spring',
@@ -11,7 +11,16 @@ const SPRING_TRANSITION = {
 };
 
 export default function DynamicIsland() {
-  const { islandState, triggerIsland, isHudOpen, toggleHud, closeHud } = useIsland();
+  const {
+    islandState,
+    triggerIsland,
+    isHudOpen,
+    toggleHud,
+    closeHud,
+    visitorCount,
+    isEqualizerActive
+  } = useIsland();
+
   const [isHovered, setIsHovered] = useState(false);
   const [isDark, setIsDark] = useState(false);
   const hudRef = useRef(null);
@@ -117,10 +126,11 @@ export default function DynamicIsland() {
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           padding: isHudOpen ? '16px 20px' : isNotificationActive ? '10px 20px' : isHovered ? '8px 18px' : '0 10px',
-          height: isHudOpen ? 'auto' : isNotificationActive ? '46px' : '32px',
+          height: isHudOpen ? 'auto' : isNotificationActive ? '48px' : '32px',
           width: isHudOpen ? '320px' : 'auto',
-          minWidth: isHudOpen ? '320px' : isNotificationActive ? '270px' : isHovered ? '190px' : '32px',
-          boxSizing: 'border-box'
+          minWidth: isHudOpen ? '320px' : isNotificationActive ? '270px' : isHovered ? '200px' : '36px',
+          boxSizing: 'border-box',
+          position: 'relative'
         }}
       >
         <AnimatePresence mode="popLayout" initial={false}>
@@ -136,7 +146,7 @@ export default function DynamicIsland() {
               style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '12px', whiteSpace: 'normal' }}
             >
               {/* HUD Header */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justify: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
                   <span style={{ color: '#ffffff', fontSize: '13px', fontWeight: 700, letterSpacing: '0.02em' }}>
@@ -155,9 +165,9 @@ export default function DynamicIsland() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.04)', padding: '8px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '11.5px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <ShieldCheck size={13} style={{ color: '#10b981' }} /> Role Availability
+                    <Users size={13} style={{ color: '#10b981' }} /> Active Viewers
                   </span>
-                  <span style={{ color: '#10b981', fontSize: '11px', fontWeight: 700 }}>Open for Roles</span>
+                  <span style={{ color: '#10b981', fontSize: '11px', fontWeight: 700 }}>🟢 {visitorCount} viewing live</span>
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.04)', padding: '8px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -238,7 +248,7 @@ export default function DynamicIsland() {
               </div>
             </motion.div>
           ) : isNotificationActive ? (
-            /* Stage 2: Active System Notification Event Mode */
+            /* Stage 2: Active System Notification / Multi-Step Progress Event Mode */
             <motion.div
               key="notification-state"
               layout
@@ -246,46 +256,84 @@ export default function DynamicIsland() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: -4 }}
               transition={SPRING_TRANSITION}
-              style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%' }}
+              style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '4px' }}
             >
-              {islandState.icon && (
-                <motion.div
-                  initial={{ scale: 0, rotate: -30 }}
-                  animate={{ scale: 1, rotate: 0 }}
-                  transition={SPRING_TRANSITION}
-                  style={{
-                    color: islandState.color || '#10b981',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0
-                  }}
-                >
-                  {islandState.icon}
-                </motion.div>
-              )}
-              
-              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <span style={{ 
-                  color: '#ffffff', 
-                  fontSize: '13.5px', 
-                  fontWeight: 700, 
-                  lineHeight: 1.2,
-                  letterSpacing: '-0.01em'
-                }}>
-                  {islandState.title}
-                </span>
-                {islandState.subtitle && (
-                  <span style={{ 
-                    color: 'rgba(255,255,255,0.75)', 
-                    fontSize: '11px', 
-                    fontWeight: 500,
-                    marginTop: '2px',
-                    lineHeight: 1.2
-                  }}>
-                    {islandState.subtitle}
-                  </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%' }}>
+                {islandState.icon && (
+                  <motion.div
+                    initial={{ scale: 0, rotate: -30 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={SPRING_TRANSITION}
+                    style={{
+                      color: islandState.color || '#10b981',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
+                    }}
+                  >
+                    {islandState.icon}
+                  </motion.div>
                 )}
+                
+                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                  <span style={{ 
+                    color: '#ffffff', 
+                    fontSize: '13.5px', 
+                    fontWeight: 700, 
+                    lineHeight: 1.2,
+                    letterSpacing: '-0.01em'
+                  }}>
+                    {islandState.title}
+                  </span>
+                  {islandState.subtitle && (
+                    <span style={{ 
+                      color: 'rgba(255,255,255,0.75)', 
+                      fontSize: '11px', 
+                      fontWeight: 500,
+                      marginTop: '2px',
+                      lineHeight: 1.2
+                    }}>
+                      {islandState.subtitle}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Filling progress bar if present */}
+              {typeof islandState.progress === 'number' && (
+                <div style={{ width: '100%', height: '3px', background: 'rgba(255,255,255,0.15)', borderRadius: '99px', overflow: 'hidden', marginTop: '2px' }}>
+                  <motion.div
+                    initial={{ width: '0%' }}
+                    animate={{ width: `${islandState.progress}%` }}
+                    transition={{ duration: 0.4, ease: 'easeInOut' }}
+                    style={{ height: '100%', background: islandState.color || '#10b981', borderRadius: '99px' }}
+                  />
+                </div>
+              )}
+            </motion.div>
+          ) : isEqualizerActive ? (
+            /* Audio Equalizer Active Mode */
+            <motion.div
+              key="equalizer-state"
+              layout
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.14 }}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0 4px' }}
+            >
+              <Volume2 size={14} style={{ color: '#3b82f6' }} />
+              <span style={{ color: '#ffffff', fontSize: '11.5px', fontWeight: 700 }}>Audio Active</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '2px', height: '12px' }}>
+                {[1, 2, 3, 4].map((bar) => (
+                  <motion.span
+                    key={bar}
+                    animate={{ height: ['4px', '12px', '4px'] }}
+                    transition={{ duration: 0.6, repeat: Infinity, delay: bar * 0.12 }}
+                    style={{ width: '3px', background: '#3b82f6', borderRadius: '2px' }}
+                  />
+                ))}
               </div>
             </motion.div>
           ) : isHovered ? (
@@ -301,7 +349,7 @@ export default function DynamicIsland() {
             >
               <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 6px #10b981' }} />
               <span style={{ color: '#ffffff', fontSize: '11.5px', fontWeight: 700, letterSpacing: '0.02em' }}>
-                Click for Telemetry HUD
+                🟢 Live: {visitorCount} viewing · Telemetry
               </span>
             </motion.div>
           ) : (
@@ -313,10 +361,10 @@ export default function DynamicIsland() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
               transition={{ duration: 0.14 }}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
             >
               <div style={{ width: '9px', height: '9px', borderRadius: '50%', background: '#1e293b', border: '1.5px solid #334155' }} />
-              <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 4px #10b981' }} />
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', boxShadow: '0 0 4px #10b981' }} />
             </motion.div>
           )}
         </AnimatePresence>

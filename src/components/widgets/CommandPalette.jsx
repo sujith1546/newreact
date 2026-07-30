@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTheme } from "../../context/ThemeContext";
+import { useIsland } from "../../context/IslandContext";
 
 const GITHUB_USERNAME = "sujith1546";
 
@@ -154,6 +155,7 @@ function useDebouncedGithubRepos(term, active) {
 
 export default function CommandPalette() {
   const { toggleTheme } = useTheme();
+  const { triggerIsland, triggerStepProgress } = useIsland();
   const navigate = useNavigate();
   const location = useLocation();
   const isMainPage = location.pathname === '/';
@@ -184,19 +186,17 @@ export default function CommandPalette() {
 
   useEffect(() => {
     if (isOpen) {
-      setQuery("");
-      setSelected(0);
-      document.body.style.overflow = "hidden";
-      setTimeout(() => inputRef.current?.focus(), 10);
+      logAnalytics("open", "cmd-k");
+      setTimeout(() => inputRef.current?.focus(), 40);
     } else {
-      document.body.style.overflow = "";
+      setQuery("");
     }
   }, [isOpen]);
 
   useEffect(() => {
     if (!toast) return;
-    const t = setTimeout(() => setToast(null), 2200);
-    return () => clearTimeout(t);
+    const handle = setTimeout(() => setToast(null), 2500);
+    return () => clearTimeout(handle);
   }, [toast]);
 
   const mode = query.startsWith(">") ? "nav"
@@ -238,12 +238,51 @@ export default function CommandPalette() {
 
   const runAction = (action) => {
     switch (action) {
-      case "resume": window.dispatchEvent(new CustomEvent("open-resume")); break;
-      case "theme": toggleTheme(); break;
-      case "copy-email": navigator.clipboard?.writeText("sujithreddy1546@gmail.com"); break;
-      case "open-github": window.open(`https://github.com/${GITHUB_USERNAME}`, "_blank", "noopener"); break;
-      case "copy-link": navigator.clipboard?.writeText(window.location.href); break;
-      default: break;
+      case "resume":
+        triggerIsland({
+          title: "Downloading Resume...",
+          subtitle: "Sujith_Thota_Resume.pdf",
+          color: "#10b981",
+          duration: 3000
+        });
+        window.dispatchEvent(new CustomEvent("open-resume"));
+        break;
+      case "theme":
+        toggleTheme();
+        triggerIsland({
+          title: "System Theme Toggled",
+          subtitle: "Updated dark/light preference",
+          color: "#3b82f6",
+          duration: 2500
+        });
+        break;
+      case "copy-email":
+        navigator.clipboard?.writeText("sujithreddy1546@gmail.com");
+        triggerStepProgress([
+          { title: "Copying Email...", subtitle: "sujithreddy1546@gmail.com", color: "#3b82f6", duration: 1000, progress: 50 },
+          { title: "Copied to Clipboard!", subtitle: "Ready to paste in your email client", color: "#10b981", duration: 2500, progress: 100 }
+        ]);
+        break;
+      case "open-github":
+        window.open(`https://github.com/${GITHUB_USERNAME}`, "_blank", "noopener");
+        triggerIsland({
+          title: "Opening GitHub Profile",
+          subtitle: `github.com/${GITHUB_USERNAME}`,
+          color: "#8b5cf6",
+          duration: 2500
+        });
+        break;
+      case "copy-link":
+        navigator.clipboard?.writeText(window.location.href);
+        triggerIsland({
+          title: "Section Link Copied!",
+          subtitle: "Copied URL to clipboard",
+          color: "#10b981",
+          duration: 2500
+        });
+        break;
+      default:
+        break;
     }
   };
 
