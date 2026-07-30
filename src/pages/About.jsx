@@ -43,11 +43,11 @@ function useDaysCoding(start = '2021-06-01') {
 
 /* ─── Skill Badges ─── */
 const BADGES = [
-  { label: 'Python',       icon: '🐍', color: '#3b82f6', bg: 'color-mix(in srgb, #3b82f6 12%, transparent)' },
-  { label: 'TensorFlow',   icon: '🧠', color: '#8b5cf6', bg: 'color-mix(in srgb, #8b5cf6 12%, transparent)' },
-  { label: 'React',        icon: '⚛️', color: '#0ea5e9', bg: 'color-mix(in srgb, #0ea5e9 12%, transparent)' },
-  { label: 'FastAPI',      icon: '⚡', color: '#10b981', bg: 'color-mix(in srgb, #10b981 12%, transparent)' },
-  { label: 'SQL',          icon: '🛢️', color: '#f59e0b', bg: 'color-mix(in srgb, #f59e0b 12%, transparent)' },
+  { label: 'Python',       color: '#3b82f6',  bg: '#eff6ff' },
+  { label: 'TensorFlow',   color: '#374151',  bg: '#f3f4f6' },
+  { label: 'React',        color: '#0ea5e9',  bg: '#f0f9ff' },
+  { label: 'FastAPI',      color: '#059669',  bg: '#f0fdf4' },
+  { label: 'SQL',          color: '#d97706',  bg: '#fffbeb' },
 ];
 
 /* ─── Stats ─── */
@@ -536,21 +536,11 @@ export default function About({ onNavClick }) {
           align-items: center; flex-shrink: 0; margin-left: auto;
         }
         .ab-badge {
-          display: inline-flex; align-items: center; gap: 5px; padding: 4px 11px; border-radius: 8px;
+          display: inline-flex; padding: 4px 12px; border-radius: 999px;
           font-size: 11.5px; font-weight: 700; cursor: default;
           transition: transform 0.15s, box-shadow 0.15s;
         }
         .ab-badge:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-
-        .ab-bio-cli-row {
-          display: inline-flex; align-items: center; gap: 8px; font-family: monospace;
-          font-size: 11.5px; padding: 5px 12px; border-radius: 8px;
-          background: var(--bg-primary); border: 1px solid var(--border-color);
-          color: var(--text-secondary); width: fit-content; margin-top: 4px;
-        }
-        .ab-cli-prompt { color: var(--primary-blue); font-weight: 700; }
-        .ab-cli-arrow { color: #10b981; font-weight: 700; }
-        .ab-cli-res { color: var(--text-muted); }
 
         /* Unified Stat Bar */
         .ab-unified-stat-bar {
@@ -579,13 +569,11 @@ export default function About({ onNavClick }) {
         }
 
         .ab-stat-num {
-          font-size: 26px;
+          font-size: 24px;
           font-weight: 800;
-          background: linear-gradient(135deg, var(--primary-blue) 0%, #10b981 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          line-height: 1.1;
-          letter-spacing: -0.025em;
+          color: var(--text-primary);
+          line-height: 1;
+          letter-spacing: -0.02em;
         }
 
         .ab-stat-lbl {
@@ -814,25 +802,18 @@ export default function About({ onNavClick }) {
                   Bridging complex backend data structures with sleek, responsive interfaces.
                 </p>
 
-                {/* Right-aligned Tech Skill Badges with Icons */}
+                {/* Right-aligned Tech Skill Badges */}
                 <div className="ab-badges">
                   {BADGES.map(b => (
                     <span
                       key={b.label}
                       className="ab-badge"
-                      style={{ background: b.bg, color: b.color, border: `1px solid ${b.color}35` }}
+                      style={{ background: b.bg, color: b.color, border: `1px solid ${b.color}25` }}
                     >
-                      <span style={{ fontSize: '12px' }}>{b.icon}</span> {b.label}
+                      {b.label}
                     </span>
                   ))}
                 </div>
-              </div>
-
-              {/* Mini CLI Readout */}
-              <div className="ab-bio-cli-row">
-                <span className="ab-cli-prompt">&gt;_ sujith.getSpecialization()</span>
-                <span className="ab-cli-arrow">&rArr;</span>
-                <span className="ab-cli-res">["Data Science", "ML Architecture", "Full-Stack AI"]</span>
               </div>
             </div>
           </div>
