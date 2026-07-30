@@ -493,11 +493,11 @@ export default function About({ onNavClick }) {
 
         .ab-avatar-initials {
           width: 58px; height: 58px; border-radius: 50%;
-          background: linear-gradient(135deg, #3b82f6 0%, #22c55e 100%);
+          background: var(--primary-blue, #3b82f6);
           color: #ffffff; font-size: 20px; font-weight: 800;
           display: flex; align-items: center; justify-content: center;
           flex-shrink: 0;
-          box-shadow: 0 4px 14px rgba(59,130,246,0.22);
+          box-shadow: 0 4px 14px rgba(59,130,246,0.3);
           letter-spacing: 0.5px;
         }
 
