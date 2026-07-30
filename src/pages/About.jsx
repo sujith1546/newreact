@@ -484,11 +484,6 @@ export default function About({ onNavClick }) {
           flex-shrink: 0;
         }
 
-        .ab-top-accent-stripe {
-          position: absolute; top: 0; left: 0; right: 0; height: 3.5px;
-          background: linear-gradient(90deg, #3b82f6, #22c55e);
-        }
-
         .ab-card-top {
           display: flex;
           align-items: flex-start;
@@ -784,8 +779,6 @@ export default function About({ onNavClick }) {
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         >
-          <div className="ab-top-accent-stripe" />
-          
           <div className="ab-card-top">
             <div className="ab-avatar-initials">ST</div>
 
