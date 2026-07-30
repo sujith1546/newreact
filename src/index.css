@@ -516,7 +516,7 @@ body {
 .social-icon-box {
   width: 34px;
   height: 34px;
-  border-radius: 50%;
+  border-radius: 8px;
   background: transparent;
   border: 1px solid var(--border-color);
   display: flex;
@@ -534,8 +534,8 @@ body {
 
 .sidebar-diag-dot {
   position: absolute;
-  top: 3px;
-  right: 3px;
+  top: 2px;
+  right: 2px;
   width: 6px;
   height: 6px;
   border-radius: 50%;
