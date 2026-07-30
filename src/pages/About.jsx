@@ -43,11 +43,11 @@ function useDaysCoding(start = '2021-06-01') {
 
 /* ─── Skill Badges ─── */
 const BADGES = [
-  { label: 'Python',       color: '#3b82f6',  bg: '#eff6ff' },
-  { label: 'TensorFlow',   color: '#374151',  bg: '#f3f4f6' },
-  { label: 'React',        color: '#0ea5e9',  bg: '#f0f9ff' },
-  { label: 'FastAPI',      color: '#059669',  bg: '#f0fdf4' },
-  { label: 'SQL',          color: '#d97706',  bg: '#fffbeb' },
+  { label: 'Python',     color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.12)' },
+  { label: 'TensorFlow', color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.12)' },
+  { label: 'React',      color: '#0ea5e9', bg: 'rgba(14, 165, 233, 0.12)' },
+  { label: 'FastAPI',    color: '#10b981', bg: 'rgba(16, 185, 129, 0.12)' },
+  { label: 'SQL',        color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.12)' },
 ];
 
 /* ─── Stats ─── */
@@ -536,7 +536,7 @@ export default function About({ onNavClick }) {
           align-items: center; flex-shrink: 0; margin-left: auto;
         }
         .ab-badge {
-          display: inline-flex; padding: 4px 12px; border-radius: 999px;
+          display: inline-flex; padding: 4px 10px; border-radius: 6px;
           font-size: 11.5px; font-weight: 700; cursor: default;
           transition: transform 0.15s, box-shadow 0.15s;
         }
