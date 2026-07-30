@@ -411,7 +411,7 @@ export default function About({ onNavClick }) {
     setTimeout(() => {
       setToast('done');
       const a = Object.assign(document.createElement('a'), { href: '/resume.pdf', download: 'Sujith_Resume.pdf' });
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      document.body.appendChild(a); a.click(); if (a.parentNode) a.parentNode.removeChild(a);
       setTimeout(() => setToast(null), 3000);
     }, 1600);
   };

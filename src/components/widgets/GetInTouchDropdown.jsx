@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Copy, Calendar, Send, Check, ArrowUpRight, ChevronLeft, Loader2 } from 'lucide-react';
 import { FaLinkedin } from 'react-icons/fa';
+import { useIsland } from '../../context/IslandContext';
 
 export default function GetInTouchDropdown({
   email = "sujithreddy1546@gmail.com",
@@ -9,6 +10,7 @@ export default function GetInTouchDropdown({
   linkedinUrl = "https://www.linkedin.com/in/thota-sujith-reddy-88a650275/",
   onSubmit
 }) {
+  const { triggerIsland } = useIsland();
   const [open, setOpen] = useState(false);
   const [view, setView] = useState("menu"); // "menu" | "form"
   const [copied, setCopied] = useState(false);
@@ -19,6 +21,7 @@ export default function GetInTouchDropdown({
 
   useEffect(() => {
     function handleClickOutside(e) {
+      if (!e.target || (document.body && !document.body.contains(e.target))) return;
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setOpen(false);
         setTimeout(() => setView("menu"), 200);
@@ -43,6 +46,7 @@ export default function GetInTouchDropdown({
       await navigator.clipboard.writeText(email);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
+      triggerIsland({ title: 'Copied!', subtitle: email, icon: <Check size={16} strokeWidth={3}/>, color: '#10b981', duration: 1500 });
     } catch (err) {
       console.error("Failed to copy email:", err);
     }

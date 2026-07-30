@@ -198,7 +198,7 @@ export default function QRModal({
       link.download = `${contactName.replace(/\s+/g, "_")}_card.png`;
       document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
+      if (link.parentNode) link.parentNode.removeChild(link);
       URL.revokeObjectURL(url);
     }, "image/png");
 

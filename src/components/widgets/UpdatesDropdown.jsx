@@ -28,6 +28,7 @@ export default function UpdatesDropdown() {
 
   useEffect(() => {
     function handleClickOutside(e) {
+      if (!e.target || (document.body && !document.body.contains(e.target))) return;
       if (ref.current && !ref.current.contains(e.target)) setOpen(false);
     }
     document.addEventListener('mousedown', handleClickOutside);

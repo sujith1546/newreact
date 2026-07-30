@@ -155,7 +155,7 @@ export default function Sidebar({ activeSection, onNavClick }) {
       link.download = 'resume.pdf';
       document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
+      if (link.parentNode) link.parentNode.removeChild(link);
 
       // Final Island state: Success
       triggerIsland({

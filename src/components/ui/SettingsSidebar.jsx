@@ -214,95 +214,6 @@ export default function SettingsSidebar() {
   const renderTab = () => {
     if (activeTab === 'appearance') return (
       <div>
-        <Section title="AI Persona (Visitor Experience)" />
-        <Row icon={User} iconColor="#ec4899" label="Active Persona" sublabel="Dynamically reorders the UI sections">
-          <div style={{ display: 'flex', gap: '4px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', padding: '3px', borderRadius: '6px' }}>
-            {['general', 'developer', 'recruiter'].map(p => (
-              <button
-                key={p} onClick={() => { setPersona(p); showToast(`Persona -> ${p}`); }}
-                style={{
-                  background: persona === p ? (isDark ? '#334155' : '#fff') : 'transparent',
-                  color: persona === p ? (isDark ? '#fff' : '#000') : (isDark ? '#94a3b8' : '#64748b'),
-                  border: 'none', borderRadius: '4px', padding: '2px 6px', fontSize: '10px', fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize',
-                  boxShadow: persona === p ? `inset 0 0 0 1px ${accent}55` : 'none',
-                }}
-              >
-                {p}
-              </button>
-            ))}
-          </div>
-        </Row>
-
-        <Section title="Theme" />
-        <Row icon={isDark ? Moon : Sun} iconColor={isDark ? '#8b5cf6' : '#f59e0b'} label="Dark Mode" sublabel={isDark ? 'Night theme active' : 'Light theme active'}>
-          <Toggle checked={isDark} onChange={toggleTheme} accent={isDark ? '#8b5cf6' : '#f59e0b'} />
-        </Row>
-
-        <Section title="Accent Color" />
-        <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: '8px',
-          padding: '14px', borderRadius: '14px',
-          background: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-          border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}`,
-          marginBottom: '8px',
-        }}>
-          {ACCENTS.map(a => (
-            <button
-              key={a.key}
-              onClick={() => { setAccentColor(a.key); showToast(`Accent → ${a.label}`); }}
-              title={a.label}
-              style={{
-                width: '100%', aspectRatio: '1', borderRadius: '50%', cursor: 'pointer',
-                background: a.hex, border: 'none', position: 'relative',
-                boxShadow: accentColor === a.key ? `0 0 0 3px ${isDark ? '#1e1030' : '#fff'}, 0 0 0 5px ${a.hex}` : 'none',
-                transform: accentColor === a.key ? 'scale(1.15)' : 'scale(1)',
-                transition: 'all 0.25s cubic-bezier(0.16,1,0.3,1)',
-              }}
-            >
-              {accentColor === a.key && (
-                <Check size={10} style={{ color: '#fff', position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)' }} />
-              )}
-            </button>
-          ))}
-        </div>
-
-        <Section title="Typography & Spacing" />
-        <Row icon={Code2} iconColor="#06b6d4" label="App Font" sublabel="Typeface style across the site">
-          <div style={{ display: 'flex', gap: '4px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', padding: '3px', borderRadius: '6px' }}>
-            {['modern', 'developer', 'classic'].map(font => (
-              <button
-                key={font} onClick={() => { setFontFamily(font); showToast(`Font → ${font}`); }}
-                style={{
-                  background: fontFamily === font ? (isDark ? '#334155' : '#fff') : 'transparent',
-                  color: fontFamily === font ? (isDark ? '#fff' : '#000') : (isDark ? '#94a3b8' : '#64748b'),
-                  border: 'none', borderRadius: '4px', padding: '2px 8px', fontSize: '10px', fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize',
-                  boxShadow: fontFamily === font ? `inset 0 0 0 1px ${accent}55` : 'none',
-                }}
-              >
-                {font}
-              </button>
-            ))}
-          </div>
-        </Row>
-
-        <Row icon={Layout} iconColor="#8b5cf6" label="Layout Density" sublabel="Adjust spacing and scale">
-          <div style={{ display: 'flex', gap: '4px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', padding: '3px', borderRadius: '6px' }}>
-            {['compact', 'comfortable', 'relaxed'].map(density => (
-              <button
-                key={density} onClick={() => { setLayoutDensity(density); showToast(`Density → ${density}`); }}
-                style={{
-                  background: layoutDensity === density ? (isDark ? '#334155' : '#fff') : 'transparent',
-                  color: layoutDensity === density ? (isDark ? '#fff' : '#000') : (isDark ? '#94a3b8' : '#64748b'),
-                  border: 'none', borderRadius: '4px', padding: '2px 8px', fontSize: '10px', fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize',
-                  boxShadow: layoutDensity === density ? `inset 0 0 0 1px ${accent}55` : 'none',
-                }}
-              >
-                {density}
-              </button>
-            ))}
-          </div>
-        </Row>
-
         <Section title="Glassmorphism" />
         <div style={{
           padding: '14px', borderRadius: '14px',
@@ -351,91 +262,13 @@ export default function SettingsSidebar() {
     if (activeTab === 'ai') return (
       <div>
         <Section title="AI Behavior" />
-        <Row icon={Bot} iconColor="#8b5cf6" label="Response Style" sublabel="Adjust AI verbosity">
-          <div style={{ display: 'flex', gap: '4px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', padding: '3px', borderRadius: '6px' }}>
-            {['concise', 'balanced', 'detailed'].map(style => (
-              <button
-                key={style} onClick={() => { setAiResponseStyle(style); showToast(`Style → ${style}`); }}
-                style={{
-                  background: aiResponseStyle === style ? (isDark ? '#334155' : '#fff') : 'transparent',
-                  color: aiResponseStyle === style ? (isDark ? '#fff' : '#000') : (isDark ? '#94a3b8' : '#64748b'),
-                  border: 'none', borderRadius: '4px', padding: '2px 6px', fontSize: '10px', fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize',
-                  boxShadow: aiResponseStyle === style ? `inset 0 0 0 1px ${accent}55` : 'none',
-                }}
-              >
-                {style}
-              </button>
-            ))}
-          </div>
-        </Row>
-        <Row icon={Volume2} iconColor="#8b5cf6" label="Voice Replies (beta)" sublabel="Read replies aloud via speech synth">
-          <Toggle checked={aiVoice} onChange={v => { setAiVoice(v); showToast(v ? 'Voice ON' : 'Voice OFF'); }} />
-        </Row>
         <Row icon={Sparkles} iconColor="#10b981" label="Screen Director" sublabel="AI auto-navigates to relevant sections">
           <Toggle checked={aiAutoNav} onChange={v => { setAiAutoNav(v); showToast(v ? 'Auto-nav ON' : 'Auto-nav OFF'); }} />
-        </Row>
-        
-        <Section title="Intelligence & Context" />
-        <Row icon={Info} iconColor="#3b82f6" label="Context Range" sublabel="How much data AI analyzes">
-          <div style={{ display: 'flex', gap: '4px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', padding: '3px', borderRadius: '6px' }}>
-            {['local', 'global'].map(range => (
-              <button
-                key={range} onClick={() => { setAiContextRange(range); showToast(`Context → ${range}`); }}
-                style={{
-                  background: aiContextRange === range ? (isDark ? '#334155' : '#fff') : 'transparent',
-                  color: aiContextRange === range ? (isDark ? '#fff' : '#000') : (isDark ? '#94a3b8' : '#64748b'),
-                  border: 'none', borderRadius: '4px', padding: '2px 8px', fontSize: '10px', fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize',
-                  boxShadow: aiContextRange === range ? `inset 0 0 0 1px ${accent}55` : 'none',
-                }}
-              >
-                {range}
-              </button>
-            ))}
-          </div>
-        </Row>
-        
-        <Row icon={Zap} iconColor="#eab308" label="Reasoning Depth" sublabel="Speed vs. Accuracy">
-          <div style={{ display: 'flex', gap: '4px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', padding: '3px', borderRadius: '6px' }}>
-            {['lightning', 'deep search'].map(depth => (
-              <button
-                key={depth} onClick={() => { setAiReasoningDepth(depth); showToast(`Depth → ${depth}`); }}
-                style={{
-                  background: aiReasoningDepth === depth ? (isDark ? '#334155' : '#fff') : 'transparent',
-                  color: aiReasoningDepth === depth ? (isDark ? '#fff' : '#000') : (isDark ? '#94a3b8' : '#64748b'),
-                  border: 'none', borderRadius: '4px', padding: '2px 8px', fontSize: '10px', fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize',
-                  boxShadow: aiReasoningDepth === depth ? `inset 0 0 0 1px ${accent}55` : 'none',
-                }}
-              >
-                {depth}
-              </button>
-            ))}
-          </div>
-        </Row>
-
-        <Row icon={Bot} iconColor="#ec4899" label="Persona Override" sublabel="AI personality style">
-          <div style={{ display: 'flex', gap: '4px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)', padding: '3px', borderRadius: '6px' }}>
-            {['professional', 'technical', 'clone'].map(persona => (
-              <button
-                key={persona} onClick={() => { setAiPersona(persona); showToast(`Persona → ${persona}`); }}
-                style={{
-                  background: aiPersona === persona ? (isDark ? '#334155' : '#fff') : 'transparent',
-                  color: aiPersona === persona ? (isDark ? '#fff' : '#000') : (isDark ? '#94a3b8' : '#64748b'),
-                  border: 'none', borderRadius: '4px', padding: '2px 8px', fontSize: '10px', fontWeight: 600, cursor: 'pointer', textTransform: 'capitalize',
-                  boxShadow: aiPersona === persona ? `inset 0 0 0 1px ${accent}55` : 'none',
-                }}
-              >
-                {persona}
-              </button>
-            ))}
-          </div>
         </Row>
         
         <Section title="Interface & Logs" />
         <Row icon={Code2} iconColor="#f59e0b" label="Show Thought Traces" sublabel="Display internal RAG steps">
           <Toggle checked={aiShowThoughts} onChange={v => { setAiShowThoughts(v); showToast(v ? 'Thoughts visible' : 'Thoughts hidden'); }} accent="#f59e0b" />
-        </Row>
-        <Row icon={MonitorPlay} iconColor="#14b8a6" label="Terminal Output Mode" sublabel="Hacker-style pure text UI">
-          <Toggle checked={aiTerminalMode} onChange={v => { setAiTerminalMode(v); showToast(v ? 'Terminal Mode ON' : 'Terminal Mode OFF'); }} accent="#14b8a6" />
         </Row>
 
         <Section title="Memory & History" />
@@ -465,48 +298,15 @@ export default function SettingsSidebar() {
 
     if (activeTab === 'access') return (
       <div>
-        <Section title="Keyboard Navigation" />
-        <Row icon={MonitorPlay} iconColor="#10b981" label="Focus HUD" sublabel="High-visibility neon focus outlines">
-          <Toggle checked={keyboardHud} onChange={v => { setKeyboardHud(v); showToast(v ? 'Focus HUD ON' : 'Focus HUD OFF'); }} accent="#10b981" />
-        </Row>
-
-        <Section title="Motion & Effects" />
-        <Row icon={uiAudio ? Volume2 : VolumeX} iconColor="#3b82f6" label="UI Sound Effects" sublabel="Subtle audio feedback on interactions">
-          <Toggle checked={uiAudio} onChange={v => { setUiAudio(v); showToast(v ? 'Sound ON' : 'Sound OFF'); }} accent="#3b82f6" />
-        </Row>
-        <Row icon={reduceMotion ? ZapOff : Zap} iconColor="#eab308" label="Reduce Motion" sublabel="Disables all animations globally">
-          <Toggle checked={reduceMotion} onChange={v => { setReduceMotion(v); showToast(v ? 'Motion reduced' : 'Motion enabled'); }} accent="#eab308" />
-        </Row>
-
         <Section title="Visual" />
         <Row icon={highContrast ? Eye : EyeOff} iconColor="#f97316" label="High Contrast" sublabel="Boosts text and border visibility">
           <Toggle checked={highContrast} onChange={v => { setHighContrast(v); showToast(v ? 'High contrast ON' : 'High contrast OFF'); }} accent="#f97316" />
         </Row>
-
-        <div style={{
-          marginTop: '8px', padding: '12px 14px', borderRadius: '12px',
-          background: isDark ? 'rgba(234,179,8,0.06)' : 'rgba(234,179,8,0.05)',
-          border: `1px solid ${isDark ? 'rgba(234,179,8,0.18)' : 'rgba(234,179,8,0.15)'}`,
-          display: 'flex', gap: '10px', alignItems: 'flex-start',
-        }}>
-          <Shield size={13} style={{ color: '#eab308', marginTop: '1px', flexShrink: 0 }} />
-          <p style={{ margin: 0, fontSize: '11px', lineHeight: 1.6, color: isDark ? '#92400e' : '#78350f', color: isDark ? '#fde68a' : '#92400e' }}>
-            Reduce Motion also respects your OS-level accessibility preference automatically.
-          </p>
-        </div>
       </div>
     );
 
     if (activeTab === 'pro') return (
       <div>
-        <Section title="Developer" />
-        <Row icon={MonitorPlay} iconColor="#14b8a6" label="Performance HUD" sublabel="Live FPS and render diagnostics">
-          <Toggle checked={devMode} onChange={v => { setDevMode(v); showToast(v ? 'HUD enabled' : 'HUD disabled'); }} accent="#14b8a6" />
-        </Row>
-        <Row icon={Code2} iconColor="#ec4899" label="Live State Inspector" sublabel="View real-time JSON application state">
-          <Toggle checked={showStateInspector} onChange={v => { setShowStateInspector(v); showToast(v ? 'Inspector ON' : 'Inspector OFF'); }} accent="#ec4899" />
-        </Row>
-
         <Section title="Portfolio" />
         <ActionBtn
           label="View Source Code"

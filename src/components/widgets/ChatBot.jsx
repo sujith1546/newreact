@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabaseClient';
-import { X, Send, Loader2, Bot, User, Atom, RotateCcw, Trash2, Copy, Check, ChevronDown, ChevronUp, Info, Mic, Cpu, Layers, Code, Zap, Paperclip, Volume2, VolumeX } from 'lucide-react';
+import { X, Send, Loader2, Bot, User, Atom, RotateCcw, Trash2, Copy, Check, ChevronDown, ChevronUp, Info, Mic, Cpu, Layers, Code, Zap, Paperclip, Volume2, VolumeX, AlertCircle } from 'lucide-react';
 import { useIsland } from '../../context/IslandContext';
 import { useTheme } from '../../context/ThemeContext';
 import ThoughtTrace from './ThoughtTrace';

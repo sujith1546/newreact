@@ -11,6 +11,10 @@ export default function DevToolsDetector() {
 
     // Method 1: Dimension Check
     const checkDimensions = () => {
+      if (typeof window !== 'undefined' && sessionStorage.getItem('devtools_alert_fired')) {
+        return;
+      }
+
       const threshold = 160;
       if (
         window.outerWidth - window.innerWidth > threshold ||
@@ -19,6 +23,7 @@ export default function DevToolsDetector() {
         if (!devtoolsOpen && !hasTriggeredRef.current) {
           devtoolsOpen = true;
           hasTriggeredRef.current = true;
+          sessionStorage.setItem('devtools_alert_fired', 'true');
           fireVibeAlert();
         }
       } else {

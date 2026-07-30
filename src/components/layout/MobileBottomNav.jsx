@@ -230,9 +230,10 @@ END:VCARD`;
     link.setAttribute('download', 'sujith_thota.vcf');
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+    if (link.parentNode) link.parentNode.removeChild(link);
     URL.revokeObjectURL(url);
     setIsMoreOpen(false);
+    triggerIsland({ title: 'vCard Downloaded', subtitle: 'Saved contact card', icon: <Check size={16} strokeWidth={3}/>, color: '#10b981', duration: 2000 });
   };
 
 

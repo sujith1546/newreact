@@ -83,6 +83,11 @@ export function IslandProvider({ children }) {
   }, []);
 
   const triggerIsland = useCallback(({ title, subtitle, icon, color = '#10b981', duration = 3200, progress = null }) => {
+    // Deduplicate if identical toast is currently displayed or queued at back of queue
+    const lastItem = queueRef.current[queueRef.current.length - 1];
+    if (lastItem && lastItem.title === title && lastItem.subtitle === subtitle) {
+      return;
+    }
     queueRef.current.push({ title, subtitle, icon, color, duration, progress });
     if (!isProcessingRef.current) {
       processNextInQueue();

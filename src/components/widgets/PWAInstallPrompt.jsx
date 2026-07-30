@@ -9,6 +9,10 @@ export default function PWAInstallPrompt() {
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
   const [isDismissed, setIsDismissed] = useState(false);
 
+  // Intelligent 5-second timer state
+  const [timeLeft, setTimeLeft] = useState(5.0);
+  const [isHovered, setIsHovered] = useState(false);
+
   const {
     showToast,
     countdown,
@@ -40,6 +44,26 @@ export default function PWAInstallPrompt() {
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
   }, []);
+
+  // 5-second countdown timer with intelligent pause-on-hover
+  useEffect(() => {
+    if (!showInstallPrompt || showToast || isDismissed) return;
+
+    const interval = setInterval(() => {
+      if (!isHovered) {
+        setTimeLeft((prev) => {
+          if (prev <= 0.1) {
+            clearInterval(interval);
+            setIsDismissed(true);
+            return 0;
+          }
+          return Math.max(0, prev - 0.1);
+        });
+      }
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [showInstallPrompt, showToast, isDismissed, isHovered]);
 
   const handleInstallClick = async () => {
     if (deferredPrompt) {
@@ -157,18 +181,23 @@ export default function PWAInstallPrompt() {
           style={{ position: 'fixed', bottom: '18px', right: '92px', zIndex: 9998 }}
         >
           {/* Card */}
-          <div style={{
-            background: 'var(--bg-secondary)',
-            border: '1px solid var(--border-color)',
-            borderRadius: '14px',
-            padding: '14px 16px',
-            maxWidth: '300px',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.14)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '10px',
-            position: 'relative',
-          }}>
+          <div
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            style={{
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--border-color)',
+              borderRadius: '14px',
+              padding: '14px 16px',
+              maxWidth: '300px',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.14)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '10px',
+              position: 'relative',
+              overflow: 'hidden',
+            }}
+          >
             {/* Header row */}
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
               <div style={{
@@ -190,6 +219,9 @@ export default function PWAInstallPrompt() {
                   ) : (
                     'Add this portfolio to your home screen for quick offline access.'
                   )}
+                </p>
+                <p style={{ margin: '4px 0 0', fontSize: '10.5px', fontWeight: 600, color: isHovered ? '#8b5cf6' : 'var(--text-muted)' }}>
+                  {isHovered ? '⏸️ Paused while inspecting' : `⏱️ Auto-dismissing in ${Math.ceil(timeLeft)}s…`}
                 </p>
               </div>
               <button
@@ -223,6 +255,21 @@ export default function PWAInstallPrompt() {
                 <Download size={13} /> Install App
               </button>
             )}
+
+            {/* Glowing 3px Gradient Progress Bar along card bottom */}
+            <div
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                height: '3px',
+                width: `${(timeLeft / 5.0) * 100}%`,
+                background: 'linear-gradient(90deg, #3b82f6, #8b5cf6, #10b981)',
+                boxShadow: isHovered ? '0 0 12px #8b5cf6' : '0 0 8px rgba(59,130,246,0.6)',
+                transition: isHovered ? 'none' : 'width 0.1s linear',
+                borderRadius: '0 0 14px 14px',
+              }}
+            />
 
             {/* Caret arrow pointing right toward Atom AI button */}
             <div style={{

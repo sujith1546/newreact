@@ -12,8 +12,6 @@ import {
   TimezoneStatus,
   ChatBot,
   CommandPalette,
-  PerformanceHUD,
-  LiveStateInspector,
   MobileStatusPanel,
   ParticleCanvas,
   SectionSpotlight
@@ -478,8 +476,6 @@ export default function PortfolioLayout() {
       <ChatBot />
       <CommandPalette />
       <SettingsSidebar />
-      <PerformanceHUD />
-      <LiveStateInspector />
 
       {isMobile && <MobileStatusPanel isOpen={isStatusOpen} onClose={() => setIsStatusOpen(false)} />}
       {isMobile && <MobileBottomNav activeSection={activeSection} onNavClick={handleNavClick} />}

@@ -107,6 +107,7 @@ export default function DynamicIsland() {
   useEffect(() => {
     if (!isHudOpen) return;
     const handleClickOutside = (e) => {
+      if (!e.target || (document.body && !document.body.contains(e.target))) return;
       if (hudRef.current && !hudRef.current.contains(e.target)) {
         closeHud();
       }
@@ -151,7 +152,9 @@ export default function DynamicIsland() {
     link.download = 'Sujith_Thota_Resume.pdf';
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
+    if (link.parentNode) {
+      link.parentNode.removeChild(link);
+    }
   };
 
   return (

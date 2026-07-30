@@ -184,7 +184,7 @@ export default function Contact() {
     const vCard = `BEGIN:VCARD\nVERSION:3.0\nN:Reddy;Thota Sujith;;;\nFN:Thota Sujith Reddy\nTITLE:Data Scientist & ML Engineer\nEMAIL;TYPE=INTERNET:${EMAIL}\nTEL;TYPE=CELL:${PHONE}\nURL:https://github.com/sujith1546\nEND:VCARD`;
     const url = URL.createObjectURL(new Blob([vCard], { type: 'text/vcard' }));
     const a = Object.assign(document.createElement('a'), { href: url, download: 'Thota_Sujith_Reddy.vcf' });
-    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    document.body.appendChild(a); a.click(); if (a.parentNode) a.parentNode.removeChild(a); URL.revokeObjectURL(url);
     triggerIsland({ title: 'vCard Downloaded', subtitle: 'Saved contact card', icon: <Check size={16} strokeWidth={3}/>, color: '#10b981', duration: 2000 });
   };
 

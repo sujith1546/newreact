@@ -25,8 +25,6 @@ export { default as MobileStatusPanel } from './widgets/MobileStatusPanel';
 export { default as MobileDashboard } from './widgets/MobileDashboard';
 
 // 3. Developer & Diagnostic Tools
-export { default as PerformanceHUD } from './dev/PerformanceHUD';
-export { default as LiveStateInspector } from './dev/LiveStateInspector';
 export { default as SystemDiagnostics } from './dev/SystemDiagnostics';
 export { default as DevToolsDetector } from './dev/DevToolsDetector';
 export { default as DiagnosticsToggle } from './dev/DiagnosticsToggle';
