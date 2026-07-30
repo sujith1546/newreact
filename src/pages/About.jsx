@@ -647,10 +647,6 @@ export default function About({ onNavClick }) {
           border-color: color-mix(in srgb, var(--primary-blue) 35%, var(--border-color));
           box-shadow: 0 10px 32px rgba(0,0,0,0.06);
         }
-        .ab-cta-top-accent {
-          position: absolute; top: 0; left: 0; right: 0; height: 3.5px;
-          background: linear-gradient(90deg, #3b82f6 0%, #10b981 50%, #8b5cf6 100%);
-        }
         .ab-cta-left { display: flex; flex-direction: column; gap: 6px; max-width: 560px; }
         
         .ab-cta-badges-row {
@@ -872,8 +868,6 @@ export default function About({ onNavClick }) {
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.4, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
         >
-          <div className="ab-cta-top-accent" />
-
           {/* Left: CTA text */}
           <div className="ab-cta-left">
             <h2 className="ab-cta-title">Let's build something great.</h2>
