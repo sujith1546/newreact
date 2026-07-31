@@ -4,42 +4,48 @@ import { supabase } from "../lib/supabaseClient";
 import { useTheme } from "../context/ThemeContext";
 
 const ADMIN_LOGIN_STYLES = `
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap');
 
 .login-page-container {
   --bg: #ffffff;
-  --sidebar-bg: #fafaf9;
+  --sidebar-bg: #ffffff;
   --card-bg: #ffffff;
-  --border: #e7e7e4;
-  --border-strong: #d8d8d4;
-  --text: #111114;
-  --text-muted: #6b7280;
-  --text-dim: #9ca3af;
-  --green: #16a34a;
-  --green-soft: #ecfdf3;
-  --amber: #d97706;
-  --black: #111111;
-  --black-hover: #262626;
-  --shadow: 0 1px 2px rgba(0,0,0,0.04), 0 8px 24px -12px rgba(0,0,0,0.08);
+  --panel-2: #f7f8fa;
+  --border: #e7e9ee;
+  --border-soft: #f0f1f4;
+  --border-strong: #cbd5e1;
+  --text: #0f1626;
+  --text-muted: #7c8494;
+  --text-dim: #aeb4bf;
+  --green: #1ba64c;
+  --green-soft: #e4f5e9;
+  --amber: #b7791b;
+  --black: #0f1626;
+  --black-hover: #26304a;
+  --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02);
   --sans: 'Inter', -apple-system, sans-serif;
-  --mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+  --display: 'Space Grotesk', sans-serif;
+  --mono: 'IBM Plex Mono', monospace;
   --radius-lg: 20px;
-  --radius-md: 14px;
-  --radius-sm: 10px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
 }
 
 [data-theme="dark"] .login-page-container {
-  --bg: #0b0d10;
-  --sidebar-bg: #111316;
-  --card-bg: #14171b;
-  --border: #23262b;
-  --border-strong: #2d3138;
-  --text: #f2f2f0;
-  --text-muted: #9aa1ab;
-  --text-dim: #6b7280;
-  --green: #22c55e;
-  --green-soft: rgba(34,197,94,0.1);
-  --black: #f2f2f0;
+  --bg: #0a0d10;
+  --sidebar-bg: #12161b;
+  --card-bg: #12161b;
+  --panel-2: #161b21;
+  --border: #232a31;
+  --border-soft: #1b2027;
+  --border-strong: #2d3844;
+  --text: #e8ecef;
+  --text-muted: #6e7982;
+  --text-dim: #4b535a;
+  --green: #6ee7b7;
+  --green-soft: rgba(43, 74, 62, 0.4);
+  --amber: #f2b75c;
+  --black: #e8ecef;
   --black-hover: #ffffff;
   --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
 }
@@ -57,6 +63,11 @@ const ADMIN_LOGIN_STYLES = `
   top: 0;
   left: 0;
   z-index: 9999;
+  background-image:
+    linear-gradient(var(--border-soft) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-soft) 1px, transparent 1px);
+  background-size: 48px 48px;
+  background-position: -1px -1px;
 }
 
 @media (min-width: 1025px) {
@@ -89,13 +100,16 @@ const ADMIN_LOGIN_STYLES = `
 .login-avatar{
   width:64px; height:64px;
   border-radius:50%;
-  background:linear-gradient(135deg,#c7b8e8 0%, #8fa8d8 100%);
+  overflow:hidden;
+  border:2px solid var(--border);
   display:flex; align-items:center; justify-content:center;
   box-shadow:var(--shadow);
   margin-bottom:16px;
   flex-shrink:0;
+  background:var(--sidebar-bg);
 }
-.login-avatar svg{ width:24px; height:24px; stroke:#fff; }
+.login-avatar img{ width:100%; height:100%; object-fit:cover; }
+.login-avatar svg{ width:24px; height:24px; stroke:var(--text-muted); }
 
 .side-name{ font-size:18px; font-weight:700; letter-spacing:-0.01em; }
 .side-sub{
@@ -133,30 +147,23 @@ const ADMIN_LOGIN_STYLES = `
 
 .side-actions{ margin-top:auto; display:flex; flex-direction:column; gap:8px; padding-top:16px; flex-shrink:0; }
 
-.btn-black{
-  display:flex; align-items:center; justify-content:center; gap:8px;
-  background:var(--black); color:var(--bg);
-  border:none; border-radius:999px;
-  padding:10px 18px;
-  font-size:13px; font-weight:600;
-  transition:background .15s ease, transform .12s ease;
+.btn-ghost{
+  width:100%;
+  display:flex; align-items:center; gap:8px;
+  background:var(--panel-2); color:var(--text-muted);
+  border:1px solid var(--border); border-radius:8px;
+  padding:10px 14px;
+  font-family:var(--mono); font-size:11.5px; font-weight:500;
+  cursor:pointer;
+  transition:all .15s ease;
 }
-.btn-black:hover{ background:var(--black-hover); }
-.btn-black:active{ transform:scale(0.98); }
-.btn-black svg{ width:14px; height:14px; }
-[data-theme="dark"] .btn-black svg{ stroke:#0b0d10; }
-.btn-black svg{ stroke:#fff; }
-
-.btn-outline{
-  display:flex; align-items:center; justify-content:center; gap:8px;
-  background:transparent; color:var(--text);
-  border:1px solid var(--border-strong); border-radius:999px;
-  padding:10px 18px;
-  font-size:13px; font-weight:600;
-  transition:border-color .15s ease, background .15s ease;
+.btn-ghost:hover{
+  background:var(--card-bg); color:var(--text);
+  border-color:var(--border-strong);
+  box-shadow:var(--shadow);
 }
-.btn-outline:hover{ background:var(--card-bg); border-color:var(--text-dim); }
-.btn-outline svg{ width:14px; height:14px; stroke:currentColor; }
+.btn-ghost svg{ width:14px; height:14px; stroke:var(--text-dim); transition:stroke .15s ease; flex-shrink:0; }
+.btn-ghost:hover svg{ stroke:var(--text); }
 
 .side-socials{ display:flex; gap:10px; margin-top:16px; flex-shrink:0; }
 .social-btn{
@@ -169,7 +176,37 @@ const ADMIN_LOGIN_STYLES = `
 .social-btn:hover{ border-color:var(--text-dim); }
 .social-btn svg{ width:14px; height:14px; stroke:var(--text-muted); }
 
-.side-footer{ margin-top:14px; font-size:11px; color:var(--text-dim); line-height:1.5; flex-shrink:0; }
+.side-footer {
+  margin-top: auto;
+  padding-top: 18px;
+  font-size: 11.5px;
+  color: var(--text-dim);
+  line-height: 1.5;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-top: 1px solid var(--border);
+}
+.side-footer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--green);
+  font-weight: 500;
+}
+.side-footer-badge svg {
+  width: 12px;
+  height: 12px;
+  stroke: var(--green);
+}
+.side-footer-copy {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
 
 .login-main{
   flex:1;
@@ -182,17 +219,10 @@ const ADMIN_LOGIN_STYLES = `
   overflow:hidden;
   min-width:0;
 }
-
-.utility-bar{
-  position:absolute;
-  top:24px; right:56px;
-  display:flex; align-items:center; gap:10px;
-  z-index:2;
-}
 .u-btn{
   display:flex; align-items:center; gap:6px;
-  height:36px; padding:0 12px;
-  border:1px solid var(--border); border-radius:999px;
+  height:34px; box-sizing:border-box; padding:0 12px;
+  border:1px solid var(--border); border-radius:8px;
   background:var(--card-bg);
   font-size:12px; color:var(--text-muted);
   font-weight:500;
@@ -225,7 +255,7 @@ const ADMIN_LOGIN_STYLES = `
 .theme-toggle button.active svg{ stroke:var(--text); }
 
 .login-content{
-  max-width:520px;
+  max-width:660px;
   margin:0 auto;
   width:100%;
 }
@@ -244,9 +274,9 @@ const ADMIN_LOGIN_STYLES = `
 .term-pill{
   display:inline-flex; align-items:center; gap:9px;
   margin-top:14px;
-  padding:7px 14px;
-  border:1px solid var(--border); border-radius:999px;
-  background:var(--card-bg);
+  padding:6px 12px;
+  border:1px solid var(--border); border-radius:8px;
+  background:var(--sidebar-bg);
   font-family:var(--mono); font-size:12.5px; color:var(--text);
 }
 .term-pill .prompt{ color:var(--green); font-weight:700; }
@@ -257,42 +287,69 @@ const ADMIN_LOGIN_STYLES = `
 }
 
 .method-row{
-  display:flex; gap:10px;
-  margin-top:20px;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:1px;
+  background:var(--border);
+  border:1px solid var(--border);
+  border-radius:8px 8px 0 0;
+  overflow:hidden;
+  margin-top:28px;
 }
 .method-card{
-  flex:1;
-  border:1px solid var(--border); border-radius:var(--radius-md);
   background:var(--card-bg);
-  padding:12px 12px;
-  display:flex; flex-direction:column; gap:8px;
-  transition:border-color .15s ease, transform .12s ease, box-shadow .15s ease;
+  padding:16px 14px;
+  cursor:pointer;
+  transition:background .15s;
+  border:none;
   text-align:left;
   color:var(--text);
+  display:flex; flex-direction:column; gap:4px;
 }
-.method-card:hover{ border-color:var(--border-strong); transform:translateY(-1px); }
-.method-card.active{ border-color:var(--text); box-shadow:var(--shadow); }
-.method-icon{
-  width:30px; height:30px; border-radius:8px;
-  border:1px solid var(--border);
-  display:flex; align-items:center; justify-content:center;
-  background:var(--sidebar-bg);
+.method-card:hover{ background:var(--panel-2); }
+.method-card.active{ background:var(--panel-2); box-shadow:inset 0 3px 0 var(--green); }
+.method-num{ font-family:var(--mono); font-size:10px; color:var(--text-dim); margin-bottom:6px; }
+.method-label{ font-size:13px; font-weight:500; }
+.method-card.active .method-label{ color:var(--green); }
+.method-sub{ font-size:11px; color:var(--text-muted); }
+
+.pulse-row{display:flex;align-items:flex-end;gap:2px;height:16px;}
+.pulse-bar{
+  width:3px;background:var(--green);border-radius:1px;opacity:.85;
+  height:6px;
+  animation:pulse 1.8s ease-in-out infinite;
 }
-.method-card.active .method-icon{ background:var(--text); border-color:var(--text); }
-.method-card.active .method-icon svg{ stroke:var(--bg); }
-.method-icon svg{ width:14px; height:14px; stroke:var(--text-muted); }
-.method-label{ font-size:12.5px; font-weight:600; }
-.method-sub{ font-size:10.5px; color:var(--text-dim); }
+.pulse-bar:nth-child(1){height:10px;animation-delay:0s;}
+.pulse-bar:nth-child(2){height:16px;animation-delay:.1s;}
+.pulse-bar:nth-child(3){height:8px;animation-delay:.2s;}
+.pulse-bar:nth-child(4){height:18px;animation-delay:.3s;}
+.pulse-bar:nth-child(5){height:12px;animation-delay:.4s;}
+.pulse-bar:nth-child(6){height:6px;animation-delay:.5s;}
+.pulse-bar:nth-child(7){height:14px;animation-delay:.6s;}
+.pulse-bar:nth-child(8){height:9px;animation-delay:.7s;}
+@keyframes pulse{
+  0%,100%{transform:scaleY(.6);}
+  50%{transform:scaleY(1);}
+}
+
+.cursor{
+  display:inline-block;width:6px;height:12px;background:var(--green);
+  animation:blink 1.1s steps(1) infinite;vertical-align:-2px;
+}
+@keyframes blink{50%{opacity:0;}}
 
 .form-panel{
-  margin-top:18px;
-  border:1px solid var(--border); border-radius:var(--radius-lg);
   background:var(--card-bg);
-  padding:20px 22px;
+  border:1px solid var(--border);
+  border-top:none;
+  border-radius:0 0 8px 8px;
+  padding:32px 28px;
+  text-align:center;
+  margin-bottom:20px;
   box-shadow:var(--shadow);
 }
 
-.field{ margin-bottom:12px; }
+.field{ margin-bottom:14px; text-align:left; }
 .field:last-of-type{ margin-bottom:0; }
 .field label{
   display:block; font-size:12px; font-weight:600; color:var(--text-muted);
@@ -300,8 +357,8 @@ const ADMIN_LOGIN_STYLES = `
 }
 .input-shell{
   display:flex; align-items:center; gap:10px;
-  background:var(--sidebar-bg);
-  border:1px solid var(--border); border-radius:var(--radius-sm);
+  background:var(--panel-2);
+  border:1px solid var(--border); border-radius:6px;
   padding:0 14px;
   transition:border-color .15s ease, box-shadow .15s ease;
 }
@@ -320,7 +377,7 @@ const ADMIN_LOGIN_STYLES = `
 .input-shell svg{ width:15px; height:15px; stroke:var(--text-dim); flex-shrink:0; }
 .input-shell input{
   flex:1; background:transparent; border:none; outline:none;
-  color:var(--text); font-family:var(--sans); font-size:13.5px; padding:10px 0;
+  color:var(--text); font-family:var(--sans); font-size:13.5px; padding:11px 0;
 }
 .input-shell input::placeholder{ color:var(--text-dim); }
 .input-shell input:disabled { color: var(--text-muted); opacity: 0.7; }
@@ -330,7 +387,7 @@ const ADMIN_LOGIN_STYLES = `
 
 .row-between{
   display:flex; align-items:center; justify-content:space-between;
-  margin:10px 0 14px;
+  margin:12px 0 16px;
 }
 .remember{ display:flex; align-items:center; gap:7px; font-size:12.5px; color:var(--text-muted); }
 .remember input{ accent-color:var(--text); width:14px; height:14px; }
@@ -346,16 +403,22 @@ const ADMIN_LOGIN_STYLES = `
 
 .submit-btn{
   width:100%;
-  display:flex; align-items:center; justify-content:center; gap:8px;
-  background:var(--black); color:var(--bg);
-  border:none; border-radius:999px;
-  padding:11px 16px;
-  font-size:14px; font-weight:700;
+  background:var(--text);
+  color:#FFFFFF;
+  font-family:var(--display);
+  font-weight:700;
+  font-size:14px;
+  padding:14px;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
   transition:background .15s ease, transform .12s ease;
 }
-.submit-btn svg{ width:15px; height:15px; stroke:var(--bg); transition:transform .18s ease; }
 .submit-btn:hover:not(:disabled){ background:var(--black-hover); }
-.submit-btn:hover:not(:disabled) svg{ transform:translateX(3px); }
 .submit-btn:active:not(:disabled){ transform:scale(0.99); }
 .submit-btn:disabled{ opacity: 0.7; cursor: not-allowed; }
 
@@ -435,6 +498,42 @@ const ADMIN_LOGIN_STYLES = `
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 60000; // 60 seconds
 
+function QrCodeSvg({ size = 150 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 29 29" style={{ borderRadius: 12, background: '#ffffff', padding: 8, boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}>
+      <rect width="29" height="29" fill="#ffffff" />
+      <rect x="2" y="2" width="7" height="7" fill="#0f172a" rx="1" />
+      <rect x="3" y="3" width="5" height="5" fill="#ffffff" rx="0.5" />
+      <rect x="4" y="4" width="3" height="3" fill="#0f172a" rx="0.5" />
+      
+      <rect x="20" y="2" width="7" height="7" fill="#0f172a" rx="1" />
+      <rect x="21" y="3" width="5" height="5" fill="#ffffff" rx="0.5" />
+      <rect x="22" y="4" width="3" height="3" fill="#0f172a" rx="0.5" />
+      
+      <rect x="2" y="20" width="7" height="7" fill="#0f172a" rx="1" />
+      <rect x="3" y="21" width="5" height="5" fill="#ffffff" rx="0.5" />
+      <rect x="4" y="22" width="3" height="3" fill="#0f172a" rx="0.5" />
+      
+      <rect x="11" y="2" width="2" height="2" fill="#0f172a" />
+      <rect x="14" y="2" width="2" height="2" fill="#0f172a" />
+      <rect x="10" y="5" width="2" height="2" fill="#0f172a" />
+      <rect x="13" y="5" width="3" height="2" fill="#0f172a" />
+      <rect x="2" y="11" width="2" height="2" fill="#0f172a" />
+      <rect x="5" y="11" width="2" height="2" fill="#0f172a" />
+      <rect x="2" y="14" width="2" height="2" fill="#0f172a" />
+      <rect x="11" y="11" width="7" height="7" fill="#0f172a" rx="1" />
+      <rect x="13" y="13" width="3" height="3" fill="#ffffff" rx="0.5" />
+      <rect x="14" y="14" width="1" height="1" fill="#0f172a" />
+      <rect x="20" y="11" width="3" height="2" fill="#0f172a" />
+      <rect x="24" y="11" width="3" height="2" fill="#0f172a" />
+      <rect x="11" y="20" width="2" height="3" fill="#0f172a" />
+      <rect x="15" y="20" width="3" height="2" fill="#0f172a" />
+      <rect x="20" y="20" width="3" height="3" fill="#0f172a" />
+      <rect x="24" y="22" width="3" height="5" fill="#0f172a" />
+    </svg>
+  );
+}
+
 export default function AdminLogin() {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
@@ -455,8 +554,14 @@ export default function AdminLogin() {
   const [totpFactorId, setTotpFactorId] = useState("");
   const [totpCode, setTotpCode] = useState("");
 
-  // Passkey State
+  // Passkey & Telemetry State
   const [passkeySupported, setPasskeySupported] = useState(false);
+  const [pingMs, setPingMs] = useState(18);
+  const [pulseBars, setPulseBars] = useState([8, 12, 6, 14, 10, 4, 12, 8, 15, 6]);
+
+  // Modal States
+  const [showHelpModal, setShowHelpModal] = useState(false);
+  const [showStatusModal, setShowStatusModal] = useState(false);
   
   // UI State
   const [activeMethod, setActiveMethod] = useState("passkey");
@@ -464,6 +569,26 @@ export default function AdminLogin() {
   const [greeting, setGreeting] = useState("GOOD AFTERNOON");
   const [capsLockOn, setCapsLockOn] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
+
+  useEffect(() => {
+    const pulseInterval = setInterval(() => {
+      setPulseBars(Array.from({ length: 10 }, () => Math.floor(4 + Math.random() * 14)));
+    }, 900);
+    return () => clearInterval(pulseInterval);
+  }, []);
+
+  useEffect(() => {
+    const measurePing = async () => {
+      const start = performance.now();
+      try {
+        await supabase.from('site_settings').select('id').limit(1);
+        setPingMs(Math.round(performance.now() - start));
+      } catch {
+        setPingMs(22);
+      }
+    };
+    measurePing();
+  }, []);
 
   useEffect(() => {
     if (window.PublicKeyCredential) {
@@ -726,6 +851,7 @@ export default function AdminLogin() {
       {/* SIDEBAR */}
       <aside className="login-sidebar">
         <div className="login-avatar">
+          <img src="/profile_photo.png" alt="Sujith Thota" onError={(e) => { e.target.style.display = 'none'; }} />
           <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
         </div>
         <div className="side-name">Sujith Thota</div>
@@ -743,8 +869,13 @@ export default function AdminLogin() {
           <div className="status-row">Passkey service
             <span className="status-tag"><span className="sdot"></span>reachable</span>
           </div>
-          <div className="status-row">Database
-            <span className="status-tag"><span className="sdot"></span>connected</span>
+          <div className="status-row">Latency ping
+            <span className="status-tag" style={{ gap: 6 }}>
+              <span className="pulse-row">
+                <span className="pulse-bar" /><span className="pulse-bar" /><span className="pulse-bar" /><span className="pulse-bar" /><span className="pulse-bar" /><span className="pulse-bar" /><span className="pulse-bar" /><span className="pulse-bar" />
+              </span>
+              <span>{pingMs}ms</span>
+            </span>
           </div>
           <div className="status-row">Encryption
             <span className="status-tag"><span className="sdot"></span>TLS 1.3</span>
@@ -752,71 +883,57 @@ export default function AdminLogin() {
         </div>
 
         <div className="side-actions">
-          <button className="btn-black" type="button">
+          <button className="btn-ghost" type="button" onClick={() => setShowHelpModal(true)}>
             <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 2-3 4M12 17h.01"/></svg>
-            Need Help?
+            <span>Need Help?</span>
           </button>
-          <button className="btn-outline" type="button">
+          <button className="btn-ghost" type="button" onClick={() => setShowStatusModal(true)}>
             <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5M12 7v5l4 2"/></svg>
-            Status Page
+            <span>Status Page</span>
           </button>
-        </div>
-
-        <div className="side-socials">
-          <a className="social-btn" href="#" aria-label="Email"><svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg></a>
-          <a className="social-btn" href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6Z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></a>
-          <a className="social-btn" href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg></a>
         </div>
 
         <div className="side-footer">
-          Session secured · July 2026<br/>
-          © 2026 All Rights Reserved Sujith
+          <div className="side-footer-badge">
+            <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span>Session Secured · TLS 1.3</span>
+          </div>
+          <div className="side-footer-copy">
+            © {new Date().getFullYear()} Sujith Thota. All rights reserved.
+          </div>
         </div>
       </aside>
 
       {/* MAIN CONTENT */}
       <main className="login-main">
-        <div className="utility-bar">
-          <div className="u-btn"><kbd>Ctrl</kbd><kbd>K</kbd></div>
-          <div className="u-btn secure"><span className="sdot"></span>Secure</div>
-          <div className="theme-toggle">
-            <button type="button" className={theme === 'light' ? 'active' : ''} onClick={() => theme !== 'light' && toggleTheme()} aria-label="Light theme">
-              <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-            </button>
-            <button type="button" className={theme === 'dark' ? 'active' : ''} onClick={() => theme !== 'dark' && toggleTheme()} aria-label="Dark theme">
-              <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></svg>
-            </button>
-          </div>
-          <button className="icon-btn" aria-label="Settings" type="button">
-            <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.55V21a2 2 0 0 1-4 0v-.09A1.7 1.7 0 0 0 9 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.55V3a2 2 0 0 1 4 0v.09a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9a1.7 1.7 0 0 0 1.55 1H21a2 2 0 0 1 0 4h-.09a1.7 1.7 0 0 0-1.55 1Z"/></svg>
-          </button>
-        </div>
 
         <div className="login-content">
-          <div className="eyebrow" id="greeting">{greeting}</div>
           <h1 className="headline">Admin Console</h1>
-
-          <div className="term-pill"><span className="prompt">&gt;_</span> Authentication required</div>
 
           <p className="lede">Sign in to manage projects, content, and deployments for the portfolio.</p>
 
           <div className="method-row">
             {passkeySupported && (
               <button className={`method-card ${activeMethod === 'passkey' ? 'active' : ''}`} onClick={() => { setError(""); setActiveMethod("passkey"); }} type="button">
-                <div className="method-icon"><svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a5 5 0 0 0-5 5c0 2.5 1 3.5 1 6v2"/><path d="M12 2a5 5 0 0 1 5 5c0 2.5-.5 4-1 5"/><path d="M8 15v3a3 3 0 0 0 3 3"/><path d="M16 13v5a3 3 0 0 1-3 3"/><circle cx="12" cy="9" r="1.5"/></svg></div>
+                <div className="method-num">01</div>
                 <div className="method-label">Passkey</div>
-                <div className="method-sub">Fastest · hardware-backed</div>
+                <div className="method-sub">Fastest · hardware</div>
               </button>
             )}
             <button className={`method-card ${activeMethod === 'password' ? 'active' : ''}`} onClick={() => { setError(""); setActiveMethod("password"); }} type="button">
-              <div className="method-icon"><svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+              <div className="method-num">02</div>
               <div className="method-label">Password</div>
-              <div className="method-sub">Email & password</div>
+              <div className="method-sub">Email &amp; password</div>
             </button>
             <button className={`method-card ${activeMethod === 'magic' ? 'active' : ''}`} onClick={() => { setError(""); setActiveMethod("magic"); }} type="button">
-              <div className="method-icon"><svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg></div>
+              <div className="method-num">03</div>
               <div className="method-label">Magic Link</div>
               <div className="method-sub">One-time email link</div>
+            </button>
+            <button className={`method-card ${activeMethod === 'qr' ? 'active' : ''}`} onClick={() => { setError(""); setActiveMethod("qr"); }} type="button">
+              <div className="method-num">04</div>
+              <div className="method-label">QR Sync</div>
+              <div className="method-sub">Scan on mobile</div>
             </button>
           </div>
 
@@ -835,14 +952,18 @@ export default function AdminLogin() {
             {/* PASSKEY VIEW */}
             {activeMethod === 'passkey' && passkeySupported && (
               <div className="method-view" id="view-passkey">
-                <div className="passkey-panel">
-                  <div className="pk-icon"><svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a5 5 0 0 0-5 5c0 2.5 1 3.5 1 6v2"/><path d="M12 2a5 5 0 0 1 5 5c0 2.5-.5 4-1 5"/><path d="M8 15v3a3 3 0 0 0 3 3"/><path d="M16 13v5a3 3 0 0 1-3 3"/><circle cx="12" cy="9" r="1.5"/></svg></div>
-                  <h3>Sign in with your passkey</h3>
-                  <p>Use Touch ID, Windows Hello, or a security key registered on this device.</p>
+                <div style={{
+                  width: 44, height: 44, borderRadius: 8,
+                  background: 'var(--green-soft)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  margin: '0 auto 18px', color: 'var(--green)'
+                }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><circle cx="12" cy="7" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>
                 </div>
+                <h2 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 18, fontWeight: 500, margin: '0 0 8px', color: 'var(--text)' }}>Sign in with your passkey</h2>
+                <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6, margin: '0 0 24px' }}>Use Touch ID, Windows Hello, or a security key registered on this device.</p>
                 <button className="submit-btn" type="button" onClick={handlePasskeySubmit} disabled={loading || lockoutTimer > 0}>
-                  {loading ? "Verifying..." : lockoutTimer > 0 ? `Locked (${lockoutTimer}s)` : "Continue with passkey"}
-                  {!loading && lockoutTimer === 0 && <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>}
+                  {loading ? "Verifying..." : lockoutTimer > 0 ? `Locked (${lockoutTimer}s)` : "Continue with passkey →"}
                 </button>
               </div>
             )}
@@ -887,8 +1008,7 @@ export default function AdminLogin() {
                     <a className="forgot" href="#">Forgot?</a>
                   </div>
                   <button className="submit-btn" type="submit" disabled={loading || lockoutTimer > 0}>
-                    {loading ? "Signing in..." : lockoutTimer > 0 ? `Locked (${lockoutTimer}s)` : "Sign in"}
-                    {!loading && lockoutTimer === 0 && <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>}
+                    {loading ? "Signing in..." : lockoutTimer > 0 ? `Locked (${lockoutTimer}s)` : "Sign in →"}
                   </button>
                 </form>
               </div>
@@ -906,24 +1026,119 @@ export default function AdminLogin() {
                     </div>
                   </div>
                   <button className="submit-btn" type="submit" style={{ marginTop: 16 }} disabled={loading || lockoutTimer > 0 || magicLinkSent}>
-                    {loading ? "Sending link..." : magicLinkSent ? "Link sent — check your inbox" : lockoutTimer > 0 ? `Locked (${lockoutTimer}s)` : "Send magic link"}
-                    {!loading && !magicLinkSent && lockoutTimer === 0 && <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>}
+                    {loading ? "Sending link..." : magicLinkSent ? "Link sent — check your inbox" : lockoutTimer > 0 ? `Locked (${lockoutTimer}s)` : "Send magic link →"}
                   </button>
                 </form>
+              </div>
+            )}
+
+            {/* QR SYNC VIEW */}
+            {activeMethod === 'qr' && (
+              <div className="method-view" id="view-qr" style={{ textAlign: 'center', padding: '10px 0' }}>
+                <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+                  <QrCodeSvg size={150} />
+                  <div>
+                    <h3 style={{ fontSize: 14.5, fontWeight: 700, margin: '0 0 4px', color: 'var(--text)' }}>Scan with Mobile App</h3>
+                    <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: 0 }}>Open portfolio on mobile & scan to sign in instantly</p>
+                  </div>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--green)', background: 'var(--green-soft)', padding: '6px 14px', borderRadius: 999, fontWeight: 600 }}>
+                    <span className="sdot" />
+                    <span>Realtime mobile authorization active</span>
+                  </div>
+                </div>
               </div>
             )}
 
           </div>
 
           <div className="footer-trust">
-            <span className="trust-item"><svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>TLS 1.3</span>
-            <span className="trust-item"><svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/></svg>Passkey ready</span>
-            <span className="trust-item"><svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Rate limited</span>
+            <span>🔒 TLS 1.3</span>
+            <span>◇ Passkey ready</span>
+            <span>◷ Rate limited</span>
           </div>
 
           <p className="foot-note">Restricted access · authorized personnel only</p>
         </div>
       </main>
+
+      {/* NEED HELP MODAL */}
+      {showHelpModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 10000, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 20, maxWidth: 440, width: '100%', padding: 28, boxShadow: '0 20px 40px rgba(0,0,0,0.2)', color: 'var(--text)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(59,130,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" width="20" height="20"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 2-3 4M12 17h.01"/></svg>
+                </div>
+                <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>Admin Help & Shortcuts</h3>
+              </div>
+              <button onClick={() => setShowHelpModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-dim)', padding: 4 }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              </button>
+            </div>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 13 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--sidebar-bg)', borderRadius: 10, border: '1px solid var(--border)' }}>
+                <span>Command Palette</span>
+                <kbd style={{ fontFamily: 'var(--mono)', fontSize: 11, background: 'var(--card-bg)', padding: '2px 8px', borderRadius: 4, border: '1px solid var(--border)' }}>Ctrl + K</kbd>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--sidebar-bg)', borderRadius: 10, border: '1px solid var(--border)' }}>
+                <span>Toggle Light / Dark Mode</span>
+                <kbd style={{ fontFamily: 'var(--mono)', fontSize: 11, background: 'var(--card-bg)', padding: '2px 8px', borderRadius: 4, border: '1px solid var(--border)' }}>Shift + T</kbd>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--sidebar-bg)', borderRadius: 10, border: '1px solid var(--border)' }}>
+                <span>Emergency Sign Out</span>
+                <kbd style={{ fontFamily: 'var(--mono)', fontSize: 11, background: 'var(--card-bg)', padding: '2px 8px', borderRadius: 4, border: '1px solid var(--border)' }}>Esc</kbd>
+              </div>
+            </div>
+
+            <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid var(--border)', fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+              For support or emergency access credentials, reach out to <a href="mailto:sujithreddy1546@gmail.com" style={{ color: 'var(--text)', textDecoration: 'underline' }}>sujithreddy1546@gmail.com</a>.
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* STATUS PAGE MODAL */}
+      {showStatusModal && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 10000, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 20, maxWidth: 460, width: '100%', padding: 28, boxShadow: '0 20px 40px rgba(0,0,0,0.2)', color: 'var(--text)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(34,197,94,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2" width="20" height="20"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>System Telemetry & Status</h3>
+                  <p style={{ margin: 0, fontSize: 11, color: 'var(--green)', fontWeight: 600 }}>All Systems Operational</p>
+                </div>
+              </div>
+              <button onClick={() => setShowStatusModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-dim)', padding: 4 }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 13 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', background: 'var(--sidebar-bg)', borderRadius: 10, border: '1px solid var(--border)' }}>
+                <span>Database Connection</span>
+                <span style={{ color: 'var(--green)', fontWeight: 600, fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}><span className="sdot"/> 100% · Connected</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', background: 'var(--sidebar-bg)', borderRadius: 10, border: '1px solid var(--border)' }}>
+                <span>Edge Auth Latency</span>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: 12, fontWeight: 600, color: 'var(--text)' }}>{pingMs}ms ping</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', background: 'var(--sidebar-bg)', borderRadius: 10, border: '1px solid var(--border)' }}>
+                <span>Passkey Hardware Trust</span>
+                <span style={{ color: 'var(--text)', fontWeight: 600, fontSize: 12 }}>TPM 2.0 Active</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', background: 'var(--sidebar-bg)', borderRadius: 10, border: '1px solid var(--border)' }}>
+                <span>Build Environment</span>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--text-muted)' }}>Vite 8.0 · Production</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

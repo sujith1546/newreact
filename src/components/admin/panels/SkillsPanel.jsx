@@ -95,7 +95,7 @@ export default function SkillsPanel() {
     setSaving(false);
   };
 
-  const toggleCategory = (cat) => setCollapsedCats(prev => ({ ...prev, [cat]: !prev[cat] }));
+  const toggleCategory = (cat) => setCollapsedCats(prev => ({ ...prev, [cat]: prev[cat] === false ? true : false }));
 
   const barColor = (pct) => {
     if (pct >= 85) return '#10b981';
@@ -117,10 +117,10 @@ export default function SkillsPanel() {
 
   if (loading) return <PanelCard title="Skills Inventory"><div style={styles.emptyState}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div></PanelCard>;
 
-  const modalOverlay = { position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' };
-  const modalBox = { background: 'var(--sidebar-bg, #1a1a2e)', border: '1px solid var(--border-color)', borderRadius: '16px', width: '100%', maxWidth: '640px', maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 32px 64px rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column' };
-  const labelStyle = { fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.5px', textTransform: 'uppercase', display: 'block', marginBottom: 6 };
-  const inputStyle = { ...styles.input, background: 'var(--bg-primary)' };
+  const modalOverlay = { position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' };
+  const modalBox = { background: 'var(--pcms-panel)', border: '1px solid var(--pcms-line)', borderRadius: '14px', width: '100%', maxWidth: '640px', maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 24px 64px rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column' };
+  const labelStyle = { fontSize: 10.5, fontWeight: 700, color: 'var(--pcms-muted)', letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', marginBottom: 5 };
+  const inputStyle = { ...styles.input, background: 'var(--pcms-panel)' };
 
   const handleArrayChange = (field, index, value) => {
     const newArray = [...formData[field]];
@@ -142,27 +142,29 @@ export default function SkillsPanel() {
         title="Skills Inventory" 
         action={{ label: 'Add Skill', icon: 'ti-plus', onClick: () => openModal() }}
       >
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', borderBottom: '1px solid var(--border-color)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', borderBottom: '1px solid var(--pcms-line)' }}>
           {[
-            { label: 'Total Skills', val: skills.length, color: '#3b82f6' },
-            { label: 'Featured Skills', val: skills.filter(s => s.is_featured).length, color: '#f59e0b' },
-            { label: 'Avg Proficiency', val: Math.round(skills.reduce((a, b) => a + (b.proficiency_level || 0), 0) / (skills.length || 1)) + '%', color: '#10b981' },
+            { label: 'Total Skills', val: skills.length, color: '#6366F1' },
+            { label: 'Featured Skills', val: skills.filter(s => s.is_featured).length, color: '#F59E0B' },
+            { label: 'Avg Proficiency', val: Math.round(skills.reduce((a, b) => a + (b.proficiency_level || 0), 0) / (skills.length || 1)) + '%', color: '#10B981' },
           ].map(s => (
-            <div key={s.label} style={{ padding: '14px 20px', borderRight: '1px solid var(--border-color)' }}>
-              <p style={{ margin: 0, fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{s.label}</p>
-              <p style={{ margin: '4px 0 0', fontSize: 20, fontWeight: 800, color: s.color }}>{s.val}</p>
+            <div key={s.label} style={{ padding: '14px 18px', borderRight: '1px solid var(--pcms-line)' }}>
+              <p style={{ margin: 0, fontSize: 10, color: 'var(--pcms-muted)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{s.label}</p>
+              <p style={{ margin: '3px 0 0', fontSize: 19, fontWeight: 800, color: s.color }}>{s.val}</p>
             </div>
           ))}
         </div>
 
-        <div style={{ padding: '12px 20px', borderBottom: '1px solid var(--border-color)', background: 'var(--bg-secondary)', display: 'flex', gap: 10, alignItems: 'center' }}>
-          <div style={{ position: 'relative', flex: 1 }}>
-            <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            </span>
-            <input type="text" placeholder="Search skills by name..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} style={{ ...inputStyle, paddingLeft: 32, paddingTop: 7, paddingBottom: 7, fontSize: 13 }} />
-          </div>
-          <span style={{ fontSize: 12, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{filteredSkills.length} matches</span>
+        <div style={{ padding: '12px 18px', borderBottom: '1px solid var(--pcms-line)', background: 'var(--pcms-panel-2)', display: 'flex', gap: 10, alignItems: 'center' }}>
+          <input
+            type="text"
+            className="pcms-search"
+            placeholder="Search skills by name..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            style={{ flex: 1 }}
+          />
+          <span style={{ fontSize: 11.5, color: 'var(--pcms-muted)', whiteSpace: 'nowrap' }}>{filteredSkills.length} matches</span>
         </div>
 
         {skills.length === 0 ? (
@@ -172,15 +174,15 @@ export default function SkillsPanel() {
             {allCategories.map(cat => {
               const catSkills = groupedSkills[cat] || [];
               if (catSkills.length === 0) return null;
-              const isCollapsed = collapsedCats[cat];
+              const isCollapsed = collapsedCats[cat] !== false;
               const displayCatName = cat.replace(/_/g, ' ');
 
               return (
                 <div key={cat}>
-                  <div onClick={() => toggleCategory(cat)} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', userSelect: 'none', marginBottom: 14, paddingBottom: 10, borderBottom: '2px solid var(--border-color)' }}>
-                    {isCollapsed ? <ChevronRight size={15} color="var(--text-muted)" /> : <ChevronDown size={15} color="var(--primary-blue)" />}
-                    <h3 style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', textTransform: 'capitalize', letterSpacing: '0.2px' }}>{displayCatName}</h3>
-                    <span style={{ padding: '2px 8px', borderRadius: 12, background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-muted)', fontSize: 10, fontWeight: 700 }}>{catSkills.length}</span>
+                  <div onClick={() => toggleCategory(cat)} style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', userSelect: 'none', marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid var(--pcms-line)' }}>
+                    {isCollapsed ? <ChevronRight size={15} color="var(--pcms-muted)" /> : <ChevronDown size={15} color="var(--pcms-accent)" />}
+                    <h3 style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--pcms-text)', textTransform: 'capitalize', letterSpacing: '0.2px' }}>{displayCatName}</h3>
+                    <span style={{ padding: '2px 8px', borderRadius: 12, background: 'var(--pcms-panel-2)', border: '1px solid var(--pcms-line)', color: 'var(--pcms-muted)', fontSize: 10, fontWeight: 700 }}>{catSkills.length}</span>
                   </div>
 
                   {!isCollapsed && (
@@ -189,15 +191,15 @@ export default function SkillsPanel() {
                         const pct = skill.proficiency_level || 0;
                         const color = barColor(pct);
                         return (
-                          <div key={skill.id} style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 12, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 12, position: 'relative', transition: 'all 0.2s' }}>
+                          <div key={skill.id} style={{ background: 'var(--pcms-panel-2)', border: '1px solid var(--pcms-line)', borderRadius: 10, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 12, position: 'relative', transition: 'all 0.2s' }}>
                             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                 <div style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0, background: `${color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                   {skill.icon_class ? <i className={`ti ti-${skill.icon_class}`} style={{ fontSize: 19, color }} /> : <Star size={17} color={color} />}
                                 </div>
                                 <div>
-                                  <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.2 }}>
-                                    {skill.name} {skill.is_featured && <Star size={12} color="#f59e0b" style={{ fill: '#f59e0b', marginLeft: 4, verticalAlign: 'text-top' }} />}
+                                  <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: 'var(--pcms-text)', lineHeight: 1.2 }}>
+                                    {skill.name} {skill.is_featured && <Star size={12} color="#F59E0B" style={{ fill: '#F59E0B', marginLeft: 4, verticalAlign: 'text-top' }} />}
                                   </p>
                                   <span style={{ display: 'inline-block', marginTop: 3, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', padding: '2px 7px', borderRadius: 99, background: `${color}18`, color }}>
                                     {skill.level_label || 'Intermediate'}
@@ -205,17 +207,17 @@ export default function SkillsPanel() {
                                 </div>
                               </div>
                               <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-                                <button onClick={() => openModal(skill)} title="Edit" style={{ ...styles.iconBtn, padding: 5, borderRadius: 6, background: 'rgba(59,130,246,0.08)' }}><Edit3 size={13} color="#3b82f6" /></button>
-                                <button onClick={() => handleDelete(skill.id, skill.name)} title="Delete" style={{ ...styles.iconBtn, padding: 5, borderRadius: 6, background: 'rgba(239,68,68,0.08)' }}><Trash2 size={13} color="#ef4444" /></button>
+                                <button onClick={() => openModal(skill)} title="Edit" className="pcms-icon-btn edit"><Edit3 size={13} /></button>
+                                <button onClick={() => handleDelete(skill.id, skill.name)} title="Delete" className="pcms-icon-btn danger"><Trash2 size={13} /></button>
                               </div>
                             </div>
                             <div>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5, fontSize: 11, fontWeight: 600 }}><span style={{ color: 'var(--text-muted)' }}>Proficiency</span><span style={{ color }}>{pct}%</span></div>
-                              <div style={{ width: '100%', height: 5, background: 'var(--border-color)', borderRadius: 99, overflow: 'hidden' }}><div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: 99 }} /></div>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5, fontSize: 11, fontWeight: 600 }}><span style={{ color: 'var(--pcms-muted)' }}>Proficiency</span><span style={{ color }}>{pct}%</span></div>
+                              <div style={{ width: '100%', height: 5, background: 'var(--pcms-line)', borderRadius: 99, overflow: 'hidden' }}><div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: 99 }} /></div>
                             </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 14, paddingTop: 10, borderTop: '1px solid var(--border-color)' }}>
-                              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--text-muted)' }}><Briefcase size={11} /> {skill.years_experience || 0} yrs</span>
-                              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--text-muted)' }}><Layers size={11} /> {skill.project_count || 0} projs</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 14, paddingTop: 10, borderTop: '1px solid var(--pcms-line)' }}>
+                              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--pcms-muted)' }}><Briefcase size={11} /> {skill.years_experience || 0} yrs</span>
+                              <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--pcms-muted)' }}><Layers size={11} /> {skill.project_count || 0} projs</span>
                             </div>
                           </div>
                         );
@@ -232,15 +234,15 @@ export default function SkillsPanel() {
       {isModalOpen && (
         <div style={modalOverlay} onClick={closeModal}>
           <div style={modalBox} onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', borderBottom: '1px solid var(--border-color)', flexShrink: 0 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--pcms-line)', background: 'var(--pcms-panel-2)', flexShrink: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(59,130,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Star size={15} color="#3b82f6" /></div>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--pcms-accent-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Star size={15} color="var(--pcms-accent)" /></div>
                 <div>
-                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{editingSkill ? 'Edit Skill' : 'New Skill'}</p>
-                  <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '2px 0 0' }}>{editingSkill ? `Editing: ${editingSkill.name}` : 'Add to your inventory'}</p>
+                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--pcms-text)', fontFamily: "'Space Grotesk', sans-serif" }}>{editingSkill ? 'Edit Skill' : 'New Skill'}</p>
+                  <p style={{ fontSize: 11, color: 'var(--pcms-muted)', margin: '2px 0 0' }}>{editingSkill ? `Editing: ${editingSkill.name}` : 'Add to your inventory'}</p>
                 </div>
               </div>
-              <button onClick={closeModal} style={{ ...styles.iconBtn, padding: 6 }}><X size={18} color="var(--text-muted)" /></button>
+              <button onClick={closeModal} className="pcms-icon-btn"><X size={18} /></button>
             </div>
 
             <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 18 }}>
@@ -267,7 +269,18 @@ export default function SkillsPanel() {
                 <div style={{ gridColumn: 'span 2' }}>
                   <label style={labelStyle}>Proficiency (1-100)</label>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <input type="range" min="1" max="100" value={formData.proficiency_level} onChange={e => setFormData({ ...formData, proficiency_level: e.target.value })} style={{ flex: 1 }} />
+                    <input
+                      type="range"
+                      min="1"
+                      max="100"
+                      value={formData.proficiency_level}
+                      onChange={e => {
+                        const val = Number(e.target.value);
+                        const autoLabel = val >= 90 ? 'Expert' : val >= 75 ? 'Advanced' : val >= 50 ? 'Intermediate' : 'Beginner';
+                        setFormData({ ...formData, proficiency_level: val, level_label: autoLabel });
+                      }}
+                      style={{ flex: 1 }}
+                    />
                     <span style={{ fontSize: 13, fontWeight: 700, color: barColor(formData.proficiency_level), width: 40, textAlign: 'right' }}>{formData.proficiency_level}%</span>
                   </div>
                 </div>

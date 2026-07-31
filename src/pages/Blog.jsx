@@ -14,16 +14,40 @@ function formatDate(str) {
 }
 
 async function incrementViewCount(postId) {
+  if (!postId || typeof postId !== 'string') return;
+  // Skip local custom post IDs
+  if (postId.startsWith('blog_') || postId.startsWith('b')) return;
   try {
-    await supabase.rpc('increment_blog_views', { post_id: postId });
+    await supabase.from('blog_posts').update({ views: 1 }).eq('id', postId);
   } catch (e) {}
 }
 
 export default function Blog() {
-  const { data: posts, loading } = useRealtimeData('blog_posts', { orderColumn: 'published_at', ascending: false });
+  const { data: rawPosts, loading } = useRealtimeData('blog_posts', { orderColumn: 'created_at', ascending: false });
   const [selectedPost, setSelectedPost] = useState(null);
   const [search, setSearch] = useState('');
   const [activeTag, setActiveTag] = useState(null);
+
+  const posts = useMemo(() => {
+    let localList = [];
+    try {
+      const raw = localStorage.getItem('pcms_local_blog_posts');
+      localList = raw ? JSON.parse(raw) : [];
+      // Clean out any dummy posts starting with 'b1' or 'b2'
+      localList = localList.filter(p => p.id !== 'b1' && p.id !== 'b2');
+    } catch {}
+
+    const combined = [...localList];
+    if (Array.isArray(rawPosts) && rawPosts.length > 0) {
+      rawPosts.forEach(r => {
+        if (r.published !== false && !combined.some(c => String(c.id) === String(r.id))) {
+          combined.push(r);
+        }
+      });
+    }
+
+    return combined;
+  }, [rawPosts]);
 
   const allTags = useMemo(() => {
     if (!posts) return [];

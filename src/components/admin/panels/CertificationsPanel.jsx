@@ -83,10 +83,10 @@ export default function CertificationsPanel() {
 
   if (loading) return <PanelCard title="Certifications"><div style={styles.emptyState}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div></PanelCard>;
 
-  const modalOverlay = { position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' };
-  const modalBox = { background: 'var(--sidebar-bg, #1a1a2e)', border: '1px solid var(--border-color)', borderRadius: '16px', width: '100%', maxWidth: '560px', maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 32px 64px rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column' };
-  const labelStyle = { fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.5px', textTransform: 'uppercase', display: 'block', marginBottom: 6 };
-  const inputStyle = { ...styles.input, background: 'var(--bg-primary)' };
+  const modalOverlay = { position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' };
+  const modalBox = { background: 'var(--pcms-panel)', border: '1px solid var(--pcms-line)', borderRadius: '14px', width: '100%', maxWidth: '580px', maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 24px 64px rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column' };
+  const labelStyle = { fontSize: 10.5, fontWeight: 700, color: 'var(--pcms-muted)', letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', marginBottom: 5 };
+  const inputStyle = { ...styles.input, background: 'var(--pcms-panel)' };
 
   return (
     <>
@@ -105,21 +105,27 @@ export default function CertificationsPanel() {
               <thead><tr><th style={styles.th}>Badge</th><th style={styles.th}>Title</th><th style={styles.th}>Issuer</th><th style={styles.th}>Date</th><th style={{ ...styles.th, textAlign: 'right' }}>Actions</th></tr></thead>
               <tbody>
                 {certs.map((cert, i) => (
-                  <tr key={cert.id} style={{ background: i % 2 === 0 ? 'transparent' : 'rgba(128,128,128,0.025)' }}>
+                  <tr key={cert.id} style={{ background: i % 2 === 0 ? 'transparent' : 'var(--pcms-panel-2)' }}>
                     <td style={styles.td}>
-                      <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(139,92,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        {cert.icon_class ? <i className={`ti ti-${cert.icon_class}`} style={{ fontSize: 20, color: '#8b5cf6' }} /> : <Award size={20} color="#8b5cf6" />}
+                      <div style={{ width: 36, height: 36, borderRadius: 8, background: 'rgba(249,115,22,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {cert.icon_class ? <i className={`ti ti-${cert.icon_class}`} style={{ fontSize: 19, color: '#F97316' }} /> : <Award size={18} color="#F97316" />}
                       </div>
                     </td>
-                    <td style={{ ...styles.td, fontWeight: 600, color: 'var(--text-primary)' }}>
-                      {cert.credential_url ? <a href={cert.credential_url} target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none' }} className="hover-underline">{cert.title} <ExternalLink size={12} style={{ marginLeft: 4, color: 'var(--text-muted)' }}/></a> : cert.title}
+                    <td style={{ ...styles.td, fontWeight: 600, color: 'var(--pcms-text)' }}>
+                      {cert.credential_url ? (
+                        <a href={cert.credential_url} target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                          {cert.title} <ExternalLink size={12} style={{ color: 'var(--pcms-accent)' }}/>
+                        </a>
+                      ) : cert.title}
                     </td>
-                    <td style={{ ...styles.td, color: 'var(--text-secondary)' }}>{cert.issuer}</td>
-                    <td style={{ ...styles.td, color: 'var(--text-muted)' }}>{cert.date}</td>
+                    <td style={{ ...styles.td, color: 'var(--pcms-muted)' }}>{cert.issuer}</td>
+                    <td style={{ ...styles.td, color: 'var(--pcms-muted)' }}>
+                      <span className="pcms-badge pcms-badge-green" style={{ fontSize: 10 }}>Active</span> {cert.date}
+                    </td>
                     <td style={{ ...styles.td, textAlign: 'right' }}>
                       <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
-                        <button onClick={() => openModal(cert)} style={{ ...styles.iconBtn, padding: 6, borderRadius: 7, background: 'rgba(59,130,246,0.08)' }}><Edit3 size={14} color="#3b82f6" /></button>
-                        <button onClick={() => handleDelete(cert.id, cert.title)} style={{ ...styles.iconBtn, padding: 6, borderRadius: 7, background: 'rgba(239,68,68,0.08)' }}><Trash2 size={14} color="#ef4444" /></button>
+                        <button onClick={() => openModal(cert)} className="pcms-icon-btn edit"><Edit3 size={14} /></button>
+                        <button onClick={() => handleDelete(cert.id, cert.title)} className="pcms-icon-btn danger"><Trash2 size={14} /></button>
                       </div>
                     </td>
                   </tr>
@@ -133,14 +139,14 @@ export default function CertificationsPanel() {
       {isModalOpen && (
         <div style={modalOverlay} onClick={closeModal}>
           <div style={modalBox} onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', borderBottom: '1px solid var(--border-color)', flexShrink: 0 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--pcms-line)', background: 'var(--pcms-panel-2)', flexShrink: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(139,92,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Award size={15} color="#8b5cf6" /></div>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(249,115,22,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Award size={15} color="#F97316" /></div>
                 <div>
-                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{editingCert ? 'Edit Certification' : 'New Certification'}</p>
+                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--pcms-text)', fontFamily: "'Space Grotesk', sans-serif" }}>{editingCert ? 'Edit Certification' : 'New Certification'}</p>
                 </div>
               </div>
-              <button onClick={closeModal} style={{ ...styles.iconBtn, padding: 6 }}><X size={18} color="var(--text-muted)" /></button>
+              <button onClick={closeModal} className="pcms-icon-btn"><X size={18} /></button>
             </div>
 
             <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 18 }}>

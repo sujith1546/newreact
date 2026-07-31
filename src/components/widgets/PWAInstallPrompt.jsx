@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw, X, Download, Share, Smartphone, Clock, PauseCircle } from 'lucide-react';
 import { useSmartUpdate } from '../../hooks/useSmartUpdate';
 
 export default function PWAInstallPrompt() {
+  const location = useLocation();
+  const isHomePage = location.pathname === '/' || location.pathname === '/home';
+
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isIOS, setIsIOS] = useState(false);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
@@ -79,6 +83,17 @@ export default function PWAInstallPrompt() {
   const handleDismissInstall = () => {
     setIsDismissed(true);
   };
+
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 900);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 900);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // If not on the Home page or on mobile version, do not show PWA Install Prompt
+  if (!isHomePage || isMobile) return null;
 
   return (
     <AnimatePresence>

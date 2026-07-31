@@ -50,8 +50,8 @@ const SECTIONS_DEF = [
 const SECTION_LABELS = {
   home: null,
   about: 'About Me',
-  skills: 'Skills & Expertise',
-  projects: 'Featured Projects',
+  skills: 'Skills',
+  projects: 'Projects',
   blog: 'Blog & Articles',
   education: 'Education',
   experience: 'Experience',
@@ -70,11 +70,11 @@ const SECTION_HEADERS = {
     subtitle: 'Passionate developer crafting intelligent digital experiences',
   },
   skills: {
-    title: 'Skills & Expertise',
+    title: 'Skills',
     subtitle: 'Technical competencies and proficiency levels',
   },
   projects: {
-    title: 'Featured Projects',
+    title: 'Projects',
     subtitle: 'Showcase of intelligent digital applications & systems',
   },
   blog: {
@@ -355,21 +355,23 @@ export default function PortfolioLayout() {
         </div>
 
         <div className="mh-right">
-          <AnimatePresence mode="wait">
-            <motion.button
-              key={activeSection + (emailCopied ? '-copied' : '')}
-              className={`mh-cta mh-cta--${cta.style}`}
-              onClick={cta.action}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              whileTap={{ scale: 0.93 }}
-            >
-              <cta.icon size={13} />
-              <span>{cta.label}</span>
-            </motion.button>
-          </AnimatePresence>
+          {!isMobile && (
+            <AnimatePresence mode="wait">
+              <motion.button
+                key={activeSection + (emailCopied ? '-copied' : '')}
+                className={`mh-cta mh-cta--${cta.style}`}
+                onClick={cta.action}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                whileTap={{ scale: 0.93 }}
+              >
+                <cta.icon size={13} />
+                <span>{cta.label}</span>
+              </motion.button>
+            </AnimatePresence>
+          )}
           {isMobile && (
             <>
               <DarkModeToggle />

@@ -78,48 +78,48 @@ export default function AiChatsPanel() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', height: 'calc(100vh - 120px)' }}>
       {/* KPI Strip */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
-        <div style={{ background: 'var(--bg-light)', padding: '20px', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: 'var(--primary-blue)' }}><MessageSquare size={18} /><span style={{ fontWeight: 600, fontSize: 13 }}>Total Chats</span></div>
-          <div style={{ fontSize: 32, fontWeight: 700, color: 'var(--text-primary)' }}>{sessions.length}</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+        <div style={{ background: 'var(--pcms-panel-2)', padding: '16px 20px', borderRadius: 12, border: '1px solid var(--pcms-line)', display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#8B5CF6' }}><MessageSquare size={16} /><span style={{ fontWeight: 600, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--pcms-muted)' }}>Total Chats</span></div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: 'var(--pcms-text)' }}>{sessions.length}</div>
         </div>
-        <div style={{ background: 'var(--bg-light)', padding: '20px', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#10b981' }}><Sparkles size={18} /><span style={{ fontWeight: 600, fontSize: 13 }}>Active Today</span></div>
-          <div style={{ fontSize: 32, fontWeight: 700, color: 'var(--text-primary)' }}>{activeToday}</div>
+        <div style={{ background: 'var(--pcms-panel-2)', padding: '16px 20px', borderRadius: 12, border: '1px solid var(--pcms-line)', display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#10B981' }}><Sparkles size={16} /><span style={{ fontWeight: 600, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--pcms-muted)' }}>Active Today</span></div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: 'var(--pcms-text)' }}>{activeToday}</div>
         </div>
-        <div style={{ background: 'var(--bg-light)', padding: '20px', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: 8, justifyContent: 'center' }}>
-          <div style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.5 }}>Telemetry automatically logs every conversation processed by your Groq AI Integration.</div>
+        <div style={{ background: 'var(--pcms-panel-2)', padding: '16px 20px', borderRadius: 12, border: '1px solid var(--pcms-line)', display: 'flex', flexDirection: 'column', gap: 6, justifyContent: 'center' }}>
+          <div style={{ fontSize: 12, color: 'var(--pcms-muted)', lineHeight: 1.5 }}>Telemetry automatically logs every conversation processed by your Groq AI Integration.</div>
         </div>
       </div>
 
       {/* Split Pane Inbox */}
-      <div style={{ display: 'flex', flex: 1, background: 'var(--bg-light)', borderRadius: '16px', border: '1px solid var(--border-color)', overflow: 'hidden' }}>
+      <div style={{ display: 'flex', flex: 1, background: 'var(--pcms-panel-2)', borderRadius: 12, border: '1px solid var(--pcms-line)', overflow: 'hidden', minHeight: 400 }}>
         
         {/* Left: Session List */}
-        <div style={{ width: '320px', borderRight: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', background: 'var(--bg-dark)' }}>
-          <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-color)', fontWeight: 600, color: 'var(--text-primary)', fontSize: 14 }}>
+        <div style={{ width: '300px', borderRight: '1px solid var(--pcms-line)', display: 'flex', flexDirection: 'column', background: 'var(--pcms-panel-2)' }}>
+          <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--pcms-line)', fontWeight: 700, color: 'var(--pcms-text)', fontSize: 13, fontFamily: "'Space Grotesk', sans-serif" }}>
             Recent Sessions
           </div>
           <div style={{ flex: 1, overflowY: 'auto' }}>
             {sessions.length === 0 ? (
-              <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>No sessions yet.</div>
+              <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--pcms-muted)', fontSize: 12.5 }}>No sessions yet.</div>
             ) : sessions.map(session => (
               <div 
                 key={session.id} 
                 onClick={() => loadMessages(session.id)}
                 style={{ 
-                  padding: '16px 20px', 
-                  borderBottom: '1px solid var(--border-color)', 
+                  padding: '14px 18px', 
+                  borderBottom: '1px solid var(--pcms-line)', 
                   cursor: 'pointer',
-                  background: selectedSession === session.id ? 'var(--bg-accent)' : 'transparent',
-                  transition: 'background 0.2s'
+                  background: selectedSession === session.id ? 'var(--pcms-accent-dim)' : 'transparent',
+                  transition: 'background 0.15s'
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
-                  <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>Visitor</span>
-                  <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{new Date(session.created_at).toLocaleDateString()}</span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: selectedSession === session.id ? 'var(--pcms-accent)' : 'var(--pcms-text)' }}>Visitor Session</span>
+                  <span style={{ fontSize: 11, color: 'var(--pcms-muted)' }}>{new Date(session.created_at).toLocaleDateString()}</span>
                 </div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', fontFamily: 'monospace', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: 11, color: 'var(--pcms-muted)', fontFamily: "'IBM Plex Mono', monospace", textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
                   ID: {session.id.split('-')[0]}...
                 </div>
               </div>
@@ -128,7 +128,7 @@ export default function AiChatsPanel() {
         </div>
 
         {/* Right: Chat Transcript */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--bg-light)' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--pcms-panel)' }}>
           {selectedSession ? (
             <>
               <div style={{ padding: '16px 24px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

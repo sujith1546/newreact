@@ -11,6 +11,9 @@ import { usePersona } from '../../context/PersonaContext';
 import useRealtimeData from '../../hooks/useRealtimeData';
 import { useIsland } from '../../context/IslandContext';
 import SystemDiagnostics from '../dev/SystemDiagnostics';
+import EmailModal from '../widgets/EmailModal';
+import { useSupabasePresence } from '../../hooks/useSupabasePresence';
+import { useAuth } from '../../context/AuthContext';
 
 function GmailIcon({ size = 20 }) {
   return (
@@ -47,6 +50,16 @@ function InstagramIcon({ size = 20 }) {
   );
 }
 
+function ShieldLockIcon({ size = 18 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3a12 12 0 0 0 8.5 3A12 12 0 0 1 12 21 12 12 0 0 1 3.5 6 12 12 0 0 0 12 3z" />
+      <circle cx="12" cy="11.5" r="1.5" />
+      <path d="M12 13v2.5" />
+    </svg>
+  );
+}
+
 const NAV_ITEMS_DEF = [
   { label: 'HOME', id: 'home' },
   { label: 'ABOUT', id: 'about' },
@@ -59,9 +72,9 @@ const NAV_ITEMS_DEF = [
   { label: 'CONTACT', id: 'contact' },
 ];
 
-import { useSupabasePresence } from '../../hooks/useSupabasePresence';
-
 export default function Sidebar({ activeSection, onNavClick }) {
+  const auth = useAuth();
+  const isAdminActive = Boolean(auth?.session || auth?.user);
   const { data: dbSettings } = useRealtimeData('site_settings', { single: true, filter: { column: 'id', value: 1 } });
   const { visitorCount, isConnected } = useSupabasePresence();
   const { getSectionOrder } = usePersona();
@@ -83,6 +96,7 @@ export default function Sidebar({ activeSection, onNavClick }) {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isDiagnosticsOpen, setIsDiagnosticsOpen] = useState(false);
+  const [isEmailOpen, setIsEmailOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const isMainPage = location.pathname === '/';
@@ -124,11 +138,14 @@ export default function Sidebar({ activeSection, onNavClick }) {
   useEffect(() => {
     const handleOpenResume = () => setIsPreviewOpen(true);
     const handleOpenQr = () => setQrOpen(true);
+    const handleOpenEmail = () => setIsEmailOpen(true);
     window.addEventListener('open-resume', handleOpenResume);
     window.addEventListener('open-qr', handleOpenQr);
+    window.addEventListener('open-email', handleOpenEmail);
     return () => {
       window.removeEventListener('open-resume', handleOpenResume);
       window.removeEventListener('open-qr', handleOpenQr);
+      window.removeEventListener('open-email', handleOpenEmail);
     };
   }, []);
 
@@ -493,14 +510,22 @@ export default function Sidebar({ activeSection, onNavClick }) {
       )}
 
       <div className="social-icons-row">
-        <a className="social-icon-box" href="mailto:sujithreddy1546@gmail.com" target="_blank" rel="noopener noreferrer" title="Gmail">
+        <button
+          className="social-icon-box"
+          onClick={() => setIsEmailOpen(true)}
+          title="Compose Email"
+          aria-label="Compose Email"
+          style={{
+            cursor: 'pointer',
+            padding: 0,
+            outline: 'none',
+            background: 'transparent',
+          }}
+        >
           <GmailIcon size={20} />
-        </a>
-        <a className="social-icon-box" href="https://www.linkedin.com/in/thota-sujith-reddy-88a650275/" target="_blank" rel="noopener noreferrer" title="LinkedIn">
+        </button>
+        <a className="social-icon-box" href="https://www.linkedin.com/in/thota-sujith-reddy-88a650275/" target="_blank" rel="noopener noreferrer" title="LinkedIn" aria-label="LinkedIn">
           <LinkedinIcon size={20} />
-        </a>
-        <a className="social-icon-box" href="https://www.instagram.com/sujith_1546/" target="_blank" rel="noopener noreferrer" title="Instagram">
-          <InstagramIcon size={20} />
         </a>
         <button
           className="social-icon-box"
@@ -517,9 +542,30 @@ export default function Sidebar({ activeSection, onNavClick }) {
           <Cpu size={18} />
           <span className="sidebar-diag-dot" />
         </button>
+
+        {/* 1px vertical divider */}
+        <div className="social-icon-divider" />
+
+        {/* Admin Login button */}
+        <button
+          className="social-icon-box"
+          onClick={() => navigate(isAdminActive ? '/admin/dashboard' : '/admin/login')}
+          title="Admin login"
+          aria-label="Admin login"
+          style={{
+            cursor: 'pointer',
+            position: 'relative',
+            padding: 0,
+            outline: 'none',
+          }}
+        >
+          <ShieldLockIcon size={18} />
+          {isAdminActive && <span className="sidebar-diag-dot" />}
+        </button>
       </div>
 
       <SystemDiagnostics open={isDiagnosticsOpen} onClose={() => setIsDiagnosticsOpen(false)} />
+      <EmailModal isOpen={isEmailOpen} onClose={() => setIsEmailOpen(false)} />
 
       {/* Build Tag Footer */}
       <div className="sidebar-build-tag">

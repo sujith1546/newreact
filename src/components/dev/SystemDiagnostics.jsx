@@ -143,7 +143,7 @@ export default function SystemDiagnostics({ open, onClose }) {
               display: flex;
               align-items: center;
               justify-content: center;
-              background: rgba(0, 0, 0, 0.45);
+              background: rgba(0, 0, 0, 0.4);
               backdrop-filter: blur(8px);
               -webkit-backdrop-filter: blur(8px);
               padding: 16px;
@@ -152,26 +152,40 @@ export default function SystemDiagnostics({ open, onClose }) {
             .sd-modal-card {
               width: 100%;
               max-width: 480px;
-              border-radius: 16px;
-              border: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
-              background: var(--bg-secondary, #ffffff);
-              padding: 24px;
+              border-radius: 14px;
+              border: 1px solid #e2e2e0;
+              background: #ffffff;
+              padding: 16px;
               font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
-              color: var(--text-primary, #0f172a);
-              box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25), 0 0 0 1px var(--border-color, rgba(0, 0, 0, 0.1));
+              color: #1a1a19;
+              box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+              box-sizing: border-box;
             }
 
             [data-theme="dark"] .sd-modal-card {
               background: #171717;
               border-color: rgba(255, 255, 255, 0.1);
               color: #f5f5f5;
+              box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+              border-radius: 16px;
+              padding: 24px;
             }
 
             .sd-header {
               display: flex;
               align-items: center;
               justify-content: space-between;
+              padding-bottom: 12px;
+              margin-bottom: 12px;
+              border-bottom: 1px solid #ececea;
+              background: #ffffff;
+            }
+
+            [data-theme="dark"] .sd-header {
+              border-bottom: none;
+              padding-bottom: 0;
               margin-bottom: 20px;
+              background: transparent;
             }
 
             .sd-header-info {
@@ -181,29 +195,33 @@ export default function SystemDiagnostics({ open, onClose }) {
             }
 
             .sd-icon-box {
-              width: 32px;
-              height: 32px;
+              width: 28px;
+              height: 28px;
               border-radius: 8px;
               display: flex;
               align-items: center;
               justify-content: center;
-              background: var(--bg-primary, #f3f4f6);
-              color: var(--text-primary, #171717);
+              background: #f5f5f3;
+              color: #1a1a19;
             }
 
             [data-theme="dark"] .sd-icon-box {
+              width: 32px;
+              height: 32px;
               background: #262626;
               color: #e5e5e5;
             }
 
             .sd-title {
-              font-size: 14px;
-              font-weight: 600;
+              font-size: 13px;
+              font-weight: 500;
               margin: 0;
-              color: var(--text-primary, #0f172a);
+              color: #1a1a19;
             }
 
             [data-theme="dark"] .sd-title {
+              font-size: 14px;
+              font-weight: 600;
               color: #f5f5f5;
             }
 
@@ -211,9 +229,14 @@ export default function SystemDiagnostics({ open, onClose }) {
               display: flex;
               align-items: center;
               gap: 6px;
-              font-size: 12px;
-              color: var(--text-muted, #737373);
+              font-size: 11px;
+              color: #8a8a86;
               margin-top: 1px;
+            }
+
+            [data-theme="dark"] .sd-status-sub {
+              font-size: 12px;
+              color: #737373;
             }
 
             .sd-green-dot {
@@ -221,6 +244,10 @@ export default function SystemDiagnostics({ open, onClose }) {
               width: 6px;
               height: 6px;
               border-radius: 50%;
+              background: #34c759;
+            }
+
+            [data-theme="dark"] .sd-green-dot {
               background: #10b981;
             }
 
@@ -231,23 +258,25 @@ export default function SystemDiagnostics({ open, onClose }) {
             }
 
             .sd-kbd-badge {
-              border-radius: 6px;
-              border: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
+              border-radius: 4px;
+              border: 1px solid #e2e2e0;
               padding: 2px 6px;
               font-family: var(--font-mono, monospace);
-              font-size: 11px;
-              color: var(--text-muted, #a3a3a3);
+              font-size: 10px;
+              color: #9a9a96;
             }
 
             [data-theme="dark"] .sd-kbd-badge {
+              border-radius: 6px;
               border-color: rgba(255, 255, 255, 0.1);
+              font-size: 11px;
               color: #737373;
             }
 
             .sd-close-button {
               background: transparent;
               border: none;
-              color: var(--text-muted, #a3a3a3);
+              color: #9a9a96;
               cursor: pointer;
               padding: 2px;
               display: flex;
@@ -257,7 +286,7 @@ export default function SystemDiagnostics({ open, onClose }) {
             }
 
             .sd-close-button:hover {
-              color: var(--text-primary, #171717);
+              color: #1a1a19;
             }
 
             [data-theme="dark"] .sd-close-button:hover {
@@ -272,30 +301,41 @@ export default function SystemDiagnostics({ open, onClose }) {
             }
 
             .sd-tile {
-              border-radius: 8px;
-              background: var(--bg-primary, #f5f5f5);
+              border-radius: 10px;
+              background: #fafaf9;
+              border: 1px solid #ececea;
               padding: 10px;
+              box-sizing: border-box;
             }
 
             [data-theme="dark"] .sd-tile {
+              border-radius: 8px;
               background: #262626;
+              border: none;
             }
 
             .sd-tile-label {
-              font-size: 11px;
-              color: var(--text-muted, #737373);
+              font-size: 10px;
+              color: #9a9a96;
               margin: 0 0 4px 0;
+            }
+
+            [data-theme="dark"] .sd-tile-label {
+              font-size: 11px;
+              color: #737373;
             }
 
             .sd-tile-value {
               font-family: var(--font-mono, monospace);
               font-size: 15px;
-              font-weight: 600;
+              font-weight: 500;
               margin: 0;
-              color: var(--text-primary, #0f172a);
+              color: #1a1a19;
             }
 
             [data-theme="dark"] .sd-tile-value {
+              font-size: 15px;
+              font-weight: 600;
               color: #f5f5f5;
             }
 
@@ -307,37 +347,48 @@ export default function SystemDiagnostics({ open, onClose }) {
             }
 
             .sd-pass-badge {
-              border-radius: 6px;
-              background: #dcfce7;
+              border-radius: 5px;
+              background: #e9f7ee;
               padding: 2px 8px;
               font-size: 10px;
-              font-weight: 700;
-              color: #15803d;
+              font-weight: 600;
+              color: #1a7a3d;
             }
 
             [data-theme="dark"] .sd-pass-badge {
+              border-radius: 6px;
               background: rgba(16, 185, 129, 0.15);
+              font-weight: 700;
               color: #34d399;
             }
 
             .sd-section-card {
-              border-radius: 8px;
-              background: var(--bg-primary, #f5f5f5);
+              border-radius: 10px;
+              background: #fafaf9;
+              border: 1px solid #ececea;
               padding: 12px;
               margin-bottom: 8px;
+              box-sizing: border-box;
             }
 
             [data-theme="dark"] .sd-section-card {
+              border-radius: 8px;
               background: #262626;
+              border: none;
             }
 
             .sd-section-label {
               display: flex;
               align-items: center;
               gap: 6px;
-              font-size: 11px;
-              color: var(--text-muted, #737373);
+              font-size: 10px;
+              color: #9a9a96;
               margin: 0 0 10px 0;
+            }
+
+            [data-theme="dark"] .sd-section-label {
+              font-size: 11px;
+              color: #737373;
             }
 
             .sd-stack-chips {
@@ -352,65 +403,78 @@ export default function SystemDiagnostics({ open, onClose }) {
               align-items: center;
               gap: 6px;
               border-radius: 6px;
-              background: #171717;
+              background: #ffffff;
+              border: 1px solid #dcdcda;
               padding: 4px 10px;
               font-size: 11px;
-              color: #ffffff;
-              font-weight: 600;
+              color: #1a1a19;
+              font-weight: 500;
             }
 
             [data-theme="dark"] .sd-live-chip {
               background: #f5f5f5;
+              border: none;
               color: #171717;
+              font-weight: 600;
             }
 
             .sd-tech-chip {
               border-radius: 6px;
-              border: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
+              background: #ffffff;
+              border: 1px solid #ececea;
               padding: 4px 10px;
-              font-size: 12px;
-              color: var(--text-primary, #262626);
+              font-size: 11px;
+              color: #1a1a19;
             }
 
             [data-theme="dark"] .sd-tech-chip {
+              background: transparent;
               border-color: rgba(255, 255, 255, 0.1);
+              font-size: 12px;
               color: #e5e5e5;
             }
 
             .sd-tech-ver {
               font-family: var(--font-mono, monospace);
               font-size: 11px;
-              color: var(--text-muted, #a3a3a3);
+              color: #b0b0ac;
             }
 
-            .sd-github-btn {
-              margin-top: 12px;
-              display: flex;
-              width: 100%;
-              align-items: center;
-              justify-content: center;
-              gap: 6px;
-              border-radius: 8px;
-              border: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
-              padding: 8px 16px;
-              font-size: 12px;
+            [data-theme="dark"] .sd-tech-ver {
+              color: #a3a3a3;
+            }
+
+            .sd-env-theme-line {
+              margin: 0 0 4px 0;
+              font-size: 13px;
+              color: #1a1a19;
+            }
+
+            [data-theme="dark"] .sd-env-theme-line {
+              font-size: 14px;
+              color: #f5f5f5;
+            }
+
+            .sd-env-theme-val {
+              color: #1a1a19;
+              font-weight: 500;
+            }
+
+            [data-theme="dark"] .sd-env-theme-val {
+              color: #38bdf8;
               font-weight: 600;
-              color: var(--text-secondary, #525252);
-              text-decoration: none;
-              transition: background 0.15s ease;
             }
 
-            .sd-github-btn:hover {
-              background: var(--bg-primary, #f5f5f5);
+            .sd-env-meta-line {
+              margin: 0;
+              font-family: var(--font-mono, monospace);
+              font-size: 11px;
+              color: #9a9a96;
             }
 
-            [data-theme="dark"] .sd-github-btn {
-              border-color: rgba(255, 255, 255, 0.1);
-              color: #d4d4d4;
-            }
-
-            [data-theme="dark"] .sd-github-btn:hover {
-              background: #262626;
+            [data-theme="dark"] .sd-env-meta-line {
+              font-size: 12px;
+              color: #737373;
             }
           `}</style>
 
@@ -470,31 +534,31 @@ export default function SystemDiagnostics({ open, onClose }) {
 
             {/* Latency + Build (Side-by-side 2-column) */}
             <div className="sd-two-col-grid">
-              <div className="sd-tile" style={{ padding: '12px' }}>
-                <p className="sd-section-label" style={{ marginBottom: '8px' }}>
+              <div className="sd-tile" style={{ padding: '10px 12px' }}>
+                <p className="sd-section-label" style={{ marginBottom: '6px' }}>
                   <Wifi size={13} /> Latency
                 </p>
-                <p className="sd-tile-value" style={{ fontSize: '16px', marginBottom: '6px' }}>
+                <p className="sd-tile-value" style={{ fontSize: '15px', marginBottom: '6px' }}>
                   {latency != null ? `${latency}ms` : "—"}
                 </p>
-                <div style={{ height: '3px', width: '100%', borderRadius: '999px', background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+                <div style={{ height: '3px', width: '100%', borderRadius: '999px', background: isDark ? 'rgba(255,255,255,0.1)' : '#ececea', overflow: 'hidden' }}>
                   <div
                     style={{
                       height: '100%',
                       borderRadius: '999px',
-                      background: '#10b981',
+                      background: isDark ? '#10b981' : '#1a1a19',
                       width: `${latencyPercent}%`,
                       transition: 'width 0.3s ease',
                     }}
                   />
                 </div>
               </div>
-              <div className="sd-tile" style={{ padding: '12px' }}>
-                <p className="sd-section-label" style={{ marginBottom: '8px' }}>
+              <div className="sd-tile" style={{ padding: '10px 12px' }}>
+                <p className="sd-section-label" style={{ marginBottom: '6px' }}>
                   <Gauge size={13} /> Build
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <p className="sd-tile-value" style={{ fontSize: '16px' }}>
+                  <p className="sd-tile-value" style={{ fontSize: '15px' }}>
                     {BUILD_VERSION}
                   </p>
                   <span className="sd-pass-badge">pass</span>
@@ -502,14 +566,14 @@ export default function SystemDiagnostics({ open, onClose }) {
               </div>
             </div>
 
-            {/* Core stack (Flex-wrap to eliminate any overlap) */}
+            {/* Core stack */}
             <div className="sd-section-card">
               <p className="sd-section-label">
                 <Layers size={13} /> Core stack
               </p>
               <div className="sd-stack-chips">
                 <span className="sd-live-chip">
-                  <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: '#34d399', animation: 'pulse 2s infinite' }} />
+                  <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: isDark ? '#34d399' : '#34c759', animation: 'pulse 2s infinite' }} />
                   live
                 </span>
                 {CORE_STACK.map((tech) => (
@@ -526,18 +590,16 @@ export default function SystemDiagnostics({ open, onClose }) {
               <p className="sd-section-label" style={{ marginBottom: '6px' }}>
                 <SlidersHorizontal size={13} /> Environment
               </p>
-              <p style={{ margin: '0 0 4px 0', fontSize: '14px', color: varTextColor(isDark) }}>
+              <p className="sd-env-theme-line">
                 Theme:{" "}
-                <span style={{ color: isDark ? '#38bdf8' : '#0284c7', fontWeight: 600 }}>
+                <span className="sd-env-theme-val">
                   {theme === "dark" ? "dark mode" : "light mode"}
                 </span>
               </p>
-              <p style={{ margin: 0, fontFamily: 'var(--font-mono, monospace)', fontSize: '12px', color: 'var(--text-muted, #737373)' }}>
+              <p className="sd-env-meta-line">
                 fps {fps} · {memory != null ? `${memory.toFixed(1)}mb` : "—"} heap · {uptime}s session
               </p>
             </div>
-
-
           </motion.div>
         </motion.div>
       )}

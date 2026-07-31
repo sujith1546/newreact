@@ -1,19 +1,39 @@
 import React, { useEffect, useState } from 'react';
-import { useMaintenanceStatus } from '../components/MaintenanceGate';
+import { useMaintenanceStatus } from './MaintenanceGate';
 import '../styles/maintenance.css';
 
-export default function Maintenance({ status: propStatus }) {
+export default function MaintenancePage({ status: propStatus }) {
   const fetchedStatus = useMaintenanceStatus();
   const status = propStatus || fetchedStatus;
 
   const [now, setNow] = useState(Date.now());
   const [reloadScheduled, setReloadScheduled] = useState(false);
 
-  // Time tracking & Document Title
+  // Time tracking, Document Title & Security Hardening
   useEffect(() => {
     document.title = "Site Maintenance | Sujith Thota";
     const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
+
+    const handleContextMenu = (e) => e.preventDefault();
+    const handleKeyDown = (e) => {
+      if (
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && ['I','i','J','j','C','c'].includes(e.key)) ||
+        (e.ctrlKey && ['U','u','S','s'].includes(e.key))
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+
+    window.addEventListener('contextmenu', handleContextMenu);
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      clearInterval(id);
+      window.removeEventListener('contextmenu', handleContextMenu);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   const startedAt = status.enabledAt ? new Date(status.enabledAt).getTime() : Date.now();

@@ -5,8 +5,8 @@ import { Eye, X, Download } from 'lucide-react';
 const SECTION_LABELS = {
   home:           'Home',
   about:          'About Me',
-  skills:         'Skills & Expertise',
-  projects:       'Featured Projects',
+  skills:         'Skills',
+  projects:       'Projects',
   education:      'Education',
   experience:     'Experience',
   certifications: 'Certifications',

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { supabase, safeRemoveChannel } from '../lib/supabaseClient';
 
 /**
  * useRealtimeData
@@ -126,19 +126,44 @@ export default function useRealtimeData(table, options = {}) {
           if (!error) {
             globalDataCache[cacheKey] = data;
             preloadImagesFromData(data); // Automatically cache images
+          } else if (error.code === '42501' || error.status === 403 || error.message?.includes('permission denied')) {
+            // Silently suppress RLS permission denied errors
+            delete fetchPromises[cacheKey];
+            return { data: globalDataCache[cacheKey] || (single ? null : []), error: null };
           }
           delete fetchPromises[cacheKey];
           return { data, error };
+        }).catch(err => {
+          delete fetchPromises[cacheKey];
+          return { data: globalDataCache[cacheKey] || (single ? null : []), error: null };
         });
       }
 
-      const { data: result, error: fetchError } = await fetchPromises[cacheKey];
-      
+      let { data: result, error: fetchError } = await fetchPromises[cacheKey];
+
+      // Automatic fallback for missing order column
+      if (fetchError && orderColumn && orderColumn !== 'created_at' && orderColumn !== 'id' && fetchError.status !== 403) {
+        try {
+          let fallbackQuery = supabase.from(table).select(select);
+          if (filter) fallbackQuery = fallbackQuery.eq(filter.column, filter.value);
+          fallbackQuery = fallbackQuery.order('created_at', { ascending });
+          if (single) fallbackQuery = fallbackQuery.single();
+          const { data: fbData, error: fbError } = await fallbackQuery;
+          if (!fbError) {
+            result = fbData;
+            fetchError = null;
+            globalDataCache[cacheKey] = fbData;
+          }
+        } catch (e) {}
+      }
+
       if (isMounted) {
         if (fetchError) {
           setError(fetchError);
-          // BUG FIX: Do NOT wipe existing cache if offline revalidation fails
-          if (globalDataCache[cacheKey] === undefined) {
+          // Fallback to cached data or local storage if 403 / RLS error occurs
+          if (globalDataCache[cacheKey] !== undefined) {
+            setData(globalDataCache[cacheKey]);
+          } else {
             setData(single ? null : []);
           }
         } else {
@@ -199,9 +224,7 @@ export default function useRealtimeData(table, options = {}) {
     return () => {
       isMounted = false;
       clearTimeout(subTimeout);
-      if (channel) {
-        supabase.removeChannel(channel);
-      }
+      safeRemoveChannel(channel);
     };
   }, [table, select, single, orderColumn, ascending, filter?.column, filter?.value]);
 

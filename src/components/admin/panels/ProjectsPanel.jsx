@@ -17,6 +17,28 @@ export default function ProjectsPanel() {
   const EMPTY_FORM = { title: '', description: '', tags: [], github_url: '', live_url: '', image_url: '', featured: false };
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [tagInput, setTagInput] = useState('');
+  const [checkingUrls, setCheckingUrls] = useState(false);
+  const [urlStatuses, setUrlStatuses] = useState({});
+
+  const PRESET_TECH_STACK = ['React', 'TypeScript', 'Node.js', 'Python', 'Supabase', 'PyTorch', 'TailwindCSS', 'PostgreSQL', 'Docker', 'Next.js', 'FastAPI'];
+
+  const checkProjectUrls = async () => {
+    setCheckingUrls(true);
+    const statuses = {};
+    for (const proj of projects) {
+      if (proj.live_url && proj.live_url !== '#') {
+        try {
+          const res = await fetch(proj.live_url, { method: 'HEAD', mode: 'no-cors' });
+          statuses[proj.id] = { live: 'online' };
+        } catch {
+          statuses[proj.id] = { live: 'unknown' };
+        }
+      }
+    }
+    setUrlStatuses(statuses);
+    setCheckingUrls(false);
+    showToast('Project links checked');
+  };
 
   useEffect(() => { fetchProjects(); }, []);
 
@@ -134,33 +156,41 @@ export default function ProjectsPanel() {
 
   const modalOverlay = {
     position: 'fixed', inset: 0, zIndex: 2000,
-    background: 'rgba(0,0,0,0.6)',
+    background: 'rgba(0,0,0,0.65)',
     backdropFilter: 'blur(6px)',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     padding: '24px',
   };
   const modalBox = {
-    background: 'var(--sidebar-bg, #1a1a2e)',
-    border: '1px solid var(--border-color)',
-    borderRadius: '16px',
+    background: 'var(--pcms-panel, #111827)',
+    border: '1px solid var(--pcms-line)',
+    borderRadius: '14px',
     width: '100%', maxWidth: '580px',
-    maxHeight: '90vh', overflowY: 'auto',
-    boxShadow: '0 32px 64px rgba(0,0,0,0.5)',
+    maxHeight: '85vh',
+    boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
     display: 'flex', flexDirection: 'column',
+    overflow: 'hidden',
   };
   const modalHeader = {
     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-    padding: '20px 24px', borderBottom: '1px solid var(--border-color)',
+    padding: '16px 20px', borderBottom: '1px solid var(--pcms-line)',
+    background: 'var(--pcms-panel-2)',
     flexShrink: 0,
+    position: 'sticky', top: 0, zIndex: 10,
   };
-  const modalBody = { padding: '24px', display: 'flex', flexDirection: 'column', gap: 18 };
+  const modalBody = {
+    padding: '20px', display: 'flex', flexDirection: 'column', gap: 16,
+    overflowY: 'auto', flex: 1, minHeight: 0,
+  };
   const modalFooter = {
-    padding: '16px 24px', borderTop: '1px solid var(--border-color)',
+    padding: '14px 20px', borderTop: '1px solid var(--pcms-line)',
     display: 'flex', justifyContent: 'flex-end', gap: 10, flexShrink: 0,
+    background: 'var(--pcms-panel-2)',
+    position: 'sticky', bottom: 0, zIndex: 10,
   };
-  const labelStyle = { fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.5px', textTransform: 'uppercase', display: 'block', marginBottom: 6 };
-  const inputStyle = { ...styles.input, background: 'var(--bg-primary)' };
-  const sectionLabel = { fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', margin: 0 };
+  const labelStyle = { fontSize: 10.5, fontWeight: 700, color: 'var(--pcms-muted)', letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', marginBottom: 5 };
+  const inputStyle = { ...styles.input, background: 'var(--pcms-panel)' };
+  const sectionLabel = { fontSize: 13, fontWeight: 600, color: 'var(--pcms-text)', margin: 0 };
 
   return (
     <>
@@ -180,38 +210,26 @@ export default function ProjectsPanel() {
 
       <PanelCard title="Projects" action={{ label: 'Add project', icon: 'ti-plus', onClick: () => openModal() }}>
         {/* Toolbar */}
-        <div style={{ padding: '12px 20px', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', background: 'var(--bg-secondary)' }}>
-          <div style={{ position: 'relative', flex: '1 1 220px', minWidth: 180 }}>
-            <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-            </span>
-            <input
-              type="text"
-              placeholder="Search by title, description or tag..."
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              style={{ ...inputStyle, paddingLeft: 32, paddingTop: 7, paddingBottom: 7, fontSize: 13 }}
-            />
-          </div>
-          <select
-            value={filterFeatured}
-            onChange={e => setFilterFeatured(e.target.value)}
-            style={{ ...inputStyle, width: 'auto', paddingTop: 7, paddingBottom: 7, cursor: 'pointer' }}
-          >
+        <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--pcms-line)', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          <input
+            type="text"
+            className="pcms-search"
+            placeholder="Search by title, description or tag..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            style={{ flex: '1 1 220px', minWidth: 180 }}
+          />
+          <select className="pcms-select" value={filterFeatured} onChange={e => setFilterFeatured(e.target.value)}>
             <option value="all">All Projects</option>
             <option value="featured">Featured Only</option>
             <option value="notfeatured">Not Featured</option>
           </select>
-          <select
-            value={sortBy}
-            onChange={e => setSortBy(e.target.value)}
-            style={{ ...inputStyle, width: 'auto', paddingTop: 7, paddingBottom: 7, cursor: 'pointer' }}
-          >
+          <select className="pcms-select" value={sortBy} onChange={e => setSortBy(e.target.value)}>
             <option value="created_at">Sort: Newest</option>
             <option value="title">Sort: A–Z</option>
             <option value="featured">Sort: Featured</option>
           </select>
-          <span style={{ fontSize: 12, color: 'var(--text-muted)', whiteSpace: 'nowrap', marginLeft: 'auto' }}>
+          <span style={{ fontSize: 11.5, color: 'var(--pcms-muted)', whiteSpace: 'nowrap', marginLeft: 'auto' }}>
             {filteredProjects.length} / {projects.length} projects
           </span>
         </div>
@@ -248,7 +266,7 @@ export default function ProjectsPanel() {
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         <span>{proj.title}</span>
                         {proj.live_url && proj.live_url !== '#' && (
-                          <a href={proj.live_url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} style={{ fontSize: 11, color: '#3b82f6', textDecoration: 'none' }}>↗ Live</a>
+                          <a href={proj.live_url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} style={{ fontSize: 11, color: 'var(--pcms-accent)', textDecoration: 'none' }}>↗ Live</a>
                         )}
                       </div>
                     </td>
@@ -260,7 +278,7 @@ export default function ProjectsPanel() {
                     <td style={styles.td}>
                       <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                         {(proj.tags || []).slice(0, 4).map(tag => (
-                          <span key={tag} style={{ fontSize: 10, padding: '2px 7px', background: 'rgba(59,130,246,0.12)', color: '#60a5fa', borderRadius: 20, fontWeight: 600, letterSpacing: '0.2px' }}>{tag}</span>
+                          <span key={tag} style={{ fontSize: 10, padding: '2px 7px', background: 'var(--pcms-accent-dim)', color: 'var(--pcms-accent)', borderRadius: 20, fontWeight: 600, letterSpacing: '0.2px' }}>{tag}</span>
                         ))}
                         {(proj.tags || []).length > 4 && (
                           <span style={{ fontSize: 10, padding: '2px 5px', color: 'var(--text-muted)' }}>+{proj.tags.length - 4}</span>
@@ -309,16 +327,16 @@ export default function ProjectsPanel() {
             {/* Modal Header */}
             <div style={modalHeader}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(59,130,246,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {editingProject ? <Edit3 size={15} color="#3b82f6" /> : <Plus size={15} color="#3b82f6" />}
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--pcms-accent-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {editingProject ? <Edit3 size={15} color="var(--pcms-accent)" /> : <Plus size={15} color="var(--pcms-accent)" />}
                 </div>
                 <div>
                   <p style={{ ...sectionLabel, margin: 0 }}>{editingProject ? 'Edit Project' : 'New Project'}</p>
-                  <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '2px 0 0' }}>{editingProject ? `Editing: ${editingProject.title}` : 'Add a new project to your portfolio'}</p>
+                  <p style={{ fontSize: 11, color: 'var(--pcms-muted)', margin: '2px 0 0' }}>{editingProject ? `Editing: ${editingProject.title}` : 'Add a new project to your portfolio'}</p>
                 </div>
               </div>
-              <button onClick={closeModal} style={{ ...styles.iconBtn, padding: 6 }}>
-                <X size={18} color="var(--text-muted)" />
+              <button onClick={closeModal} className="pcms-icon-btn">
+                <X size={18} />
               </button>
             </div>
 
@@ -351,30 +369,58 @@ export default function ProjectsPanel() {
               <div>
                 <label style={labelStyle}>Tags</label>
                 <div style={{
-                  display: 'flex', flexWrap: 'wrap', gap: 6, padding: '6px 10px',
-                  borderRadius: 8, border: '1px solid var(--border-color)',
-                  background: 'var(--bg-primary)', minHeight: 42, alignItems: 'center',
+                  display: 'flex', flexWrap: 'wrap', gap: 6, padding: '8px 12px',
+                  borderRadius: 8, border: '1px solid var(--pcms-line)',
+                  background: 'var(--pcms-panel)', minHeight: 42, alignItems: 'center',
                   cursor: 'text',
                 }} onClick={e => e.currentTarget.querySelector('input')?.focus()}>
                   {formData.tags.map(tag => (
                     <span key={tag} style={{
                       display: 'inline-flex', alignItems: 'center', gap: 4,
-                      background: 'rgba(59,130,246,0.15)', color: '#60a5fa',
+                      background: 'var(--pcms-accent-dim)', color: 'var(--pcms-accent)',
                       padding: '3px 8px', borderRadius: 20, fontSize: 12, fontWeight: 600,
                     }}>
                       {tag}
-                      <button onClick={() => removeTag(tag)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#60a5fa', padding: 0, lineHeight: 1, opacity: 0.7 }}>×</button>
+                      <button onClick={() => removeTag(tag)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--pcms-accent)', padding: 0, lineHeight: 1, opacity: 0.7 }}>×</button>
                     </span>
                   ))}
                   <input
-                    style={{ border: 'none', background: 'transparent', outline: 'none', flex: '1 1 80px', minWidth: 60, fontSize: 13, color: 'var(--text-primary)' }}
+                    style={{ border: 'none', background: 'transparent', outline: 'none', flex: '1 1 80px', minWidth: 60, fontSize: 13, color: 'var(--pcms-text)' }}
                     value={tagInput}
                     onChange={e => setTagInput(e.target.value)}
                     onKeyDown={handleTagKeyDown}
                     placeholder={formData.tags.length === 0 ? 'Type a tag and press Enter...' : ''}
                   />
                 </div>
-                <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '5px 0 0' }}>Press Enter or comma to add a tag. Backspace to remove last tag.</p>
+                <p style={{ fontSize: 11, color: 'var(--pcms-muted)', margin: '5px 0 0' }}>Press Enter or comma to add a tag. Backspace to remove last tag.</p>
+                <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginTop: 8 }}>
+                  <span style={{ fontSize: 10, color: 'var(--pcms-muted)', fontWeight: 700, textTransform: 'uppercase', alignSelf: 'center' }}>Quick add:</span>
+                  {PRESET_TECH_STACK.map(tech => {
+                    const isSelected = formData.tags.includes(tech);
+                    return (
+                      <button
+                        key={tech}
+                        type="button"
+                        onClick={() => {
+                          if (isSelected) {
+                            setFormData(prev => ({ ...prev, tags: prev.tags.filter(t => t !== tech) }));
+                          } else {
+                            setFormData(prev => ({ ...prev, tags: [...prev.tags, tech] }));
+                          }
+                        }}
+                        style={{
+                          fontSize: 10.5, padding: '2px 8px', borderRadius: 12,
+                          border: `1px solid ${isSelected ? 'var(--pcms-accent)' : 'var(--pcms-line)'}`,
+                          background: isSelected ? 'var(--pcms-accent-dim)' : 'transparent',
+                          color: isSelected ? 'var(--pcms-accent)' : 'var(--pcms-muted)',
+                          cursor: 'pointer', fontWeight: 600, transition: 'all 0.15s'
+                        }}
+                      >
+                        {isSelected ? '✓ ' : '+ '}{tech}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* URLs */}
@@ -438,14 +484,15 @@ export default function ProjectsPanel() {
             <div style={modalFooter}>
               <button
                 onClick={closeModal}
-                style={{ padding: '8px 18px', borderRadius: 8, border: '1px solid var(--border-color)', background: 'transparent', color: 'var(--text-secondary)', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}
+                className="pcms-btn-secondary"
               >
                 Cancel
               </button>
               <button
                 onClick={saveProject}
                 disabled={saving}
-                style={{ padding: '8px 20px', borderRadius: 8, border: 'none', background: '#3b82f6', color: '#fff', fontSize: 13, fontWeight: 600, cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1, display: 'flex', alignItems: 'center', gap: 7 }}
+                className="pcms-btn-dark"
+                style={{ opacity: saving ? 0.7 : 1, cursor: saving ? 'not-allowed' : 'pointer' }}
               >
                 {saving && <Loader2 size={14} className="spin" />}
                 {editingProject ? 'Save Changes' : 'Create Project'}

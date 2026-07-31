@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useIsland } from '../../context/IslandContext';
 import { useTheme } from '../../context/ThemeContext';
-import { Sparkles, Command, FileText, Sun, Moon, ShieldCheck, Zap, X, Users, Volume2 } from 'lucide-react';
+import { Sparkles, Command, FileText, Sun, Moon, ShieldCheck, Zap, X, Users, Volume2, Search } from 'lucide-react';
 
 const SPRING_TRANSITION = {
   type: 'spring',
@@ -80,6 +80,32 @@ const WaveformSVG = ({ isSettled = false }) => {
 };
 
 export default function DynamicIsland() {
+  const [isAdminPage, setIsAdminPage] = useState(() =>
+    typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')
+  );
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 900);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 900);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
+    const checkPath = () => {
+      if (typeof window !== 'undefined') {
+        setIsAdminPage(window.location.pathname.startsWith('/admin'));
+      }
+    };
+    checkPath();
+    window.addEventListener('popstate', checkPath);
+    const interval = setInterval(checkPath, 250);
+    return () => {
+      window.removeEventListener('popstate', checkPath);
+      clearInterval(interval);
+    };
+  }, []);
+
   const {
     islandState,
     triggerIsland,
@@ -96,6 +122,7 @@ export default function DynamicIsland() {
   const hudRef = useRef(null);
 
   const isNotificationActive = islandState.isOpen;
+  const effectiveHover = isMobile ? false : isHovered;
 
   useEffect(() => {
     const observer = new MutationObserver(() => {
@@ -106,7 +133,9 @@ export default function DynamicIsland() {
     return () => observer.disconnect();
   }, []);
 
-  // Close HUD when clicking outside
+  if (isAdminPage) return null;
+
+  // Close HUD when clicking or touching outside
   useEffect(() => {
     if (!isHudOpen) return;
     const handleClickOutside = (e) => {
@@ -116,7 +145,11 @@ export default function DynamicIsland() {
       }
     };
     window.addEventListener('mousedown', handleClickOutside);
-    return () => window.removeEventListener('mousedown', handleClickOutside);
+    window.addEventListener('touchstart', handleClickOutside, { passive: true });
+    return () => {
+      window.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('touchstart', handleClickOutside);
+    };
   }, [isHudOpen, closeHud]);
 
   const handleToggleTheme = (e) => {
@@ -136,7 +169,11 @@ export default function DynamicIsland() {
   const handleOpenCommandSearch = (e) => {
     e.stopPropagation();
     closeHud();
-    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, ctrlKey: true }));
+    if (isMobile) {
+      window.dispatchEvent(new CustomEvent('open-chatbot'));
+    } else {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, ctrlKey: true }));
+    }
   };
 
   const handleDownloadCV = (e) => {
@@ -164,7 +201,7 @@ export default function DynamicIsland() {
       id="dynamic-island-container"
       style={{
         position: 'fixed',
-        top: '12px',
+        top: isMobile ? '8px' : '12px',
         left: '50%',
         transform: 'translateX(-50%)',
         zIndex: 999999,
@@ -179,8 +216,8 @@ export default function DynamicIsland() {
         layout
         transition={SPRING_TRANSITION}
         whileTap={{ scale: 0.96 }}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        onMouseEnter={() => !isMobile && setIsHovered(true)}
+        onMouseLeave={() => !isMobile && setIsHovered(false)}
         onClick={() => {
           if (!isNotificationActive) {
             toggleHud();
@@ -188,7 +225,7 @@ export default function DynamicIsland() {
         }}
         style={{
           background: '#07090e',
-          borderRadius: isHudOpen ? '22px' : '999px',
+          borderRadius: isHudOpen ? '20px' : '999px',
           border: '1px solid #2a2c33',
           boxShadow: isHudOpen
             ? '0 24px 60px rgba(0,0,0,0.75), 0 0 30px rgba(59,130,246,0.18)'
@@ -202,10 +239,11 @@ export default function DynamicIsland() {
           cursor: 'pointer',
           whiteSpace: 'nowrap',
           overflow: 'hidden',
-          padding: isHudOpen ? '16px 20px' : isNotificationActive ? '10px 20px' : isHovered ? '8px 18px' : '0 10px',
-          height: isHudOpen ? 'auto' : isNotificationActive ? '48px' : '32px',
-          width: isHudOpen ? '320px' : 'auto',
-          minWidth: isHudOpen ? '320px' : isNotificationActive ? '270px' : isHovered ? '190px' : '32px',
+          padding: isHudOpen ? '14px 16px' : isNotificationActive ? '10px 16px' : effectiveHover ? '8px 16px' : '0 10px',
+          height: isHudOpen ? 'auto' : isNotificationActive ? '44px' : '32px',
+          width: isHudOpen ? (isMobile ? 'calc(94vw)' : '320px') : 'auto',
+          maxWidth: isHudOpen ? '340px' : isNotificationActive ? '290px' : effectiveHover ? '190px' : '36px',
+          minWidth: isHudOpen ? (isMobile ? '280px' : '320px') : isNotificationActive ? '250px' : effectiveHover ? '180px' : '32px',
           boxSizing: 'border-box',
           position: 'relative',
           willChange: 'width, height, border-radius'
@@ -222,13 +260,13 @@ export default function DynamicIsland() {
               animate="animate"
               exit="exit"
               transition={SPRING_TRANSITION}
-              style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '12px', whiteSpace: 'normal' }}
+              style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '10px', whiteSpace: 'normal' }}
             >
               {/* HUD Header */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '8px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <WaveformSVG isSettled={true} />
-                  <span style={{ color: '#ffffff', fontSize: '13px', fontWeight: 700, letterSpacing: '0.02em' }}>
+                  <span style={{ color: '#ffffff', fontSize: '12.5px', fontWeight: 700, letterSpacing: '0.02em' }}>
                     Sujith Thota · System HUD
                   </span>
                 </div>
@@ -241,33 +279,33 @@ export default function DynamicIsland() {
               </div>
 
               {/* Telemetry Status Items */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.04)', padding: '8px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '11.5px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Users size={13} style={{ color: '#10b981' }} /> Active Viewers
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.04)', padding: '7px 10px', borderRadius: '9px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Users size={12} style={{ color: '#10b981' }} /> Active Viewers
                   </span>
-                  <span style={{ color: '#10b981', fontSize: '11px', fontWeight: 700 }}>🟢 {visitorCount} {visitorCount === 1 ? 'active session' : 'active sessions'}</span>
+                  <span style={{ color: '#10b981', fontSize: '10.5px', fontWeight: 700 }}>🟢 {visitorCount} {visitorCount === 1 ? 'active session' : 'active sessions'}</span>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.04)', padding: '8px 12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '11.5px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Zap size={13} style={{ color: '#3b82f6' }} /> RAG / AI Pipeline
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.04)', padding: '7px 10px', borderRadius: '9px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Zap size={12} style={{ color: '#3b82f6' }} /> RAG / AI Pipeline
                   </span>
-                  <span style={{ color: '#3b82f6', fontSize: '11px', fontWeight: 700 }}>Sub-2s Latency</span>
+                  <span style={{ color: '#3b82f6', fontSize: '10.5px', fontWeight: 700 }}>Sub-2s Latency</span>
                 </div>
               </div>
 
               {/* Quick Action Control Buttons */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', paddingTop: '2px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', paddingTop: '2px' }}>
                 <button
                   onClick={handleOpenCommandSearch}
                   style={{
                     background: 'rgba(255,255,255,0.08)',
                     border: '1px solid rgba(255,255,255,0.12)',
-                    borderRadius: '10px',
-                    padding: '8px 6px',
+                    borderRadius: '8px',
+                    padding: '7px 4px',
                     color: '#ffffff',
-                    fontSize: '11px',
+                    fontSize: '10.5px',
                     fontWeight: 600,
                     display: 'flex',
                     flexDirection: 'column',
@@ -277,8 +315,8 @@ export default function DynamicIsland() {
                     transition: 'background 0.2s'
                   }}
                 >
-                  <Command size={14} style={{ color: '#8b5cf6' }} />
-                  <span>Command</span>
+                  {isMobile ? <Sparkles size={13} style={{ color: '#06b6d4' }} /> : <Command size={13} style={{ color: '#8b5cf6' }} />}
+                  <span>{isMobile ? 'Atom AI' : 'Command'}</span>
                 </button>
 
                 <button
@@ -286,10 +324,10 @@ export default function DynamicIsland() {
                   style={{
                     background: 'rgba(255,255,255,0.08)',
                     border: '1px solid rgba(255,255,255,0.12)',
-                    borderRadius: '10px',
-                    padding: '8px 6px',
+                    borderRadius: '8px',
+                    padding: '7px 4px',
                     color: '#ffffff',
-                    fontSize: '11px',
+                    fontSize: '10.5px',
                     fontWeight: 600,
                     display: 'flex',
                     flexDirection: 'column',
@@ -299,7 +337,7 @@ export default function DynamicIsland() {
                     transition: 'background 0.2s'
                   }}
                 >
-                  <FileText size={14} style={{ color: '#10b981' }} />
+                  <FileText size={13} style={{ color: '#10b981' }} />
                   <span>Resume</span>
                 </button>
 
@@ -308,10 +346,10 @@ export default function DynamicIsland() {
                   style={{
                     background: 'rgba(255,255,255,0.08)',
                     border: '1px solid rgba(255,255,255,0.12)',
-                    borderRadius: '10px',
-                    padding: '8px 6px',
+                    borderRadius: '8px',
+                    padding: '7px 4px',
                     color: '#ffffff',
-                    fontSize: '11px',
+                    fontSize: '10.5px',
                     fontWeight: 600,
                     display: 'flex',
                     flexDirection: 'column',
@@ -321,7 +359,7 @@ export default function DynamicIsland() {
                     transition: 'background 0.2s'
                   }}
                 >
-                  {isDark ? <Sun size={14} style={{ color: '#f59e0b' }} /> : <Moon size={14} style={{ color: '#3b82f6' }} />}
+                  {isDark ? <Sun size={13} style={{ color: '#f59e0b' }} /> : <Moon size={13} style={{ color: '#3b82f6' }} />}
                   <span>Theme</span>
                 </button>
               </div>
@@ -338,7 +376,7 @@ export default function DynamicIsland() {
               transition={SPRING_TRANSITION}
               style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '4px' }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%' }}>
                 {islandState.icon && (
                   <motion.div
                     initial={{ scale: 0, rotate: -30 }}
@@ -359,7 +397,7 @@ export default function DynamicIsland() {
                 <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                   <span style={{ 
                     color: '#ffffff', 
-                    fontSize: '13.5px', 
+                    fontSize: '12.5px', 
                     fontWeight: 700, 
                     lineHeight: 1.2,
                     letterSpacing: '-0.01em'
@@ -369,7 +407,7 @@ export default function DynamicIsland() {
                   {islandState.subtitle && (
                     <span style={{ 
                       color: 'rgba(255,255,255,0.75)', 
-                      fontSize: '11px', 
+                      fontSize: '10.5px', 
                       fontWeight: 500,
                       marginTop: '2px',
                       lineHeight: 1.2
@@ -392,8 +430,8 @@ export default function DynamicIsland() {
                 </div>
               )}
             </motion.div>
-          ) : isHovered ? (
-            /* Hovered Idle State */
+          ) : effectiveHover ? (
+            /* Hovered Idle State (Desktop only) */
             <motion.div
               key="hover-state"
               layout

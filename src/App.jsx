@@ -21,6 +21,7 @@ import { PersonaProvider } from "./context/PersonaContext";
 import { prefetchTable } from "./hooks/useRealtimeData";
 
 import PWAInstallPrompt from './components/widgets/PWAInstallPrompt';
+import SiteDisabledGate from './components/SiteDisabledGate';
 
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 const AdminLogin = React.lazy(() => import('./pages/AdminLogin'));
@@ -159,12 +160,14 @@ function AppContent() {
           <IslandProvider>
             <DynamicIsland />
             <DevToolsDetector />
-            <PWAInstallPrompt />
             <BrowserRouter>
+              <PWAInstallPrompt />
               <Suspense fallback={<Loader />}>
-                <MaintenanceGate>
-                  <AnimatedRoutes />
-                </MaintenanceGate>
+                <SiteDisabledGate>
+                  <MaintenanceGate>
+                    <AnimatedRoutes />
+                  </MaintenanceGate>
+                </SiteDisabledGate>
               </Suspense>
             </BrowserRouter>
           </IslandProvider>

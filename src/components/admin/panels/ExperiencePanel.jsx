@@ -19,6 +19,20 @@ export default function ExperiencePanel() {
   };
   const [formData, setFormData] = useState(EMPTY_FORM);
 
+  function calculateTenure(start, end, isCurrent) {
+    if (!start) return '';
+    const d1 = new Date(start);
+    const d2 = isCurrent || !end ? new Date() : new Date(end);
+    if (isNaN(d1.getTime()) || isNaN(d2.getTime())) return '';
+    const months = Math.max(1, (d2.getFullYear() - d1.getFullYear()) * 12 + (d2.getMonth() - d1.getMonth()));
+    const yrs = Math.floor(months / 12);
+    const mos = months % 12;
+    let str = '';
+    if (yrs > 0) str += `${yrs} yr${yrs > 1 ? 's' : ''} `;
+    if (mos > 0 || yrs === 0) str += `${mos} mo${mos > 1 ? 's' : ''}`;
+    return str.trim();
+  }
+
   useEffect(() => { fetchExperience(); }, []);
 
   const showToast = (msg, type = 'success') => {
@@ -110,10 +124,10 @@ export default function ExperiencePanel() {
 
   if (loading) return <PanelCard title="Experience Timeline"><div style={styles.emptyState}><Loader2 className="spin" size={24} color="var(--text-muted)" /></div></PanelCard>;
 
-  const modalOverlay = { position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' };
-  const modalBox = { background: 'var(--sidebar-bg, #1a1a2e)', border: '1px solid var(--border-color)', borderRadius: '16px', width: '100%', maxWidth: '640px', maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 32px 64px rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column' };
-  const labelStyle = { fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.5px', textTransform: 'uppercase', display: 'block', marginBottom: 6 };
-  const inputStyle = { ...styles.input, background: 'var(--bg-primary)' };
+  const modalOverlay = { position: 'fixed', inset: 0, zIndex: 2000, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' };
+  const modalBox = { background: 'var(--pcms-panel)', border: '1px solid var(--pcms-line)', borderRadius: '14px', width: '100%', maxWidth: '640px', maxHeight: '92vh', overflowY: 'auto', boxShadow: '0 24px 64px rgba(0,0,0,0.5)', display: 'flex', flexDirection: 'column' };
+  const labelStyle = { fontSize: 10.5, fontWeight: 700, color: 'var(--pcms-muted)', letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', marginBottom: 5 };
+  const inputStyle = { ...styles.input, background: 'var(--pcms-panel)' };
 
   return (
     <>
@@ -140,27 +154,32 @@ export default function ExperiencePanel() {
               </thead>
               <tbody>
                 {experiences.map((exp, i) => (
-                  <tr key={exp.id} style={{ background: i % 2 === 0 ? 'transparent' : 'rgba(128,128,128,0.025)' }}>
+                  <tr key={exp.id} style={{ background: i % 2 === 0 ? 'transparent' : 'var(--pcms-panel-2)' }}>
                     <td style={styles.td}>
-                      <div style={{ width: 40, height: 40, borderRadius: 8, background: '#fff', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                        {exp.logo_url ? <img src={exp.logo_url} alt="logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={(e) => { e.target.style.display='none'; e.target.parentElement.innerHTML = '<i class="ti ti-briefcase" style="color:#9ca3af; font-size: 20px;"></i>'; }} /> : <Briefcase size={20} color="#9ca3af" />}
+                      <div style={{ width: 36, height: 36, borderRadius: 8, background: 'var(--pcms-panel-2)', border: '1px solid var(--pcms-line)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                        {exp.logo_url ? <img src={exp.logo_url} alt="logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} onError={(e) => { e.target.style.display='none'; e.target.parentElement.innerHTML = '<i class="ti ti-briefcase" style="color:var(--pcms-muted); font-size: 18px;"></i>'; }} /> : <Briefcase size={18} color="var(--pcms-muted)" />}
                       </div>
                     </td>
                     <td style={styles.td}>
-                      <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--text-primary)' }}>{exp.role}</div>
-                      <div style={{ fontSize: 13, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
+                      <div style={{ fontWeight: 700, fontSize: 13.5, color: 'var(--pcms-text)' }}>{exp.role}</div>
+                      <div style={{ fontSize: 12, color: 'var(--pcms-muted)', display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
                         {exp.company}
-                        {exp.is_education && <span style={{ padding: '2px 6px', borderRadius: 4, background: 'rgba(59,130,246,0.1)', color: '#3b82f6', fontSize: 10, fontWeight: 700, textTransform: 'uppercase' }}>Edu</span>}
+                        {exp.is_education && <span style={{ padding: '2px 6px', borderRadius: 4, background: 'var(--pcms-accent-dim)', color: 'var(--pcms-accent)', fontSize: 10, fontWeight: 700, textTransform: 'uppercase' }}>Edu</span>}
                       </div>
                     </td>
-                    <td style={{ ...styles.td, color: 'var(--text-secondary)', fontSize: 13 }}>
-                      {exp.start_date} <span style={{ color: 'var(--text-muted)' }}>→</span> {exp.end_date ? exp.end_date : <span style={{ color: '#10b981', fontWeight: 600 }}>Present</span>}
+                    <td style={{ ...styles.td, color: 'var(--pcms-muted)', fontSize: 12 }}>
+                      <div>{exp.start_date} <span style={{ color: 'var(--pcms-muted)' }}>→</span> {exp.end_date ? exp.end_date : <span style={{ color: '#10B981', fontWeight: 600 }}>Present</span>}</div>
+                      {calculateTenure(exp.start_date, exp.end_date, !exp.end_date) && (
+                        <span style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--pcms-accent)', background: 'var(--pcms-accent-dim)', padding: '1px 6px', borderRadius: 4, display: 'inline-block', marginTop: 3 }}>
+                          ⏱️ {calculateTenure(exp.start_date, exp.end_date, !exp.end_date)}
+                        </span>
+                      )}
                     </td>
-                    <td style={{ ...styles.td, color: 'var(--text-muted)' }}>{exp.display_order}</td>
+                    <td style={{ ...styles.td, color: 'var(--pcms-muted)' }}>{exp.display_order}</td>
                     <td style={{ ...styles.td, textAlign: 'right' }}>
                       <div style={{ display: 'flex', gap: 4, justifyContent: 'flex-end' }}>
-                        <button onClick={() => openModal(exp)} style={{ ...styles.iconBtn, padding: 6, borderRadius: 7, background: 'rgba(59,130,246,0.08)' }} title="Edit"><Edit3 size={14} color="#3b82f6" /></button>
-                        <button onClick={() => handleDelete(exp.id, exp.role)} style={{ ...styles.iconBtn, padding: 6, borderRadius: 7, background: 'rgba(239,68,68,0.08)' }} title="Delete"><Trash2 size={14} color="#ef4444" /></button>
+                        <button onClick={() => openModal(exp)} className="pcms-icon-btn edit" title="Edit"><Edit3 size={14} /></button>
+                        <button onClick={() => handleDelete(exp.id, exp.role)} className="pcms-icon-btn danger" title="Delete"><Trash2 size={14} /></button>
                       </div>
                     </td>
                   </tr>
@@ -174,15 +193,15 @@ export default function ExperiencePanel() {
       {isModalOpen && (
         <div style={modalOverlay} onClick={closeModal}>
           <div style={modalBox} onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', borderBottom: '1px solid var(--border-color)', flexShrink: 0 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--pcms-line)', background: 'var(--pcms-panel-2)', flexShrink: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(16,185,129,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Briefcase size={15} color="#10b981" /></div>
+                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'rgba(16,185,129,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Briefcase size={15} color="#10B981" /></div>
                 <div>
-                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>{editingExp ? 'Edit Experience' : 'New Experience'}</p>
-                  <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '2px 0 0' }}>Log a new role or position</p>
+                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--pcms-text)', fontFamily: "'Space Grotesk', sans-serif" }}>{editingExp ? 'Edit Experience' : 'New Experience'}</p>
+                  <p style={{ fontSize: 11, color: 'var(--pcms-muted)', margin: '2px 0 0' }}>Log a new role or position</p>
                 </div>
               </div>
-              <button onClick={closeModal} style={{ ...styles.iconBtn, padding: 6 }}><X size={18} color="var(--text-muted)" /></button>
+              <button onClick={closeModal} className="pcms-icon-btn"><X size={18} /></button>
             </div>
 
             <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: 18 }}>

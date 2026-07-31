@@ -22,8 +22,8 @@ export default function TestimonialsPanel() {
 
   const sorted = (testimonials || []).sort((a, b) => a.display_order - b.display_order);
 
-  const inputStyle = { width: '100%', padding: '9px 14px', borderRadius: 10, border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: 14, outline: 'none', boxSizing: 'border-box' };
-  const labelStyle = { fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 6, display: 'block', textTransform: 'uppercase', letterSpacing: 0.3 };
+  const labelStyle = { fontSize: 10.5, fontWeight: 700, color: 'var(--pcms-muted)', marginBottom: 5, display: 'block', letterSpacing: '0.05em', textTransform: 'uppercase' };
+  const inputStyle = { width: '100%', padding: '9px 12px', borderRadius: 8, border: '1px solid var(--pcms-line)', background: 'var(--pcms-panel)', color: 'var(--pcms-text)', fontSize: 13, outline: 'none', boxSizing: 'border-box' };
 
   const handleSave = async (form) => {
     setSaving(true);
@@ -54,23 +54,34 @@ export default function TestimonialsPanel() {
     logAuditEvent('TOGGLE_TESTIMONIAL_VISIBILITY', 'testimonials', t.name);
   };
 
+  const copyRequestLink = () => {
+    const link = `${window.location.origin}/contact?type=testimonial`;
+    navigator.clipboard.writeText(link);
+    alert(`Public testimonial request link copied to clipboard!\n${link}`);
+  };
+
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 10 }}>
             <Users size={22} color="#8b5cf6" /> Testimonials
           </h2>
           <p style={{ margin: '4px 0 0', color: 'var(--text-muted)', fontSize: 14 }}>{(testimonials || []).length} endorsements · {(testimonials || []).filter(t => t.is_visible).length} visible</p>
         </div>
-        <button onClick={() => setEditing({ ...BLANK })} disabled={editing !== null} style={{
-          display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 12, border: 'none',
-          background: 'linear-gradient(135deg, #8b5cf6, #ec4899)', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 14,
-          boxShadow: '0 4px 16px rgba(139,92,246,0.35)',
-        }}>
-          <Plus size={16} /> Add Testimonial
-        </button>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button onClick={copyRequestLink} className="pcms-btn-secondary" style={{ padding: '8px 14px', fontSize: 13 }}>
+            🔗 Request Link
+          </button>
+          <button onClick={() => setEditing({ ...BLANK })} disabled={editing !== null} style={{
+            display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 12, border: 'none',
+            background: 'linear-gradient(135deg, #8b5cf6, #ec4899)', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 14,
+            boxShadow: '0 4px 16px rgba(139,92,246,0.35)',
+          }}>
+            <Plus size={16} /> Add Testimonial
+          </button>
+        </div>
       </div>
 
       {/* Editor Form */}
@@ -113,13 +124,9 @@ export default function TestimonialsPanel() {
                 </label>
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 8, borderTop: '1px solid var(--border-color)' }}>
-              <button onClick={() => setEditing(null)} style={{ padding: '9px 20px', borderRadius: 10, border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', cursor: 'pointer', fontWeight: 600, fontSize: 14 }}>Cancel</button>
-              <button onClick={() => handleSave(editing)} disabled={saving || !editing.name || !editing.message} style={{
-                padding: '9px 24px', borderRadius: 10, border: 'none',
-                background: 'linear-gradient(135deg, #8b5cf6, #ec4899)', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: 14,
-                display: 'flex', alignItems: 'center', gap: 8, opacity: saving ? 0.7 : 1,
-              }}>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', paddingTop: 12, borderTop: '1px solid var(--pcms-line)' }}>
+              <button onClick={() => setEditing(null)} className="pcms-btn-secondary">Cancel</button>
+              <button onClick={() => handleSave(editing)} disabled={saving || !editing.name || !editing.message} className="pcms-btn-dark" style={{ opacity: saving ? 0.7 : 1 }}>
                 {saving ? <Loader2 size={15} className="spin" /> : <Save size={15} />}
                 {saving ? 'Saving...' : 'Save'}
               </button>
@@ -138,31 +145,31 @@ export default function TestimonialsPanel() {
           <p style={{ fontSize: 13 }}>Add endorsements from colleagues, professors, or mentors.</p>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {sorted.map(t => (
             <motion.div key={t.id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-              style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 16, padding: '18px 20px', display: 'flex', gap: 14, alignItems: 'flex-start', opacity: deleting === t.id ? 0.5 : 1 }}
+              style={{ background: 'var(--pcms-panel-2)', border: '1px solid var(--pcms-line)', borderRadius: 10, padding: '16px 18px', display: 'flex', gap: 14, alignItems: 'flex-start', opacity: deleting === t.id ? 0.5 : 1 }}
             >
-              <Avatar name={t.name} url={t.avatar_url} size={44} />
+              <Avatar name={t.name} url={t.avatar_url} size={40} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
                   <div>
-                    <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)' }}>{t.name}</div>
-                    <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{t.role}{t.company ? ` · ${t.company}` : ''}</div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--pcms-text)' }}>{t.name}</div>
+                    <div style={{ fontSize: 12, color: 'var(--pcms-muted)' }}>{t.role}{t.company ? ` · ${t.company}` : ''}</div>
                   </div>
                   <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-                    <button onClick={() => handleVisibility(t)} title={t.is_visible ? 'Hide' : 'Show'} style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 8, padding: '6px 9px', cursor: 'pointer', color: t.is_visible ? '#10b981' : 'var(--text-muted)', display: 'flex' }}>
+                    <button onClick={() => handleVisibility(t)} title={t.is_visible ? 'Hide' : 'Show'} className="pcms-icon-btn" style={{ color: t.is_visible ? 'var(--pcms-green)' : 'var(--pcms-muted)' }}>
                       {t.is_visible ? <Eye size={14} /> : <EyeOff size={14} />}
                     </button>
-                    <button onClick={() => setEditing({ ...t })} style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 8, padding: '6px 9px', cursor: 'pointer', color: 'var(--primary-blue)', display: 'flex' }}>
+                    <button onClick={() => setEditing({ ...t })} className="pcms-icon-btn edit">
                       <Edit2 size={14} />
                     </button>
-                    <button onClick={() => handleDelete(t.id, t.name)} style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 8, padding: '6px 9px', cursor: 'pointer', color: '#ef4444', display: 'flex' }}>
-                      {deleting === t.id ? <Loader2 size={14} className="spin" /> : <Trash2 size={14} />}
+                    <button onClick={() => handleDelete(t.id, t.name)} className="pcms-icon-btn danger">
+                      <Trash2 size={14} />
                     </button>
                   </div>
                 </div>
-                <p style={{ margin: '10px 0 0', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, fontStyle: 'italic' }}>"{t.message}"</p>
+                <p style={{ margin: '8px 0 0', fontSize: 12.5, color: 'var(--pcms-text)', lineHeight: 1.5, opacity: 0.9 }}>"{t.message}"</p>
               </div>
             </motion.div>
           ))}
@@ -171,3 +178,4 @@ export default function TestimonialsPanel() {
     </motion.div>
   );
 }
+

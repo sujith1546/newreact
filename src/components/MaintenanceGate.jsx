@@ -1,5 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { createPortal } from 'react-dom';
+import { supabase, safeRemoveChannel } from '../lib/supabaseClient';
+import { Wrench, ArrowRight, Clock } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import '../styles/maintenance.css';
 
 const BYPASS_KEY = 'maint_bypass_token';
@@ -9,42 +12,66 @@ const BYPASS_SECRET = import.meta.env.VITE_MAINTENANCE_BYPASS_SECRET || 'preview
 // 1. REALTIME HOOK
 // =================================================================
 export function useMaintenanceStatus() {
-  const [status, setStatus] = useState({
-    loading: true,
-    enabled: false,
-    enabledAt: null,
-    etaMinutes: 20,
-    message: '',
-  });
+  const getInitialStatus = () => {
+    if (typeof window === 'undefined') return { loading: false, enabled: false, enabledAt: null, etaMinutes: 20, message: '' };
+    const localEnabled = localStorage.getItem('pcms_maint_enabled') === 'true';
+    const localAt = localStorage.getItem('pcms_maint_at') || null;
+    const localEta = Number(localStorage.getItem('pcms_maint_eta')) || 20;
+    const localMsg = localStorage.getItem('pcms_maint_msg') || '';
+    return {
+      loading: false,
+      enabled: localEnabled,
+      enabledAt: localAt,
+      etaMinutes: localEta,
+      message: localMsg,
+    };
+  };
+
+  const [status, setStatus] = useState(getInitialStatus);
 
   useEffect(() => {
     let channel;
 
     async function loadInitial() {
+      const localEnabled = localStorage.getItem('pcms_maint_enabled');
+      const localAt = localStorage.getItem('pcms_maint_at');
+      const localEta = localStorage.getItem('pcms_maint_eta');
+      const localMsg = localStorage.getItem('pcms_maint_msg');
+
       const { data } = await supabase.from('site_settings').select('*').limit(1).single();
 
       if (data) {
+        const isEnabled = data.maintenance_enabled !== undefined && data.maintenance_enabled !== null 
+          ? !!data.maintenance_enabled 
+          : (localEnabled === 'true');
+
         setStatus({
           loading: false,
-          enabled: data.maintenance_enabled,
-          enabledAt: data.maintenance_enabled_at,
-          etaMinutes: data.maintenance_eta ?? 20,
-          message: data.maintenance_message ?? '',
+          enabled: isEnabled,
+          enabledAt: data.maintenance_enabled_at || localAt || null,
+          etaMinutes: data.maintenance_eta ?? Number(localEta) ?? 20,
+          message: data.maintenance_message ?? localMsg ?? '',
         });
       } else {
-        setStatus((s) => ({ ...s, loading: false }));
+        setStatus({
+          loading: false,
+          enabled: localEnabled === 'true',
+          enabledAt: localAt || null,
+          etaMinutes: Number(localEta) || 20,
+          message: localMsg || '',
+        });
       }
     }
 
     loadInitial();
 
-    // Catch up on missed events if tab was suspended by browser
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         loadInitial();
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('storage', handleVisibilityChange);
 
     const channelName = `site_settings_maint_${Math.random().toString(36).substring(7)}`;
     channel = supabase
@@ -53,107 +80,135 @@ export function useMaintenanceStatus() {
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'site_settings' },
         (payload) => {
-          const row = payload.new;
-          setStatus({
-            loading: false,
-            enabled: row.maintenance_enabled,
-            enabledAt: row.maintenance_enabled_at,
-            etaMinutes: row.maintenance_eta,
-            message: row.maintenance_message,
-          });
+          const row = payload?.new;
+          if (row) {
+            const isEnabled = !!row.maintenance_enabled;
+            const at = row.maintenance_enabled_at || null;
+            const eta = row.maintenance_eta || 20;
+            const msg = row.maintenance_message || '';
+
+            localStorage.setItem('pcms_maint_enabled', String(isEnabled));
+            if (at) localStorage.setItem('pcms_maint_at', String(at));
+            localStorage.setItem('pcms_maint_eta', String(eta));
+            localStorage.setItem('pcms_maint_msg', String(msg));
+
+            setStatus({
+              loading: false,
+              enabled: isEnabled,
+              enabledAt: at,
+              etaMinutes: eta,
+              message: msg,
+            });
+          } else {
+            loadInitial();
+          }
         }
       )
       .subscribe();
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      if (channel) supabase.removeChannel(channel);
+      window.removeEventListener('storage', handleVisibilityChange);
+      safeRemoveChannel(channel);
     };
   }, []);
 
   return status;
 }
 
-import MaintenancePage from '../pages/Maintenance';
+import MaintenancePage from './MaintenancePage';
 
 export { MaintenancePage };
 
-const styles = {
-  page: {
-    fontFamily: 'Inter, sans-serif',
-    background: '#F7F7F5',
-    color: '#1C1E22',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '100vh',
-    padding: 32,
-  },
-  card: {
-    width: '100%',
-    maxWidth: 560,
-    background: '#FFFFFF',
-    border: '1px solid #E4E4E0',
-    borderRadius: 14,
-    padding: '52px 48px 40px',
-    boxShadow: '0 1px 2px rgba(20,20,20,0.03), 0 20px 44px -28px rgba(20,20,20,0.18)',
-  },
-  mark: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 34 },
-  markBadge: {
-    width: 34,
-    height: 34,
-    borderRadius: 9,
-    background: '#1F3A5F',
-    color: '#fff',
-    fontFamily: "'Source Serif 4', serif",
-    fontWeight: 600,
-    fontSize: 16,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  markName: { fontSize: 14, fontWeight: 600, letterSpacing: '-0.01em' },
-  markRole: { fontSize: 12, color: '#5B6069' },
-  statusTag: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: 7,
-    fontSize: 12.5,
-    fontWeight: 600,
-    color: '#1F3A5F',
-    background: '#EAF0F7',
-    padding: '6px 12px 6px 10px',
-    borderRadius: 100,
-    marginBottom: 22,
-  },
-  input: { width: '100%', padding: '10px 12px', fontSize: 14, borderRadius: 8, border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-primary)', outline: 'none' },
-  updateBtn: { marginTop: 4, padding: '10px 16px', background: '#ef4444', color: '#fff', fontSize: 13, fontWeight: 700, border: 'none', borderRadius: 8, cursor: 'pointer', transition: '0.2s', width: 'fit-content', alignSelf: 'flex-start' },
-  inputGroup: { display: 'flex', flexDirection: 'column', gap: 6 },
-  label: { fontSize: 12.5, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' },
-  pulse: { width: 7, height: 7, borderRadius: '50%', background: '#1F3A5F', animation: 'pulse 2s ease-out infinite' },
-  h1: {
-    fontFamily: "'Source Serif 4', serif",
-    fontWeight: 600,
-    fontSize: 30,
-    lineHeight: 1.25,
-    letterSpacing: '-0.01em',
-    margin: '0 0 14px',
-  },
-  sub: { fontSize: 15.5, lineHeight: 1.65, color: '#5B6069', margin: '0 0 30px', maxWidth: '46ch' },
-  progressLabels: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    fontSize: 12.5,
-    color: '#5B6069',
-    marginBottom: 8,
-  },
-  track: { height: 6, background: '#EAF0F7', borderRadius: 100, overflow: 'hidden' },
-  fill: { height: '100%', background: '#1F3A5F', borderRadius: 100, transition: 'width 0.6s ease' },
-  divider: { height: 1, background: '#E4E4E0', margin: '0 0 26px' },
-  row: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 20 },
-  smallLabel: { fontSize: 12.5, color: '#5B6069', marginBottom: 4 },
-  link: { color: '#1F3A5F', fontSize: 14.5, fontWeight: 600, textDecoration: 'none' },
-};
+// =================================================================
+// 2. MAINTENANCE OVERLAY (PORTAL MOUNTED ON DOCUMENT.BODY)
+// =================================================================
+export function MaintenanceOverlay({ status }) {
+  useEffect(() => {
+    document.documentElement.classList.add('site-maint-lock-active');
+    document.body.classList.add('site-maint-lock-active');
+
+    const handleContextMenu = (e) => e.preventDefault();
+    const handleKeyDown = (e) => {
+      if (
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && ['I','i','J','j','C','c'].includes(e.key)) ||
+        (e.ctrlKey && ['U','u','S','s'].includes(e.key))
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    };
+
+    window.addEventListener('contextmenu', handleContextMenu);
+    window.addEventListener('keydown', handleKeyDown);
+
+    const observer = new MutationObserver(() => {
+      if (!document.body.classList.contains('site-maint-lock-active')) {
+        document.body.classList.add('site-maint-lock-active');
+      }
+      if (!document.documentElement.classList.contains('site-maint-lock-active')) {
+        document.documentElement.classList.add('site-maint-lock-active');
+      }
+    });
+
+    try {
+      observer.observe(document.body, { attributes: true, attributeFilter: ['class', 'style'] });
+    } catch (err) {}
+
+    return () => {
+      try { observer.disconnect(); } catch (err) {}
+      document.documentElement.classList.remove('site-maint-lock-active');
+      document.body.classList.remove('site-maint-lock-active');
+      window.removeEventListener('contextmenu', handleContextMenu);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  const content = (
+    <div className="pcms-maint-overlay">
+      <style>{`
+        html.site-maint-lock-active,
+        body.site-maint-lock-active {
+          overflow: hidden !important;
+          height: 100% !important;
+          width: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+
+        .pcms-maint-overlay {
+          position: fixed !important;
+          top: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          bottom: 0 !important;
+          width: 100vw !important;
+          height: 100vh !important;
+          min-width: 100% !important;
+          min-height: 100% !important;
+          background-color: #F7F7F5 !important;
+          z-index: 2147483647 !important;
+          overflow-y: auto !important;
+        }
+
+        body.site-maint-lock-active [class*="island"],
+        body.site-maint-lock-active [class*="Island"],
+        body.site-maint-lock-active [class*="banner"],
+        body.site-maint-lock-active [class*="Banner"],
+        body.site-maint-lock-active nav,
+        body.site-maint-lock-active header,
+        body.site-maint-lock-active footer,
+        body.site-maint-lock-active .pwa-install-prompt {
+          display: none !important;
+        }
+      `}</style>
+      <MaintenancePage status={status} />
+    </div>
+  );
+
+  return createPortal(content, document.body);
+}
 
 // =================================================================
 // 3. MAINTENANCE GATE
@@ -180,31 +235,13 @@ export function MaintenanceGate({ children }) {
   const hasBypassToken =
     typeof window !== 'undefined' && localStorage.getItem(BYPASS_KEY) === BYPASS_SECRET && !!BYPASS_SECRET;
 
-  // For this portfolio, anyone authenticated is an admin.
   const isAdmin = !!session?.user;
-
-  // IMPORTANT: Always allow access to admin routes so the login page isn't blocked!
   const isAdminRoute = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
 
-  useEffect(() => {
-    if (status.loading || session === undefined || typeof window === 'undefined') return;
-
-    const isMaintRoute = window.location.pathname === '/maintenance';
-    const isCurrentAdminRoute = window.location.pathname.startsWith('/admin');
-
-    if (status.enabled && !isAdmin && !hasBypassToken && !isCurrentAdminRoute) {
-      if (!isMaintRoute) {
-        window.history.replaceState(null, '', '/maintenance');
-      }
-    } else if (!status.enabled && isMaintRoute) {
-      window.history.replaceState(null, '', '/home');
-    }
-  }, [status.enabled, status.loading, session, isAdmin, hasBypassToken]);
-
-  if (status.loading || session === undefined) return null; // avoid a flash of the wrong screen
+  if (status.loading || session === undefined) return null;
 
   if (status.enabled && !isAdmin && !hasBypassToken && !isAdminRoute) {
-    return <MaintenancePage status={status} />;
+    return <MaintenanceOverlay status={status} />;
   }
 
   return children;
@@ -242,28 +279,30 @@ export function MaintenanceSettingsPanel() {
 
   async function save(nextEnabled, overrides = {}) {
     setSaving(true);
+    const nowAt = nextEnabled && !enabled ? new Date().toISOString() : (!nextEnabled ? null : enabledAt);
+    const finalEta = overrides.etaMinutes ?? Number(etaMinutes);
+    const finalMsg = overrides.message !== undefined ? overrides.message : message;
+
+    localStorage.setItem('pcms_maint_enabled', String(nextEnabled));
+    localStorage.setItem('pcms_maint_at', nowAt || '');
+    localStorage.setItem('pcms_maint_eta', String(finalEta));
+    localStorage.setItem('pcms_maint_msg', String(finalMsg));
+    window.dispatchEvent(new Event('storage'));
+
     const payload = {
       maintenance_enabled: nextEnabled,
-      maintenance_eta: overrides.etaMinutes ?? Number(etaMinutes),
-      maintenance_message: overrides.message !== undefined ? overrides.message : message,
-      ...(nextEnabled && !enabled ? { maintenance_enabled_at: new Date().toISOString() } : {}),
+      maintenance_eta: finalEta,
+      maintenance_message: finalMsg,
+      ...(nextEnabled && !enabled ? { maintenance_enabled_at: nowAt } : {}),
       ...(!nextEnabled ? { maintenance_enabled_at: null } : {}),
     };
 
-    if (!rowId) {
-       console.error("No row ID found for site_settings");
-       setSaving(false);
-       return;
+    if (rowId) {
+      await supabase.from('site_settings').update(payload).eq('id', rowId);
     }
-
-    const { error } = await supabase.from('site_settings').update(payload).eq('id', rowId);
-
-    setTimeout(() => setSaving(false), 600);
-    
-    if (!error) {
-      setEnabled(nextEnabled);
-      if (payload.maintenance_enabled_at !== undefined) setEnabledAt(payload.maintenance_enabled_at);
-    }
+    setTimeout(() => setSaving(false), 500);
+    setEnabled(nextEnabled);
+    if (nowAt !== undefined) setEnabledAt(nowAt);
   }
 
   const handleBlur = (field, val) => {
@@ -273,26 +312,26 @@ export function MaintenanceSettingsPanel() {
   if (loading) return null;
 
   return (
-    <div className="setting-card">
-      <div className="setting-row">
+    <div className="pcms-maint-card">
+      <div className="pcms-maint-row">
         <div>
-          <h4 style={{ margin: '0 0 4px', fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <h4 style={{ margin: '0 0 2px', fontSize: 13, fontWeight: 600, color: 'var(--pcms-text, #0F1626)', display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'Space Grotesk, sans-serif' }}>
             Maintenance Mode
-            {saving && <span style={{ fontSize: 12, fontWeight: 500, color: '#ef4444', display: 'flex', alignItems: 'center', gap: 4 }}><div className="maint-spinner" /> Saving...</span>}
+            {saving && <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--pcms-danger, #C4432F)', display: 'flex', alignItems: 'center', gap: 4 }}><div className="maint-spinner" /> Saving...</span>}
           </h4>
           <p className="setting-desc">
             Locks the public site with a "be right back" screen. Admin dashboard stays accessible.
           </p>
           {enabled && enabledAt && (
             <p className="setting-meta">
-              Turned on at{' '}
+              Active since{' '}
               {new Date(enabledAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
             </p>
           )}
         </div>
         <button
           type="button"
-          className={`switch ${enabled ? 'on' : ''}`}
+          className={`pcms-switch ${enabled ? 'on' : ''}`}
           onClick={(e) => { e.preventDefault(); save(!enabled); }}
           disabled={saving}
           aria-pressed={enabled}
@@ -302,61 +341,54 @@ export function MaintenanceSettingsPanel() {
       </div>
 
       {enabled && (
-        <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Estimated Time (Minutes)</label>
+        <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid var(--pcms-line, #E7E9EE)', display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--pcms-muted, #7C8494)', textTransform: 'uppercase' }}>Estimated Time (Minutes)</label>
             <input
               type="number"
               min={1}
               value={etaMinutes}
               onChange={(e) => setEtaMinutes(e.target.value)}
               onBlur={(e) => handleBlur('etaMinutes', e.target.value)}
-              style={styles.input}
+              style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--pcms-line, #E7E9EE)', background: 'var(--pcms-panel, #FFFFFF)', color: 'var(--pcms-text, #0F1626)', fontSize: 12, outline: 'none' }}
             />
           </div>
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Custom Message (Optional)</label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--pcms-muted, #7C8494)', textTransform: 'uppercase' }}>Custom Message (Optional)</label>
             <textarea
               rows={2}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onBlur={(e) => handleBlur('message', e.target.value)}
               placeholder="e.g. We are upgrading the database..."
-              style={{ ...styles.input, resize: 'vertical' }}
+              style={{ width: '100%', padding: '8px 10px', borderRadius: 6, border: '1px solid var(--pcms-line, #E7E9EE)', background: 'var(--pcms-panel, #FFFFFF)', color: 'var(--pcms-text, #0F1626)', fontSize: 12, outline: 'none', resize: 'vertical', fontFamily: 'inherit' }}
             />
           </div>
         </div>
       )}
 
       <style>{`
-        .setting-card { 
-          padding: 24px; 
-          background: var(--bg-primary); 
-          border-radius: 20px; 
-          border: 1px solid var(--border-color);
+        .pcms-maint-card { 
+          padding: 12px 14px; 
+          background: ${enabled ? 'rgba(196, 67, 47, 0.04)' : 'var(--pcms-panel, #FFFFFF)'}; 
+          border-radius: 6px; 
+          border: 1px solid ${enabled ? 'rgba(196, 67, 47, 0.3)' : 'var(--pcms-line, #E7E9EE)'};
           position: relative;
           overflow: hidden;
-          box-shadow: 0 8px 30px rgba(0,0,0,0.04);
+          max-width: 480px;
         }
-        .setting-card::before {
-          content: "";
-          position: absolute;
-          top: 0; left: 0; bottom: 0; width: 6px;
-          background: ${enabled ? '#ef4444' : 'transparent'};
-          transition: 0.3s;
-        }
-        .setting-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; }
-        .setting-desc { font-size: 14px; color: var(--text-muted); margin: 4px 0 0; max-width: 50ch; line-height: 1.5; }
-        .setting-meta { font-size: 13px; color: #ef4444; margin: 12px 0 0; font-weight: 600; background: #ef444415; padding: 6px 12px; border-radius: 100px; display: inline-block; }
+        .pcms-maint-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+        .setting-desc { font-size: 11px; color: var(--pcms-muted, #7C8494); margin: 2px 0 0; line-height: 1.4; }
+        .setting-meta { font-size: 10px; color: var(--pcms-danger, #C4432F); margin: 6px 0 0; font-weight: 500; background: rgba(196, 67, 47, 0.12); padding: 2px 8px; border-radius: 20px; display: inline-block; }
 
-        .switch { width: 52px; height: 28px; border-radius: 100px; border: none; background: #D8DCE3;
+        .pcms-switch { width: 34px; height: 18px; border-radius: 10px; border: none; background: var(--pcms-line, #E7E9EE);
           position: relative; cursor: pointer; flex-shrink: 0; transition: background 0.2s ease; }
-        .switch.on { background: #ef4444; box-shadow: 0 4px 12px color-mix(in srgb, #ef4444 40%, transparent); }
-        .switch .knob { position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%;
-          background: #fff; transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 1px 2px rgba(0,0,0,0.15); }
-        .switch.on .knob { transform: translateX(24px); }
+        .pcms-switch.on { background: var(--pcms-danger, #C4432F); }
+        .pcms-switch .knob { position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%;
+          background: #fff; transition: left 0.2s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+        .pcms-switch.on .knob { left: 18px; }
 
-        .maint-spinner { width: 14px; height: 14px; border: 2px solid #ef444430; border-top-color: #ef4444; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        .maint-spinner { width: 12px; height: 12px; border: 2px solid rgba(196, 67, 47, 0.3); border-top-color: var(--pcms-danger, #C4432F); border-radius: 50%; animation: spin 0.8s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
     </div>  );

@@ -3,11 +3,18 @@ import { useLocation } from "react-router-dom";
 import { X } from "lucide-react";
 import { FaEnvelope, FaLinkedin, FaInstagram } from "react-icons/fa";
 
-const PRO_TIPS = [
+const DESKTOP_TIPS = [
   "Double-click my profile photo to view it large.",
   "Try asking the Atom AI chatbot in the bottom right!",
   "Press Cmd+K or click the ⌘K pill to open Command Search.",
   "Hit the moon icon up top to switch to dark mode.",
+];
+
+const MOBILE_TIPS = [
+  "Tap the Atom AI chatbot in the bottom corner to ask anything!",
+  "Tap 'View projects' below to explore featured builds.",
+  "Use the theme toggle up top for dark/light mode.",
+  "Tap any project card for live demos and tech stack details.",
 ];
 
 const LOADING_PHRASES = [
@@ -56,9 +63,19 @@ export default function WelcomeModal({ onNavClick }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [tipIndex, setTipIndex] = useState(0);
   const [tipsPaused, setTipsPaused] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 900);
   const cardRef = useRef(null);
   const { visitCount, isFirstVisit } = useVisitInfo();
   const location = useLocation();
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 900);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const activeTips = isMobile ? MOBILE_TIPS : DESKTOP_TIPS;
+  const shortcutHint = isMobile ? "Tap anywhere outside to close" : "Esc to close • Enter to view projects";
 
   useEffect(() => {
     if (localStorage.getItem("welcome_dismissed_forever") === "true") return;
@@ -100,10 +117,10 @@ export default function WelcomeModal({ onNavClick }) {
   useEffect(() => {
     if (!isOpen || tipsPaused) return;
     const interval = setInterval(() => {
-      setTipIndex((i) => (i + 1) % PRO_TIPS.length);
+      setTipIndex((i) => (i + 1) % activeTips.length);
     }, 3500);
     return () => clearInterval(interval);
-  }, [isOpen, tipsPaused]);
+  }, [isOpen, tipsPaused, activeTips.length]);
 
   // Escape to close, lock scroll, basic focus trap
   useEffect(() => {
@@ -227,7 +244,7 @@ export default function WelcomeModal({ onNavClick }) {
             <div className="welcome-tip-nav">
               <button
                 onClick={() =>
-                  setTipIndex((i) => (i - 1 + PRO_TIPS.length) % PRO_TIPS.length)
+                  setTipIndex((i) => (i - 1 + activeTips.length) % activeTips.length)
                 }
                 aria-label="Previous tip"
                 className="welcome-tip-nav-btn"
@@ -235,7 +252,7 @@ export default function WelcomeModal({ onNavClick }) {
                 ‹
               </button>
               <button
-                onClick={() => setTipIndex((i) => (i + 1) % PRO_TIPS.length)}
+                onClick={() => setTipIndex((i) => (i + 1) % activeTips.length)}
                 aria-label="Next tip"
                 className="welcome-tip-nav-btn"
               >
@@ -244,15 +261,15 @@ export default function WelcomeModal({ onNavClick }) {
             </div>
           </div>
           <p className="welcome-tip-text">
-            {PRO_TIPS[tipIndex]}
+            {activeTips[tipIndex % activeTips.length]}
           </p>
           <div className="welcome-tip-dots">
-            {PRO_TIPS.map((_, i) => (
+            {activeTips.map((_, i) => (
               <button
                 key={i}
                 onClick={() => setTipIndex(i)}
                 aria-label={`Go to tip ${i + 1}`}
-                className={`welcome-tip-dot ${i === tipIndex ? "active" : ""}`}
+                className={`welcome-tip-dot ${i === tipIndex % activeTips.length ? "active" : ""}`}
               />
             ))}
           </div>
@@ -312,7 +329,7 @@ export default function WelcomeModal({ onNavClick }) {
         </div>
 
         {/* Keyboard shortcut hint */}
-        <p className="welcome-shortcut-hint">{SHORTCUTS_HINT}</p>
+        <p className="welcome-shortcut-hint">{shortcutHint}</p>
       </div>
 
       <style>{`
@@ -703,6 +720,66 @@ export default function WelcomeModal({ onNavClick }) {
 
         @keyframes blink {
           50% { opacity: 0; }
+        }
+
+        @media (max-width: 600px) {
+          .welcome-overlay {
+            padding: 12px;
+            align-items: center;
+          }
+          .welcome-card {
+            width: 95vw !important;
+            max-width: 95vw !important;
+            border-radius: 20px;
+            padding: 22px 18px 18px !important;
+            max-height: 85vh;
+            overflow-y: auto;
+          }
+          .welcome-status-badge {
+            font-size: 11.5px !important;
+            padding: 5px 12px !important;
+            margin-bottom: 12px !important;
+            max-width: 100% !important;
+            white-space: normal !important;
+            word-break: break-word !important;
+            line-height: 1.3 !important;
+          }
+          .welcome-eyebrow {
+            font-size: 10.5px !important;
+            margin-bottom: 2px !important;
+          }
+          .welcome-headline {
+            font-size: 22px !important;
+            margin-bottom: 10px !important;
+          }
+          .welcome-terminal-badge {
+            padding: 8px 12px !important;
+            font-size: 12px !important;
+            margin-bottom: 14px !important;
+          }
+          .welcome-tip-card {
+            padding: 12px 14px !important;
+            margin-bottom: 14px !important;
+          }
+          .welcome-tip-text {
+            font-size: 12px !important;
+          }
+          .welcome-cta-row {
+            gap: 8px !important;
+            margin-bottom: 14px !important;
+          }
+          .welcome-btn-primary, .welcome-btn-secondary {
+            padding: 10px 14px !important;
+            font-size: 12.5px !important;
+          }
+          .welcome-footer {
+            gap: 8px !important;
+            font-size: 11px !important;
+            margin-bottom: 6px !important;
+          }
+          .welcome-shortcut-hint {
+            font-size: 10px !important;
+          }
         }
       `}</style>
     </div>
