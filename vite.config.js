@@ -4,12 +4,14 @@ import { VitePWA } from 'vite-plugin-pwa';
 export default defineConfig({
   plugins: [
     VitePWA({
-      registerType: 'prompt',
+      registerType: 'autoUpdate',
       injectRegister: 'auto',
       devOptions: {
         enabled: false
       },
       workbox: {
+        skipWaiting: true,
+        clientsClaim: true,
         navigateFallback: '/index.html',
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5MB limit
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,jpg}'],
