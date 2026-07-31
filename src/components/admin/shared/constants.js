@@ -19,21 +19,11 @@ export const NAV_GROUPS = [
       { key: "certifications", label: "Certifications", icon: "ti-certificate", color: "#f97316" },
     ]
   },
-  {
-    label: "Intelligence",
-    items: [
-      { key: "analytics", label: "Analytics Hub", icon: "ti-chart-bar", color: "#3b82f6" },
-      { key: "copilot", label: "AI Copilot & ATS", icon: "ti-sparkles", color: "#8b5cf6" },
-      { key: "assets", label: "Asset Storage", icon: "ti-folder", color: "#10b981" },
-    ]
-  },
+
   {
     label: "System",
     items: [
-      { key: "theme", label: "Theme Studio", icon: "ti-palette", color: "#ec4899" },
       { key: "settings", label: "Settings", icon: "ti-settings", color: "#6b7280" },
-      { key: "backup", label: "Backup & Restore", icon: "ti-database", color: "#f59e0b" },
-      { key: "audit", label: "Audit & Health", icon: "ti-activity", color: "#ef4444" },
     ]
   },
 ];

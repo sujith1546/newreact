@@ -14,13 +14,7 @@ import ExperiencePanel from '../components/admin/panels/ExperiencePanel';
 import SkillsPanel from '../components/admin/panels/SkillsPanel';
 import ProjectsPanel from '../components/admin/panels/ProjectsPanel';
 import UpdatesPanel from '../components/admin/panels/UpdatesPanel';
-import AssetsPanel from '../components/admin/panels/AssetsPanel';
-import ThemeStudioPanel from '../components/admin/panels/ThemeStudioPanel';
-import BackupRestorePanel from '../components/admin/panels/BackupRestorePanel';
-import AuditHealthPanel from '../components/admin/panels/AuditHealthPanel';
-import CopilotPanel from '../components/admin/panels/CopilotPanel';
 import AiChatsPanel from '../components/admin/panels/AiChatsPanel';
-import AnalyticsPanel from '../components/admin/panels/AnalyticsPanel';
 import BlogPanel from '../components/admin/panels/BlogPanel';
 import TestimonialsPanel from '../components/admin/panels/TestimonialsPanel';
 
@@ -206,12 +200,6 @@ function AdminDashboardDesktop() {
             {activeTab === "experience"     && <ExperiencePanel />}
             {activeTab === "certifications" && <CertificationsPanel />}
             {activeTab === "education"      && <EducationPanel />}
-            {activeTab === "analytics"      && <AnalyticsPanel />}
-            {activeTab === "copilot"        && <CopilotPanel />}
-            {activeTab === "assets"         && <AssetsPanel />}
-            {activeTab === "theme"          && <ThemeStudioPanel />}
-            {activeTab === "backup"         && <BackupRestorePanel />}
-            {activeTab === "audit"          && <AuditHealthPanel />}
           </div>
         </div>
       </main>
@@ -232,12 +220,6 @@ export {
   ExperiencePanel,
   CertificationsPanel,
   EducationPanel,
-  AnalyticsPanel,
-  CopilotPanel,
-  AssetsPanel,
-  ThemeStudioPanel,
-  BackupRestorePanel,
-  AuditHealthPanel,
 };
 
 export default function AdminDashboard() {

@@ -3,13 +3,12 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { useTheme } from '../../../context/ThemeContext';
 import { useDashboardStats } from '../shared/useDashboardStats';
-import { LogOut, Palette, Plus, ShieldCheck, Sparkles, Folder, Briefcase, Bolt } from 'lucide-react';
+import { LogOut, Palette, Plus, ShieldCheck, Briefcase, Bolt } from 'lucide-react';
 import SwipeableTabs from './SwipeableTabs';
 import MobileNav from './MobileNav';
 import BottomSheet from './BottomSheet';
 import InboxView from './views/InboxView';
 import ContentView from './views/ContentView';
-import IntelligenceView from './views/IntelligenceView';
 import SystemView from './views/SystemView';
 
 const TAB_TO_CATEGORY = {
@@ -21,13 +20,8 @@ const TAB_TO_CATEGORY = {
   experience: 'content',
   education: 'content',
   certifications: 'content',
-  analytics: 'intelligence',
-  copilot: 'intelligence',
-  assets: 'intelligence',
   theme: 'system',
   settings: 'system',
-  backup: 'system',
-  audit: 'system',
 };
 
 export default function MobileShell() {
@@ -43,8 +37,7 @@ export default function MobileShell() {
   const [categorySubTabs, setCategorySubTabs] = useState({
     inbox: 'messages',
     content: 'projects',
-    intelligence: 'analytics',
-    system: 'theme',
+    system: 'settings',
   });
 
   const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
@@ -62,7 +55,7 @@ export default function MobileShell() {
   }, [tab, navigate]);
 
   const handleSelectCategory = (cat) => {
-    const targetTab = categorySubTabs[cat] || (cat === 'inbox' ? 'messages' : cat === 'content' ? 'projects' : cat === 'intelligence' ? 'analytics' : 'theme');
+    const targetTab = categorySubTabs[cat] || (cat === 'inbox' ? 'messages' : cat === 'content' ? 'projects' : 'settings');
     navigate(`/admin/dashboard/${targetTab}`);
   };
 
@@ -139,12 +132,6 @@ export default function MobileShell() {
                 onSelectSubTab={handleSelectSubTab}
               />
             ),
-            intelligence: (
-              <IntelligenceView
-                activeSubTab={categorySubTabs.intelligence}
-                onSelectSubTab={handleSelectSubTab}
-              />
-            ),
             system: (
               <SystemView
                 activeSubTab={categorySubTabs.system}
@@ -206,19 +193,6 @@ export default function MobileShell() {
               <i className="ti ti-star" style={{ fontSize: 22 }} />
             </div>
             <span>Add Skill</span>
-          </button>
-
-          <button
-            className="admin-quick-action-card"
-            onClick={() => {
-              setIsQuickActionsOpen(false);
-              navigate('/admin/dashboard/copilot');
-            }}
-          >
-            <div className="quick-action-icon" style={{ background: '#8b5cf620', color: '#8b5cf6' }}>
-              <Sparkles size={22} />
-            </div>
-            <span>AI Copilot</span>
           </button>
         </div>
       </BottomSheet>

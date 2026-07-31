@@ -274,8 +274,8 @@ export default function Contact() {
           display: inline-flex;
           align-items: center;
           gap: 6px;
-          padding: 4px 11px;
-          border-radius: 999px;
+          padding: 4px 10px;
+          border-radius: 6px;
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
           color: var(--text-primary);
@@ -609,31 +609,6 @@ export default function Contact() {
                 <p className="ct-reply-line">Replies within 4h, on average</p>
               </div>
 
-              <div>
-                <div className="ct-copy-box" onClick={() => handleCopy(EMAIL, 'email')} title="Click to copy email">
-                  <Mail size={14} style={{ color: 'var(--text-primary)', flexShrink: 0 }} />
-                  <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>{EMAIL}</span>
-                  {copiedField === 'email' ? <Check size={14} color="var(--text-primary)" /> : <Copy size={13} style={{ opacity: 0.6 }} />}
-                </div>
-
-                <div className="ct-copy-box" onClick={() => handleCopy(PHONE, 'phone')} title="Click to copy phone">
-                  <Phone size={14} style={{ color: 'var(--text-primary)', flexShrink: 0 }} />
-                  <span style={{ flex: 1 }}>{PHONE}</span>
-                  {copiedField === 'phone' ? <Check size={14} color="var(--text-primary)" /> : <Copy size={13} style={{ opacity: 0.6 }} />}
-                </div>
-
-                <div className="ct-social-row">
-                  <a href="https://github.com/sujith1546" target="_blank" rel="noreferrer" className="ct-social-btn" title="GitHub">
-                    <FaGithub size={16} />
-                  </a>
-                  <a href="https://linkedin.com/in/thota-sujith-reddy" target="_blank" rel="noreferrer" className="ct-social-btn" title="LinkedIn">
-                    <FaLinkedin size={16} />
-                  </a>
-                  <button className="ct-social-btn" onClick={handleSaveVCard} title="Download vCard">
-                    <FileText size={16} />
-                  </button>
-                </div>
-              </div>
             </div>
 
             {/* Right Panel */}
@@ -753,28 +728,7 @@ export default function Contact() {
             <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>IST {clock || '9:41 pm'}</span>
           </div>
 
-          <div className="mc-card-grid">
-            <div className="mc-card" onClick={() => handleCopy(EMAIL, 'email')}>
-              <div className="mc-card-icon"><Mail size={14} /></div>
-              <p className="mc-card-title">{copiedField === 'email' ? 'Copied!' : 'Copy Email'}</p>
-              <p className="mc-card-sub">{EMAIL.slice(0, 16)}...</p>
-            </div>
-            <div className="mc-card" onClick={() => handleCopy(PHONE, 'phone')}>
-              <div className="mc-card-icon"><Phone size={14} /></div>
-              <p className="mc-card-title">{copiedField === 'phone' ? 'Copied!' : 'Copy Phone'}</p>
-              <p className="mc-card-sub">{PHONE}</p>
-            </div>
-            <a href="https://wa.me/918501889996" target="_blank" rel="noreferrer" className="mc-card" style={{ textDecoration: 'none' }}>
-              <div className="mc-card-icon"><FaWhatsapp size={14} /></div>
-              <p className="mc-card-title">WhatsApp</p>
-              <p className="mc-card-sub">Instant chat</p>
-            </a>
-            <div className="mc-card" onClick={handleSaveVCard}>
-              <div className="mc-card-icon"><FileText size={14} /></div>
-              <p className="mc-card-title">vCard</p>
-              <p className="mc-card-sub">Save Contact</p>
-            </div>
-          </div>
+
 
           <div className="mc-form-card">
             <div>

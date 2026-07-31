@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useIsland } from '../../context/IslandContext';
+import { useTheme } from '../../context/ThemeContext';
 import { Sparkles, Command, FileText, Sun, Moon, ShieldCheck, Zap, X, Users, Volume2 } from 'lucide-react';
 
 const SPRING_TRANSITION = {
@@ -88,6 +89,8 @@ export default function DynamicIsland() {
     visitorCount
   } = useIsland();
 
+  const { toggleTheme } = useTheme();
+
   const [isHovered, setIsHovered] = useState(false);
   const [isDark, setIsDark] = useState(false);
   const hudRef = useRef(null);
@@ -120,8 +123,7 @@ export default function DynamicIsland() {
     e.stopPropagation();
     const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
     const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', nextTheme);
-    localStorage.setItem('portfolio_theme', nextTheme);
+    toggleTheme(e);
     triggerIsland({
       title: `Switched to ${nextTheme === 'dark' ? 'Dark' : 'Light'} Mode`,
       subtitle: 'System theme updated',
@@ -159,6 +161,7 @@ export default function DynamicIsland() {
 
   return (
     <div 
+      id="dynamic-island-container"
       style={{
         position: 'fixed',
         top: '12px',

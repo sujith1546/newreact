@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { flushSync } from 'react-dom';
 
 const ThemeContext = createContext();
 
@@ -148,17 +149,25 @@ export function ThemeProvider({ children }) {
 
   const toggleTheme = (e) => {
     const isDark = theme === 'dark';
-    
-    if (!document.startViewTransition) {
-      setTheme(t => t === 'dark' ? 'light' : 'dark');
-      return;
-    }
+    const nextTheme = isDark ? 'light' : 'dark';
 
-    // Determine coordinate of toggle click
+    // Determine coordinate of toggle animation (locked to Dynamic Island on desktop)
     let x = window.innerWidth / 2;
     let y = window.innerHeight / 2;
     
-    if (e && typeof e.clientX === 'number') {
+    const isDesktop = window.innerWidth >= 768;
+
+    if (isDesktop) {
+      const dynamicIsland = document.getElementById('dynamic-island-container');
+      if (dynamicIsland) {
+        const rect = dynamicIsland.getBoundingClientRect();
+        x = rect.left + rect.width / 2;
+        y = rect.top + rect.height / 2;
+      } else {
+        x = window.innerWidth / 2;
+        y = 28;
+      }
+    } else if (e && typeof e.clientX === 'number' && (e.clientX !== 0 || e.clientY !== 0)) {
       x = e.clientX;
       y = e.clientY;
     } else {
@@ -175,28 +184,31 @@ export function ThemeProvider({ children }) {
       Math.max(y, window.innerHeight - y)
     );
 
+    if (!document.startViewTransition) {
+      setTheme(nextTheme);
+      document.documentElement.setAttribute('data-theme', nextTheme);
+      return;
+    }
+
     const transition = document.startViewTransition(() => {
-      setTheme(isDark ? 'light' : 'dark');
+      flushSync(() => {
+        setTheme(nextTheme);
+      });
+      document.documentElement.setAttribute('data-theme', nextTheme);
     });
 
     transition.ready.then(() => {
-      const clipPath = [
-        `circle(0px at ${x}px ${y}px)`,
-        `circle(${endRadius}px at ${x}px ${y}px)`
-      ];
-      
       document.documentElement.animate(
         {
-          clipPath: isDark 
-            ? [`circle(${endRadius}px at ${x}px ${y}px)`, `circle(0px at ${x}px ${y}px)`]
-            : [`circle(0px at ${x}px ${y}px)`, `circle(${endRadius}px at ${x}px ${y}px)`]
+          clipPath: [
+            `circle(0px at ${x}px ${y}px)`,
+            `circle(${endRadius}px at ${x}px ${y}px)`
+          ]
         },
         {
           duration: 500,
           easing: 'ease-in-out',
-          pseudoElement: isDark 
-            ? '::view-transition-old(root)' 
-            : '::view-transition-new(root)'
+          pseudoElement: '::view-transition-new(root)'
         }
       );
     });

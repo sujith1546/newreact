@@ -3,7 +3,6 @@ import React from 'react';
 const NAV_TABS = [
   { key: 'inbox', label: 'Inbox', icon: 'ti-message-circle', color: '#3b82f6' },
   { key: 'content', label: 'Content', icon: 'ti-briefcase', color: '#10b981' },
-  { key: 'intelligence', label: 'Intelligence', icon: 'ti-sparkles', color: '#8b5cf6' },
   { key: 'system', label: 'System', icon: 'ti-settings', color: '#ec4899' },
 ];
 

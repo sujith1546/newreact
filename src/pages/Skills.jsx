@@ -55,6 +55,7 @@ function ProgressRing({ percent, color, size = 80 }) {
 }
 
 function SkillsRadarChart({ categories }) {
+  const [hoveredIndex, setHoveredIndex] = useState(null);
   const SIZE = 480;
   const CX = SIZE / 2;
   const CY = SIZE / 2;
@@ -83,12 +84,33 @@ function SkillsRadarChart({ categories }) {
   });
   const dataPath = dataPoints.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ') + ' Z';
 
+  // Initial zero-radius data points for dynamic path expansion animation
+  const zeroDataPoints = categories.map((_, i) => getPoint(i * angleStep, 0));
+  const zeroDataPath = zeroDataPoints.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ') + ' Z';
+
   const CATEGORY_COLORS = ['#3b82f6','#8b5cf6','#10b981','#f59e0b','#ef4444'];
 
   return (
-    <div style={{ position: 'relative' }}>
-      <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`}>
-        {/* Concentric level polygons */}
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9, rotate: -2 }}
+      animate={{ opacity: 1, scale: 1, rotate: 0 }}
+      exit={{ opacity: 0, scale: 0.92, rotate: 2 }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+    >
+      <svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} style={{ overflow: 'visible' }}>
+        <defs>
+          <radialGradient id="radarGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="var(--primary-blue)" stopOpacity="0.4" />
+            <stop offset="100%" stopColor="var(--primary-blue)" stopOpacity="0.04" />
+          </radialGradient>
+          <filter id="shadowGlow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="6" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
+        </defs>
+
+        {/* Concentric level polygons with staggered scale animation */}
         {Array.from({ length: LEVELS }, (_, lvl) => {
           const r = (R * (lvl + 1)) / LEVELS;
           const pts = Array.from({ length: n }, (_, i) => {
@@ -96,88 +118,196 @@ function SkillsRadarChart({ categories }) {
             return `${p.x.toFixed(1)},${p.y.toFixed(1)}`;
           }).join(' ');
           return (
-            <polygon key={lvl} points={pts}
-              fill="none" stroke="var(--border-color)" strokeWidth={1}
-              opacity={lvl === LEVELS - 1 ? 0.8 : 0.4}
+            <motion.polygon
+              key={lvl}
+              points={pts}
+              fill="none"
+              stroke="var(--border-color)"
+              strokeWidth={1}
+              initial={{ opacity: 0, scale: 0.3 }}
+              animate={{ opacity: lvl === LEVELS - 1 ? 0.8 : 0.4, scale: 1 }}
+              transition={{ duration: 0.6, delay: lvl * 0.08, ease: [0.16, 1, 0.3, 1] }}
+              style={{ transformOrigin: `${CX}px ${CY}px` }}
             />
           );
         })}
 
-        {/* Axis lines */}
+        {/* Axis radial lines shooting outward from center */}
         {categories.map((_, i) => {
           const outer = getPoint(i * angleStep, R);
-          return <line key={i} x1={CX} y1={CY} x2={outer.x} y2={outer.y} stroke="var(--border-color)" strokeWidth={1} opacity={0.6} />;
+          const isHovered = hoveredIndex === i;
+          const color = CATEGORY_COLORS[i % CATEGORY_COLORS.length];
+          return (
+            <motion.line
+              key={i}
+              x1={CX}
+              y1={CY}
+              x2={CX}
+              y2={CY}
+              animate={{ x2: outer.x, y2: outer.y }}
+              transition={{ duration: 0.65, delay: 0.2 + i * 0.06, ease: [0.16, 1, 0.3, 1] }}
+              stroke={isHovered ? color : "var(--border-color)"}
+              strokeWidth={isHovered ? 2 : 1}
+              opacity={isHovered ? 1 : 0.6}
+            />
+          );
         })}
 
-        {/* Data polygon */}
-        <path d={dataPath}
-          fill={`rgba(59,130,246,0.15)`}
+        {/* Data polygon expanding from center */}
+        <motion.path
+          d={zeroDataPath}
+          animate={{ d: dataPath }}
+          transition={{ duration: 0.95, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          fill="url(#radarGlow)"
           stroke="var(--primary-blue)"
           strokeWidth={2.5}
           strokeLinejoin="round"
+          filter="url(#shadowGlow)"
         />
 
-        {/* Data points */}
-        {dataPoints.map((p, i) => (
-          <circle key={i} cx={p.x} cy={p.y} r={5}
-            fill={CATEGORY_COLORS[i % CATEGORY_COLORS.length]}
-            stroke="white" strokeWidth={2}
-          />
-        ))}
+        {/* Interactive Data points */}
+        {dataPoints.map((p, i) => {
+          const isHovered = hoveredIndex === i;
+          const color = CATEGORY_COLORS[i % CATEGORY_COLORS.length];
+          return (
+            <g
+              key={i}
+              style={{ cursor: 'pointer' }}
+              onMouseEnter={() => setHoveredIndex(i)}
+              onMouseLeave={() => setHoveredIndex(null)}
+            >
+              {isHovered && (
+                <motion.circle
+                  cx={p.x} cy={p.y} r={14}
+                  fill={color}
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: [1, 1.4, 1], opacity: [0.4, 0.1, 0.4] }}
+                  transition={{ repeat: Infinity, duration: 1.5 }}
+                />
+              )}
+              <motion.circle
+                cx={p.x}
+                cy={p.y}
+                r={isHovered ? 7 : 5}
+                fill={color}
+                stroke="#ffffff"
+                strokeWidth={2}
+                initial={{ scale: 0, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: 'spring', stiffness: 380, damping: 18, delay: 0.55 + i * 0.08 }}
+                style={{ transformOrigin: `${p.x}px ${p.y}px` }}
+              />
+            </g>
+          );
+        })}
 
-        {/* Category labels */}
+        {/* Category labels & average percentage text */}
         {categories.map((cat, i) => {
           const angle = i * angleStep;
           const labelR = R + 34;
           const p = getPoint(angle, labelR);
           const isLeft = p.x < CX - 10;
           const isRight = p.x > CX + 10;
+          const isHovered = hoveredIndex === i;
+          const color = CATEGORY_COLORS[i % CATEGORY_COLORS.length];
+
           return (
-            <g key={i}>
+            <motion.g
+              key={i}
+              initial={{ opacity: 0, y: 12, scale: 0.8 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.6 + i * 0.07 }}
+              onMouseEnter={() => setHoveredIndex(i)}
+              onMouseLeave={() => setHoveredIndex(null)}
+              style={{ cursor: 'pointer', transformOrigin: `${p.x}px ${p.y}px` }}
+            >
               <text
                 x={p.x} y={p.y}
                 textAnchor={isLeft ? 'end' : isRight ? 'start' : 'middle'}
                 dominantBaseline="middle"
-                fontSize={12} fontWeight={700}
-                fill="var(--text-primary)"
+                fontSize={isHovered ? 13 : 12}
+                fontWeight={700}
+                fill={isHovered ? color : "var(--text-primary)"}
+                style={{ transition: 'fill 0.2s, font-size 0.2s' }}
               >
                 {cat.title}
               </text>
               <text
-                x={p.x} y={p.y + 14}
+                x={p.x} y={p.y + 15}
                 textAnchor={isLeft ? 'end' : isRight ? 'start' : 'middle'}
                 dominantBaseline="middle"
-                fontSize={10} fontWeight={500}
-                fill="var(--text-muted)"
+                fontSize={isHovered ? 11 : 10}
+                fontWeight={600}
+                fill={isHovered ? color : "var(--text-muted)"}
+                style={{ transition: 'fill 0.2s' }}
               >
-                {Math.round(values[i])}%
+                {Math.round(values[i])}% Avg
               </text>
-            </g>
+            </motion.g>
           );
         })}
 
-        {/* Level labels */}
+        {/* Level labels along vertical axis */}
         {Array.from({ length: LEVELS }, (_, lvl) => {
           const r = (R * (lvl + 1)) / LEVELS;
           const p = getPoint(0, r);
           return (
-            <text key={lvl} x={p.x + 5} y={p.y} fontSize={9} fill="var(--text-muted)" dominantBaseline="middle">
-              {Math.round(((lvl + 1) / LEVELS) * 100)}
-            </text>
+            <motion.text
+              key={lvl}
+              x={p.x + 6}
+              y={p.y}
+              fontSize={9}
+              fontWeight={600}
+              fill="var(--text-muted)"
+              dominantBaseline="middle"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.7 }}
+              transition={{ delay: 0.4 + lvl * 0.05 }}
+            >
+              {Math.round(((lvl + 1) / LEVELS) * 100)}%
+            </motion.text>
           );
         })}
       </svg>
 
-      {/* Legend */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, justifyContent: 'center', marginTop: 16 }}>
-        {categories.map((cat, i) => (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-secondary)' }}>
-            <div style={{ width: 10, height: 10, borderRadius: '50%', background: CATEGORY_COLORS[i % CATEGORY_COLORS.length], flexShrink: 0 }} />
-            {cat.title} — {cat.skills.length} skill{cat.skills.length !== 1 ? 's' : ''}
-          </div>
-        ))}
-      </div>
-    </div>
+      {/* Legend with interactive hover highlighting */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.8 }}
+        style={{ display: 'flex', flexWrap: 'wrap', gap: 12, justifyContent: 'center', marginTop: 16 }}
+      >
+        {categories.map((cat, i) => {
+          const isHovered = hoveredIndex === i;
+          const color = CATEGORY_COLORS[i % CATEGORY_COLORS.length];
+          return (
+            <motion.div
+              key={i}
+              onMouseEnter={() => setHoveredIndex(i)}
+              onMouseLeave={() => setHoveredIndex(null)}
+              whileHover={{ scale: 1.05 }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 7,
+                fontSize: 12,
+                fontWeight: isHovered ? 700 : 500,
+                color: isHovered ? color : 'var(--text-secondary)',
+                cursor: 'pointer',
+                padding: '4px 10px',
+                borderRadius: '20px',
+                background: isHovered ? `${color}15` : 'transparent',
+                border: isHovered ? `1px solid ${color}40` : '1px solid transparent',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <div style={{ width: 10, height: 10, borderRadius: '50%', background: color, flexShrink: 0 }} />
+              {cat.title} ({cat.skills.length})
+            </motion.div>
+          );
+        })}
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -690,42 +820,60 @@ export default function Skills() {
           <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
             <p>No skills found in the database. Please add them in the Admin Dashboard.</p>
           </div>
-        ) : !isMobile && desktopView === 'radar' ? (
-          /* ── RADAR CHART VIEW ── */
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.4 }}
-            style={{ display: 'flex', justifyContent: 'center', padding: '20px 0 40px' }}
-          >
-            <SkillsRadarChart categories={skillCategories} />
-          </motion.div>
         ) : !isMobile ? (
-          <motion.div className="skills-grid" variants={containerVariants}>
-            {skillCategories.map(category => {
-              const Icon = categoryIconMap[category.id] || categoryIconMap.languages;
-              const isFullWidth = category.id === 'exploring';
-              return (
-                <motion.div
-                  key={category.id}
-                  className="skill-category-card"
-                  style={isFullWidth ? { gridColumn: '1 / -1', marginTop: '-4px' } : {}}
-                  variants={itemVariants}
-                >
-                  <div className="skill-category-header">
-                    <div className="skill-category-icon">
-                      <Icon size={22} style={{ strokeWidth: 1.5 }} />
-                    </div>
-                    <h2 className="skill-category-title">{category.title}</h2>
-                  </div>
-                  <div className="skill-pills">
-                    {category.skills.map(skill => (
-                      <SkillTooltip key={skill.id} skill={skill}>
-                        <span className="skill-pill">{skill.name}</span>
-                      </SkillTooltip>
-                    ))}
-                  </div>
-                </motion.div>
-              );
-            })}
-          </motion.div>
+          <AnimatePresence mode="wait">
+            {desktopView === 'radar' ? (
+              /* ── RADAR CHART VIEW ── */
+              <motion.div
+                key="radar"
+                initial={{ opacity: 0, scale: 0.94 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.94 }}
+                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                style={{ display: 'flex', justifyContent: 'center', padding: '10px 0 30px', width: '100%' }}
+              >
+                <SkillsRadarChart categories={skillCategories} />
+              </motion.div>
+            ) : (
+              /* ── GRID VIEW ── */
+              <motion.div
+                key="grid"
+                className="skills-grid"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3 }}
+              >
+                {skillCategories.map(category => {
+                  const Icon = categoryIconMap[category.id] || categoryIconMap.languages;
+                  const isFullWidth = category.id === 'exploring';
+                  return (
+                    <motion.div
+                      key={category.id}
+                      className="skill-category-card"
+                      style={isFullWidth ? { gridColumn: '1 / -1', marginTop: '-4px' } : {}}
+                      variants={itemVariants}
+                    >
+                      <div className="skill-category-header">
+                        <div className="skill-category-icon">
+                          <Icon size={22} style={{ strokeWidth: 1.5 }} />
+                        </div>
+                        <h2 className="skill-category-title">{category.title}</h2>
+                      </div>
+                      <div className="skill-pills">
+                        {category.skills.map(skill => (
+                          <SkillTooltip key={skill.id} skill={skill}>
+                            <span className="skill-pill">{skill.name}</span>
+                          </SkillTooltip>
+                        ))}
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </motion.div>
+            )}
+          </AnimatePresence>
         ) : (
           <div className="skills-mobile-grid">
             {skillCategories.map((category, idx) => {
