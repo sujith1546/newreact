@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Award, FileText, Share, X, Moon, Sun, FileDown, Settings, ChevronLeft, ChevronDown, ChevronRight, Monitor, Bell, Wand2, Globe, Trash2, User, UserPlus, Copy, Check, MapPin, School, Sparkles, Atom, HelpCircle, Zap, BookOpen, Code2, ExternalLink, Star, Info, Navigation, Layers, Shield, Clock } from 'lucide-react';
+import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Award, FileText, Share, X, Moon, Sun, FileDown, Settings, ChevronLeft, ChevronDown, ChevronRight, Monitor, Bell, Wand2, Globe, Trash2, User, UserPlus, Copy, Check, MapPin, School, Sparkles, Atom, HelpCircle, Zap, BookOpen, Code2, ExternalLink, Star, Info, Navigation, Layers, Shield, Clock, Compass } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
 import { IconBolt, IconLayoutGrid } from '@tabler/icons-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -451,63 +451,98 @@ END:VCARD`;
             {/* Scrollable content */}
             <div className="drawer-scroll-area">
               {/* Explore */}
-              <p className="drawer-sections-label">Explore</p>
+              <p className="drawer-sections-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Compass size={13} style={{ color: 'var(--primary-blue)' }} />
+                <span>EXPLORE</span>
+              </p>
               <div className="drawer-explore-row">
-                <button onClick={() => handleTabClick('education')} className="drawer-explore-item">
+                <motion.button
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.93 }}
+                  onClick={() => { haptic.light(); handleTabClick('education'); }}
+                  className="drawer-explore-item"
+                >
                   <div className="drawer-item-box"><GraduationCap size={20} /></div>
                   <span>Education</span>
-                </button>
+                </motion.button>
+
                 {dbSettings?.feature_experience !== false && (
-                <button onClick={() => handleTabClick('experience')} className="drawer-explore-item">
-                  <div className="drawer-item-box"><Briefcase size={20} /></div>
-                  <span>Experience</span>
-                </button>
+                  <motion.button
+                    whileHover={{ scale: 1.04 }}
+                    whileTap={{ scale: 0.93 }}
+                    onClick={() => { haptic.light(); handleTabClick('experience'); }}
+                    className="drawer-explore-item"
+                  >
+                    <div className="drawer-item-box"><Briefcase size={20} /></div>
+                    <span>Experience</span>
+                  </motion.button>
                 )}
+
                 {dbSettings?.feature_certifications !== false && (
-                <button onClick={() => handleTabClick('certifications')} className="drawer-explore-item">
-                  <div className="drawer-item-box"><Award size={20} /></div>
-                  <span>Certs</span>
-                </button>
+                  <motion.button
+                    whileHover={{ scale: 1.04 }}
+                    whileTap={{ scale: 0.93 }}
+                    onClick={() => { haptic.light(); handleTabClick('certifications'); }}
+                    className="drawer-explore-item"
+                  >
+                    <div className="drawer-item-box"><Award size={20} /></div>
+                    <span>Certs</span>
+                  </motion.button>
                 )}
-                <button onClick={() => { playSound(); setIsGithubStatsOpen(true); setIsMoreOpen(false); }} className="drawer-explore-item">
+
+                <motion.button
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.93 }}
+                  onClick={() => { haptic.light(); playSound(); setIsGithubStatsOpen(true); setIsMoreOpen(false); }}
+                  className="drawer-explore-item"
+                >
                   <div className="drawer-item-box"><FaGithub size={20} /></div>
                   <span>GitHub</span>
-                </button>
-                <button onClick={() => { playSound(); setIsMoreOpen(false); window.dispatchEvent(new CustomEvent('open-chatbot')); }} className="drawer-explore-item">
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.93 }}
+                  onClick={() => { haptic.light(); playSound(); setIsMoreOpen(false); window.dispatchEvent(new CustomEvent('open-chatbot')); }}
+                  className="drawer-explore-item"
+                >
                   <div className="drawer-item-box" style={{ color: '#06b6d4', background: 'rgba(6,182,212,0.1)', borderColor: 'rgba(6,182,212,0.2)' }}><Atom size={20} /></div>
                   <span>Atom AI</span>
-                </button>
+                </motion.button>
               </div>
 
               <div className="drawer-divider" />
 
               {/* Actions */}
-              <p className="drawer-sections-label">Actions</p>
+              <p className="drawer-sections-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Zap size={13} style={{ color: '#f59e0b' }} />
+                <span>QUICK ACTIONS</span>
+              </p>
               <div className="drawer-actions-list">
-                <button onClick={() => { playSound(); handleInstallClick(); setIsMoreOpen(false); }} className="drawer-action-row-btn" style={{ color: 'var(--primary-blue)' }}>
+                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.95 }} onClick={() => { haptic.light(); playSound(); handleInstallClick(); setIsMoreOpen(false); }} className="drawer-action-row-btn" style={{ color: 'var(--primary-blue)' }}>
                   <FileDown size={17} /><span>Install App</span>
-                </button>
-                <button onClick={() => triggerEvent('open-resume')} className="drawer-action-row-btn">
+                </motion.button>
+                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.95 }} onClick={() => { haptic.light(); triggerEvent('open-resume'); }} className="drawer-action-row-btn">
                   <FileDown size={17} /><span>Resume</span>
-                </button>
-                <button onClick={handleDownloadVCard} className="drawer-action-row-btn">
+                </motion.button>
+                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.95 }} onClick={() => { haptic.light(); handleDownloadVCard(); }} className="drawer-action-row-btn">
                   <UserPlus size={17} /><span>Save Contact</span>
-                </button>
-                <button onClick={handleShare} className="drawer-action-row-btn">
+                </motion.button>
+                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.95 }} onClick={() => { haptic.light(); handleShare(); }} className="drawer-action-row-btn">
                   <Share size={17} /><span>Share</span>
-                </button>
-                <button onClick={() => { playSound(); setIsProfileOpen(true); setIsMoreOpen(false); }} className="drawer-action-row-btn">
+                </motion.button>
+                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.95 }} onClick={() => { haptic.light(); playSound(); setIsProfileOpen(true); setIsMoreOpen(false); }} className="drawer-action-row-btn">
                   <User size={17} /><span>Profile</span>
-                </button>
-                <button onClick={() => { playSound(); setIsUpdatesOpen(true); setIsMoreOpen(false); }} className="drawer-action-row-btn">
+                </motion.button>
+                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.95 }} onClick={() => { haptic.light(); playSound(); setIsUpdatesOpen(true); setIsMoreOpen(false); }} className="drawer-action-row-btn">
                   <Sparkles size={17} /><span>Updates</span>
-                </button>
-                <button onClick={() => { playSound(); window.dispatchEvent(new CustomEvent('open-all-settings')); setIsMoreOpen(false); }} className="drawer-action-row-btn">
+                </motion.button>
+                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.95 }} onClick={() => { haptic.light(); playSound(); window.dispatchEvent(new CustomEvent('open-all-settings')); setIsMoreOpen(false); }} className="drawer-action-row-btn">
                   <Settings size={17} /><span>Settings</span>
-                </button>
-                <button onClick={() => { playSound(); setIsHelpOpen(true); setIsMoreOpen(false); }} className="drawer-action-row-btn">
+                </motion.button>
+                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.95 }} onClick={() => { haptic.light(); playSound(); setIsHelpOpen(true); setIsMoreOpen(false); }} className="drawer-action-row-btn">
                   <HelpCircle size={17} /><span>Help</span>
-                </button>
+                </motion.button>
               </div>
             </div>
           </motion.div>
