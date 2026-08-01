@@ -148,6 +148,7 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
   }, [isMoreOpen]);
 
   const handleTabClick = (sectionId) => {
+    haptic.light();
     playSound();
     onNavClick(sectionId);
     setIsMoreOpen(false);
@@ -815,7 +816,20 @@ END:VCARD`;
               whileTap={{ scale: 0.85 }}
               transition={{ type: "spring", stiffness: 400, damping: 32 }}
             >
-              <Icon size={18} aria-hidden="true" />
+              {isActive && (
+                <motion.div
+                  layoutId="mobileActiveTabPill"
+                  className="nav-capsule-active-pill"
+                  transition={{ type: "spring", stiffness: 450, damping: 32 }}
+                />
+              )}
+              <motion.div
+                animate={{ scale: isActive ? 1.16 : 1, y: isActive ? -1 : 0 }}
+                transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <Icon size={18} aria-hidden="true" />
+              </motion.div>
               <span>{label}</span>
             </motion.button>
           );
@@ -824,7 +838,10 @@ END:VCARD`;
         {/* More Tab Trigger */}
         <motion.button
           ref={moreBtnRef}
-          onClick={() => setIsMoreOpen(!isMoreOpen)}
+          onClick={() => {
+            haptic.medium();
+            setIsMoreOpen(!isMoreOpen);
+          }}
           className={`nav-capsule-tab${isMoreOpen ? ' nav-capsule-tab-active' : ''}`}
           aria-expanded={isMoreOpen}
           aria-haspopup="dialog"
@@ -832,7 +849,20 @@ END:VCARD`;
           whileTap={{ scale: 0.85 }}
           transition={{ type: "spring", stiffness: 400, damping: 32 }}
         >
-          <MoreHorizontal size={18} aria-hidden="true" />
+          {isMoreOpen && (
+            <motion.div
+              layoutId="mobileActiveTabPill"
+              className="nav-capsule-active-pill"
+              transition={{ type: "spring", stiffness: 450, damping: 32 }}
+            />
+          )}
+          <motion.div
+            animate={{ scale: isMoreOpen ? 1.16 : 1, y: isMoreOpen ? -1 : 0 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            <MoreHorizontal size={18} aria-hidden="true" />
+          </motion.div>
           <span>More</span>
         </motion.button>
       </nav>
