@@ -7,23 +7,42 @@ export default function ParticleCanvas() {
 
   useEffect(() => {
     const canvas = canvasRef.current;
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
     let particles = [];
     let animationId;
+    let isScrolling = false;
+    let scrollTimeout;
+
+    const isMobile = window.innerWidth <= 900;
+    const count = isMobile ? 15 : 50;
 
     function resize() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
     }
-    window.addEventListener('resize', resize);
+    window.addEventListener('resize', resize, { passive: true });
     resize();
+
+    // Scroll-pause listener: reserve 100% GPU for mobile scrolling
+    const handleScroll = () => {
+      isScrolling = true;
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        isScrolling = false;
+      }, 150);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    const mainEl = document.querySelector('.main-content');
+    if (mainEl) mainEl.addEventListener('scroll', handleScroll, { passive: true });
 
     class Particle {
       constructor() {
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height;
-        this.vx = (Math.random() - 0.5) * 0.5;
-        this.vy = (Math.random() - 0.5) * 0.5;
+        this.vx = (Math.random() - 0.5) * 0.4;
+        this.vy = (Math.random() - 0.5) * 0.4;
         this.size = Math.random() * 2 + 1;
       }
       update() {
@@ -40,25 +59,27 @@ export default function ParticleCanvas() {
       }
     }
 
-    for (let i = 0; i < 50; i++) particles.push(new Particle());
+    for (let i = 0; i < count; i++) particles.push(new Particle());
 
     function animate() {
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)';
-      ctx.lineWidth = 1;
-      for (let i = 0; i < particles.length; i++) {
-        particles[i].update();
-        particles[i].draw(isDark);
-        for (let j = i + 1; j < particles.length; j++) {
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 150) {
-            ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.stroke();
+      if (!isScrolling) {
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)';
+        ctx.lineWidth = 1;
+        for (let i = 0; i < particles.length; i++) {
+          particles[i].update();
+          particles[i].draw(isDark);
+          for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 140) {
+              ctx.beginPath();
+              ctx.moveTo(particles[i].x, particles[i].y);
+              ctx.lineTo(particles[j].x, particles[j].y);
+              ctx.stroke();
+            }
           }
         }
       }
@@ -68,6 +89,9 @@ export default function ParticleCanvas() {
 
     return () => {
       window.removeEventListener('resize', resize);
+      window.removeEventListener('scroll', handleScroll);
+      if (mainEl) mainEl.removeEventListener('scroll', handleScroll);
+      clearTimeout(scrollTimeout);
       cancelAnimationFrame(animationId);
     };
   }, []);
@@ -81,6 +105,8 @@ export default function ParticleCanvas() {
         width: '100%', height: '100%',
         zIndex: -1,
         pointerEvents: 'none',
+        willChange: 'transform',
+        transform: 'translateZ(0)',
       }}
     />
   );

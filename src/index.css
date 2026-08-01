@@ -2092,6 +2092,7 @@ html {
     height: 100vh;
     height: 100dvh;
     overflow: hidden;
+    transform: translateZ(0);
   }
 
   .sidebar {
@@ -2103,10 +2104,12 @@ html {
     height: 100vh !important;
     height: 100dvh !important;
     padding-top: 60px !important;      /* clears the fixed header */
-    padding-bottom: 90px !important;   /* clears the fixed bottom dock + safe area */
+    padding-bottom: max(90px, calc(70px + env(safe-area-inset-bottom, 0px))) !important;   /* clears the fixed bottom dock + safe area */
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch;
     box-sizing: border-box;
+    contain: content;
+    transform: translateZ(0);
   }
 
   /* â”€â”€ Navigation progress bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
