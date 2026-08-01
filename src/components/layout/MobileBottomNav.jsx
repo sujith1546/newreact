@@ -462,7 +462,7 @@ END:VCARD`;
                   onClick={() => { haptic.light(); handleTabClick('education'); }}
                   className="drawer-explore-item"
                 >
-                  <div className="drawer-item-box"><GraduationCap size={20} /></div>
+                  <div className="drawer-item-box"><GraduationCap size={17} /></div>
                   <span>Education</span>
                 </motion.button>
 
@@ -473,7 +473,7 @@ END:VCARD`;
                     onClick={() => { haptic.light(); handleTabClick('experience'); }}
                     className="drawer-explore-item"
                   >
-                    <div className="drawer-item-box"><Briefcase size={20} /></div>
+                    <div className="drawer-item-box"><Briefcase size={17} /></div>
                     <span>Experience</span>
                   </motion.button>
                 )}
@@ -485,7 +485,7 @@ END:VCARD`;
                     onClick={() => { haptic.light(); handleTabClick('certifications'); }}
                     className="drawer-explore-item"
                   >
-                    <div className="drawer-item-box"><Award size={20} /></div>
+                    <div className="drawer-item-box"><Award size={17} /></div>
                     <span>Certs</span>
                   </motion.button>
                 )}
@@ -496,7 +496,7 @@ END:VCARD`;
                   onClick={() => { haptic.light(); playSound(); setIsGithubStatsOpen(true); setIsMoreOpen(false); }}
                   className="drawer-explore-item"
                 >
-                  <div className="drawer-item-box"><FaGithub size={20} /></div>
+                  <div className="drawer-item-box"><FaGithub size={17} /></div>
                   <span>GitHub</span>
                 </motion.button>
 
@@ -506,7 +506,7 @@ END:VCARD`;
                   onClick={() => { haptic.light(); playSound(); setIsMoreOpen(false); window.dispatchEvent(new CustomEvent('open-chatbot')); }}
                   className="drawer-explore-item"
                 >
-                  <div className="drawer-item-box" style={{ color: '#06b6d4', background: 'rgba(6,182,212,0.1)', borderColor: 'rgba(6,182,212,0.2)' }}><Atom size={20} /></div>
+                  <div className="drawer-item-box" style={{ color: '#06b6d4', background: 'rgba(6,182,212,0.1)', borderColor: 'rgba(6,182,212,0.2)' }}><Atom size={17} /></div>
                   <span>Atom AI</span>
                 </motion.button>
               </div>
@@ -526,7 +526,7 @@ END:VCARD`;
                   className="drawer-explore-item"
                 >
                   <div className="drawer-item-box" style={{ color: '#3b82f6', background: 'rgba(59,130,246,0.1)', borderColor: 'rgba(59,130,246,0.2)' }}>
-                    <FileDown size={20} />
+                    <FileDown size={17} />
                   </div>
                   <span>Install App</span>
                 </motion.button>
@@ -538,7 +538,7 @@ END:VCARD`;
                   className="drawer-explore-item"
                 >
                   <div className="drawer-item-box" style={{ color: '#8b5cf6', background: 'rgba(139,92,246,0.1)', borderColor: 'rgba(139,92,246,0.2)' }}>
-                    <FileText size={20} />
+                    <FileText size={17} />
                   </div>
                   <span>Resume</span>
                 </motion.button>
@@ -550,7 +550,7 @@ END:VCARD`;
                   className="drawer-explore-item"
                 >
                   <div className="drawer-item-box" style={{ color: '#10b981', background: 'rgba(16,185,129,0.1)', borderColor: 'rgba(16,185,129,0.2)' }}>
-                    <UserPlus size={20} />
+                    <UserPlus size={17} />
                   </div>
                   <span>Contact</span>
                 </motion.button>
@@ -562,7 +562,7 @@ END:VCARD`;
                   className="drawer-explore-item"
                 >
                   <div className="drawer-item-box" style={{ color: '#06b6d4', background: 'rgba(6,182,212,0.1)', borderColor: 'rgba(6,182,212,0.2)' }}>
-                    <Share size={20} />
+                    <Share size={17} />
                   </div>
                   <span>Share</span>
                 </motion.button>
@@ -574,7 +574,7 @@ END:VCARD`;
                   className="drawer-explore-item"
                 >
                   <div className="drawer-item-box" style={{ color: '#6366f1', background: 'rgba(99,102,241,0.1)', borderColor: 'rgba(99,102,241,0.2)' }}>
-                    <User size={20} />
+                    <User size={17} />
                   </div>
                   <span>Profile</span>
                 </motion.button>
@@ -586,7 +586,7 @@ END:VCARD`;
                   className="drawer-explore-item"
                 >
                   <div className="drawer-item-box" style={{ color: '#ec4899', background: 'rgba(236,72,153,0.1)', borderColor: 'rgba(236,72,153,0.2)' }}>
-                    <Sparkles size={20} />
+                    <Sparkles size={17} />
                   </div>
                   <span>Updates</span>
                 </motion.button>
@@ -598,7 +598,7 @@ END:VCARD`;
                   className="drawer-explore-item"
                 >
                   <div className="drawer-item-box" style={{ color: '#64748b', background: 'rgba(100,116,139,0.1)', borderColor: 'rgba(100,116,139,0.2)' }}>
-                    <Settings size={20} />
+                    <Settings size={17} />
                   </div>
                   <span>Settings</span>
                 </motion.button>
