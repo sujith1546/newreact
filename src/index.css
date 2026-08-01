@@ -2133,13 +2133,27 @@ html {
   }
 
   /* Disable ScrollReveal transitions on mobile for instant rendering */
-  .reveal {
-    opacity: 1 !important;
-    transform: none !important;
-    transition: none !important;
+  /* Disable main page vertical scrolling on all mobile page containers */
+  #home, #about, #skills, #projects, #blog, #education, #experience, #certifications, #contact, #updates {
+    height: calc(100dvh - 150px) !important;
+    max-height: calc(100dvh - 150px) !important;
+    overflow-y: hidden !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-sizing: border-box;
   }
 
-  /* Hide utility-bar divider on mobile â€” sidebar is hidden, layout is vertical */
+  .mpj-list, .skills-mobile-view, .experience-mobile-list, .contact-mobile-view {
+    flex: 1;
+    overflow-y: auto;
+    max-height: calc(100dvh - 210px);
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .mpj-list::-webkit-scrollbar, .skills-mobile-view::-webkit-scrollbar, .experience-mobile-list::-webkit-scrollbar, .contact-mobile-view::-webkit-scrollbar {
+    display: none;
+  }  /* Hide utility-bar divider on mobile — sidebar is hidden, layout is vertical */
   .main-content::before {
     display: none;
   }
