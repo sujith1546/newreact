@@ -2742,19 +2742,25 @@ html {
     pointer-events: none;
     box-shadow: 0 2px 12px color-mix(in srgb, var(--primary-blue, #007bff) 20%, transparent);
   }
+  /* ── Backdrop ── */
+  .more-overlay-backdrop {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    z-index: 9996;
+    transform: translateZ(0);
+    will-change: opacity, backdrop-filter;
+  }
 
-  /* More Drawer Overlay & Sheet */
-  /* ────────────────────────────────────────── 
-     UNIFIED SLIDE-UP DRAWER SYSTEM
-     All panels share these base tokens for visual consistency
-     ──────────────────────────────────────────  */
   /* ── Base sheet ── */
   .more-overlay-sheet {
     position: fixed;
     bottom: max(76px, calc(68px + env(safe-area-inset-bottom, 12px)));
     left: 10px; right: 10px;
     width: auto;
-    max-width: 440px;
     margin: 0 auto;
     background: rgba(255, 255, 255, 0.9);
     backdrop-filter: blur(24px);
