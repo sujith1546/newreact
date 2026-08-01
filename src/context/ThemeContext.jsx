@@ -9,46 +9,74 @@ export const PRESETS = {
   'Retro Terminal':    { theme: 'dark',  fontFamily: 'developer', uiAudio: true,  accentColor: 'emerald' }
 };
 
+const safeStorage = {
+  getItem: (key) => {
+    try {
+      return localStorage.getItem(key);
+    } catch (e) {
+      return null;
+    }
+  },
+  setItem: (key, val) => {
+    try {
+      localStorage.setItem(key, val);
+    } catch (e) {}
+  },
+  removeItem: (key) => {
+    try {
+      localStorage.removeItem(key);
+    } catch (e) {}
+  }
+};
+
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
-  const [accentColor, setAccentColor] = useState(localStorage.getItem('accentColor') || 'blue');
-  const [fontFamily, setFontFamily] = useState(localStorage.getItem('fontFamily') || 'modern');
-  const [layoutDensity, setLayoutDensity] = useState(localStorage.getItem('layoutDensity') || 'comfortable');
-  const [uiAudio, setUiAudio] = useState(localStorage.getItem('uiAudio') !== 'false');
-  const [glassIntensity, setGlassIntensity] = useState(localStorage.getItem('glassIntensity') || 'medium');
-  const [reduceMotion, setReduceMotion] = useState(localStorage.getItem('reduceMotion') === 'true');
-  const [highContrast, setHighContrast] = useState(localStorage.getItem('highContrast') === 'true');
-  const [aiVoice, setAiVoice] = useState(localStorage.getItem('aiVoice') !== 'false');
-  const [aiAutoNav, setAiAutoNav] = useState(localStorage.getItem('aiAutoNav') !== 'false');
-  const [aiResponseStyle, setAiResponseStyle] = useState(localStorage.getItem('aiResponseStyle') || 'balanced');
-  const [aiShowThoughts, setAiShowThoughts] = useState(localStorage.getItem('aiShowThoughts') !== 'false');
+  const [theme, setTheme] = useState(() => safeStorage.getItem('theme') || 'light');
+  const [accentColor, setAccentColor] = useState(() => safeStorage.getItem('accentColor') || 'blue');
+  const [fontFamily, setFontFamily] = useState(() => safeStorage.getItem('fontFamily') || 'modern');
+  const [layoutDensity, setLayoutDensity] = useState(() => safeStorage.getItem('layoutDensity') || 'comfortable');
+  const [uiAudio, setUiAudio] = useState(() => safeStorage.getItem('uiAudio') !== 'false');
+  const [glassIntensity, setGlassIntensity] = useState(() => safeStorage.getItem('glassIntensity') || 'medium');
+  const [reduceMotion, setReduceMotion] = useState(() => safeStorage.getItem('reduceMotion') === 'true');
+  const [highContrast, setHighContrast] = useState(() => safeStorage.getItem('highContrast') === 'true');
+  const [aiVoice, setAiVoice] = useState(() => safeStorage.getItem('aiVoice') !== 'false');
+  const [aiAutoNav, setAiAutoNav] = useState(() => safeStorage.getItem('aiAutoNav') !== 'false');
+  const [aiResponseStyle, setAiResponseStyle] = useState(() => safeStorage.getItem('aiResponseStyle') || 'balanced');
+  const [aiShowThoughts, setAiShowThoughts] = useState(() => safeStorage.getItem('aiShowThoughts') !== 'false');
   
   // Advanced AI Features
-  const [aiContextRange, setAiContextRange] = useState(localStorage.getItem('aiContextRange') || 'global');
-  const [aiReasoningDepth, setAiReasoningDepth] = useState(localStorage.getItem('aiReasoningDepth') || 'lightning');
-  const [aiPersona, setAiPersona] = useState(localStorage.getItem('aiPersona') || 'professional');
-  const [aiTerminalMode, setAiTerminalMode] = useState(localStorage.getItem('aiTerminalMode') === 'true');
+  const [aiContextRange, setAiContextRange] = useState(() => safeStorage.getItem('aiContextRange') || 'global');
+  const [aiReasoningDepth, setAiReasoningDepth] = useState(() => safeStorage.getItem('aiReasoningDepth') || 'lightning');
+  const [aiPersona, setAiPersona] = useState(() => safeStorage.getItem('aiPersona') || 'professional');
+  const [aiTerminalMode, setAiTerminalMode] = useState(() => safeStorage.getItem('aiTerminalMode') === 'true');
 
   // Advanced Accessibility
-  const [keyboardHud, setKeyboardHud] = useState(localStorage.getItem('keyboardHud') === 'true');
+  const [keyboardHud, setKeyboardHud] = useState(() => safeStorage.getItem('keyboardHud') === 'true');
   
   // Tier 1 & 3 Advanced settings
   const [notifyOnContact, setNotifyOnContact] = useState(
-    () => JSON.parse(localStorage.getItem('notifyOnContact') ?? 'true')
+    () => {
+      try {
+        const val = safeStorage.getItem('notifyOnContact');
+        return val ? JSON.parse(val) : true;
+      } catch (e) {
+        return true;
+      }
+    }
   );
   const [photoAccent, setPhotoAccent] = useState(
-    () => localStorage.getItem('photoAccent') || null
+    () => safeStorage.getItem('photoAccent') || null
   );
   const [activePreset, setActivePreset] = useState(
-    () => localStorage.getItem('activePreset') || null
+    () => safeStorage.getItem('activePreset') || null
   );
   const [devMode, setDevMode] = useState(
-    () => localStorage.getItem('devMode') === 'true'
+    () => safeStorage.getItem('devMode') === 'true'
   );
   const [showStateInspector, setShowStateInspector] = useState(false);
   const [flags, setFlags] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem('devFlags')) || {
+      const raw = safeStorage.getItem('devFlags');
+      return raw ? JSON.parse(raw) : {
         showFPSCounter: false,
         verboseConsoleLogs: false,
         experimentalChatbotUI: false,
@@ -123,28 +151,28 @@ export function ThemeProvider({ children }) {
     root.style.setProperty('--app-font', fonts[fontFamily]);
     
     // Save preferences
-    localStorage.setItem('theme', theme);
-    localStorage.setItem('accentColor', accentColor);
-    localStorage.setItem('fontFamily', fontFamily);
-    localStorage.setItem('layoutDensity', layoutDensity);
-    localStorage.setItem('uiAudio', uiAudio);
-    localStorage.setItem('glassIntensity', glassIntensity);
-    localStorage.setItem('reduceMotion', String(reduceMotion));
-    localStorage.setItem('highContrast', String(highContrast));
-    localStorage.setItem('aiVoice', String(aiVoice));
-    localStorage.setItem('aiAutoNav', String(aiAutoNav));
-    localStorage.setItem('aiResponseStyle', aiResponseStyle);
-    localStorage.setItem('aiShowThoughts', String(aiShowThoughts));
-    localStorage.setItem('aiContextRange', aiContextRange);
-    localStorage.setItem('aiReasoningDepth', aiReasoningDepth);
-    localStorage.setItem('aiPersona', aiPersona);
-    localStorage.setItem('aiTerminalMode', String(aiTerminalMode));
-    localStorage.setItem('keyboardHud', String(keyboardHud));
-    localStorage.setItem('notifyOnContact', JSON.stringify(notifyOnContact));
-    if (photoAccent) localStorage.setItem('photoAccent', photoAccent);
-    localStorage.setItem('activePreset', activePreset || '');
-    localStorage.setItem('devMode', String(devMode));
-    localStorage.setItem('devFlags', JSON.stringify(flags));
+    safeStorage.setItem('theme', theme);
+    safeStorage.setItem('accentColor', accentColor);
+    safeStorage.setItem('fontFamily', fontFamily);
+    safeStorage.setItem('layoutDensity', layoutDensity);
+    safeStorage.setItem('uiAudio', uiAudio);
+    safeStorage.setItem('glassIntensity', glassIntensity);
+    safeStorage.setItem('reduceMotion', String(reduceMotion));
+    safeStorage.setItem('highContrast', String(highContrast));
+    safeStorage.setItem('aiVoice', String(aiVoice));
+    safeStorage.setItem('aiAutoNav', String(aiAutoNav));
+    safeStorage.setItem('aiResponseStyle', aiResponseStyle);
+    safeStorage.setItem('aiShowThoughts', String(aiShowThoughts));
+    safeStorage.setItem('aiContextRange', aiContextRange);
+    safeStorage.setItem('aiReasoningDepth', aiReasoningDepth);
+    safeStorage.setItem('aiPersona', aiPersona);
+    safeStorage.setItem('aiTerminalMode', String(aiTerminalMode));
+    safeStorage.setItem('keyboardHud', String(keyboardHud));
+    safeStorage.setItem('notifyOnContact', JSON.stringify(notifyOnContact));
+    if (photoAccent) safeStorage.setItem('photoAccent', photoAccent);
+    safeStorage.setItem('activePreset', activePreset || '');
+    safeStorage.setItem('devMode', String(devMode));
+    safeStorage.setItem('devFlags', JSON.stringify(flags));
   }, [theme, accentColor, fontFamily, layoutDensity, uiAudio, glassIntensity, reduceMotion, highContrast, aiVoice, aiAutoNav, aiResponseStyle, aiShowThoughts, aiContextRange, aiReasoningDepth, aiPersona, aiTerminalMode, keyboardHud, notifyOnContact, photoAccent, activePreset, devMode, flags]);
 
   const toggleTheme = (e) => {

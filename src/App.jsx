@@ -39,11 +39,15 @@ function AnimatedRoutes() {
 
   // Track visited pages for 404 breadcrumb trail
   useEffect(() => {
-    const trail = JSON.parse(sessionStorage.getItem("visited_trail") || "[]");
-    // Ensure we don't duplicate the last path
-    if (trail[trail.length - 1] !== location.pathname) {
-      trail.push(location.pathname);
-      sessionStorage.setItem("visited_trail", JSON.stringify(trail.slice(-6)));
+    try {
+      const trail = JSON.parse(sessionStorage.getItem("visited_trail") || "[]");
+      // Ensure we don't duplicate the last path
+      if (trail[trail.length - 1] !== location.pathname) {
+        trail.push(location.pathname);
+        sessionStorage.setItem("visited_trail", JSON.stringify(trail.slice(-6)));
+      }
+    } catch (err) {
+      // Ignore storage errors on restrictive mobile browsers
     }
     
     // Log page view to Supabase analytics
@@ -98,6 +102,19 @@ function AppContent() {
   const [showContent, setShowContent] = useState(false);
 
   useEffect(() => {
+    let mounted = true;
+
+    const forceUnlock = () => {
+      if (mounted) {
+        setAppReady(true);
+        setShowContent(true);
+        document.body.style.overflow = 'unset';
+      }
+    };
+
+    // Safety fallback timer: force show content after 1200ms max, regardless of network speed/mobile latency
+    const safetyTimer = setTimeout(forceUnlock, 1200);
+
     async function prefetchData() {
       try {
         // Prevent layout shift scrollbars during splash screen
@@ -121,33 +138,32 @@ function AppContent() {
         }
 
         await Promise.all(corePromises);
-
-        // Stage 2: Release the Splash Screen to fade out
-        setAppReady(true);
-        // Safely mount background content slightly before splash unmounts for a seamless crossfade
-        setTimeout(() => {
-          setShowContent(true);
-          document.body.style.overflow = 'unset';
-        }, 200);
+      } catch (e) {
+        // Ignore prefetch failures
+      } finally {
+        clearTimeout(safetyTimer);
+        forceUnlock();
 
         // Stage 3: Silent Background Prefetching Engine (Everything else)
         setTimeout(async () => {
-          await Promise.all([
-            prefetchTable('projects', { orderColumn: 'created_at', ascending: true }),
-            prefetchTable('experience', { orderColumn: 'display_order', ascending: true }),
-            prefetchTable('skills', { orderColumn: 'order_index', ascending: true }),
-            prefetchTable('education', { orderColumn: 'display_order', ascending: true })
-          ]);
-        }, 1000); 
-        
-      } catch (e) {
-        setAppReady(true);
-        setShowContent(true);
-        document.body.style.overflow = 'unset';
+          try {
+            await Promise.all([
+              prefetchTable('projects', { orderColumn: 'created_at', ascending: true }),
+              prefetchTable('experience', { orderColumn: 'display_order', ascending: true }),
+              prefetchTable('skills', { orderColumn: 'order_index', ascending: true }),
+              prefetchTable('education', { orderColumn: 'display_order', ascending: true })
+            ]);
+          } catch (err) {}
+        }, 1000);
       }
     }
     
     prefetchData();
+
+    return () => {
+      mounted = false;
+      clearTimeout(safetyTimer);
+    };
   }, []);
 
   return (

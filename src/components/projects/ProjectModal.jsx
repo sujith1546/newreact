@@ -321,8 +321,6 @@ export default function ProjectModal({ project, onClose, isMobile = false }) {
 function ModalStyles() {
   return (
     <style>{`
-      @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap');
-
       :root {
         --pm-bg-panel: var(--bg-secondary);
         --pm-bg-raise: var(--bg-primary);

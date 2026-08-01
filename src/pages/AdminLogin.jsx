@@ -4,8 +4,6 @@ import { supabase } from "../lib/supabaseClient";
 import { useTheme } from "../context/ThemeContext";
 
 const ADMIN_LOGIN_STYLES = `
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700;800&display=swap');
-
 .login-page-container {
   --bg: #ffffff;
   --sidebar-bg: #ffffff;
