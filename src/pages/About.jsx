@@ -398,7 +398,9 @@ export default function About({ onNavClick }) {
 
   const handleCopyEmail = () => {
     try {
-      navigator.clipboard.writeText('sujithreddy1546@gmail.com');
+      if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText('sujithreddy1546@gmail.com').catch(() => {});
+      }
       setCopiedEmail(true);
       setTimeout(() => setCopiedEmail(false), 2200);
     } catch { /* fallback */ }

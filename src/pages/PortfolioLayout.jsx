@@ -242,7 +242,9 @@ export default function PortfolioLayout() {
   };
 
   const handleCopyEmail = () => {
-    navigator.clipboard.writeText('sujithreddy1546@gmail.com');
+    if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText('sujithreddy1546@gmail.com').catch(() => {});
+    }
     setEmailCopied(true);
     setTimeout(() => setEmailCopied(false), 2000);
   };
@@ -397,19 +399,16 @@ export default function PortfolioLayout() {
               id={activeSection}
               custom={slideDirection}
 
-              variants={isMobile ? mobilePageVariants : undefined}
-              initial={isMobile ? 'initial' : { opacity: 0 }}
-              animate={isMobile ? 'animate' : { opacity: 1 }}
-              exit={isMobile ? 'exit' : { opacity: 0 }}
+              initial={isMobile ? false : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
 
               transition={isMobile ? mobileTransition : { duration: 0.25, ease: 'easeInOut' }}
 
               style={{
-                width:                     isMobile ? 'calc(100% - 24px)' : '100%',
-                height:                    '100%',
-                position:                  isMobile ? 'absolute' : 'relative',
-                top:                       isMobile ? '12px' : 0,
-                left:                      isMobile ? '12px' : 0,
+                width:                     '100%',
+                minHeight:                 '100%',
+                position:                  'relative',
                 willChange:                'transform',
                 backfaceVisibility:        'hidden',
                 WebkitBackfaceVisibility:  'hidden',

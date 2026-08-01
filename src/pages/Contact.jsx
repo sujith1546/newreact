@@ -322,7 +322,9 @@ END:VCARD`;
   };
 
   const handleCopyEmail = () => {
-    navigator.clipboard.writeText(email);
+    if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(email).catch(() => {});
+    }
     setEmailCopied(true);
     setTimeout(() => setEmailCopied(false), 2000);
   };

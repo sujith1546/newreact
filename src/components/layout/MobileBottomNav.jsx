@@ -167,11 +167,16 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
   };
 
   const handleCopyEmail = () => {
-    navigator.clipboard.writeText('sujithreddy1546@gmail.com').then(() => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText('sujithreddy1546@gmail.com').then(() => {
+        setCopiedEmail(true);
+        playSound();
+        setTimeout(() => setCopiedEmail(false), 1500);
+      }).catch(() => {});
+    } else {
       setCopiedEmail(true);
-      playSound();
       setTimeout(() => setCopiedEmail(false), 1500);
-    });
+    }
   };
 
   const handleExploreClick = (target) => {
@@ -199,14 +204,14 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
       url: window.location.origin
     };
 
-    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+    if (typeof navigator !== 'undefined' && navigator.share && navigator.canShare && navigator.canShare(shareData)) {
       try {
         await navigator.share(shareData);
       } catch (err) {
         console.log('Share sheet failed', err);
       }
-    } else {
-      navigator.clipboard.writeText(shareData.url);
+    } else if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(shareData.url).catch(() => {});
       alert('Link copied to clipboard!');
     }
   };
