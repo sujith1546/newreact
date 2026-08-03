@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Smartphone, Tablet, RotateCw, RefreshCw, Apple, Smartphone as AndroidIcon, Globe } from 'lucide-react';
+import { X, Smartphone, Tablet, RotateCw, RefreshCw, Apple, Smartphone as AndroidIcon, Globe, Wifi, Battery } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 
 const DEVICES = {
@@ -144,12 +144,12 @@ export default function MobilePreviewModal({ isOpen, onClose }) {
                 alignItems: "center",
                 justifyContent: "center",
                 backgroundColor: "color-mix(in srgb, var(--text-primary) 3%, var(--bg-primary))",
-                padding: "1.5rem",
+                padding: "1rem",
                 overflow: "auto",
                 position: "relative"
               }}
             >
-              <DeviceFrame dims={dims}>
+              <DeviceFrame dims={dims} isPortrait={orientation === "portrait"}>
                 <iframe
                   key={reloadKey}
                   src={siteUrl}
@@ -332,16 +332,42 @@ function DeviceSimulatorSidebar({ deviceKey, setDeviceKey, orientation, setOrien
   );
 }
 
-function DeviceFrame({ dims, children }) {
+function DeviceFrame({ dims, isPortrait = true, children }) {
+  const [viewportSize, setViewportSize] = useState(() => ({
+    w: typeof window !== 'undefined' ? window.innerWidth : 1200,
+    h: typeof window !== 'undefined' ? window.innerHeight : 800
+  }));
+
+  useEffect(() => {
+    const handleResize = () => {
+      setViewportSize({
+        w: window.innerWidth,
+        h: window.innerHeight
+      });
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // Real dimensions of device casing shell
   const frameUnscaledW = dims.w + 24; // 12px padding on each side
   const frameUnscaledH = dims.h + 24;
 
-  const maxAvailableH = typeof window !== 'undefined' ? window.innerHeight - 130 : 700;
-  const maxAvailableW = typeof window !== 'undefined' ? window.innerWidth - 280 : 800;
+  // Available stage area inside modal body (Header: 54px, Stage padding: 32px)
+  const availableStageH = Math.max(200, viewportSize.h - 54 - 32);
+  // Sidebar: 240px, Stage padding: 32px
+  const availableStageW = Math.max(200, viewportSize.w - 240 - 32);
 
-  // Scale factor to scale the outer shell visually as a single unit
-  const scale = Math.min(1, maxAvailableH / frameUnscaledH, maxAvailableW / frameUnscaledW);
+  // Target ~78% of available stage height for optimal phone frame presence
+  const targetHeight = availableStageH * 0.78;
+  const heightScale = targetHeight / frameUnscaledH;
+
+  // Ensure frame never overflows available stage height or width (capped at 92% of stage max)
+  const maxScaleW = (availableStageW * 0.92) / frameUnscaledW;
+  const maxScaleH = (availableStageH * 0.92) / frameUnscaledH;
+
+  // Proportional scale factor locks aspect ratio (width:height) to real device dimensions
+  const scale = Math.min(heightScale, maxScaleW, maxScaleH);
 
   return (
     <div
@@ -354,16 +380,16 @@ function DeviceFrame({ dims, children }) {
         position: "relative"
       }}
     >
-      {/* Outer Scaled Device Casing */}
+      {/* Outer Scaled Device Casing with Metallic Finish */}
       <div
         style={{
           width: `${frameUnscaledW}px`,
           height: `${frameUnscaledH}px`,
-          backgroundColor: "#111111",
-          borderRadius: "46px",
+          background: "linear-gradient(145deg, #2d2e33 0%, #151518 50%, #0c0d10 100%)",
+          borderRadius: "48px",
           padding: "12px",
-          boxShadow: "0 25px 60px rgba(0, 0, 0, 0.4)",
-          border: "1px solid rgba(255, 255, 255, 0.12)",
+          boxShadow: "inset 0 1px 1px rgba(255, 255, 255, 0.25), inset 0 -1px 2px rgba(0, 0, 0, 0.9), 0 30px 70px rgba(0, 0, 0, 0.45)",
+          border: "1px solid rgba(255, 255, 255, 0.14)",
           boxSizing: "border-box",
           transform: `scale(${scale})`,
           transformOrigin: "center center",
@@ -371,21 +397,95 @@ function DeviceFrame({ dims, children }) {
           transition: "transform 0.2s ease"
         }}
       >
-        {/* Dynamic Island / Top Notch Capsule */}
-        <div
-          style={{
-            position: "absolute",
-            top: "14px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: "96px",
-            height: "22px",
-            backgroundColor: "#000000",
-            borderRadius: "14px",
-            zIndex: 10,
-            border: "1px solid rgba(255, 255, 255, 0.08)"
-          }}
-        />
+        {/* Left Side Hardware Buttons (Action Switch + Volume Rockers) */}
+        {isPortrait && (
+          <>
+            <div
+              style={{
+                position: "absolute",
+                left: "-4px",
+                top: "85px",
+                width: "4px",
+                height: "26px",
+                borderRadius: "3px 0 0 3px",
+                background: "linear-gradient(to right, #444448, #222225)",
+                boxShadow: "-1px 0 3px rgba(0,0,0,0.4)"
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                left: "-4px",
+                top: "125px",
+                width: "4px",
+                height: "48px",
+                borderRadius: "3px 0 0 3px",
+                background: "linear-gradient(to right, #444448, #222225)",
+                boxShadow: "-1px 0 3px rgba(0,0,0,0.4)"
+              }}
+            />
+            <div
+              style={{
+                position: "absolute",
+                left: "-4px",
+                top: "185px",
+                width: "4px",
+                height: "48px",
+                borderRadius: "3px 0 0 3px",
+                background: "linear-gradient(to right, #444448, #222225)",
+                boxShadow: "-1px 0 3px rgba(0,0,0,0.4)"
+              }}
+            />
+
+            {/* Right Side Hardware Power/Lock Button */}
+            <div
+              style={{
+                position: "absolute",
+                right: "-4px",
+                top: "140px",
+                width: "4px",
+                height: "65px",
+                borderRadius: "0 3px 3px 0",
+                background: "linear-gradient(to left, #444448, #222225)",
+                boxShadow: "1px 0 3px rgba(0,0,0,0.4)"
+              }}
+            />
+          </>
+        )}
+
+        {/* Dynamic Island / Top Notch Capsule with Camera Lens Dot */}
+        {isPortrait && (
+          <div
+            style={{
+              position: "absolute",
+              top: "14px",
+              left: "50%",
+              transform: "translateX(-50%)",
+              width: "98px",
+              height: "22px",
+              backgroundColor: "#000000",
+              borderRadius: "14px",
+              zIndex: 15,
+              border: "1px solid rgba(255, 255, 255, 0.08)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-end",
+              paddingRight: "12px"
+            }}
+          >
+            {/* Camera Lens Dot */}
+            <div
+              style={{
+                width: "9px",
+                height: "9px",
+                borderRadius: "50%",
+                backgroundColor: "#0a0e1a",
+                border: "1px solid #1c263c",
+                boxShadow: "inset 0 0 3px rgba(59, 130, 246, 0.6)"
+              }}
+            />
+          </div>
+        )}
 
         {/* Screen Frame Area (Matches Exact Target Resolution) */}
         <div
@@ -393,11 +493,41 @@ function DeviceFrame({ dims, children }) {
             width: `${dims.w}px`,
             height: `${dims.h}px`,
             backgroundColor: "#ffffff",
-            borderRadius: "34px",
+            borderRadius: "36px",
             overflow: "hidden",
             position: "relative"
           }}
         >
+          {/* Live Mobile Status Bar Overlay (9:41, WiFi, Signal, Battery) */}
+          {isPortrait && (
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                height: "36px",
+                zIndex: 10,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "0 22px",
+                color: "#0f172a",
+                fontWeight: 700,
+                fontSize: "12px",
+                pointerEvents: "none",
+                letterSpacing: "-0.01em"
+              }}
+            >
+              <span>9:41</span>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <Wifi size={13} strokeWidth={2.5} />
+                <div style={{ fontSize: "10px", fontWeight: 800 }}>5G</div>
+                <Battery size={15} strokeWidth={2.5} />
+              </div>
+            </div>
+          )}
+
           {children}
         </div>
       </div>
