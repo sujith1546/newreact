@@ -114,10 +114,30 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
   return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <motion.div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="scheduling-header-title"
+        <>
+          {/* Backdrop Blur Overlay */}
+          {!minimized && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={onClose}
+              style={{
+                position: 'fixed',
+                inset: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.45)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                zIndex: 999998,
+              }}
+            />
+          )}
+
+          {/* Mail-style Floating Window */}
+          <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="scheduling-header-title"
           initial={{ opacity: 0, y: 40, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 40, scale: 0.95 }}
@@ -505,6 +525,7 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
             )}
           </div>
         </motion.div>
+        </>
       )}
     </AnimatePresence>,
     document.body

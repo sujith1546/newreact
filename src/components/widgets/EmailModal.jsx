@@ -262,9 +262,9 @@ export default function EmailModal({ isOpen, onClose }) {
             display: 'flex',
             alignItems: maximized ? 'stretch' : 'flex-end',
             justifyContent: maximized ? 'stretch' : 'flex-end',
-            background: 'rgba(0, 0, 0, 0.35)',
-            backdropFilter: 'blur(3px)',
-            WebkitBackdropFilter: 'blur(3px)',
+            background: 'rgba(0, 0, 0, 0.45)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
             padding: maximized ? '0' : '0 16px 0 0',
           }}
           onClick={onClose}
