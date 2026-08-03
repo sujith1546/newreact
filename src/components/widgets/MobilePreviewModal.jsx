@@ -504,40 +504,6 @@ function DeviceFrame({ dims, isPortrait = true, zoomScale = "auto", children }) 
           </>
         )}
 
-        {/* Dynamic Island / Top Notch Capsule with Camera Lens Dot */}
-        {isPortrait && (
-          <div
-            style={{
-              position: "absolute",
-              top: "14px",
-              left: "50%",
-              transform: "translateX(-50%)",
-              width: "98px",
-              height: "22px",
-              backgroundColor: "#000000",
-              borderRadius: "14px",
-              zIndex: 15,
-              border: "1px solid rgba(255, 255, 255, 0.08)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "flex-end",
-              paddingRight: "12px"
-            }}
-          >
-            {/* Camera Lens Dot */}
-            <div
-              style={{
-                width: "9px",
-                height: "9px",
-                borderRadius: "50%",
-                backgroundColor: "#0a0e1a",
-                border: "1px solid #1c263c",
-                boxShadow: "inset 0 0 3px rgba(59, 130, 246, 0.6)"
-              }}
-            />
-          </div>
-        )}
-
         {/* Screen Frame Area (Matches Exact Target Resolution) */}
         <div
           style={{
