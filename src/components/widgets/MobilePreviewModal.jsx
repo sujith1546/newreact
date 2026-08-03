@@ -144,10 +144,10 @@ export default function MobilePreviewModal({ isOpen, onClose }) {
             <div
               style={{
                 display: "flex",
-                alignItems: "center",
+                alignItems: "flex-start",
                 justifyContent: "center",
                 backgroundColor: "color-mix(in srgb, var(--text-primary) 3%, var(--bg-primary))",
-                padding: "1rem",
+                padding: "1.25rem 1rem 1rem",
                 overflow: "hidden",
                 position: "relative"
               }}
