@@ -101,12 +101,12 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, onConfirm }) {
             style={{
               position: 'relative',
               width: '100%',
-              maxWidth: '520px',
+              maxWidth: '620px',
               backgroundColor: '#222222',
-              borderRadius: '16px',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              padding: '24px',
-              boxShadow: '0 30px 80px rgba(0, 0, 0, 0.7)',
+              borderRadius: '20px',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              padding: '28px',
+              boxShadow: '0 30px 80px rgba(0, 0, 0, 0.75)',
               color: '#ffffff',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
               zIndex: 1000000,
@@ -204,7 +204,7 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, onConfirm }) {
                 </div>
 
                 {/* Calendar Grid + Slots Grid */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '22px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '28px', marginBottom: '24px' }}>
                   {/* Left Column: Calendar Grid */}
                   <div>
                     {/* Calendar Month Header */}
