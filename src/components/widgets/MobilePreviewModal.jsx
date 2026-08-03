@@ -5,19 +5,18 @@ import { X, Smartphone, Tablet, RotateCw, RefreshCw, Apple, Smartphone as Androi
 import { useTheme } from '../../context/ThemeContext';
 
 const DEVICES = {
-  "iphone-16-pro": { id: "iphone-16-pro", label: "iPhone 16 Pro", icon: "apple", portrait: { w: 393, h: 852 } },
-  "pixel-9-pro": { id: "pixel-9-pro", label: "Pixel 9 Pro", icon: "android", portrait: { w: 412, h: 892 } },
+  "iphone-16": { id: "iphone-16", label: "iPhone 16", icon: "apple", portrait: { w: 393, h: 852 } },
   "ipad-air": { id: "ipad-air", label: "iPad Air", icon: "tablet", portrait: { w: 820, h: 1180 } },
 };
 
 export default function MobilePreviewModal({ isOpen, onClose }) {
   const { theme } = useTheme();
-  const [deviceKey, setDeviceKey] = useState("iphone-16-pro");
+  const [deviceKey, setDeviceKey] = useState("iphone-16");
   const [orientation, setOrientation] = useState("portrait");
-  const [zoomScale, setZoomScale] = useState("auto"); // "auto" | 0.85 | 1.0 | 1.15 | 1.25
+  const [zoomScale, setZoomScale] = useState(0.85); // 0.85
   const [reloadKey, setReloadKey] = useState(0);
 
-  const device = DEVICES[deviceKey] || DEVICES["iphone-16-pro"];
+  const device = DEVICES[deviceKey] || DEVICES["iphone-16"];
   const dims = useMemo(() => {
     const base = device.portrait;
     return orientation === "portrait" ? base : { w: base.h, h: base.w };
@@ -286,12 +285,9 @@ function DeviceSimulatorSidebar({ deviceKey, setDeviceKey, orientation, setOrien
       {/* Frame Zoom Scale Selector */}
       <div>
         <p style={sectionLabelStyle}>Frame Size Zoom</p>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
+        <div style={{ display: "flex" }}>
           {[
-            { id: "auto", label: "Auto (Max Stage)" },
-            { id: 0.85, label: "85%" },
-            { id: 1.0, label: "100% (1:1)" },
-            { id: 1.15, label: "115% (Large)" }
+            { id: 0.85, label: "85%" }
           ].map((z) => {
             const active = zoomScale === z.id;
             return (
@@ -300,14 +296,15 @@ function DeviceSimulatorSidebar({ deviceKey, setDeviceKey, orientation, setOrien
                 type="button"
                 onClick={() => setZoomScale(z.id)}
                 style={{
-                  padding: "7px 6px",
+                  width: "100%",
+                  padding: "8px 12px",
                   borderRadius: "8px",
-                  fontSize: "11.5px",
-                  fontWeight: active ? 700 : 500,
+                  fontSize: "12px",
+                  fontWeight: 700,
                   cursor: "pointer",
-                  border: active ? "1px solid var(--primary-blue)" : "1px solid var(--border-color)",
-                  backgroundColor: active ? "color-mix(in srgb, var(--primary-blue) 14%, var(--bg-primary))" : "var(--bg-primary)",
-                  color: active ? "var(--primary-blue)" : "var(--text-primary)",
+                  border: "1px solid var(--primary-blue)",
+                  backgroundColor: "color-mix(in srgb, var(--primary-blue) 14%, var(--bg-primary))",
+                  color: "var(--primary-blue)",
                   textAlign: "center",
                   transition: "all 0.15s ease"
                 }}
