@@ -122,10 +122,12 @@ export default function CraftedWithLoveModal({ isOpen, onClose }) {
                   <Heart size={20} fill="#ef4444" />
                 </div>
                 <div>
-                  <h3 id="crafted-modal-title" style={{ fontSize: '18px', fontWeight: 800, margin: '0 0 2px', color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
+                  <h3 id="crafted-modal-title" style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
                     Crafted with Love
                   </h3>
-                  <HeaderSubtitleMarquee text="Designed & Engineered by Sujith Thota · Full-Stack & AI Architect · v1.3.0" />
+                  <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 500 }}>
+                    Designed & Engineered by Sujith Thota
+                  </span>
                 </div>
               </div>
 
@@ -368,36 +370,6 @@ function TechStackCard({ icon, title, desc }) {
         <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)' }}>{title}</span>
       </div>
       <span style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>{desc}</span>
-    </div>
-  );
-}
-
-function HeaderSubtitleMarquee({ text }) {
-  const repeated = `${text}  ✦  ${text}  ✦  ${text}  ✦  `;
-  return (
-    <div style={{
-      maxWidth: '280px',
-      overflow: 'hidden',
-      position: 'relative',
-      whiteSpace: 'nowrap',
-      maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
-      WebkitMaskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)'
-    }}>
-      <style>{`
-        @keyframes headerSubtitleMarqueeScroll {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-33.333%); }
-        }
-      `}</style>
-      <div style={{
-        display: 'inline-block',
-        fontSize: '11.5px',
-        fontWeight: 600,
-        color: 'var(--text-secondary)',
-        animation: 'headerSubtitleMarqueeScroll 14s linear infinite'
-      }}>
-        {repeated}
-      </div>
     </div>
   );
 }
