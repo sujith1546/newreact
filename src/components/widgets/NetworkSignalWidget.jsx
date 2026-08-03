@@ -1,122 +1,163 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Wifi, WifiOff, Activity, RefreshCw, Zap, AlertTriangle, ShieldCheck } from 'lucide-react';
-import { useTheme } from '../../context/ThemeContext';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { WifiOff } from 'lucide-react';
+
+const CHECK_INTERVAL_MS = 45000; // 45s
+const HISTORY_LENGTH = 6;
+const FLICKER_DEBOUNCE_MS = 2000;
+
+function classifyLatency(ms) {
+  if (ms == null) return "unknown";
+  if (ms < 100) return "fast";
+  if (ms <= 250) return "moderate";
+  return "slow";
+}
+
+function SignalBars({ filled, color, size = 12 }) {
+  const heights = [size * 0.35, size * 0.58, size * 0.8, size];
+  return (
+    <div style={{ display: "flex", alignItems: "flex-end", gap: "1.5px", height: `${size}px` }}>
+      {heights.map((h, i) => (
+        <div
+          key={i}
+          style={{
+            width: "3px",
+            height: `${h}px`,
+            background: i < filled ? color : "var(--border-color, rgba(128,128,128,0.25))",
+            borderRadius: "1px",
+            transition: "background 0.25s ease",
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function Row({ label, value }) {
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <span style={{ color: "var(--text-secondary, #888)" }}>{label}</span>
+      <span style={{ fontWeight: 600, color: "var(--text-primary)" }}>{value}</span>
+    </div>
+  );
+}
 
 export default function NetworkSignalWidget() {
-  const { theme } = useTheme();
-  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
-  const [latency, setLatency] = useState(null); // in ms
-  const [pingQuality, setPingQuality] = useState('good'); // 'good' | 'fair' | 'poor' | 'offline'
-  const [connectionInfo, setConnectionInfo] = useState({ effectiveType: '4g', downlink: null, rtt: null });
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const [isPinging, setIsPinging] = useState(false);
+  const [isOnline, setIsOnline] = useState(typeof navigator !== "undefined" ? navigator.onLine : true);
+  const [latency, setLatency] = useState(null);
+  const [connType, setConnType] = useState(null);
+  const [downlink, setDownlink] = useState(null);
+  const [history, setHistory] = useState([]);
+  const [popoverOpen, setPopoverOpen] = useState(false);
 
-  // Measure Ping Latency
-  const checkPing = async () => {
-    if (!navigator.onLine) {
-      setIsOnline(false);
-      setPingQuality('offline');
-      setLatency(null);
-      return;
-    }
+  const flickerTimeout = useRef(null);
+  const intervalRef = useRef(null);
+  const popoverRef = useRef(null);
 
-    setIsPinging(true);
-    const start = performance.now();
-    try {
-      // Fetch tiny asset with cache busting to measure actual round-trip time
-      await fetch(`/manifest.webmanifest?t=${Date.now()}`, {
-        method: 'HEAD',
-        cache: 'no-store',
-      });
-      const end = performance.now();
-      const rtt = Math.round(end - start);
-      setLatency(rtt);
-      setIsOnline(true);
-
-      if (rtt < 120) {
-        setPingQuality('good');
-      } else if (rtt < 300) {
-        setPingQuality('fair');
-      } else {
-        setPingQuality('poor');
-      }
-    } catch (err) {
-      // If fetch fails but navigator is online, try fallback check
-      console.warn('Network ping check error:', err);
-      setIsOnline(navigator.onLine);
-      setPingQuality(navigator.onLine ? 'fair' : 'offline');
-    } finally {
-      setIsPinging(false);
-    }
-  };
-
-  // Listen to Network State and API
+  // Debounced online/offline listener
   useEffect(() => {
-    const handleOnline = () => {
-      setIsOnline(true);
-      checkPing();
+    const handleChange = (nextOnline) => {
+      clearTimeout(flickerTimeout.current);
+      flickerTimeout.current = setTimeout(() => {
+        setIsOnline(nextOnline);
+      }, FLICKER_DEBOUNCE_MS);
     };
+    const onOnline = () => handleChange(true);
+    const onOffline = () => handleChange(false);
 
-    const handleOffline = () => {
-      setIsOnline(false);
-      setPingQuality('offline');
-      setLatency(null);
-    };
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    // Initial ping
-    checkPing();
-
-    // Periodic ping every 12 seconds
-    const interval = setInterval(checkPing, 12000);
-
-    // Network Information API if supported
-    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-    if (conn) {
-      const updateConnInfo = () => {
-        setConnectionInfo({
-          effectiveType: conn.effectiveType || '4g',
-          downlink: conn.downlink || null,
-          rtt: conn.rtt || null,
-        });
-      };
-      updateConnInfo();
-      conn.addEventListener('change', updateConnInfo);
-      return () => {
-        window.removeEventListener('online', handleOnline);
-        window.removeEventListener('offline', handleOffline);
-        clearInterval(interval);
-        conn.removeEventListener('change', updateConnInfo);
-      };
-    }
-
+    window.addEventListener("online", onOnline);
+    window.addEventListener("offline", onOffline);
     return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-      clearInterval(interval);
+      window.removeEventListener("online", onOnline);
+      window.removeEventListener("offline", onOffline);
+      clearTimeout(flickerTimeout.current);
     };
   }, []);
 
-  // Determine indicator colors
-  const getQualityColor = () => {
-    if (!isOnline || pingQuality === 'offline') return '#ef4444'; // Red
-    if (pingQuality === 'poor') return '#f59e0b'; // Amber
-    if (pingQuality === 'fair') return '#3b82f6'; // Blue
-    return '#10b981'; // Green
-  };
+  const checkConnection = useCallback(async () => {
+    if (!navigator.onLine) return;
 
-  const statusColor = getQualityColor();
+    // Prefer Network Information API when available
+    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (conn) {
+      setConnType(conn.effectiveType || null);
+      setDownlink(conn.downlink ?? null);
+      if (typeof conn.rtt === "number" && conn.rtt > 0) {
+        setLatency(conn.rtt);
+        setHistory((h) => [...h.slice(-(HISTORY_LENGTH - 1)), conn.rtt]);
+        return;
+      }
+    }
+
+    // Fallback: manual lightweight ping
+    try {
+      const start = performance.now();
+      await fetch("/manifest.webmanifest", { method: "HEAD", cache: "no-store" });
+      const rtt = Math.round(performance.now() - start);
+      setLatency(rtt);
+      setHistory((h) => [...h.slice(-(HISTORY_LENGTH - 1)), rtt]);
+    } catch {
+      setLatency(null);
+    }
+  }, []);
+
+  // Poll periodically, pausing when tab is hidden
+  useEffect(() => {
+    const startPolling = () => {
+      checkConnection();
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      intervalRef.current = setInterval(checkConnection, CHECK_INTERVAL_MS);
+    };
+    const stopPolling = () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        stopPolling();
+      } else {
+        startPolling();
+      }
+    };
+
+    if (!document.hidden) startPolling();
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    return () => {
+      stopPolling();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [checkConnection]);
+
+  // Close popover on outside click
+  useEffect(() => {
+    const onClick = (e) => {
+      if (popoverRef.current && !popoverRef.current.contains(e.target)) {
+        setPopoverOpen(false);
+      }
+    };
+    const onKey = (e) => e.key === "Escape" && setPopoverOpen(false);
+    document.addEventListener("mousedown", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, []);
+
+  const quality = isOnline ? classifyLatency(latency) : "offline";
+  const barColor =
+    quality === "fast"
+      ? "#10b981" // Green
+      : quality === "moderate"
+      ? "#f59e0b" // Amber
+      : "#ef4444"; // Red
+
+  const filledBars = quality === "fast" ? 4 : quality === "moderate" ? 2 : quality === "slow" ? 1 : 0;
 
   return (
-    <div 
-      style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}
-      onMouseLeave={() => setIsPopoverOpen(false)}
-    >
+    <div ref={popoverRef} style={{ position: "relative" }} aria-live="polite">
       <style>{`
-        .net-signal-pill {
+        .net-signal-pill-btn {
           height: 34px;
           border-radius: 17px;
           background: rgba(243, 244, 246, 0.85);
@@ -127,172 +168,128 @@ export default function NetworkSignalWidget() {
           display: flex;
           align-items: center;
           gap: 6px;
-          padding: 0 10px;
+          padding: 0 12px;
           cursor: pointer;
-          font-size: 12px;
+          font-size: 11.5px;
           font-weight: 600;
           color: var(--text-primary);
           transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
           user-select: none;
         }
 
-        [data-theme="dark"] .net-signal-pill {
+        [data-theme="dark"] .net-signal-pill-btn {
           background: rgba(30, 30, 30, 0.5);
           border-color: rgba(255,255,255,0.08);
           box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
-        .net-signal-pill:hover {
+        .net-signal-pill-btn:hover {
           transform: translateY(-2px);
           box-shadow: 0 8px 25px rgba(0,0,0,0.12);
         }
-
-        .net-pulse-dot {
-          width: 7px;
-          height: 7px;
-          border-radius: 50%;
-          flex-shrink: 0;
-          transition: background-color 0.3s ease;
-        }
       `}</style>
 
-      {/* Top Bar Signal Pill */}
-      <motion.button
+      <button
         type="button"
-        className="net-signal-pill"
-        onClick={() => {
-          setIsPopoverOpen((prev) => !prev);
-          checkPing();
-        }}
-        onMouseEnter={() => setIsPopoverOpen(true)}
-        whileTap={{ scale: 0.96 }}
-        title={`Network Status: ${isOnline ? 'Online' : 'Offline'}${latency ? ` (${latency}ms)` : ''}`}
-        aria-label="Network connection status"
-        style={{
-          borderColor: isPopoverOpen ? statusColor : undefined,
-        }}
+        className="net-signal-pill-btn"
+        onClick={() => setPopoverOpen((o) => !o)}
+        aria-label={isOnline ? `Connection ${quality}, ${latency ?? "?"} ms` : "Connection offline"}
       >
         {!isOnline ? (
-          <WifiOff size={14} color="#ef4444" style={{ animation: 'bounce 1.5s infinite' }} />
+          <>
+            <WifiOff size={14} color="#ef4444" />
+            <span style={{ fontSize: "11px", color: "#ef4444", fontWeight: 700 }}>Offline</span>
+          </>
         ) : (
-          <Wifi size={14} color={statusColor} />
+          <>
+            <SignalBars filled={filledBars} color={barColor} size={12} />
+            <span style={{ fontSize: "11px", color: "var(--text-secondary)" }}>
+              {latency != null ? `${latency}ms` : "—"}
+            </span>
+          </>
         )}
+      </button>
 
-        <span className="net-pulse-dot" style={{ backgroundColor: statusColor, boxShadow: `0 0 8px ${statusColor}` }} />
+      {popoverOpen && (
+        <div
+          style={{
+            position: "absolute",
+            top: "calc(100% + 8px)",
+            right: 0,
+            width: "250px",
+            background: "var(--bg-secondary, #1e1e1e)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
+            border: "1px solid var(--border-color, rgba(255,255,255,0.12))",
+            borderRadius: "14px",
+            padding: "14px",
+            boxShadow: "0 16px 36px rgba(0,0,0,0.25), inset 0 1px 1px rgba(255,255,255,0.1)",
+            zIndex: 9999,
+            color: "var(--text-primary)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
+            {isOnline ? (
+              <SignalBars filled={filledBars} color={barColor} size={16} />
+            ) : (
+              <WifiOff size={16} color="#ef4444" />
+            )}
+            <span style={{ fontSize: "13px", fontWeight: 600 }}>
+              {!isOnline
+                ? "You're offline"
+                : quality === "fast"
+                ? "Connection is fast"
+                : quality === "moderate"
+                ? "Connection is moderate"
+                : "Connection is slow"}
+            </span>
+          </div>
 
-        <span style={{ fontSize: '11.5px', fontWeight: 600, color: 'var(--text-primary)', letterSpacing: '-0.2px' }}>
-          {!isOnline ? (
-            <span style={{ color: '#ef4444' }}>Offline</span>
-          ) : latency !== null ? (
-            `${latency}ms`
-          ) : (
-            'Online'
-          )}
-        </span>
-      </motion.button>
+          <div style={{ display: "flex", flexDirection: "column", gap: "6px", fontSize: "12px" }}>
+            <Row label="Latency" value={latency != null ? `${latency} ms` : "—"} />
+            <Row label="Type" value={connType ? connType.toUpperCase() : "Broadband"} />
+            <Row label="Downlink" value={downlink != null ? `${downlink.toFixed(1)} Mbps` : "—"} />
+          </div>
 
-      {/* Interactive Diagnostics Popover */}
-      <AnimatePresence>
-        {isPopoverOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 8, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.95 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            style={{
-              position: 'absolute',
-              top: '42px',
-              right: 0,
-              width: '230px',
-              background: 'var(--bg-secondary, rgba(20, 20, 20, 0.95))',
-              backdropFilter: 'blur(16px)',
-              WebkitBackdropFilter: 'blur(16px)',
-              border: '1px solid var(--border-color, rgba(255,255,255,0.12))',
-              borderRadius: '14px',
-              padding: '14px',
-              boxShadow: '0 16px 36px rgba(0,0,0,0.25), inset 0 1px 1px rgba(255,255,255,0.1)',
-              zIndex: 9999,
-              color: 'var(--text-primary)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', borderBottom: '1px solid rgba(128,128,128,0.15)', paddingBottom: '8px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 700 }}>
-                <Activity size={15} color={statusColor} />
-                <span>Network Signal</span>
-              </div>
-
-              <motion.button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  checkPing();
-                }}
-                whileTap={{ rotate: 180 }}
+          {history.length > 1 && (
+            <>
+              <div
                 style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: 'var(--text-secondary)',
-                  cursor: 'pointer',
-                  padding: '2px',
-                  display: 'flex',
-                  alignItems: 'center',
+                  marginTop: "12px",
+                  paddingTop: "10px",
+                  borderTop: "1px solid var(--border-color, rgba(128,128,128,0.15))",
+                  display: "flex",
+                  alignItems: "flex-end",
+                  gap: "3px",
+                  height: "28px",
                 }}
-                title="Refresh network ping"
               >
-                <RefreshCw size={13} className={isPinging ? 'spin' : ''} />
-              </motion.button>
-            </div>
-
-            {/* Metrics List */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Status:</span>
-                <span style={{ fontWeight: 700, color: statusColor, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  {isOnline ? <ShieldCheck size={13} /> : <AlertTriangle size={13} />}
-                  {isOnline ? 'Connected' : 'Disconnected'}
-                </span>
+                {history.map((val, i) => {
+                  const max = Math.max(...history, 1);
+                  const heightPct = Math.max(15, (val / max) * 100);
+                  return (
+                    <div
+                      key={i}
+                      style={{
+                        flex: 1,
+                        height: `${heightPct}%`,
+                        background: barColor,
+                        opacity: 0.85,
+                        borderRadius: "2px 2px 0 0",
+                        transition: "height 0.3s ease",
+                      }}
+                      title={`${val} ms`}
+                    />
+                  );
+                })}
               </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Latency:</span>
-                <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-                  {latency !== null ? `${latency} ms` : 'N/A'}
-                </span>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Network:</span>
-                <span style={{ fontWeight: 600, color: 'var(--text-primary)', textTransform: 'uppercase' }}>
-                  {connectionInfo.effectiveType || 'Broadband'}
-                </span>
-              </div>
-
-              {connectionInfo.downlink && (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ color: 'var(--text-secondary)' }}>Speed (Est.):</span>
-                  <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-                    {connectionInfo.downlink} Mbps
-                  </span>
-                </div>
-              )}
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <span style={{ color: 'var(--text-secondary)' }}>Quality:</span>
-                <span style={{ 
-                  fontWeight: 600, 
-                  fontSize: '11px',
-                  padding: '2px 6px',
-                  borderRadius: '4px',
-                  backgroundColor: `${statusColor}20`,
-                  color: statusColor,
-                  textTransform: 'capitalize'
-                }}>
-                  {pingQuality}
-                </span>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <p style={{ fontSize: "10.5px", color: "var(--text-secondary)", margin: "4px 0 0", textAlign: "right" }}>
+                Last {history.length} checks
+              </p>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }
