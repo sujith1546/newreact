@@ -3,38 +3,107 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Clock, Calendar as CalendarIcon, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 
-const MOCK_AVAILABILITY = {
-  "2026-08-04": ["10:00 AM", "11:30 AM", "1:00 PM", "3:00 PM"],
-  "2026-08-05": ["11:00 AM", "2:00 PM", "4:30 PM"],
-  "2026-08-07": ["10:00 AM", "11:30 AM", "1:00 PM", "3:00 PM", "4:30 PM"],
-  "2026-08-10": ["10:00 AM", "1:00 PM", "3:30 PM"],
-  "2026-08-11": ["11:30 AM", "2:30 PM", "4:00 PM"],
-  "2026-08-12": ["10:00 AM", "1:00 PM", "4:30 PM"]
+const DEFAULT_AVAILABILITY = {
+  "2026-08-05": ["10:00", "11:30", "15:00"],
+  "2026-08-06": ["09:00", "14:00"],
+  "2026-08-07": ["10:00", "11:30", "13:00", "15:00", "16:30"],
+  "2026-08-08": ["10:00", "13:00", "16:30"],
+  "2026-08-10": ["10:00", "11:30", "15:00"],
+  "2026-08-11": ["11:30", "14:30", "16:30"],
+  "2026-08-12": ["10:00", "13:00", "16:30"]
 };
 
-export default function ScheduleUpcomingModal({ isOpen, onClose, onConfirm }) {
+export default function ScheduleUpcomingModal({ isOpen, onClose, availability = DEFAULT_AVAILABILITY, onConfirm }) {
   const [duration, setDuration] = useState("30");
-  const [selectedDay, setSelectedDay] = useState(7);
-  const [selectedSlot, setSelectedSlot] = useState("3:00 PM");
+  
+  // View month date state (defaults to Aug 1, 2026 or current month)
+  const [viewDate, setViewDate] = useState(() => {
+    return new Date(2026, 7, 1); // August 2026
+  });
+
+  const [selectedDate, setSelectedDate] = useState("2026-08-07");
+  const [selectedSlot, setSelectedSlot] = useState("15:00");
   const [booked, setBooked] = useState(false);
+
+  const timezone = useMemo(() => {
+    try {
+      return Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Kolkata';
+    } catch {
+      return 'Asia/Kolkata';
+    }
+  }, []);
 
   const timezoneAbbr = useMemo(() => {
     try {
-      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const parts = new Intl.DateTimeFormat('en-US', { timeZone: tz, timeZoneName: 'short' }).formatToParts(new Date());
+      const parts = new Intl.DateTimeFormat('en-US', { timeZone: timezone, timeZoneName: 'short' }).formatToParts(new Date());
       return parts.find(p => p.type === 'timeZoneName')?.value || 'IST';
     } catch {
       return 'IST';
     }
+  }, [timezone]);
+
+  const today = useMemo(() => {
+    const d = new Date();
+    return new Date(d.getFullYear(), d.getMonth(), d.getDate());
   }, []);
 
-  const dateStr = selectedDay ? `2026-08-${String(selectedDay).padStart(2, '0')}` : null;
-  const slots = MOCK_AVAILABILITY[dateStr] || ["10:00 AM", "11:30 AM", "1:00 PM", "3:00 PM", "4:30 PM"];
+  // Dynamic calendar generation (fixes weekday offset & month days)
+  const calendarCells = useMemo(() => {
+    const y = viewDate.getFullYear();
+    const m = viewDate.getMonth();
+    const firstDayIndex = new Date(y, m, 1).getDay(); // 0 = Sunday
+    const daysInMonth = new Date(y, m + 1, 0).getDate();
+
+    const cells = [];
+    // Padding empty cells for weekday offset
+    for (let i = 0; i < firstDayIndex; i++) {
+      cells.push(null);
+    }
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const cellDate = new Date(y, m, d);
+      // Key format: YYYY-MM-DD
+      const mm = String(m + 1).padStart(2, '0');
+      const dd = String(d).padStart(2, '0');
+      const key = `${y}-${mm}-${dd}`;
+      const isPast = cellDate < today;
+      const hasSlots = Boolean(availability[key] && availability[key].length > 0);
+
+      cells.push({
+        day: d,
+        key,
+        isAvailable: hasSlots && !isPast,
+      });
+    }
+    return cells;
+  }, [viewDate, availability, today]);
+
+  const monthLabel = viewDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const slots = selectedDate ? availability[selectedDate] || [] : [];
+
+  const formatDateLabel = (dateStr) => {
+    if (!dateStr) return '';
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const dateObj = new Date(y, m - 1, d);
+    return dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  };
+
+  const formatTimeLabel = (time24) => {
+    if (!time24) return '';
+    const [h, m] = time24.split(":").map(Number);
+    const dateObj = new Date();
+    dateObj.setHours(h, m);
+    return dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  };
+
+  const goToMonth = (delta) => {
+    setViewDate((prev) => new Date(prev.getFullYear(), prev.getMonth() + delta, 1));
+  };
 
   const handleConfirm = async () => {
-    if (!selectedDay || !selectedSlot) return;
+    if (!selectedDate || !selectedSlot) return;
     if (onConfirm) {
-      await onConfirm({ date: dateStr, slot: selectedSlot, duration });
+      await onConfirm({ date: selectedDate, slot: selectedSlot, duration });
     }
     setBooked(true);
     setTimeout(() => {
@@ -52,12 +121,6 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, onConfirm }) {
   }, [isOpen, onClose]);
 
   if (!isOpen || typeof document === 'undefined') return null;
-
-  // Calendar dates layout matching screenshot
-  // Available days: 4, 5, 7, 10, 11, 12
-  const daysRow1 = [1, 2, 3, 4, 5, 6, 7];
-  const daysRow2 = [8, 9, 10, 11, 12, 13, 14];
-  const availableDays = [4, 5, 7, 10, 11, 12];
 
   return createPortal(
     <AnimatePresence>
@@ -120,7 +183,7 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, onConfirm }) {
                   {booked ? "Booked!" : "Book a time"}
                 </h3>
                 <p style={{ fontSize: '13.5px', color: 'rgba(255, 255, 255, 0.6)', margin: 0, fontWeight: 500 }}>
-                  {booked ? "Check your email for the confirmation." : "with Sujith Thota"}
+                  {booked ? "Check your email for the confirmation." : "with Sujith Thota · 1:1 call"}
                 </p>
               </div>
               <button
@@ -170,16 +233,25 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, onConfirm }) {
                   <Check size={22} />
                 </div>
                 <h4 style={{ fontSize: '16px', fontWeight: 800, color: '#ffffff', margin: '0 0 6px' }}>
-                  Fri, Aug {selectedDay} · {selectedSlot} {timezoneAbbr}
+                  {formatDateLabel(selectedDate)} · {formatTimeLabel(selectedSlot)} {timezoneAbbr}
                 </h4>
                 <p style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.6)', margin: 0 }}>
-                  Google Meet link generated ({duration} min)
+                  Google Meet invitation sent ({duration} min)
                 </p>
               </motion.div>
             ) : (
               <>
-                {/* Duration Toggle Pills */}
-                <div style={{ display: 'flex', gap: '12px', marginBottom: '22px' }}>
+                {/* Segmented Pill Duration Toggle */}
+                <div
+                  style={{
+                    display: 'flex',
+                    gap: '4px',
+                    marginBottom: '22px',
+                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                    padding: '4px',
+                    borderRadius: '999px',
+                  }}
+                >
                   {["15", "30"].map((d) => (
                     <button
                       key={d}
@@ -187,14 +259,15 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, onConfirm }) {
                       onClick={() => setDuration(d)}
                       style={{
                         flex: 1,
-                        height: '42px',
-                        borderRadius: '999px',
+                        padding: '8px',
                         fontSize: '13.5px',
                         fontWeight: 700,
+                        borderRadius: '999px',
+                        border: 'none',
                         cursor: 'pointer',
-                        border: d === duration ? 'none' : '1px solid rgba(255, 255, 255, 0.25)',
-                        backgroundColor: d === duration ? '#ffffff' : 'transparent',
-                        color: d === duration ? '#000000' : '#ffffff',
+                        backgroundColor: duration === d ? '#ffffff' : 'transparent',
+                        color: duration === d ? '#000000' : 'rgba(255, 255, 255, 0.7)',
+                        boxShadow: duration === d ? '0 2px 8px rgba(0, 0, 0, 0.2)' : 'none',
                         transition: 'all 0.15s ease'
                       }}
                     >
@@ -204,101 +277,118 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, onConfirm }) {
                 </div>
 
                 {/* Calendar Grid + Slots Grid */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '28px', marginBottom: '24px' }}>
-                  {/* Left Column: Calendar Grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: '28px', marginBottom: '24px' }}>
+                  {/* Left Column: Dynamic Calendar */}
                   <div>
-                    {/* Calendar Month Header */}
+                    {/* Calendar Month Header & Navigation */}
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                      <span style={{ fontSize: '14px', fontWeight: 800, color: '#ffffff' }}>August 2026</span>
-                      <div style={{ display: 'flex', gap: '8px', color: 'rgba(255, 255, 255, 0.6)' }}>
-                        <ChevronLeft size={16} style={{ cursor: 'pointer' }} />
-                        <ChevronRight size={16} style={{ cursor: 'pointer' }} />
+                      <span style={{ fontSize: '13.5px', fontWeight: 800, color: '#ffffff' }}>{monthLabel}</span>
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <button
+                          type="button"
+                          onClick={() => goToMonth(-1)}
+                          aria-label="Previous month"
+                          style={{
+                            width: '24px',
+                            height: '24px',
+                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            borderRadius: '6px',
+                            backgroundColor: 'transparent',
+                            color: '#ffffff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          <ChevronLeft size={14} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => goToMonth(1)}
+                          aria-label="Next month"
+                          style={{
+                            width: '24px',
+                            height: '24px',
+                            border: '1px solid rgba(255, 255, 255, 0.2)',
+                            borderRadius: '6px',
+                            backgroundColor: 'transparent',
+                            color: '#ffffff',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          <ChevronRight size={14} />
+                        </button>
                       </div>
                     </div>
 
                     {/* Weekday Header */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px', textAlign: 'center', fontSize: '11px', fontWeight: 700, color: 'rgba(255, 255, 255, 0.5)', marginBottom: '8px' }}>
-                      <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px', textAlign: 'center', fontSize: '11px', fontWeight: 700, color: 'rgba(255, 255, 255, 0.5)', marginBottom: '8px' }}>
+                      {["S", "M", "T", "W", "T", "F", "S"].map((dayName, idx) => (
+                        <span key={idx}>{dayName}</span>
+                      ))}
                     </div>
 
-                    {/* Date Rows Grid */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      {/* Row 1: 1 to 7 */}
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px', textAlign: 'center' }}>
-                        {daysRow1.map((d) => {
-                          const isAvailable = availableDays.includes(d);
-                          const isSelected = selectedDay === d;
-                          return (
-                            <div
-                              key={d}
-                              onClick={() => isAvailable && setSelectedDay(d)}
-                              style={{
-                                height: '32px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '12px',
-                                fontWeight: 700,
-                                borderRadius: '8px',
-                                cursor: isAvailable ? 'pointer' : 'default',
-                                opacity: isAvailable ? 1 : 0.35,
-                                border: isSelected ? 'none' : isAvailable ? '1px solid rgba(255, 255, 255, 0.25)' : 'none',
-                                backgroundColor: isSelected ? '#ffffff' : 'transparent',
-                                color: isSelected ? '#000000' : '#ffffff',
-                                transition: 'all 0.15s ease'
-                              }}
-                            >
-                              {d}
-                            </div>
-                          );
-                        })}
-                      </div>
-
-                      {/* Row 2: 8 to 14 */}
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px', textAlign: 'center' }}>
-                        {daysRow2.map((d) => {
-                          const isAvailable = availableDays.includes(d);
-                          const isSelected = selectedDay === d;
-                          return (
-                            <div
-                              key={d}
-                              onClick={() => isAvailable && setSelectedDay(d)}
-                              style={{
-                                height: '32px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                fontSize: '12px',
-                                fontWeight: 700,
-                                borderRadius: '8px',
-                                cursor: isAvailable ? 'pointer' : 'default',
-                                opacity: isAvailable ? 1 : 0.35,
-                                border: isSelected ? 'none' : isAvailable ? '1px solid rgba(255, 255, 255, 0.25)' : 'none',
-                                backgroundColor: isSelected ? '#ffffff' : 'transparent',
-                                color: isSelected ? '#000000' : '#ffffff',
-                                transition: 'all 0.15s ease'
-                              }}
-                            >
-                              {d}
-                            </div>
-                          );
-                        })}
-                      </div>
+                    {/* Dynamic Calendar Date Grid */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
+                      {calendarCells.map((cell, idx) => {
+                        if (!cell) return <div key={`pad-${idx}`} />;
+                        const isSelected = cell.key === selectedDate;
+                        return (
+                          <div
+                            key={cell.key}
+                            onClick={() => {
+                              if (!cell.isAvailable) return;
+                              setSelectedDate(cell.key);
+                              setSelectedSlot(null);
+                            }}
+                            style={{
+                              height: '32px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '12px',
+                              fontWeight: 700,
+                              borderRadius: '6px',
+                              cursor: cell.isAvailable ? 'pointer' : 'default',
+                              backgroundColor: isSelected ? '#ffffff' : 'transparent',
+                              color: isSelected
+                                ? '#000000'
+                                : cell.isAvailable
+                                ? '#ffffff'
+                                : 'rgba(255, 255, 255, 0.35)',
+                              border: !isSelected && cell.isAvailable ? '1px solid rgba(255, 255, 255, 0.25)' : 'none',
+                              opacity: cell.isAvailable || isSelected ? 1 : 0.35,
+                              transition: 'all 0.15s ease'
+                            }}
+                          >
+                            {cell.day}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
 
                   {/* Right Column: Time Slots Stack */}
                   <div>
-                    {/* Timezone Label Header */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px', fontSize: '12px', fontWeight: 600, color: 'rgba(255, 255, 255, 0.7)' }}>
+                    {/* Timezone Header */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '14px', fontSize: '12px', fontWeight: 600, color: 'rgba(255, 255, 255, 0.7)' }}>
                       <Clock size={13} color="rgba(255, 255, 255, 0.7)" />
                       <span>{timezoneAbbr} (auto-detected)</span>
                     </div>
 
-                    {/* Scrollable Slots Stack */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '180px', overflowY: 'auto', paddingRight: '4px' }}>
+                    {/* Scrollable Time Slots List */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '190px', overflowY: 'auto', paddingRight: '4px' }}>
+                      {!selectedDate && (
+                        <p style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.5)', margin: '16px 0', textAlign: 'center' }}>
+                          Select a date to see times
+                        </p>
+                      )}
                       {slots.map((slot) => {
-                        const isSelected = selectedSlot === slot;
+                        const isSel = slot === selectedSlot;
                         return (
                           <button
                             key={slot}
@@ -306,19 +396,19 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, onConfirm }) {
                             onClick={() => setSelectedSlot(slot)}
                             style={{
                               width: '100%',
-                              height: '36px',
-                              borderRadius: '8px',
-                              fontSize: '12.5px',
+                              height: '38px',
+                              borderRadius: '9px',
+                              fontSize: '13px',
                               fontWeight: 700,
                               cursor: 'pointer',
-                              border: isSelected ? 'none' : '1px solid rgba(255, 255, 255, 0.2)',
-                              backgroundColor: isSelected ? '#ffffff' : 'transparent',
-                              color: isSelected ? '#000000' : '#ffffff',
+                              border: isSel ? 'none' : '1px solid rgba(255, 255, 255, 0.2)',
+                              backgroundColor: isSel ? '#ffffff' : 'transparent',
+                              color: isSel ? '#000000' : '#ffffff',
                               textAlign: 'center',
                               transition: 'all 0.15s ease'
                             }}
                           >
-                            {slot}
+                            {formatTimeLabel(slot)}
                           </button>
                         );
                       })}
@@ -326,18 +416,18 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, onConfirm }) {
                   </div>
                 </div>
 
-                <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)', paddingTop: '16px', marginTop: '10px' }}>
-                  {/* SELECTED Label */}
+                {/* Selected Summary Card + Confirm Button */}
+                <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)', paddingTop: '16px' }}>
                   <div style={{ fontSize: '11px', fontWeight: 800, color: 'rgba(255, 255, 255, 0.5)', letterSpacing: '0.05em', marginBottom: '8px', textTransform: 'uppercase' }}>
                     SELECTED
                   </div>
 
-                  {/* Summary Box */}
+                  {/* Summary Card with Muted Background */}
                   <div style={{
                     padding: '12px 14px',
                     borderRadius: '10px',
-                    backgroundColor: 'transparent',
-                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.06)',
+                    border: '1px solid rgba(255, 255, 255, 0.12)',
                     marginBottom: '16px',
                     display: 'flex',
                     alignItems: 'center',
@@ -348,8 +438,8 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, onConfirm }) {
                   }}>
                     <CalendarIcon size={16} color="#3b82f6" />
                     <span>
-                      {selectedDay && selectedSlot
-                        ? `Fri, Aug ${selectedDay} · ${selectedSlot} ${timezoneAbbr} · ${duration} min`
+                      {selectedDate && selectedSlot
+                        ? `${formatDateLabel(selectedDate)} · ${formatTimeLabel(selectedSlot)} ${timezoneAbbr} · ${duration} min`
                         : "Pick a date and time slot"}
                     </span>
                   </div>
@@ -358,22 +448,22 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, onConfirm }) {
                   <button
                     type="button"
                     onClick={handleConfirm}
-                    disabled={!selectedDay || !selectedSlot}
+                    disabled={!selectedDate || !selectedSlot}
                     style={{
                       width: '100%',
                       height: '44px',
                       borderRadius: '10px',
-                      backgroundColor: !selectedDay || !selectedSlot ? 'rgba(255, 255, 255, 0.2)' : '#ffffff',
+                      backgroundColor: !selectedDate || !selectedSlot ? 'rgba(255, 255, 255, 0.2)' : '#ffffff',
                       color: '#000000',
                       fontSize: '14px',
                       fontWeight: 800,
                       border: 'none',
-                      cursor: !selectedDay || !selectedSlot ? 'not-allowed' : 'pointer',
+                      cursor: !selectedDate || !selectedSlot ? 'not-allowed' : 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: '8px',
-                      opacity: !selectedDay || !selectedSlot ? 0.5 : 1,
+                      opacity: !selectedDate || !selectedSlot ? 0.5 : 1,
                       transition: 'all 0.15s ease'
                     }}
                   >
