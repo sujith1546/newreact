@@ -23,6 +23,7 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
   const [minimized, setMinimized] = useState(false);
   const [maximized, setMaximized] = useState(false);
   const [visitorEmail, setVisitorEmail] = useState('');
+  const [visitorTopic, setVisitorTopic] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // View month date state
@@ -99,34 +100,35 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
     setIsSubmitting(true);
     
     const formattedDate = formatDateLabel(selectedDate);
-    const guestEmail = visitorEmail.trim() || 'sujithreddy1546@gmail.com';
+    const guestEmail = visitorEmail.trim() || 'Not Provided';
+    const topicNote = visitorTopic.trim() || 'General Portfolio Discussion & Networking';
     const meetLink = `https://meet.google.com/${Math.random().toString(36).substring(2, 5)}-${Math.random().toString(36).substring(2, 6)}-${Math.random().toString(36).substring(2, 5)}`;
     
-    const messageBody = `📅 INSTANT MEETING BOOKING CONFIRMED\n\n` +
-      `• Host: Sujith Thota (sujithreddy1546@gmail.com)\n` +
-      `• Guest Email: ${guestEmail}\n` +
-      `• Date: ${formattedDate}\n` +
-      `• Time Slot: ${selectedSlot} (${timezoneAbbr})\n` +
-      `• Duration: ${duration} minutes\n` +
-      `• Timezone: ${timezone}\n` +
-      `• Video Link: ${meetLink}\n\n` +
-      `Calendar invitation and Google Meet link have been automatically generated for this session.`;
+    const messageBody = `📌 NEW 1-ON-1 MEETING BOOKED FOR SUJITH\n\n` +
+      `👤 Visitor Email: ${guestEmail}\n` +
+      `📅 Date: ${formattedDate}\n` +
+      `⏰ Time Slot: ${selectedSlot} (${timezoneAbbr})\n` +
+      `⏳ Duration: ${duration} minutes\n` +
+      `🌍 Visitor Timezone: ${timezone}\n` +
+      `📝 Discussion Topic: ${topicNote}\n` +
+      `🎥 Auto Google Meet Link: ${meetLink}\n\n` +
+      `Google Meet link and meeting parameters have been automatically logged for Sujith Thota.`;
 
     try {
       await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: guestEmail.split('@')[0] || 'Meeting Guest',
-          email: guestEmail,
+          name: guestEmail !== 'Not Provided' ? guestEmail.split('@')[0] : 'Meeting Visitor',
+          email: 'sujithreddy1546@gmail.com', // Always route booking alert directly to Sujith
           message: messageBody,
           referrer_path: '/instant-scheduling-modal'
         })
       });
 
       triggerIsland?.({
-        title: 'Meeting Scheduled! 📅',
-        subtitle: `Confirmation sent to ${guestEmail}`,
+        title: 'Meeting Request Sent! 📅',
+        subtitle: `Details delivered to Sujith Thota`,
         icon: <Check size={16} strokeWidth={3} />,
         color: '#10b981',
         duration: 4000,
@@ -136,7 +138,7 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
     } finally {
       setIsSubmitting(false);
       if (onConfirm) {
-        await onConfirm({ date: selectedDate, slot: selectedSlot, duration, email: guestEmail, meetLink });
+        await onConfirm({ date: selectedDate, slot: selectedSlot, duration, email: guestEmail, topic: topicNote, meetLink });
       }
       setBooked(true);
       setTimeout(() => {
@@ -515,31 +517,60 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
                   <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '14px', marginTop: 'auto' }}>
                     
                     {/* Visitor Email Input Field */}
-                    <div style={{ marginBottom: '12px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-                        <Mail size={13} color="var(--primary-blue)" />
-                        <span style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                          Your Email (for Google Meet invite)
-                        </span>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Mail size={13} color="var(--primary-blue)" />
+                          <span style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                            Your Email
+                          </span>
+                        </div>
+                        <input
+                          type="email"
+                          value={visitorEmail}
+                          onChange={(e) => setVisitorEmail(e.target.value)}
+                          placeholder="your.email@gmail.com"
+                          style={{
+                            width: '100%',
+                            height: '36px',
+                            borderRadius: '8px',
+                            border: '1px solid var(--border-color)',
+                            backgroundColor: 'var(--bg-primary)',
+                            color: 'var(--text-primary)',
+                            padding: '0 10px',
+                            fontSize: '12px',
+                            outline: 'none',
+                            boxSizing: 'border-box'
+                          }}
+                        />
                       </div>
-                      <input
-                        type="email"
-                        value={visitorEmail}
-                        onChange={(e) => setVisitorEmail(e.target.value)}
-                        placeholder="your.email@gmail.com"
-                        style={{
-                          width: '100%',
-                          height: '38px',
-                          borderRadius: '8px',
-                          border: '1px solid var(--border-color)',
-                          backgroundColor: 'var(--bg-primary)',
-                          color: 'var(--text-primary)',
-                          padding: '0 12px',
-                          fontSize: '12.5px',
-                          outline: 'none',
-                          boxSizing: 'border-box'
-                        }}
-                      />
+
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
+                          <Clock size={13} color="#10b981" />
+                          <span style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                            Topic / Agenda (Optional)
+                          </span>
+                        </div>
+                        <input
+                          type="text"
+                          value={visitorTopic}
+                          onChange={(e) => setVisitorTopic(e.target.value)}
+                          placeholder="e.g. AI project, hiring"
+                          style={{
+                            width: '100%',
+                            height: '36px',
+                            borderRadius: '8px',
+                            border: '1px solid var(--border-color)',
+                            backgroundColor: 'var(--bg-primary)',
+                            color: 'var(--text-primary)',
+                            padding: '0 10px',
+                            fontSize: '12px',
+                            outline: 'none',
+                            boxSizing: 'border-box'
+                          }}
+                        />
+                      </div>
                     </div>
 
                     <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: '0.05em', marginBottom: '6px', textTransform: 'uppercase' }}>
