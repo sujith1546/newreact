@@ -147,8 +147,8 @@ export default function MobilePreviewModal({ isOpen, onClose }) {
                 alignItems: "center",
                 justifyContent: "center",
                 backgroundColor: "color-mix(in srgb, var(--text-primary) 3%, var(--bg-primary))",
-                padding: "1.5rem",
-                overflow: "auto",
+                padding: "1rem",
+                overflow: "hidden",
                 position: "relative"
               }}
             >
@@ -410,12 +410,10 @@ function DeviceFrame({ dims, isPortrait = true, zoomScale = "auto", children }) 
   let scale = 1.0;
 
   if (zoomScale === "auto") {
-    // Target 95% of available stage height with a generous 0.88 minimum floor (ensuring ~365px x 770px frame size minimum)
-    const targetFrameH = availableStageH * 0.95;
-    const computedHScale = targetFrameH / frameUnscaledH;
-    
-    // Ensure frame renders very large & visible
-    scale = Math.max(0.88, computedHScale);
+    // Force a prominent scale floor of 0.88 minimum (~367px wide x 771px tall)
+    // so the phone frame NEVER renders tiny or squeezed, while keeping outer stage non-scrollable (overflow: hidden)
+    const computedHScale = (availableStageH * 0.96) / frameUnscaledH;
+    scale = Math.max(0.88, Math.min(1.15, computedHScale));
   } else if (typeof zoomScale === "number") {
     scale = zoomScale;
   }
