@@ -250,45 +250,56 @@ export default async function handler(req, res) {
     const safeEmail = escapeHTML(email);
     const safeMessage = escapeHTML(message).replace(/\n/g, "<br/>");
 
-    // 3. Formulate the email body exactly like the user's template design
+    // 3. Formulate the email body dynamically for General Contact vs Scheduled Meeting
+    const isMeeting = (referrer_path === '/instant-scheduling-modal') || message.includes('MEETING BOOKED');
+    const emailSubject = isMeeting
+      ? `📅 New 1-on-1 Meeting Session Request from ${safeName}`
+      : `Portfolio Contact Form: ${safeName}`;
+
     const mailOptions = {
       from: `"Sujith Portfolio" <${smtpUser}>`,
       to: smtpUser, // Send to your own inbox
       replyTo: email, // Directly reply to the recruiter
-      subject: `Portfolio Contact Form: ${name}`,
-      text: `Sujith Thota Portfolio contact form:\n\nName: ${name}\nEmail: ${email}\nDate: ${dateStr} ${timeStr}\n\nSubject: ${name} sent a message from your portfolio\nMessage (${wordCount} words):\n${message}`,
+      subject: emailSubject,
+      text: `Sujith Thota Portfolio contact form:\n\nName: ${name}\nEmail: ${email}\nDate: ${dateStr} ${timeStr}\n\nSubject: ${emailSubject}\nMessage (${wordCount} words):\n${message}`,
       html: `
         <!DOCTYPE html>
         <html>
         <head>
           <meta charset="utf-8">
-          <title>New Message</title>
+          <title>${isMeeting ? 'Meeting Scheduled' : 'New Message'}</title>
         </head>
         <body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased;">
-          <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f3f4f6; padding: 20px 8px;">
+          <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f3f4f6; padding: 24px 12px;">
             <tr>
               <td align="center">
                 
                 <!-- Main Card -->
-                <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 580px; background-color: #ffffff; border-radius: 16px; border: 1px solid #e5e7eb; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border-collapse: separate;">
+                <table width="100%" border="0" cellspacing="0" cellpadding="0" style="max-width: 580px; background-color: #ffffff; border-radius: 16px; border: 1px solid #e5e7eb; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.06); border-collapse: separate;">
                   
                   <!-- Card Header -->
                   <tr>
-                    <td style="padding: 16px 12px; border-bottom: 1px solid #f3f4f6;">
+                    <td style="padding: 16px 20px; border-bottom: 1px solid #f3f4f6; background-color: ${isMeeting ? '#0f172a' : '#ffffff'};">
                       <table width="100%" border="0" cellspacing="0" cellpadding="0">
                         <tr>
                           <!-- Logo + Title -->
                           <td align="left" style="vertical-align: middle;">
                             <table border="0" cellspacing="0" cellpadding="0">
                               <tr>
-                                <td style="background-color: #0f172a; color: #ffffff; font-weight: bold; font-size: 15px; text-align: center; width: 30px; height: 30px; line-height: 30px; border-radius: 6px; font-family: inherit;">S</td>
-                                <td style="font-weight: 700; font-size: 13.5px; color: #0f172a; padding-left: 8px; letter-spacing: -0.01em;">Portfolio contact form</td>
+                                <td style="background-color: ${isMeeting ? '#3b82f6' : '#0f172a'}; color: #ffffff; font-weight: bold; font-size: 15px; text-align: center; width: 32px; height: 32px; line-height: 32px; border-radius: 8px; font-family: inherit;">
+                                  ${isMeeting ? '📅' : 'S'}
+                                </td>
+                                <td style="font-weight: 700; font-size: 14px; color: ${isMeeting ? '#ffffff' : '#0f172a'}; padding-left: 10px; letter-spacing: -0.01em;">
+                                  ${isMeeting ? 'Instant Meeting Request' : 'Portfolio Contact Form'}
+                                </td>
                               </tr>
                             </table>
                           </td>
                           <!-- Badge -->
                           <td align="right" style="vertical-align: middle;">
-                            <span style="background-color: #dcfce7; color: #16a34a; font-size: 10.5px; font-weight: 700; padding: 3px 8px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.05em;">• New</span>
+                            <span style="background-color: ${isMeeting ? 'rgba(59, 130, 246, 0.2)' : '#dcfce7'}; color: ${isMeeting ? '#60a5fa' : '#16a34a'}; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.05em;">
+                              ${isMeeting ? '• Scheduled' : '• New'}
+                            </span>
                           </td>
                         </tr>
                       </table>
@@ -297,55 +308,55 @@ export default async function handler(req, res) {
 
                   <!-- Card Body -->
                   <tr>
-                    <td style="padding: 18px 12px;">
+                    <td style="padding: 20px;">
                       
                       <!-- Sender Info Row -->
                       <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 20px;">
                         <tr>
                           <!-- Avatar -->
-                          <td width="36" style="vertical-align: top;">
-                            <div style="background-color: #eef2ff; color: #4f46e5; font-weight: 700; font-size: 14px; text-align: center; width: 36px; height: 36px; line-height: 36px; border-radius: 50%;">${initials}</div>
+                          <td width="40" style="vertical-align: top;">
+                            <div style="background-color: #eef2ff; color: #4f46e5; font-weight: 700; font-size: 15px; text-align: center; width: 40px; height: 40px; line-height: 40px; border-radius: 50%;">${initials}</div>
                           </td>
                           <!-- Name / Email -->
-                          <td style="padding-left: 10px; vertical-align: middle; text-align: left;">
-                            <div style="font-weight: 700; font-size: 14.5px; color: #0f172a; line-height: 1.2;">${safeName}</div>
-                            <div style="font-size: 12.5px; color: #4f46e5; margin-top: 3px; word-break: break-all; -webkit-hyphens: auto; -ms-hyphens: auto; hyphens: auto;">
-                              <a href="mailto:${safeEmail}" style="color: #4f46e5; text-decoration: none; word-break: break-all;">${safeEmail}</a>
+                          <td style="padding-left: 12px; vertical-align: middle; text-align: left;">
+                            <div style="font-weight: 700; font-size: 15px; color: #0f172a; line-height: 1.2;">${safeName}</div>
+                            <div style="font-size: 13px; color: #4f46e5; margin-top: 3px; word-break: break-all;">
+                              <a href="mailto:${safeEmail}" style="color: #4f46e5; text-decoration: none;">${safeEmail}</a>
                             </div>
                           </td>
                           <!-- Date/Time (IST) -->
-                          <td align="right" style="vertical-align: middle; font-size: 10.5px; color: #6b7280; line-height: 1.35; white-space: nowrap; padding-left: 10px;">
+                          <td align="right" style="vertical-align: middle; font-size: 11px; color: #6b7280; line-height: 1.4; white-space: nowrap; padding-left: 10px;">
                             <div>${dateStr}</div>
                             <div style="margin-top: 1px;">${timeStr}</div>
                           </td>
                         </tr>
                       </table>
 
-                      <!-- Subject Chip Box -->
-                      <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f9fafb; border-radius: 10px; margin-bottom: 18px;">
+                      <!-- Subject Box -->
+                      <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; border: 1px solid #f1f5f9; border-radius: 10px; margin-bottom: 20px;">
                         <tr>
-                          <td style="padding: 10px 14px; text-align: left;">
-                            <div style="font-size: 9px; font-weight: bold; color: #9ca3af; letter-spacing: 0.08em; text-transform: uppercase;">Subject</div>
-                            <div style="font-size: 13.5px; font-weight: 700; color: #0f172a; margin-top: 3px;">${safeName} sent a message from your portfolio</div>
+                          <td style="padding: 12px 16px; text-align: left;">
+                            <div style="font-size: 9.5px; font-weight: bold; color: #94a3b8; letter-spacing: 0.08em; text-transform: uppercase;">SUBJECT</div>
+                            <div style="font-size: 14px; font-weight: 700; color: #0f172a; margin-top: 3px;">${emailSubject}</div>
                           </td>
                         </tr>
                       </table>
 
-                      <!-- Message Area -->
-                      <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 20px;">
+                      <!-- Message / Meeting Area -->
+                      <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 22px;">
                         <tr>
                           <td>
-                            <!-- Header / Word Count -->
-                            <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 5px;">
+                            <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 6px;">
                               <tr>
-                                <td align="left" style="font-size: 9px; font-weight: bold; color: #9ca3af; letter-spacing: 0.08em; text-transform: uppercase;">Message</td>
-                                <td align="right" style="font-size: 10.5px; color: #9ca3af; font-family: monospace;">${wordCount} words</td>
+                                <td align="left" style="font-size: 9.5px; font-weight: bold; color: #94a3b8; letter-spacing: 0.08em; text-transform: uppercase;">${isMeeting ? 'SESSION PARAMETERS' : 'MESSAGE DETAILS'}</td>
+                                <td align="right" style="font-size: 11px; color: #94a3b8; font-family: monospace;">${wordCount} words</td>
                               </tr>
                             </table>
-                            <!-- Text content box -->
-                            <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border: 1px solid #f3f4f6; border-radius: 12px; border-collapse: separate;">
+
+                            <!-- Formatted Content Box -->
+                            <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; border-collapse: separate;">
                               <tr>
-                                <td style="padding: 14px 16px; font-size: 13px; line-height: 1.6; color: #374151; text-align: left;">
+                                <td style="padding: 16px 18px; font-size: 13.5px; line-height: 1.65; color: #334155; text-align: left;">
                                   ${safeMessage}
                                 </td>
                               </tr>
@@ -358,10 +369,14 @@ export default async function handler(req, res) {
                       <table border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 4px;">
                         <tr>
                           <td style="background-color: #0f172a; border-radius: 8px;">
-                            <a href="mailto:${safeEmail}?subject=Re:%20Portfolio%20contact" target="_blank" style="display: inline-block; padding: 10px 14px; color: #ffffff; font-size: 12.5px; font-weight: 600; text-decoration: none; font-family: inherit;">Reply to ${safeName.split(" ")[0]}</a>
+                            <a href="mailto:${safeEmail}?subject=Re:%20${encodeURIComponent(emailSubject)}" target="_blank" style="display: inline-block; padding: 10px 16px; color: #ffffff; font-size: 13px; font-weight: 600; text-decoration: none; font-family: inherit;">
+                              Reply to ${safeName.split(" ")[0]}
+                            </a>
                           </td>
                           <td style="padding-left: 10px;">
-                            <a href="mailto:${safeEmail}" style="display: inline-block; padding: 9px 14px; background-color: #ffffff; border: 1px solid #e5e7eb; color: #0f172a; font-size: 12.5px; font-weight: 600; text-decoration: none; border-radius: 8px; font-family: inherit;">Contact Direct</a>
+                            <a href="mailto:${safeEmail}" style="display: inline-block; padding: 9px 16px; background-color: #ffffff; border: 1px solid #cbd5e1; color: #0f172a; font-size: 13px; font-weight: 600; text-decoration: none; border-radius: 8px; font-family: inherit;">
+                              Contact Direct
+                            </a>
                           </td>
                         </tr>
                       </table>
@@ -371,15 +386,24 @@ export default async function handler(req, res) {
 
                   <!-- Footer -->
                   <tr>
-                    <td style="padding: 16px 12px; border-top: 1px solid #f3f4f6; background-color: #fafafa;">
+                    <td style="padding: 16px 20px; border-top: 1px solid #f1f5f9; background-color: #fafafa;">
                       <table width="100%" border="0" cellspacing="0" cellpadding="0">
                         <tr>
-                          <td align="left" style="font-size: 11px; color: #9ca3af;">Sent via your portfolio contact form</td>
-                          <td align="right" style="font-size: 11px; color: #9ca3af; font-weight: 600;">sujiththota.dev</td>
+                          <td align="left" style="font-size: 11.5px; color: #94a3b8;">Sent via Sujith Thota Portfolio System</td>
+                          <td align="right" style="font-size: 11.5px; color: #94a3b8; font-weight: 700;">sujiththota.dev</td>
                         </tr>
                       </table>
                     </td>
                   </tr>
+
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
+      `
+    };
                 </table>
 
                 <!-- Bottom Automated Disclaimer -->

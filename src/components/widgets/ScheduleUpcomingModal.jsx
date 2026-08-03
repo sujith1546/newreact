@@ -116,15 +116,15 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
     const topicNote = visitorTopic.trim() || 'General Portfolio Discussion & Networking';
     const meetLink = `https://meet.google.com/${Math.random().toString(36).substring(2, 5)}-${Math.random().toString(36).substring(2, 6)}-${Math.random().toString(36).substring(2, 5)}`;
     
-    const messageBody = `📌 NEW 1-ON-1 MEETING BOOKED FOR SUJITH\n\n` +
+    const messageBody = `📌 NEW 1-ON-1 MEETING SESSION BOOKED FOR SUJITH\n\n` +
       `👤 Visitor Email: ${guestEmail}\n` +
-      `📅 Date: ${formattedDate}\n` +
+      `📅 Meeting Date: ${formattedDate}\n` +
       `⏰ Time Slot: ${selectedSlot} (${timezoneAbbr})\n` +
-      `⏳ Duration: ${duration} minutes\n` +
-      `🌍 Visitor Timezone: ${timezone}\n` +
-      `📝 Discussion Topic: ${topicNote}\n` +
-      `🎥 Auto Google Meet Link: ${meetLink}\n\n` +
-      `Google Meet link and meeting parameters have been automatically logged for Sujith Thota.`;
+      `⏳ Session Duration: ${duration} minutes\n` +
+      `🌍 Visitor Location/TZ: ${timezone}\n` +
+      `📝 Agenda / Topic: ${topicNote}\n` +
+      `🎥 Google Meet Video Link: ${meetLink}\n\n` +
+      `Google Meet session link & parameters auto-generated via Portfolio Instant Scheduling system.`;
 
     try {
       const res = await fetch('/api/contact', {
