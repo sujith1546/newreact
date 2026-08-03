@@ -365,12 +365,17 @@ export default async function handler(req, res) {
                         </tr>
                       </table>
 
-                      <!-- Action Buttons -->
+                      <!-- Action Buttons Row -->
                       <table border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 4px;">
                         <tr>
                           <td style="background-color: #0f172a; border-radius: 8px;">
                             <a href="mailto:${safeEmail}?subject=Re:%20${encodeURIComponent(emailSubject)}" target="_blank" style="display: inline-block; padding: 10px 16px; color: #ffffff; font-size: 13px; font-weight: 600; text-decoration: none; font-family: inherit;">
                               Reply to ${safeName.split(" ")[0]}
+                            </a>
+                          </td>
+                          <td style="padding-left: 10px;">
+                            <a href="https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(emailSubject)}&details=${encodeURIComponent(message)}&location=Google%20Meet" target="_blank" style="display: inline-block; padding: 9px 16px; background-color: #1a73e8; border: 1px solid #1557b0; color: #ffffff; font-size: 13px; font-weight: 700; text-decoration: none; border-radius: 8px; font-family: inherit;">
+                              📅 Add to Google Calendar
                             </a>
                           </td>
                           <td style="padding-left: 10px;">

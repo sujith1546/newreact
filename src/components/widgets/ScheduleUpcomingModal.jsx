@@ -357,9 +357,32 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
                   <h4 style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 6px' }}>
                     {formatDateLabel(selectedDate)} · {selectedSlot} {timezoneAbbr}
                   </h4>
-                  <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0 }}>
+                  <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '0 0 16px' }}>
                     Email confirmation & Google Meet invite dispatched! ({duration} min 1:1 call)
                   </p>
+
+                  {/* Add to Google Calendar Button */}
+                  <a
+                    href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`1-on-1 Meeting with Sujith Thota`)}&details=${encodeURIComponent(`Session Topic: ${visitorTopic || 'General Portfolio Discussion'}`)}&location=Google%20Meet`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '10px 18px',
+                      borderRadius: '8px',
+                      backgroundColor: '#1a73e8',
+                      color: '#ffffff',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      textDecoration: 'none',
+                      boxShadow: '0 4px 12px rgba(26, 115, 232, 0.3)',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <CalendarIcon size={15} /> Add to Google Calendar
+                  </a>
                 </motion.div>
               ) : (
                 <>
