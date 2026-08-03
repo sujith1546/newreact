@@ -144,7 +144,7 @@ export default function MobilePreviewModal({ isOpen, onClose }) {
                 alignItems: "center",
                 justifyContent: "center",
                 backgroundColor: "color-mix(in srgb, var(--text-primary) 3%, var(--bg-primary))",
-                padding: "2rem",
+                padding: "1.5rem",
                 overflow: "auto",
                 position: "relative"
               }}
@@ -154,11 +154,14 @@ export default function MobilePreviewModal({ isOpen, onClose }) {
                   key={reloadKey}
                   src={siteUrl}
                   title="Live portfolio mobile preview"
+                  width={dims.w}
+                  height={dims.h}
                   style={{
-                    width: "100%",
-                    height: "100%",
+                    width: `${dims.w}px`,
+                    height: `${dims.h}px`,
                     border: "none",
-                    backgroundColor: "#ffffff"
+                    backgroundColor: "#ffffff",
+                    display: "block"
                   }}
                 />
               </DeviceFrame>
@@ -330,58 +333,73 @@ function DeviceSimulatorSidebar({ deviceKey, setDeviceKey, orientation, setOrien
 }
 
 function DeviceFrame({ dims, children }) {
-  // Scaling math to fit inside viewport cleanly
-  const maxAvailableH = typeof window !== 'undefined' ? window.innerHeight - 140 : 700;
-  const maxAvailableW = typeof window !== 'undefined' ? window.innerWidth - 300 : 800;
+  // Real dimensions of device casing shell
+  const frameUnscaledW = dims.w + 24; // 12px padding on each side
+  const frameUnscaledH = dims.h + 24;
 
-  const scale = Math.min(1, maxAvailableH / (dims.h + 50), maxAvailableW / (dims.w + 50));
+  const maxAvailableH = typeof window !== 'undefined' ? window.innerHeight - 130 : 700;
+  const maxAvailableW = typeof window !== 'undefined' ? window.innerWidth - 280 : 800;
 
-  const scaledW = Math.round(dims.w * scale);
-  const scaledH = Math.round(dims.h * scale);
+  // Scale factor to scale the outer shell visually as a single unit
+  const scale = Math.min(1, maxAvailableH / frameUnscaledH, maxAvailableW / frameUnscaledW);
 
   return (
     <div
       style={{
-        position: "relative",
-        width: `${scaledW + 24}px`,
-        height: `${scaledH + 24}px`,
-        backgroundColor: "#111111",
-        borderRadius: "44px",
-        padding: "12px",
-        boxShadow: "0 25px 60px rgba(0, 0, 0, 0.4)",
-        border: "1px solid rgba(255, 255, 255, 0.1)",
-        boxSizing: "border-box",
-        transition: "all 0.25s ease"
+        width: `${frameUnscaledW * scale}px`,
+        height: `${frameUnscaledH * scale}px`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        position: "relative"
       }}
     >
-      {/* Dynamic Island / Top Notch Capsule */}
+      {/* Outer Scaled Device Casing */}
       <div
         style={{
-          position: "absolute",
-          top: "14px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          width: "96px",
-          height: "22px",
-          backgroundColor: "#000000",
-          borderRadius: "14px",
-          zIndex: 10,
-          border: "1px solid rgba(255, 255, 255, 0.08)"
-        }}
-      />
-
-      {/* Screen Frame Content Area */}
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          backgroundColor: "#ffffff",
-          borderRadius: "34px",
-          overflow: "hidden",
-          position: "relative"
+          width: `${frameUnscaledW}px`,
+          height: `${frameUnscaledH}px`,
+          backgroundColor: "#111111",
+          borderRadius: "46px",
+          padding: "12px",
+          boxShadow: "0 25px 60px rgba(0, 0, 0, 0.4)",
+          border: "1px solid rgba(255, 255, 255, 0.12)",
+          boxSizing: "border-box",
+          transform: `scale(${scale})`,
+          transformOrigin: "center center",
+          position: "relative",
+          transition: "transform 0.2s ease"
         }}
       >
-        {children}
+        {/* Dynamic Island / Top Notch Capsule */}
+        <div
+          style={{
+            position: "absolute",
+            top: "14px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: "96px",
+            height: "22px",
+            backgroundColor: "#000000",
+            borderRadius: "14px",
+            zIndex: 10,
+            border: "1px solid rgba(255, 255, 255, 0.08)"
+          }}
+        />
+
+        {/* Screen Frame Area (Matches Exact Target Resolution) */}
+        <div
+          style={{
+            width: `${dims.w}px`,
+            height: `${dims.h}px`,
+            backgroundColor: "#ffffff",
+            borderRadius: "34px",
+            overflow: "hidden",
+            position: "relative"
+          }}
+        >
+          {children}
+        </div>
       </div>
     </div>
   );
