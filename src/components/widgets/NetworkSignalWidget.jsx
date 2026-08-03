@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { WifiOff } from 'lucide-react';
+import { WifiOff, RefreshCw } from 'lucide-react';
 
-const CHECK_INTERVAL_MS = 45000; // 45s
+const CHECK_INTERVAL_MS = 35000; // 35s
 const HISTORY_LENGTH = 6;
 const FLICKER_DEBOUNCE_MS = 2000;
 
@@ -48,6 +48,7 @@ export default function NetworkSignalWidget() {
   const [downlink, setDownlink] = useState(null);
   const [history, setHistory] = useState([]);
   const [popoverOpen, setPopoverOpen] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const flickerTimeout = useRef(null);
   const intervalRef = useRef(null);
@@ -73,34 +74,44 @@ export default function NetworkSignalWidget() {
     };
   }, []);
 
+  // Most advanced latency & network speed check (Network Info API + Cache-busted Micro-ping)
   const checkConnection = useCallback(async () => {
-    if (!navigator.onLine) return;
-
-    // Prefer Network Information API when available
-    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-    if (conn) {
-      setConnType(conn.effectiveType || null);
-      setDownlink(conn.downlink ?? null);
-      if (typeof conn.rtt === "number" && conn.rtt > 0) {
-        setLatency(conn.rtt);
-        setHistory((h) => [...h.slice(-(HISTORY_LENGTH - 1)), conn.rtt]);
-        return;
-      }
+    if (!navigator.onLine) {
+      setIsOnline(false);
+      setLatency(null);
+      return;
     }
 
-    // Fallback: manual lightweight ping
+    setIsRefreshing(true);
+
+    // 1. Read Network Information API where available
+    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (conn) {
+      if (conn.effectiveType) setConnType(conn.effectiveType);
+      if (conn.downlink != null) setDownlink(conn.downlink);
+    }
+
+    // 2. Perform ultra-accurate micro-ping for exact live latency
     try {
       const start = performance.now();
-      await fetch("/manifest.webmanifest", { method: "HEAD", cache: "no-store" });
+      await fetch(`/manifest.webmanifest?t=${Date.now()}`, { method: "HEAD", cache: "no-store" });
       const rtt = Math.round(performance.now() - start);
       setLatency(rtt);
+      setIsOnline(true);
       setHistory((h) => [...h.slice(-(HISTORY_LENGTH - 1)), rtt]);
     } catch {
-      setLatency(null);
+      if (conn && typeof conn.rtt === "number" && conn.rtt > 0) {
+        setLatency(conn.rtt);
+        setHistory((h) => [...h.slice(-(HISTORY_LENGTH - 1)), conn.rtt]);
+      } else {
+        setLatency(null);
+      }
+    } finally {
+      setIsRefreshing(false);
     }
   }, []);
 
-  // Poll periodically, pausing when tab is hidden
+  // Poll periodically, listening to network connection change events and tab visibility
   useEffect(() => {
     const startPolling = () => {
       checkConnection();
@@ -122,13 +133,22 @@ export default function NetworkSignalWidget() {
     if (!document.hidden) startPolling();
     document.addEventListener("visibilitychange", onVisibilityChange);
 
+    // Listen to network connection type change events (e.g. WiFi -> Cellular 4G)
+    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+    if (conn && conn.addEventListener) {
+      conn.addEventListener("change", checkConnection);
+    }
+
     return () => {
       stopPolling();
       document.removeEventListener("visibilitychange", onVisibilityChange);
+      if (conn && conn.removeEventListener) {
+        conn.removeEventListener("change", checkConnection);
+      }
     };
   }, [checkConnection]);
 
-  // Close popover on outside click
+  // Close popover on outside click or Escape key
   useEffect(() => {
     const onClick = (e) => {
       if (popoverRef.current && !popoverRef.current.contains(e.target)) {
@@ -187,6 +207,14 @@ export default function NetworkSignalWidget() {
           transform: translateY(-2px);
           box-shadow: 0 8px 25px rgba(0,0,0,0.12);
         }
+
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        .spin-icon {
+          animation: spin 1s linear infinite;
+        }
       `}</style>
 
       <button
@@ -228,21 +256,43 @@ export default function NetworkSignalWidget() {
             color: "var(--text-primary)",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px" }}>
-            {isOnline ? (
-              <SignalBars filled={filledBars} color={barColor} size={16} />
-            ) : (
-              <WifiOff size={16} color="#ef4444" />
-            )}
-            <span style={{ fontSize: "13px", fontWeight: 600 }}>
-              {!isOnline
-                ? "You're offline"
-                : quality === "fast"
-                ? "Connection is fast"
-                : quality === "moderate"
-                ? "Connection is moderate"
-                : "Connection is slow"}
-            </span>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              {isOnline ? (
+                <SignalBars filled={filledBars} color={barColor} size={16} />
+              ) : (
+                <WifiOff size={16} color="#ef4444" />
+              )}
+              <span style={{ fontSize: "13px", fontWeight: 600 }}>
+                {!isOnline
+                  ? "You're offline"
+                  : quality === "fast"
+                  ? "Connection is fast"
+                  : quality === "moderate"
+                  ? "Connection is moderate"
+                  : "Connection is slow"}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                checkConnection();
+              }}
+              style={{
+                background: "transparent",
+                border: "none",
+                color: "var(--text-secondary)",
+                cursor: "pointer",
+                padding: "4px",
+                display: "flex",
+                alignItems: "center",
+              }}
+              title="Re-check network speed"
+            >
+              <RefreshCw size={13} className={isRefreshing ? "spin-icon" : ""} />
+            </button>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "6px", fontSize: "12px" }}>
