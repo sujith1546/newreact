@@ -676,16 +676,26 @@ export default function Sidebar({ activeSection, onNavClick }) {
           <i className="ti ti-gauge" style={{ fontSize: '16px', color: isAiUsageOpen ? '#f59e0b' : 'var(--text-primary)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} />
         </button>
 
-        {/* 4. Command Palette (Ctrl+K) */}
+        {/* 4. Mobile View & Device Simulator */}
         <button
           type="button"
-          className="social-icon-box"
-          onClick={() => window.dispatchEvent(new CustomEvent('open-command-palette'))}
-          title="Command Palette (Ctrl+K)"
-          aria-label="Command Palette"
-          style={{ cursor: 'pointer', position: 'relative', padding: 0, outline: 'none' }}
+          className={`social-icon-box ${isMobilePreviewOpen ? 'active' : ''}`}
+          onClick={() => setIsMobilePreviewOpen(true)}
+          title="Mobile View & Device Simulator"
+          aria-label="Mobile View & Device Simulator"
+          style={{
+            cursor: 'pointer',
+            position: 'relative',
+            padding: 0,
+            outline: 'none',
+            borderColor: isMobilePreviewOpen ? 'var(--primary-blue)' : 'var(--border-color)',
+            backgroundColor: isMobilePreviewOpen ? 'color-mix(in srgb, var(--primary-blue) 14%, transparent)' : 'transparent',
+          }}
         >
-          <Terminal size={15} />
+          <Smartphone size={15} color={isMobilePreviewOpen ? 'var(--primary-blue)' : 'var(--text-primary)'} />
+          {isMobilePreviewOpen && (
+            <span className="sidebar-diag-dot" style={{ backgroundColor: 'var(--primary-blue)', boxShadow: '0 0 6px var(--primary-blue)' }} />
+          )}
         </button>
 
         {/* 1px invisible divider spacer matching Row 1 */}
