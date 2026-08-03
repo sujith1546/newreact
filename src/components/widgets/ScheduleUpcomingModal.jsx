@@ -15,6 +15,18 @@ const DEFAULT_AVAILABILITY = {
   "2026-08-12": ["10:00 AM", "1:00 PM", "4:30 PM"]
 };
 
+const getSessionToken = () => {
+  if (typeof window === 'undefined') return '';
+  let token = sessionStorage.getItem('x-portfolio-session');
+  if (!token) {
+    const array = new Uint8Array(16);
+    crypto.getRandomValues(array);
+    token = Array.from(array, (byte) => byte.toString(16).padStart(2, '0')).join('');
+    sessionStorage.setItem('x-portfolio-session', token);
+  }
+  return token;
+};
+
 export default function ScheduleUpcomingModal({ isOpen, onClose, availability = DEFAULT_AVAILABILITY, onConfirm }) {
   const { theme } = useTheme();
   const { triggerIsland } = useIsland();
@@ -115,9 +127,12 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
       `Google Meet link and meeting parameters have been automatically logged for Sujith Thota.`;
 
     try {
-      await fetch('/api/contact', {
+      const res = await fetch('/api/contact', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-portfolio-session': getSessionToken(),
+        },
         body: JSON.stringify({
           name: guestEmail !== 'Not Provided' ? guestEmail.split('@')[0] : 'Meeting Visitor',
           email: 'sujithreddy1546@gmail.com', // Always route booking alert directly to Sujith
@@ -125,6 +140,13 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
           referrer_path: '/instant-scheduling-modal'
         })
       });
+
+      if (!res.ok) {
+        // Fallback to direct mailto trigger if backend endpoint fails or SMTP unconfigured
+        const mailtoSubject = encodeURIComponent(`📅 Meeting Request: ${formattedDate} at ${selectedSlot} (${duration} min)`);
+        const mailtoBody = encodeURIComponent(messageBody);
+        window.location.href = `mailto:sujithreddy1546@gmail.com?subject=${mailtoSubject}&body=${mailtoBody}`;
+      }
 
       triggerIsland?.({
         title: 'Meeting Request Sent! 📅',
@@ -134,7 +156,10 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
         duration: 4000,
       });
     } catch (err) {
-      console.warn("Meeting booking email dispatch error:", err);
+      console.warn("Meeting booking API error, triggering mailto fallback:", err);
+      const mailtoSubject = encodeURIComponent(`📅 Meeting Request: ${formattedDate} at ${selectedSlot} (${duration} min)`);
+      const mailtoBody = encodeURIComponent(messageBody);
+      window.location.href = `mailto:sujithreddy1546@gmail.com?subject=${mailtoSubject}&body=${mailtoBody}`;
     } finally {
       setIsSubmitting(false);
       if (onConfirm) {
