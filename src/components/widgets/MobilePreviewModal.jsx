@@ -549,36 +549,6 @@ function DeviceFrame({ dims, isPortrait = true, zoomScale = "auto", children }) 
             position: "relative"
           }}
         >
-          {/* Live Mobile Status Bar Overlay (9:41, WiFi, Signal, Battery) */}
-          {isPortrait && (
-            <div
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                height: "36px",
-                zIndex: 10,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "0 22px",
-                color: "#0f172a",
-                fontWeight: 700,
-                fontSize: "12px",
-                pointerEvents: "none",
-                letterSpacing: "-0.01em"
-              }}
-            >
-              <span>9:41</span>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <Wifi size={13} strokeWidth={2.5} />
-                <div style={{ fontSize: "10px", fontWeight: 800 }}>5G</div>
-                <Battery size={15} strokeWidth={2.5} />
-              </div>
-            </div>
-          )}
-
           {children}
         </div>
       </div>
