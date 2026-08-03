@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { QrCode, Download, MapPin, Loader2, CheckCircle, FileText, Eye, X, Cpu, Layers, Wifi, RefreshCw, ExternalLink, ShieldCheck, FileDown, Check, Sparkles, Clock, Bot, Zap, PlusCircle, Terminal, Gauge, Info } from 'lucide-react';
+import { QrCode, Download, MapPin, Loader2, CheckCircle, FileText, Eye, X, Cpu, Layers, Wifi, RefreshCw, ExternalLink, ShieldCheck, FileDown, Check, Sparkles, Clock, Bot, Zap, PlusCircle, Terminal, Gauge, Info, Calendar } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ResumeQuickLook from '../widgets/ResumeQuickLook';
 import { useLocalTime } from '../../hooks/useLocalTime';
@@ -18,6 +18,7 @@ import UpdatesModal from '../widgets/UpdatesModal';
 import AiLiveUsageModal from '../widgets/AiLiveUsageModal';
 import MobilePreviewModal from '../widgets/MobilePreviewModal';
 import CraftedWithLoveModal from '../widgets/CraftedWithLoveModal';
+import ScheduleUpcomingModal from '../widgets/ScheduleUpcomingModal';
 import { useSupabasePresence } from '../../hooks/useSupabasePresence';
 import { useAuth } from '../../context/AuthContext';
 
@@ -107,6 +108,7 @@ export default function Sidebar({ activeSection, onNavClick }) {
   const [isAiUsageOpen, setIsAiUsageOpen] = useState(false);
   const [isMobilePreviewOpen, setIsMobilePreviewOpen] = useState(false);
   const [isCraftedModalOpen, setIsCraftedModalOpen] = useState(false);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const isMainPage = location.pathname === '/';
@@ -117,17 +119,20 @@ export default function Sidebar({ activeSection, onNavClick }) {
     const handleOpenAiUsage = () => setIsAiUsageOpen(true);
     const handleOpenMobilePreview = () => setIsMobilePreviewOpen(true);
     const handleOpenCrafted = () => setIsCraftedModalOpen(true);
+    const handleOpenSchedule = () => setIsScheduleModalOpen(true);
     window.addEventListener('open-github', handleOpenGithub);
     window.addEventListener('open-updates', handleOpenUpdates);
     window.addEventListener('open-ai-usage', handleOpenAiUsage);
     window.addEventListener('open-mobile-preview', handleOpenMobilePreview);
     window.addEventListener('open-crafted-modal', handleOpenCrafted);
+    window.addEventListener('open-schedule', handleOpenSchedule);
     return () => {
       window.removeEventListener('open-github', handleOpenGithub);
       window.removeEventListener('open-updates', handleOpenUpdates);
       window.removeEventListener('open-ai-usage', handleOpenAiUsage);
       window.removeEventListener('open-mobile-preview', handleOpenMobilePreview);
       window.removeEventListener('open-crafted-modal', handleOpenCrafted);
+      window.removeEventListener('open-schedule', handleOpenSchedule);
     };
   }, []);
 
@@ -633,16 +638,23 @@ export default function Sidebar({ activeSection, onNavClick }) {
           <span className="sidebar-diag-dot" style={{ backgroundColor: 'var(--primary-blue)', boxShadow: '0 0 6px var(--primary-blue)' }} />
         </button>
 
-        {/* 2. Timezone & Local Clock */}
+        {/* 2. Schedule a 1:1 Meeting (Calendar) */}
         <button
           type="button"
-          className="social-icon-box"
-          onClick={() => window.dispatchEvent(new CustomEvent('open-status'))}
-          title={`Timezone: ${localTime}`}
-          aria-label="Timezone Status"
-          style={{ cursor: 'pointer', position: 'relative', padding: 0, outline: 'none' }}
+          className={`social-icon-box ${isScheduleModalOpen ? 'active' : ''}`}
+          onClick={() => setIsScheduleModalOpen(true)}
+          title={`Book 1:1 Call with Sujith (${localTime})`}
+          aria-label="Book 1:1 Call"
+          style={{
+            cursor: 'pointer',
+            position: 'relative',
+            padding: 0,
+            outline: 'none',
+            borderColor: isScheduleModalOpen ? 'var(--primary-blue)' : 'var(--border-color)',
+            backgroundColor: isScheduleModalOpen ? 'color-mix(in srgb, var(--primary-blue) 14%, transparent)' : 'transparent',
+          }}
         >
-          <Clock size={15} />
+          <Calendar size={15} color={isScheduleModalOpen ? 'var(--primary-blue)' : 'var(--text-primary)'} />
         </button>
 
         {/* 3. Groq & Voyage AI Live Telemetry */}
@@ -706,6 +718,7 @@ export default function Sidebar({ activeSection, onNavClick }) {
       <AiLiveUsageModal isOpen={isAiUsageOpen} onClose={() => setIsAiUsageOpen(false)} />
       <MobilePreviewModal isOpen={isMobilePreviewOpen} onClose={() => setIsMobilePreviewOpen(false)} />
       <CraftedWithLoveModal isOpen={isCraftedModalOpen} onClose={() => setIsCraftedModalOpen(false)} />
+      <ScheduleUpcomingModal isOpen={isScheduleModalOpen} onClose={() => setIsScheduleModalOpen(false)} />
 
       {/* Build Tag Footer */}
       <div className="sidebar-build-tag">
