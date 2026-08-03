@@ -30,6 +30,7 @@ export { default as UpdatesModal } from './widgets/UpdatesModal';
 export { default as AiLiveUsageModal } from './widgets/AiLiveUsageModal';
 export { default as MobilePreviewModal } from './widgets/MobilePreviewModal';
 export { default as CraftedWithLoveModal } from './widgets/CraftedWithLoveModal';
+export { default as NetworkSignalWidget } from './widgets/NetworkSignalWidget';
 
 // 3. Developer & Diagnostic Tools
 export { default as SystemDiagnostics } from './dev/SystemDiagnostics';

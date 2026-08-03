@@ -4,6 +4,7 @@ import { Smartphone } from 'lucide-react';
 import DarkModeToggle from '../ui/DarkModeToggle';
 import SettingsDropdown from '../ui/SettingsDropdown';
 import GetInTouchDropdown from './GetInTouchDropdown';
+import NetworkSignalWidget from './NetworkSignalWidget';
 import { useSupabasePresence } from '../../hooks/useSupabasePresence';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -449,6 +450,7 @@ export default function TimezoneStatus() {
           <Smartphone size={14} color="var(--text-primary)" />
         </button>
 
+        <NetworkSignalWidget />
         <DarkModeToggle />
         <SettingsDropdown />
         <GetInTouchDropdown />
