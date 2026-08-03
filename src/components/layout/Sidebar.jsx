@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { QrCode, Download, MapPin, Loader2, CheckCircle, FileText, Eye, X, Cpu, Layers, Wifi, RefreshCw, ExternalLink, ShieldCheck, FileDown, Check, Sparkles, Clock, Bot, Zap, PlusCircle, Terminal, Gauge, Info, Calendar } from 'lucide-react';
+import { QrCode, Download, MapPin, Loader2, CheckCircle, FileText, Eye, X, Cpu, Layers, Wifi, RefreshCw, ExternalLink, ShieldCheck, FileDown, Check, Sparkles, Clock, Bot, Zap, PlusCircle, Terminal, Gauge, Info, Calendar, Smartphone } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ResumeQuickLook from '../widgets/ResumeQuickLook';
 import { useLocalTime } from '../../hooks/useLocalTime';
