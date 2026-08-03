@@ -333,44 +333,57 @@ function DeviceSimulatorSidebar({ deviceKey, setDeviceKey, orientation, setOrien
 }
 
 function DeviceFrame({ dims, isPortrait = true, children }) {
-  const [viewportSize, setViewportSize] = useState(() => ({
-    w: typeof window !== 'undefined' ? window.innerWidth : 1200,
-    h: typeof window !== 'undefined' ? window.innerHeight : 800
-  }));
+  const containerRef = React.useRef(null);
+  const [stageSize, setStageSize] = useState({ w: 900, h: 850 });
 
   useEffect(() => {
-    const handleResize = () => {
-      setViewportSize({
-        w: window.innerWidth,
-        h: window.innerHeight
-      });
+    if (!containerRef.current) return;
+
+    const updateSize = () => {
+      if (containerRef.current) {
+        const parent = containerRef.current.parentElement;
+        if (parent) {
+          const rect = parent.getBoundingClientRect();
+          setStageSize({
+            w: rect.width || parent.clientWidth || 900,
+            h: rect.height || parent.clientHeight || 850
+          });
+        }
+      }
     };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+
+    updateSize();
+
+    const resizeObserver = new ResizeObserver(updateSize);
+    if (containerRef.current.parentElement) {
+      resizeObserver.observe(containerRef.current.parentElement);
+    }
+
+    return () => resizeObserver.disconnect();
   }, []);
 
   // Real dimensions of device casing shell
   const frameUnscaledW = dims.w + 24; // 12px padding on each side
   const frameUnscaledH = dims.h + 24;
 
-  // Available stage area inside modal body (Header: 54px, Stage padding: 32px)
-  const availableStageH = Math.max(200, viewportSize.h - 54 - 32);
-  // Sidebar: 240px, Stage padding: 32px
-  const availableStageW = Math.max(200, viewportSize.w - 240 - 32);
+  // Available stage area directly measured from parent panel's clientHeight / clientWidth
+  const availableStageH = stageSize.h > 0 ? stageSize.h : 850;
+  const availableStageW = stageSize.w > 0 ? stageSize.w : 900;
 
-  // Target ~78% of available stage height for optimal phone frame presence
-  const targetHeight = availableStageH * 0.78;
-  const heightScale = targetHeight / frameUnscaledH;
+  // Target exactly 85% of the preview panel's clientHeight
+  const targetFrameH = availableStageH * 0.85;
+  const heightScale = targetFrameH / frameUnscaledH;
 
-  // Ensure frame never overflows available stage height or width (capped at 92% of stage max)
-  const maxScaleW = (availableStageW * 0.92) / frameUnscaledW;
-  const maxScaleH = (availableStageH * 0.92) / frameUnscaledH;
+  // Safety caps ensuring landscape & tablet frames stay within 95% of stage bounds
+  const maxScaleW = (availableStageW * 0.95) / frameUnscaledW;
+  const maxScaleH = (availableStageH * 0.95) / frameUnscaledH;
 
   // Proportional scale factor locks aspect ratio (width:height) to real device dimensions
   const scale = Math.min(heightScale, maxScaleW, maxScaleH);
 
   return (
     <div
+      ref={containerRef}
       style={{
         width: `${frameUnscaledW * scale}px`,
         height: `${frameUnscaledH * scale}px`,
