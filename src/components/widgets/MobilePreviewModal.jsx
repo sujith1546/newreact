@@ -5,18 +5,27 @@ import { X, Smartphone, Tablet, RotateCw, RefreshCw, Apple, Smartphone as Androi
 import { useTheme } from '../../context/ThemeContext';
 
 const DEVICES = {
-  "iphone-16": { id: "iphone-16", label: "iPhone 16", icon: "apple", portrait: { w: 393, h: 852 } },
-  "ipad-air": { id: "ipad-air", label: "iPad Air", icon: "tablet", portrait: { w: 820, h: 1180 } },
+  "iphone-16": { id: "iphone-16", label: "iPhone 16", icon: "apple", portrait: { w: 393, h: 852 }, defaultOrientation: "portrait" },
+  "ipad-air": { id: "ipad-air", label: "iPad Air", icon: "tablet", portrait: { w: 820, h: 1180 }, defaultOrientation: "landscape" },
 };
 
 export default function MobilePreviewModal({ isOpen, onClose }) {
   const { theme } = useTheme();
   const [deviceKey, setDeviceKey] = useState("iphone-16");
-  const [orientation, setOrientation] = useState("portrait");
+  // Auto-initialize orientation from device's defaultOrientation
+  const [orientation, setOrientation] = useState(DEVICES["iphone-16"].defaultOrientation);
   const [zoomScale, setZoomScale] = useState(0.85); // 0.85
   const [reloadKey, setReloadKey] = useState(0);
 
   const device = DEVICES[deviceKey] || DEVICES["iphone-16"];
+
+  // Intelligently switch orientation whenever device changes
+  const handleDeviceChange = (key) => {
+    setDeviceKey(key);
+    const target = DEVICES[key];
+    if (target) setOrientation(target.defaultOrientation);
+  };
+
   const dims = useMemo(() => {
     const base = device.portrait;
     return orientation === "portrait" ? base : { w: base.h, h: base.w };
@@ -130,7 +139,7 @@ export default function MobilePreviewModal({ isOpen, onClose }) {
             {/* Sidebar Controls */}
             <DeviceSimulatorSidebar
               deviceKey={deviceKey}
-              setDeviceKey={setDeviceKey}
+              setDeviceKey={handleDeviceChange}
               orientation={orientation}
               setOrientation={setOrientation}
               zoomScale={zoomScale}
