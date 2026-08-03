@@ -141,7 +141,7 @@ export default async function handler(req, res) {
     return res.status(403).json({ error: "Invalid or missing session token. Unauthorized." });
   }
 
-  const { name, email, message, company_website, referrer_path } = req.body;
+  const { name, email, message, inquiry_type, company_website, referrer_path } = req.body;
 
   if (company_website) {
     // Honeypot triggered, silently pretend success

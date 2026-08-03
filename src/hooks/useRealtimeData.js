@@ -46,6 +46,21 @@ function preloadImagesFromData(data) {
   }
 }
 
+function getStorageCache(cacheKey) {
+  try {
+    const raw = localStorage.getItem('swr_cache_' + cacheKey);
+    return raw ? JSON.parse(raw) : undefined;
+  } catch (e) {
+    return undefined;
+  }
+}
+
+function setStorageCache(cacheKey, data) {
+  try {
+    localStorage.setItem('swr_cache_' + cacheKey, JSON.stringify(data));
+  } catch (e) {}
+}
+
 export async function prefetchTable(table, options = {}) {
   const {
     select = '*',
@@ -57,22 +72,65 @@ export async function prefetchTable(table, options = {}) {
 
   const cacheKey = `${table}_${JSON.stringify({ select, single, orderColumn, ascending, filter })}`;
 
-  if (globalDataCache[cacheKey] !== undefined) return globalDataCache[cacheKey];
+  if (globalDataCache[cacheKey] === undefined) {
+    const stored = getStorageCache(cacheKey);
+    if (stored !== undefined) {
+      globalDataCache[cacheKey] = stored;
+    }
+  }
+
+  if (globalDataCache[cacheKey] !== undefined) {
+    // Silent background revalidation
+    if (!fetchPromises[cacheKey]) {
+      const t0 = performance.now();
+      let query = supabase.from(table).select(select);
+      if (filter) query = query.eq(filter.column, filter.value);
+      if (!single && orderColumn) query = query.order(orderColumn, { ascending });
+      if (single) query = query.single();
+
+      fetchPromises[cacheKey] = query.then(({ data, error }) => {
+        const pingMs = Math.round(performance.now() - t0);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('db-telemetry', { detail: { pingMs, table } }));
+        }
+        if (!error && data) {
+          globalDataCache[cacheKey] = data;
+          setStorageCache(cacheKey, data);
+          preloadImagesFromData(data);
+        }
+        delete fetchPromises[cacheKey];
+        return { data, error };
+      }).catch(err => {
+        delete fetchPromises[cacheKey];
+        return { data: globalDataCache[cacheKey] || (single ? null : []), error: null };
+      });
+    }
+    return globalDataCache[cacheKey];
+  }
   
   if (fetchPromises[cacheKey]) return fetchPromises[cacheKey];
 
+  const t0 = performance.now();
   let query = supabase.from(table).select(select);
   if (filter) query = query.eq(filter.column, filter.value);
   if (!single && orderColumn) query = query.order(orderColumn, { ascending });
   if (single) query = query.single();
 
   fetchPromises[cacheKey] = query.then(({ data, error }) => {
-    if (!error) {
+    const pingMs = Math.round(performance.now() - t0);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('db-telemetry', { detail: { pingMs, table } }));
+    }
+    if (!error && data) {
       globalDataCache[cacheKey] = data;
-      preloadImagesFromData(data); // Automatically cache images inside the fetched data
+      setStorageCache(cacheKey, data);
+      preloadImagesFromData(data);
     }
     delete fetchPromises[cacheKey];
     return { data, error };
+  }).catch(err => {
+    delete fetchPromises[cacheKey];
+    return { data: globalDataCache[cacheKey] || (single ? null : []), error: null };
   });
 
   return fetchPromises[cacheKey];
@@ -90,11 +148,17 @@ export default function useRealtimeData(table, options = {}) {
 
   const cacheKey = `${table}_${JSON.stringify({ select, single, orderColumn, ascending, filter })}`;
 
-  const [data, setData] = useState(() => 
-    globalDataCache[cacheKey] !== undefined ? globalDataCache[cacheKey] : (single ? null : [])
-  );
+  const [data, setData] = useState(() => {
+    if (globalDataCache[cacheKey] !== undefined) return globalDataCache[cacheKey];
+    const stored = getStorageCache(cacheKey);
+    if (stored !== undefined) {
+      globalDataCache[cacheKey] = stored;
+      return stored;
+    }
+    return single ? null : [];
+  });
   // Only show loading if cache is empty
-  const [loading, setLoading] = useState(globalDataCache[cacheKey] === undefined);
+  const [loading, setLoading] = useState(data === null || (Array.isArray(data) && data.length === 0 && globalDataCache[cacheKey] === undefined));
   const [error, setError] = useState(null);
 
   useEffect(() => {

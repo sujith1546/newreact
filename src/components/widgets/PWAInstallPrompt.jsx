@@ -49,9 +49,30 @@ export default function PWAInstallPrompt() {
     return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
   }, []);
 
+  // Welcome modal tracking (only show install prompt AFTER welcome modal is closed)
+  const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const isDismissedForever = localStorage.getItem("welcome_dismissed_forever") === "true";
+    return !isDismissedForever;
+  });
+
+  useEffect(() => {
+    const handleWelcomeClosed = () => {
+      setIsWelcomeModalOpen(false);
+    };
+
+    window.addEventListener('welcome-modal-closed', handleWelcomeClosed);
+
+    if (localStorage.getItem("welcome_dismissed_forever") === "true") {
+      setIsWelcomeModalOpen(false);
+    }
+
+    return () => window.removeEventListener('welcome-modal-closed', handleWelcomeClosed);
+  }, []);
+
   // 5-second countdown timer with intelligent pause-on-hover
   useEffect(() => {
-    if (!showInstallPrompt || showToast || isDismissed) return;
+    if (!showInstallPrompt || showToast || isDismissed || isWelcomeModalOpen) return;
 
     const interval = setInterval(() => {
       if (!isHovered) {
@@ -67,7 +88,7 @@ export default function PWAInstallPrompt() {
     }, 100);
 
     return () => clearInterval(interval);
-  }, [showInstallPrompt, showToast, isDismissed, isHovered]);
+  }, [showInstallPrompt, showToast, isDismissed, isHovered, isWelcomeModalOpen]);
 
   const handleInstallClick = async () => {
     if (deferredPrompt) {
@@ -92,8 +113,8 @@ export default function PWAInstallPrompt() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // If not on the Home page or on mobile version, do not show PWA Install Prompt
-  if (!isHomePage || isMobile) return null;
+  // If not on the Home page, on mobile version, or if welcome modal is currently active, do not show PWA Install Prompt
+  if (!isHomePage || isMobile || isWelcomeModalOpen) return null;
 
   return (
     <AnimatePresence>
@@ -192,7 +213,7 @@ export default function PWAInstallPrompt() {
           initial={{ opacity: 0, x: 50, scale: 0.95 }}
           animate={{ opacity: 1, x: 0, scale: 1 }}
           exit={{ opacity: 0, x: 50, scale: 0.95 }}
-          transition={{ type: 'spring', damping: 24, stiffness: 300, delay: 0.3 }}
+          transition={{ type: 'spring', damping: 24, stiffness: 300 }}
           style={{ position: 'fixed', bottom: '18px', right: '92px', zIndex: 9998 }}
         >
           {/* Card */}

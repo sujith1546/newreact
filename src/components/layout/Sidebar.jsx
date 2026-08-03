@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { QrCode, Download, MapPin, Loader2, CheckCircle, FileText, Eye, X, Cpu, Layers, Wifi, RefreshCw, ExternalLink, ShieldCheck, FileDown, Check } from 'lucide-react';
+import { QrCode, Download, MapPin, Loader2, CheckCircle, FileText, Eye, X, Cpu, Layers, Wifi, RefreshCw, ExternalLink, ShieldCheck, FileDown, Check, Sparkles, Clock, Bot, Zap, PlusCircle, Terminal, Gauge } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ResumeQuickLook from '../widgets/ResumeQuickLook';
 import { useLocalTime } from '../../hooks/useLocalTime';
@@ -10,8 +10,12 @@ import { useTheme } from '../../context/ThemeContext';
 import { usePersona } from '../../context/PersonaContext';
 import useRealtimeData from '../../hooks/useRealtimeData';
 import { useIsland } from '../../context/IslandContext';
+import { FaGithub } from 'react-icons/fa';
 import SystemDiagnostics from '../dev/SystemDiagnostics';
 import EmailModal from '../widgets/EmailModal';
+import GitHubCommitsModal from '../widgets/GitHubCommitsModal';
+import UpdatesModal from '../widgets/UpdatesModal';
+import AiLiveUsageModal from '../widgets/AiLiveUsageModal';
 import { useSupabasePresence } from '../../hooks/useSupabasePresence';
 import { useAuth } from '../../context/AuthContext';
 
@@ -65,7 +69,6 @@ const NAV_ITEMS_DEF = [
   { label: 'ABOUT', id: 'about' },
   { label: 'SKILLS', id: 'skills' },
   { label: 'PROJECTS', id: 'projects' },
-  { label: 'BLOG', id: 'blog' },
   { label: 'EDUCATION', id: 'education' },
   { label: 'EXPERIENCE', id: 'experience' },
   { label: 'CERTIFICATIONS', id: 'certifications' },
@@ -97,9 +100,26 @@ export default function Sidebar({ activeSection, onNavClick }) {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isDiagnosticsOpen, setIsDiagnosticsOpen] = useState(false);
   const [isEmailOpen, setIsEmailOpen] = useState(false);
+  const [isGithubModalOpen, setIsGithubModalOpen] = useState(false);
+  const [isUpdatesModalOpen, setIsUpdatesModalOpen] = useState(false);
+  const [isAiUsageOpen, setIsAiUsageOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const isMainPage = location.pathname === '/';
+
+  useEffect(() => {
+    const handleOpenGithub = () => setIsGithubModalOpen(true);
+    const handleOpenUpdates = () => setIsUpdatesModalOpen(true);
+    const handleOpenAiUsage = () => setIsAiUsageOpen(true);
+    window.addEventListener('open-github', handleOpenGithub);
+    window.addEventListener('open-updates', handleOpenUpdates);
+    window.addEventListener('open-ai-usage', handleOpenAiUsage);
+    return () => {
+      window.removeEventListener('open-github', handleOpenGithub);
+      window.removeEventListener('open-updates', handleOpenUpdates);
+      window.removeEventListener('open-ai-usage', handleOpenAiUsage);
+    };
+  }, []);
 
   // Keyboard shortcut: Ctrl+D or Cmd+D to toggle System Diagnostics
   useEffect(() => {
@@ -529,6 +549,20 @@ export default function Sidebar({ activeSection, onNavClick }) {
         </a>
         <button
           className="social-icon-box"
+          onClick={() => setIsGithubModalOpen(true)}
+          title="GitHub commits & activity"
+          aria-label="GitHub commits"
+          style={{
+            cursor: 'pointer',
+            padding: 0,
+            outline: 'none',
+            background: 'transparent',
+          }}
+        >
+          <FaGithub size={19} />
+        </button>
+        <button
+          className="social-icon-box"
           onClick={() => setIsDiagnosticsOpen(true)}
           title="System diagnostics"
           aria-label="System diagnostics"
@@ -564,8 +598,95 @@ export default function Sidebar({ activeSection, onNavClick }) {
         </button>
       </div>
 
+      {/* Row 2: 5-Icon Secondary Utility Layer (Aligned 1:1 with Row 1) */}
+      <div 
+        className="social-icons-row" 
+        style={{ marginTop: '10px' }}
+      >
+        {/* 1. System Updates Icon */}
+        <button
+          type="button"
+          className={`social-icon-box ${isUpdatesModalOpen ? 'active' : ''}`}
+          onClick={() => setIsUpdatesModalOpen(true)}
+          title="System Updates & Changelog"
+          aria-label="System Updates"
+          style={{
+            cursor: 'pointer',
+            position: 'relative',
+            padding: 0,
+            outline: 'none',
+            borderColor: isUpdatesModalOpen ? 'var(--primary-blue)' : 'var(--border-color)',
+            backgroundColor: isUpdatesModalOpen ? 'color-mix(in srgb, var(--primary-blue) 14%, transparent)' : 'transparent',
+          }}
+        >
+          <Sparkles size={16} color={isUpdatesModalOpen ? 'var(--primary-blue)' : 'var(--text-primary)'} />
+          <span className="sidebar-diag-dot" style={{ backgroundColor: 'var(--primary-blue)', boxShadow: '0 0 6px var(--primary-blue)' }} />
+        </button>
+
+        {/* 2. Timezone & Local Clock */}
+        <button
+          type="button"
+          className="social-icon-box"
+          onClick={() => window.dispatchEvent(new CustomEvent('open-status'))}
+          title={`Timezone: ${localTime}`}
+          aria-label="Timezone Status"
+          style={{ cursor: 'pointer', position: 'relative', padding: 0, outline: 'none' }}
+        >
+          <Clock size={15} />
+        </button>
+
+        {/* 3. Groq & Voyage AI Live Telemetry */}
+        <button
+          type="button"
+          className={`social-icon-box ${isAiUsageOpen ? 'active' : ''}`}
+          onClick={() => setIsAiUsageOpen(true)}
+          title="Groq & Voyage AI Live Usage Telemetry"
+          aria-label="AI Live Usage"
+          style={{
+            cursor: 'pointer',
+            position: 'relative',
+            padding: 0,
+            outline: 'none',
+            borderColor: isAiUsageOpen ? '#f59e0b' : 'var(--border-color)',
+            backgroundColor: isAiUsageOpen ? 'rgba(245, 158, 11, 0.14)' : 'transparent',
+          }}
+        >
+          <i className="ti ti-gauge" style={{ fontSize: '16px', color: isAiUsageOpen ? '#f59e0b' : 'var(--text-primary)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} />
+        </button>
+
+        {/* 4. Command Palette (Ctrl+K) */}
+        <button
+          type="button"
+          className="social-icon-box"
+          onClick={() => window.dispatchEvent(new CustomEvent('open-command-palette'))}
+          title="Command Palette (Ctrl+K)"
+          aria-label="Command Palette"
+          style={{ cursor: 'pointer', position: 'relative', padding: 0, outline: 'none' }}
+        >
+          <Terminal size={15} />
+        </button>
+
+        {/* 1px invisible divider spacer matching Row 1 */}
+        <div className="social-icon-divider" style={{ opacity: 0 }} />
+
+        {/* 5. Schedule Call / Future Extension Slot */}
+        <button
+          type="button"
+          className="social-icon-box"
+          onClick={() => window.dispatchEvent(new CustomEvent('open-schedule-modal'))}
+          title="Schedule Call / Feature Extension Slot"
+          aria-label="Feature Extension Slot"
+          style={{ cursor: 'pointer', position: 'relative', padding: 0, outline: 'none' }}
+        >
+          <PlusCircle size={15} />
+        </button>
+      </div>
+
       <SystemDiagnostics open={isDiagnosticsOpen} onClose={() => setIsDiagnosticsOpen(false)} />
       <EmailModal isOpen={isEmailOpen} onClose={() => setIsEmailOpen(false)} />
+      <GitHubCommitsModal isOpen={isGithubModalOpen} onClose={() => setIsGithubModalOpen(false)} />
+      <UpdatesModal isOpen={isUpdatesModalOpen} onClose={() => setIsUpdatesModalOpen(false)} />
+      <AiLiveUsageModal isOpen={isAiUsageOpen} onClose={() => setIsAiUsageOpen(false)} />
 
       {/* Build Tag Footer */}
       <div className="sidebar-build-tag">

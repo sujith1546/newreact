@@ -26,8 +26,6 @@ const Education = lazy(() => import('./Education'));
 const Experience = lazy(() => import('./Experience'));
 const Certifications = lazy(() => import('./Certifications'));
 const Contact = lazy(() => import('./Contact'));
-const Blog = lazy(() => import('./Blog'));
-const Updates = lazy(() => import('./Updates'));
 import { useTheme } from '../context/ThemeContext';
 import { usePersona } from '../context/PersonaContext';
 import useRealtimeData from '../hooks/useRealtimeData';
@@ -39,12 +37,10 @@ const SECTIONS_DEF = [
   { id: 'about',          Component: About          },
   { id: 'skills',         Component: Skills         },
   { id: 'projects',       Component: Projects       },
-  { id: 'blog',           Component: Blog           },
   { id: 'education',      Component: Education      },
   { id: 'experience',     Component: Experience     },
   { id: 'certifications', Component: Certifications },
   { id: 'contact',        Component: Contact        },
-  { id: 'updates',        Component: Updates        },
 ];
 
 const SECTION_LABELS = {
@@ -52,12 +48,10 @@ const SECTION_LABELS = {
   about: 'About Me',
   skills: 'Skills',
   projects: 'Projects',
-  blog: 'Blog & Articles',
   education: 'Education',
   experience: 'Experience',
   certifications: 'Certifications',
   contact: 'Contact',
-  updates: 'Updates',
 };
 
 const SECTION_HEADERS = {
@@ -77,10 +71,6 @@ const SECTION_HEADERS = {
     title: 'Projects',
     subtitle: 'Showcase of intelligent digital applications & systems',
   },
-  blog: {
-    title: 'Blog & Articles',
-    subtitle: 'Technical writings, tutorials, and insights',
-  },
   education: {
     title: 'Education',
     subtitle: 'My academic journey — from foundation to university',
@@ -96,10 +86,6 @@ const SECTION_HEADERS = {
   contact: {
     title: 'Contact',
     subtitle: 'Get in touch for opportunities, projects, or collaboration',
-  },
-  updates: {
-    title: 'System Updates & Changelog',
-    subtitle: 'Latest feature releases, improvements, and bug fixes',
   },
 };
 
@@ -282,7 +268,6 @@ export default function PortfolioLayout() {
     about:          { label: 'Resume',     icon: FileText,   action: () => window.dispatchEvent(new CustomEvent('open-resume')), style: 'ghost' },
     skills:         { label: 'Resume',     icon: FileText,   action: () => window.dispatchEvent(new CustomEvent('open-resume')), style: 'ghost' },
     projects:       { label: 'GitHub',     icon: FaGithub,   action: () => window.open('https://github.com/sujith1546', '_blank'), style: 'ghost' },
-    blog:           { label: 'GitHub',     icon: FaGithub,   action: () => window.open('https://github.com/sujith1546', '_blank'), style: 'ghost' },
     education:      { label: 'Resume',     icon: FileText,   action: () => window.dispatchEvent(new CustomEvent('open-resume')), style: 'ghost' },
     experience:     { label: 'Resume',     icon: FileText,   action: () => window.dispatchEvent(new CustomEvent('open-resume')), style: 'ghost' },
     certifications: { label: 'Resume',     icon: FileText,   action: () => window.dispatchEvent(new CustomEvent('open-resume')), style: 'ghost' },
@@ -415,7 +400,7 @@ export default function PortfolioLayout() {
               }}
               className={`text-content
                 ${activeSection === 'home' ? ' home-content' : ''}
-                ${['contact','education','about','skills','experience','projects','certifications','blog','updates'].includes(activeSection) ? ' wide-content' : ''}
+                ${['contact','education','about','skills','experience','projects','certifications'].includes(activeSection) ? ' wide-content' : ''}
               `}
             >
               <ErrorBoundary>

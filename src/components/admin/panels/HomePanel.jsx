@@ -166,15 +166,6 @@ export default function HomePanel() {
       onClick: () => navigate('/admin/dashboard/projects'),
     },
     {
-      key: 'blog',
-      label: 'Blog Posts',
-      value: stats.blogCount,
-      icon: FileText,
-      gradient: 'linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)',
-      delta: 'Articles published',
-      onClick: () => navigate('/admin/dashboard/blog'),
-    },
-    {
       key: 'updates',
       label: 'Updates',
       value: stats.updateCount,
@@ -205,7 +196,6 @@ export default function HomePanel() {
 
   const quickActions = [
     { icon: Plus, label: 'Add New Project', sub: 'Showcase your latest work', color: '#10B981', tab: 'projects' },
-    { icon: FileText, label: 'Write a Blog Post', sub: 'Share your knowledge', color: '#06B6D4', tab: 'blog' },
     { icon: MessageSquare, label: 'View Messages', sub: `${stats.unreadMessages} unread`, color: '#6366F1', tab: 'messages' },
     { icon: Zap, label: 'Post an Update', sub: 'Announce something new', color: '#F59E0B', tab: 'updates' },
     { icon: Award, label: 'Add Certification', sub: 'Update credentials', color: '#F97316', tab: 'certifications' },
@@ -217,11 +207,7 @@ export default function HomePanel() {
       CREATE_PROJECT: { text: 'New project added', color: '#10B981' },
       UPDATE_PROJECT: { text: 'Project updated', color: '#6366F1' },
       DELETE_PROJECT: { text: 'Project deleted', color: '#EF4444' },
-      CREATE_BLOG_POST: { text: 'New blog post published', color: '#06B6D4' },
-      UPDATE_BLOG_POST: { text: 'Blog post updated', color: '#6366F1' },
       UPDATE_SETTINGS: { text: 'Site settings changed', color: '#8B5CF6' },
-      TOGGLE_BLOG_PUBLISH: { text: 'Blog post toggled', color: '#F59E0B' },
-      DELETE_BLOG_POST: { text: 'Blog post deleted', color: '#EF4444' },
     };
     return map[action] || { text: action?.replace(/_/g, ' ').toLowerCase(), color: '#8896B3' };
   }
@@ -418,7 +404,6 @@ export default function HomePanel() {
               { label: 'Site Status', val: siteSettings?.site_disabled ? 'Locked 🔒' : 'Live ✓', color: siteSettings?.site_disabled ? '#EF4444' : '#10B981' },
               { label: 'Maintenance', val: siteSettings?.maintenance_mode ? 'On' : 'Off', color: siteSettings?.maintenance_mode ? '#F59E0B' : '#8896B3' },
               { label: 'Projects Visible', val: siteSettings?.show_projects !== false ? 'Yes' : 'No', color: siteSettings?.show_projects !== false ? '#10B981' : '#EF4444' },
-              { label: 'Blog Visible', val: siteSettings?.show_blog !== false ? 'Yes' : 'No', color: siteSettings?.show_blog !== false ? '#10B981' : '#EF4444' },
             ].map((row) => (
               <div key={row.label} className="pcms-status-row">
                 <span className="pcms-status-label">{row.label}</span>

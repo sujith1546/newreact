@@ -2,10 +2,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabaseClient';
-import { X, Send, Loader2, Bot, User, Atom, RotateCcw, Trash2, Copy, Check, ChevronDown, ChevronUp, Info, Mic, Cpu, Layers, Code, Zap, Paperclip, Volume2, VolumeX, AlertCircle } from 'lucide-react';
+import { X, Send, Loader2, Bot, User, Atom, RotateCcw, Trash2, Copy, Check, ChevronDown, ChevronUp, Info, Mic, Cpu, Layers, Code, Zap, Paperclip, Volume2, VolumeX, AlertCircle, Sparkles } from 'lucide-react';
 import { useIsland } from '../../context/IslandContext';
 import { useTheme } from '../../context/ThemeContext';
 import ThoughtTrace from './ThoughtTrace';
+import RagFaithfulnessInspector from './RagFaithfulnessInspector';
 import SkillChart from './GenerativeUI/SkillChart';
 import ProjectCarousel from './GenerativeUI/ProjectCarousel';
 import BentoBox from './GenerativeUI/BentoBox';
@@ -120,9 +121,10 @@ export default function ChatBot() {
   const [isRecording, setIsRecording] = useState(false);
   const { aiVoice, setAiVoice, aiAutoNav, aiResponseStyle, aiShowThoughts, aiContextRange, aiReasoningDepth, aiPersona, aiTerminalMode } = useTheme();
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [overridePersona, setOverridePersona] = useState('auto'); // 'auto' | 'recruiter' | 'developer'
   const [attachment, setAttachment] = useState(null); // { file, base64 }
   const fileInputRef = useRef(null);
-  const { triggerIsland } = useIsland();
+  const { triggerIsland, setAiStatus } = useIsland();
 
   const DISCLAIMER_KEY = 'ai_disclaimer_dismissed';
   const [isDisclaimerDismissed, setIsDisclaimerDismissed] = useState(() => {
@@ -294,6 +296,7 @@ export default function ChatBot() {
     }
     setMessages(prev => [...prev, { role: 'user', content: userText, image: currentAttachment?.base64 }]);
     setIsLoading(true);
+    if (typeof setAiStatus === 'function') setAiStatus('thinking');
 
     try {
       // Build multi-turn message history
@@ -319,8 +322,8 @@ export default function ChatBot() {
       const currentContext = window.location.hash || window.location.pathname || 'homepage';
       
       triggerIsland({
-        title: '⚡ Gemini 2.5 Flash',
-        subtitle: 'Embedding Query (200+ Term KB)...',
+        title: '⚡ Voyage AI & Groq Llama 3.3',
+        subtitle: 'Embedding Query (Voyage-3-Lite KB)...',
         icon: <Sparkles size={15} />,
         color: '#3b82f6',
         duration: 2500
@@ -418,6 +421,20 @@ export default function ChatBot() {
                 }
                 return updated;
               });
+            } else if (data.type === 'telemetry') {
+              setMessages(prev => {
+                const updated = [...prev];
+                const lastIdx = updated.length - 1;
+                if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
+                  updated[lastIdx] = {
+                    ...updated[lastIdx],
+                    persona: data.persona,
+                    topScore: data.topScore,
+                    sources: data.sources || updated[lastIdx].sources
+                  };
+                }
+                return updated;
+              });
             } else if (data.type === 'sources') {
               setMessages(prev => {
                 const updated = [...prev];
@@ -492,12 +509,26 @@ export default function ChatBot() {
             window.dispatchEvent(new CustomEvent('navigate-section', {
               detail: { section: 'resume', highlight: true, keyword: 'download' }
             }));
+            triggerIsland({
+              title: 'Opening Resume Previewer',
+              subtitle: 'Sujith_Thota_Resume.pdf',
+              icon: <FileText size={15} />,
+              color: '#10b981',
+              duration: 2800
+            });
           }, 350);
         } else if (validSections.includes(targetSection)) {
           setTimeout(() => {
             window.dispatchEvent(new CustomEvent('navigate-section', {
               detail: { section: targetSection, highlight: true, keyword }
             }));
+            triggerIsland({
+              title: `Navigating to ${targetSection.toUpperCase()}`,
+              subtitle: `Highlighting "${keyword}"`,
+              icon: <Zap size={15} />,
+              color: '#3b82f6',
+              duration: 2800
+            });
           }, 350);
         }
       }
@@ -528,6 +559,7 @@ export default function ChatBot() {
       });
     } finally {
       setIsLoading(false);
+      if (typeof setAiStatus === 'function') setAiStatus('idle');
     }
   };
 
@@ -1325,10 +1357,31 @@ export default function ChatBot() {
                 <p className="chatbot-header-name">Ask Sujith AI</p>
                 <div className="chatbot-header-status">
                   <div className="chatbot-online-dot" />
-                  <span>Powered by Groq • Portfolio Expert</span>
+                  <span>{isLoading ? 'Retrieving Voyage AI & Reasoning...' : 'Voyage AI RAG • Groq Llama 3.3'}</span>
                 </div>
               </div>
               <div className="chatbot-header-actions">
+                <button
+                  onClick={() => {
+                    setOverridePersona(prev => prev === 'auto' ? 'recruiter' : prev === 'recruiter' ? 'developer' : 'auto');
+                  }}
+                  style={{
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    padding: '3px 8px',
+                    borderRadius: '100px',
+                    border: '1px solid var(--border-color)',
+                    background: 'var(--bg-secondary)',
+                    color: overridePersona === 'recruiter' ? '#10b981' : overridePersona === 'developer' ? '#3b82f6' : 'var(--text-secondary)',
+                    cursor: 'pointer',
+                    marginRight: '6px'
+                  }}
+                  title="Click to switch persona mode (Recruiter / Developer / Auto)"
+                  type="button"
+                >
+                  {overridePersona === 'recruiter' ? '👔 Recruiter' : overridePersona === 'developer' ? '⚡ Developer' : '🎯 Auto Mode'}
+                </button>
+
                 <button 
                   onClick={() => setAiVoice(!aiVoice)} 
                   className={`chatbot-header-btn ${aiVoice ? 'active' : ''}`} 
@@ -1485,38 +1538,13 @@ export default function ChatBot() {
                       </div>
                     )}
 
-                    {/* Generative UI Rendering */}
-                    {msg.content.includes('[RENDER_SKILLS]') && (
-                      <div className="genui-card">
-                        <div className="genui-glow" style={{ background: 'rgba(16,185,129,0.15)' }} />
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                          <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(16,185,129,0.1)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Cpu size={14} /></div>
-                          <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-primary)' }}>My Top Skills</span>
-                        </div>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                          {['Python', 'TensorFlow', 'Scikit-learn', 'React', 'FastAPI', 'Pandas'].map(s => (
-                            <span key={s} style={{ fontSize: '11px', fontWeight: 600, padding: '4px 8px', borderRadius: '12px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }}>{s}</span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {msg.content.includes('[RENDER_PROJECTS]') && (
-                      <div className="genui-card">
-                        <div className="genui-glow" style={{ background: 'rgba(59,130,246,0.15)' }} />
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-                          <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'rgba(59,130,246,0.1)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Layers size={14} /></div>
-                          <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-primary)' }}>Featured Projects</span>
-                        </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                          <div style={{ padding: '8px', borderRadius: '8px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', fontSize: '11px', color: 'var(--text-primary)' }}>
-                            <strong>SMS Finance Analyzer</strong> • Privacy-first RAG Pipeline
-                          </div>
-                          <div style={{ padding: '8px', borderRadius: '8px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', fontSize: '11px', color: 'var(--text-primary)' }}>
-                            <strong>Financial Sentiment</strong> • FinBERT Model Fine-Tuning
-                          </div>
-                        </div>
-                      </div>
+                    {/* RAG Faithfulness Inspector */}
+                    {msg.role === 'assistant' && msg.content && (
+                      <RagFaithfulnessInspector
+                        sources={msg.sources}
+                        topScore={msg.topScore || 0.95}
+                        content={msg.content}
+                      />
                     )}
 
                     {msg.role === 'assistant' && (
@@ -1535,15 +1563,8 @@ export default function ChatBot() {
                       </div>
                     )}
 
-                    {msg.sources && msg.sources.length > 0 && (
-                      <div className="chat-sources-row">
-                        <span className="sources-label">Sources:</span>
-                        {msg.sources.map((s, idx) => (
-                          <span key={idx} className="source-chip" title={`Section: ${s.section}`}>
-                            {s.source}
-                          </span>
-                        ))}
-                      </div>
+                    {msg.role === 'assistant' && msg.content && (
+                      <RagFaithfulnessInspector sources={msg.sources} topScore={msg.topScore} content={msg.content} />
                     )}
                   </div>
                 </motion.div>

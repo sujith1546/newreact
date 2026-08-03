@@ -9,6 +9,7 @@ import {
   SiGit,
   SiPandas
 } from "react-icons/si";
+import StatsRow from "./ui/StatsRow";
 
 const TAGLINES = [
   "Building Modern Web Apps",
@@ -395,19 +396,8 @@ export default function HeroSection({ name = "Sujith Thota", photoUrl = "/IMG_03
             dangerouslySetInnerHTML={{ __html: settings?.hero_headline || "I build modern web applications, blending data science with clean, responsive engineering." }}
           />
 
-          {/* Stats strip */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', maxWidth: '440px' }}>
-            {STATS.map((s) => (
-              <div key={s.label} className="stat-card-item">
-                <p style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.02em' }}>
-                  <AnimatedStatValue targetValue={s.value} />
-                </p>
-                <p style={{ fontSize: '10px', color: 'var(--text-muted)', margin: '2px 0 0 0', fontWeight: 600 }}>
-                  {s.label}
-                </p>
-              </div>
-            ))}
-          </div>
+          {/* Continuous Merged Stats Strip */}
+          <StatsRow />
 
           {/* CTA Buttons */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', paddingTop: '4px' }}>

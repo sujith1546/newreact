@@ -103,13 +103,66 @@ export default function WhatsNewPanel({ open, onClose }) {
   }, [open, activeTab, visibleCount]);
 
   const filteredReleases = useMemo(() => {
-    if (activeTab === "all") return updates;
-    return updates
+    if (!updates || !Array.isArray(updates)) return [];
+    
+    const normalized = updates.map((rel) => {
+      if (!rel) return null;
+      const version = rel.version || rel.title || "Release";
+      const label = rel.label || rel.title || rel.version || "Update";
+      const date = rel.date || (rel.created_at ? new Date(rel.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "");
+      
+      let rawItems = rel.items;
+      if (!rawItems || !Array.isArray(rawItems)) {
+        if (rel.description || rel.body) {
+          rawItems = [{ type: rel.category || rel.type || "feature", title: rel.title || label, body: rel.description || rel.body || "" }];
+        } else {
+          rawItems = [];
+        }
+      }
+      
+      const items = rawItems.map((item) => {
+        if (typeof item === 'string') {
+          let type = rel.category || rel.type || 'feature';
+          let title = item;
+          if (item.toLowerCase().startsWith('[feature]')) {
+            type = 'feature';
+            title = item.replace(/^\[feature\]\s*/i, '');
+          } else if (item.toLowerCase().startsWith('[fix]')) {
+            type = 'fix';
+            title = item.replace(/^\[fix\]\s*/i, '');
+          } else if (item.toLowerCase().startsWith('[perf]') || item.toLowerCase().startsWith('[improvement]')) {
+            type = 'perf';
+            title = item.replace(/^\[(?:perf|improvement)\]\s*/i, '');
+          }
+          return { type, title, body: '' };
+        }
+        if (item && typeof item === 'object') {
+          return {
+            type: item.type || rel.category || 'feature',
+            title: item.title || item.name || '',
+            body: item.body || item.description || ''
+          };
+        }
+        return { type: 'feature', title: String(item || ''), body: '' };
+      });
+
+      return {
+        ...rel,
+        version,
+        label,
+        date,
+        items
+      };
+    }).filter(Boolean);
+
+    if (activeTab === "all") return normalized;
+
+    return normalized
       .map((rel) => ({
         ...rel,
-        items: rel.items.filter((item) => item.type === activeTab || (activeTab === 'perf' && item.type === 'improvement')),
+        items: (rel.items || []).filter((item) => item.type === activeTab || (activeTab === 'perf' && item.type === 'improvement')),
       }))
-      .filter((rel) => rel.items.length > 0);
+      .filter((rel) => (rel.items || []).length > 0);
   }, [updates, activeTab]);
 
   const visibleReleases = useMemo(() => {
@@ -203,11 +256,11 @@ export default function WhatsNewPanel({ open, onClose }) {
               ) : (
                 <AnimatePresence mode="popLayout">
                   {visibleReleases.map((release, i) => {
-                    if (release.items.length === 0) return null;
+                    if (!release || !release.items || release.items.length === 0) return null;
                     const isLast = i === visibleReleases.length - 1;
                     return (
                       <motion.div 
-                        key={release.version} 
+                        key={release.id || release.version || i} 
                         layout 
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -230,16 +283,16 @@ export default function WhatsNewPanel({ open, onClose }) {
                         <div className="wn-release-date">{release.date}</div>
 
                         <div className="wn-items-list">
-                          {release.items.map((item, idx) => {
-                            const meta = TYPE_META[item.type];
-                            const ItemIcon = meta.Icon;
+                          {(release.items || []).map((item, idx) => {
+                            const meta = TYPE_META[item.type] || TYPE_META.feature;
+                            const ItemIcon = meta?.Icon || Sparkles;
                             return (
-                              <div key={idx} className={`wn-item-card ${meta.colorClass}`}>
+                              <div key={idx} className={`wn-item-card ${meta?.colorClass || 'wn-feat-color'}`}>
                                 <div className="wn-item-title-row">
                                   <ItemIcon size={14} />
                                   <span>{item.title}</span>
                                 </div>
-                                <p className="wn-item-body">{item.body}</p>
+                                {item.body && <p className="wn-item-body">{item.body}</p>}
                               </div>
                             );
                           })}

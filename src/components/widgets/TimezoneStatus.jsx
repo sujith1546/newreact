@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DarkModeToggle from '../ui/DarkModeToggle';
 import SettingsDropdown from '../ui/SettingsDropdown';
-import UpdatesDropdown from './UpdatesDropdown';
 import GetInTouchDropdown from './GetInTouchDropdown';
 import { useSupabasePresence } from '../../hooks/useSupabasePresence';
 import { useTheme } from '../../context/ThemeContext';
@@ -437,8 +436,6 @@ export default function TimezoneStatus() {
           <span className="cmdk-hint-kbd">Ctrl</span>
           <span className="cmdk-hint-kbd">K</span>
         </button>
-
-        <UpdatesDropdown />
 
         <DarkModeToggle />
         <SettingsDropdown />

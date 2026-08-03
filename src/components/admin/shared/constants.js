@@ -16,7 +16,6 @@ export const NAV_GROUPS = [
     label: "Content",
     items: [
       { key: "projects", label: "Projects", icon: "ti-briefcase", color: "#10B981" },
-      { key: "blog", label: "Blog & Articles", icon: "ti-pencil", color: "#06B6D4" },
       { key: "testimonials", label: "Testimonials", icon: "ti-quote", color: "#8B5CF6" },
       { key: "updates", label: "Updates", icon: "ti-bolt", color: "#F59E0B" },
       { key: "skills", label: "Skills", icon: "ti-star", color: "#06B6D4" },

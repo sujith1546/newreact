@@ -6,6 +6,7 @@ import { supabase } from './supabaseClient';
  */
 export async function trackPageView(pagePath) {
   try {
+    if (typeof navigator !== 'undefined' && !navigator.onLine) return;
     const referrer = document.referrer || 'Direct';
     const userAgent = navigator.userAgent || 'Unknown';
     
@@ -15,7 +16,7 @@ export async function trackPageView(pagePath) {
       user_agent: userAgent.substring(0, 500),
       country_code: 'US',
       created_at: new Date().toISOString()
-    }]);
+    }]).catch(() => {});
   } catch (e) {
     // Silent catch for smooth UX
   }
@@ -28,11 +29,12 @@ export async function trackPageView(pagePath) {
  */
 export async function trackRecruiterEvent(eventType, eventDetail = '') {
   try {
+    if (typeof navigator !== 'undefined' && !navigator.onLine) return;
     await supabase.from('recruiter_events').insert([{
       event_type: eventType,
       event_detail: eventDetail,
       created_at: new Date().toISOString()
-    }]);
+    }]).catch(() => {});
   } catch (e) {
     // Silent catch for smooth UX
   }

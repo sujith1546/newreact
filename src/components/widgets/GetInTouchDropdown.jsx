@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Copy, Calendar, Send, Check, ArrowUpRight, ChevronLeft, Loader2 } from 'lucide-react';
 import { FaLinkedin } from 'react-icons/fa';
 import { useIsland } from '../../context/IslandContext';
+import ScheduleUpcomingModal from './ScheduleUpcomingModal';
 
 export default function GetInTouchDropdown({
   email = "sujithreddy1546@gmail.com",
@@ -14,7 +15,14 @@ export default function GetInTouchDropdown({
   const [open, setOpen] = useState(false);
   const [view, setView] = useState("menu"); // "menu" | "form"
   const [copied, setCopied] = useState(false);
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [form, setForm] = useState({ name: "", email: "", message: "" });
+
+  useEffect(() => {
+    const handleOpenSchedule = () => setIsScheduleModalOpen(true);
+    window.addEventListener('open-schedule-modal', handleOpenSchedule);
+    return () => window.removeEventListener('open-schedule-modal', handleOpenSchedule);
+  }, []);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const dropdownRef = useRef(null);
@@ -282,16 +290,17 @@ export default function GetInTouchDropdown({
                 </button>
 
                 {/* Schedule a Call */}
-                <a
-                  href={calendlyUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  type="button"
                   className="git-menu-item"
-                  onClick={() => setOpen(false)}
+                  onClick={() => {
+                    setOpen(false);
+                    setIsScheduleModalOpen(true);
+                  }}
                 >
                   <Calendar size={15} style={{ color: 'var(--text-secondary)' }} />
                   <span>Schedule a call</span>
-                </a>
+                </button>
 
                 {/* Message on LinkedIn */}
                 <a
@@ -383,6 +392,11 @@ export default function GetInTouchDropdown({
           </motion.div>
         )}
       </AnimatePresence>
+
+      <ScheduleUpcomingModal 
+        isOpen={isScheduleModalOpen} 
+        onClose={() => setIsScheduleModalOpen(false)} 
+      />
     </div>
   );
 }

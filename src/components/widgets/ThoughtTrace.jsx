@@ -1,30 +1,44 @@
 import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Route, Database, Eye, Zap, CheckCircle2, Info, Activity, ChevronDown, ChevronUp } from 'lucide-react';
+import { Route, Database, Eye, Zap, CheckCircle2, Info, Activity, ChevronDown, ChevronUp, ShieldCheck, Cpu } from 'lucide-react';
 
-export default function ThoughtTrace({ steps = [] }) {
-  const [isExpanded, setIsExpanded] = useState(false);
+export default function ThoughtTrace({ steps = [], isFirstTurn = false }) {
+  const [isExpanded, setIsExpanded] = useState(isFirstTurn);
   const totalMs = useMemo(() => steps.reduce((acc, step) => acc + (step.ms || 0), 0), [steps]);
 
   // Determine flow type based on steps
   const isVisionFlow = steps.some(s => s.node === 'vision');
 
+  const getNodeMs = (nodeId) => {
+    const nodeSteps = steps.filter(s => s.node === nodeId);
+    return nodeSteps.reduce((acc, s) => acc + (s.ms || 0), 0);
+  };
+
   const nodes = isVisionFlow
     ? [
         { id: 'input', label: 'Image', icon: <Eye size={12} /> },
         { id: 'vision', label: 'Vision', icon: <Eye size={12} /> },
-        { id: 'gen', label: 'Groq', icon: <Zap size={12} /> }
+        { id: 'critic', label: 'Critic', icon: <ShieldCheck size={12} /> },
+        { id: 'gen', label: 'Groq LPU', icon: <Zap size={12} /> }
       ]
     : [
         { id: 'input', label: 'Query', icon: <Info size={12} /> },
         { id: 'router', label: 'Router', icon: <Route size={12} /> },
-        { id: 'rag', label: 'RAG', icon: <Database size={12} /> },
-        { id: 'gen', label: 'Groq', icon: <Zap size={12} /> }
+        { id: 'rag', label: 'Vector RAG', icon: <Database size={12} /> },
+        { id: 'critic', label: 'Critic', icon: <ShieldCheck size={12} /> },
+        { id: 'gen', label: 'Groq LPU', icon: <Zap size={12} /> }
       ];
 
   // Helper to determine node state: 'pending', 'active', 'done'
   const getNodeState = (nodeId) => {
     if (nodeId === 'input') return 'done';
+    if (nodeId === 'critic') {
+      const ragDone = steps.some(s => s.node === 'rag' && s.status === 'done');
+      if (ragDone) return 'done';
+      const ragActive = steps.some(s => s.node === 'rag' && s.status === 'active');
+      if (ragActive) return 'active';
+      return 'pending';
+    }
     const nodeSteps = steps.filter(s => s.node === nodeId);
     if (nodeSteps.length === 0) return 'pending';
     if (nodeSteps.some(s => s.status === 'done')) return 'done';
@@ -35,6 +49,7 @@ export default function ThoughtTrace({ steps = [] }) {
     switch (node) {
       case 'router': return <Route size={12} />;
       case 'rag': return <Database size={12} />;
+      case 'critic': return <ShieldCheck size={12} />;
       case 'vision': return <Eye size={12} />;
       case 'gen': return <Zap size={12} />;
       default: return <Activity size={12} />;
@@ -49,12 +64,12 @@ export default function ThoughtTrace({ steps = [] }) {
         type="button"
       >
         <span className="trace-status-text">
-          <Activity size={12} className={steps.length && !steps[steps.length - 1].status?.includes('done') ? 'spinning' : ''} />
-          <span>Multi-Agent Orchestration</span>
+          <Cpu size={13} color="#3b82f6" className={steps.length && !steps[steps.length - 1].status?.includes('done') ? 'spinning' : ''} />
+          <span>Agentic AI Workflow Graph</span>
         </span>
         <span className="trace-header-right">
           <span className="trace-latency">
-            {totalMs > 0 ? `${totalMs}ms` : 'calculating...'}
+            {totalMs > 0 ? `${totalMs}ms` : 'sub-second'}
           </span>
           {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
         </span>
@@ -69,9 +84,9 @@ export default function ThoughtTrace({ steps = [] }) {
             style={{ overflow: 'hidden' }}
           >
             <div className="trace-pipeline-svg">
-              <svg viewBox="0 0 300 80" style={{ width: '100%', height: 'auto', minHeight: '80px', overflow: 'visible' }}>
+              <svg viewBox="0 0 340 80" style={{ width: '100%', height: 'auto', minHeight: '80px', overflow: 'visible' }}>
                 {nodes.map((n, i) => {
-                  const x = 30 + (i * (240 / (nodes.length - 1)));
+                  const x = 28 + (i * (284 / (nodes.length - 1)));
                   const y = 35;
                   const state = getNodeState(n.id);
                   const color = state === 'done' ? '#10b981' : state === 'active' ? '#3b82f6' : '#64748b';
@@ -80,8 +95,8 @@ export default function ThoughtTrace({ steps = [] }) {
                     <g key={n.id}>
                       {i < nodes.length - 1 && (
                         <line 
-                          x1={x + 24} y1={y} 
-                          x2={30 + ((i + 1) * (240 / (nodes.length - 1))) - 24} y2={y}
+                          x1={x + 20} y1={y} 
+                          x2={28 + ((i + 1) * (284 / (nodes.length - 1))) - 20} y2={y}
                           stroke={getNodeState(nodes[i+1].id) !== 'pending' ? '#3b82f6' : '#334155'}
                           strokeWidth="3"
                           strokeDasharray={getNodeState(nodes[i+1].id) === 'active' ? "6 6" : "none"}
@@ -93,22 +108,22 @@ export default function ThoughtTrace({ steps = [] }) {
                       )}
                       
                       <circle 
-                        cx={x} cy={y} r="18" 
+                        cx={x} cy={y} r="16" 
                         fill={state === 'pending' ? 'transparent' : `${color}20`}
                         stroke={color} strokeWidth="2"
                       />
                       
                       {state === 'active' && (
-                        <circle cx={x} cy={y} r="22" fill="none" stroke={color} strokeWidth="1" opacity="0.5">
-                          <animate attributeName="r" values="18; 28" dur="1s" repeatCount="indefinite" />
-                          <animate attributeName="opacity" values="0.8; 0" dur="1s" repeatCount="indefinite" />
+                        <circle cx={x} cy={y} r="22" fill="none" stroke={color} strokeWidth="1.5" opacity="0.6">
+                          <animate attributeName="r" values="16; 26" dur="1.2s" repeatCount="indefinite" />
+                          <animate attributeName="opacity" values="0.8; 0" dur="1.2s" repeatCount="indefinite" />
                         </circle>
                       )}
                       
-                      <text x={x} y={y + 5} fontSize="12" textAnchor="middle" fill={color} fontFamily="monospace" fontWeight="700">
-                        {n.id.substring(0,2).toUpperCase()}
+                      <text x={x} y={y + 4} fontSize="11" textAnchor="middle" fill={color} fontFamily="monospace" fontWeight="800">
+                        {n.id === 'critic' ? 'CT' : n.id.substring(0,2).toUpperCase()}
                       </text>
-                      <text x={x} y={y + 32} fontSize="11" textAnchor="middle" fill="var(--text-secondary)" fontWeight="600">
+                      <text x={x} y={y + 30} fontSize="10" textAnchor="middle" fill="var(--text-secondary)" fontWeight="600">
                         {n.label}
                       </text>
                     </g>

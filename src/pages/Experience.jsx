@@ -5,7 +5,6 @@ import useRealtimeData from '../hooks/useRealtimeData';
 
 export default function Experience() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
-  const [expandedId, setExpandedId] = useState(null);
   const { data: experiences, loading } = useRealtimeData('experience', { orderColumn: 'display_order', ascending: true });
 
   useEffect(() => {
@@ -232,38 +231,30 @@ export default function Experience() {
           </div>
         ) : (
           <div className="timeline">
-            {experiences.map((exp, index) => {
-              const isExpanded = isMobile ? (expandedId === exp.id || (expandedId === null && index === 0)) : true;
-              return (
-                <div 
-                  key={exp.id} 
-                  className={`timeline-item${isExpanded ? ' timeline-expanded' : ''}`}
-                  onClick={() => isMobile && setExpandedId(expandedId === exp.id ? null : exp.id)}
-                  style={{ cursor: isMobile ? 'pointer' : 'default' }}
-                >
-                  <div className="timeline-dot" />
-                  <div className="timeline-content">
-                    <div className="timeline-header">
-                      <div className="timeline-title">
-                        <h3>{exp.role}</h3>
-                        <p>{exp.company} {exp.is_education ? '(Education)' : ''}</p>
-                      </div>
-                      <div className="timeline-date">
-                        <Calendar size={14} />
-                        {exp.start_date} — {exp.end_date || 'Present'}
-                      </div>
+            {experiences.map((exp) => (
+              <div key={exp.id} className="timeline-item">
+                <div className="timeline-dot" />
+                <div className="timeline-content">
+                  <div className="timeline-header">
+                    <div className="timeline-title">
+                      <h3>{exp.role}</h3>
+                      <p>{exp.company} {exp.is_education ? '(Education)' : ''}</p>
                     </div>
-                    {isExpanded && exp.description_bullets && exp.description_bullets.length > 0 && (
-                      <ul className="timeline-bullets">
-                        {exp.description_bullets.map((bullet, i) => (
-                          <li key={i}>{bullet}</li>
-                        ))}
-                      </ul>
-                    )}
+                    <div className="timeline-date">
+                      <Calendar size={14} />
+                      {exp.start_date} — {exp.end_date || 'Present'}
+                    </div>
                   </div>
+                  {exp.description_bullets && exp.description_bullets.length > 0 && (
+                    <ul className="timeline-bullets">
+                      {exp.description_bullets.map((bullet, i) => (
+                        <li key={i}>{bullet}</li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         )}
       </div>

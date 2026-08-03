@@ -45,7 +45,7 @@ function getBreadcrumbs(pathname) {
   const clean = pathname.replace(/^\//, '') || 'home';
   const labels = {
     home: 'Home', about: 'About', skills: 'Skills', projects: 'Projects',
-    blog: 'Blog', education: 'Education', experience: 'Experience',
+    education: 'Education', experience: 'Experience',
     certifications: 'Certifications', contact: 'Contact'
   };
   return {

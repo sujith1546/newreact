@@ -18,10 +18,23 @@ export function IslandProvider({ children }) {
   const [isHudOpen, setIsHudOpen] = useState(false);
   const [visitorCount, setVisitorCount] = useState(1);
   const [isEqualizerActive, setIsEqualizerActive] = useState(false);
+  const [aiStatus, setAiStatus] = useState('idle'); // 'idle' | 'thinking' | 'responding'
 
   const queueRef = useRef([]);
   const isProcessingRef = useRef(false);
   const timerRef = useRef(null);
+
+  // Global Keyboard Shortcut: Alt + I to toggle Dynamic Island HUD
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.altKey && (e.key === 'i' || e.key === 'I')) || (e.ctrlKey && e.shiftKey && (e.key === 'i' || e.key === 'I'))) {
+        e.preventDefault();
+        setIsHudOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Sync real-time Supabase presence viewer count
   useEffect(() => {
@@ -138,7 +151,9 @@ export function IslandProvider({ children }) {
       closeHud,
       visitorCount,
       isEqualizerActive,
-      setIsEqualizerActive
+      setIsEqualizerActive,
+      aiStatus,
+      setAiStatus
     }}>
       {children}
     </IslandContext.Provider>

@@ -78,9 +78,15 @@ export default function WelcomeModal({ onNavClick }) {
   const shortcutHint = isMobile ? "Tap anywhere outside to close" : "Esc to close • Enter to view projects";
 
   useEffect(() => {
-    if (localStorage.getItem("welcome_dismissed_forever") === "true") return;
+    if (localStorage.getItem("welcome_dismissed_forever") === "true") {
+      window.dispatchEvent(new CustomEvent("welcome-modal-closed"));
+      return;
+    }
     // Only trigger on the Home page ('/' or '/home')
-    if (location.pathname !== '/' && location.pathname !== '' && location.pathname !== '/home') return;
+    if (location.pathname !== '/' && location.pathname !== '' && location.pathname !== '/home') {
+      window.dispatchEvent(new CustomEvent("welcome-modal-closed"));
+      return;
+    }
 
     setIsOpen(true);
   }, [location.pathname]);
@@ -162,6 +168,7 @@ export default function WelcomeModal({ onNavClick }) {
       localStorage.setItem("welcome_dismissed_forever", "true");
     }
     setIsOpen(false);
+    window.dispatchEvent(new CustomEvent("welcome-modal-closed"));
   };
 
   if (!isOpen) return null;

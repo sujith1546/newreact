@@ -411,31 +411,15 @@ export default function Projects() {
         .dsheet-action-pill--primary { background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%); color: #ffffff !important; border: none; box-shadow: 0 4px 16px rgba(59,130,246,.3); }
         .dsheet-action-pill--primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59,130,246,.45); }
 
-        /* ========== MOBILE SPECIFIC CAROUSEL ========== */
+        /* ========== MOBILE SPECIFIC LIST ========== */
         @media (max-width: 900px) {
-          .mpj-list {
-            display: flex !important;
-            flex-direction: row !important;
-            overflow-x: auto !important;
-            scroll-snap-type: x mandatory !important;
-            gap: 12px !important;
-            padding: 8px 4px 16px !important;
-            -webkit-overflow-scrolling: touch;
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-          }
-          .mpj-list::-webkit-scrollbar { display: none; }
-          .mpj-row {
-            flex: 0 0 84% !important;
-            scroll-snap-align: center !important;
-            position: relative; overflow: hidden; display: flex; align-items: center; gap: 10px; padding: 14px 16px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 18px; text-align: left; cursor: pointer;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.06);
-          }
-          .mpj-stripe { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; border-radius: 18px 0 0 18px; }
-          .mpj-icon { width: 36px; height: 36px; border-radius: 12px; border: 1px solid; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0; }
+          .mpj-list { display: flex; flex-direction: column; gap: 8px; }
+          .mpj-row { position: relative; overflow: hidden; display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 14px; width: 100%; text-align: left; cursor: pointer; }
+          .mpj-stripe { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; border-radius: 14px 0 0 14px; }
+          .mpj-icon { width: 32px; height: 32px; border-radius: 10px; border: 1px solid; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; }
           .mpj-body { flex: 1; min-width: 0; }
-          .mpj-title { font-size: 14px; font-weight: 750; color: var(--text-primary); margin: 0 0 2px; }
-          .mpj-desc { font-size: 11px; color: var(--text-secondary); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          .mpj-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin: 0; }
+          .mpj-desc { font-size: 10.5px; color: var(--text-secondary); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
           .mpj-chevron { color: var(--text-muted); flex-shrink: 0; }
         }
       `}</style>

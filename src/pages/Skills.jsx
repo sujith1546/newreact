@@ -19,12 +19,24 @@ const categoryMeta = {
 };
 
 const containerVariants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.12,
+      delayChildren: 0.06
+    }
+  },
 };
+
 const itemVariants = {
-  hidden: { opacity: 0, y: 15 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } },
+  hidden: { opacity: 0, y: 25, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] }
+  },
 };
 
 const levelColor = {
@@ -845,7 +857,7 @@ export default function Skills() {
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.3 }}
               >
-                {skillCategories.map(category => {
+                {skillCategories.map((category, catIdx) => {
                   const Icon = categoryIconMap[category.id] || categoryIconMap.languages;
                   const isFullWidth = category.id === 'exploring';
                   return (
@@ -854,18 +866,37 @@ export default function Skills() {
                       className="skill-category-card"
                       style={isFullWidth ? { gridColumn: '1 / -1', marginTop: '-4px' } : {}}
                       variants={itemVariants}
+                      whileHover={{ translateY: -4, boxShadow: '0 12px 30px rgba(59,130,246,0.12)' }}
                     >
                       <div className="skill-category-header">
-                        <div className="skill-category-icon">
+                        <motion.div 
+                          className="skill-category-icon"
+                          whileHover={{ rotate: 10, scale: 1.1 }}
+                          transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+                        >
                           <Icon size={22} style={{ strokeWidth: 1.5 }} />
-                        </div>
+                        </motion.div>
                         <h2 className="skill-category-title">{category.title}</h2>
                       </div>
                       <div className="skill-pills">
-                        {category.skills.map(skill => (
-                          <SkillTooltip key={skill.id} skill={skill}>
-                            <span className="skill-pill">{skill.name}</span>
-                          </SkillTooltip>
+                        {category.skills.map((skill, skillIdx) => (
+                          <motion.div
+                            key={skill.id}
+                            initial={{ opacity: 0, scale: 0.8, y: 12 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            transition={{
+                              duration: 0.35,
+                              delay: 0.15 + catIdx * 0.08 + skillIdx * 0.03,
+                              ease: [0.16, 1, 0.3, 1]
+                            }}
+                            whileHover={{ scale: 1.06, y: -2 }}
+                            whileTap={{ scale: 0.95 }}
+                            style={{ display: 'inline-block' }}
+                          >
+                            <SkillTooltip skill={skill}>
+                              <span className="skill-pill">{skill.name}</span>
+                            </SkillTooltip>
+                          </motion.div>
                         ))}
                       </div>
                     </motion.div>

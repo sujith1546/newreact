@@ -68,12 +68,10 @@ function AnimatedRoutes() {
             <Route path="about" element={null} />
             <Route path="skills" element={null} />
             <Route path="projects" element={null} />
-            <Route path="blog" element={null} />
             <Route path="education" element={null} />
             <Route path="experience" element={null} />
             <Route path="certifications" element={null} />
             <Route path="contact" element={null} />
-            <Route path="updates" element={null} />
           </Route>
           <Route path="/resume-preview" element={<ResumePreview />} />
           <Route path="/admin/login" element={<AdminLogin />} />
@@ -120,21 +118,37 @@ function AppContent() {
         // Prevent layout shift scrollbars during splash screen
         document.body.style.overflow = 'hidden';
 
+        // Detect client network capabilities
+        const conn = typeof navigator !== 'undefined' ? (navigator.connection || navigator.mozConnection || navigator.webkitConnection) : null;
+        const effectiveType = conn?.effectiveType || '4g';
+        const saveData = conn?.saveData || false;
+        const isFastNetwork = effectiveType === '4g' && !saveData;
+
         // Stage 1: Always fetch global required data
         const corePromises = [
           prefetchTable('site_settings', { single: true, filter: { column: 'id', value: 1 } })
         ];
 
-        // Route-specific intelligent prefetching (deep linking)
-        const path = window.location.pathname;
-        if (path.startsWith('/projects')) {
-          corePromises.push(prefetchTable('projects', { orderColumn: 'created_at', ascending: true }));
-        } else if (path.startsWith('/experience')) {
-          corePromises.push(prefetchTable('experience', { orderColumn: 'display_order', ascending: true }));
-        } else if (path.startsWith('/skills')) {
-          corePromises.push(prefetchTable('skills', { orderColumn: 'order_index', ascending: true }));
-        } else if (path.startsWith('/education')) {
-          corePromises.push(prefetchTable('education', { orderColumn: 'display_order', ascending: true }));
+        if (isFastNetwork) {
+          // Fast connection: Parallel batch prefetch all primary tables immediately
+          corePromises.push(
+            prefetchTable('projects', { orderColumn: 'created_at', ascending: true }),
+            prefetchTable('experience', { orderColumn: 'display_order', ascending: true }),
+            prefetchTable('skills', { orderColumn: 'order_index', ascending: true }),
+            prefetchTable('education', { orderColumn: 'display_order', ascending: true })
+          );
+        } else {
+          // Route-specific intelligent prefetching for constrained connections
+          const path = window.location.pathname;
+          if (path.startsWith('/projects')) {
+            corePromises.push(prefetchTable('projects', { orderColumn: 'created_at', ascending: true }));
+          } else if (path.startsWith('/experience')) {
+            corePromises.push(prefetchTable('experience', { orderColumn: 'display_order', ascending: true }));
+          } else if (path.startsWith('/skills')) {
+            corePromises.push(prefetchTable('skills', { orderColumn: 'order_index', ascending: true }));
+          } else if (path.startsWith('/education')) {
+            corePromises.push(prefetchTable('education', { orderColumn: 'display_order', ascending: true }));
+          }
         }
 
         await Promise.all(corePromises);
@@ -144,7 +158,7 @@ function AppContent() {
         clearTimeout(safetyTimer);
         forceUnlock();
 
-        // Stage 3: Silent Background Prefetching Engine (Everything else)
+        // Stage 3: Silent Background Prefetching Engine
         setTimeout(async () => {
           try {
             await Promise.all([
@@ -154,7 +168,7 @@ function AppContent() {
               prefetchTable('education', { orderColumn: 'display_order', ascending: true })
             ]);
           } catch (err) {}
-        }, 1000);
+        }, 800);
       }
     }
     

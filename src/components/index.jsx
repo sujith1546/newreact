@@ -11,6 +11,7 @@ export { default as ParticleCanvas } from './layout/ParticleCanvas';
 export { default as SplashScreen } from './layout/SplashScreen';
 export { default as SEOHelmet } from './layout/SEOHelmet';
 export { default as DynamicIsland } from './layout/DynamicIsland';
+export { default as StatsRow } from './ui/StatsRow';
 
 // 2. Interactive Widgets & Overlays
 export { default as ChatBot } from './widgets/ChatBot';
@@ -23,6 +24,10 @@ export { default as QRModal } from './widgets/QRModal';
 export { default as ResumeQuickLook } from './widgets/ResumeQuickLook';
 export { default as MobileStatusPanel } from './widgets/MobileStatusPanel';
 export { default as MobileDashboard } from './widgets/MobileDashboard';
+export { default as ScheduleUpcomingModal } from './widgets/ScheduleUpcomingModal';
+export { default as GitHubCommitsModal } from './widgets/GitHubCommitsModal';
+export { default as UpdatesModal } from './widgets/UpdatesModal';
+export { default as AiLiveUsageModal } from './widgets/AiLiveUsageModal';
 
 // 3. Developer & Diagnostic Tools
 export { default as SystemDiagnostics } from './dev/SystemDiagnostics';
@@ -38,7 +43,10 @@ export { default as TechStackTicker } from './ui/TechStackTicker';
 export { default as ScrollReveal } from './ui/ScrollReveal';
 export { default as SkillTooltip } from './ui/SkillTooltip';
 export { default as FAB } from './ui/FAB';
-export { default as StatCard } from './ui/StatCard';
+export { default as EmailDomainSuggest } from './ui/EmailDomainSuggest';
+export { default as CharacterCounter } from './ui/CharacterCounter';
+export { default as InquiryTypeSelector } from './ui/InquiryTypeSelector';
+export { default as CopyButton } from './ui/CopyButton';
 
 // 5. Guards & Security
 export * from './MaintenanceGate';

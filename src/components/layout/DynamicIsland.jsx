@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useIsland } from '../../context/IslandContext';
 import { useTheme } from '../../context/ThemeContext';
-import { Sparkles, Command, FileText, Sun, Moon, ShieldCheck, Zap, X, Users, Volume2, Search } from 'lucide-react';
+import { Sparkles, Command, FileText, Sun, Moon, ShieldCheck, Zap, X, Users, Volume2, Search, Mail, Clock, Check, ExternalLink } from 'lucide-react';
 
 const SPRING_TRANSITION = {
   type: 'spring',
@@ -24,7 +24,7 @@ const BARS_CONFIG = [
   { x: 17, min: 3, max: 11, duration: 1500, delay: 540, color: '#e8e8ec' },
 ];
 
-const WaveformSVG = ({ isSettled = false }) => {
+const WaveformSVG = ({ isSettled = false, activeColor = null }) => {
   const [heights, setHeights] = useState(BARS_CONFIG.map((b) => b.min));
   const animFrameRef = useRef(null);
 
@@ -71,7 +71,7 @@ const WaveformSVG = ({ isSettled = false }) => {
             width="2"
             height={h}
             rx="1"
-            fill={bar.color}
+            fill={activeColor || bar.color}
           />
         );
       })}
@@ -84,6 +84,24 @@ export default function DynamicIsland() {
     typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')
   );
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 900);
+  const [istTime, setIstTime] = useState('');
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Kolkata',
+        hour: 'numeric',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true,
+      });
+      setIstTime(formatter.format(now));
+    };
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 900);
@@ -112,7 +130,8 @@ export default function DynamicIsland() {
     isHudOpen,
     toggleHud,
     closeHud,
-    visitorCount
+    visitorCount,
+    aiStatus
   } = useIsland();
 
   const { toggleTheme } = useTheme();
@@ -122,6 +141,7 @@ export default function DynamicIsland() {
   const hudRef = useRef(null);
 
   const isNotificationActive = islandState.isOpen;
+  const isAiActive = aiStatus !== 'idle';
   const effectiveHover = isMobile ? false : isHovered;
 
   useEffect(() => {
@@ -133,7 +153,17 @@ export default function DynamicIsland() {
     return () => observer.disconnect();
   }, []);
 
-  if (isAdminPage) return null;
+  // Close HUD when Escape is pressed
+  useEffect(() => {
+    if (!isHudOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        closeHud();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isHudOpen, closeHud]);
 
   // Close HUD when clicking or touching outside
   useEffect(() => {
@@ -152,19 +182,7 @@ export default function DynamicIsland() {
     };
   }, [isHudOpen, closeHud]);
 
-  const handleToggleTheme = (e) => {
-    e.stopPropagation();
-    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-    const nextTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    toggleTheme(e);
-    triggerIsland({
-      title: `Switched to ${nextTheme === 'dark' ? 'Dark' : 'Light'} Mode`,
-      subtitle: 'System theme updated',
-      icon: nextTheme === 'dark' ? <Moon size={15} /> : <Sun size={15} />,
-      color: '#3b82f6',
-      duration: 2500
-    });
-  };
+  if (isAdminPage) return null;
 
   const handleOpenCommandSearch = (e) => {
     e.stopPropagation();
@@ -174,6 +192,25 @@ export default function DynamicIsland() {
     } else {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'k', metaKey: true, ctrlKey: true }));
     }
+  };
+
+  const handleOpenChatBot = (e) => {
+    e.stopPropagation();
+    closeHud();
+    window.dispatchEvent(new CustomEvent('open-chatbot'));
+  };
+
+  const handleCopyEmail = (e) => {
+    e.stopPropagation();
+    closeHud();
+    navigator.clipboard.writeText('sujithreddy1546@gmail.com');
+    triggerIsland({
+      title: 'Email Copied!',
+      subtitle: 'sujithreddy1546@gmail.com',
+      icon: <Mail size={15} />,
+      color: '#8b5cf6',
+      duration: 2500
+    });
   };
 
   const handleDownloadCV = (e) => {
@@ -226,9 +263,15 @@ export default function DynamicIsland() {
         style={{
           background: '#07090e',
           borderRadius: isHudOpen ? '20px' : '999px',
-          border: '1px solid #2a2c33',
+          border: isHudOpen
+            ? '1px solid #3b82f6'
+            : isAiActive
+            ? '1px solid rgba(6, 182, 212, 0.6)'
+            : '1px solid #2a2c33',
           boxShadow: isHudOpen
-            ? '0 24px 60px rgba(0,0,0,0.75), 0 0 30px rgba(59,130,246,0.18)'
+            ? '0 24px 60px rgba(0,0,0,0.75), 0 0 30px rgba(59,130,246,0.22)'
+            : isAiActive
+            ? '0 12px 35px rgba(6, 182, 212, 0.4), 0 0 25px rgba(139, 92, 246, 0.5)'
             : isNotificationActive
             ? '0 20px 50px rgba(0,0,0,0.65), 0 0 20px rgba(16,185,129,0.2)'
             : '0 6px 22px rgba(0,0,0,0.4)',
@@ -239,18 +282,18 @@ export default function DynamicIsland() {
           cursor: 'pointer',
           whiteSpace: 'nowrap',
           overflow: 'hidden',
-          padding: isHudOpen ? '14px 16px' : isNotificationActive ? '10px 16px' : effectiveHover ? '8px 16px' : '0 10px',
+          padding: isHudOpen ? '14px 16px' : isNotificationActive ? '10px 16px' : isAiActive ? '8px 16px' : effectiveHover ? '8px 16px' : '0 10px',
           height: isHudOpen ? 'auto' : isNotificationActive ? '44px' : '32px',
-          width: isHudOpen ? (isMobile ? 'calc(94vw)' : '320px') : 'auto',
-          maxWidth: isHudOpen ? '340px' : isNotificationActive ? '290px' : effectiveHover ? '190px' : '36px',
-          minWidth: isHudOpen ? (isMobile ? '280px' : '320px') : isNotificationActive ? '250px' : effectiveHover ? '180px' : '32px',
+          width: isHudOpen ? (isMobile ? 'calc(94vw)' : '340px') : 'auto',
+          maxWidth: isHudOpen ? '360px' : isNotificationActive ? '290px' : isAiActive ? '220px' : effectiveHover ? '190px' : '36px',
+          minWidth: isHudOpen ? (isMobile ? '280px' : '340px') : isNotificationActive ? '250px' : isAiActive ? '200px' : effectiveHover ? '180px' : '32px',
           boxSizing: 'border-box',
           position: 'relative',
           willChange: 'width, height, border-radius'
         }}
       >
         <AnimatePresence mode="popLayout" initial={false}>
-          {/* Stage 3: Full Interactive Telemetry HUD Mode */}
+          {/* Stage 4: Full Interactive Telemetry HUD Mode */}
           {isHudOpen ? (
             <motion.div
               key="hud-mode"
@@ -280,6 +323,14 @@ export default function DynamicIsland() {
 
               {/* Telemetry Status Items */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {/* Live IST Clock & Visitor Presence */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.04)', padding: '7px 10px', borderRadius: '9px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                  <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <Clock size={12} style={{ color: '#3b82f6' }} /> IST Time
+                  </span>
+                  <span style={{ color: '#60a5fa', fontSize: '10.5px', fontWeight: 700, fontFamily: 'monospace' }}>{istTime || '10:18 AM IST'}</span>
+                </div>
+
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.04)', padding: '7px 10px', borderRadius: '9px', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <Users size={12} style={{ color: '#10b981' }} /> Active Viewers
@@ -289,23 +340,24 @@ export default function DynamicIsland() {
 
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.04)', padding: '7px 10px', borderRadius: '9px', border: '1px solid rgba(255,255,255,0.06)' }}>
                   <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Zap size={12} style={{ color: '#3b82f6' }} /> RAG / AI Pipeline
+                    <Zap size={12} style={{ color: '#8b5cf6' }} /> Work Status
                   </span>
-                  <span style={{ color: '#3b82f6', fontSize: '10.5px', fontWeight: 700 }}>Sub-2s Latency</span>
+                  <span style={{ color: '#a78bfa', fontSize: '10.5px', fontWeight: 700 }}>Available for roles</span>
                 </div>
               </div>
 
-              {/* Quick Action Control Buttons */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px', paddingTop: '2px' }}>
+              {/* 4-Grid Quick Action Controls */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px', paddingTop: '2px' }}>
                 <button
                   onClick={handleOpenCommandSearch}
+                  title="Search Palette (Ctrl + K)"
                   style={{
                     background: 'rgba(255,255,255,0.08)',
                     border: '1px solid rgba(255,255,255,0.12)',
                     borderRadius: '8px',
                     padding: '7px 4px',
                     color: '#ffffff',
-                    fontSize: '10.5px',
+                    fontSize: '10px',
                     fontWeight: 600,
                     display: 'flex',
                     flexDirection: 'column',
@@ -315,19 +367,66 @@ export default function DynamicIsland() {
                     transition: 'background 0.2s'
                   }}
                 >
-                  {isMobile ? <Sparkles size={13} style={{ color: '#06b6d4' }} /> : <Command size={13} style={{ color: '#8b5cf6' }} />}
-                  <span>{isMobile ? 'Atom AI' : 'Command'}</span>
+                  <Command size={13} style={{ color: '#8b5cf6' }} />
+                  <span>Cmd</span>
                 </button>
 
                 <button
-                  onClick={handleDownloadCV}
+                  onClick={handleOpenChatBot}
+                  title="Launch Atom AI Assistant"
                   style={{
                     background: 'rgba(255,255,255,0.08)',
                     border: '1px solid rgba(255,255,255,0.12)',
                     borderRadius: '8px',
                     padding: '7px 4px',
                     color: '#ffffff',
-                    fontSize: '10.5px',
+                    fontSize: '10px',
+                    fontWeight: 600,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '4px',
+                    cursor: 'pointer',
+                    transition: 'background 0.2s'
+                  }}
+                >
+                  <Sparkles size={13} style={{ color: '#06b6d4' }} />
+                  <span>Atom AI</span>
+                </button>
+
+                <button
+                  onClick={handleCopyEmail}
+                  title="Copy Email Address"
+                  style={{
+                    background: 'rgba(255,255,255,0.08)',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    borderRadius: '8px',
+                    padding: '7px 4px',
+                    color: '#ffffff',
+                    fontSize: '10px',
+                    fontWeight: 600,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '4px',
+                    cursor: 'pointer',
+                    transition: 'background 0.2s'
+                  }}
+                >
+                  <Mail size={13} style={{ color: '#ec4899' }} />
+                  <span>Email</span>
+                </button>
+
+                <button
+                  onClick={handleDownloadCV}
+                  title="Download Resume PDF"
+                  style={{
+                    background: 'rgba(255,255,255,0.08)',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    borderRadius: '8px',
+                    padding: '7px 4px',
+                    color: '#ffffff',
+                    fontSize: '10px',
                     fontWeight: 600,
                     display: 'flex',
                     flexDirection: 'column',
@@ -340,32 +439,10 @@ export default function DynamicIsland() {
                   <FileText size={13} style={{ color: '#10b981' }} />
                   <span>Resume</span>
                 </button>
-
-                <button
-                  onClick={handleToggleTheme}
-                  style={{
-                    background: 'rgba(255,255,255,0.08)',
-                    border: '1px solid rgba(255,255,255,0.12)',
-                    borderRadius: '8px',
-                    padding: '7px 4px',
-                    color: '#ffffff',
-                    fontSize: '10.5px',
-                    fontWeight: 600,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '4px',
-                    cursor: 'pointer',
-                    transition: 'background 0.2s'
-                  }}
-                >
-                  {isDark ? <Sun size={13} style={{ color: '#f59e0b' }} /> : <Moon size={13} style={{ color: '#3b82f6' }} />}
-                  <span>Theme</span>
-                </button>
               </div>
             </motion.div>
           ) : isNotificationActive ? (
-            /* Stage 2: Active System Notification Event Mode */
+            /* Stage 3: Active System Notification Event Mode */
             <motion.div
               key="notification-state"
               layout
@@ -430,6 +507,30 @@ export default function DynamicIsland() {
                 </div>
               )}
             </motion.div>
+          ) : isAiActive ? (
+            /* Stage 2: AI Thinking Ambient State */
+            <motion.div
+              key="ai-thinking-state"
+              layout
+              variants={FADE_BLUR_VARIANTS}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={SPRING_TRANSITION}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+            >
+              <motion.div
+                animate={{ scale: [1, 1.2, 1], rotate: [0, 15, -15, 0] }}
+                transition={{ duration: 1.4, repeat: Infinity, ease: 'easeInOut' }}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <Sparkles size={14} style={{ color: '#06b6d4' }} />
+              </motion.div>
+              <span style={{ color: '#ffffff', fontSize: '11.5px', fontWeight: 700, letterSpacing: '0.02em' }}>
+                Atom AI Thinking...
+              </span>
+              <WaveformSVG isSettled={false} activeColor="#06b6d4" />
+            </motion.div>
           ) : effectiveHover ? (
             /* Hovered Idle State (Desktop only) */
             <motion.div
@@ -467,3 +568,4 @@ export default function DynamicIsland() {
     </div>
   );
 }
+

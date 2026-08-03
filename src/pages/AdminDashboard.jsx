@@ -15,7 +15,6 @@ import SkillsPanel from '../components/admin/panels/SkillsPanel';
 import ProjectsPanel from '../components/admin/panels/ProjectsPanel';
 import UpdatesPanel from '../components/admin/panels/UpdatesPanel';
 import AiChatsPanel from '../components/admin/panels/AiChatsPanel';
-import BlogPanel from '../components/admin/panels/BlogPanel';
 import TestimonialsPanel from '../components/admin/panels/TestimonialsPanel';
 import { NAV_GROUPS, ALL_NAV_ITEMS } from '../components/admin/shared/constants';
 import { useDashboardStats } from '../components/admin/shared/useDashboardStats';
@@ -192,7 +191,6 @@ function AdminDashboardDesktop() {
           {activeTab === "home"          && <HomePanel />}
           {activeTab === "messages"      && <MessagesAdmin />}
           {activeTab === "projects"      && <ProjectsPanel />}
-          {activeTab === "blog"          && <BlogPanel />}
           {activeTab === "testimonials"  && <TestimonialsPanel />}
           {activeTab === "updates"       && <UpdatesPanel />}
           {activeTab === "chats"         && <AiChatsPanel />}
