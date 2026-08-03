@@ -16,6 +16,7 @@ import EmailModal from '../widgets/EmailModal';
 import GitHubCommitsModal from '../widgets/GitHubCommitsModal';
 import UpdatesModal from '../widgets/UpdatesModal';
 import AiLiveUsageModal from '../widgets/AiLiveUsageModal';
+import MobilePreviewModal from '../widgets/MobilePreviewModal';
 import { useSupabasePresence } from '../../hooks/useSupabasePresence';
 import { useAuth } from '../../context/AuthContext';
 
@@ -103,6 +104,7 @@ export default function Sidebar({ activeSection, onNavClick }) {
   const [isGithubModalOpen, setIsGithubModalOpen] = useState(false);
   const [isUpdatesModalOpen, setIsUpdatesModalOpen] = useState(false);
   const [isAiUsageOpen, setIsAiUsageOpen] = useState(false);
+  const [isMobilePreviewOpen, setIsMobilePreviewOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const isMainPage = location.pathname === '/';
@@ -111,13 +113,16 @@ export default function Sidebar({ activeSection, onNavClick }) {
     const handleOpenGithub = () => setIsGithubModalOpen(true);
     const handleOpenUpdates = () => setIsUpdatesModalOpen(true);
     const handleOpenAiUsage = () => setIsAiUsageOpen(true);
+    const handleOpenMobilePreview = () => setIsMobilePreviewOpen(true);
     window.addEventListener('open-github', handleOpenGithub);
     window.addEventListener('open-updates', handleOpenUpdates);
     window.addEventListener('open-ai-usage', handleOpenAiUsage);
+    window.addEventListener('open-mobile-preview', handleOpenMobilePreview);
     return () => {
       window.removeEventListener('open-github', handleOpenGithub);
       window.removeEventListener('open-updates', handleOpenUpdates);
       window.removeEventListener('open-ai-usage', handleOpenAiUsage);
+      window.removeEventListener('open-mobile-preview', handleOpenMobilePreview);
     };
   }, []);
 
@@ -687,6 +692,7 @@ export default function Sidebar({ activeSection, onNavClick }) {
       <GitHubCommitsModal isOpen={isGithubModalOpen} onClose={() => setIsGithubModalOpen(false)} />
       <UpdatesModal isOpen={isUpdatesModalOpen} onClose={() => setIsUpdatesModalOpen(false)} />
       <AiLiveUsageModal isOpen={isAiUsageOpen} onClose={() => setIsAiUsageOpen(false)} />
+      <MobilePreviewModal isOpen={isMobilePreviewOpen} onClose={() => setIsMobilePreviewOpen(false)} />
 
       {/* Build Tag Footer */}
       <div className="sidebar-build-tag">

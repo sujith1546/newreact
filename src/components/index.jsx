@@ -28,6 +28,7 @@ export { default as ScheduleUpcomingModal } from './widgets/ScheduleUpcomingModa
 export { default as GitHubCommitsModal } from './widgets/GitHubCommitsModal';
 export { default as UpdatesModal } from './widgets/UpdatesModal';
 export { default as AiLiveUsageModal } from './widgets/AiLiveUsageModal';
+export { default as MobilePreviewModal } from './widgets/MobilePreviewModal';
 
 // 3. Developer & Diagnostic Tools
 export { default as SystemDiagnostics } from './dev/SystemDiagnostics';
