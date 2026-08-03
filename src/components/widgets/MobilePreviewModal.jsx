@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Smartphone, Tablet, RotateCw, RefreshCw, Apple, Smartphone as AndroidIcon, Globe, Wifi, Battery } from 'lucide-react';
+import { X, Smartphone, Tablet, RotateCw, RefreshCw, Apple, Smartphone as AndroidIcon, Globe, Wifi, Battery, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 
 const DEVICES = {
@@ -14,6 +14,7 @@ export default function MobilePreviewModal({ isOpen, onClose }) {
   const { theme } = useTheme();
   const [deviceKey, setDeviceKey] = useState("iphone-16-pro");
   const [orientation, setOrientation] = useState("portrait");
+  const [zoomScale, setZoomScale] = useState("auto"); // "auto" | 0.85 | 1.0 | 1.15 | 1.25
   const [reloadKey, setReloadKey] = useState(0);
 
   const device = DEVICES[deviceKey] || DEVICES["iphone-16-pro"];
@@ -58,7 +59,7 @@ export default function MobilePreviewModal({ isOpen, onClose }) {
           {/* Header Bar */}
           <div
             style={{
-              height: "54px",
+              height: "50px",
               padding: "0 1.5rem",
               borderBottom: "1px solid var(--border-color)",
               backgroundColor: "var(--bg-secondary)",
@@ -71,8 +72,8 @@ export default function MobilePreviewModal({ isOpen, onClose }) {
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <div
                 style={{
-                  width: "32px",
-                  height: "32px",
+                  width: "30px",
+                  height: "30px",
                   borderRadius: "8px",
                   backgroundColor: "color-mix(in srgb, var(--primary-blue) 14%, var(--bg-primary))",
                   color: "var(--primary-blue)",
@@ -82,9 +83,9 @@ export default function MobilePreviewModal({ isOpen, onClose }) {
                   border: "1px solid var(--border-color)"
                 }}
               >
-                <Smartphone size={17} />
+                <Smartphone size={16} />
               </div>
-              <span style={{ fontSize: "14.5px", fontWeight: 700, color: "var(--text-primary)" }}>
+              <span style={{ fontSize: "14px", fontWeight: 700, color: "var(--text-primary)" }}>
                 Device Preview Simulator
               </span>
               <div style={{ width: "1px", height: "14px", backgroundColor: "var(--border-color)", margin: "0 4px" }} />
@@ -133,6 +134,8 @@ export default function MobilePreviewModal({ isOpen, onClose }) {
               setDeviceKey={setDeviceKey}
               orientation={orientation}
               setOrientation={setOrientation}
+              zoomScale={zoomScale}
+              setZoomScale={setZoomScale}
               dims={dims}
               onReload={() => setReloadKey((k) => k + 1)}
             />
@@ -144,12 +147,12 @@ export default function MobilePreviewModal({ isOpen, onClose }) {
                 alignItems: "center",
                 justifyContent: "center",
                 backgroundColor: "color-mix(in srgb, var(--text-primary) 3%, var(--bg-primary))",
-                padding: "1rem",
+                padding: "1.5rem",
                 overflow: "auto",
                 position: "relative"
               }}
             >
-              <DeviceFrame dims={dims} isPortrait={orientation === "portrait"}>
+              <DeviceFrame dims={dims} isPortrait={orientation === "portrait"} zoomScale={zoomScale}>
                 <iframe
                   key={reloadKey}
                   src={siteUrl}
@@ -174,7 +177,7 @@ export default function MobilePreviewModal({ isOpen, onClose }) {
   );
 }
 
-function DeviceSimulatorSidebar({ deviceKey, setDeviceKey, orientation, setOrientation, dims, onReload }) {
+function DeviceSimulatorSidebar({ deviceKey, setDeviceKey, orientation, setOrientation, zoomScale, setZoomScale, dims, onReload }) {
   const iconFor = (iconType) => {
     if (iconType === "apple") return <Apple size={15} />;
     if (iconType === "android") return <AndroidIcon size={15} />;
@@ -198,7 +201,7 @@ function DeviceSimulatorSidebar({ deviceKey, setDeviceKey, orientation, setOrien
         padding: "1.25rem",
         display: "flex",
         flexDirection: "column",
-        gap: "24px",
+        gap: "22px",
         overflowY: "auto"
       }}
     >
@@ -280,6 +283,42 @@ function DeviceSimulatorSidebar({ deviceKey, setDeviceKey, orientation, setOrien
         </div>
       </div>
 
+      {/* Frame Zoom Scale Selector */}
+      <div>
+        <p style={sectionLabelStyle}>Frame Size Zoom</p>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
+          {[
+            { id: "auto", label: "Auto (Max Stage)" },
+            { id: 0.85, label: "85%" },
+            { id: 1.0, label: "100% (1:1)" },
+            { id: 1.15, label: "115% (Large)" }
+          ].map((z) => {
+            const active = zoomScale === z.id;
+            return (
+              <button
+                key={String(z.id)}
+                type="button"
+                onClick={() => setZoomScale(z.id)}
+                style={{
+                  padding: "7px 6px",
+                  borderRadius: "8px",
+                  fontSize: "11.5px",
+                  fontWeight: active ? 700 : 500,
+                  cursor: "pointer",
+                  border: active ? "1px solid var(--primary-blue)" : "1px solid var(--border-color)",
+                  backgroundColor: active ? "color-mix(in srgb, var(--primary-blue) 14%, var(--bg-primary))" : "var(--bg-primary)",
+                  color: active ? "var(--primary-blue)" : "var(--text-primary)",
+                  textAlign: "center",
+                  transition: "all 0.15s ease"
+                }}
+              >
+                {z.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Viewport Info Box */}
       <div>
         <p style={sectionLabelStyle}>Viewport Resolution</p>
@@ -332,23 +371,21 @@ function DeviceSimulatorSidebar({ deviceKey, setDeviceKey, orientation, setOrien
   );
 }
 
-function DeviceFrame({ dims, isPortrait = true, children }) {
+function DeviceFrame({ dims, isPortrait = true, zoomScale = "auto", children }) {
   const containerRef = React.useRef(null);
-  const [stageSize, setStageSize] = useState({ w: 900, h: 850 });
+  const [stageSize, setStageSize] = useState({ w: 1000, h: 900 });
 
   useEffect(() => {
     if (!containerRef.current) return;
 
     const updateSize = () => {
-      if (containerRef.current) {
+      if (containerRef.current && containerRef.current.parentElement) {
         const parent = containerRef.current.parentElement;
-        if (parent) {
-          const rect = parent.getBoundingClientRect();
-          setStageSize({
-            w: rect.width || parent.clientWidth || 900,
-            h: rect.height || parent.clientHeight || 850
-          });
-        }
+        const rect = parent.getBoundingClientRect();
+        setStageSize({
+          w: rect.width || parent.clientWidth || 1000,
+          h: rect.height || parent.clientHeight || 900
+        });
       }
     };
 
@@ -367,19 +404,21 @@ function DeviceFrame({ dims, isPortrait = true, children }) {
   const frameUnscaledH = dims.h + 24;
 
   // Available stage area directly measured from parent panel's clientHeight / clientWidth
-  const availableStageH = stageSize.h > 0 ? stageSize.h : 850;
-  const availableStageW = stageSize.w > 0 ? stageSize.w : 900;
+  const availableStageH = stageSize.h > 0 ? stageSize.h : 900;
+  const availableStageW = stageSize.w > 0 ? stageSize.w : 1000;
 
-  // Target exactly 85% of the preview panel's clientHeight
-  const targetFrameH = availableStageH * 0.85;
-  const heightScale = targetFrameH / frameUnscaledH;
+  let scale = 1.0;
 
-  // Safety caps ensuring landscape & tablet frames stay within 95% of stage bounds
-  const maxScaleW = (availableStageW * 0.95) / frameUnscaledW;
-  const maxScaleH = (availableStageH * 0.95) / frameUnscaledH;
-
-  // Proportional scale factor locks aspect ratio (width:height) to real device dimensions
-  const scale = Math.min(heightScale, maxScaleW, maxScaleH);
+  if (zoomScale === "auto") {
+    // Target 95% of available stage height with a generous 0.88 minimum floor (ensuring ~365px x 770px frame size minimum)
+    const targetFrameH = availableStageH * 0.95;
+    const computedHScale = targetFrameH / frameUnscaledH;
+    
+    // Ensure frame renders very large & visible
+    scale = Math.max(0.88, computedHScale);
+  } else if (typeof zoomScale === "number") {
+    scale = zoomScale;
+  }
 
   return (
     <div
@@ -390,7 +429,8 @@ function DeviceFrame({ dims, isPortrait = true, children }) {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        position: "relative"
+        position: "relative",
+        margin: "auto"
       }}
     >
       {/* Outer Scaled Device Casing with Metallic Finish */}
@@ -407,7 +447,7 @@ function DeviceFrame({ dims, isPortrait = true, children }) {
           transform: `scale(${scale})`,
           transformOrigin: "center center",
           position: "relative",
-          transition: "transform 0.2s ease"
+          transition: "transform 0.2s cubic-bezier(0.16, 1, 0.3, 1)"
         }}
       >
         {/* Left Side Hardware Buttons (Action Switch + Volume Rockers) */}
