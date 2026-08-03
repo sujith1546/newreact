@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { QrCode, Download, MapPin, Loader2, CheckCircle, FileText, Eye, X, Cpu, Layers, Wifi, RefreshCw, ExternalLink, ShieldCheck, FileDown, Check, Sparkles, Clock, Bot, Zap, PlusCircle, Terminal, Gauge } from 'lucide-react';
+import { QrCode, Download, MapPin, Loader2, CheckCircle, FileText, Eye, X, Cpu, Layers, Wifi, RefreshCw, ExternalLink, ShieldCheck, FileDown, Check, Sparkles, Clock, Bot, Zap, PlusCircle, Terminal, Gauge, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ResumeQuickLook from '../widgets/ResumeQuickLook';
 import { useLocalTime } from '../../hooks/useLocalTime';
@@ -17,6 +17,7 @@ import GitHubCommitsModal from '../widgets/GitHubCommitsModal';
 import UpdatesModal from '../widgets/UpdatesModal';
 import AiLiveUsageModal from '../widgets/AiLiveUsageModal';
 import MobilePreviewModal from '../widgets/MobilePreviewModal';
+import CraftedWithLoveModal from '../widgets/CraftedWithLoveModal';
 import { useSupabasePresence } from '../../hooks/useSupabasePresence';
 import { useAuth } from '../../context/AuthContext';
 
@@ -105,6 +106,7 @@ export default function Sidebar({ activeSection, onNavClick }) {
   const [isUpdatesModalOpen, setIsUpdatesModalOpen] = useState(false);
   const [isAiUsageOpen, setIsAiUsageOpen] = useState(false);
   const [isMobilePreviewOpen, setIsMobilePreviewOpen] = useState(false);
+  const [isCraftedModalOpen, setIsCraftedModalOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const isMainPage = location.pathname === '/';
@@ -114,15 +116,18 @@ export default function Sidebar({ activeSection, onNavClick }) {
     const handleOpenUpdates = () => setIsUpdatesModalOpen(true);
     const handleOpenAiUsage = () => setIsAiUsageOpen(true);
     const handleOpenMobilePreview = () => setIsMobilePreviewOpen(true);
+    const handleOpenCrafted = () => setIsCraftedModalOpen(true);
     window.addEventListener('open-github', handleOpenGithub);
     window.addEventListener('open-updates', handleOpenUpdates);
     window.addEventListener('open-ai-usage', handleOpenAiUsage);
     window.addEventListener('open-mobile-preview', handleOpenMobilePreview);
+    window.addEventListener('open-crafted-modal', handleOpenCrafted);
     return () => {
       window.removeEventListener('open-github', handleOpenGithub);
       window.removeEventListener('open-updates', handleOpenUpdates);
       window.removeEventListener('open-ai-usage', handleOpenAiUsage);
       window.removeEventListener('open-mobile-preview', handleOpenMobilePreview);
+      window.removeEventListener('open-crafted-modal', handleOpenCrafted);
     };
   }, []);
 
@@ -674,16 +679,23 @@ export default function Sidebar({ activeSection, onNavClick }) {
         {/* 1px invisible divider spacer matching Row 1 */}
         <div className="social-icon-divider" style={{ opacity: 0 }} />
 
-        {/* 5. Schedule Call / Future Extension Slot */}
+        {/* 5. Crafted with Love Info Modal */}
         <button
           type="button"
-          className="social-icon-box"
-          onClick={() => window.dispatchEvent(new CustomEvent('open-schedule-modal'))}
-          title="Schedule Call / Feature Extension Slot"
-          aria-label="Feature Extension Slot"
-          style={{ cursor: 'pointer', position: 'relative', padding: 0, outline: 'none' }}
+          className={`social-icon-box ${isCraftedModalOpen ? 'active' : ''}`}
+          onClick={() => setIsCraftedModalOpen(true)}
+          title="Crafted with ❤️ by Sujith Thota"
+          aria-label="Crafted with Love Info"
+          style={{
+            cursor: 'pointer',
+            position: 'relative',
+            padding: 0,
+            outline: 'none',
+            borderColor: isCraftedModalOpen ? '#ef4444' : 'var(--border-color)',
+            backgroundColor: isCraftedModalOpen ? 'rgba(239, 68, 68, 0.12)' : 'transparent',
+          }}
         >
-          <PlusCircle size={15} />
+          <Info size={15} color={isCraftedModalOpen ? '#ef4444' : 'var(--text-primary)'} />
         </button>
       </div>
 
@@ -693,6 +705,7 @@ export default function Sidebar({ activeSection, onNavClick }) {
       <UpdatesModal isOpen={isUpdatesModalOpen} onClose={() => setIsUpdatesModalOpen(false)} />
       <AiLiveUsageModal isOpen={isAiUsageOpen} onClose={() => setIsAiUsageOpen(false)} />
       <MobilePreviewModal isOpen={isMobilePreviewOpen} onClose={() => setIsMobilePreviewOpen(false)} />
+      <CraftedWithLoveModal isOpen={isCraftedModalOpen} onClose={() => setIsCraftedModalOpen(false)} />
 
       {/* Build Tag Footer */}
       <div className="sidebar-build-tag">
