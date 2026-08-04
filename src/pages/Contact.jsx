@@ -452,6 +452,17 @@ export default function Contact() {
                           onBlur={handleBlur}
                           placeholder="sujithreddy1546@gmail.com"
                           className={touched.email && errors.email ? 'has-error' : ''}
+                          style={{
+                            backgroundColor: 'var(--bg-primary)',
+                            border: touched.email && errors.email ? '1px solid #ef4444' : '1px solid var(--border-color)',
+                            borderRadius: '8px',
+                            padding: '8px 12px',
+                            fontSize: '12.5px',
+                            color: 'var(--text-primary)',
+                            outline: 'none',
+                            width: '100%',
+                            boxSizing: 'border-box'
+                          }}
                         />
                         {touched.email && errors.email && <span style={{ fontSize: '11px', color: '#ef4444' }}>{errors.email}</span>}
                       </div>
