@@ -233,14 +233,16 @@ export default function RagFaithfulnessInspector({ sources = [], topScore = 0.95
           align-items: center;
           justify-content: space-between;
           width: 100%;
-          padding: 9px 12px;
+          padding: 7px 10px;
           background: transparent;
           border: none;
           cursor: pointer;
           font-size: 11.5px;
           color: var(--text-secondary);
           transition: background 0.2s;
-          gap: 8px;
+          gap: 6px;
+          box-sizing: border-box;
+          text-align: left;
         }
         .rag-inspector-trigger:hover {
           background: rgba(128,128,128,0.06);
@@ -251,36 +253,40 @@ export default function RagFaithfulnessInspector({ sources = [], topScore = 0.95
         .rag-trigger-left {
           display: flex;
           align-items: center;
-          gap: 7px;
+          gap: 6px;
           min-width: 0;
+          flex: 1;
         }
         .rag-shield-icon { flex-shrink: 0; }
         .rag-shield-icon.green { color: #10b981; }
         .rag-shield-icon.amber { color: #f59e0b; }
         .rag-trigger-title {
           font-weight: 700;
-          letter-spacing: 0.2px;
+          letter-spacing: 0.1px;
           color: var(--text-primary);
           white-space: nowrap;
-          font-size: 11.5px;
+          font-size: 11px;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
         .rag-trigger-right {
           display: flex;
           align-items: center;
-          gap: 6px;
+          gap: 5px;
           flex-shrink: 0;
+          margin-left: auto;
         }
         .rag-score-pill {
           display: inline-flex;
           align-items: center;
-          gap: 5px;
-          padding: 3px 10px;
+          gap: 4px;
+          padding: 2px 7px;
           border-radius: 100px;
-          font-size: 10.5px;
+          font-size: 10px;
           font-weight: 700;
           white-space: nowrap;
           flex-shrink: 0;
-          line-height: 1;
+          line-height: 1.2;
         }
         .rag-score-pill.green {
           background: rgba(16, 185, 129, 0.14);

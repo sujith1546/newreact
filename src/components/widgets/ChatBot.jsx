@@ -1581,10 +1581,6 @@ export default function ChatBot() {
                         )}
                       </div>
                     )}
-
-                    {msg.role === 'assistant' && msg.content && (
-                      <RagFaithfulnessInspector sources={msg.sources} topScore={msg.topScore} content={msg.content} />
-                    )}
                   </div>
                 </motion.div>
               ))}
