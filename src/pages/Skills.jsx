@@ -5,7 +5,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ChevronRight, ChevronDown, Star, Layers, Clock, Briefcase, ChevronLeft, Loader2, LayoutGrid, PieChart } from 'lucide-react';
+import { X, ChevronRight, ChevronDown, Star, Layers, Clock, Briefcase, ChevronLeft, Loader2, LayoutGrid, PieChart, Search } from 'lucide-react';
 import { ScrollReveal, SkillTooltip } from '../components';
 import { categoryIconMap } from '../components/ui/skillIcons';
 import useRealtimeData from '../hooks/useRealtimeData';
@@ -328,6 +328,7 @@ export default function Skills() {
   const [activeCategory, setActiveCategory] = useState(null);  // category object
   const [activeSkill,    setActiveSkill]    = useState(null);  // skill object
   const [desktopView, setDesktopView] = useState('grid'); // 'grid' | 'radar'
+  const [searchQuery, setSearchQuery] = useState('');
   const [hasCatScrolled,  setHasCatScrolled]  = useState(false);
   const [isCatScrollable, setIsCatScrollable] = useState(false);
   const [hasSkillScrolled,  setHasSkillScrolled]  = useState(false);
@@ -770,56 +771,96 @@ export default function Skills() {
               <span>{skillCategories.reduce((acc, cat) => acc + (cat.skills?.length || 0), 0)} Total Skills Categorized</span>
             </div>
 
-            <div style={{
-              display: 'inline-flex',
-              gap: '4px',
-              padding: '4px',
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--border-color)',
-              borderRadius: '12px',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
-            }}>
-              <button 
-                onClick={() => setDesktopView('grid')}
-                style={{
-                  padding: '7px 18px',
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '7px',
-                  background: desktopView === 'grid' ? 'var(--primary-blue)' : 'transparent',
-                  color: desktopView === 'grid' ? '#ffffff' : 'var(--text-secondary)',
-                  transition: 'all 0.2s ease',
-                  boxShadow: desktopView === 'grid' ? '0 2px 8px color-mix(in srgb, var(--primary-blue) 35%, transparent)' : 'none'
-                }}
-              >
-                <LayoutGrid size={14} /> Grid
-              </button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              {/* Search Bar */}
+              <div style={{ position: 'relative', width: '210px' }}>
+                <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search skills (e.g. Python)..."
+                  style={{
+                    width: '100%',
+                    height: '34px',
+                    paddingLeft: '32px',
+                    paddingRight: '28px',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border-color)',
+                    backgroundColor: 'var(--bg-secondary)',
+                    color: 'var(--text-primary)',
+                    fontSize: '12px',
+                    fontWeight: 500,
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                    transition: 'border-color 0.2s ease'
+                  }}
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    style={{
+                      position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)',
+                      background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 2, display: 'flex'
+                    }}
+                  >
+                    <X size={13} />
+                  </button>
+                )}
+              </div>
 
-              <button 
-                onClick={() => setDesktopView('radar')}
-                style={{
-                  padding: '7px 18px',
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '7px',
-                  background: desktopView === 'radar' ? 'var(--primary-blue)' : 'transparent',
-                  color: desktopView === 'radar' ? '#ffffff' : 'var(--text-secondary)',
-                  transition: 'all 0.2s ease',
-                  boxShadow: desktopView === 'radar' ? '0 2px 8px color-mix(in srgb, var(--primary-blue) 35%, transparent)' : 'none'
-                }}
-              >
-                <PieChart size={14} /> Radar
-              </button>
+              <div style={{
+                display: 'inline-flex',
+                gap: '4px',
+                padding: '4px',
+                background: 'var(--bg-secondary)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '12px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
+              }}>
+                <button 
+                  onClick={() => setDesktopView('grid')}
+                  style={{
+                    padding: '7px 16px',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '12.5px',
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    background: desktopView === 'grid' ? 'var(--primary-blue)' : 'transparent',
+                    color: desktopView === 'grid' ? '#ffffff' : 'var(--text-secondary)',
+                    transition: 'all 0.2s ease',
+                    boxShadow: desktopView === 'grid' ? '0 2px 8px color-mix(in srgb, var(--primary-blue) 35%, transparent)' : 'none'
+                  }}
+                >
+                  <LayoutGrid size={14} /> Grid
+                </button>
+
+                <button 
+                  onClick={() => setDesktopView('radar')}
+                  style={{
+                    padding: '7px 16px',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '12.5px',
+                    fontWeight: 600,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    background: desktopView === 'radar' ? 'var(--primary-blue)' : 'transparent',
+                    color: desktopView === 'radar' ? '#ffffff' : 'var(--text-secondary)',
+                    transition: 'all 0.2s ease',
+                    boxShadow: desktopView === 'radar' ? '0 2px 8px color-mix(in srgb, var(--primary-blue) 35%, transparent)' : 'none'
+                  }}
+                >
+                  <PieChart size={14} /> Radar
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
@@ -879,25 +920,39 @@ export default function Skills() {
                         <h2 className="skill-category-title">{category.title}</h2>
                       </div>
                       <div className="skill-pills">
-                        {category.skills.map((skill, skillIdx) => (
-                          <motion.div
-                            key={skill.id}
-                            initial={{ opacity: 0, scale: 0.8, y: 12 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            transition={{
-                              duration: 0.35,
-                              delay: 0.15 + catIdx * 0.08 + skillIdx * 0.03,
-                              ease: [0.16, 1, 0.3, 1]
-                            }}
-                            whileHover={{ scale: 1.06, y: -2 }}
-                            whileTap={{ scale: 0.95 }}
-                            style={{ display: 'inline-block' }}
-                          >
-                            <SkillTooltip skill={skill}>
-                              <span className="skill-pill">{skill.name}</span>
-                            </SkillTooltip>
-                          </motion.div>
-                        ))}
+                        {category.skills.map((skill, skillIdx) => {
+                          const isMatch = searchQuery && skill.name.toLowerCase().includes(searchQuery.toLowerCase());
+                          return (
+                            <motion.div
+                              key={skill.id}
+                              initial={{ opacity: 0, scale: 0.8, y: 12 }}
+                              animate={{ opacity: 1, scale: 1, y: 0 }}
+                              transition={{
+                                duration: 0.35,
+                                delay: 0.15 + catIdx * 0.08 + skillIdx * 0.03,
+                                ease: [0.16, 1, 0.3, 1]
+                              }}
+                              whileHover={{ scale: 1.06, y: -2 }}
+                              whileTap={{ scale: 0.95 }}
+                              style={{ display: 'inline-block' }}
+                            >
+                              <SkillTooltip skill={skill}>
+                                <span
+                                  className="skill-pill"
+                                  style={isMatch ? {
+                                    backgroundColor: 'var(--primary-blue)',
+                                    color: '#ffffff',
+                                    borderColor: 'var(--primary-blue)',
+                                    boxShadow: '0 0 12px color-mix(in srgb, var(--primary-blue) 60%, transparent)',
+                                    fontWeight: 700
+                                  } : {}}
+                                >
+                                  {skill.name}
+                                </span>
+                              </SkillTooltip>
+                            </motion.div>
+                          );
+                        })}
                       </div>
                     </motion.div>
                   );
