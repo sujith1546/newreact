@@ -52,7 +52,6 @@ const DESKS = [
 
 export default function Contact() {
   const [selectedDesk, setSelectedDesk] = useState(null);
-  const [committed, setCommitted] = useState(false); // false | true | "closing"
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -65,70 +64,21 @@ export default function Contact() {
   const [status, setStatus] = useState('idle');
   const [submitError, setSubmitError] = useState('');
 
-  const cardRefs = useRef({});
-  const panelRef = useRef(null);
-  const rectRef = useRef(null);
-
   const activeDeskObj = DESKS.find(d => d.id === selectedDesk) || DESKS[3];
 
-  // ── FLIP morph: card → panel ──
-  const playMorphIn = useCallback(() => {
-    const panel = panelRef.current;
-    if (!panel || !rectRef.current) return;
-    const end = panel.getBoundingClientRect();
-    const start = rectRef.current;
-    const dx = start.left - end.left;
-    const dy = start.top - end.top;
-    const sx = start.width / end.width;
-    const sy = Math.max(start.height / end.height, 0.15);
-    panel.style.transformOrigin = 'top left';
-    panel.style.transition = 'none';
-    panel.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
-    void panel.offsetHeight; // force reflow
-    requestAnimationFrame(() => {
-      panel.style.transition = 'transform 0.48s cubic-bezier(0.22, 1, 0.36, 1)';
-      panel.style.transform = 'translate(0px, 0px) scale(1, 1)';
-    });
-  }, []);
-
-  const playMorphOut = useCallback((onDone) => {
-    const panel = panelRef.current;
-    if (!panel || !rectRef.current) { onDone(); return; }
-    const end = panel.getBoundingClientRect();
-    const start = rectRef.current;
-    const dx = start.left - end.left;
-    const dy = start.top - end.top;
-    const sx = start.width / end.width;
-    const sy = Math.max(start.height / end.height, 0.15);
-    panel.style.transformOrigin = 'top left';
-    panel.style.transition = 'transform 0.38s cubic-bezier(0.4, 0, 0.2, 1)';
-    panel.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
-    setTimeout(onDone, 380);
-  }, []);
-
-  useLayoutEffect(() => {
-    if (committed === true) playMorphIn();
-  }, [committed, selectedDesk, playMorphIn]);
-
   const chooseDesk = (id) => {
-    const el = cardRefs.current[id];
-    if (el) rectRef.current = el.getBoundingClientRect();
     setSelectedDesk(id);
     setForm({ name: '', email: '', message: '', company: '', _catch: '' });
     setTouched({});
     setErrors({});
     setSubmitError('');
     setStatus('idle');
-    setCommitted(true);
   };
 
   const goBack = () => {
-    setCommitted('closing');
-    playMorphOut(() => {
-      setCommitted(false);
-      setSelectedDesk(null);
-      setStatus('idle');
-    });
+    setSelectedDesk(null);
+    setStatus('idle');
+    setSubmitError('');
   };
 
   const validateField = (name, value) => {
@@ -220,26 +170,28 @@ export default function Contact() {
           </p>
         </div>
 
-        {/* ── STAGE: Grid + Morphing Form Panel Overlay ── */}
-        <div style={{ position: 'relative' }}>
-          {/* STEP 1: DESK ROUTING CARDS GRID */}
-          <div
-            style={{
-              opacity: committed === true ? 0 : 1,
-              pointerEvents: committed === true ? 'none' : 'auto',
-              transition: 'opacity 0.22s ease'
-            }}
-          >
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '12px', maxWidth: '720px', margin: '0 auto' }}>
+        {/* ── NATIVE FRAMER MOTION FLIP MORPH ── */}
+        <AnimatePresence mode="wait">
+          {!selectedDesk ? (
+            /* STEP 1: DESK ROUTING CARDS GRID */
+            <motion.div
+              key="desk-grid"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, transition: { duration: 0.15 } }}
+              transition={{ duration: 0.25 }}
+              style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '12px', maxWidth: '720px', margin: '0 auto' }}
+            >
               {DESKS.map((desk) => {
                 const IconComp = desk.icon;
                 return (
                   <motion.div
                     key={desk.id}
-                    ref={(el) => (cardRefs.current[desk.id] = el)}
+                    layoutId={`desk-card-${desk.id}`}
                     onClick={() => chooseDesk(desk.id)}
                     whileHover={{ scale: 1.015, y: -2 }}
                     whileTap={{ scale: 0.985 }}
+                    transition={{ type: 'spring', stiffness: 350, damping: 25 }}
                     style={{
                       backgroundColor: 'var(--bg-secondary)',
                       border: '1px solid var(--border-color)',
@@ -251,7 +203,6 @@ export default function Contact() {
                       justifyContent: 'space-between',
                       minHeight: '105px',
                       position: 'relative',
-                      transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
                       boxShadow: '0 3px 12px rgba(0, 0, 0, 0.025)'
                     }}
                     onMouseEnter={(e) => {
@@ -283,141 +234,172 @@ export default function Contact() {
                   </motion.div>
                 );
               })}
-            </div>
-          </div>
-
-          {/* STEP 2: MORPHING FORM PANEL (FLIP EXPANSION FROM CLICKED CARD) */}
-          {selectedDesk !== null && (
-            <div
-              ref={panelRef}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: '50%',
-                marginLeft: '-270px',
-                width: '100%',
-                maxWidth: '540px',
-                zIndex: 10,
-                willChange: 'transform'
-              }}
+            </motion.div>
+          ) : (
+            /* STEP 2: TAILORED FORM CONTAINER MORPHED FROM CLICKED CARD */
+            <motion.div
+              key="desk-form"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, transition: { duration: 0.15 } }}
+              style={{ maxWidth: '540px', margin: '0 auto', width: '100%' }}
             >
-              <div
+              {/* Back Button */}
+              <motion.button
+                type="button"
+                onClick={goBack}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.08 }}
                 style={{
-                  opacity: committed === true ? 1 : 0,
-                  transition: 'opacity 0.28s ease 0.18s'
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-secondary)',
+                  fontSize: '12.5px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  marginBottom: '14px',
+                  padding: '4px 8px',
+                  marginLeft: '-8px',
+                  borderRadius: '6px'
                 }}
               >
-                {/* Back Button */}
-                <button
-                  type="button"
-                  onClick={goBack}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    background: 'none',
-                    border: 'none',
-                    color: 'var(--text-secondary)',
-                    fontSize: '12.5px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    marginBottom: '16px',
-                    padding: '4px 8px',
-                    marginLeft: '-8px',
-                    borderRadius: '6px'
-                  }}
-                >
-                  <ArrowLeft size={15} /> Choose different option
-                </button>
+                <ArrowLeft size={15} /> Choose different option
+              </motion.button>
 
-                {/* Form Box */}
-                <div
-                  style={{
-                    backgroundColor: 'var(--bg-secondary)',
-                    border: '1px solid var(--border-color)',
-                    borderRadius: '16px',
-                    padding: '22px 20px',
-                    boxShadow: '0 12px 36px rgba(0, 0, 0, 0.08)'
-                  }}
-                >
-                  {/* Desk Header Badge */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', paddingBottom: '14px', borderBottom: '1px solid var(--border-color)' }}>
-                    <div style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: activeDeskObj.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: activeDeskObj.iconColor }}>
-                      {React.createElement(activeDeskObj.icon, { size: 16 })}
-                    </div>
-                    <div>
-                      <span style={{ fontSize: '10px', fontWeight: 800, color: activeDeskObj.iconColor, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                        {activeDeskObj.tag}
-                      </span>
-                      <h2 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
-                        {activeDeskObj.title}
-                      </h2>
-                    </div>
+              {/* Form Box with layoutId matching clicked card */}
+              <motion.div
+                layoutId={`desk-card-${selectedDesk}`}
+                transition={{ type: 'spring', stiffness: 350, damping: 28, mass: 0.9 }}
+                style={{
+                  backgroundColor: 'var(--bg-secondary)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '16px',
+                  padding: '22px 20px',
+                  boxShadow: '0 12px 36px rgba(0, 0, 0, 0.08)'
+                }}
+              >
+                {/* Desk Header Badge */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', paddingBottom: '14px', borderBottom: '1px solid var(--border-color)' }}>
+                  <div style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: activeDeskObj.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: activeDeskObj.iconColor }}>
+                    {React.createElement(activeDeskObj.icon, { size: 16 })}
                   </div>
+                  <div>
+                    <span style={{ fontSize: '10px', fontWeight: 800, color: activeDeskObj.iconColor, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                      {activeDeskObj.tag}
+                    </span>
+                    <h2 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                      {activeDeskObj.title}
+                    </h2>
+                  </div>
+                </div>
 
-                  {status === 'sent' ? (
-                    /* Success Confirmation */
-                    <div style={{ textAlign: 'center', padding: '24px 12px' }}>
-                      <div style={{ width: '52px', height: '52px', borderRadius: '50%', backgroundColor: 'rgba(16, 185, 129, 0.12)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
-                        <Check size={28} strokeWidth={2.5} />
-                      </div>
-                      <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 4px' }}>
-                        Message delivered!
-                      </h3>
-                      <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '0 0 16px', lineHeight: 1.5 }}>
-                        Thank you for reaching out regarding <strong>{activeDeskObj.title}</strong>. I'll get back to you within 24 hours.
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setForm({ name: '', email: '', message: '', company: '', _catch: '' });
-                          setStatus('idle');
-                          setTouched({});
-                          setErrors({});
-                        }}
-                        style={{
-                          padding: '8px 18px',
-                          borderRadius: '999px',
-                          border: '1px solid var(--border-color)',
-                          backgroundColor: 'var(--bg-primary)',
-                          color: 'var(--text-primary)',
-                          fontSize: '12px',
-                          fontWeight: 700,
-                          cursor: 'pointer'
-                        }}
-                      >
-                        Send another message
-                      </button>
+                {status === 'sent' ? (
+                  /* Success Confirmation */
+                  <div style={{ textAlign: 'center', padding: '24px 12px' }}>
+                    <div style={{ width: '52px', height: '52px', borderRadius: '50%', backgroundColor: 'rgba(16, 185, 129, 0.12)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
+                      <Check size={28} strokeWidth={2.5} />
                     </div>
-                  ) : (
-                    /* Form Fields */
-                    <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '13px' }}>
-                      {/* Honeypot hidden input */}
-                      <input 
-                        type="text" 
-                        name="_catch" 
-                        tabIndex={-1} 
-                        autoComplete="off" 
-                        aria-hidden="true" 
-                        style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', opacity: 0, pointerEvents: 'none' }} 
-                        value={form._catch} 
-                        onChange={handleChange} 
-                      />
+                    <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 4px' }}>
+                      Message delivered!
+                    </h3>
+                    <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '0 0 16px', lineHeight: 1.5 }}>
+                      Thank you for reaching out regarding <strong>{activeDeskObj.title}</strong>. I'll get back to you within 24 hours.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setForm({ name: '', email: '', message: '', company: '', _catch: '' });
+                        setStatus('idle');
+                        setTouched({});
+                        setErrors({});
+                      }}
+                      style={{
+                        padding: '8px 18px',
+                        borderRadius: '999px',
+                        border: '1px solid var(--border-color)',
+                        backgroundColor: 'var(--bg-primary)',
+                        color: 'var(--text-primary)',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Send another message
+                    </button>
+                  </div>
+                ) : (
+                  /* Form Fields */
+                  <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '13px' }}>
+                    {/* Honeypot hidden input */}
+                    <input 
+                      type="text" 
+                      name="_catch" 
+                      tabIndex={-1} 
+                      autoComplete="off" 
+                      aria-hidden="true" 
+                      style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', opacity: 0, pointerEvents: 'none' }} 
+                      value={form._catch} 
+                      onChange={handleChange} 
+                    />
 
-                      {/* Name */}
+                    {/* Name */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                        Your name *
+                      </label>
+                      <input
+                        name="name"
+                        value={form.name}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        placeholder="Thota Sujith Reddy"
+                        style={{
+                          backgroundColor: 'var(--bg-primary)',
+                          border: touched.name && errors.name ? '1px solid #ef4444' : '1px solid var(--border-color)',
+                          borderRadius: '8px',
+                          padding: '8px 12px',
+                          fontSize: '12.5px',
+                          color: 'var(--text-primary)',
+                          outline: 'none'
+                        }}
+                      />
+                      {touched.name && errors.name && <span style={{ fontSize: '11px', color: '#ef4444' }}>{errors.name}</span>}
+                    </div>
+
+                    {/* Email */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                        Your email *
+                      </label>
+                      <EmailDomainSuggest
+                        name="email"
+                        value={form.email}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        placeholder="sujithreddy1546@gmail.com"
+                        className={touched.email && errors.email ? 'has-error' : ''}
+                      />
+                      {touched.email && errors.email && <span style={{ fontSize: '11px', color: '#ef4444' }}>{errors.email}</span>}
+                    </div>
+
+                    {/* Optional Company Name */}
+                    {(selectedDesk === 'rec' || selectedDesk === 'frl') && (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                          Your name *
+                          Company / Organization (Optional)
                         </label>
                         <input
-                          name="name"
-                          value={form.name}
+                          name="company"
+                          value={form.company}
                           onChange={handleChange}
-                          onBlur={handleBlur}
-                          placeholder="Thota Sujith Reddy"
+                          placeholder="e.g. Acme Corp"
                           style={{
                             backgroundColor: 'var(--bg-primary)',
-                            border: touched.name && errors.name ? '1px solid #ef4444' : '1px solid var(--border-color)',
+                            border: '1px solid var(--border-color)',
                             borderRadius: '8px',
                             padding: '8px 12px',
                             fontSize: '12.5px',
@@ -425,153 +407,112 @@ export default function Contact() {
                             outline: 'none'
                           }}
                         />
-                        {touched.name && errors.name && <span style={{ fontSize: '11px', color: '#ef4444' }}>{errors.name}</span>}
                       </div>
+                    )}
 
-                      {/* Email */}
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    {/* Message Textarea */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                          Your email *
+                          Message *
                         </label>
-                        <EmailDomainSuggest
-                          name="email"
-                          value={form.email}
-                          onChange={handleChange}
-                          onBlur={handleBlur}
-                          placeholder="sujithreddy1546@gmail.com"
-                          className={touched.email && errors.email ? 'has-error' : ''}
-                        />
-                        {touched.email && errors.email && <span style={{ fontSize: '11px', color: '#ef4444' }}>{errors.email}</span>}
+                        <CharacterCounter currentLength={form.message.length} maxLength={500} />
                       </div>
-
-                      {/* Optional Company Name */}
-                      {(selectedDesk === 'rec' || selectedDesk === 'frl') && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                          <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                            Company / Organization (Optional)
-                          </label>
-                          <input
-                            name="company"
-                            value={form.company}
-                            onChange={handleChange}
-                            placeholder="e.g. Acme Corp"
-                            style={{
-                              backgroundColor: 'var(--bg-primary)',
-                              border: '1px solid var(--border-color)',
-                              borderRadius: '8px',
-                              padding: '8px 12px',
-                              fontSize: '12.5px',
-                              color: 'var(--text-primary)',
-                              outline: 'none'
-                            }}
-                          />
-                        </div>
-                      )}
-
-                      {/* Message Textarea */}
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                            Message *
-                          </label>
-                          <CharacterCounter currentLength={form.message.length} maxLength={500} />
-                        </div>
-                        <textarea
-                          name="message"
-                          rows={3}
-                          maxLength={500}
-                          value={form.message}
-                          onChange={handleChange}
-                          onBlur={handleBlur}
-                          placeholder={activeDeskObj.placeholder}
-                          style={{
-                            backgroundColor: 'var(--bg-primary)',
-                            border: touched.message && errors.message ? '1px solid #ef4444' : '1px solid var(--border-color)',
-                            borderRadius: '8px',
-                            padding: '8px 12px',
-                            fontSize: '12.5px',
-                            color: 'var(--text-primary)',
-                            outline: 'none',
-                            resize: 'none'
-                          }}
-                        />
-                        {touched.message && errors.message && <span style={{ fontSize: '11px', color: '#ef4444' }}>{errors.message}</span>}
-                      </div>
-
-                      {/* Submit Error Retry Banner */}
-                      {submitError && (
-                        <div
-                          style={{
-                            padding: '8px 12px',
-                            borderRadius: '8px',
-                            backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                            border: '1px solid rgba(239, 68, 68, 0.25)',
-                            color: '#ef4444',
-                            fontSize: '12px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between'
-                          }}
-                        >
-                          <span>{submitError}</span>
-                          <button
-                            type="button"
-                            onClick={handleSubmit}
-                            style={{
-                              background: '#ef4444',
-                              color: '#fff',
-                              border: 'none',
-                              padding: '3px 8px',
-                              borderRadius: '6px',
-                              fontSize: '11px',
-                              fontWeight: 700,
-                              cursor: 'pointer'
-                            }}
-                          >
-                            Retry
-                          </button>
-                        </div>
-                      )}
-
-                      {/* Submit Button */}
-                      <button
-                        type="submit"
-                        disabled={status === 'sending'}
+                      <textarea
+                        name="message"
+                        rows={3}
+                        maxLength={500}
+                        value={form.message}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        placeholder={activeDeskObj.placeholder}
                         style={{
-                          height: '38px',
+                          backgroundColor: 'var(--bg-primary)',
+                          border: touched.message && errors.message ? '1px solid #ef4444' : '1px solid var(--border-color)',
                           borderRadius: '8px',
-                          backgroundColor: '#0f172a',
-                          color: '#ffffff',
-                          fontSize: '13px',
-                          fontWeight: 700,
-                          border: 'none',
-                          cursor: 'pointer',
+                          padding: '8px 12px',
+                          fontSize: '12.5px',
+                          color: 'var(--text-primary)',
+                          outline: 'none',
+                          resize: 'none'
+                        }}
+                      />
+                      {touched.message && errors.message && <span style={{ fontSize: '11px', color: '#ef4444' }}>{errors.message}</span>}
+                    </div>
+
+                    {/* Submit Error Retry Banner */}
+                    {submitError && (
+                      <div
+                        style={{
+                          padding: '8px 12px',
+                          borderRadius: '8px',
+                          backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                          border: '1px solid rgba(239, 68, 68, 0.25)',
+                          color: '#ef4444',
+                          fontSize: '12px',
                           display: 'flex',
                           alignItems: 'center',
-                          justifyContent: 'center',
-                          gap: '6px',
-                          marginTop: '2px',
-                          boxShadow: '0 3px 12px rgba(15, 23, 42, 0.2)'
+                          justifyContent: 'space-between'
                         }}
                       >
-                        {status === 'sending' ? (
-                          <>
-                            <Loader2 size={15} className="spin" style={{ animation: 'spin 1s linear infinite' }} />
-                            Sending...
-                          </>
-                        ) : (
-                          <>
-                            <Send size={14} /> Send message
-                          </>
-                        )}
-                      </button>
-                    </form>
-                  )}
-                </div>
-              </div>
-            </div>
+                        <span>{submitError}</span>
+                        <button
+                          type="button"
+                          onClick={handleSubmit}
+                          style={{
+                            background: '#ef4444',
+                            color: '#fff',
+                            border: 'none',
+                            padding: '3px 8px',
+                            borderRadius: '6px',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            cursor: 'pointer'
+                          }}
+                        >
+                          Retry
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Submit Button */}
+                    <button
+                      type="submit"
+                      disabled={status === 'sending'}
+                      style={{
+                        height: '38px',
+                        borderRadius: '8px',
+                        backgroundColor: '#0f172a',
+                        color: '#ffffff',
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        border: 'none',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '6px',
+                        marginTop: '2px',
+                        boxShadow: '0 3px 12px rgba(15, 23, 42, 0.2)'
+                      }}
+                    >
+                      {status === 'sending' ? (
+                        <>
+                          <Loader2 size={15} className="spin" style={{ animation: 'spin 1s linear infinite' }} />
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          <Send size={14} /> Send message
+                        </>
+                      )}
+                    </button>
+                  </form>
+                )}
+              </motion.div>
+            </motion.div>
           )}
-        </div>
+        </AnimatePresence>
       </div>
     </ScrollReveal>
   );
