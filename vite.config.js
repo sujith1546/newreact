@@ -1,8 +1,79 @@
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+function localApiDevPlugin() {
+  return {
+    name: 'local-api-dev-handler',
+    configureServer(server) {
+      server.middlewares.use(async (req, res, next) => {
+        const url = req.url || '';
+        if (!url.startsWith('/api/')) return next();
+
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-portfolio-session');
+
+        if (req.method === 'OPTIONS') {
+          res.statusCode = 200;
+          return res.end();
+        }
+
+        if (url.startsWith('/api/geo')) {
+          res.setHeader('Content-Type', 'application/json');
+          try {
+            const geoModule = await import('./api/geo.js');
+            return await geoModule.default(req, res);
+          } catch {
+            res.statusCode = 200;
+            return res.end(JSON.stringify({
+              success: true,
+              country: 'India',
+              region: 'Asia-South',
+              lat: 20.5937,
+              lng: 78.9629,
+              referrerBucket: 'direct',
+              deviceType: 'desktop',
+              isBot: false
+            }));
+          }
+        }
+
+        if (url.startsWith('/api/chat')) {
+          const buffers = [];
+          for await (const chunk of req) {
+            buffers.push(chunk);
+          }
+          const rawBody = Buffer.concat(buffers).toString('utf-8');
+          try {
+            req.body = rawBody ? JSON.parse(rawBody) : {};
+          } catch {
+            req.body = {};
+          }
+
+          try {
+            const chatModule = await import('./api/chat.js');
+            return await chatModule.default(req, res);
+          } catch (err) {
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'text/event-stream');
+            res.setHeader('Cache-Control', 'no-cache');
+            res.setHeader('Connection', 'keep-alive');
+            
+            const fallbackText = "👋 Hi! I'm **Sujith's AI Assistant**. I see you are testing locally! Ask me about my **Skills**, **Projects**, or **Education**.";
+            res.write(`data: ${JSON.stringify({ type: 'token', token: fallbackText })}\n\n`);
+            res.write(`data: [DONE]\n\n`);
+            return res.end();
+          }
+        }
+
+        next();
+      });
+    }
+  };
+}
+
 export default defineConfig({
   plugins: [
+    localApiDevPlugin(),
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
@@ -73,15 +144,7 @@ export default defineConfig({
       }
     })
   ],
-  server: {
-    proxy: {
-      // Proxy /api/* calls to our local serverless function handler during dev
-      '/api': {
-        target: 'http://localhost:3001',
-        changeOrigin: true,
-      }
-    }
-  },
+
   build: {
     rollupOptions: {
       output: {

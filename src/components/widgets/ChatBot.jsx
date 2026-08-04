@@ -329,24 +329,35 @@ export default function ChatBot() {
         duration: 2500
       });
 
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'x-portfolio-session': sessionToken 
-        },
-        body: JSON.stringify({ 
-          message: userText, 
-          image: currentAttachment?.base64, 
-          history, 
-          contextPath: currentContext,
-          style: aiResponseStyle,
-          showThoughts: aiShowThoughts,
-          contextRange: aiContextRange,
-          reasoningDepth: aiReasoningDepth,
-          persona: aiPersona
-        })
-      });
+      let res;
+      try {
+        res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-portfolio-session': sessionToken 
+          },
+          body: JSON.stringify({ 
+            message: userText, 
+            image: currentAttachment?.base64, 
+            history, 
+            contextPath: currentContext,
+            style: aiResponseStyle,
+            showThoughts: aiShowThoughts,
+            contextRange: aiContextRange,
+            reasoningDepth: aiReasoningDepth,
+            persona: aiPersona
+          })
+        });
+      } catch (netErr) {
+        triggerIsland({
+          title: 'Network Error',
+          subtitle: 'Unable to reach AI chat service.',
+          color: '#f59e0b',
+          duration: 4000
+        });
+        throw new Error('Network error: Unable to reach AI server.');
+      }
 
       if (!res.ok) {
         if (res.status === 429) {
@@ -363,11 +374,17 @@ export default function ChatBot() {
             color: '#ef4444',
             duration: 4000
           });
+        } else if (res.status === 502 || res.status === 504) {
+          triggerIsland({
+            title: 'API Server Offline',
+            subtitle: 'Backend service returned 502 Bad Gateway.',
+            color: '#f59e0b',
+            duration: 4000
+          });
         }
 
-        // Fallback removed: Always strictly use the real Groq + Voyage API
         const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Request failed');
+        throw new Error(errorData.error || `Request failed with status ${res.status}`);
       }
 
       if (!res.body) throw new Error('Response body is null');
@@ -1464,7 +1481,8 @@ export default function ChatBot() {
                       <div className="sentient-indicator">
                         <motion.div 
                           className="sentient-core"
-                          animate={{ scale: [1, 1.2, 1], rotate: [0, 180, 360], filter: ['blur(2px)', 'blur(4px)', 'blur(2px)'] }}
+                          style={{ filter: 'blur(2px)' }}
+                          animate={{ scale: [1, 1.25, 1], rotate: [0, 180, 360], opacity: [0.7, 1, 0.7] }}
                           transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
                         />
                         <motion.div 

@@ -108,9 +108,9 @@ function initGlobalPresenceChannel() {
           try { geo = JSON.parse(cached); } catch { /* fallback */ }
         } else {
           try {
-            const res = await fetch('/api/geo');
-            if (res.ok) {
-              const data = await res.json();
+            const res = await fetch('/api/geo').catch(() => null);
+            if (res && res.ok) {
+              const data = await res.json().catch(() => null);
               if (data && data.lat && data.lng) {
                 geo = { lat: data.lat, lng: data.lng, country: data.country || 'India', deviceType: data.deviceType || 'desktop' };
                 sessionStorage.setItem('visitor_location', JSON.stringify(geo));
