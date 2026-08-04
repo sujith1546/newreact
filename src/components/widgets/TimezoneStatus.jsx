@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Smartphone } from 'lucide-react';
 import DarkModeToggle from '../ui/DarkModeToggle';
 import SettingsDropdown from '../ui/SettingsDropdown';
 import GetInTouchDropdown from './GetInTouchDropdown';
@@ -430,25 +429,7 @@ export default function TimezoneStatus() {
           </span>
         </div>
 
-        <button 
-          className="cmdk-hint-pill"
-          onClick={() => window.dispatchEvent(new CustomEvent("toggle-command-palette"))}
-          title="Open Command Palette (Ctrl+K)"
-        >
-          <span className="cmdk-hint-kbd">Ctrl</span>
-          <span className="cmdk-hint-kbd">K</span>
-        </button>
 
-        <button
-          type="button"
-          className="cmdk-hint-pill"
-          onClick={() => window.dispatchEvent(new CustomEvent("open-mobile-preview"))}
-          title="Mobile View & Device Frame Simulator"
-          aria-label="Mobile View"
-          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 8px' }}
-        >
-          <Smartphone size={14} color="var(--text-primary)" />
-        </button>
 
         <NetworkSignalWidget />
         <DarkModeToggle />

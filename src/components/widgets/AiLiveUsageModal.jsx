@@ -49,7 +49,7 @@ export default function AiLiveUsageModal({ isOpen, onClose }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  if (!isOpen || typeof document === 'undefined') return null;
+  return null;
 
   return createPortal(
     <AnimatePresence>

@@ -297,6 +297,8 @@ export function SiteDisabledPage({ reason, disabledAt }) {
           </span>
           <Link
             to="/admin/login"
+            target="_blank"
+            rel="noopener noreferrer"
             style={{
               display: 'inline-flex',
               alignItems: 'center',

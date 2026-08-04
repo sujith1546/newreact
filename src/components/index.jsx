@@ -27,7 +27,6 @@ export { default as MobileDashboard } from './widgets/MobileDashboard';
 export { default as ScheduleUpcomingModal } from './widgets/ScheduleUpcomingModal';
 export { default as GitHubCommitsModal } from './widgets/GitHubCommitsModal';
 export { default as UpdatesModal } from './widgets/UpdatesModal';
-export { default as AiLiveUsageModal } from './widgets/AiLiveUsageModal';
 export { default as MobilePreviewModal } from './widgets/MobilePreviewModal';
 export { default as CraftedWithLoveModal } from './widgets/CraftedWithLoveModal';
 export { default as NetworkSignalWidget } from './widgets/NetworkSignalWidget';

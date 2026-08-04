@@ -39,7 +39,7 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
       const newCount = prev + 1;
       if (newCount === 5) {
         setIsMoreOpen(false); // Close the drawer
-        navigate('/admin/login');
+        window.open('/admin/login', '_blank', 'noopener,noreferrer');
         return 0; // Reset
       }
       return newCount;

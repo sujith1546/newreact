@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { QrCode, Download, MapPin, Loader2, CheckCircle, FileText, Eye, X, Cpu, Layers, Wifi, RefreshCw, ExternalLink, ShieldCheck, FileDown, Check, Sparkles, Clock, Bot, Zap, PlusCircle, Terminal, Gauge, Info, Calendar, Smartphone } from 'lucide-react';
+import { QrCode, Download, MapPin, Loader2, CheckCircle, FileText, Eye, X, Cpu, Layers, Wifi, RefreshCw, ExternalLink, ShieldCheck, FileDown, Check, Sparkles, Clock, Bot, Zap, PlusCircle, Terminal, Gauge, Info, Calendar, Smartphone, Sun, Moon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ResumeQuickLook from '../widgets/ResumeQuickLook';
 import { useLocalTime } from '../../hooks/useLocalTime';
@@ -15,7 +15,6 @@ import SystemDiagnostics from '../dev/SystemDiagnostics';
 import EmailModal from '../widgets/EmailModal';
 import GitHubCommitsModal from '../widgets/GitHubCommitsModal';
 import UpdatesModal from '../widgets/UpdatesModal';
-import AiLiveUsageModal from '../widgets/AiLiveUsageModal';
 import MobilePreviewModal from '../widgets/MobilePreviewModal';
 import CraftedWithLoveModal from '../widgets/CraftedWithLoveModal';
 import ScheduleUpcomingModal from '../widgets/ScheduleUpcomingModal';
@@ -95,7 +94,7 @@ export default function Sidebar({ activeSection, onNavClick }) {
   const NAV_ITEMS = getSectionOrder(baseItems);
 
   const localTime = useLocalTime();
-  const { theme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
   const [qrOpen, setQrOpen] = useState(false);
   const [toastStatus, setToastStatus] = useState(null); // null, 'packaging', 'ready'
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
@@ -105,7 +104,6 @@ export default function Sidebar({ activeSection, onNavClick }) {
   const [isEmailOpen, setIsEmailOpen] = useState(false);
   const [isGithubModalOpen, setIsGithubModalOpen] = useState(false);
   const [isUpdatesModalOpen, setIsUpdatesModalOpen] = useState(false);
-  const [isAiUsageOpen, setIsAiUsageOpen] = useState(false);
   const [isMobilePreviewOpen, setIsMobilePreviewOpen] = useState(false);
   const [isCraftedModalOpen, setIsCraftedModalOpen] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
@@ -116,20 +114,17 @@ export default function Sidebar({ activeSection, onNavClick }) {
   useEffect(() => {
     const handleOpenGithub = () => setIsGithubModalOpen(true);
     const handleOpenUpdates = () => setIsUpdatesModalOpen(true);
-    const handleOpenAiUsage = () => setIsAiUsageOpen(true);
     const handleOpenMobilePreview = () => setIsMobilePreviewOpen(true);
     const handleOpenCrafted = () => setIsCraftedModalOpen(true);
     const handleOpenSchedule = () => setIsScheduleModalOpen(true);
     window.addEventListener('open-github', handleOpenGithub);
     window.addEventListener('open-updates', handleOpenUpdates);
-    window.addEventListener('open-ai-usage', handleOpenAiUsage);
     window.addEventListener('open-mobile-preview', handleOpenMobilePreview);
     window.addEventListener('open-crafted-modal', handleOpenCrafted);
     window.addEventListener('open-schedule', handleOpenSchedule);
     return () => {
       window.removeEventListener('open-github', handleOpenGithub);
       window.removeEventListener('open-updates', handleOpenUpdates);
-      window.removeEventListener('open-ai-usage', handleOpenAiUsage);
       window.removeEventListener('open-mobile-preview', handleOpenMobilePreview);
       window.removeEventListener('open-crafted-modal', handleOpenCrafted);
       window.removeEventListener('open-schedule', handleOpenSchedule);
@@ -156,7 +151,7 @@ export default function Sidebar({ activeSection, onNavClick }) {
     setClickCount((prev) => {
       const newCount = prev + 1;
       if (newCount === 5) {
-        navigate('/admin/login');
+        window.open('/admin/login', '_blank', 'noopener,noreferrer');
         return 0; // Reset
       }
       return newCount;
@@ -598,7 +593,7 @@ export default function Sidebar({ activeSection, onNavClick }) {
         {/* Admin Login button */}
         <button
           className="social-icon-box"
-          onClick={() => navigate(isAdminActive ? '/admin/dashboard' : '/admin/login')}
+          onClick={() => window.open(isAdminActive ? '/admin/dashboard' : '/admin/login', '_blank', 'noopener,noreferrer')}
           title="Admin login"
           aria-label="Admin login"
           style={{
@@ -657,23 +652,25 @@ export default function Sidebar({ activeSection, onNavClick }) {
           <Calendar size={15} color={isScheduleModalOpen ? 'var(--primary-blue)' : 'var(--text-primary)'} />
         </button>
 
-        {/* 3. Groq & Voyage AI Live Telemetry */}
+        {/* 3. Theme Toggle (Dark / Light Mode) */}
         <button
           type="button"
-          className={`social-icon-box ${isAiUsageOpen ? 'active' : ''}`}
-          onClick={() => setIsAiUsageOpen(true)}
-          title="Groq & Voyage AI Live Usage Telemetry"
-          aria-label="AI Live Usage"
+          className="social-icon-box"
+          onClick={(e) => toggleTheme(e)}
+          title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+          aria-label="Toggle Theme"
           style={{
             cursor: 'pointer',
             position: 'relative',
             padding: 0,
             outline: 'none',
-            borderColor: isAiUsageOpen ? '#f59e0b' : 'var(--border-color)',
-            backgroundColor: isAiUsageOpen ? 'rgba(245, 158, 11, 0.14)' : 'transparent',
           }}
         >
-          <i className="ti ti-gauge" style={{ fontSize: '16px', color: isAiUsageOpen ? '#f59e0b' : 'var(--text-primary)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} />
+          {theme === 'dark' ? (
+            <Sun size={16} color="var(--text-primary)" />
+          ) : (
+            <Moon size={16} color="var(--text-primary)" />
+          )}
         </button>
 
         {/* 4. Mobile View & Device Simulator */}
@@ -725,7 +722,6 @@ export default function Sidebar({ activeSection, onNavClick }) {
       <EmailModal isOpen={isEmailOpen} onClose={() => setIsEmailOpen(false)} />
       <GitHubCommitsModal isOpen={isGithubModalOpen} onClose={() => setIsGithubModalOpen(false)} />
       <UpdatesModal isOpen={isUpdatesModalOpen} onClose={() => setIsUpdatesModalOpen(false)} />
-      <AiLiveUsageModal isOpen={isAiUsageOpen} onClose={() => setIsAiUsageOpen(false)} />
       <MobilePreviewModal isOpen={isMobilePreviewOpen} onClose={() => setIsMobilePreviewOpen(false)} />
       <CraftedWithLoveModal isOpen={isCraftedModalOpen} onClose={() => setIsCraftedModalOpen(false)} />
       <ScheduleUpcomingModal isOpen={isScheduleModalOpen} onClose={() => setIsScheduleModalOpen(false)} />
