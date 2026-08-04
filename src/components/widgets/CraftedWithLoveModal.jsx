@@ -1,25 +1,23 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Heart, Sparkles, Cpu, Layers, ShieldCheck, Mail, Code2, Zap, Terminal, Smartphone, Calendar, Database, Activity } from 'lucide-react';
+import { X, Heart, Sparkles, Cpu, Layers, ShieldCheck, Mail, Code2, Zap, Terminal, Smartphone, Calendar, Database, Activity, Gauge } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
 import { useTheme } from '../../context/ThemeContext';
 
 const MARQUEE_ROW_1 = [
   { icon: <Code2 size={13} color="#3b82f6" />, name: "React 18", tag: "UI Core" },
-  { icon: <Cpu size={13} color="#10b981" />, name: "Groq LPU", tag: "720 tok/s" },
-  { icon: <Database size={13} color="#8b5cf6" />, name: "Voyage AI", tag: "RAG Embed" },
-  { icon: <Layers size={13} color="#f59e0b" />, name: "Supabase", tag: "pgvector" },
   { icon: <Zap size={13} color="#ec4899" />, name: "Vite 6", tag: "Fast Build" },
+  { icon: <Layers size={13} color="#f59e0b" />, name: "Supabase", tag: "Database" },
   { icon: <Activity size={13} color="#06b6d4" />, name: "Framer Motion", tag: "60 FPS" },
+  { icon: <Code2 size={13} color="#10b981" />, name: "TypeScript", tag: "Strict Types" },
 ];
 
 const MARQUEE_ROW_2 = [
   { icon: <Sparkles size={13} color="#a855f7" />, name: "Dynamic Island", tag: "HUD Notify" },
   { icon: <Terminal size={13} color="#3b82f6" />, name: "Cmd Palette", tag: "Ctrl+K" },
-  { icon: <Smartphone size={13} color="#10b981" />, name: "Mobile View", tag: "iPhone Frame" },
-  { icon: <Calendar size={13} color="#f59e0b" />, name: "Instant Booking", tag: "Live Calendar" },
-  { icon: <Mail size={13} color="#ec4899" />, name: "Gmail Popup", tag: "Direct Send" },
+  { icon: <Smartphone size={13} color="#10b981" />, name: "Mobile View", tag: "Simulator" },
+  { icon: <Calendar size={13} color="#f59e0b" />, name: "Instant Booking", tag: "Calendar" },
   { icon: <ShieldCheck size={13} color="#06b6d4" />, name: "PWA v1.3.0", tag: "Offline Mode" },
 ];
 
@@ -71,19 +69,19 @@ export default function CraftedWithLoveModal({ isOpen, onClose }) {
           {/* Modal Container */}
           <motion.div
             onClick={(e) => e.stopPropagation()}
-            initial={{ scale: 0.9, opacity: 0, y: 16 }}
+            initial={{ scale: 0.92, opacity: 0, y: 16 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.92, opacity: 0, y: 12 }}
+            exit={{ scale: 0.94, opacity: 0, y: 12 }}
             transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
             style={{
               position: 'relative',
               width: '100%',
-              maxWidth: '560px',
+              maxWidth: '540px',
               backgroundColor: 'var(--bg-secondary)',
-              borderRadius: '22px',
+              borderRadius: '20px',
               border: '1px solid var(--border-color)',
-              padding: '28px',
-              boxShadow: '0 30px 80px rgba(0, 0, 0, 0.45)',
+              padding: '24px 26px',
+              boxShadow: '0 25px 60px rgba(0, 0, 0, 0.35)',
               color: 'var(--text-primary)',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
               zIndex: 1000000,
@@ -95,25 +93,26 @@ export default function CraftedWithLoveModal({ isOpen, onClose }) {
             <div
               style={{
                 position: 'absolute',
-                top: '-50px',
-                right: '-50px',
-                width: '200px',
-                height: '200px',
+                top: '-60px',
+                right: '-60px',
+                width: '220px',
+                height: '220px',
                 borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(239, 68, 68, 0.25) 0%, transparent 70%)',
-                filter: 'blur(35px)',
+                background: 'radial-gradient(circle, rgba(239, 68, 68, 0.18) 0%, transparent 70%)',
+                filter: 'blur(40px)',
                 pointerEvents: 'none'
               }}
             />
 
             {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '18px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{
-                  width: '38px',
-                  height: '38px',
+                  width: '40px',
+                  height: '40px',
                   borderRadius: '12px',
-                  backgroundColor: 'rgba(239, 68, 68, 0.14)',
+                  backgroundColor: 'rgba(239, 68, 68, 0.12)',
+                  border: '1px solid rgba(239, 68, 68, 0.2)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -125,7 +124,7 @@ export default function CraftedWithLoveModal({ isOpen, onClose }) {
                   <h3 id="crafted-modal-title" style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
                     Crafted with Love
                   </h3>
-                  <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: 500 }}>
+                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 500 }}>
                     Designed & Engineered by Sujith Thota
                   </span>
                 </div>
@@ -136,18 +135,28 @@ export default function CraftedWithLoveModal({ isOpen, onClose }) {
                 onClick={onClose}
                 aria-label="Close modal"
                 style={{
-                  background: 'none',
-                  border: 'none',
+                  background: 'transparent',
+                  border: '1px solid var(--border-color)',
                   cursor: 'pointer',
                   color: 'var(--text-muted)',
-                  padding: '4px',
-                  borderRadius: '6px',
+                  width: '30px',
+                  height: '30px',
+                  borderRadius: '8px',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  transition: 'all 0.15s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'var(--text-primary)';
+                  e.currentTarget.style.borderColor = 'var(--text-muted)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'var(--text-muted)';
+                  e.currentTarget.style.borderColor = 'var(--border-color)';
                 }}
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
 
@@ -157,22 +166,22 @@ export default function CraftedWithLoveModal({ isOpen, onClose }) {
               borderRadius: '14px',
               backgroundColor: 'var(--bg-primary)',
               border: '1px solid var(--border-color)',
-              marginBottom: '18px',
+              marginBottom: '16px',
               fontSize: '12.5px',
               color: 'var(--text-secondary)',
-              lineHeight: 1.6
+              lineHeight: 1.55
             }}>
               <p style={{ margin: '0 0 4px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                ✨ "Crafted with passion, precision, and state-of-the-art Web & AI engineering."
+                ✨ "Crafted with passion, precision, and modern web engineering."
               </p>
               <span>
-                Ultra-fast responsive portfolio powered by Groq LPU inference, Voyage vector RAG, dynamic glassmorphism, and instant telemetry.
+                Ultra-fast responsive portfolio engineered with React 18, Vite 6, dynamic glassmorphism, and seamless PWA offline performance.
               </span>
             </div>
 
             {/* Dual Infinite Scroll Marquee Stack */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '22px' }}>
-              <span style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '18px' }}>
+              <span style={{ fontSize: '10.5px', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                 ARCHITECTURE & FEATURES MARQUEE
               </span>
 
@@ -181,16 +190,16 @@ export default function CraftedWithLoveModal({ isOpen, onClose }) {
             </div>
 
             {/* Technology Stack Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '22px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '20px' }}>
               <TechStackCard
                 icon={<Code2 size={15} color="var(--primary-blue)" />}
                 title="Frontend Core"
-                desc="React 18 · Vite · Framer Motion"
+                desc="React 18 · Vite 6 · Framer Motion"
               />
               <TechStackCard
-                icon={<Cpu size={15} color="#10b981" />}
-                title="AI Telemetry"
-                desc="Groq LPU (720 tok/s) · Voyage AI"
+                icon={<Gauge size={15} color="#10b981" />}
+                title="Performance & Design"
+                desc="Glassmorphism · 60 FPS · PWA v1.3"
               />
             </div>
 
@@ -202,7 +211,7 @@ export default function CraftedWithLoveModal({ isOpen, onClose }) {
                 rel="noopener noreferrer"
                 style={{
                   flex: 1,
-                  height: '42px',
+                  height: '40px',
                   borderRadius: '10px',
                   backgroundColor: 'var(--bg-primary)',
                   color: 'var(--text-primary)',
@@ -224,11 +233,11 @@ export default function CraftedWithLoveModal({ isOpen, onClose }) {
                 type="button"
                 onClick={() => {
                   onClose();
-                  window.dispatchEvent(new CustomEvent('open-email-modal'));
+                  window.dispatchEvent(new CustomEvent('open-email'));
                 }}
                 style={{
                   flex: 1,
-                  height: '42px',
+                  height: '40px',
                   borderRadius: '10px',
                   backgroundColor: 'var(--primary-blue)',
                   color: '#ffffff',
@@ -255,7 +264,6 @@ export default function CraftedWithLoveModal({ isOpen, onClose }) {
 }
 
 function InfiniteMarqueeTrack({ items, direction = 'left', duration = 24 }) {
-  // Quadruple items to ensure 100% smooth seamless infinite loop
   const quadItems = [...items, ...items, ...items, ...items];
   const animName = direction === 'left' ? 'marqueeScrollLeft' : 'marqueeScrollRight';
 
@@ -263,7 +271,7 @@ function InfiniteMarqueeTrack({ items, direction = 'left', duration = 24 }) {
     <div style={{
       position: 'relative',
       width: '100%',
-      height: '36px',
+      height: '34px',
       borderRadius: '10px',
       backgroundColor: 'var(--bg-primary)',
       border: '1px solid var(--border-color)',
@@ -291,7 +299,7 @@ function InfiniteMarqueeTrack({ items, direction = 'left', duration = 24 }) {
         top: 0,
         left: 0,
         bottom: 0,
-        width: '32px',
+        width: '28px',
         background: 'linear-gradient(to right, var(--bg-primary) 20%, transparent)',
         zIndex: 2,
         pointerEvents: 'none'
@@ -301,7 +309,7 @@ function InfiniteMarqueeTrack({ items, direction = 'left', duration = 24 }) {
         top: 0,
         right: 0,
         bottom: 0,
-        width: '32px',
+        width: '28px',
         background: 'linear-gradient(to left, var(--bg-primary) 20%, transparent)',
         zIndex: 2,
         pointerEvents: 'none'
@@ -313,7 +321,7 @@ function InfiniteMarqueeTrack({ items, direction = 'left', duration = 24 }) {
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '10px',
+          gap: '8px',
           width: 'max-content',
           animation: `${animName} ${duration}s linear infinite`
         }}
@@ -325,11 +333,11 @@ function InfiniteMarqueeTrack({ items, direction = 'left', duration = 24 }) {
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              padding: '4px 10px',
-              borderRadius: '8px',
-              backgroundColor: 'color-mix(in srgb, var(--text-primary) 6%, var(--bg-primary))',
+              padding: '3px 8px',
+              borderRadius: '6px',
+              backgroundColor: 'color-mix(in srgb, var(--text-primary) 5%, var(--bg-primary))',
               border: '1px solid var(--border-color)',
-              fontSize: '11.5px',
+              fontSize: '11px',
               fontWeight: 700,
               color: 'var(--text-primary)',
               whiteSpace: 'nowrap'
@@ -338,9 +346,9 @@ function InfiniteMarqueeTrack({ items, direction = 'left', duration = 24 }) {
             {item.icon}
             <span>{item.name}</span>
             <span style={{
-              fontSize: '9.5px',
+              fontSize: '9px',
               fontWeight: 800,
-              padding: '1px 5px',
+              padding: '1px 4px',
               borderRadius: '4px',
               backgroundColor: 'color-mix(in srgb, var(--primary-blue) 14%, transparent)',
               color: 'var(--primary-blue)'
@@ -373,3 +381,4 @@ function TechStackCard({ icon, title, desc }) {
     </div>
   );
 }
+
