@@ -246,74 +246,82 @@ export default function Home({ onNavClick }) {
         }
 
         .home-content .home-quick-actions {
-          display: flex;
-          gap: 12px;
-          margin-top: 32px;
-          flex-wrap: wrap;
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 14px;
+          margin-top: 0;
+          width: 100%;
         }
 
         .home-content .qa-card {
-          flex: 1;
-          min-width: 130px;
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
-          border-radius: 12px;
+          border-radius: 14px;
           padding: 16px;
           display: flex;
           flex-direction: column;
           gap: 12px;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
           position: relative;
           overflow: hidden;
           text-align: left;
         }
         .home-content .qa-card:hover {
           border-color: var(--primary-blue);
-          transform: translateY(-2px);
-          box-shadow: 0 10px 20px -10px rgba(0,0,0,0.1);
-        }
-        [data-theme="dark"] .home-content .qa-card:hover {
-          box-shadow: 0 10px 20px -10px rgba(0,0,0,0.5);
+          transform: translateY(-3px);
+          box-shadow: 0 12px 24px -8px color-mix(in srgb, var(--primary-blue) 20%, transparent);
         }
         
+        .home-content .qa-card-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          width: 100%;
+        }
+
         .home-content .qa-icon-wrap {
-          width: 34px;
-          height: 34px;
-          border-radius: 8px;
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
           background: var(--bg-primary);
           border: 1px solid var(--border-color);
           display: flex;
           align-items: center;
           justify-content: center;
-          color: var(--text-primary);
+          color: var(--primary-blue);
           transition: all 0.2s ease;
         }
         .home-content .qa-card:hover .qa-icon-wrap {
           background: var(--primary-blue);
           border-color: var(--primary-blue);
-          color: white;
+          color: #ffffff;
         }
 
         .home-content .qa-title {
-          font-size: 13.5px;
-          font-weight: 600;
+          font-size: 14px;
+          font-weight: 700;
           color: var(--text-primary);
-          margin: 0;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
+          margin: 0 0 2px 0;
         }
         
+        .home-content .qa-subtext {
+          font-size: 11px;
+          font-weight: 500;
+          color: var(--text-muted);
+          margin: 0;
+        }
+
         .home-content .qa-arrow {
-          opacity: 0;
-          transform: translateX(-5px);
+          opacity: 0.4;
+          transform: translateX(-3px);
           transition: all 0.2s ease;
-          color: var(--primary-blue);
+          color: var(--text-muted);
         }
         .home-content .qa-card:hover .qa-arrow {
           opacity: 1;
           transform: translateX(0);
+          color: var(--primary-blue);
         }
 
         .home-content .home-image-side {
@@ -565,26 +573,38 @@ export default function Home({ onNavClick }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '32px', width: '100%' }}>
         <HeroSection name={nameText} photoUrl="/IMG_0322.jpg" onNavClick={onNavClick} settings={settings} />
 
-        <div className="home-quick-actions" style={{ marginTop: 0, justifyContent: 'flex-start', maxWidth: '600px' }}>
+        <div className="home-quick-actions" style={{ marginTop: 0, width: '100%', maxWidth: '640px' }}>
           <button className="qa-card" onClick={() => onNavClick?.('skills')}>
-            <div className="qa-icon-wrap"><Code size={16} /></div>
-            <div className="qa-title">
-              Core Skills <ArrowRight size={14} className="qa-arrow" />
+            <div className="qa-card-header">
+              <div className="qa-icon-wrap"><Code size={16} /></div>
+              <ArrowRight size={14} className="qa-arrow" />
+            </div>
+            <div>
+              <div className="qa-title">Core Skills</div>
+              <div className="qa-subtext">12+ Tech &amp; Data Stack</div>
             </div>
           </button>
           <button className="qa-card" onClick={() => onNavClick?.('projects')}>
-            <div className="qa-icon-wrap"><Briefcase size={16} /></div>
-            <div className="qa-title">
-              Projects <ArrowRight size={14} className="qa-arrow" />
+            <div className="qa-card-header">
+              <div className="qa-icon-wrap"><Briefcase size={16} /></div>
+              <ArrowRight size={14} className="qa-arrow" />
+            </div>
+            <div>
+              <div className="qa-title">Projects</div>
+              <div className="qa-subtext">10+ Shipped Apps</div>
             </div>
           </button>
           <button className="qa-card" onClick={() => onNavClick?.('contact')}>
-            <div className="qa-icon-wrap"><Mail size={16} /></div>
-            <div className="qa-title">
-              Contact Me <ArrowRight size={14} className="qa-arrow" />
+            <div className="qa-card-header">
+              <div className="qa-icon-wrap"><Mail size={16} /></div>
+              <ArrowRight size={14} className="qa-arrow" />
+            </div>
+            <div>
+              <div className="qa-title">Contact Me</div>
+              <div className="qa-subtext">Email &amp; Instant Call</div>
             </div>
           </button>
-      </div>
+        </div>
 
         {/* Currently Working On Widget — only shown on desktop when set */}
         {!isMobile && settings?.current_project && (

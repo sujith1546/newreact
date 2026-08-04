@@ -123,8 +123,21 @@ export default function HeroSection({ name = "Sujith Thota", photoUrl = "/IMG_03
   }
 
   const triggerResume = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     window.dispatchEvent(new CustomEvent('open-resume'));
+  };
+
+  const getGreeting = () => {
+    try {
+      const now = new Date();
+      const options = { timeZone: 'Asia/Kolkata', hour: 'numeric', hour12: false };
+      const istHour = parseInt(new Intl.DateTimeFormat('en-US', options).format(now), 10);
+      if (istHour < 12) return 'Good morning';
+      if (istHour < 17) return 'Good afternoon';
+      return 'Good evening';
+    } catch {
+      return 'Good day';
+    }
   };
 
   return (
@@ -166,6 +179,7 @@ export default function HeroSection({ name = "Sujith Thota", photoUrl = "/IMG_03
           animation: scroll-left 25s linear infinite;
         }
         .hero-img-wrap {
+          position: relative;
           width: 100%;
           max-width: 340px;
           margin: 0 auto;
@@ -177,7 +191,7 @@ export default function HeroSection({ name = "Sujith Thota", photoUrl = "/IMG_03
           transition: transform 0.3s ease;
         }
         .hero-img-wrap:hover {
-          transform: scale(1.02) rotate(-1deg);
+          transform: scale(1.02);
         }
         .fc-badge {
           display: inline-flex;
@@ -364,7 +378,7 @@ export default function HeroSection({ name = "Sujith Thota", photoUrl = "/IMG_03
           {/* Title */}
           <div>
             <p style={{ fontSize: '12px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', margin: '0 0 4px 0' }}>
-              Good afternoon
+              {getGreeting()}
             </p>
             <h1 style={{ fontSize: '48px', fontWeight: 800, letterSpacing: '-0.02em', color: 'var(--text-primary)', margin: 0, lineHeight: 1.1 }}>
               {name}
@@ -402,6 +416,7 @@ export default function HeroSection({ name = "Sujith Thota", photoUrl = "/IMG_03
           {/* CTA Buttons */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', paddingTop: '4px' }}>
             <button
+              className="hero-primary-btn"
               onClick={() => onNavClick?.('contact')}
               style={{
                 display: 'inline-flex',
@@ -410,18 +425,28 @@ export default function HeroSection({ name = "Sujith Thota", photoUrl = "/IMG_03
                 borderRadius: '10px',
                 background: 'var(--primary-blue)',
                 color: '#ffffff',
-                padding: '10px 20px',
+                padding: '10px 22px',
                 fontSize: '14px',
                 fontWeight: 600,
                 border: 'none',
                 cursor: 'pointer',
-                transition: 'all 0.2s ease'
+                transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                boxShadow: '0 4px 14px color-mix(in srgb, var(--primary-blue) 35%, transparent)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 6px 20px color-mix(in srgb, var(--primary-blue) 50%, transparent)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 4px 14px color-mix(in srgb, var(--primary-blue) 35%, transparent)';
               }}
             >
               <Mail size={16} />
               Get in touch
             </button>
             <button
+              className="hero-secondary-btn"
               onClick={triggerResume}
               style={{
                 display: 'inline-flex',
@@ -431,11 +456,19 @@ export default function HeroSection({ name = "Sujith Thota", photoUrl = "/IMG_03
                 border: '1px solid var(--border-color)',
                 background: 'var(--bg-secondary)',
                 color: 'var(--text-primary)',
-                padding: '10px 20px',
+                padding: '10px 22px',
                 fontSize: '14px',
                 fontWeight: 600,
                 cursor: 'pointer',
-                transition: 'all 0.2s ease'
+                transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.borderColor = 'var(--primary-blue)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.borderColor = 'var(--border-color)';
               }}
             >
               <Download size={16} style={{ color: 'var(--primary-blue)' }} />
@@ -444,10 +477,49 @@ export default function HeroSection({ name = "Sujith Thota", photoUrl = "/IMG_03
           </div>
         </div>
 
-        {/* Right Column: Photo */}
+        {/* Right Column: Photo with Ambient Glow & Glass Badge */}
         {photoUrl && (
-          <div className="hero-img-wrap">
-            <img src={photoUrl} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <div style={{ position: 'relative', width: '100%', maxWidth: '340px', margin: '0 auto' }}>
+            <div
+              style={{
+                position: 'absolute',
+                inset: '-10px',
+                borderRadius: '32px',
+                background: 'radial-gradient(circle, color-mix(in srgb, var(--primary-blue) 25%, transparent) 0%, transparent 70%)',
+                filter: 'blur(28px)',
+                pointerEvents: 'none',
+                zIndex: 0
+              }}
+            />
+
+            <div className="hero-img-wrap" style={{ zIndex: 1 }}>
+              <img src={photoUrl} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+
+              {/* Floating Glassmorphic Badge */}
+              <div style={{
+                position: 'absolute',
+                bottom: '12px',
+                left: '12px',
+                right: '12px',
+                padding: '8px 12px',
+                borderRadius: '12px',
+                backgroundColor: 'rgba(0, 0, 0, 0.45)',
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                border: '1px solid rgba(255, 255, 255, 0.18)',
+                color: '#ffffff',
+                fontSize: '11.5px',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.25)',
+                letterSpacing: '0.01em'
+              }}>
+                <span>🎓</span> B.Tech CSE @ VIT · 8.7 CGPA
+              </div>
+            </div>
           </div>
         )}
       </div>
