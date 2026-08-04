@@ -853,7 +853,7 @@ export default function About({ onNavClick }) {
           </div>
         </motion.div>
 
-        {/* Bento Grid: Engineering Philosophy & Core Focus */}
+        {/* Bento Grid: Personal Profile & Achievements */}
         <motion.div
           className="ab-bento-grid"
           initial={{ opacity: 0, y: 12 }}
@@ -879,13 +879,13 @@ export default function About({ onNavClick }) {
             overflow: 'hidden'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '16px' }}>🎯</span>
+              <span style={{ fontSize: '16px' }}>🎓</span>
               <h3 style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-                Data Science &amp; ML
+                Academic Excellence
               </h3>
             </div>
             <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
-              Building applied machine learning pipelines, vector search RAGs, and predictive analytics models.
+              B.Tech CS student at VIT Vellore (8.7 CGPA) with a 98% distinction mark in Senior Secondary (MPC).
             </p>
           </div>
 
@@ -902,13 +902,13 @@ export default function About({ onNavClick }) {
             overflow: 'hidden'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '16px' }}>⚡</span>
+              <span style={{ fontSize: '16px' }}>🔥</span>
               <h3 style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-                Full-Stack Web Dev
+                Passion &amp; Work Ethic
               </h3>
             </div>
             <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
-              Crafting 60 FPS user experiences using React 18, Vite 6, and modern state management.
+              Dedicated developer with 1,000+ continuous days of coding experience and 10+ shipped web &amp; AI apps.
             </p>
           </div>
 
@@ -925,13 +925,13 @@ export default function About({ onNavClick }) {
             overflow: 'hidden'
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '16px' }}>💡</span>
+              <span style={{ fontSize: '16px' }}>🚀</span>
               <h3 style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
-                Problem Solving &amp; DSA
+                Career Goal &amp; Roles
               </h3>
             </div>
             <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
-              Solved 200+ Data Structures &amp; Algorithms problems with optimal space-time complexity.
+              Actively seeking full-time Software Engineering, Data Science, and AI roles to build high-impact software.
             </p>
           </div>
         </motion.div>
