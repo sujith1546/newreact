@@ -268,47 +268,58 @@ function CareerTimeline() {
 
       {/* Popover Card anchored directly above hovered milestone node */}
       <AnimatePresence>
-        {hoveredNode && hoveredIndex >= 0 && (
-          <motion.div
-            key={`hover-popover-${hoveredNode.id}`}
-            initial={{ opacity: 0, y: 6, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 4, scale: 0.95 }}
-            transition={{ duration: 0.18, ease: 'easeOut' }}
-            style={{
-              position: 'absolute',
-              bottom: 'calc(100% - 4px)',
-              left: `${(hoveredIndex / (milestones.length - 1)) * 80 + 10}%`,
-              transform: 'translateX(-50%)',
-              zIndex: 100,
-              width: 230,
-              pointerEvents: 'none'
-            }}
-          >
-            <div style={{
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--border-color)',
-              borderRadius: 14,
-              padding: '10px 12px',
-              boxShadow: '0 10px 28px rgba(0,0,0,0.18), 0 0 0 1px color-mix(in srgb, var(--primary-blue) 15%, transparent)',
-              backdropFilter: 'blur(12px)',
-              position: 'relative'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                <span className={`tl-text-badge tl-text-badge--${hoveredNode.status}`}>
-                  {hoveredNode.badge}
-                </span>
-                <span style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600 }}>{hoveredNode.meta}</span>
+        {hoveredNode && hoveredIndex >= 0 && (() => {
+          let popoverPosStyle = {
+            left: `${(hoveredIndex / (milestones.length - 1)) * 80 + 10}%`,
+            transform: 'translateX(-50%)'
+          };
+          if (hoveredIndex === 0) {
+            popoverPosStyle = { left: '0px', transform: 'translateX(0%)' };
+          } else if (hoveredIndex === milestones.length - 1) {
+            popoverPosStyle = { right: '0px', left: 'auto', transform: 'translateX(0%)' };
+          }
+
+          return (
+            <motion.div
+              key={`hover-popover-${hoveredNode.id}`}
+              initial={{ opacity: 0, y: 6, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 4, scale: 0.95 }}
+              transition={{ duration: 0.18, ease: 'easeOut' }}
+              style={{
+                position: 'absolute',
+                bottom: 'calc(100% - 4px)',
+                zIndex: 100,
+                width: 220,
+                pointerEvents: 'none',
+                ...popoverPosStyle
+              }}
+            >
+              <div style={{
+                background: 'var(--bg-secondary)',
+                border: '1px solid var(--border-color)',
+                borderRadius: 14,
+                padding: '10px 12px',
+                boxShadow: '0 10px 28px rgba(0,0,0,0.18), 0 0 0 1px color-mix(in srgb, var(--primary-blue) 15%, transparent)',
+                backdropFilter: 'blur(12px)',
+                position: 'relative'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <span className={`tl-text-badge tl-text-badge--${hoveredNode.status}`}>
+                    {hoveredNode.badge}
+                  </span>
+                  <span style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600 }}>{hoveredNode.meta}</span>
+                </div>
+                <p style={{ margin: '3px 0 2px', fontSize: 12.5, fontWeight: 700, color: 'var(--text-primary)' }}>
+                  {hoveredNode.title} <span style={{ color: 'var(--primary-blue)', fontWeight: 600 }}>· {hoveredNode.subtitle}</span>
+                </p>
+                <p style={{ margin: 0, fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.45 }}>
+                  {hoveredNode.description}
+                </p>
               </div>
-              <p style={{ margin: '3px 0 2px', fontSize: 12.5, fontWeight: 700, color: 'var(--text-primary)' }}>
-                {hoveredNode.title} <span style={{ color: 'var(--primary-blue)', fontWeight: 600 }}>· {hoveredNode.subtitle}</span>
-              </p>
-              <p style={{ margin: 0, fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.45 }}>
-                {hoveredNode.description}
-              </p>
-            </div>
-          </motion.div>
-        )}
+            </motion.div>
+          );
+        })()}
       </AnimatePresence>
 
       {/* Top Track Row (Line + Dots) */}
