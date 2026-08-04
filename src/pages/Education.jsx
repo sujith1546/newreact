@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Trophy, Laptop, BookOpen, School, X, Hand, ChevronRight, ChevronDown, Loader2 } from 'lucide-react';
+import { MapPin, Trophy, Laptop, BookOpen, School, X, Hand, ChevronRight, ChevronDown, Loader2, GraduationCap } from 'lucide-react';
 import { ScrollReveal, EducationArrowFlow } from '../components';
 import useRealtimeData from '../hooks/useRealtimeData';
 
@@ -298,6 +298,35 @@ export default function Education() {
           font-size: 13.5px;
           color: var(--text-secondary);
           margin: 0;
+        }
+
+        .edu-academic-banner {
+          background: var(--bg-secondary);
+          border: 1px solid var(--border-color);
+          border-radius: 16px;
+          padding: 14px 18px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+          flex-wrap: wrap;
+          margin-bottom: 12px;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+        .edu-academic-left {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .edu-academic-pill {
+          background: rgba(16, 185, 129, 0.12);
+          border: 1px solid rgba(16, 185, 129, 0.25);
+          color: #10b981;
+          font-size: 11px;
+          font-weight: 800;
+          padding: 4px 10px;
+          border-radius: 8px;
+          letter-spacing: 0.02em;
         }
 
         /* Progress Rail */
@@ -1003,6 +1032,32 @@ export default function Education() {
       `}</style>
 
       <div className="edu-page">
+        {/* Academic Grade Breakdown Banner */}
+        <div className="edu-academic-banner">
+          <div className="edu-academic-left">
+            <div style={{
+              width: 38, height: 38, borderRadius: 10,
+              background: 'rgba(59,130,246,0.12)', color: 'var(--primary-blue)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
+            }}>
+              <GraduationCap size={20} />
+            </div>
+            <div>
+              <div style={{ fontSize: 14.5, fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                VIT Vellore · B.Tech CS (Data Science)
+              </div>
+              <div style={{ fontSize: 11.5, color: 'var(--text-muted)', fontWeight: 500, margin: '2px 0 0' }}>
+                Graduating Senior Class of 2025 · 8.7 / 10 CGPA Distinction
+              </div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+            <span className="edu-academic-pill">DSA (A)</span>
+            <span className="edu-academic-pill">DBMS (A)</span>
+            <span className="edu-academic-pill">ML (A)</span>
+            <span className="edu-academic-pill">OS (A)</span>
+          </div>
+        </div>
 
         {/* Horizontal Progress Rail */}
         {loading ? (
