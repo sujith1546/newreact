@@ -151,7 +151,7 @@ export default function Sidebar({ activeSection, onNavClick }) {
     setClickCount((prev) => {
       const newCount = prev + 1;
       if (newCount === 5) {
-        window.open('/admin/login', '_blank', 'noopener,noreferrer');
+        window.open('/admin/login', '_blank');
         return 0; // Reset
       }
       return newCount;
@@ -169,13 +169,21 @@ export default function Sidebar({ activeSection, onNavClick }) {
     const handleOpenResume = () => setIsPreviewOpen(true);
     const handleOpenQr = () => setQrOpen(true);
     const handleOpenEmail = () => setIsEmailOpen(true);
+    const handleEscapeModal = (e) => {
+      if (e.key === 'Escape') {
+        setIsActionModalOpen(false);
+        setIsProfileModalOpen(false);
+      }
+    };
     window.addEventListener('open-resume', handleOpenResume);
     window.addEventListener('open-qr', handleOpenQr);
     window.addEventListener('open-email', handleOpenEmail);
+    window.addEventListener('keydown', handleEscapeModal);
     return () => {
       window.removeEventListener('open-resume', handleOpenResume);
       window.removeEventListener('open-qr', handleOpenQr);
       window.removeEventListener('open-email', handleOpenEmail);
+      window.removeEventListener('keydown', handleEscapeModal);
     };
   }, []);
 
@@ -236,10 +244,7 @@ export default function Sidebar({ activeSection, onNavClick }) {
     }
 
     // 2. Fallback: If on Desktop/Unsupported, use wa.me text link.
-    // Intelligently prevent sharing "localhost" links which don't work for others.
-    const origin = window.location.origin.includes('localhost')
-      ? 'https://sujith-portfolio.com' // NOTE: Replace this with your actual live domain later!
-      : window.location.origin;
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
 
     const resumeUrl = `${origin}/resume.pdf`;
     const message = `Hi! Here's my resume: ${resumeUrl}`;
@@ -277,7 +282,7 @@ export default function Sidebar({ activeSection, onNavClick }) {
               className={activeSection === id ? 'active' : ''}
               onClick={(e) => {
                 e.preventDefault();
-                onNavClick(id);
+                onNavClick?.(id);
               }}
             >
               {label}
@@ -541,6 +546,7 @@ export default function Sidebar({ activeSection, onNavClick }) {
 
       <div className="social-icons-row">
         <button
+          type="button"
           className="social-icon-box"
           onClick={() => setIsEmailOpen(true)}
           title="Compose Email"
@@ -558,6 +564,7 @@ export default function Sidebar({ activeSection, onNavClick }) {
           <LinkedinIcon size={20} />
         </a>
         <button
+          type="button"
           className="social-icon-box"
           onClick={() => setIsGithubModalOpen(true)}
           title="GitHub commits & activity"
@@ -572,6 +579,7 @@ export default function Sidebar({ activeSection, onNavClick }) {
           <FaGithub size={19} />
         </button>
         <button
+          type="button"
           className="social-icon-box"
           onClick={() => setIsDiagnosticsOpen(true)}
           title="System diagnostics"
@@ -592,8 +600,9 @@ export default function Sidebar({ activeSection, onNavClick }) {
 
         {/* Admin Login button */}
         <button
+          type="button"
           className="social-icon-box"
-          onClick={() => window.open(isAdminActive ? '/admin/dashboard' : '/admin/login', '_blank', 'noopener,noreferrer')}
+          onClick={() => window.open(isAdminActive ? '/admin/dashboard' : '/admin/login', '_blank')}
           title="Admin login"
           aria-label="Admin login"
           style={{
@@ -740,7 +749,7 @@ export default function Sidebar({ activeSection, onNavClick }) {
       <QRModal 
         isOpen={qrOpen} 
         onClose={() => setQrOpen(false)} 
-        shareUrl={window.location.href}
+        shareUrl={typeof window !== 'undefined' ? window.location.href : ''}
         title="Share your portfolio"
         contactName="Sujith Thota"
         contactRole="Data Science Enthusiast · VIT"
