@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Mail, Download, Code2, Clock, Database } from "lucide-react";
+import HeroPhotoCaption from "./HeroPhotoCaption";
 import {
   SiPython,
   SiTensorflow,
@@ -477,7 +478,7 @@ export default function HeroSection({ name = "Sujith Thota", photoUrl = "/IMG_03
           </div>
         </div>
 
-        {/* Right Column: Photo with Ambient Glow & Glass Badge */}
+        {/* Right Column: Photo with Ambient Glow & Animated Caption */}
         {photoUrl && (
           <div style={{ position: 'relative', width: '100%', maxWidth: '340px', margin: '0 auto' }}>
             <div
@@ -492,33 +493,13 @@ export default function HeroSection({ name = "Sujith Thota", photoUrl = "/IMG_03
               }}
             />
 
-            <div className="hero-img-wrap" style={{ zIndex: 1 }}>
-              <img src={photoUrl} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-
-              {/* Floating Glassmorphic Badge */}
-              <div style={{
-                position: 'absolute',
-                bottom: '12px',
-                left: '12px',
-                right: '12px',
-                padding: '8px 12px',
-                borderRadius: '12px',
-                backgroundColor: 'rgba(0, 0, 0, 0.45)',
-                backdropFilter: 'blur(12px)',
-                WebkitBackdropFilter: 'blur(12px)',
-                border: '1px solid rgba(255, 255, 255, 0.18)',
-                color: '#ffffff',
-                fontSize: '11.5px',
-                fontWeight: 700,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-                boxShadow: '0 4px 16px rgba(0, 0, 0, 0.25)',
-                letterSpacing: '0.01em'
-              }}>
-                <span>🎓</span> B.Tech CSE @ VIT · 8.7 CGPA
-              </div>
+            <div className="hero-photo-frame" style={{ zIndex: 1 }}>
+              <img src={photoUrl} alt={name} />
+              <HeroPhotoCaption
+                label="Education"
+                title="B.Tech CSE, VIT Vellore"
+                subtitle="8.7 CGPA"
+              />
             </div>
           </div>
         )}
