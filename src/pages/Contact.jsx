@@ -147,10 +147,10 @@ export default function Contact() {
             /* ────── STEP 1: DESK ROUTING SCREEN (COMPACT 90% SCALE) ────── */
             <motion.div
               key="desk-selector"
-              initial={{ opacity: 0, filter: 'blur(10px)', scale: 0.97 }}
-              animate={{ opacity: 1, filter: 'blur(0px)', scale: 1 }}
-              exit={{ opacity: 0, filter: 'blur(12px)', scale: 0.96 }}
-              transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
+              initial={{ opacity: 0, scale: 0.96, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.94, y: -8 }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
             >
               {/* Scaled Header */}
               <div style={{ textAlign: 'center', marginBottom: '26px' }}>
@@ -226,10 +226,10 @@ export default function Contact() {
             /* ────── STEP 2: TAILORED FORM SCREEN (COMPACT 90% SCALE) ────── */
             <motion.div
               key="tailored-form"
-              initial={{ opacity: 0, filter: 'blur(14px)', scale: 0.97 }}
-              animate={{ opacity: 1, filter: 'blur(0px)', scale: 1 }}
-              exit={{ opacity: 0, filter: 'blur(14px)', scale: 0.97 }}
-              transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
+              initial={{ opacity: 0, scale: 0.92, y: 14 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.94, y: 10 }}
+              transition={{ type: "spring", stiffness: 380, damping: 26, mass: 0.85 }}
               style={{ maxWidth: '540px', margin: '0 auto', width: '100%' }}
             >
               {/* Back Button */}
