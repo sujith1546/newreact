@@ -994,7 +994,7 @@ export default function About({ onNavClick }) {
             background: 'var(--bg-secondary)',
             border: '1px solid var(--border-color)',
             borderRadius: '16px',
-            padding: '20px 22px',
+            padding: '18px 20px',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'flex-start',
@@ -1002,22 +1002,24 @@ export default function About({ onNavClick }) {
             position: 'relative',
             overflow: 'hidden'
           }}>
-            <div style={{
-              width: 36,
-              height: 36,
-              borderRadius: 10,
-              background: 'color-mix(in srgb, #185fa5 15%, transparent)',
-              color: '#185fa5',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginBottom: 16
-            }}>
-              <GraduationCap size={18} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+              <div style={{
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                background: 'color-mix(in srgb, #185fa5 15%, transparent)',
+                color: '#185fa5',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
+              }}>
+                <GraduationCap size={18} />
+              </div>
+              <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
+                Academic excellence
+              </h3>
             </div>
-            <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 8px' }}>
-              Academic excellence
-            </h3>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
               B.Tech CS student at VIT Vellore (8.7 CGPA) with a 98% distinction mark in senior secondary (MPC).
             </p>
@@ -1027,7 +1029,7 @@ export default function About({ onNavClick }) {
             background: 'var(--bg-secondary)',
             border: '1px solid var(--border-color)',
             borderRadius: '16px',
-            padding: '20px 22px',
+            padding: '18px 20px',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'flex-start',
@@ -1035,22 +1037,24 @@ export default function About({ onNavClick }) {
             position: 'relative',
             overflow: 'hidden'
           }}>
-            <div style={{
-              width: 36,
-              height: 36,
-              borderRadius: 10,
-              background: 'color-mix(in srgb, #d93025 15%, transparent)',
-              color: '#d93025',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginBottom: 16
-            }}>
-              <Zap size={18} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+              <div style={{
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                background: 'color-mix(in srgb, #d93025 15%, transparent)',
+                color: '#d93025',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
+              }}>
+                <Zap size={18} />
+              </div>
+              <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
+                Passion and work ethic
+              </h3>
             </div>
-            <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 8px' }}>
-              Passion and work ethic
-            </h3>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
               Dedicated developer with 1,000+ continuous days of coding experience and 10+ shipped web and AI apps.
             </p>
@@ -1060,7 +1064,7 @@ export default function About({ onNavClick }) {
             background: 'var(--bg-secondary)',
             border: '1px solid var(--border-color)',
             borderRadius: '16px',
-            padding: '20px 22px',
+            padding: '18px 20px',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'flex-start',
@@ -1068,22 +1072,24 @@ export default function About({ onNavClick }) {
             position: 'relative',
             overflow: 'hidden'
           }}>
-            <div style={{
-              width: 36,
-              height: 36,
-              borderRadius: 10,
-              background: 'color-mix(in srgb, #137333 15%, transparent)',
-              color: '#137333',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginBottom: 16
-            }}>
-              <Rocket size={18} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+              <div style={{
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                background: 'color-mix(in srgb, #137333 15%, transparent)',
+                color: '#137333',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0
+              }}>
+                <Rocket size={18} />
+              </div>
+              <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
+                Career goal and roles
+              </h3>
             </div>
-            <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 8px' }}>
-              Career goal and roles
-            </h3>
             <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
               Actively seeking full-time software engineering, data science, and AI roles to build high-impact software.
             </p>
