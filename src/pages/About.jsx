@@ -993,8 +993,8 @@ export default function About({ onNavClick }) {
           <div className="ab-bento-card" style={{
             background: 'var(--bg-secondary)',
             border: '1px solid var(--border-color)',
-            borderRadius: '16px',
-            padding: '18px 20px',
+            borderRadius: '14px',
+            padding: '13px 16px',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'flex-start',
@@ -1002,11 +1002,11 @@ export default function About({ onNavClick }) {
             position: 'relative',
             overflow: 'hidden'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
               <div style={{
-                width: 36,
-                height: 36,
-                borderRadius: 10,
+                width: 30,
+                height: 30,
+                borderRadius: 8,
                 background: 'color-mix(in srgb, #185fa5 15%, transparent)',
                 color: '#185fa5',
                 display: 'flex',
@@ -1014,13 +1014,13 @@ export default function About({ onNavClick }) {
                 justifyContent: 'center',
                 flexShrink: 0
               }}>
-                <GraduationCap size={18} />
+                <GraduationCap size={16} />
               </div>
-              <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
+              <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
                 Academic excellence
               </h3>
             </div>
-            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+            <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: 1.45, margin: 0 }}>
               B.Tech CS student at VIT Vellore (8.7 CGPA) with a 98% distinction mark in senior secondary (MPC).
             </p>
           </div>
@@ -1028,8 +1028,8 @@ export default function About({ onNavClick }) {
           <div className="ab-bento-card" style={{
             background: 'var(--bg-secondary)',
             border: '1px solid var(--border-color)',
-            borderRadius: '16px',
-            padding: '18px 20px',
+            borderRadius: '14px',
+            padding: '13px 16px',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'flex-start',
@@ -1037,11 +1037,11 @@ export default function About({ onNavClick }) {
             position: 'relative',
             overflow: 'hidden'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
               <div style={{
-                width: 36,
-                height: 36,
-                borderRadius: 10,
+                width: 30,
+                height: 30,
+                borderRadius: 8,
                 background: 'color-mix(in srgb, #d93025 15%, transparent)',
                 color: '#d93025',
                 display: 'flex',
@@ -1049,13 +1049,13 @@ export default function About({ onNavClick }) {
                 justifyContent: 'center',
                 flexShrink: 0
               }}>
-                <Zap size={18} />
+                <Zap size={16} />
               </div>
-              <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
+              <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
                 Passion and work ethic
               </h3>
             </div>
-            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+            <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: 1.45, margin: 0 }}>
               Dedicated developer with 1,000+ continuous days of coding experience and 10+ shipped web and AI apps.
             </p>
           </div>
@@ -1063,8 +1063,8 @@ export default function About({ onNavClick }) {
           <div className="ab-bento-card" style={{
             background: 'var(--bg-secondary)',
             border: '1px solid var(--border-color)',
-            borderRadius: '16px',
-            padding: '18px 20px',
+            borderRadius: '14px',
+            padding: '13px 16px',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'flex-start',
@@ -1072,11 +1072,11 @@ export default function About({ onNavClick }) {
             position: 'relative',
             overflow: 'hidden'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
               <div style={{
-                width: 36,
-                height: 36,
-                borderRadius: 10,
+                width: 30,
+                height: 30,
+                borderRadius: 8,
                 background: 'color-mix(in srgb, #137333 15%, transparent)',
                 color: '#137333',
                 display: 'flex',
@@ -1084,13 +1084,13 @@ export default function About({ onNavClick }) {
                 justifyContent: 'center',
                 flexShrink: 0
               }}>
-                <Rocket size={18} />
+                <Rocket size={16} />
               </div>
-              <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
+              <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
                 Career goal and roles
               </h3>
             </div>
-            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+            <p style={{ fontSize: '12.5px', color: 'var(--text-secondary)', lineHeight: 1.45, margin: 0 }}>
               Actively seeking full-time software engineering, data science, and AI roles to build high-impact software.
             </p>
           </div>
