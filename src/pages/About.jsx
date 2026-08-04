@@ -449,6 +449,18 @@ export default function About({ onNavClick }) {
           .ab-row3 { padding: 18px 24px; }
         }
 
+        .ab-bento-card:hover {
+          transform: translateY(-2px);
+          border-color: var(--primary-blue) !important;
+          box-shadow: 0 10px 24px -8px color-mix(in srgb, var(--primary-blue) 20%, transparent);
+        }
+
+        @media (max-width: 900px) {
+          .ab-bento-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+
         /* ── Page shell ── */
         .ab-page {
           width: 100%;
@@ -838,6 +850,89 @@ export default function About({ onNavClick }) {
               <span className="ab-stat-num">{useCountUp(8.7, 1000, 1, inView).toFixed(1)}</span>
               <span className="ab-stat-lbl">CGPA</span>
             </div>
+          </div>
+        </motion.div>
+
+        {/* Bento Grid: Engineering Philosophy & Core Focus */}
+        <motion.div
+          className="ab-bento-grid"
+          initial={{ opacity: 0, y: 12 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.4, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '14px',
+            width: '100%'
+          }}
+        >
+          <div className="ab-bento-card" style={{
+            background: 'var(--bg-secondary)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '16px',
+            padding: '16px 18px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '6px',
+            transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '16px' }}>🎯</span>
+              <h3 style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+                Data Science &amp; ML
+              </h3>
+            </div>
+            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+              Building applied machine learning pipelines, vector search RAGs, and predictive analytics models.
+            </p>
+          </div>
+
+          <div className="ab-bento-card" style={{
+            background: 'var(--bg-secondary)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '16px',
+            padding: '16px 18px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '6px',
+            transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '16px' }}>⚡</span>
+              <h3 style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+                Full-Stack Web Dev
+              </h3>
+            </div>
+            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+              Crafting 60 FPS user experiences using React 18, Vite 6, and modern state management.
+            </p>
+          </div>
+
+          <div className="ab-bento-card" style={{
+            background: 'var(--bg-secondary)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '16px',
+            padding: '16px 18px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '6px',
+            transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '16px' }}>💡</span>
+              <h3 style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+                Problem Solving &amp; DSA
+              </h3>
+            </div>
+            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5, margin: 0 }}>
+              Solved 200+ Data Structures &amp; Algorithms problems with optimal space-time complexity.
+            </p>
           </div>
         </motion.div>
 
