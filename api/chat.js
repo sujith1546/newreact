@@ -653,8 +653,9 @@ Analyze the tone and style of the user's message before responding:
       }
     }
 
-    // Stream SSE Telemetry & Sources Metadata
     const detectedPersona = detectPersona(message);
+
+    // Stream SSE Telemetry & Sources Metadata
     res.write(
       `data: ${JSON.stringify({ 
         type: "telemetry", 
@@ -689,21 +690,6 @@ Analyze the tone and style of the user's message before responding:
     
     let ttfbMs = Date.now() - genT0;
     sendStep('gen', 'done', "Connection established (TTFB)", ttfbMs);
-
-    // Stream SSE Telemetry & Sources Metadata
-    const detectedPersona = detectPersona(message);
-    res.write(
-      `data: ${JSON.stringify({ 
-        type: "telemetry", 
-        persona: detectedPersona, 
-        topScore: chunks.length > 0 ? 0.95 : 0.4, 
-        sources: chunks.map((c) => ({ source: c.source, section: c.section, content: c.content })) 
-      })}\n\n`
-    );
-
-    res.write(
-      `data: ${JSON.stringify({ type: "sources", sources: chunks.map((c) => ({ source: c.source, section: c.section, content: c.content })) })}\n\n`
-    );
 
     const reader = groqRes.body.getReader();
     const decoder = new TextDecoder();
