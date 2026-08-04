@@ -476,9 +476,10 @@ export default function ChatBot() {
                 const updated = [...prev];
                 const lastIdx = updated.length - 1;
                 if (lastIdx >= 0 && updated[lastIdx].role === 'assistant') {
+                  const cleanedStreamContent = finalText.replace(/\[NAVIGATE:\s*[a-zA-Z0-9_\-]+(?::\s*[^\]]+)?\]/gi, '');
                   updated[lastIdx] = {
                     ...updated[lastIdx],
-                    content: updated[lastIdx].content + data.token
+                    content: cleanedStreamContent
                   };
                 }
                 return updated;
@@ -491,7 +492,7 @@ export default function ChatBot() {
       }
 
       // Clean raw NAVIGATE tokens from final displayed message content
-      const cleanDisplayContent = finalText.replace(/\[NAVIGATE:\s*[a-zA-Z]+(?::\s*[^\]]+)?\]/gi, '').trim();
+      const cleanDisplayContent = finalText.replace(/\[NAVIGATE:\s*[a-zA-Z0-9_\-]+(?::\s*[^\]]+)?\]/gi, '').trim();
 
       setMessages(prev => {
         const updated = [...prev];
@@ -513,12 +514,12 @@ export default function ChatBot() {
       }
 
       // 🎬 Screen Director: detect [NAVIGATE:sectionId] or [NAVIGATE:sectionId:keyword] 🎬
-      const navMatch = finalText.match(/\[NAVIGATE:\s*([a-zA-Z]+)(?::\s*([^\]]+))?\]/i);
+      const navMatch = finalText.match(/\[NAVIGATE:\s*([a-zA-Z0-9_\-]+)(?::\s*([^\]]+))?\]/i);
       
       if (navMatch && aiAutoNav) {
-        const targetSection = navMatch[1].toLowerCase();
+        const targetSection = navMatch[1].toLowerCase().trim();
         const keyword = navMatch[2] ? navMatch[2].trim() : targetSection;
-        const validSections = ['home','about','skills','projects','blog','education','experience','certifications','contact'];
+        const validSections = ['home','about','skills','projects','blog','education','experience','certifications','contact','resume'];
 
         if (targetSection === 'resume') {
           setTimeout(() => {

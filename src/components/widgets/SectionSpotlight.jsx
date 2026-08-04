@@ -19,43 +19,53 @@ const SECTION_LABELS = {
 // ═══════════════════════════════════════════════════════════════
 const SECTION_SCOPE = {
   home: [
-    '.home-grid',            // Desktop hero 2-col
-    '.mobile-dashboard',     // Mobile full dashboard
+    '.wide-content',
+    '.home-grid',
+    '.mobile-dashboard',
     '.hero-info',
     '.home-content',
   ],
   about: [
-    '.about-page',           // Full about container
+    '.wide-content',
+    '.about-page',
     '.about-container',
   ],
   skills: [
-    '.skills-grid',          // Desktop grid
-    '.skills-mobile-grid',   // Mobile category grid
+    '.wide-content',
+    '.skills-grid',
+    '.skills-mobile-grid',
     '.sk-category-grid',
     '.skills-page',
   ],
   projects: [
-    '.projects-grid',        // Desktop grid
-    '.mpj-list',             // Mobile project list
+    '.wide-content',
+    '.projects-grid',
+    '.mpj-list',
     '.projects-page',
   ],
   education: [
-    '.edu-grid',             // Desktop 3D flip grid
-    '.mobile-edu-feed',      // Mobile feed
+    '.wide-content',
+    '.edu-grid',
+    '.mobile-edu-feed',
     '.edu-page',
   ],
   experience: [
+    '.wide-content',
     '.exp-page',
     '.experience-page',
   ],
   certifications: [
-    '.certs-grid',           // Desktop cert grid
-    '.mobile-certs-feed',    // Mobile cert feed
+    '.wide-content',
+    '.cert-grid',
+    '.certs-grid',
+    '.mobile-certs-feed',
     '.certs-page',
   ],
   contact: [
-    '.fc-wrapper',           // Desktop layout
-    '.mc-outer-container',   // Mobile layout
+    '.wide-content',
+    '.pf-stage',
+    '.fc-wrapper',
+    '.mc-outer-container',
     '.contact-page-wrap',
   ],
 };
@@ -90,11 +100,15 @@ const CLASS_RADIUS_MAP = {
   'edu-closing-summary':   '14px',
   // Certifications
   'cert-card':             '16px',
+  'certs-grid':            '16px',
+  'cert-grid':             '16px',
   'mcert-card':            '14px',
   'cert-hero-card':        '14px',
   // Experience
   'empty-state-card':      '18px',
   // Contact
+  'pf-card':               '14px',
+  'pf-panel':              '16px',
   'fc-info-panel':         '16px',
   'fc-form-panel':         '16px',
   'mc-contact-card-item':  '12px',
@@ -104,13 +118,13 @@ const CLASS_RADIUS_MAP = {
 
 // Recognized card classes for exact element card climbing
 const CARD_CLASSES = new Set([
-  'skill-category-card', 'sk-cat-card', 'sk-skills-card', 'skill-pill',
+  'cert-card', 'cert-grid', 'mcert-card', 'cert-hero-card',
   'project-card', 'mpj-row',
   'edu-flip-card', 'medu-card', 'edu-closing-summary',
-  'cert-card', 'mcert-card', 'cert-hero-card',
+  'skill-category-card', 'sk-cat-card', 'sk-skills-card', 'skill-pill',
   'hobby-card', 'contact-pill', 'micro-timeline', 'stat-card', 'qa-card',
   'dashboard-profile-card', 'dashboard-bio-card', 'dashboard-link-card',
-  'empty-state-card',
+  'empty-state-card', 'pf-card', 'pf-panel',
   'fc-info-panel', 'fc-form-panel', 'mc-contact-card-item', 'swipe-send-container'
 ]);
 
@@ -283,10 +297,12 @@ function resolveTargetElement(sectionId, rawKeyword) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// CSS INJECTION
+// CSS INJECTION & POLLING HIGHLIGHT
 // ═══════════════════════════════════════════════════════════════
 const STYLE_ID = 'ai-spotlight-ring-style';
 let TARGET_EL  = null;
+let POLL_TIMER = null;
+
 function buildCSS(uid, radius) {
   return `
     @keyframes ai-spotlight-pulse-${uid} {
@@ -311,31 +327,40 @@ function injectHighlight(sectionId, keyword) {
   removeHighlight();
   if (sectionId === 'resume') return;
 
-  const el = resolveTargetElement(sectionId, keyword);
-  if (!el) return;
+  let attempts = 0;
+  const poll = () => {
+    const el = resolveTargetElement(sectionId, keyword);
+    if (el && el !== document.body) {
+      TARGET_EL = el;
+      const uid = Date.now();
+      const radius = getRadius(el);
 
-  TARGET_EL = el;
-  const uid = Date.now();
-  const radius = getRadius(el);
+      const styleEl = document.createElement('style');
+      styleEl.id = STYLE_ID;
+      styleEl.textContent = buildCSS(uid, radius);
+      document.head.appendChild(styleEl);
 
-  const styleEl = document.createElement('style');
-  styleEl.id = STYLE_ID;
-  styleEl.textContent = buildCSS(uid, radius);
-  document.head.appendChild(styleEl);
+      el.classList.add('ai-spotlight-target');
 
-  el.classList.add('ai-spotlight-target');
-
-  // Scroll into view smoothly on Desktop & Mobile
-  setTimeout(() => {
-    try {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
-    } catch {
-      el.scrollIntoView(true);
+      try {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+      } catch {
+        el.scrollIntoView(true);
+      }
+    } else if (attempts < 12) {
+      attempts++;
+      POLL_TIMER = setTimeout(poll, 120);
     }
-  }, 350);
+  };
+
+  poll();
 }
 
 function removeHighlight() {
+  if (POLL_TIMER) {
+    clearTimeout(POLL_TIMER);
+    POLL_TIMER = null;
+  }
   document.getElementById(STYLE_ID)?.remove();
   if (TARGET_EL) {
     TARGET_EL.classList.remove('ai-spotlight-target');
@@ -357,9 +382,8 @@ export default function SectionSpotlight({ section, keyword, duration = 6, onDis
       setCountdown(duration);
       setPaused(false);
       // Wait for page transition & DOM layout settling
-      const t1 = setTimeout(() => injectHighlight(section, keyword), 450);
-      const t2 = setTimeout(() => injectHighlight(section, keyword), 850);
-      return () => { clearTimeout(t1); clearTimeout(t2); };
+      const t1 = setTimeout(() => injectHighlight(section, keyword), 200);
+      return () => { clearTimeout(t1); };
     } else {
       removeHighlight();
     }
