@@ -144,13 +144,13 @@ export default function Contact() {
       <div style={{ maxWidth: '780px', margin: '0 auto', padding: '8px 16px 32px', minHeight: '75vh', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         <AnimatePresence mode="wait">
           {!selectedDesk ? (
-            /* ────── STEP 1: DESK ROUTING SCREEN (COMPACT 90% SCALE) ────── */
+            /* ────── STEP 1: DESK ROUTING SCREEN ────── */
             <motion.div
               key="desk-selector"
-              initial={{ opacity: 0, scale: 0.96, y: 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.94, y: -8 }}
-              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
             >
               {/* Scaled Header */}
               <div style={{ textAlign: 'center', marginBottom: '26px' }}>
@@ -172,13 +172,15 @@ export default function Contact() {
                   return (
                     <motion.div
                       key={desk.id}
+                      layoutId={`desk-container-${desk.id}`}
                       onClick={() => setSelectedDesk(desk.id)}
                       whileHover={{ scale: 1.015, y: -2 }}
                       whileTap={{ scale: 0.985 }}
+                      transition={{ type: 'spring', stiffness: 350, damping: 28, mass: 0.8 }}
                       style={{
                         backgroundColor: 'var(--bg-secondary)',
                         border: '1px solid var(--border-color)',
-                        borderRadius: '14px',
+                        borderRadius: '16px',
                         padding: '18px 16px',
                         cursor: 'pointer',
                         display: 'flex',
@@ -186,7 +188,6 @@ export default function Contact() {
                         justifyContent: 'space-between',
                         minHeight: '105px',
                         position: 'relative',
-                        transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
                         boxShadow: '0 3px 12px rgba(0, 0, 0, 0.025)'
                       }}
                       onMouseEnter={(e) => {
@@ -200,19 +201,28 @@ export default function Contact() {
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
                         {/* Compact Icon Chip */}
-                        <div style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: desk.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: desk.iconColor }}>
+                        <motion.div
+                          layoutId={`desk-icon-${desk.id}`}
+                          style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: desk.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: desk.iconColor }}
+                        >
                           <IconComp size={16} />
-                        </div>
+                        </motion.div>
                         {/* Top Right Tag Badge */}
-                        <span style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: '0.08em' }}>
+                        <motion.span
+                          layoutId={`desk-tag-${desk.id}`}
+                          style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: '0.08em' }}
+                        >
                           {desk.tag}
-                        </span>
+                        </motion.span>
                       </div>
 
                       <div>
-                        <h3 style={{ fontSize: '14.5px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 3px', letterSpacing: '-0.01em' }}>
+                        <motion.h3
+                          layoutId={`desk-title-${desk.id}`}
+                          style={{ fontSize: '14.5px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 3px', letterSpacing: '-0.01em' }}
+                        >
                           {desk.title}
-                        </h3>
+                        </motion.h3>
                         <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.45 }}>
                           {desk.desc}
                         </p>
@@ -223,17 +233,14 @@ export default function Contact() {
               </div>
             </motion.div>
           ) : (
-            /* ────── STEP 2: TAILORED FORM SCREEN (COMPACT 90% SCALE) ────── */
-            <motion.div
-              key="tailored-form"
-              initial={{ opacity: 0, scale: 0.92, y: 14 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.94, y: 10 }}
-              transition={{ type: "spring", stiffness: 380, damping: 26, mass: 0.85 }}
-              style={{ maxWidth: '540px', margin: '0 auto', width: '100%' }}
-            >
+            /* ────── STEP 2: TAILORED FORM SCREEN (SHARED LAYOUT MORPH EXPANSION) ────── */
+            <div style={{ maxWidth: '540px', margin: '0 auto', width: '100%' }}>
               {/* Back Button */}
-              <button
+              <motion.button
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -8 }}
+                transition={{ duration: 0.18 }}
                 type="button"
                 onClick={() => {
                   setSelectedDesk(null);
@@ -257,30 +264,42 @@ export default function Contact() {
                 }}
               >
                 <ArrowLeft size={15} /> Choose different option
-              </button>
+              </motion.button>
 
-              {/* Form Box */}
-              <div
+              {/* Form Box Container (Shared layoutId expansion from clicked card) */}
+              <motion.div
+                layoutId={`desk-container-${selectedDesk}`}
+                transition={{ type: 'spring', stiffness: 350, damping: 28, mass: 0.8 }}
                 style={{
                   backgroundColor: 'var(--bg-secondary)',
                   border: '1px solid var(--border-color)',
                   borderRadius: '16px',
                   padding: '22px 20px',
-                  boxShadow: '0 10px 30px rgba(0, 0, 0, 0.04)'
+                  boxShadow: '0 10px 30px rgba(0, 0, 0, 0.04)',
+                  overflow: 'hidden'
                 }}
               >
-                {/* Desk Header Badge */}
+                {/* Desk Header Badge (Shared layoutId elements) */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px', paddingBottom: '14px', borderBottom: '1px solid var(--border-color)' }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: activeDeskObj.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: activeDeskObj.iconColor }}>
+                  <motion.div
+                    layoutId={`desk-icon-${selectedDesk}`}
+                    style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: activeDeskObj.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: activeDeskObj.iconColor }}
+                  >
                     {React.createElement(activeDeskObj.icon, { size: 16 })}
-                  </div>
+                  </motion.div>
                   <div>
-                    <span style={{ fontSize: '10px', fontWeight: 800, color: activeDeskObj.iconColor, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                    <motion.span
+                      layoutId={`desk-tag-${selectedDesk}`}
+                      style={{ fontSize: '10px', fontWeight: 800, color: activeDeskObj.iconColor, letterSpacing: '0.08em', textTransform: 'uppercase', display: 'block' }}
+                    >
                       {activeDeskObj.tag}
-                    </span>
-                    <h2 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>
+                    </motion.span>
+                    <motion.h2
+                      layoutId={`desk-title-${selectedDesk}`}
+                      style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}
+                    >
                       {activeDeskObj.title}
-                    </h2>
+                    </motion.h2>
                   </div>
                 </div>
 
@@ -496,8 +515,8 @@ export default function Contact() {
                     </button>
                   </form>
                 )}
-              </div>
-            </motion.div>
+              </motion.div>
+            </div>
           )}
         </AnimatePresence>
       </div>
