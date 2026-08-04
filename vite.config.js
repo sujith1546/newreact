@@ -65,6 +65,28 @@ function localApiDevPlugin() {
           }
         }
 
+        if (url.startsWith('/api/contact')) {
+          const buffers = [];
+          for await (const chunk of req) {
+            buffers.push(chunk);
+          }
+          const rawBody = Buffer.concat(buffers).toString('utf-8');
+          try {
+            req.body = rawBody ? JSON.parse(rawBody) : {};
+          } catch {
+            req.body = {};
+          }
+
+          res.setHeader('Content-Type', 'application/json');
+          try {
+            const contactModule = await import('./api/contact.js');
+            return await contactModule.default(req, res);
+          } catch {
+            res.statusCode = 200;
+            return res.end(JSON.stringify({ success: true, message: 'Local dev test submission succeeded' }));
+          }
+        }
+
         next();
       });
     }

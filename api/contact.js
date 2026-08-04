@@ -409,20 +409,6 @@ export default async function handler(req, res) {
         </html>
       `
     };
-                </table>
-
-                <!-- Bottom Automated Disclaimer -->
-                <div style="text-align: center; font-size: 10px; color: #9ca3af; margin-top: 16px; letter-spacing: 0.02em;">
-                  This is an automated notification - do not reply to this email address directly
-                </div>
-
-              </td>
-            </tr>
-          </table>
-        </body>
-        </html>
-      `
-    };
 
     // 4. Send Email
     await transporter.sendMail(mailOptions);
