@@ -97,6 +97,8 @@ export default function Certifications() {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
           gap: 16px;
+          max-width: 820px;
+          margin: 0 auto;
         }
 
         .cert-card {
