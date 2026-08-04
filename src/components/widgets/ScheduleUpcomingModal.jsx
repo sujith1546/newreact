@@ -225,13 +225,13 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
               height: maximized ? '100vh' : 'auto',
               zIndex: 999999,
               backgroundColor: 'var(--bg-secondary)',
-              borderRadius: maximized ? '0px' : '8px 8px 0 0',
+              borderRadius: maximized ? '0px' : '12px 12px 0 0',
               border: '1px solid var(--border-color)',
               borderBottom: 'none',
               boxShadow: '0 12px 28px rgba(0, 0, 0, 0.25)',
               color: 'var(--text-primary)',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-              overflow: 'visible',
+              overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column',
               userSelect: 'none'
@@ -248,7 +248,9 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
                 justifyContent: 'space-between',
                 borderBottom: '1px solid var(--border-color)',
                 cursor: 'pointer',
-                flexShrink: 0
+                flexShrink: 0,
+                borderTopLeftRadius: maximized ? '0px' : '11px',
+                borderTopRightRadius: maximized ? '0px' : '11px',
               }}
               onClick={() => setMinimized(!minimized)}
             >
