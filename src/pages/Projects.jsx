@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollReveal } from '../components';
-import { ChevronRight, Search, X, LayoutGrid, GitMerge, Table as TableIcon, Zap, Briefcase, Code2, ExternalLink } from 'lucide-react';
-import { FaGithub } from 'react-icons/fa';
+import { ChevronRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import useRealtimeData from '../hooks/useRealtimeData';
 
@@ -59,33 +58,12 @@ export default function Projects() {
   
   const [selectedProject, setSelectedProject] = useState(null);
   const [contextMenuProject, setContextMenuProject] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'pipeline' | 'table'
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 900);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-
-  const categories = ['All', 'Full-Stack', 'ML / AI', 'Utilities'];
-
-  const filteredProjects = (projectsData || []).filter(p => {
-    const query = searchQuery.toLowerCase().trim();
-    const matchesSearch = !query || 
-      p.title?.toLowerCase().includes(query) ||
-      p.description?.toLowerCase().includes(query) ||
-      (p.tags && p.tags.some(t => t.toLowerCase().includes(query)));
-
-    const categoryLower = selectedCategory.toLowerCase();
-    const matchesCategory = selectedCategory === 'All' ||
-      (p.tags && p.tags.some(t => t.toLowerCase().includes(categoryLower))) ||
-      (selectedCategory === 'Full-Stack' && (p.tags?.includes('React') || p.tags?.includes('Streamlit'))) ||
-      (selectedCategory === 'ML / AI' && (p.tags?.includes('TensorFlow') || p.tags?.includes('NLP') || p.tags?.includes('Python')));
-
-    return matchesSearch && matchesCategory;
-  });
 
 
 
@@ -446,124 +424,13 @@ export default function Projects() {
         }
       `}</style>
 
-      {/* Metrics Banner */}
-      {!loading && !isMobile && (
-        <div className="pm-metrics-banner">
-          <div className="pm-metric-card">
-            <div className="pm-metric-icon-wrap" style={{ backgroundColor: 'rgba(59,130,246,0.12)', color: '#3b82f6', borderColor: 'rgba(59,130,246,0.25)' }}>
-              <Briefcase size={20} />
-            </div>
-            <div className="pm-metric-info">
-              <div className="pm-metric-val-row">
-                <span className="pm-metric-value">{projectsData?.length || 10}+</span>
-                <span className="pm-metric-badge" style={{ backgroundColor: 'rgba(59,130,246,0.12)', color: '#3b82f6', borderColor: 'rgba(59,130,246,0.25)' }}>Shipped</span>
-              </div>
-              <span className="pm-metric-label">Completed Systems</span>
-            </div>
-          </div>
-
-          <div className="pm-metric-card">
-            <div className="pm-metric-icon-wrap" style={{ backgroundColor: 'rgba(16,185,129,0.12)', color: '#10b981', borderColor: 'rgba(16,185,129,0.25)' }}>
-              <Code2 size={20} />
-            </div>
-            <div className="pm-metric-info">
-              <div className="pm-metric-val-row">
-                <span className="pm-metric-value">100%</span>
-                <span className="pm-metric-badge" style={{ backgroundColor: 'rgba(16,185,129,0.12)', color: '#10b981', borderColor: 'rgba(16,185,129,0.25)' }}>Open Source</span>
-              </div>
-              <span className="pm-metric-label">GitHub Repositories</span>
-            </div>
-          </div>
-
-          <div className="pm-metric-card">
-            <div className="pm-metric-icon-wrap" style={{ backgroundColor: 'rgba(245,158,11,0.12)', color: '#f59e0b', borderColor: 'rgba(245,158,11,0.25)' }}>
-              <Zap size={20} />
-            </div>
-            <div className="pm-metric-info">
-              <div className="pm-metric-val-row">
-                <span className="pm-metric-value">99/100</span>
-                <span className="pm-metric-badge" style={{ backgroundColor: 'rgba(245,158,11,0.12)', color: '#f59e0b', borderColor: 'rgba(245,158,11,0.25)' }}>Lighthouse</span>
-              </div>
-              <span className="pm-metric-label">Avg Performance Score</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Search & Filter Controls Bar */}
-      {!loading && (
-        <div className="pf-container">
-          <div className="pf-search-row">
-            <div className="pf-search-input-wrap">
-              <Search size={16} className="pf-search-icon" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search projects by title, description, or technology stack..."
-                className="pf-search-input"
-              />
-              {searchQuery && (
-                <button type="button" onClick={() => setSearchQuery('')} className="pf-search-clear">
-                  <X size={16} />
-                </button>
-              )}
-            </div>
-
-            {!isMobile && (
-              <div className="pf-view-toggle">
-                <button
-                  type="button"
-                  onClick={() => setViewMode('grid')}
-                  className={`pf-view-btn ${viewMode === 'grid' ? 'pf-view-btn--active' : ''}`}
-                >
-                  <LayoutGrid size={14} /> Grid
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode('pipeline')}
-                  className={`pf-view-btn ${viewMode === 'pipeline' ? 'pf-view-btn--active' : ''}`}
-                >
-                  <GitMerge size={14} /> Pipeline
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode('table')}
-                  className={`pf-view-btn ${viewMode === 'table' ? 'pf-view-btn--active' : ''}`}
-                >
-                  <TableIcon size={14} /> Table
-                </button>
-              </div>
-            )}
-          </div>
-
-          <div className="pf-categories-row">
-            <div className="pf-categories-list">
-              {categories.map((cat) => (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`pf-cat-pill ${selectedCategory === cat ? 'pf-cat-pill--active' : ''}`}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-            <span className="pf-results-count">
-              Showing {filteredProjects.length} of {projectsData?.length || 0} projects
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* Content Rendering based on Loading & View Mode */}
+      {/* Content Rendering based on Loading State */}
       {loading ? (
         <ProjectSkeleton count={6} />
       ) : isMobile ? (
         /* Mobile List View */
         <div className="mpj-list">
-          {filteredProjects.map((project, i) => (
+          {(projectsData || []).map((project, i) => (
             <MobileProjectRow
               key={project.id || project.title}
               project={project}
@@ -573,74 +440,10 @@ export default function Projects() {
             />
           ))}
         </div>
-      ) : viewMode === 'pipeline' ? (
-        /* Desktop Pipeline View */
-        <div className="pp-pipeline-grid">
-          {filteredProjects.map((project) => (
-            <div
-              key={project.id || project.title}
-              className="pp-pipeline-card"
-              onClick={() => setSelectedProject(project)}
-            >
-              <div className="pp-card-header">
-                <div>
-                  <h3 className="pp-card-title">{project.title}</h3>
-                  <p className="pp-card-subtitle">{project.description}</p>
-                </div>
-              </div>
-              <div className="pp-nodes-container">
-                <span className="pp-nodes-label">Architecture Pipeline Workflow</span>
-                <div className="pp-nodes-row">
-                  {(project.pipeline || [
-                    { label: 'Input Data', iconName: 'Database' },
-                    { label: 'Core Processing', iconName: 'Brain' },
-                    { label: 'Live Output', iconName: 'TrendingUp' }
-                  ]).map((step, idx) => (
-                    <React.Fragment key={step.label + idx}>
-                      <div className="pp-node-pill">
-                        <span className="pp-node-number">{idx + 1}</span>
-                        <span>{step.label}</span>
-                      </div>
-                      {idx < 2 && <span className="pp-node-arrow">&rarr;</span>}
-                    </React.Fragment>
-                  ))}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : viewMode === 'table' ? (
-        /* Desktop Compact Table View */
-        <div className="pt-table-wrap">
-          <table className="pt-table">
-            <thead>
-              <tr>
-                <th>Project Name</th>
-                <th>Category / Domain</th>
-                <th>Tech Stack</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredProjects.map((project) => (
-                <tr key={project.id || project.title} onClick={() => setSelectedProject(project)}>
-                  <td style={{ fontWeight: 700 }}>{project.title}</td>
-                  <td style={{ color: 'var(--primary-blue)', fontWeight: 600 }}>{project.tags?.[0] || 'Engineering'}</td>
-                  <td>{project.tags?.slice(0, 3).join(', ')}</td>
-                  <td>
-                    <button className="project-link project-link--details" type="button">
-                      Case Study &rarr;
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
       ) : (
-        /* Desktop Grid View */
+        /* Desktop Grid View - Upgraded Cards */
         <div className="projects-grid">
-          {filteredProjects.map((project) => (
+          {(projectsData || []).map((project) => (
             <ProjectCard
               key={project.id || project.title}
               project={project}
