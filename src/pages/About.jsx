@@ -779,7 +779,6 @@ export default function About({ onNavClick }) {
           .ab-github-wrapper > * { height: auto; }
           .ab-row1 { grid-template-columns: 1fr; }
           .ab-stats-grid { grid-template-columns: repeat(4, 1fr); }
-          .ab-row3 { flex-direction: column; align-items: stretch; gap: 14px; padding: 18px 20px; }
           .ab-actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
           .ab-btn-primary, .ab-btn-secondary { padding: 10px 14px; font-size: 12.5px; }
         }
@@ -787,7 +786,7 @@ export default function About({ onNavClick }) {
 
       <div className="ab-page" ref={pageRef}>
 
-        {/* ══════════ Profile Card (Pixel-Perfect to Screenshot) ══════════ */}
+        {/* ══════════ Profile Card (Compact & Sleek) ══════════ */}
         <motion.div
           className="ab-profile-card"
           initial={{ opacity: 0, y: 12 }}
@@ -796,22 +795,22 @@ export default function About({ onNavClick }) {
           style={{
             background: 'var(--bg-secondary)',
             border: '1px solid var(--border-color)',
-            borderRadius: '20px',
-            padding: '24px 28px 0',
+            borderRadius: '16px',
+            padding: '16px 20px 0',
             boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
             overflow: 'hidden'
           }}
         >
           {/* Header Row */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div style={{
-                width: '46px',
-                height: '46px',
+                width: '38px',
+                height: '38px',
                 borderRadius: '50%',
                 background: 'color-mix(in srgb, var(--primary-blue) 15%, transparent)',
                 color: 'var(--primary-blue)',
-                fontSize: '16px',
+                fontSize: '14px',
                 fontWeight: 700,
                 display: 'flex',
                 alignItems: 'center',
@@ -820,21 +819,21 @@ export default function About({ onNavClick }) {
                 ST
               </div>
               <div>
-                <h2 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)', margin: 0, lineHeight: 1.2 }}>
+                <h2 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-primary)', margin: 0, lineHeight: 1.2 }}>
                   Sujith Thota
                 </h2>
-                <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '3px 0 0', fontWeight: 500 }}>
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '1px 0 0', fontWeight: 500 }}>
                   B.Tech CSE, VIT Vellore
                 </p>
               </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{
                 border: '1px solid var(--border-color)',
                 borderRadius: '999px',
-                padding: '4px 14px',
-                fontSize: '12px',
+                padding: '3px 10px',
+                fontSize: '11px',
                 fontWeight: 600,
                 color: 'var(--text-secondary)',
                 background: 'var(--bg-primary)'
@@ -848,24 +847,24 @@ export default function About({ onNavClick }) {
                   border: 'none',
                   color: 'var(--text-muted)',
                   cursor: 'pointer',
-                  padding: '4px',
+                  padding: '2px',
                   display: 'flex',
                   alignItems: 'center'
                 }}
               >
-                <MoreHorizontal size={18} />
+                <MoreHorizontal size={16} />
               </button>
             </div>
           </div>
 
           {/* Main Headline */}
           <h1 style={{
-            fontSize: '25px',
+            fontSize: '20px',
             fontWeight: 700,
             lineHeight: 1.35,
             color: 'var(--text-primary)',
-            margin: '0 0 10px',
-            letterSpacing: '-0.02em',
+            margin: '0 0 6px',
+            letterSpacing: '-0.015em',
             maxWidth: '780px'
           }}>
             Data science specialist bridging complex backend systems with sleek, responsive interfaces.
@@ -873,23 +872,23 @@ export default function About({ onNavClick }) {
 
           {/* Subheading */}
           <p style={{
-            fontSize: '14px',
+            fontSize: '13px',
             color: 'var(--text-secondary)',
-            margin: '0 0 20px',
+            margin: '0 0 12px',
             fontWeight: 400
           }}>
             Applied ML pipelines, full-stack web apps, and 200+ solved DSA problems.
           </p>
 
           {/* Tech Badges Row */}
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '24px' }}>
+          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '14px' }}>
             {['Python', 'TensorFlow', 'React', 'FastAPI', 'SQL'].map((tag) => (
               <span
                 key={tag}
                 style={{
-                  padding: '5px 14px',
-                  borderRadius: '8px',
-                  fontSize: '12.5px',
+                  padding: '3.5px 11px',
+                  borderRadius: '6px',
+                  fontSize: '11.5px',
                   fontWeight: 600,
                   color: 'var(--text-secondary)',
                   background: 'var(--bg-primary)',
@@ -906,8 +905,8 @@ export default function About({ onNavClick }) {
             display: 'grid',
             gridTemplateColumns: 'repeat(4, 1fr)',
             borderTop: '1px solid var(--border-color)',
-            marginLeft: '-28px',
-            marginRight: '-28px',
+            marginLeft: '-20px',
+            marginRight: '-20px',
             background: 'var(--bg-secondary)'
           }}>
             <div style={{
@@ -915,16 +914,16 @@ export default function About({ onNavClick }) {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '16px 12px',
+              padding: '10px 8px',
               borderRight: '1px solid var(--border-color)',
               textAlign: 'center',
-              gap: '4px'
+              gap: '2px'
             }}>
-              <Code2 size={16} style={{ color: 'var(--text-muted)' }} />
-              <span style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>
+              <Code2 size={14} style={{ color: 'var(--text-muted)' }} />
+              <span style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>
                 {useCountUp(3.5, 1000, 1, inView).toFixed(1)}
               </span>
-              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>
+              <span style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontWeight: 500 }}>
                 years coding
               </span>
             </div>
@@ -934,16 +933,16 @@ export default function About({ onNavClick }) {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '16px 12px',
+              padding: '10px 8px',
               borderRight: '1px solid var(--border-color)',
               textAlign: 'center',
-              gap: '4px'
+              gap: '2px'
             }}>
-              <Folder size={16} style={{ color: 'var(--text-muted)' }} />
-              <span style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>
+              <Folder size={14} style={{ color: 'var(--text-muted)' }} />
+              <span style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>
                 {Math.floor(useCountUp(10, 1000, 0, inView))}
               </span>
-              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>
+              <span style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontWeight: 500 }}>
                 projects
               </span>
             </div>
@@ -953,16 +952,16 @@ export default function About({ onNavClick }) {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '16px 12px',
+              padding: '10px 8px',
               borderRight: '1px solid var(--border-color)',
               textAlign: 'center',
-              gap: '4px'
+              gap: '2px'
             }}>
-              <FileText size={16} style={{ color: 'var(--text-muted)' }} />
-              <span style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>
+              <FileText size={14} style={{ color: 'var(--text-muted)' }} />
+              <span style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>
                 {Math.floor(useCountUp(200, 1000, 0, inView))}
               </span>
-              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>
+              <span style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontWeight: 500 }}>
                 DSA solved
               </span>
             </div>
@@ -972,15 +971,15 @@ export default function About({ onNavClick }) {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '16px 12px',
+              padding: '10px 8px',
               textAlign: 'center',
-              gap: '4px'
+              gap: '2px'
             }}>
-              <GraduationCap size={16} style={{ color: 'var(--text-muted)' }} />
-              <span style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>
+              <GraduationCap size={14} style={{ color: 'var(--text-muted)' }} />
+              <span style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>
                 {useCountUp(8.7, 1000, 1, inView).toFixed(1)}
               </span>
-              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>
+              <span style={{ fontSize: '10.5px', color: 'var(--text-muted)', fontWeight: 500 }}>
                 CGPA
               </span>
             </div>
