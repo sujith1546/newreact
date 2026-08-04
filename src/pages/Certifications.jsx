@@ -1,4 +1,4 @@
-﻿import { ScrollReveal } from '../components';
+import { ScrollReveal } from '../components';
 import { Loader2 } from 'lucide-react';
 import useRealtimeData from '../hooks/useRealtimeData';
 
@@ -304,7 +304,7 @@ export default function Certifications() {
           gridTemplateColumns: 'repeat(2, 1fr)',
           gap: '20px',
           maxWidth: '920px',
-          margin: '0 auto',
+          margin: '0',
         }}>
           {certifications.map(cert => (
             <CertCard key={cert.id || cert.credentialId} cert={cert} />
