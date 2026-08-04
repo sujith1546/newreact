@@ -99,7 +99,6 @@ export default function Sidebar({ activeSection, onNavClick }) {
   const [toastStatus, setToastStatus] = useState(null); // null, 'packaging', 'ready'
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isDiagnosticsOpen, setIsDiagnosticsOpen] = useState(false);
   const [isEmailOpen, setIsEmailOpen] = useState(false);
   const [isGithubModalOpen, setIsGithubModalOpen] = useState(false);
@@ -172,7 +171,6 @@ export default function Sidebar({ activeSection, onNavClick }) {
     const handleEscapeModal = (e) => {
       if (e.key === 'Escape') {
         setIsActionModalOpen(false);
-        setIsProfileModalOpen(false);
       }
     };
     window.addEventListener('open-resume', handleOpenResume);
@@ -260,13 +258,8 @@ export default function Sidebar({ activeSection, onNavClick }) {
       <div 
         className="sidebar-avatar-container" 
         onClick={handleSecretAdminClick}
-        onDoubleClick={() => setIsProfileModalOpen(true)}
       >
         <img src="/profile_photo.png" alt="Sujith Thota" />
-        <div className="sidebar-avatar-overlay">
-          <Eye size={18} />
-          <span>Double-Click</span>
-        </div>
       </div>
       <h2>Sujith Thota</h2>
       <p className="sidebar-title" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "5px", flexWrap: "wrap" }}>
@@ -756,43 +749,6 @@ export default function Sidebar({ activeSection, onNavClick }) {
         contactEmail="sujithreddy1546@gmail.com"
         contactPhone="+918501889996"
       />
-
-      {/* Profile Photo Modal */}
-      {createPortal(
-        <AnimatePresence>
-          {isProfileModalOpen && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="avatar-modal-overlay"
-              onClick={() => setIsProfileModalOpen(false)}
-            >
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                transition={{ type: 'spring', damping: 25, stiffness: 220 }}
-                className="avatar-modal-container"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {/* Close Button */}
-                <button 
-                  className="avatar-modal-close"
-                  onClick={() => setIsProfileModalOpen(false)}
-                  aria-label="Close Preview"
-                >
-                  <X size={18} />
-                </button>
-                
-                {/* Large Profile Image */}
-                <img src="/profile_photo.png" alt="Sujith Thota Large" className="avatar-modal-img" />
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>,
-        document.body
-      )}
     </aside>
   );
 }
