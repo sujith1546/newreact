@@ -4,6 +4,7 @@ import { motion, AnimatePresence, useInView } from 'framer-motion';
 import {
   Mail, Download, CheckCircle, Loader2, Zap, GraduationCap, Calendar,
   Terminal, Layers, Target, Award, Code2, ArrowRight, Copy, Check, Clock,
+  MoreHorizontal, Folder, FileText,
 } from 'lucide-react';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { ScrollReveal } from '../components';
@@ -786,69 +787,202 @@ export default function About({ onNavClick }) {
 
       <div className="ab-page" ref={pageRef}>
 
-        {/* ══════════ Profile Card ══════════ */}
+        {/* ══════════ Profile Card (Pixel-Perfect to Screenshot) ══════════ */}
         <motion.div
           className="ab-profile-card"
           initial={{ opacity: 0, y: 12 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          style={{
+            background: 'var(--bg-secondary)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '20px',
+            padding: '24px 28px 0',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
+            overflow: 'hidden'
+          }}
         >
-          <div className="ab-card-top">
-            <div className="ab-avatar-initials">ST</div>
-
-            <div className="ab-bio-body">
-              <div className="ab-bio-header-row">
-                <h1 className="ab-bio-name">
-                  Hi, I'm Sujith — a B.Tech student at{' '}
-                  <span className="ab-blue-highlight">VIT Vellore (8.7 CGPA)</span> specializing in{' '}
-                  <span className="ab-blue-highlight">Data Science</span>.
-                </h1>
-                {daysCoding > 0 && (
-                  <div className="ab-days-badge">
-                    <Zap size={11} className="ab-zap-pulse" />
-                    <span>{daysCoding.toLocaleString()}d</span>
-                  </div>
-                )}
+          {/* Header Row */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <div style={{
+                width: '46px',
+                height: '46px',
+                borderRadius: '50%',
+                background: 'color-mix(in srgb, var(--primary-blue) 15%, transparent)',
+                color: 'var(--primary-blue)',
+                fontSize: '16px',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                ST
               </div>
-
-              <div className="ab-bio-desc-row">
-                <p className="ab-bio-desc">
-                  Bridging complex backend data structures with sleek, responsive interfaces.
+              <div>
+                <h2 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)', margin: 0, lineHeight: 1.2 }}>
+                  Sujith Thota
+                </h2>
+                <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '3px 0 0', fontWeight: 500 }}>
+                  B.Tech CSE, VIT Vellore
                 </p>
-
-                {/* Right-aligned Tech Skill Badges */}
-                <div className="ab-badges">
-                  {BADGES.map(b => (
-                    <span
-                      key={b.label}
-                      className="ab-badge"
-                      style={{ background: b.bg, color: b.color, border: `1px solid ${b.color}25` }}
-                    >
-                      {b.label}
-                    </span>
-                  ))}
-                </div>
               </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{
+                border: '1px solid var(--border-color)',
+                borderRadius: '999px',
+                padding: '4px 14px',
+                fontSize: '12px',
+                fontWeight: 600,
+                color: 'var(--text-secondary)',
+                background: 'var(--bg-primary)'
+              }}>
+                5+ yrs coding
+              </div>
+              <button
+                type="button"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-muted)',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}
+              >
+                <MoreHorizontal size={18} />
+              </button>
             </div>
           </div>
 
-          {/* Unified Stat Bar */}
-          <div className="ab-unified-stat-bar">
-            <div className="ab-stat-col">
-              <span className="ab-stat-num">{useCountUp(3.5, 1000, 1, inView).toFixed(1)}</span>
-              <span className="ab-stat-lbl">Years Coding</span>
+          {/* Main Headline */}
+          <h1 style={{
+            fontSize: '25px',
+            fontWeight: 700,
+            lineHeight: 1.35,
+            color: 'var(--text-primary)',
+            margin: '0 0 10px',
+            letterSpacing: '-0.02em',
+            maxWidth: '780px'
+          }}>
+            Data science specialist bridging complex backend systems with sleek, responsive interfaces.
+          </h1>
+
+          {/* Subheading */}
+          <p style={{
+            fontSize: '14px',
+            color: 'var(--text-secondary)',
+            margin: '0 0 20px',
+            fontWeight: 400
+          }}>
+            Applied ML pipelines, full-stack web apps, and 200+ solved DSA problems.
+          </p>
+
+          {/* Tech Badges Row */}
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '24px' }}>
+            {['Python', 'TensorFlow', 'React', 'FastAPI', 'SQL'].map((tag) => (
+              <span
+                key={tag}
+                style={{
+                  padding: '5px 14px',
+                  borderRadius: '8px',
+                  fontSize: '12.5px',
+                  fontWeight: 600,
+                  color: 'var(--text-secondary)',
+                  background: 'var(--bg-primary)',
+                  border: '1px solid var(--border-color)'
+                }}
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+
+          {/* Stat Grid Bar */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, 1fr)',
+            borderTop: '1px solid var(--border-color)',
+            marginLeft: '-28px',
+            marginRight: '-28px',
+            background: 'var(--bg-secondary)'
+          }}>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '16px 12px',
+              borderRight: '1px solid var(--border-color)',
+              textAlign: 'center',
+              gap: '4px'
+            }}>
+              <Code2 size={16} style={{ color: 'var(--text-muted)' }} />
+              <span style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>
+                {useCountUp(3.5, 1000, 1, inView).toFixed(1)}
+              </span>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>
+                years coding
+              </span>
             </div>
-            <div className="ab-stat-col">
-              <span className="ab-stat-num">{Math.floor(useCountUp(10, 1000, 0, inView))}</span>
-              <span className="ab-stat-lbl">Projects</span>
+
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '16px 12px',
+              borderRight: '1px solid var(--border-color)',
+              textAlign: 'center',
+              gap: '4px'
+            }}>
+              <Folder size={16} style={{ color: 'var(--text-muted)' }} />
+              <span style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>
+                {Math.floor(useCountUp(10, 1000, 0, inView))}
+              </span>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>
+                projects
+              </span>
             </div>
-            <div className="ab-stat-col">
-              <span className="ab-stat-num">{Math.floor(useCountUp(200, 1000, 0, inView))}</span>
-              <span className="ab-stat-lbl">DSA Solved</span>
+
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '16px 12px',
+              borderRight: '1px solid var(--border-color)',
+              textAlign: 'center',
+              gap: '4px'
+            }}>
+              <FileText size={16} style={{ color: 'var(--text-muted)' }} />
+              <span style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>
+                {Math.floor(useCountUp(200, 1000, 0, inView))}
+              </span>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>
+                DSA solved
+              </span>
             </div>
-            <div className="ab-stat-col ab-stat-col--last">
-              <span className="ab-stat-num">{useCountUp(8.7, 1000, 1, inView).toFixed(1)}</span>
-              <span className="ab-stat-lbl">CGPA</span>
+
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '16px 12px',
+              textAlign: 'center',
+              gap: '4px'
+            }}>
+              <GraduationCap size={16} style={{ color: 'var(--text-muted)' }} />
+              <span style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>
+                {useCountUp(8.7, 1000, 1, inView).toFixed(1)}
+              </span>
+              <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 500 }}>
+                CGPA
+              </span>
             </div>
           </div>
         </motion.div>
