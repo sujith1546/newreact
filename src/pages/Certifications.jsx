@@ -96,15 +96,15 @@ export default function Certifications() {
         .cert-grid {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
-          gap: 16px;
-          max-width: 820px;
+          gap: 20px;
+          max-width: 920px;
           margin: 0 auto;
         }
 
         .cert-card {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
-          border-radius: 14px;
+          border-radius: 16px;
           overflow: hidden;
           transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
           display: flex;
@@ -112,12 +112,12 @@ export default function Certifications() {
         }
 
         .cert-card:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 10px 24px rgba(0,0,0,0.06);
+          transform: translateY(-3px);
+          box-shadow: 0 12px 28px rgba(0,0,0,0.08);
         }
 
         .cert-card-header {
-          padding: 16px 18px;
+          padding: 20px 24px;
           position: relative;
         }
 
@@ -144,21 +144,21 @@ export default function Certifications() {
 
         .cert-verified-pill {
           position: absolute;
-          top: 14px;
-          right: 14px;
-          font-size: 10.5px;
+          top: 18px;
+          right: 18px;
+          font-size: 11px;
           font-weight: 600;
           background: #ffffff;
           border-radius: 999px;
-          padding: 3px 9px;
+          padding: 3.5px 11px;
           display: flex;
           align-items: center;
-          gap: 4px;
-          box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+          gap: 5px;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.06);
         }
 
         .cert-verified-pill i {
-          font-size: 12px;
+          font-size: 13px;
         }
 
         .cert-verified-pill--accent {
@@ -184,15 +184,15 @@ export default function Certifications() {
         .cert-header-content {
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 16px;
         }
 
         .cert-badge {
-          width: 44px;
-          height: 44px;
+          width: 58px;
+          height: 58px;
           border-radius: 50%;
           background: #ffffff;
-          border: 2px solid #ffffff;
+          border: 2.5px solid #ffffff;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -200,7 +200,7 @@ export default function Certifications() {
         }
 
         .cert-badge i {
-          font-size: 22px;
+          font-size: 26px;
         }
 
         .cert-badge--accent {
@@ -224,11 +224,11 @@ export default function Certifications() {
         .cert-badge--warning i { color: #b06000; }
 
         .cert-issuer {
-          font-size: 10.5px;
-          letter-spacing: 0.05em;
+          font-size: 11px;
+          letter-spacing: 0.06em;
           text-transform: uppercase;
           font-weight: 700;
-          margin: 0 0 2px;
+          margin: 0 0 3px;
         }
 
         .cert-issuer--accent { color: #0b57d0; }
@@ -242,8 +242,8 @@ export default function Certifications() {
         [data-theme="dark"] .cert-issuer--warning { color: #fde293; }
 
         .cert-title {
-          font-size: 15px;
-          font-weight: 600;
+          font-size: 17px;
+          font-weight: 700;
           margin: 0;
           color: #1f1f1f;
           line-height: 1.3;
@@ -251,35 +251,35 @@ export default function Certifications() {
         [data-theme="dark"] .cert-title { color: #f1efe8; }
 
         .cert-card-body {
-          padding: 16px 18px 16px;
+          padding: 22px 24px 20px;
           display: flex;
           flex-direction: column;
           flex-grow: 1;
         }
 
         .cert-description {
-          font-size: 13px;
+          font-size: 13.5px;
           color: var(--text-secondary);
-          line-height: 1.55;
-          margin: 0 0 12px;
+          line-height: 1.6;
+          margin: 0 0 16px;
           flex-grow: 1;
         }
 
         .cert-skills {
           display: flex;
           flex-wrap: wrap;
-          gap: 6px;
-          margin-bottom: 14px;
+          gap: 8px;
+          margin-bottom: 20px;
         }
 
         .cert-skill-chip {
-          font-size: 11px;
+          font-size: 11.5px;
           font-weight: 500;
           color: var(--text-secondary);
           background: var(--bg-primary);
           border: 1px solid var(--border-color);
           border-radius: 999px;
-          padding: 3.5px 11px;
+          padding: 4px 12px;
         }
 
         .cert-footer {
@@ -287,7 +287,7 @@ export default function Certifications() {
           align-items: center;
           justify-content: space-between;
           border-top: 1px solid var(--border-color);
-          padding-top: 12px;
+          padding-top: 14px;
           margin-top: auto;
         }
 
@@ -307,7 +307,7 @@ export default function Certifications() {
         .cert-meta--mono {
           font-family: "SF Mono", "JetBrains Mono", "Roboto Mono", monospace;
           margin-top: 2px;
-          font-size: 10px;
+          font-size: 10.5px;
           font-weight: 600;
           border: none !important;
           border-bottom: none !important;
@@ -318,14 +318,14 @@ export default function Certifications() {
         }
 
         .cert-verify-link {
-          font-size: 13px;
+          font-size: 13.5px;
           font-weight: 600;
           color: #0b57d0;
           display: inline-flex;
           align-items: center;
-          gap: 4px;
+          gap: 5px;
           text-decoration: none;
-          padding: 3px 6px;
+          padding: 4px 8px;
           border-radius: 6px;
           transition: background 0.2s, color 0.2s;
         }
@@ -336,7 +336,7 @@ export default function Certifications() {
         }
 
         .cert-verify-link i {
-          font-size: 13.5px;
+          font-size: 14px;
         }
 
         @media (max-width: 720px) {
