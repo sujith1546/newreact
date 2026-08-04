@@ -59,36 +59,50 @@ export default function Certifications() {
   const { data: dbData, loading } = useRealtimeData('certifications', { orderColumn: 'display_order', ascending: true });
 
   const certifications = (dbData && dbData.length > 0)
-    ? dbData.map((item, idx) => ({
-        id: item.id || `cert-${idx}`,
-        issuer: item.issuer || item.organization || "Global Issuer",
-        title: item.title || item.name || "Professional Certificate",
-        description: item.description || "Verified technical credential.",
-        skills: item.skills || (item.tags ? item.tags : ["Engineering", "Technology"]),
-        issuedDate: item.issuedDate || item.date || "2025",
-        credentialId: item.credentialId || item.credential_id || `ID-${idx + 100}`,
-        verifyUrl: item.verifyUrl || item.credentialUrl || item.url || "#",
-        icon: item.icon || (item.issuer?.toLowerCase().includes("oracle") ? "ti-cloud" : "ti-brand-google"),
-        color: item.color || (idx % 2 === 0 ? "accent" : "danger")
-      }))
+    ? dbData.map((item, idx) => {
+        let derivedSkills = item.skills || item.tags;
+        if (!derivedSkills || derivedSkills.length === 0) {
+          const t = (item.title || "").toLowerCase();
+          if (t.includes("tensorflow") || t.includes("deep learning")) {
+            derivedSkills = ["Deep learning", "Computer vision", "NLP"];
+          } else if (t.includes("generative ai") || t.includes("oracle") || t.includes("llm")) {
+            derivedSkills = ["Generative AI", "LLMs", "OCI"];
+          } else if (t.includes("front-end") || t.includes("react") || t.includes("meta")) {
+            derivedSkills = ["React 18", "Full-Stack Web", "UX Systems"];
+          } else {
+            derivedSkills = ["Data science", "Python", "Predictive analytics"];
+          }
+        }
+
+        return {
+          id: item.id || `cert-${idx}`,
+          issuer: item.issuer || item.organization || "Global Issuer",
+          title: item.title || item.name || "Professional Certificate",
+          description: item.description || "Verified technical credential.",
+          skills: derivedSkills,
+          issuedDate: item.issuedDate || item.date || "2025",
+          credentialId: item.credentialId || item.credential_id || `ID-${idx + 100}`,
+          verifyUrl: item.verifyUrl || item.credentialUrl || item.url || "#",
+          icon: item.icon || (item.issuer?.toLowerCase().includes("oracle") ? "ti-cloud" : "ti-brand-google"),
+          color: item.color || (idx % 2 === 0 ? "accent" : "danger")
+        };
+      })
     : DEFAULT_CERTIFICATIONS;
 
   return (
     <ScrollReveal className="wide-content">
       <style>{`
-        @import url('https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css');
-
         /* ── DESKTOP CERTIFICATIONS GRID ── */
         .cert-grid {
           display: grid;
           grid-template-columns: repeat(2, 1fr);
-          gap: 20px;
+          gap: 16px;
         }
 
         .cert-card {
           background: var(--bg-secondary);
           border: 1px solid var(--border-color);
-          border-radius: 16px;
+          border-radius: 14px;
           overflow: hidden;
           transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
           display: flex;
@@ -96,12 +110,12 @@ export default function Certifications() {
         }
 
         .cert-card:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+          transform: translateY(-2px);
+          box-shadow: 0 10px 24px rgba(0,0,0,0.06);
         }
 
         .cert-card-header {
-          padding: 22px 24px;
+          padding: 16px 18px;
           position: relative;
         }
 
@@ -128,21 +142,21 @@ export default function Certifications() {
 
         .cert-verified-pill {
           position: absolute;
-          top: 18px;
-          right: 18px;
-          font-size: 11px;
+          top: 14px;
+          right: 14px;
+          font-size: 10.5px;
           font-weight: 600;
           background: #ffffff;
           border-radius: 999px;
-          padding: 3.5px 11px;
+          padding: 3px 9px;
           display: flex;
           align-items: center;
-          gap: 5px;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+          gap: 4px;
+          box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
 
         .cert-verified-pill i {
-          font-size: 13px;
+          font-size: 12px;
         }
 
         .cert-verified-pill--accent {
@@ -168,15 +182,15 @@ export default function Certifications() {
         .cert-header-content {
           display: flex;
           align-items: center;
-          gap: 16px;
+          gap: 12px;
         }
 
         .cert-badge {
-          width: 56px;
-          height: 56px;
+          width: 44px;
+          height: 44px;
           border-radius: 50%;
           background: #ffffff;
-          border: 3px solid #ffffff;
+          border: 2px solid #ffffff;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -184,7 +198,7 @@ export default function Certifications() {
         }
 
         .cert-badge i {
-          font-size: 26px;
+          font-size: 22px;
         }
 
         .cert-badge--accent {
@@ -208,11 +222,11 @@ export default function Certifications() {
         .cert-badge--warning i { color: #b06000; }
 
         .cert-issuer {
-          font-size: 11px;
-          letter-spacing: 0.06em;
+          font-size: 10.5px;
+          letter-spacing: 0.05em;
           text-transform: uppercase;
           font-weight: 700;
-          margin: 0 0 3px;
+          margin: 0 0 2px;
         }
 
         .cert-issuer--accent { color: #0b57d0; }
@@ -226,8 +240,8 @@ export default function Certifications() {
         [data-theme="dark"] .cert-issuer--warning { color: #fde293; }
 
         .cert-title {
-          font-size: 17px;
-          font-weight: 700;
+          font-size: 15px;
+          font-weight: 600;
           margin: 0;
           color: #1f1f1f;
           line-height: 1.3;
@@ -235,35 +249,35 @@ export default function Certifications() {
         [data-theme="dark"] .cert-title { color: #f1efe8; }
 
         .cert-card-body {
-          padding: 22px 24px 20px;
+          padding: 16px 18px 16px;
           display: flex;
           flex-direction: column;
           flex-grow: 1;
         }
 
         .cert-description {
-          font-size: 13.5px;
+          font-size: 13px;
           color: var(--text-secondary);
-          line-height: 1.6;
-          margin: 0 0 16px;
+          line-height: 1.55;
+          margin: 0 0 12px;
           flex-grow: 1;
         }
 
         .cert-skills {
           display: flex;
           flex-wrap: wrap;
-          gap: 8px;
-          margin-bottom: 20px;
+          gap: 6px;
+          margin-bottom: 14px;
         }
 
         .cert-skill-chip {
-          font-size: 11.5px;
+          font-size: 11px;
           font-weight: 500;
           color: var(--text-secondary);
           background: var(--bg-primary);
           border: 1px solid var(--border-color);
           border-radius: 999px;
-          padding: 4px 12px;
+          padding: 3.5px 11px;
         }
 
         .cert-footer {
@@ -271,7 +285,8 @@ export default function Certifications() {
           align-items: center;
           justify-content: space-between;
           border-top: 1px solid var(--border-color);
-          padding-top: 14px;
+          padding-top: 12px;
+          margin-top: auto;
         }
 
         .cert-meta {
@@ -279,24 +294,36 @@ export default function Certifications() {
           color: var(--text-muted);
           margin: 0;
           font-weight: 500;
+          border: none !important;
+          border-bottom: none !important;
+          outline: none !important;
+          text-decoration: none !important;
+          background: transparent !important;
+          box-shadow: none !important;
         }
 
         .cert-meta--mono {
           font-family: "SF Mono", "JetBrains Mono", "Roboto Mono", monospace;
           margin-top: 2px;
-          font-size: 10.5px;
+          font-size: 10px;
           font-weight: 600;
+          border: none !important;
+          border-bottom: none !important;
+          outline: none !important;
+          text-decoration: none !important;
+          background: transparent !important;
+          box-shadow: none !important;
         }
 
         .cert-verify-link {
-          font-size: 13.5px;
+          font-size: 13px;
           font-weight: 600;
           color: #0b57d0;
           display: inline-flex;
           align-items: center;
-          gap: 5px;
+          gap: 4px;
           text-decoration: none;
-          padding: 4px 8px;
+          padding: 3px 6px;
           border-radius: 6px;
           transition: background 0.2s, color 0.2s;
         }
@@ -307,7 +334,7 @@ export default function Certifications() {
         }
 
         .cert-verify-link i {
-          font-size: 14px;
+          font-size: 13.5px;
         }
 
         @media (max-width: 720px) {
