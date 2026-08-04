@@ -174,9 +174,9 @@ export default function ProjectCard({ project, onCardClick }) {
             Case Study <ArrowRight size={13} />
           </button>
           <div className="project-links-right">
-            {project.githubUrl && (
+            {(project.githubUrl || project.github_url || true) && (
               <a
-                href={project.githubUrl}
+                href={project.githubUrl || project.github_url || 'https://github.com/sujith1546'}
                 target="_blank"
                 rel="noreferrer"
                 className="project-link"
@@ -185,9 +185,9 @@ export default function ProjectCard({ project, onCardClick }) {
                 <FaGithub size={13} /> Code
               </a>
             )}
-            {project.liveUrl && (
+            {(project.liveUrl || project.live_url) && (
               <a
-                href={project.liveUrl}
+                href={project.liveUrl || project.live_url}
                 target="_blank"
                 rel="noreferrer"
                 className="project-link project-link--live"
