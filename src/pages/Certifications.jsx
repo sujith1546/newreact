@@ -76,9 +76,7 @@ export default function Certifications() {
   return (
     <ScrollReveal className="wide-content">
       <style>{`
-        .certs-header { margin-bottom: 28px; }
-        .certs-header h1 { font-size: 26px; font-weight: 700; color: var(--text-primary); margin: 0 0 6px 0; }
-        .certs-header p { font-size: 14px; color: var(--text-secondary); max-width: 620px; line-height: 1.5; margin: 0; }
+        @import url('https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css');
 
         /* ── DESKTOP CERTIFICATIONS GRID ── */
         .cert-grid {
