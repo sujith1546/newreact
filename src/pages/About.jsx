@@ -77,311 +77,187 @@ function StatCard({ target, suffix = '', label, decimals = 0, trigger, delay = 0
   );
 }
 
-/* ─── Career Timeline ─── */
-const TL_NODES = [
-  {
-    id: 'a',
-    label: 'Gudivada',
-    sub: 'Schooling',
-    done: true,
-    active: false,
-    period: '2017 – 2019',
-    badge: 'Foundation',
-    badgeBg: 'rgba(99,102,241,0.12)',
-    badgeColor: '#6366f1',
-    badgeBorder: 'rgba(99,102,241,0.25)',
-    description: 'Academic foundation in Mathematics, Science, and Analytical Problem Solving.',
-  },
-  {
-    id: 'b',
-    label: 'Vijayawada',
-    sub: 'Intermediate',
-    done: true,
-    active: false,
-    period: '2019 – 2021',
-    badge: 'Score: 98%',
-    badgeBg: 'rgba(14,165,233,0.12)',
-    badgeColor: '#0ea5e9',
-    badgeBorder: 'rgba(14,165,233,0.25)',
-    description: 'Senior Secondary MPC stream (Mathematics, Physics, Chemistry) achieving a 98% distinction mark.',
-  },
-  {
-    id: 'c',
-    label: 'VIT Vellore',
-    sub: 'B.Tech CS',
-    done: true,
-    active: false,
-    period: '2021 – 2025',
-    badge: 'CGPA: 8.7',
-    badgeBg: 'rgba(16,185,129,0.12)',
-    badgeColor: '#10b981',
-    badgeBorder: 'rgba(16,185,129,0.25)',
-    description: 'Computer Science Engineering degree at VIT Vellore covering Data Structures, Algorithms, OS, DBMS & Networks.',
-  },
-  {
-    id: 'd',
-    label: 'Data Science',
-    sub: 'Specialization',
-    done: true,
-    active: true,
-    period: 'Current Focus',
-    badge: 'Active Phase',
-    badgeBg: 'rgba(59,130,246,0.15)',
-    badgeColor: '#3b82f6',
-    badgeBorder: 'rgba(59,130,246,0.3)',
-    description: 'Focused on Applied AI, Machine Learning, Deep Learning (TensorFlow/PyTorch), and building scalable REST APIs.',
-  },
-  {
-    id: 'e',
-    label: "What's Next?",
-    sub: 'Opportunities',
-    done: false,
-    active: false,
-    muted: true,
-    period: 'Future Roadmap',
-    badge: 'Open to Roles',
-    badgeBg: 'rgba(245,158,11,0.12)',
-    badgeColor: '#f59e0b',
-    badgeBorder: 'rgba(245,158,11,0.25)',
-    description: 'Open to full-time Software Engineering, AI, and Data Science roles.',
-  },
+/* ─── Career Timeline (Redesigned) ─── */
+const milestones = [
+  { title: "Gudivada", subtitle: "Schooling", meta: "2017 – 2019", badge: "Foundation", status: "done" },
+  { title: "Vijayawada", subtitle: "Intermediate", meta: "2019 – 2021", badge: "Score: 98%", status: "done" },
+  { title: "VIT Vellore", subtitle: "B.Tech CS", meta: "2021 – 2025", badge: "CGPA: 8.7", status: "done" },
+  { title: "Data science", subtitle: "Specialization", meta: "Current focus", badge: "Active phase", status: "current" },
+  { title: "What's next?", subtitle: "Opportunities", meta: "Future roadmap", badge: "Open to roles", status: "future" },
 ];
 
 function CareerTimeline() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, amount: 0.3 });
-  const [hoveredNode, setHoveredNode] = useState(null);
+  const currentIndex = milestones.findIndex((m) => m.status === "current");
+  const validIndex = currentIndex >= 0 ? currentIndex : milestones.length - 1;
+  const segmentWidth = 100 / (milestones.length - 1);
+  const progressPercent = validIndex * segmentWidth;
 
   return (
-    <div ref={ref} style={{ padding: '28px 0 0', position: 'relative', overflow: 'visible' }}>
+    <div className="timeline-card-redesign" ref={ref}>
       <style>{`
-        @keyframes railPulseStream {
-          0% { left: -10%; opacity: 0; }
-          20% { opacity: 1; }
-          80% { opacity: 1; }
-          100% { left: 110%; opacity: 0; }
+        .timeline-card-redesign {
+          position: relative;
+          padding: 8px 0 0;
+          overflow: visible;
         }
-        @keyframes pulseRing {
-          0% { transform: scale(1); opacity: 0.8; }
-          100% { transform: scale(1.8); opacity: 0; }
+
+        .timeline-track-wrap {
+          position: relative;
+          padding: 0 4px;
         }
-        .tl-node-btn {
-          background: none; border: none; padding: 0; cursor: pointer;
-          display: flex; flex-direction: column; align-items: center; width: 100%;
-          outline: none; transition: transform 0.2s;
+
+        .timeline-line {
+          position: absolute;
+          top: 7px;
+          left: 20px;
+          right: 20px;
+          height: 2px;
+          background: var(--border-color);
+          border-radius: 2px;
         }
-        .tl-node-btn:hover, .tl-node-btn:focus-visible { transform: translateY(-2px); }
-        @media (prefers-reduced-motion: reduce) {
-          .tl-node-pulse { animation: none !important; }
-          .tl-rail-pulse-beam { animation: none !important; display: none !important; }
+
+        .timeline-line-fill {
+          position: absolute;
+          top: 7px;
+          left: 20px;
+          height: 2px;
+          background: var(--primary-blue);
+          border-radius: 2px;
+        }
+
+        .timeline-grid {
+          display: grid;
+          grid-template-columns: repeat(5, 1fr);
+          gap: 8px;
+          position: relative;
+          z-index: 2;
+        }
+
+        .timeline-item {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+        }
+
+        .timeline-dot {
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          margin-bottom: 12px;
+          box-sizing: border-box;
+          transition: all 0.25s ease;
+        }
+
+        .timeline-dot--done {
+          background: var(--bg-secondary);
+          border: 2px solid var(--text-muted);
+        }
+
+        .timeline-dot--current {
+          background: var(--primary-blue);
+          border: 2px solid var(--primary-blue);
+          box-shadow: 0 0 10px color-mix(in srgb, var(--primary-blue) 50%, transparent);
+        }
+
+        .timeline-dot--future {
+          background: var(--bg-secondary);
+          border: 2px dashed var(--text-muted);
+        }
+
+        .timeline-title {
+          font-size: 13px;
+          font-weight: 700;
+          margin: 0 0 2px;
+          color: var(--text-primary);
+        }
+
+        .timeline-title--current {
+          color: var(--primary-blue);
+        }
+
+        .timeline-title--future {
+          color: var(--text-muted);
+        }
+
+        .timeline-subtitle {
+          font-size: 11px;
+          font-weight: 500;
+          color: var(--text-secondary);
+          margin: 0 0 2px;
+        }
+
+        .timeline-meta {
+          font-size: 10.5px;
+          font-weight: 600;
+          color: var(--text-muted);
+          margin: 0 0 8px;
+        }
+
+        .timeline-badge {
+          font-size: 10px;
+          font-weight: 700;
+          border-radius: 999px;
+          padding: 3px 9px;
+          display: inline-block;
+        }
+
+        .timeline-badge--done,
+        .timeline-badge--future {
+          color: var(--text-secondary);
+          background: var(--bg-primary);
+          border: 1px solid var(--border-color);
+        }
+
+        .timeline-badge--current {
+          color: var(--primary-blue);
+          background: color-mix(in srgb, var(--primary-blue) 12%, transparent);
+          border: 1px solid color-mix(in srgb, var(--primary-blue) 30%, transparent);
+        }
+
+        @media (max-width: 640px) {
+          .timeline-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
+          }
+          .timeline-line, .timeline-line-fill {
+            display: none;
+          }
         }
       `}</style>
 
-      {/* Line + Dots row */}
-      <div style={{ position: 'relative', display: 'flex', alignItems: 'center', marginBottom: 12, overflow: 'visible' }}>
-        {/* Background track */}
-        <div style={{
-          position: 'absolute', left: '10%', right: '10%', height: 3,
-          background: 'var(--border-color)', borderRadius: 3,
-          boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.06)'
-        }} />
-        
-        {/* Animated Multi-Color Gradient Progress Fill with Neon Backdrop Glow */}
+      <div className="timeline-track-wrap">
+        <div className="timeline-line" />
         <motion.div
-          style={{
-            position: 'absolute', left: '10%', right: '10%', height: 3,
-            background: 'linear-gradient(90deg, #6366f1 0%, #0ea5e9 33%, #10b981 66%, #3b82f6 100%)',
-            boxShadow: '0 0 10px rgba(59,130,246,0.5), 0 0 20px rgba(16,185,129,0.3)',
-            borderRadius: 3, transformOrigin: 'left center',
-            overflow: 'hidden'
-          }}
-          initial={{ scaleX: 0 }}
-          animate={inView ? { scaleX: 0.78 } : { scaleX: 0 }}
-          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-        >
-          {/* Active Data Flow Light Beam */}
-          <div className="tl-rail-pulse-beam" style={{
-            position: 'absolute', top: 0, bottom: 0, width: 60,
-            background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.9) 50%, transparent 100%)',
-            animation: 'railPulseStream 2.6s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-            pointerEvents: 'none'
-          }} />
-        </motion.div>
+          className="timeline-line-fill"
+          initial={{ width: 0 }}
+          animate={inView ? { width: `calc(${progressPercent}% - 30px)` } : { width: 0 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+        />
 
-        {/* Dots */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', position: 'relative', zIndex: 2, overflow: 'visible' }}>
-          {TL_NODES.map((node, i) => {
-            const isHovered = hoveredNode?.id === node.id;
-            const delay = 0.25 + i * 0.16;
-
-            // Alignment styles based on node position in timeline
-            let popoverStyle = { left: '50%', transform: 'translateX(-50%)' };
-            let tailStyle = { left: '50%' };
-            if (i === 0) {
-              popoverStyle = { left: '-8px', transform: 'translateX(0%)' };
-              tailStyle = { left: '18px' };
-            } else if (i === TL_NODES.length - 1) {
-              popoverStyle = { right: '-8px', left: 'auto', transform: 'translateX(0%)' };
-              tailStyle = { right: '18px', left: 'auto' };
-            }
-
-            return (
-              <div key={node.id} style={{ flex: 1, display: 'flex', justifyContent: 'center', position: 'relative', overflow: 'visible' }}>
-                {/* Popover anchored directly above this specific node */}
-                <AnimatePresence>
-                  {isHovered && (
-                    <motion.div
-                      key={`popover-${node.id}`}
-                      initial={{ opacity: 0, y: 6, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 4, scale: 0.95 }}
-                      transition={{ duration: 0.18, ease: 'easeOut' }}
-                      style={{
-                        position: 'absolute',
-                        bottom: 'calc(100% + 14px)',
-                        zIndex: 100,
-                        width: 240,
-                        pointerEvents: 'none',
-                        ...popoverStyle,
-                      }}
-                    >
-                      <div style={{
-                        background: 'var(--bg-secondary)',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: 14,
-                        padding: '12px 14px',
-                        boxShadow: '0 12px 30px rgba(0,0,0,0.22), 0 0 0 1px color-mix(in srgb, var(--primary-blue) 15%, transparent)',
-                        backdropFilter: 'blur(14px) saturate(160%)',
-                        WebkitBackdropFilter: 'blur(14px) saturate(160%)',
-                        position: 'relative'
-                      }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-                          <span style={{
-                            display: 'inline-flex', alignItems: 'center', gap: 5,
-                            fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
-                            background: node.badgeBg, color: node.badgeColor, border: `1px solid ${node.badgeBorder}`
-                          }}>
-                            {node.active && (
-                              <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 6px #10b981' }} />
-                            )}
-                            {node.badge}
-                          </span>
-                          <span style={{ fontSize: 10.5, color: 'var(--text-muted)', fontWeight: 600 }}>{node.period}</span>
-                        </div>
-                        <p style={{ margin: '4px 0 2px', fontSize: 13, fontWeight: 700, color: 'var(--text-primary)' }}>
-                          {node.label} <span style={{ color: 'var(--primary-blue)', fontWeight: 600 }}>· {node.sub}</span>
-                        </p>
-                        <p style={{ margin: 0, fontSize: 11.5, color: 'var(--text-secondary)', lineHeight: 1.45 }}>
-                          {node.description}
-                        </p>
-                        
-                        {/* Downward Arrow Tail */}
-                        <div style={{
-                          position: 'absolute', bottom: -5,
-                          transform: 'translateX(-50%) rotate(45deg)',
-                          width: 9, height: 9,
-                          background: 'var(--bg-secondary)',
-                          borderRight: '1px solid var(--border-color)',
-                          borderBottom: '1px solid var(--border-color)',
-                          ...tailStyle
-                        }} />
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                <button
-                  className="tl-node-btn"
-                  onMouseEnter={() => setHoveredNode(node)}
-                  onMouseLeave={() => setHoveredNode(null)}
-                  onFocus={() => setHoveredNode(node)}
-                  onBlur={() => setHoveredNode(null)}
-                  aria-label={`${node.label} ${node.sub} - ${node.period}`}
-                >
-                  <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {node.active && (
-                      <span className="tl-node-pulse" style={{
-                        position: 'absolute', width: 22, height: 22, borderRadius: '50%',
-                        background: 'rgba(59,130,246,0.3)', animation: 'pulseRing 1.8s ease-out infinite'
-                      }} />
-                    )}
-                    <motion.div
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={inView ? { scale: 1, opacity: 1 } : {}}
-                      transition={{ delay, type: 'spring', stiffness: 350, damping: 22 }}
-                      style={{
-                        width: node.active ? 16 : 14,
-                        height: node.active ? 16 : 14,
-                        borderRadius: '50%',
-                        background: node.active
-                          ? 'linear-gradient(135deg, #3b82f6 0%, #10b981 100%)'
-                          : isHovered
-                          ? node.badgeColor
-                          : 'var(--bg-secondary)',
-                        border: node.muted
-                          ? '2px solid var(--border-color)'
-                          : `2.5px solid ${node.done || node.active ? node.badgeColor : 'var(--border-color)'}`,
-                        boxShadow: isHovered
-                          ? `0 0 14px ${node.badgeColor}`
-                          : node.active
-                          ? '0 0 12px rgba(59,130,246,0.6)'
-                          : 'none',
-                        transition: 'all 0.25s ease'
-                      }}
-                    />
-                  </div>
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Labels & Badges row */}
-      <div style={{ display: 'flex' }}>
-        {TL_NODES.map((node, i) => {
-          const delay = 0.32 + i * 0.14;
-          return (
+        <div className="timeline-grid">
+          {milestones.map((m, i) => (
             <motion.div
-              key={node.id}
-              initial={{ opacity: 0, y: 6 }}
+              key={m.title}
+              className="timeline-item"
+              initial={{ opacity: 0, y: 10 }}
               animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ delay, duration: 0.3 }}
-              style={{ flex: 1, textAlign: 'center', cursor: 'default', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
-              onMouseEnter={() => setHoveredNode(node)}
-              onMouseLeave={() => setHoveredNode(null)}
-              onFocus={() => setHoveredNode(node)}
-              onBlur={() => setHoveredNode(null)}
-              tabIndex={0}
+              transition={{ delay: 0.15 + i * 0.08, duration: 0.35 }}
             >
-              <p style={{
-                fontSize: 12.5, fontWeight: 700, margin: '0 0 2px',
-                color: node.active ? 'var(--primary-blue)' : node.muted ? 'var(--text-muted)' : 'var(--text-primary)',
-              }}>
-                {node.label}
+              <div className={`timeline-dot timeline-dot--${m.status}`} />
+              <p className={`timeline-title timeline-title--${m.status}`}>
+                {m.title}
               </p>
-              <p style={{ fontSize: 11, color: 'var(--text-muted)', margin: '0 0 4px', fontWeight: 500 }}>
-                {node.sub}
-              </p>
-              <span style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600, marginBottom: 5 }}>
-                {node.period}
-              </span>
-              <span style={{
-                display: 'inline-flex', alignItems: 'center', gap: 4,
-                fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 999,
-                background: node.badgeBg, color: node.badgeColor, border: `1px solid ${node.badgeBorder}`
-              }}>
-                {node.active && (
-                  <span style={{
-                    width: 5, height: 5, borderRadius: '50%', background: '#10b981',
-                    boxShadow: '0 0 6px #10b981', display: 'inline-block'
-                  }} />
-                )}
-                {node.badge}
+              <p className="timeline-subtitle">{m.subtitle}</p>
+              <p className="timeline-meta">{m.meta}</p>
+              <span className={`timeline-badge timeline-badge--${m.status}`}>
+                {m.badge}
               </span>
             </motion.div>
-          );
-        })}
+          ))}
+        </div>
       </div>
     </div>
   );
