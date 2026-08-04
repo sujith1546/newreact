@@ -77,7 +77,7 @@ function StatCard({ target, suffix = '', label, decimals = 0, trigger, delay = 0
   );
 }
 
-/* ─── Career Timeline (Redesigned) ─── */
+/* ─── Career Timeline (Redesigned & Clean) ─── */
 const milestones = [
   { title: "Gudivada", subtitle: "Schooling", meta: "2017 – 2019", badge: "Foundation", status: "done" },
   { title: "Vijayawada", subtitle: "Intermediate", meta: "2019 – 2021", badge: "Score: 98%", status: "done" },
@@ -91,173 +91,210 @@ function CareerTimeline() {
   const inView = useInView(ref, { once: true, amount: 0.3 });
   const currentIndex = milestones.findIndex((m) => m.status === "current");
   const validIndex = currentIndex >= 0 ? currentIndex : milestones.length - 1;
-  const segmentWidth = 100 / (milestones.length - 1);
-  const progressPercent = validIndex * segmentWidth;
+  const progressPercent = (validIndex / (milestones.length - 1)) * 100;
 
   return (
-    <div className="timeline-card-redesign" ref={ref}>
+    <div className="tl-container-clean" ref={ref}>
       <style>{`
-        .timeline-card-redesign {
+        .tl-container-clean {
           position: relative;
-          padding: 8px 0 0;
-          overflow: visible;
+          padding-top: 10px;
+          width: 100%;
         }
 
-        .timeline-track-wrap {
+        /* Top Row: Track & Dots */
+        .tl-track-row {
           position: relative;
-          padding: 0 4px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          width: 100%;
+          margin-bottom: 14px;
         }
 
-        .timeline-line {
+        .tl-line-base {
           position: absolute;
-          top: 7px;
-          left: 20px;
-          right: 20px;
+          left: 10%;
+          right: 10%;
+          top: 50%;
+          transform: translateY(-50%);
           height: 2px;
           background: var(--border-color);
+          z-index: 1;
           border-radius: 2px;
         }
 
-        .timeline-line-fill {
+        .tl-line-progress {
           position: absolute;
-          top: 7px;
-          left: 20px;
+          left: 10%;
+          top: 50%;
+          transform: translateY(-50%);
           height: 2px;
           background: var(--primary-blue);
+          z-index: 1;
           border-radius: 2px;
+          transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .timeline-grid {
-          display: grid;
-          grid-template-columns: repeat(5, 1fr);
-          gap: 8px;
+        .tl-dots-wrap {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          width: 100%;
           position: relative;
           z-index: 2;
         }
 
-        .timeline-item {
+        .tl-dot-node {
+          flex: 1;
           display: flex;
-          flex-direction: column;
+          justify-content: center;
           align-items: center;
-          text-align: center;
         }
 
-        .timeline-dot {
+        .tl-dot-shape {
           width: 16px;
           height: 16px;
           border-radius: 50%;
-          margin-bottom: 12px;
           box-sizing: border-box;
           transition: all 0.25s ease;
         }
 
-        .timeline-dot--done {
+        .tl-dot-shape--done {
           background: var(--bg-secondary);
           border: 2px solid var(--text-muted);
         }
 
-        .timeline-dot--current {
+        .tl-dot-shape--current {
           background: var(--primary-blue);
           border: 2px solid var(--primary-blue);
-          box-shadow: 0 0 10px color-mix(in srgb, var(--primary-blue) 50%, transparent);
+          box-shadow: 0 0 12px color-mix(in srgb, var(--primary-blue) 60%, transparent);
         }
 
-        .timeline-dot--future {
+        .tl-dot-shape--future {
           background: var(--bg-secondary);
           border: 2px dashed var(--text-muted);
         }
 
-        .timeline-title {
+        /* Bottom Row: Text Columns */
+        .tl-text-grid {
+          display: flex;
+          justify-content: space-between;
+          width: 100%;
+        }
+
+        .tl-text-col {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+          padding: 0 4px;
+        }
+
+        .tl-text-title {
           font-size: 13px;
           font-weight: 700;
           margin: 0 0 2px;
           color: var(--text-primary);
+          line-height: 1.25;
         }
 
-        .timeline-title--current {
+        .tl-text-title--current {
           color: var(--primary-blue);
         }
 
-        .timeline-title--future {
+        .tl-text-title--future {
           color: var(--text-muted);
         }
 
-        .timeline-subtitle {
+        .tl-text-sub {
           font-size: 11px;
           font-weight: 500;
           color: var(--text-secondary);
           margin: 0 0 2px;
+          line-height: 1.2;
         }
 
-        .timeline-meta {
+        .tl-text-meta {
           font-size: 10.5px;
           font-weight: 600;
           color: var(--text-muted);
-          margin: 0 0 8px;
+          margin: 0 0 6px;
         }
 
-        .timeline-badge {
+        .tl-text-badge {
           font-size: 10px;
           font-weight: 700;
           border-radius: 999px;
           padding: 3px 9px;
           display: inline-block;
+          white-space: nowrap;
         }
 
-        .timeline-badge--done,
-        .timeline-badge--future {
+        .tl-text-badge--done,
+        .tl-text-badge--future {
           color: var(--text-secondary);
           background: var(--bg-primary);
           border: 1px solid var(--border-color);
         }
 
-        .timeline-badge--current {
+        .tl-text-badge--current {
           color: var(--primary-blue);
           background: color-mix(in srgb, var(--primary-blue) 12%, transparent);
           border: 1px solid color-mix(in srgb, var(--primary-blue) 30%, transparent);
         }
 
         @media (max-width: 640px) {
-          .timeline-grid {
-            grid-template-columns: 1fr;
-            gap: 20px;
-          }
-          .timeline-line, .timeline-line-fill {
-            display: none;
-          }
+          .tl-track-row { display: none; }
+          .tl-text-grid { flex-direction: column; gap: 16px; }
         }
       `}</style>
 
-      <div className="timeline-track-wrap">
-        <div className="timeline-line" />
+      {/* Top Track Row (Line + Dots) */}
+      <div className="tl-track-row">
+        <div className="tl-line-base" />
         <motion.div
-          className="timeline-line-fill"
-          initial={{ width: 0 }}
-          animate={inView ? { width: `calc(${progressPercent}% - 30px)` } : { width: 0 }}
+          className="tl-line-progress"
+          initial={{ width: '0%' }}
+          animate={inView ? { width: `calc(${progressPercent * 0.8}% )` } : { width: '0%' }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
         />
 
-        <div className="timeline-grid">
+        <div className="tl-dots-wrap">
           {milestones.map((m, i) => (
-            <motion.div
-              key={m.title}
-              className="timeline-item"
-              initial={{ opacity: 0, y: 10 }}
-              animate={inView ? { opacity: 1, y: 0 } : {}}
-              transition={{ delay: 0.15 + i * 0.08, duration: 0.35 }}
-            >
-              <div className={`timeline-dot timeline-dot--${m.status}`} />
-              <p className={`timeline-title timeline-title--${m.status}`}>
-                {m.title}
-              </p>
-              <p className="timeline-subtitle">{m.subtitle}</p>
-              <p className="timeline-meta">{m.meta}</p>
-              <span className={`timeline-badge timeline-badge--${m.status}`}>
-                {m.badge}
-              </span>
-            </motion.div>
+            <div key={m.title + '-dot'} className="tl-dot-node">
+              <motion.div
+                className={`tl-dot-shape tl-dot-shape--${m.status}`}
+                initial={{ scale: 0 }}
+                animate={inView ? { scale: 1 } : { scale: 0 }}
+                transition={{ delay: 0.15 + i * 0.08, type: 'spring', stiffness: 350, damping: 20 }}
+              />
+            </div>
           ))}
         </div>
+      </div>
+
+      {/* Bottom Text Columns */}
+      <div className="tl-text-grid">
+        {milestones.map((m, i) => (
+          <motion.div
+            key={m.title + '-text'}
+            className="tl-text-col"
+            initial={{ opacity: 0, y: 10 }}
+            animate={inView ? { opacity: 1, y: 0 } : {}}
+            transition={{ delay: 0.2 + i * 0.08, duration: 0.35 }}
+          >
+            <p className={`tl-text-title tl-text-title--${m.status}`}>
+              {m.title}
+            </p>
+            <p className="tl-text-sub">{m.subtitle}</p>
+            <p className="tl-text-meta">{m.meta}</p>
+            <span className={`tl-text-badge tl-text-badge--${m.status}`}>
+              {m.badge}
+            </span>
+          </motion.div>
+        ))}
       </div>
     </div>
   );
