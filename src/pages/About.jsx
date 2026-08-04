@@ -77,21 +77,24 @@ function StatCard({ target, suffix = '', label, decimals = 0, trigger, delay = 0
   );
 }
 
-/* ─── Career Timeline (Redesigned & Clean) ─── */
+/* ─── Career Timeline (Redesigned & Interactive Hover) ─── */
 const milestones = [
-  { title: "Gudivada", subtitle: "Schooling", meta: "2017 – 2019", badge: "Foundation", status: "done" },
-  { title: "Vijayawada", subtitle: "Intermediate", meta: "2019 – 2021", badge: "Score: 98%", status: "done" },
-  { title: "VIT Vellore", subtitle: "B.Tech CS", meta: "2021 – 2025", badge: "CGPA: 8.7", status: "done" },
-  { title: "Data science", subtitle: "Specialization", meta: "Current focus", badge: "Active phase", status: "current" },
-  { title: "What's next?", subtitle: "Opportunities", meta: "Future roadmap", badge: "Open to roles", status: "future" },
+  { id: 'a', title: "Gudivada", subtitle: "Schooling", meta: "2017 – 2019", badge: "Foundation", status: "done", description: "Academic foundation in Mathematics, Science, and Analytical Problem Solving." },
+  { id: 'b', title: "Vijayawada", subtitle: "Intermediate", meta: "2019 – 2021", badge: "Score: 98%", status: "done", description: "Senior Secondary MPC stream (Mathematics, Physics, Chemistry) achieving a 98% distinction mark." },
+  { id: 'c', title: "VIT Vellore", subtitle: "B.Tech CS", meta: "2021 – 2025", badge: "CGPA: 8.7", status: "done", description: "Computer Science Engineering degree at VIT Vellore covering Data Structures, Algorithms, OS, DBMS & Networks." },
+  { id: 'd', title: "Data science", subtitle: "Specialization", meta: "Current focus", badge: "Active phase", status: "current", description: "Focused on Applied AI, Machine Learning, Deep Learning (TensorFlow/PyTorch), and building scalable REST APIs." },
+  { id: 'e', title: "What's next?", subtitle: "Opportunities", meta: "Future roadmap", badge: "Open to roles", status: "future", description: "Open to full-time Software Engineering, AI, and Data Science roles." },
 ];
 
 function CareerTimeline() {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, amount: 0.3 });
+  const [hoveredNode, setHoveredNode] = useState(null);
+
   const currentIndex = milestones.findIndex((m) => m.status === "current");
   const validIndex = currentIndex >= 0 ? currentIndex : milestones.length - 1;
   const progressPercent = (validIndex / (milestones.length - 1)) * 100;
+  const hoveredIndex = hoveredNode ? milestones.findIndex(m => m.id === hoveredNode.id) : -1;
 
   return (
     <div className="tl-container-clean" ref={ref}>
@@ -150,6 +153,7 @@ function CareerTimeline() {
           display: flex;
           justify-content: center;
           align-items: center;
+          cursor: pointer;
         }
 
         .tl-dot-shape {
@@ -158,6 +162,11 @@ function CareerTimeline() {
           border-radius: 50%;
           box-sizing: border-box;
           transition: all 0.25s ease;
+        }
+
+        .tl-dot-node:hover .tl-dot-shape,
+        .tl-text-col:hover ~ .tl-track-row .tl-dot-shape {
+          transform: scale(1.25);
         }
 
         .tl-dot-shape--done {
@@ -190,6 +199,12 @@ function CareerTimeline() {
           align-items: center;
           text-align: center;
           padding: 0 4px;
+          cursor: pointer;
+          transition: transform 0.2s ease;
+        }
+
+        .tl-text-col:hover {
+          transform: translateY(-2px);
         }
 
         .tl-text-title {
@@ -251,6 +266,51 @@ function CareerTimeline() {
         }
       `}</style>
 
+      {/* Popover Card anchored directly above hovered milestone node */}
+      <AnimatePresence>
+        {hoveredNode && hoveredIndex >= 0 && (
+          <motion.div
+            key={`hover-popover-${hoveredNode.id}`}
+            initial={{ opacity: 0, y: 6, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 4, scale: 0.95 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
+            style={{
+              position: 'absolute',
+              bottom: 'calc(100% - 4px)',
+              left: `${(hoveredIndex / (milestones.length - 1)) * 80 + 10}%`,
+              transform: 'translateX(-50%)',
+              zIndex: 100,
+              width: 230,
+              pointerEvents: 'none'
+            }}
+          >
+            <div style={{
+              background: 'var(--bg-secondary)',
+              border: '1px solid var(--border-color)',
+              borderRadius: 14,
+              padding: '10px 12px',
+              boxShadow: '0 10px 28px rgba(0,0,0,0.18), 0 0 0 1px color-mix(in srgb, var(--primary-blue) 15%, transparent)',
+              backdropFilter: 'blur(12px)',
+              position: 'relative'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                <span className={`tl-text-badge tl-text-badge--${hoveredNode.status}`}>
+                  {hoveredNode.badge}
+                </span>
+                <span style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 600 }}>{hoveredNode.meta}</span>
+              </div>
+              <p style={{ margin: '3px 0 2px', fontSize: 12.5, fontWeight: 700, color: 'var(--text-primary)' }}>
+                {hoveredNode.title} <span style={{ color: 'var(--primary-blue)', fontWeight: 600 }}>· {hoveredNode.subtitle}</span>
+              </p>
+              <p style={{ margin: 0, fontSize: 11, color: 'var(--text-secondary)', lineHeight: 1.45 }}>
+                {hoveredNode.description}
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Top Track Row (Line + Dots) */}
       <div className="tl-track-row">
         <div className="tl-line-base" />
@@ -263,7 +323,12 @@ function CareerTimeline() {
 
         <div className="tl-dots-wrap">
           {milestones.map((m, i) => (
-            <div key={m.title + '-dot'} className="tl-dot-node">
+            <div
+              key={m.title + '-dot'}
+              className="tl-dot-node"
+              onMouseEnter={() => setHoveredNode(m)}
+              onMouseLeave={() => setHoveredNode(null)}
+            >
               <motion.div
                 className={`tl-dot-shape tl-dot-shape--${m.status}`}
                 initial={{ scale: 0 }}
@@ -281,6 +346,8 @@ function CareerTimeline() {
           <motion.div
             key={m.title + '-text'}
             className="tl-text-col"
+            onMouseEnter={() => setHoveredNode(m)}
+            onMouseLeave={() => setHoveredNode(null)}
             initial={{ opacity: 0, y: 10 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ delay: 0.2 + i * 0.08, duration: 0.35 }}
