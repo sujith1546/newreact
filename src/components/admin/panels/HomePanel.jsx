@@ -118,14 +118,13 @@ export default function HomePanel() {
     async function loadActivity() {
       setActivityLoading(true);
       try {
-        const { data } = await supabase
-          .from('audit_log')
+        const { data, error } = await supabase
+          .from('admin_audit_logs')
           .select('*')
           .order('created_at', { ascending: false })
           .limit(6);
-        if (data) setRecentActivity(data);
+        if (data && !error) setRecentActivity(data);
       } catch (_) {
-        // audit_log might not exist
         setRecentActivity([]);
       }
       setActivityLoading(false);
@@ -133,12 +132,12 @@ export default function HomePanel() {
 
     async function loadSettings() {
       try {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from('site_settings')
-          .select('site_disabled, maintenance_mode, show_projects, show_blog')
+          .select('site_disabled, maintenance_enabled, feature_experience, feature_blog')
           .eq('id', 1)
           .single();
-        if (data) setSiteSettings(data);
+        if (data && !error) setSiteSettings(data);
       } catch (_) {}
     }
 
@@ -405,8 +404,8 @@ export default function HomePanel() {
               { label: 'Supabase DB', val: 'Connected', color: '#10B981' },
               { label: 'Realtime', val: 'Active', color: '#10B981' },
               { label: 'Site Status', val: siteSettings?.site_disabled ? 'Locked 🔒' : 'Live ✓', color: siteSettings?.site_disabled ? '#EF4444' : '#10B981' },
-              { label: 'Maintenance', val: siteSettings?.maintenance_mode ? 'On' : 'Off', color: siteSettings?.maintenance_mode ? '#F59E0B' : '#8896B3' },
-              { label: 'Projects Visible', val: siteSettings?.show_projects !== false ? 'Yes' : 'No', color: siteSettings?.show_projects !== false ? '#10B981' : '#EF4444' },
+              { label: 'Maintenance', val: siteSettings?.maintenance_enabled ? 'On' : 'Off', color: siteSettings?.maintenance_enabled ? '#F59E0B' : '#8896B3' },
+              { label: 'Projects Visible', val: siteSettings?.feature_experience !== false ? 'Yes' : 'No', color: siteSettings?.feature_experience !== false ? '#10B981' : '#EF4444' },
             ].map((row) => (
               <div key={row.label} className="pcms-status-row">
                 <span className="pcms-status-label">{row.label}</span>

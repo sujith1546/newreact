@@ -60,13 +60,16 @@ export default function PortfolioPreviewPanel() {
 
   const handleIframeLoad = () => {
     setLoading(false);
-    // Also send postMessage so the inner gate can verify via message event
+    // Send postMessage to iframe window so the inner gate can verify token via message event
     try {
-      const stored = JSON.parse(sessionStorage.getItem(PREVIEW_TOKEN_KEY) || '{}');
-      iframeRef.current?.contentWindow?.postMessage(
-        { type: 'PCMS_ADMIN_PREVIEW', token: stored.token, expires: stored.expires },
-        window.location.origin
-      );
+      const targetWindow = iframeRef.current?.contentWindow;
+      if (targetWindow) {
+        const stored = JSON.parse(sessionStorage.getItem(PREVIEW_TOKEN_KEY) || '{}');
+        targetWindow.postMessage(
+          { type: 'PCMS_ADMIN_PREVIEW', token: stored.token, expires: stored.expires },
+          '*'
+        );
+      }
     } catch (_) {}
   };
 
