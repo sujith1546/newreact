@@ -30,28 +30,7 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
   const [toast, setToast] = useState(null); // { label, prevValue, nextValue, undo }
   const [tapCount, setTapCount] = useState(0);
 
-  // Secret 5-click admin login trigger
-  const [clickCount, setClickCount] = useState(0);
-  const clickTimerRef = useRef(null);
 
-  const handleSecretAdminClick = () => {
-    setClickCount((prev) => {
-      const newCount = prev + 1;
-      if (newCount === 5) {
-        setIsMoreOpen(false); // Close the drawer
-        window.open('/admin/login', '_blank', 'noopener,noreferrer');
-        return 0; // Reset
-      }
-      return newCount;
-    });
-
-    if (clickTimerRef.current) {
-      clearTimeout(clickTimerRef.current);
-    }
-    clickTimerRef.current = setTimeout(() => {
-      setClickCount(0); // Reset after 1.5 seconds of inactivity
-    }, 1500);
-  };
     
   // PWA Install Prompt Listener
   useEffect(() => {
@@ -429,7 +408,6 @@ END:VCARD`;
                 src="/profile_photo.png" 
                 alt="Sujith Thota" 
                 className="drawer-avatar" 
-                onClick={handleSecretAdminClick}
               />
               <div className="drawer-profile-info">
                 <h4>Sujith Thota</h4>

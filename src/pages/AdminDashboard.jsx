@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { Sun, Moon, ExternalLink } from 'lucide-react';
+import { Sun, Moon, ExternalLink, Eye, Lock } from 'lucide-react';
 import MessagesAdmin, { UnreadBadge } from '../components/admin/panels/MessagesAdmin';
 import MobileShell from '../components/admin/mobile/MobileShell';
 import HomePanel from '../components/admin/panels/HomePanel';
@@ -16,15 +16,20 @@ import ProjectsPanel from '../components/admin/panels/ProjectsPanel';
 import UpdatesPanel from '../components/admin/panels/UpdatesPanel';
 import AiChatsPanel from '../components/admin/panels/AiChatsPanel';
 import TestimonialsPanel from '../components/admin/panels/TestimonialsPanel';
+import PortfolioPreviewPanel from '../components/admin/panels/PortfolioPreviewPanel';
 import { NAV_GROUPS, ALL_NAV_ITEMS } from '../components/admin/shared/constants';
 import { useDashboardStats } from '../components/admin/shared/useDashboardStats';
+import { useSiteStatus } from '../components/SiteDisabledGate';
 
 function AdminDashboardDesktop() {
   const navigate = useNavigate();
   const { tab } = useParams();
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const siteStatus = useSiteStatus();
   const [lastLogin, setLastLogin] = useState(null);
+
+  const isLocked = siteStatus.siteDisabled || siteStatus.maintenance;
 
   const VALID_TABS = ALL_NAV_ITEMS.map(n => n.key);
   const activeTab = VALID_TABS.includes(tab) ? tab : "home";
@@ -84,7 +89,16 @@ function AdminDashboardDesktop() {
             return (
               <div key={group.label} className="pcms-nav-group">
                 <div
+                  role="button"
+                  tabIndex={0}
+                  aria-expanded={!isCollapsed}
                   onClick={() => toggleGroup(group.label)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      toggleGroup(group.label);
+                    }
+                  }}
                   className="pcms-nav-label"
                   style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', userSelect: 'none' }}
                   title="Click to collapse/expand"
@@ -179,26 +193,45 @@ function AdminDashboardDesktop() {
               <span>{theme === 'dark' ? 'Light' : 'Dark'}</span>
             </button>
 
-            <a href="/" target="_blank" rel="noreferrer" className="pcms-pill-btn">
-              <ExternalLink size={13} />
-              <span>Live site</span>
-            </a>
+            {/* Live Site / Preview button */}
+            {isLocked ? (
+              <button
+                type="button"
+                onClick={() => navigate('/admin/dashboard/preview')}
+                className="pcms-pill-btn"
+                title="Site is locked — open Portfolio Preview tab"
+                style={{
+                  background: 'rgba(196,67,47,0.08)',
+                  border: '1px solid rgba(196,67,47,0.25)',
+                  color: '#C4432F',
+                }}
+              >
+                <Lock size={13} />
+                <span>Site Locked — Preview</span>
+              </button>
+            ) : (
+              <a href="/" target="_blank" rel="noreferrer" className="pcms-pill-btn">
+                <ExternalLink size={13} />
+                <span>Live site</span>
+              </a>
+            )}
           </div>
         </div>
 
         {/* Panel Content */}
-        <div className="admin-body">
-          {activeTab === "home"          && <HomePanel />}
-          {activeTab === "messages"      && <MessagesAdmin />}
-          {activeTab === "projects"      && <ProjectsPanel />}
-          {activeTab === "testimonials"  && <TestimonialsPanel />}
-          {activeTab === "updates"       && <UpdatesPanel />}
-          {activeTab === "chats"         && <AiChatsPanel />}
-          {activeTab === "settings"      && <SettingsPanel />}
-          {activeTab === "skills"        && <SkillsPanel />}
-          {activeTab === "experience"    && <ExperiencePanel />}
-          {activeTab === "certifications" && <CertificationsPanel />}
-          {activeTab === "education"     && <EducationPanel />}
+        <div className={`admin-body${activeTab === 'preview' ? ' no-padding' : ''}`}>
+          {activeTab === "home"           && <HomePanel />}
+          {activeTab === "preview"         && <PortfolioPreviewPanel />}
+          {activeTab === "messages"        && <MessagesAdmin />}
+          {activeTab === "projects"        && <ProjectsPanel />}
+          {activeTab === "testimonials"    && <TestimonialsPanel />}
+          {activeTab === "updates"         && <UpdatesPanel />}
+          {activeTab === "chats"           && <AiChatsPanel />}
+          {activeTab === "settings"        && <SettingsPanel />}
+          {activeTab === "skills"          && <SkillsPanel />}
+          {activeTab === "experience"      && <ExperiencePanel />}
+          {activeTab === "certifications"  && <CertificationsPanel />}
+          {activeTab === "education"       && <EducationPanel />}
         </div>
       </main>
     </div>

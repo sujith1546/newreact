@@ -9,7 +9,6 @@ import {
   SiGit,
   SiPandas
 } from "react-icons/si";
-import StatsRow from "./ui/StatsRow";
 
 const TAGLINES = [
   "Building Modern Web Apps",
@@ -18,12 +17,13 @@ const TAGLINES = [
   "Shipping Data Pipelines",
 ];
 
-const STATS = [
-  { label: "Years coding", value: "3.5" },
-  { label: "Projects", value: "10" },
-  { label: "DSA solved", value: "200" },
-  { label: "CGPA", value: "8.7" },
-];
+function sanitizeHTML(str) {
+  if (typeof str !== 'string') return '';
+  return str
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/javascript:/gi, '')
+    .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '');
+}
 
 const TECH_STACK = [
   { name: "Python", Icon: SiPython },
@@ -407,11 +407,8 @@ export default function HeroSection({ name = "Sujith Thota", photoUrl = "/IMG_03
           {/* Subtitle */}
           <div
             style={{ fontSize: '15px', color: 'var(--text-secondary)', lineHeight: 1.6, maxWidth: '480px' }}
-            dangerouslySetInnerHTML={{ __html: settings?.hero_headline || "I build modern web applications, blending data science with clean, responsive engineering." }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHTML(settings?.hero_headline || "I build modern web applications, blending data science with clean, responsive engineering.") }}
           />
-
-          {/* Continuous Merged Stats Strip */}
-          <StatsRow />
 
           {/* CTA Buttons */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', paddingTop: '4px' }}>

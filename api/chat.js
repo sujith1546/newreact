@@ -625,13 +625,22 @@ Analyze the tone and style of the user's message before responding:
       }
 
       const userPrompt = buildUserPrompt(chunks, standaloneQuestion);
+      const clientPersona = req.body?.persona || 'general';
+      let personaGuidance = "";
+      if (clientPersona === 'recruiter') {
+        personaGuidance = "\n\nVISITOR MODE: RECRUITER / HIRING MANAGER. Tailor your tone for a recruiter. Emphasize achievements, impact metrics, VIT Vellore degree, certifications, and availability for full-time or contract roles.";
+      } else if (clientPersona === 'developer') {
+        personaGuidance = "\n\nVISITOR MODE: DEVELOPER / TECH LEAD. Tailor your tone for an engineer. Emphasize React, Node.js, Python, ML pipelines, API design, code quality, and GitHub repos.";
+      } else if (clientPersona === 'founder') {
+        personaGuidance = "\n\nVISITOR MODE: FOUNDER / CLIENT. Tailor your tone for a client/founder. Emphasize end-to-end fullstack delivery, problem solving, reliability, and contact desk routing.";
+      }
 
       groqPayload = {
         model: GROQ_MODEL,
         temperature: 0.4,
         stream: true,
         messages: [
-          { role: "system", content: DYNAMIC_SYSTEM_PROMPT },
+          { role: "system", content: DYNAMIC_SYSTEM_PROMPT + personaGuidance },
           { role: "user", content: userPrompt },
         ],
       };

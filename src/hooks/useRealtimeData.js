@@ -243,7 +243,7 @@ export default function useRealtimeData(table, options = {}) {
 
     let channel = null;
 
-    // Debounce the Realtime channel setup to avoid React StrictMode rapid mount/unmount WSS abortion
+    // Small delay to avoid React StrictMode rapid mount/unmount WebSocket abort
     const subTimeout = setTimeout(() => {
       if (!isMounted) return;
 
@@ -252,38 +252,48 @@ export default function useRealtimeData(table, options = {}) {
         .channel(channelName)
         .on('postgres_changes', { event: '*', schema: 'public', table }, (payload) => {
           if (!isMounted) return;
-          
+
           const { eventType, new: newRow, old: oldRow } = payload;
-          
+
           setData((currentData) => {
+            let nextData = currentData;
+
             if (single) {
               if (filter && newRow && newRow[filter.column] !== filter.value) {
-                return currentData;
+                nextData = currentData;
+              } else if (eventType === 'DELETE') {
+                nextData = null;
+              } else {
+                nextData = { ...currentData, ...newRow };
               }
-              if (eventType === 'DELETE') return null;
-              return { ...currentData, ...newRow };
-            }
-
-            if (eventType === 'INSERT') {
-              if (currentData.some(item => item.id === newRow.id)) {
-                return currentData.map(item => item.id === newRow.id ? { ...item, ...newRow } : item);
+            } else {
+              if (eventType === 'INSERT') {
+                if (currentData.some(item => item.id === newRow.id)) {
+                  nextData = currentData.map(item => item.id === newRow.id ? { ...item, ...newRow } : item);
+                } else {
+                  nextData = [newRow, ...currentData];
+                }
+              } else if (eventType === 'UPDATE') {
+                nextData = currentData.map((item) => (item.id === newRow.id ? { ...item, ...newRow } : item));
+              } else if (eventType === 'DELETE') {
+                nextData = currentData.filter((item) => item.id !== oldRow.id);
               }
-              return [newRow, ...currentData];
             }
 
-            if (eventType === 'UPDATE') {
-              return currentData.map((item) => (item.id === newRow.id ? { ...item, ...newRow } : item));
-            }
+            // Keep globalDataCache in sync so newly-mounted components read fresh data.
+            globalDataCache[cacheKey] = nextData;
+            // Also update the localStorage SWR cache so page refreshes are fast.
+            setStorageCache(cacheKey, nextData);
+            // Broadcast a custom event so any other listeners can react immediately.
+            try {
+              window.dispatchEvent(new CustomEvent('pcms_data_updated', { detail: { table, eventType } }));
+            } catch (_) {}
 
-            if (eventType === 'DELETE') {
-              return currentData.filter((item) => item.id !== oldRow.id);
-            }
-
-            return currentData;
+            return nextData;
           });
         })
         .subscribe();
-    }, 150);
+    }, 50);
 
     return () => {
       isMounted = false;

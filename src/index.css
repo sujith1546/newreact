@@ -4397,6 +4397,13 @@ html[data-density="relaxed"] { font-size: 18px; }
   overflow-y: auto;
   padding: 22px 28px;
 }
+/* Zero-padding variant — used by full-bleed panels like Portfolio Preview */
+.admin-body.no-padding {
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
 
 /* â”€â”€ Stat cards â”€â”€ */
 .admin-stats-grid {

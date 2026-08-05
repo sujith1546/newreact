@@ -142,27 +142,7 @@ export default function Sidebar({ activeSection, onNavClick }) {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Secret 5-click admin login trigger
-  const [clickCount, setClickCount] = useState(0);
-  const clickTimerRef = useRef(null);
 
-  const handleSecretAdminClick = () => {
-    setClickCount((prev) => {
-      const newCount = prev + 1;
-      if (newCount === 5) {
-        window.open('/admin/login', '_blank');
-        return 0; // Reset
-      }
-      return newCount;
-    });
-
-    if (clickTimerRef.current) {
-      clearTimeout(clickTimerRef.current);
-    }
-    clickTimerRef.current = setTimeout(() => {
-      setClickCount(0); // Reset after 1.5 seconds of inactivity
-    }, 1500);
-  };
 
   useEffect(() => {
     const handleOpenResume = () => setIsPreviewOpen(true);
@@ -255,10 +235,7 @@ export default function Sidebar({ activeSection, onNavClick }) {
 
   return (
     <aside className="sidebar">
-      <div 
-        className="sidebar-avatar-container" 
-        onClick={handleSecretAdminClick}
-      >
+      <div className="sidebar-avatar-container">
         <img src="/profile_photo.png" alt="Sujith Thota" />
       </div>
       <h2>Sujith Thota</h2>

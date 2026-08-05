@@ -12,6 +12,8 @@ import ProjectCarousel from './GenerativeUI/ProjectCarousel';
 import BentoBox from './GenerativeUI/BentoBox';
 import ReactMarkdown from 'react-markdown';
 
+import { usePersona } from '../../context/PersonaContext';
+
 function generateUUID() {
   try { return crypto.randomUUID(); } 
   catch (e) {
@@ -21,6 +23,69 @@ function generateUUID() {
     });
   }
 }
+
+const PERSONA_OPTIONS = [
+  {
+    id: 'recruiter',
+    title: 'Recruiter / Hiring Manager',
+    badge: '👔 Recruiter',
+    desc: 'Work experience, certifications, resume metrics, & availability',
+    color: '#3b82f6',
+    bgColor: 'rgba(59, 130, 246, 0.1)',
+    greeting: "Hi there! 👔 I've set your mode to **Recruiter / Hiring Manager**. Ask me anything about Sujith's work history, certifications, resume metrics, or hiring availability!",
+    questions: [
+      "Are you available for full-time roles?",
+      "Show me Sujith's work experience",
+      "What certifications do you hold?",
+      "Can I download your resume?"
+    ]
+  },
+  {
+    id: 'developer',
+    title: 'Developer / Tech Lead',
+    badge: '💻 Developer',
+    desc: 'Tech stack, ML architecture, React components, & GitHub repos',
+    color: '#10b981',
+    bgColor: 'rgba(16, 185, 129, 0.1)',
+    greeting: "Hey! 💻 I've configured your mode for a **Developer / Tech Lead**. Ask me about Sujith's tech stack, ML pipeline architectures, React components, or GitHub repos!",
+    questions: [
+      "What projects have you built?",
+      "Tell me about your ML experience",
+      "What's your core tech stack?",
+      "Show me your Financial Sentiment project"
+    ]
+  },
+  {
+    id: 'founder',
+    title: 'Founder / Client',
+    badge: '🚀 Founder',
+    desc: 'Full-stack application delivery, freelance work, & desk routing',
+    color: '#f59e0b',
+    bgColor: 'rgba(245, 158, 11, 0.1)',
+    greeting: "Welcome! 🚀 Mode set for **Founder / Client**. Ask me how Sujith builds full-stack applications, handles freelance projects, or how to route a project to his desk!",
+    questions: [
+      "Can you build a web app for me?",
+      "How can I route a project to your desk?",
+      "What's your project turnaround time?",
+      "Show me your portfolio projects"
+    ]
+  },
+  {
+    id: 'general',
+    title: 'Peer / General Visitor',
+    badge: '🎓 Visitor',
+    desc: 'General overview of background, education at VIT, & hobbies',
+    color: '#8b5cf6',
+    bgColor: 'rgba(139, 92, 246, 0.1)',
+    greeting: "Hi! 👋 Welcome to Sujith's portfolio. I can answer anything about background, education at VIT Vellore, projects, skills, or hobbies!",
+    questions: [
+      "Tell me about your background",
+      "Where did you study?",
+      "What are your key skills?",
+      "How can I contact you?"
+    ]
+  }
+];
 
 const SUGGESTED_QUESTIONS = [
   "What projects have you built?",
@@ -53,6 +118,34 @@ const getSessionToken = () => {
 
 export default function ChatBot() {
   const telemetrySessionRef = useRef(null);
+  const abortControllerRef = useRef(null);
+  const { persona, setPersona, hasChosenPersona, resetPersonaChoice } = usePersona();
+  const [showPersonaMenu, setShowPersonaMenu] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
+
+  const activePersonaObj = PERSONA_OPTIONS.find(p => p.id === persona) || PERSONA_OPTIONS[3];
+
+  const handleSelectPersona = (selectedId) => {
+    setPersona(selectedId);
+    setShowPersonaMenu(false);
+    
+    const matchedOpt = PERSONA_OPTIONS.find(p => p.id === selectedId);
+    if (matchedOpt) {
+      setMessages([
+        {
+          role: 'assistant',
+          content: matchedOpt.greeting
+        }
+      ]);
+    }
+  };
 
   useEffect(() => {
     const saved = localStorage.getItem('ai_session_id');
@@ -331,12 +424,19 @@ export default function ChatBot() {
 
       let res;
       try {
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort();
+        }
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
+
         res = await fetch('/api/chat', {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
             'x-portfolio-session': sessionToken 
           },
+          signal: controller.signal,
           body: JSON.stringify({ 
             message: userText, 
             image: currentAttachment?.base64, 
@@ -350,6 +450,7 @@ export default function ChatBot() {
           })
         });
       } catch (netErr) {
+        if (netErr.name === 'AbortError') return;
         triggerIsland({
           title: 'Network Error',
           subtitle: 'Unable to reach AI chat service.',
@@ -1380,9 +1481,7 @@ export default function ChatBot() {
               </div>
               <div className="chatbot-header-actions">
                 <button
-                  onClick={() => {
-                    setOverridePersona(prev => prev === 'auto' ? 'recruiter' : prev === 'recruiter' ? 'developer' : 'auto');
-                  }}
+                  onClick={() => setShowPersonaMenu(prev => !prev)}
                   style={{
                     fontSize: '10px',
                     fontWeight: 700,
@@ -1390,14 +1489,18 @@ export default function ChatBot() {
                     borderRadius: '100px',
                     border: '1px solid var(--border-color)',
                     background: 'var(--bg-secondary)',
-                    color: overridePersona === 'recruiter' ? '#10b981' : overridePersona === 'developer' ? '#3b82f6' : 'var(--text-secondary)',
+                    color: activePersonaObj.color,
                     cursor: 'pointer',
-                    marginRight: '6px'
+                    marginRight: '6px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px'
                   }}
-                  title="Click to switch persona mode (Recruiter / Developer / Auto)"
+                  title="Click to switch persona perspective (Recruiter / Developer / Founder / Visitor)"
                   type="button"
                 >
-                  {overridePersona === 'recruiter' ? '👔 Recruiter' : overridePersona === 'developer' ? '⚡ Developer' : '🎯 Auto Mode'}
+                  <span>{activePersonaObj.badge}</span>
+                  <ChevronDown size={11} />
                 </button>
 
                 <button 
@@ -1440,6 +1543,76 @@ export default function ChatBot() {
                     >
                       <X size={12} />
                     </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* 🎯 Interactive Persona Selector Card / Switcher Menu 🎯 */}
+            <AnimatePresence>
+              {(!hasChosenPersona || showPersonaMenu) && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                  transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                  style={{
+                    margin: '10px 14px 4px',
+                    padding: '12px 14px',
+                    borderRadius: '14px',
+                    backgroundColor: 'var(--bg-secondary)',
+                    border: '1px solid var(--border-color)',
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.06)'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Sparkles size={13} color="#3b82f6" />
+                      <span style={{ fontSize: '11.5px', fontWeight: 800, color: 'var(--text-primary)' }}>
+                        Select your role / perspective:
+                      </span>
+                    </div>
+                    {hasChosenPersona && (
+                      <button
+                        type="button"
+                        onClick={() => setShowPersonaMenu(false)}
+                        style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 0 }}
+                      >
+                        <X size={13} />
+                      </button>
+                    )}
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
+                    {PERSONA_OPTIONS.map((opt) => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => handleSelectPersona(opt.id)}
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'flex-start',
+                          padding: '8px 10px',
+                          borderRadius: '10px',
+                          border: persona === opt.id ? `1.5px solid ${opt.color}` : '1px solid var(--border-color)',
+                          backgroundColor: persona === opt.id ? opt.bgColor : 'var(--bg-primary)',
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        <span style={{ fontSize: '11px', fontWeight: 800, color: opt.color, marginBottom: '1px' }}>
+                          {opt.badge}
+                        </span>
+                        <span style={{ fontSize: '10.5px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2 }}>
+                          {opt.title}
+                        </span>
+                        <span style={{ fontSize: '9px', color: 'var(--text-secondary)', marginTop: '2px', lineHeight: 1.25 }}>
+                          {opt.desc}
+                        </span>
+                      </button>
+                    ))}
                   </div>
                 </motion.div>
               )}
@@ -1594,7 +1767,7 @@ export default function ChatBot() {
               <p className="chatbot-suggestions-label">⚡ Quick questions</p>
               <div className="chatbot-suggestions-scroll-wrap">
                 <div className="chatbot-suggestions">
-                  {SUGGESTED_QUESTIONS.map(q => (
+                  {(activePersonaObj.questions || SUGGESTED_QUESTIONS).map(q => (
                     <button
                       key={q}
                       className="suggestion-chip"

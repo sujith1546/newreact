@@ -11,7 +11,6 @@ import {
   SEOHelmet,
   AnnouncementBanner,
   SplashScreen,
-  MaintenanceGate
 } from './components';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -185,23 +184,19 @@ function AppContent() {
       <SplashScreen isReady={appReady} />
       
       {showContent && (
-        <>
-          <AnnouncementBanner />
-          <IslandProvider>
-            <DynamicIsland />
-            <DevToolsDetector />
-            <BrowserRouter>
+        <IslandProvider>
+          <BrowserRouter>
+            <SiteDisabledGate>
+              <AnnouncementBanner />
+              <DynamicIsland />
+              <DevToolsDetector />
               <PWAInstallPrompt />
               <Suspense fallback={<Loader />}>
-                <SiteDisabledGate>
-                  <MaintenanceGate>
-                    <AnimatedRoutes />
-                  </MaintenanceGate>
-                </SiteDisabledGate>
+                <AnimatedRoutes />
               </Suspense>
-            </BrowserRouter>
-          </IslandProvider>
-        </>
+            </SiteDisabledGate>
+          </BrowserRouter>
+        </IslandProvider>
       )}
     </MotionConfig>
   );

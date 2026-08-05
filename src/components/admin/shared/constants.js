@@ -6,6 +6,12 @@ export const NAV_GROUPS = [
     ]
   },
   {
+    label: "Preview",
+    items: [
+      { key: "preview", label: "Portfolio Preview", icon: "ti-eye", color: "#8B5CF6" },
+    ]
+  },
+  {
     label: "Inbox",
     items: [
       { key: "messages", label: "Messages", icon: "ti-message-circle", color: "#6366F1" },

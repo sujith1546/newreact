@@ -295,16 +295,19 @@ export default function HomePanel() {
 
       {/* Stats Grid */}
       <div className="pcms-stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', marginBottom: 24 }}>
-        {statCards.map((card, i) => (
-          <motion.div
-            key={card.key}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: i * 0.06 }}
-          >
-            <StatCard {...card} loading={stats.loading} />
-          </motion.div>
-        ))}
+        {statCards.map((card, i) => {
+          const { key, ...cardProps } = card;
+          return (
+            <motion.div
+              key={key}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: i * 0.06 }}
+            >
+              <StatCard {...cardProps} loading={stats.loading} />
+            </motion.div>
+          );
+        })}
       </div>
 
       {/* Bottom Grid */}

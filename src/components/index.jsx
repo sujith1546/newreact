@@ -11,7 +11,6 @@ export { default as ParticleCanvas } from './layout/ParticleCanvas';
 export { default as SplashScreen } from './layout/SplashScreen';
 export { default as SEOHelmet } from './layout/SEOHelmet';
 export { default as DynamicIsland } from './layout/DynamicIsland';
-export { default as StatsRow } from './ui/StatsRow';
 
 // 2. Interactive Widgets & Overlays
 export { default as ChatBot } from './widgets/ChatBot';

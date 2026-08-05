@@ -99,8 +99,6 @@ const mobilePageVariants = {
   exit: { opacity: 0 },
 };
 
-let hasHandledInitialRefresh = false;
-
 export default function PortfolioLayout() {
   const { data: dbSettings } = useRealtimeData('site_settings', { single: true, filter: { column: 'id', value: 1 } });
   const { getSectionOrder } = usePersona();
@@ -133,15 +131,23 @@ export default function PortfolioLayout() {
   const navTimerRef = useRef(null);
   const [scrollProgress, setScrollProgress] = useState(0);
 
-  // Cursor glow effect (desktop only)
+  // Cursor glow effect (desktop only with rAF throttling)
   useEffect(() => {
     if (isMobile) return;
+    let rafId = null;
     const handleMouseMove = (e) => {
-      document.documentElement.style.setProperty('--cursor-x', `${e.clientX}px`);
-      document.documentElement.style.setProperty('--cursor-y', `${e.clientY}px`);
+      if (rafId) return;
+      rafId = requestAnimationFrame(() => {
+        document.documentElement.style.setProperty('--cursor-x', `${e.clientX}px`);
+        document.documentElement.style.setProperty('--cursor-y', `${e.clientY}px`);
+        rafId = null;
+      });
     };
     window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
   }, [isMobile]);
 
   // Scroll progress
@@ -161,19 +167,6 @@ export default function PortfolioLayout() {
     const onResize = () => setIsMobile(window.innerWidth <= 900);
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
-  }, []);
-
-  // Intelligently redirect to home page ONLY on full browser refresh (F5/Reload)
-  useEffect(() => {
-    if (!hasHandledInitialRefresh) {
-      hasHandledInitialRefresh = true;
-      const navEntry = performance.getEntriesByType?.('navigation')?.[0];
-      const isReload = navEntry?.type === 'reload';
-
-      if (isReload && location.pathname !== '/' && location.pathname !== '/home') {
-        navigate('/home', { replace: true });
-      }
-    }
   }, []);
 
   useEffect(() => {
