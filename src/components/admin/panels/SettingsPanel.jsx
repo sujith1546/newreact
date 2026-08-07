@@ -9,12 +9,13 @@ import {
   Activity, BookOpen, Star, Bot, BarChart2, Trash2, RotateCcw,
   Eye, EyeOff, Clock, Server, Wifi, Download, ChevronDown, ChevronUp,
   Info, Shield, CheckCircle2, XCircle, TrendingUp, Users, MessageCircle,
-  Cpu, Terminal, User, Pen
+  Cpu, Terminal, User, Pen, ChevronRight
 } from 'lucide-react';
 import { FaGithub, FaLinkedin, FaTwitter } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PremiumToggle, PremiumInput } from '../shared/components';
 import { useTheme } from '../../../context/ThemeContext';
+import BottomSheet from '../mobile/BottomSheet';
 
 /* ──────────────────────────────────────────────────────────────
    CONFIG
@@ -33,6 +34,42 @@ const TABS = [
   { id: 'webhooks_api',  icon: Key,           label: 'Webhooks & Vault',      desc: 'Deploy hooks & API keys' },
   { id: 'audit',         icon: Terminal,      label: 'Audit Log',             desc: 'Admin action history' },
   { id: 'danger',        icon: AlertTriangle, label: 'Danger Zone',           desc: 'Irreversible operations' },
+];
+
+const SETTING_GROUPS = [
+  {
+    groupLabel: 'System & Modules',
+    items: [
+      { id: 'toggles', icon: Layers, label: 'Feature Flags', desc: 'Enable or disable site modules', color: '#6366F1' },
+      { id: 'status_avail', icon: Zap, label: 'Status & Availability', desc: 'Project status & hiring info', color: '#10B981' },
+      { id: 'banner', icon: Bell, label: 'Announcement', desc: 'Global site-wide banner', color: '#F59E0B' },
+    ],
+  },
+  {
+    groupLabel: 'Branding & Discovery',
+    items: [
+      { id: 'theme', icon: Palette, label: 'Theme & Branding', desc: 'Accent color & identity', color: '#8B5CF6' },
+      { id: 'seo', icon: Globe, label: 'SEO & Discovery', desc: 'Meta tags & social sharing', color: '#06B6D4' },
+      { id: 'links', icon: Link, label: 'Links & Assets', desc: 'Social links & resume PDF', color: '#EC4899' },
+    ],
+  },
+  {
+    groupLabel: 'Performance & Security',
+    items: [
+      { id: 'performance', icon: Activity, label: 'Performance', desc: 'Analytics, rate limits & cache', color: '#3B82F6' },
+      { id: 'notifications', icon: Mail, label: 'Notifications', desc: 'Email & alert preferences', color: '#F59E0B' },
+      { id: 'security_lock', icon: Lock, label: 'Security & Lock', desc: 'Maintenance & lockdown modes', color: '#EF4444' },
+    ],
+  },
+  {
+    groupLabel: 'Advanced & Maintenance',
+    items: [
+      { id: 'backup', icon: Database, label: 'Backup & Restore', desc: 'Export & restore CMS data', color: '#10B981' },
+      { id: 'webhooks_api', icon: Key, label: 'Webhooks & Vault', desc: 'Deploy hooks & API keys', color: '#8B5CF6' },
+      { id: 'audit', icon: Terminal, label: 'Audit Log', desc: 'Admin action history', color: '#64748B' },
+      { id: 'danger', icon: AlertTriangle, label: 'Danger Zone', desc: 'Irreversible operations', color: '#EF4444' },
+    ],
+  },
 ];
 
 const ACCENT_OPTIONS = [
@@ -101,7 +138,7 @@ const Field = ({ label, children, hint, hintColor }) => (
 
 /** Two-column grid */
 const Grid2 = ({ children }) => (
-  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>{children}</div>
+  <div className="pcms-grid-2col" style={{ gap: 12 }}>{children}</div>
 );
 
 /** Status badge pill */
@@ -135,18 +172,21 @@ const AuditRow = ({ row, isLast }) => {
     : '#F59E0B';
   return (
     <div style={{
-      display: 'grid', gridTemplateColumns: '130px 1fr 1fr 70px',
-      gap: 10, padding: '9px 14px', alignItems: 'center',
+      display: 'flex', flexWrap: 'wrap', gap: 8, padding: '10px 14px', alignItems: 'center', justifyContent: 'space-between',
       borderBottom: isLast ? 'none' : '1px solid var(--pcms-line-soft)',
     }}>
-      <span style={{ fontFamily: 'monospace', fontSize: 10.5, color: 'var(--pcms-muted-2)' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0, flex: 1 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <span style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: 700, color }}>{row.action}</span>
+          <Pill color={color}>{row.action?.split('_')[0] || 'SYS'}</Pill>
+        </div>
+        <span style={{ fontSize: 12, color: 'var(--pcms-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {row.entity_type}{row.entity_id ? ` · ${row.entity_id}` : ''}
+        </span>
+      </div>
+      <span style={{ fontFamily: 'monospace', fontSize: 10.5, color: 'var(--pcms-muted-2)', flexShrink: 0 }}>
         {t.toLocaleDateString()} {t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
       </span>
-      <span style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: 700, color }}>{row.action}</span>
-      <span style={{ fontSize: 12, color: 'var(--pcms-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-        {row.entity_type}{row.entity_id ? ` · ${row.entity_id}` : ''}
-      </span>
-      <Pill color={color}>{row.action?.split('_')[0] || 'SYS'}</Pill>
     </div>
   );
 };
@@ -154,11 +194,34 @@ const AuditRow = ({ row, isLast }) => {
 /* ──────────────────────────────────────────────────────────────
    MAIN PANEL
 ────────────────────────────────────────────────────────────── */
+const DEFAULT_SETTINGS = {
+  id: 1,
+  feature_experience: true,
+  feature_certifications: true,
+  feature_blog: true,
+  feature_testimonials: true,
+  feature_chatbot: true,
+  feature_updates: true,
+  feature_contact: true,
+  is_available_for_hire: true,
+  current_project: 'AI Portfolio Engine',
+  current_project_status: 'In Progress',
+  current_project_pct: 85,
+  availability_status: 'Available',
+  preferred_role: 'Full-Stack & AI Engineer',
+  notice_period: 'Immediate',
+  announcement_enabled: false,
+  announcement_text: 'Open for opportunities',
+  seo_title: 'Sujith Thota | Portfolio',
+  seo_description: 'Full-stack & AI Engineer Portfolio',
+  accent_color: 'blue',
+};
+
 export default function SettingsPanel() {
   const { data: dbSettings, setData: setDbSettings, loading } = useRealtimeData(
     'site_settings', { single: true, filter: { column: 'id', value: 1 } }
   );
-  const [settings, setSettings] = useState(null);
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [saveStatus, setSaveStatus]       = useState('saved'); // 'saved' | 'saving' | 'error'
   const [uploadingResume, setUploadingResume]   = useState(false);
   const [exportingBackup, setExportingBackup]   = useState(false);
@@ -179,15 +242,17 @@ export default function SettingsPanel() {
 
   /* bootstrap */
   useEffect(() => {
-    if (dbSettings && !settings) {
-      setSettings({
+    if (dbSettings) {
+      setSettings(prev => ({
+        ...DEFAULT_SETTINGS,
         ...dbSettings,
+        ...prev,
         site_disabled: dbSettings.site_disabled ?? false,
         site_disabled_reason: dbSettings.site_disabled_reason || 'Access disabled by administrator.',
         site_disabled_at: dbSettings.site_disabled_at || null,
-      });
+      }));
     }
-  }, [dbSettings, settings]);
+  }, [dbSettings]);
 
   /* fetch audit when tab opens */
   useEffect(() => {
@@ -319,7 +384,16 @@ export default function SettingsPanel() {
     setDangerConfirm(null); setDangerInput('');
   };
 
-  if (loading || !settings) return (
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth <= 768 : false);
+  const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  if (!settings) return (
     <div style={{ padding: 60, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
       <Loader2 className="spin" size={22} color="var(--pcms-accent)" />
     </div>
@@ -334,110 +408,29 @@ export default function SettingsPanel() {
     error:  { color: '#EF4444', icon: <XCircle size={12} />,         text: 'Error' },
   }[saveStatus];
 
-  return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', flexDirection: 'column', gap: 14, height: '100%', minHeight: 0 }}>
-
-      {/* ── Top bar ──────────────────────────────────────────── */}
-      <div style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        background: 'var(--pcms-panel)', border: '1px solid var(--pcms-line)',
-        borderRadius: 10, padding: '13px 18px',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div className="pcms-topbar-icon"><Settings size={16} /></div>
-          <div>
-            <h2 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--pcms-text)', fontFamily: "'Space Grotesk', sans-serif" }}>
-              Control Center
-            </h2>
-            <p style={{ margin: 0, fontSize: 11, color: 'var(--pcms-muted)', marginTop: 1 }}>
-              Site-wide configuration — changes apply instantly.
-            </p>
+  const renderTabContent = () => (
+    <>
+      {/* ─────────────── FEATURE FLAGS ─────────────── */}
+      {activeTab === 'toggles' && (<>
+        <Card>
+          <CardHead icon={Layers} label="Portfolio Modules" sub="Toggle entire sections visible to public visitors." />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <PremiumToggle icon={Briefcase} color="#6366F1" label="Experience & Timeline" description="Career history, roles & achievements." checked={settings?.feature_experience ?? true} onChange={v => toggle('feature_experience', v)} />
+            <PremiumToggle icon={Award}     color="#10B981" label="Certifications & Awards" description="Credentials, badges & recognitions." checked={settings?.feature_certifications ?? true} onChange={v => toggle('feature_certifications', v)} />
+            <PremiumToggle icon={BookOpen}  color="#06B6D4" label="Blog & Articles" description="Blog listing page and individual posts." checked={settings?.feature_blog ?? true} onChange={v => toggle('feature_blog', v)} />
+            <PremiumToggle icon={Star}      color="#F59E0B" label="Testimonials" description="Recommendations from clients & peers." checked={settings?.feature_testimonials ?? true} onChange={v => toggle('feature_testimonials', v)} />
+            <PremiumToggle icon={Activity}  color="#8B5CF6" label="Updates Feed" description="Live activity & project updates stream." checked={settings?.feature_updates ?? true} onChange={v => toggle('feature_updates', v)} />
           </div>
-        </div>
-        <Pill color={statusCfg.color}>{statusCfg.icon}{statusCfg.text}</Pill>
-      </div>
-
-      {/* ── Two-column shell ─────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '196px 1fr', gap: 14, flex: 1, minHeight: 0, alignItems: 'stretch' }}>
-
-        {/* ── Left nav ── */}
-        <div style={{
-          background: 'var(--pcms-panel)', border: '1px solid var(--pcms-line)',
-          borderRadius: 10, padding: '8px 6px', display: 'flex', flexDirection: 'column', gap: 1,
-          position: 'sticky', top: 0, overflowY: 'auto', scrollbarWidth: 'none',
-          maxHeight: 'calc(100vh / 0.66 - 58px - 40px - 78px)',
-        }}>
-          <p style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--pcms-muted-2)', padding: '4px 8px 6px', margin: 0 }}>Settings</p>
-          {TABS.map(tab => {
-            const Icon = tab.icon;
-            const active = activeTab === tab.id;
-            const isDanger = tab.id === 'danger';
-            const baseColor = isDanger ? '#EF4444' : 'var(--pcms-accent)';
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  padding: '8px 10px', borderRadius: 8, fontSize: 12, fontWeight: active ? 600 : 400,
-                  background: active ? (isDanger ? '#EF444414' : 'var(--pcms-accent-dim)') : 'transparent',
-                  color: active ? baseColor : isDanger ? '#EF4444aa' : 'var(--pcms-muted)',
-                  border: 'none', cursor: 'pointer', textAlign: 'left', width: '100%',
-                  transition: 'all 0.12s',
-                }}
-              >
-                <Icon size={13} style={{ flexShrink: 0, opacity: active ? 1 : 0.75 }} />
-                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tab.label}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* ── Right content ── */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 5 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.13 }}
-            style={{
-              background: 'var(--pcms-panel)', border: '1px solid var(--pcms-line)',
-              borderRadius: 10, padding: '18px 20px',
-              display: 'flex', flexDirection: 'column', gap: 14,
-              overflowY: 'auto', scrollbarWidth: 'thin',
-              maxHeight: 'calc(100vh / 0.66 - 58px - 40px - 78px)',
-            }}
-          >
-            {/* Section heading */}
-            <div style={{ paddingBottom: 14, borderBottom: '1px solid var(--pcms-line-soft)' }}>
-              <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--pcms-text)', fontFamily: "'Space Grotesk', sans-serif" }}>
-                {tabMeta?.label}
-              </h3>
-              <p style={{ margin: '3px 0 0', fontSize: 11.5, color: 'var(--pcms-muted)' }}>{tabMeta?.desc}</p>
-            </div>
-
-            {/* ─────────────── FEATURE FLAGS ─────────────── */}
-            {activeTab === 'toggles' && (<>
-              <Card>
-                <CardHead icon={Layers} label="Portfolio Modules" sub="Toggle entire sections visible to public visitors." />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <PremiumToggle icon={Briefcase} color="#6366F1" label="Experience & Timeline" description="Career history, roles & achievements." checked={settings?.feature_experience ?? true} onChange={v => toggle('feature_experience', v)} />
-                  <PremiumToggle icon={Award}     color="#10B981" label="Certifications & Awards" description="Credentials, badges & recognitions." checked={settings?.feature_certifications ?? true} onChange={v => toggle('feature_certifications', v)} />
-                  <PremiumToggle icon={BookOpen}  color="#06B6D4" label="Blog & Articles" description="Blog listing page and individual posts." checked={settings?.feature_blog ?? true} onChange={v => toggle('feature_blog', v)} />
-                  <PremiumToggle icon={Star}      color="#F59E0B" label="Testimonials" description="Recommendations from clients & peers." checked={settings?.feature_testimonials ?? true} onChange={v => toggle('feature_testimonials', v)} />
-                  <PremiumToggle icon={Activity}  color="#8B5CF6" label="Updates Feed" description="Live activity & project updates stream." checked={settings?.feature_updates ?? true} onChange={v => toggle('feature_updates', v)} />
-                </div>
-              </Card>
-              <Card>
-                <CardHead icon={Bot} label="AI & Engagement" sub="Interactive and AI-powered features." color="#06B6D4" />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <PremiumToggle icon={Bot}           color="#06B6D4" label="AI Chat Assistant" description="RAG-powered portfolio chatbot widget." checked={settings?.feature_chatbot ?? true} onChange={v => toggle('feature_chatbot', v)} />
-                  <PremiumToggle icon={Sparkles}      color="#8B5CF6" label="Available for Hire Badge" description="'Open for Opportunities' pill in hero." checked={settings?.is_available_for_hire ?? false} onChange={v => toggle('is_available_for_hire', v)} />
-                  <PremiumToggle icon={MessageCircle} color="#EC4899" label="Contact Form" description="Allow visitors to send you messages." checked={settings?.feature_contact ?? true} onChange={v => toggle('feature_contact', v)} />
-                </div>
-              </Card>
-            </>)}
+        </Card>
+        <Card>
+          <CardHead icon={Bot} label="AI & Engagement" sub="Interactive and AI-powered features." color="#06B6D4" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <PremiumToggle icon={Bot}           color="#06B6D4" label="AI Chat Assistant" description="RAG-powered portfolio chatbot widget." checked={settings?.feature_chatbot ?? true} onChange={v => toggle('feature_chatbot', v)} />
+            <PremiumToggle icon={Sparkles}      color="#8B5CF6" label="Available for Hire Badge" description="'Open for Opportunities' pill in hero." checked={settings?.is_available_for_hire ?? false} onChange={v => toggle('is_available_for_hire', v)} />
+            <PremiumToggle icon={MessageCircle} color="#EC4899" label="Contact Form" description="Allow visitors to send you messages." checked={settings?.feature_contact ?? true} onChange={v => toggle('feature_contact', v)} />
+          </div>
+        </Card>
+      </>)}
 
             {/* ─────────────── STATUS & AVAILABILITY ─────────────── */}
             {activeTab === 'status_avail' && (<>
@@ -909,7 +902,179 @@ export default function SettingsPanel() {
                 })}
               </div>
             )}
+    </>
+  );
 
+  if (isMobile) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {/* Mobile Header Card */}
+        <div style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          background: 'var(--pcms-panel)', border: '1px solid var(--pcms-line)',
+          borderRadius: 12, padding: '14px 16px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div className="pcms-topbar-icon"><Settings size={18} /></div>
+            <div>
+              <h2 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--pcms-text)', fontFamily: "'Space Grotesk', sans-serif" }}>
+                Control Center
+              </h2>
+              <p style={{ margin: '2px 0 0', fontSize: 11, color: 'var(--pcms-muted)' }}>
+                Tap any category to open editor sheet
+              </p>
+            </div>
+          </div>
+          <Pill color={statusCfg.color}>{statusCfg.icon}{statusCfg.text}</Pill>
+        </div>
+
+        {/* Grouped Apple-Style Index List */}
+        {SETTING_GROUPS.map((grp) => (
+          <div key={grp.groupLabel} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--pcms-muted-2)', paddingLeft: 4 }}>
+              {grp.groupLabel}
+            </div>
+            <div style={{
+              background: 'var(--pcms-panel)', border: '1px solid var(--pcms-line)',
+              borderRadius: 12, overflow: 'hidden', display: 'flex', flexDirection: 'column',
+            }}>
+              {grp.items.map((item, idx) => {
+                const Icon = item.icon;
+                const isLast = idx === grp.items.length - 1;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setActiveTab(item.id);
+                      setIsMobileSheetOpen(true);
+                    }}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '12px 14px', background: 'transparent', border: 'none',
+                      borderBottom: isLast ? 'none' : '1px solid var(--pcms-line-soft)',
+                      cursor: 'pointer', textAlign: 'left', width: '100%',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0, flex: 1 }}>
+                      <div style={{
+                        width: 34, height: 34, borderRadius: 10, flexShrink: 0,
+                        background: `${item.color}18`, color: item.color,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        <Icon size={17} />
+                      </div>
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--pcms-text)' }}>{item.label}</div>
+                        <div style={{ fontSize: 11, color: 'var(--pcms-muted)', marginTop: 1, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{item.desc}</div>
+                      </div>
+                    </div>
+                    <ChevronRight size={16} style={{ color: 'var(--pcms-muted-2)', flexShrink: 0, marginLeft: 8 }} />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+
+        {/* Slide-Up Bottom Sheet Modal for active setting */}
+        <BottomSheet
+          isOpen={isMobileSheetOpen}
+          onClose={() => setIsMobileSheetOpen(false)}
+          title={tabMeta?.label}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14, paddingBottom: 24 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, paddingBottom: 10, borderBottom: '1px solid var(--pcms-line-soft)' }}>
+              <p style={{ margin: 0, fontSize: 12, color: 'var(--pcms-muted)' }}>{tabMeta?.desc}</p>
+              <Pill color={statusCfg.color}>{statusCfg.icon}{statusCfg.text}</Pill>
+            </div>
+            {renderTabContent()}
+          </div>
+        </BottomSheet>
+      </div>
+    );
+  }
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', flexDirection: 'column', gap: 14, height: '100%', minHeight: 0 }}>
+      {/* ── Top bar ──────────────────────────────────────────── */}
+      <div style={{
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        background: 'var(--pcms-panel)', border: '1px solid var(--pcms-line)',
+        borderRadius: 10, padding: '13px 18px',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div className="pcms-topbar-icon"><Settings size={16} /></div>
+          <div>
+            <h2 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--pcms-text)', fontFamily: "'Space Grotesk', sans-serif" }}>
+              Control Center
+            </h2>
+            <p style={{ margin: 0, fontSize: 11, color: 'var(--pcms-muted)', marginTop: 1 }}>
+              Site-wide configuration — changes apply instantly.
+            </p>
+          </div>
+        </div>
+        <Pill color={statusCfg.color}>{statusCfg.icon}{statusCfg.text}</Pill>
+      </div>
+
+      {/* ── Two-column shell ─────────────────────────────────── */}
+      <div className="pcms-settings-layout">
+        {/* ── Left nav ── */}
+        <div className="pcms-settings-sidebar" style={{
+          background: 'var(--pcms-panel)', border: '1px solid var(--pcms-line)',
+          borderRadius: 10, padding: '8px 6px', display: 'flex', flexDirection: 'column', gap: 1,
+          position: 'sticky', top: 0, overflowY: 'auto', scrollbarWidth: 'none',
+          maxHeight: 'calc(100vh / 0.66 - 58px - 40px - 78px)',
+        }}>
+          <p style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--pcms-muted-2)', padding: '4px 8px 6px', margin: 0 }} className="pcms-settings-side-label">Settings</p>
+          {TABS.map(tab => {
+            const Icon = tab.icon;
+            const active = activeTab === tab.id;
+            const isDanger = tab.id === 'danger';
+            const baseColor = isDanger ? '#EF4444' : 'var(--pcms-accent)';
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '8px 10px', borderRadius: 8, fontSize: 12, fontWeight: active ? 600 : 400,
+                  background: active ? (isDanger ? '#EF444414' : 'var(--pcms-accent-dim)') : 'transparent',
+                  color: active ? baseColor : isDanger ? '#EF4444aa' : 'var(--pcms-muted)',
+                  border: 'none', cursor: 'pointer', textAlign: 'left',
+                  transition: 'all 0.12s',
+                }}
+              >
+                <Icon size={13} style={{ flexShrink: 0, opacity: active ? 1 : 0.75 }} />
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* ── Right content ── */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4 }}
+            transition={{ duration: 0.13 }}
+            className="pcms-settings-content"
+            style={{
+              background: 'var(--pcms-panel)', border: '1px solid var(--pcms-line)',
+              borderRadius: 10, padding: '18px 20px',
+              display: 'flex', flexDirection: 'column', gap: 14,
+              overflowY: 'auto', scrollbarWidth: 'thin',
+              maxHeight: 'calc(100vh / 0.66 - 58px - 40px - 78px)',
+            }}
+          >
+            <div style={{ paddingBottom: 14, borderBottom: '1px solid var(--pcms-line-soft)' }}>
+              <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--pcms-text)', fontFamily: "'Space Grotesk', sans-serif" }}>
+                {tabMeta?.label}
+              </h3>
+              <p style={{ margin: '3px 0 0', fontSize: 11.5, color: 'var(--pcms-muted)' }}>{tabMeta?.desc}</p>
+            </div>
+            {renderTabContent()}
           </motion.div>
         </AnimatePresence>
       </div>

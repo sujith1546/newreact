@@ -74,7 +74,7 @@ export default function MobileShell() {
   };
 
   return (
-    <div className="admin-mobile-shell">
+    <div className="admin-mobile-shell pcms-scope">
       {/* Top Bar */}
       <header className="admin-mobile-topbar">
         <div className="admin-mobile-logo">
