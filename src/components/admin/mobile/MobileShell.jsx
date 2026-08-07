@@ -98,6 +98,17 @@ export default function MobileShell() {
             <Plus size={18} />
           </button>
 
+          {/* Admin Login Button */}
+          <button
+            className="admin-mobile-action-btn login"
+            onClick={() => navigate('/admin/login')}
+            aria-label="Admin Login"
+            title="Admin Login"
+            style={{ background: 'rgba(99,102,241,0.15)', borderColor: 'rgba(99,102,241,0.35)', color: '#6366f1' }}
+          >
+            <ShieldCheck size={18} />
+          </button>
+
           {/* Theme Toggle */}
           <button
             className="admin-mobile-action-btn"
