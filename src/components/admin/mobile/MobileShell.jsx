@@ -159,6 +159,32 @@ export default function MobileShell() {
         />
       </main>
 
+      {/* Floating Action Button (FAB) */}
+      <button
+        onClick={() => setIsQuickActionsOpen(true)}
+        aria-label="Quick Actions"
+        style={{
+          position: 'fixed',
+          bottom: 74,
+          right: 20,
+          zIndex: 8900,
+          width: 50,
+          height: 50,
+          borderRadius: 25,
+          background: 'linear-gradient(135deg, #6366f1, #3b82f6)',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          color: '#ffffff',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 8px 24px rgba(99, 102, 241, 0.5)',
+          cursor: 'pointer',
+          transition: 'all 0.2s ease',
+        }}
+      >
+        <Plus size={24} />
+      </button>
+
       {/* Bottom Navigation */}
       <MobileNav
         activeCategory={activeCategory}
