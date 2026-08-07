@@ -424,7 +424,7 @@ export default function ProjectsPanel() {
               </div>
 
               {/* URLs */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+              <div className="pcms-grid-2col">
                 <div>
                   <label style={labelStyle}>GitHub URL</label>
                   <input

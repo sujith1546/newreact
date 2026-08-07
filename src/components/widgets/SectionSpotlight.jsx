@@ -280,8 +280,14 @@ function resolveTargetElement(sectionId, rawKeyword) {
     scopeEl = document.querySelector('.main-content') || document.querySelector('main') || document.body;
   }
 
-  // If keyword is generic (e.g. user just said "show skills"), highlight scopeEl
+  // If keyword is generic (e.g. user just said "show skills"), pick the main card/grid inside scopeEl
   if (!cleanKw) {
+    if (scopeEl) {
+      const primaryChild = scopeEl.querySelector('.skills-grid, .projects-grid, .edu-grid, .cert-grid, .about-container, .pf-stage, .hero-info, .dashboard-profile-card, .project-card, .skill-category-card, .edu-flip-card, .sk-cat-card');
+      if (primaryChild) return primaryChild;
+      const firstCard = scopeEl.querySelector('> div, > section, article, .card');
+      if (firstCard) return firstCard;
+    }
     return scopeEl;
   }
 
@@ -310,6 +316,11 @@ function buildCSS(uid, radius) {
       50%  { box-shadow: 0 0 0 14px rgba(139,92,246,0.08), 0 0 64px 26px rgba(139,92,246,0.15); outline-color: rgba(99,102,241,0.70); }
       100% { box-shadow: 0 0 0 0    rgba(139,92,246,0.75), 0 0 36px 10px rgba(139,92,246,0.35); outline-color: rgba(139,92,246,1);    }
     }
+    @keyframes purpleSpotlightPulseOverlay {
+      0%   { box-shadow: 0 0 0 4px rgba(139,92,246,0.4), 0 0 28px 10px rgba(139,92,246,0.65), inset 0 0 20px rgba(139,92,246,0.2); border-color: rgba(139,92,246,0.95); }
+      50%  { box-shadow: 0 0 0 8px rgba(168,85,247,0.25), 0 0 45px 18px rgba(168,85,247,0.85), inset 0 0 30px rgba(168,85,247,0.35); border-color: rgba(192,132,252,1); }
+      100% { box-shadow: 0 0 0 4px rgba(139,92,246,0.4), 0 0 28px 10px rgba(139,92,246,0.65), inset 0 0 20px rgba(139,92,246,0.2); border-color: rgba(139,92,246,0.95); }
+    }
     .ai-spotlight-target {
       outline:        3px solid rgba(139,92,246,0.95) !important;
       outline-offset: 6px !important;
@@ -323,7 +334,7 @@ function buildCSS(uid, radius) {
   `;
 }
 
-function injectHighlight(sectionId, keyword) {
+function injectHighlight(sectionId, keyword, onTargetFound) {
   removeHighlight();
   if (sectionId === 'resume') return;
 
@@ -341,6 +352,7 @@ function injectHighlight(sectionId, keyword) {
       document.head.appendChild(styleEl);
 
       el.classList.add('ai-spotlight-target');
+      onTargetFound?.(el);
 
       try {
         el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
@@ -374,22 +386,61 @@ function removeHighlight() {
 export default function SectionSpotlight({ section, keyword, duration = 6, onDismiss }) {
   const [countdown, setCountdown] = useState(duration);
   const [paused, setPaused] = useState(false);
+  const [targetBox, setTargetBox] = useState(null);
+  const [targetRadius, setTargetRadius] = useState('16px');
   const isResume = section === 'resume';
   const label = SECTION_LABELS[section] || section || '';
 
   useEffect(() => {
+    let animFrame = null;
+
+    const updateBox = () => {
+      if (TARGET_EL) {
+        const rect = TARGET_EL.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          const pad = 8;
+          setTargetBox({
+            top: rect.top - pad,
+            left: rect.left - pad,
+            width: rect.width + pad * 2,
+            height: rect.height + pad * 2,
+          });
+          setTargetRadius(getRadius(TARGET_EL));
+        }
+      }
+      animFrame = requestAnimationFrame(updateBox);
+    };
+
     if (section) {
       setCountdown(duration);
       setPaused(false);
-      // Wait for page transition & DOM layout settling
-      const t1 = setTimeout(() => injectHighlight(section, keyword), 200);
-      return () => { clearTimeout(t1); };
+      const t1 = setTimeout(() => {
+        injectHighlight(section, keyword, (el) => {
+          if (el) {
+            updateBox();
+          }
+        });
+      }, 200);
+
+      window.addEventListener('scroll', updateBox, { capture: true, passive: true });
+      window.addEventListener('resize', updateBox, { passive: true });
+
+      return () => {
+        clearTimeout(t1);
+        if (animFrame) cancelAnimationFrame(animFrame);
+        window.removeEventListener('scroll', updateBox, { capture: true });
+        window.removeEventListener('resize', updateBox);
+      };
     } else {
       removeHighlight();
+      setTargetBox(null);
     }
   }, [section, keyword, duration]);
 
-  useEffect(() => () => removeHighlight(), []);
+  useEffect(() => () => {
+    removeHighlight();
+    setTargetBox(null);
+  }, []);
 
   // Auto-dismiss countdown (pauses on hover or focus)
   useEffect(() => {
@@ -411,6 +462,7 @@ export default function SectionSpotlight({ section, keyword, duration = 6, onDis
 
   const handleDismiss = () => {
     removeHighlight();
+    setTargetBox(null);
     onDismiss?.();
   };
 
@@ -419,9 +471,6 @@ export default function SectionSpotlight({ section, keyword, duration = 6, onDis
   const badgeLabel = isSpecific ? `${label} › ${cleanKw}` : label;
   const eyebrow = isResume ? 'AI Downloading' : (isSpecific ? 'AI is showing you' : 'AI Highlighting');
   const accentColor = isResume ? '#10b981' : '#8b5cf6';
-  const accentGrad  = isResume
-    ? 'linear-gradient(135deg,#10b981,#059669)'
-    : 'linear-gradient(135deg,#8b5cf6,#6366f1)';
 
   // SVG Progress Ring calculations
   const r = 11;
@@ -432,119 +481,144 @@ export default function SectionSpotlight({ section, keyword, duration = 6, onDis
   return (
     <AnimatePresence>
       {section && (
-        <motion.div
-          key={`spotlight-toast-${section}-${keyword}`}
-          initial={{ opacity: 0, y: -56, scale: 0.84 }}
-          animate={{ opacity: 1,  y: 0,   scale: 1    }}
-          exit={{    opacity: 0,  y: -44,  scale: 0.9  }}
-          transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
-          role="status"
-          aria-live="polite"
-          onMouseEnter={() => setPaused(true)}
-          onMouseLeave={() => setPaused(false)}
-          onFocus={() => setPaused(true)}
-          onBlur={() => setPaused(false)}
-          style={{
-            position: 'fixed', top: 14, left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 9500, pointerEvents: 'auto',
-          }}
-        >
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 10,
-            background: 'linear-gradient(135deg, rgba(10,6,24,0.97) 0%, rgba(22,14,44,0.97) 100%)',
-            border: `1px solid ${accentColor}55`,
-            borderRadius: 100,
-            padding: '8px 14px 8px 10px',
-            boxShadow: `0 8px 32px rgba(0,0,0,0.55), 0 0 0 1px ${accentColor}18`,
-            backdropFilter: 'blur(var(--glass-blur, 12px))', WebkitbackdropFilter: 'blur(var(--glass-blur, 12px))',
-            userSelect: 'none', maxWidth: '92vw',
-          }}>
-            {/* SVG Countdown Ring */}
-            <div style={{ position: 'relative', width: 28, height: 28, flexShrink: 0 }}>
-              <svg width="28" height="28" viewBox="0 0 28 28">
-                <defs>
-                  <linearGradient id="ai-ring-gradient" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stopColor={isResume ? '#10b981' : '#8b5cf6'} />
-                    <stop offset="100%" stopColor={isResume ? '#34d399' : '#d4537e'} />
-                  </linearGradient>
-                </defs>
-                <circle
-                  cx="14" cy="14" r={r}
-                  fill="none"
-                  stroke="rgba(255,255,255,0.1)"
-                  strokeWidth="2.5"
-                />
-                <circle
-                  cx="14" cy="14" r={r}
-                  fill="none"
-                  stroke="url(#ai-ring-gradient)"
-                  strokeWidth="2.5"
-                  strokeDasharray={circumference}
-                  strokeDashoffset={dashOffset}
-                  strokeLinecap="round"
-                  transform="rotate(-90 14 14)"
-                  style={{ transition: 'stroke-dashoffset 0.8s linear' }}
-                />
-                <text
-                  x="14" y="14"
-                  textAnchor="middle"
-                  dominantBaseline="central"
-                  fontSize="9.5"
-                  fill="#ffffff"
-                  fontWeight="700"
-                >
-                  {countdown}
-                </text>
-              </svg>
-            </div>
-
-            {/* Label Block */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}>
-              <span style={{
-                fontSize: 9.5, fontWeight: 700, color: `${accentColor}cc`,
-                textTransform: 'uppercase', letterSpacing: '0.8px', whiteSpace: 'nowrap',
-              }}>
-                {eyebrow} {paused && '(Paused)'}
-              </span>
-              <span style={{
-                fontSize: 13, fontWeight: 700, color: '#fff',
-                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 220,
-                textTransform: 'capitalize',
-              }}>
-                {badgeLabel}
-              </span>
-            </div>
-            {/* Vertical Divider */}
-            <div style={{ width: 1, height: 18, background: 'rgba(255,255,255,0.12)', margin: '0 2px' }} />
-
-            {/* Dismiss Close Button */}
-            <button
-              onClick={handleDismiss}
-              aria-label="Dismiss AI highlight"
-              title="Dismiss AI highlight"
+        <>
+          {/* High-Visibility Floating Purple Spotlight Box Overlay */}
+          {!isResume && targetBox && (
+            <motion.div
+              key={`spotlight-box-${section}-${keyword}`}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.25 }}
               style={{
-                background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)',
-                borderRadius: '50%', width: 26, height: 26, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'rgba(255,255,255,0.6)', flexShrink: 0,
-                transition: 'all 0.18s ease', padding: 0,
+                position: 'fixed',
+                top: `${targetBox.top}px`,
+                left: `${targetBox.left}px`,
+                width: `${targetBox.width}px`,
+                height: `${targetBox.height}px`,
+                borderRadius: targetRadius,
+                pointerEvents: 'none',
+                zIndex: 9200,
+                border: '3px solid rgba(139,92,246,0.95)',
+                animation: 'purpleSpotlightPulseOverlay 2s ease-in-out infinite',
               }}
-              onMouseEnter={e => {
-                e.currentTarget.style.background = 'rgba(239,68,68,0.22)';
-                e.currentTarget.style.color = '#f87171';
-                e.currentTarget.style.borderColor = 'rgba(239,68,68,0.35)';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.background = 'rgba(255,255,255,0.07)';
-                e.currentTarget.style.color = 'rgba(255,255,255,0.6)';
-                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
-              }}
-            >
-              <X size={12} />
-            </button>
-          </div>
-        </motion.div>
+            />
+          )}
+
+          <motion.div
+            key={`spotlight-toast-${section}-${keyword}`}
+            initial={{ opacity: 0, y: -56, scale: 0.84 }}
+            animate={{ opacity: 1,  y: 0,   scale: 1    }}
+            exit={{    opacity: 0,  y: -44,  scale: 0.9  }}
+            transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
+            role="status"
+            aria-live="polite"
+            onMouseEnter={() => setPaused(true)}
+            onMouseLeave={() => setPaused(false)}
+            onFocus={() => setPaused(true)}
+            onBlur={() => setPaused(false)}
+            style={{
+              position: 'fixed', top: 14, left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 9500, pointerEvents: 'auto',
+            }}
+          >
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              background: 'linear-gradient(135deg, rgba(10,6,24,0.97) 0%, rgba(22,14,44,0.97) 100%)',
+              border: `1px solid ${accentColor}55`,
+              borderRadius: 100,
+              padding: '8px 14px 8px 10px',
+              boxShadow: `0 8px 32px rgba(0,0,0,0.55), 0 0 0 1px ${accentColor}18`,
+              backdropFilter: 'blur(var(--glass-blur, 12px))', WebkitbackdropFilter: 'blur(var(--glass-blur, 12px))',
+              userSelect: 'none', maxWidth: '92vw',
+            }}>
+              {/* SVG Countdown Ring */}
+              <div style={{ position: 'relative', width: 28, height: 28, flexShrink: 0 }}>
+                <svg width="28" height="28" viewBox="0 0 28 28">
+                  <defs>
+                    <linearGradient id="ai-ring-gradient" x1="0" y1="0" x2="1" y2="1">
+                      <stop offset="0%" stopColor={isResume ? '#10b981' : '#8b5cf6'} />
+                      <stop offset="100%" stopColor={isResume ? '#34d399' : '#d4537e'} />
+                    </linearGradient>
+                  </defs>
+                  <circle
+                    cx="14" cy="14" r={r}
+                    fill="none"
+                    stroke="rgba(255,255,255,0.1)"
+                    strokeWidth="2.5"
+                  />
+                  <circle
+                    cx="14" cy="14" r={r}
+                    fill="none"
+                    stroke="url(#ai-ring-gradient)"
+                    strokeWidth="2.5"
+                    strokeDasharray={circumference}
+                    strokeDashoffset={dashOffset}
+                    strokeLinecap="round"
+                    transform="rotate(-90 14 14)"
+                    style={{ transition: 'stroke-dashoffset 0.8s linear' }}
+                  />
+                  <text
+                    x="14" y="14"
+                    textAnchor="middle"
+                    dominantBaseline="central"
+                    fontSize="9.5"
+                    fill="#ffffff"
+                    fontWeight="700"
+                  >
+                    {countdown}
+                  </text>
+                </svg>
+              </div>
+
+              {/* Label Block */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 0 }}>
+                <span style={{
+                  fontSize: 9.5, fontWeight: 700, color: `${accentColor}cc`,
+                  textTransform: 'uppercase', letterSpacing: '0.8px', whiteSpace: 'nowrap',
+                }}>
+                  {eyebrow} {paused && '(Paused)'}
+                </span>
+                <span style={{
+                  fontSize: 13, fontWeight: 700, color: '#fff',
+                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 220,
+                  textTransform: 'capitalize',
+                }}>
+                  {badgeLabel}
+                </span>
+              </div>
+              {/* Vertical Divider */}
+              <div style={{ width: 1, height: 18, background: 'rgba(255,255,255,0.12)', margin: '0 2px' }} />
+
+              {/* Dismiss Close Button */}
+              <button
+                onClick={handleDismiss}
+                aria-label="Dismiss AI highlight"
+                title="Dismiss AI highlight"
+                style={{
+                  background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: '50%', width: 26, height: 26, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: 'rgba(255,255,255,0.6)', flexShrink: 0,
+                  transition: 'all 0.18s ease', padding: 0,
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'rgba(239,68,68,0.22)';
+                  e.currentTarget.style.color = '#f87171';
+                  e.currentTarget.style.borderColor = 'rgba(239,68,68,0.35)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.07)';
+                  e.currentTarget.style.color = 'rgba(255,255,255,0.6)';
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+                }}
+              >
+                <X size={12} />
+              </button>
+            </div>
+          </motion.div>
+        </>
       )}
     </AnimatePresence>
   );

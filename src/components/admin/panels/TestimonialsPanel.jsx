@@ -95,7 +95,7 @@ export default function TestimonialsPanel() {
             <h3 style={{ margin: '0 0 20px', fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>
               {editing.id ? '✏️ Edit Testimonial' : '➕ Add New Testimonial'}
             </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+            <div className="pcms-grid-2col" style={{ marginBottom: 16 }}>
               {[
                 ['name', 'Name *', 'Jane Doe'],
                 ['role', 'Role / Title', 'Senior Engineer'],

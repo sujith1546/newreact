@@ -3,23 +3,27 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { useTheme } from '../../../context/ThemeContext';
 import { useDashboardStats } from '../shared/useDashboardStats';
-import { LogOut, Palette, Plus, ShieldCheck, Briefcase, Bolt } from 'lucide-react';
+import { LogOut, Palette, Plus, ShieldCheck, Briefcase, Bolt, Home, Eye, MessageSquare } from 'lucide-react';
 import SwipeableTabs from './SwipeableTabs';
 import MobileNav from './MobileNav';
 import BottomSheet from './BottomSheet';
+import HomeView from './views/HomeView';
 import InboxView from './views/InboxView';
 import ContentView from './views/ContentView';
 import SystemView from './views/SystemView';
 
 const TAB_TO_CATEGORY = {
+  home: 'home',
   messages: 'inbox',
   chats: 'inbox',
   projects: 'content',
+  testimonials: 'content',
   updates: 'content',
   skills: 'content',
   experience: 'content',
   education: 'content',
   certifications: 'content',
+  preview: 'content',
   theme: 'system',
   settings: 'system',
 };
@@ -31,10 +35,11 @@ export default function MobileShell() {
   const { theme, toggleTheme } = useTheme();
   const stats = useDashboardStats();
 
-  const currentTab = tab || 'messages';
-  const activeCategory = TAB_TO_CATEGORY[currentTab] || 'inbox';
+  const currentTab = tab || 'home';
+  const activeCategory = TAB_TO_CATEGORY[currentTab] || 'home';
 
   const [categorySubTabs, setCategorySubTabs] = useState({
+    home: 'home',
     inbox: 'messages',
     content: 'projects',
     system: 'settings',
@@ -44,7 +49,7 @@ export default function MobileShell() {
 
   useEffect(() => {
     if (!tab || !TAB_TO_CATEGORY[tab]) {
-      navigate('/admin/dashboard/messages', { replace: true });
+      navigate('/admin/dashboard/home', { replace: true });
     } else {
       const cat = TAB_TO_CATEGORY[tab];
       setCategorySubTabs((prev) => {
@@ -55,7 +60,7 @@ export default function MobileShell() {
   }, [tab, navigate]);
 
   const handleSelectCategory = (cat) => {
-    const targetTab = categorySubTabs[cat] || (cat === 'inbox' ? 'messages' : cat === 'content' ? 'projects' : 'settings');
+    const targetTab = categorySubTabs[cat] || (cat === 'home' ? 'home' : cat === 'inbox' ? 'messages' : cat === 'content' ? 'projects' : 'settings');
     navigate(`/admin/dashboard/${targetTab}`);
   };
 
@@ -119,6 +124,7 @@ export default function MobileShell() {
           activeCategory={activeCategory}
           onCategoryChange={handleSelectCategory}
           childrenMap={{
+            home: <HomeView />,
             inbox: (
               <InboxView
                 activeSubTab={categorySubTabs.inbox}
@@ -173,6 +179,19 @@ export default function MobileShell() {
             className="admin-quick-action-card"
             onClick={() => {
               setIsQuickActionsOpen(false);
+              navigate('/admin/dashboard/messages');
+            }}
+          >
+            <div className="quick-action-icon" style={{ background: '#6366f120', color: '#6366f1' }}>
+              <MessageSquare size={22} />
+            </div>
+            <span>Messages</span>
+          </button>
+
+          <button
+            className="admin-quick-action-card"
+            onClick={() => {
+              setIsQuickActionsOpen(false);
               navigate('/admin/dashboard/updates');
             }}
           >
@@ -193,6 +212,19 @@ export default function MobileShell() {
               <i className="ti ti-star" style={{ fontSize: 22 }} />
             </div>
             <span>Add Skill</span>
+          </button>
+
+          <button
+            className="admin-quick-action-card"
+            onClick={() => {
+              setIsQuickActionsOpen(false);
+              navigate('/admin/dashboard/preview');
+            }}
+          >
+            <div className="quick-action-icon" style={{ background: '#8b5cf620', color: '#8b5cf6' }}>
+              <Eye size={22} />
+            </div>
+            <span>Live Preview</span>
           </button>
         </div>
       </BottomSheet>

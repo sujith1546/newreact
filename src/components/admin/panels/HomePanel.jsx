@@ -229,17 +229,7 @@ export default function HomePanel() {
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        style={{
-          background: 'linear-gradient(135deg, rgba(99,102,241,0.12) 0%, rgba(139,92,246,0.06) 100%)',
-          border: '1px solid rgba(99,102,241,0.2)',
-          borderRadius: 12,
-          padding: '20px 24px',
-          marginBottom: 24,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 16,
-        }}
+        className="pcms-welcome-header"
       >
         <div>
           <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--pcms-accent)', marginBottom: 4 }}>
@@ -252,7 +242,7 @@ export default function HomePanel() {
             {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
         </div>
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           {siteSettings && (
             <div style={{
               display: 'flex', alignItems: 'center', gap: 6,
@@ -293,7 +283,7 @@ export default function HomePanel() {
       </motion.div>
 
       {/* Stats Grid */}
-      <div className="pcms-stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', marginBottom: 24 }}>
+      <div className="pcms-stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', marginBottom: 24 }}>
         {statCards.map((card, i) => {
           const { key, ...cardProps } = card;
           return (
@@ -310,7 +300,7 @@ export default function HomePanel() {
       </div>
 
       {/* Bottom Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+      <div className="pcms-home-bottom-grid">
 
         {/* Quick Actions */}
         <motion.div
@@ -318,7 +308,6 @@ export default function HomePanel() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, delay: 0.3 }}
           className="pcms-panel-card"
-          style={{ gridColumn: '1 / 2' }}
         >
           <div className="pcms-panel-header">
             <div className="pcms-panel-title-row">
@@ -346,7 +335,6 @@ export default function HomePanel() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, delay: 0.35 }}
           className="pcms-panel-card"
-          style={{ gridColumn: '2 / 3' }}
         >
           <div className="pcms-panel-header">
             <div className="pcms-panel-title-row">
@@ -388,7 +376,6 @@ export default function HomePanel() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, delay: 0.4 }}
           className="pcms-panel-card"
-          style={{ gridColumn: '3 / 4' }}
         >
           <div className="pcms-panel-header">
             <div className="pcms-panel-title-row">

@@ -32,37 +32,9 @@ export function PersonaProvider({ children }) {
     localStorage.removeItem('visitor_persona_chosen');
   };
 
-  // Derived layout order based on persona
+  // Derived layout order based on persona - return sections as-is to preserve sidebar layout
   const getSectionOrder = (sections) => {
-    if (persona === 'developer') {
-      return prioritize(sections, ['projects', 'skills', 'experience']);
-    }
-    if (persona === 'recruiter') {
-      return prioritize(sections, ['experience', 'education', 'certifications', 'projects']);
-    }
-    if (persona === 'founder') {
-      return prioritize(sections, ['projects', 'contact', 'experience']);
-    }
-    return sections; // general order
-  };
-
-  const prioritize = (arr, topKeys) => {
-    const top = [];
-    const rest = [];
-    arr.forEach(item => {
-      const key = typeof item === 'string' ? item : (item.id || item.key);
-      if (topKeys.includes(key)) top.push(item);
-      else rest.push(item);
-    });
-    
-    // Sort top array to match the order in topKeys
-    top.sort((a, b) => {
-      const keyA = typeof a === 'string' ? a : (a.id || a.key);
-      const keyB = typeof b === 'string' ? b : (b.id || b.key);
-      return topKeys.indexOf(keyA) - topKeys.indexOf(keyB);
-    });
-
-    return [...top, ...rest];
+    return sections; // general order preserved for all roles
   };
 
   return (

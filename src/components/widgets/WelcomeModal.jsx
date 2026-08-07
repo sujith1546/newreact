@@ -221,7 +221,7 @@ export default function WelcomeModal({ onNavClick }) {
             <div className="welcome-status-dot" />
           </div>
           <span>
-            {isFirstVisit ? "Available for Opportunities" : `Available for Opportunities • Visit #${visitCount}`}
+            Available for Opportunities
           </span>
         </div>
 

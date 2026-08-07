@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
-const CATEGORIES = ['inbox', 'content', 'system'];
+const CATEGORIES = ['home', 'inbox', 'content', 'system'];
 
 export default function SwipeableTabs({ activeCategory, onCategoryChange, childrenMap }) {
   // Track visited categories for persistent DOM caching (lazy mounting)
