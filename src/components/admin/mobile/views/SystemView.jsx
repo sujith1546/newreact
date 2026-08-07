@@ -7,7 +7,7 @@ const SYSTEM_TABS = [
 
 export default function SystemView({ activeSubTab = 'settings', onSelectSubTab }) {
   return (
-    <div className="admin-mobile-view">
+    <div className="admin-mobile-view" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
       {/* Sub-tab pills switcher */}
       <div className="admin-subtab-bar">
         {SYSTEM_TABS.map((tab) => {
@@ -26,7 +26,7 @@ export default function SystemView({ activeSubTab = 'settings', onSelectSubTab }
       </div>
 
       {/* View Content */}
-      <div className="admin-subtab-content">
+      <div className="admin-subtab-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '12px 14px 100px' }}>
         {activeSubTab === 'settings' && <SettingsPanel />}
       </div>
     </div>

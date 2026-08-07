@@ -907,7 +907,7 @@ export default function SettingsPanel() {
 
   if (isMobile) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14, paddingBottom: 40 }}>
         {/* Mobile Header Card */}
         <div style={{
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
