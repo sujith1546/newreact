@@ -20,6 +20,14 @@ import PortfolioPreviewPanel from '../components/admin/panels/PortfolioPreviewPa
 import { NAV_GROUPS, ALL_NAV_ITEMS } from '../components/admin/shared/constants';
 import { useDashboardStats } from '../components/admin/shared/useDashboardStats';
 import { useSiteStatus } from '../components/SiteDisabledGate';
+import { motion } from 'framer-motion';
+
+const DESKTOP_DOCK_TABS = [
+  { key: 'home', label: 'Home', icon: 'ti-home', color: '#6366f1' },
+  { key: 'messages', label: 'Inbox', icon: 'ti-message-circle', color: '#3b82f6' },
+  { key: 'projects', label: 'Projects', icon: 'ti-briefcase', color: '#10b981' },
+  { key: 'settings', label: 'System', icon: 'ti-settings', color: '#ec4899' },
+];
 
 function AdminDashboardDesktop() {
   const navigate = useNavigate();
@@ -166,18 +174,48 @@ function AdminDashboardDesktop() {
 
       {/* ─── Main Content ─── */}
       <main className="pcms-main">
-        {/* Topbar */}
-        <div className="pcms-topbar">
-          <div className="pcms-topbar-left">
-            <div className="pcms-topbar-icon" style={{ background: `${activeNavItem?.color || '#6366F1'}18`, borderColor: `${activeNavItem?.color || '#6366F1'}30`, color: activeNavItem?.color || '#6366F1' }}>
+        {/* Glassmorphic Floating Dock Topbar */}
+        <div
+          className="pcms-topbar"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 16,
+            padding: '10px 18px',
+            borderRadius: 20,
+            background: 'var(--pcms-panel-2, rgba(18, 18, 22, 0.85))',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+            border: '1px solid var(--pcms-line, rgba(255, 255, 255, 0.14))',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.25)',
+            marginBottom: 20,
+          }}
+        >
+          {/* Left: Active Title & Status */}
+          <div className="pcms-topbar-left" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div
+              className="pcms-topbar-icon"
+              style={{
+                background: `${activeNavItem?.color || '#6366F1'}18`,
+                borderColor: `${activeNavItem?.color || '#6366F1'}30`,
+                color: activeNavItem?.color || '#6366F1',
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
               <i className={`ti ${activeNavItem?.icon || 'ti-home'}`} style={{ fontSize: 17 }} />
             </div>
             <div>
-              <h1 className="pcms-topbar-title">
+              <h1 className="pcms-topbar-title" style={{ margin: 0, fontSize: 15, fontWeight: 700, fontFamily: "'Space Grotesk', sans-serif" }}>
                 {activeNavItem?.label || 'Home'}
               </h1>
-              <div className="pcms-topbar-status">
-                <span className="pcms-topbar-status-dot" />
+              <div className="pcms-topbar-status" style={{ fontSize: 11, color: 'var(--pcms-muted)', display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span className="pcms-topbar-status-dot" style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 6px #10b981' }} />
                 {lastLogin
                   ? `Last active: ${new Date(lastLogin.logged_in_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}`
                   : 'Active session'}
@@ -185,7 +223,69 @@ function AdminDashboardDesktop() {
             </div>
           </div>
 
-          <div className="pcms-topbar-right">
+          {/* Center: Floating Dock Category Navigation Pills */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+            background: 'var(--pcms-panel, rgba(255,255,255,0.04))',
+            padding: '4px 6px',
+            borderRadius: 16,
+            border: '1px solid var(--pcms-line-soft)',
+          }}>
+            {DESKTOP_DOCK_TABS.map((dockTab) => {
+              const isDockActive = activeTab === dockTab.key ||
+                (dockTab.key === 'messages' && (activeTab === 'messages' || activeTab === 'chats')) ||
+                (dockTab.key === 'projects' && ['projects', 'testimonials', 'updates', 'skills', 'experience', 'education', 'certifications', 'preview'].includes(activeTab)) ||
+                (dockTab.key === 'settings' && activeTab === 'settings');
+
+              return (
+                <button
+                  key={dockTab.key}
+                  onClick={() => setActiveTab(dockTab.key)}
+                  style={{
+                    position: 'relative',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 7,
+                    padding: '7px 14px',
+                    borderRadius: 12,
+                    border: 'none',
+                    background: 'transparent',
+                    color: isDockActive ? dockTab.color : 'var(--pcms-muted)',
+                    fontSize: 12,
+                    fontWeight: isDockActive ? 700 : 500,
+                    cursor: 'pointer',
+                    transition: 'color 0.2s ease',
+                  }}
+                >
+                  {isDockActive && (
+                    <motion.div
+                      layoutId="desktopDockActivePill"
+                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        borderRadius: 12,
+                        background: `${dockTab.color}18`,
+                        border: `1px solid ${dockTab.color}40`,
+                      }}
+                    />
+                  )}
+                  <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <i className={`ti ${dockTab.icon}`} style={{ fontSize: 14, color: isDockActive ? dockTab.color : 'inherit' }} />
+                    <span>{dockTab.label}</span>
+                    {dockTab.key === 'messages' && (
+                      <UnreadBadge />
+                    )}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Right: Theme Toggle & Live Site Action Buttons */}
+          <div className="pcms-topbar-right" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <button onClick={toggleTheme} className="pcms-pill-btn" type="button">
               {theme === 'dark'
                 ? <Sun size={13} />
