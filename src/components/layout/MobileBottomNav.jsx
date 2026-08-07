@@ -592,6 +592,18 @@ END:VCARD`;
                   </div>
                   <span>Help</span>
                 </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.92 }}
+                  onClick={() => { haptic.light(); playSound(); setIsMoreOpen(false); navigate('/admin/login'); }}
+                  className="drawer-explore-item"
+                >
+                  <div className="drawer-item-box" style={{ color: '#ef4444', background: 'rgba(239,68,68,0.1)', borderColor: 'rgba(239,68,68,0.2)' }}>
+                    <Shield size={17} />
+                  </div>
+                  <span>Admin Login</span>
+                </motion.button>
               </div>
             </div>
           </motion.div>
