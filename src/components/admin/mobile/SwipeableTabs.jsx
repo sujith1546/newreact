@@ -52,7 +52,7 @@ export default function SwipeableTabs({ activeCategory, onCategoryChange, childr
               display: isActive ? 'flex' : 'none',
               flexDirection: 'column',
               flex: 1,
-              overflowY: 'auto',
+              overflow: 'hidden',
               height: '100%',
             }}
           >

@@ -487,6 +487,8 @@ export default function HomePanel({ isMobile = false }) {
                 maxHeight: 236,
                 overflowY: 'auto',
                 WebkitOverflowScrolling: 'touch',
+                touchAction: 'pan-y',
+                overscrollBehavior: 'contain',
                 paddingRight: 4,
                 scrollbarWidth: 'thin',
                 scrollbarColor: 'var(--pcms-line-soft) transparent',

@@ -1023,7 +1023,7 @@ export default function SettingsPanel() {
           background: 'var(--pcms-panel)', border: '1px solid var(--pcms-line)',
           borderRadius: 10, padding: '8px 6px', display: 'flex', flexDirection: 'column', gap: 1,
           position: 'sticky', top: 0, overflowY: 'auto', scrollbarWidth: 'none',
-          maxHeight: 'calc(100vh / 0.66 - 58px - 40px - 78px)',
+              maxHeight: 'calc(100vh - 160px)',
         }}>
           <p style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--pcms-muted-2)', padding: '4px 8px 6px', margin: 0 }} className="pcms-settings-side-label">Settings</p>
           {TABS.map(tab => {
@@ -1065,7 +1065,7 @@ export default function SettingsPanel() {
               borderRadius: 10, padding: '18px 20px',
               display: 'flex', flexDirection: 'column', gap: 14,
               overflowY: 'auto', scrollbarWidth: 'thin',
-              maxHeight: 'calc(100vh / 0.66 - 58px - 40px - 78px)',
+                  maxHeight: 'calc(100vh - 160px)',
             }}
           >
             <div style={{ paddingBottom: 14, borderBottom: '1px solid var(--pcms-line-soft)' }}>
