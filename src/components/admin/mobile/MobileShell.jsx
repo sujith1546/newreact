@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { useTheme } from '../../../context/ThemeContext';
 import { useDashboardStats } from '../shared/useDashboardStats';
-import { LogOut, Palette, Plus, ShieldCheck, Briefcase, Bolt, Home, Eye, MessageSquare } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { LogOut, Plus, ShieldCheck, Briefcase, Eye, MessageSquare, Zap, Star, Sun, Moon } from 'lucide-react';
 import SwipeableTabs from './SwipeableTabs';
 import MobileNav from './MobileNav';
-import BottomSheet from './BottomSheet';
 import HomeView from './views/HomeView';
 import InboxView from './views/InboxView';
 import ContentView from './views/ContentView';
@@ -28,6 +28,41 @@ const TAB_TO_CATEGORY = {
   settings: 'system',
 };
 
+const SPEED_DIAL_ACTIONS = [
+  { icon: Briefcase, label: 'New Project', color: '#10b981', route: '/admin/dashboard/projects' },
+  { icon: MessageSquare, label: 'Messages', color: '#6366f1', route: '/admin/dashboard/messages' },
+  { icon: Zap, label: 'New Update', color: '#f59e0b', route: '/admin/dashboard/updates' },
+  { icon: Star, label: 'Add Skill', color: '#06b6d4', route: '/admin/dashboard/skills' },
+  { icon: Eye, label: 'Preview Site', color: '#8b5cf6', route: '/admin/dashboard/preview' },
+];
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Good morning';
+  if (h < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+
+function getDateStr() {
+  return new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+function getInitials(email) {
+  if (!email) return 'A';
+  const name = email.split('@')[0];
+  const parts = name.split(/[._-]/);
+  return parts.length > 1
+    ? (parts[0][0] + parts[1][0]).toUpperCase()
+    : name.slice(0, 2).toUpperCase();
+}
+
+function getFirstName(email) {
+  if (!email) return 'Admin';
+  const name = email.split('@')[0];
+  const first = name.split(/[._-]/)[0];
+  return first.charAt(0).toUpperCase() + first.slice(1);
+}
+
 export default function MobileShell() {
   const navigate = useNavigate();
   const { tab } = useParams();
@@ -45,7 +80,9 @@ export default function MobileShell() {
     system: 'settings',
   });
 
-  const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
+  const [isSpeedDialOpen, setIsSpeedDialOpen] = useState(false);
+  const [isAvatarMenuOpen, setIsAvatarMenuOpen] = useState(false);
+  const avatarMenuRef = useRef(null);
 
   useEffect(() => {
     if (!tab || !TAB_TO_CATEGORY[tab]) {
@@ -59,9 +96,25 @@ export default function MobileShell() {
     }
   }, [tab, navigate]);
 
+  useEffect(() => {
+    if (!isAvatarMenuOpen) return;
+    function handleClick(e) {
+      if (avatarMenuRef.current && !avatarMenuRef.current.contains(e.target)) {
+        setIsAvatarMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('touchstart', handleClick);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('touchstart', handleClick);
+    };
+  }, [isAvatarMenuOpen]);
+
   const handleSelectCategory = (cat) => {
     const targetTab = categorySubTabs[cat] || (cat === 'home' ? 'home' : cat === 'inbox' ? 'messages' : cat === 'content' ? 'projects' : 'settings');
     navigate(`/admin/dashboard/${targetTab}`);
+    setIsSpeedDialOpen(false);
   };
 
   const handleSelectSubTab = (newSubTab) => {
@@ -69,63 +122,91 @@ export default function MobileShell() {
   };
 
   const handleLogout = async () => {
+    setIsAvatarMenuOpen(false);
     await logout();
     navigate('/admin/login');
   };
 
+  const initials = getInitials(user?.email);
+  const firstName = getFirstName(user?.email);
+
   return (
     <div className="admin-mobile-shell pcms-scope">
-      {/* Top Bar */}
-      <header className="admin-mobile-topbar">
-        <div className="admin-mobile-logo">
-          <div className="admin-logo-icon">
-            <i className="ti ti-command" style={{ fontSize: 16, color: '#fff' }} />
+      {/* Personalized Greeting Top Bar */}
+      <header style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '14px 16px 10px',
+        background: 'var(--pcms-bg, #0c0c10)',
+        borderBottom: '1px solid var(--pcms-line-soft, rgba(255,255,255,0.06))',
+        position: 'relative',
+        zIndex: 100,
+        flexShrink: 0,
+      }}>
+        <div>
+          <div style={{ fontSize: 11, color: 'var(--pcms-muted)', fontWeight: 500, letterSpacing: '0.04em', marginBottom: 2 }}>
+            {getDateStr()}
           </div>
-          <div>
-            <h1 className="admin-mobile-title">Portfolio CMS</h1>
-            <p className="admin-mobile-subtitle">Admin Mobile</p>
+          <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--pcms-text)', lineHeight: 1.2, fontFamily: "''Space Grotesk'', sans-serif" }}>
+            {getGreeting()}, {firstName} 👋
           </div>
         </div>
-
-        <div className="admin-mobile-top-actions">
-          {/* Quick Actions Button */}
+        <div ref={avatarMenuRef} style={{ position: 'relative' }}>
           <button
-            className="admin-mobile-action-btn"
-            onClick={() => setIsQuickActionsOpen(true)}
-            aria-label="Quick Actions"
-            title="Quick Actions"
+            onClick={() => setIsAvatarMenuOpen(v => !v)}
+            aria-label="Account menu"
+            style={{
+              width: 40, height: 40, borderRadius: 20,
+              background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+              border: '2px solid rgba(99,102,241,0.4)',
+              color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 4px 12px rgba(99,102,241,0.35)',
+              fontFamily: "''Space Grotesk'', sans-serif",
+            }}
           >
-            <Plus size={18} />
+            {initials}
           </button>
-
-          {/* Admin Login Button */}
-          <button
-            className="admin-mobile-action-btn login"
-            onClick={() => navigate('/admin/login')}
-            aria-label="Admin Login"
-            title="Admin Login"
-            style={{ background: 'rgba(99,102,241,0.15)', borderColor: 'rgba(99,102,241,0.35)', color: '#6366f1' }}
-          >
-            <ShieldCheck size={18} />
-          </button>
-
-          {/* Theme Toggle */}
-          <button
-            className="admin-mobile-action-btn"
-            onClick={toggleTheme}
-            aria-label="Toggle Theme"
-          >
-            <Palette size={18} />
-          </button>
-
-          {/* Logout Button */}
-          <button
-            className="admin-mobile-action-btn logout"
-            onClick={handleLogout}
-            aria-label="Log Out"
-          >
-            <LogOut size={18} />
-          </button>
+          <AnimatePresence>
+            {isAvatarMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.92, y: -6 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.92, y: -6 }}
+                transition={{ duration: 0.15 }}
+                style={{
+                  position: 'absolute', top: 48, right: 0, width: 200,
+                  background: 'var(--pcms-panel, #18181c)',
+                  border: '1px solid var(--pcms-line, rgba(255,255,255,0.12))',
+                  borderRadius: 14, boxShadow: '0 16px 40px rgba(0,0,0,0.5)',
+                  overflow: 'hidden', zIndex: 9500,
+                }}
+              >
+                <div style={{ padding: '12px 14px 10px', borderBottom: '1px solid var(--pcms-line-soft)' }}>
+                  <div style={{ fontSize: 10, color: 'var(--pcms-muted)', fontWeight: 500, marginBottom: 2 }}>Signed in as</div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--pcms-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {user?.email || 'admin@portfolio.com'}
+                  </div>
+                </div>
+                <button onClick={() => { toggleTheme(); setIsAvatarMenuOpen(false); }}
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', background: 'transparent', border: 'none', color: 'var(--pcms-text)', fontSize: 13, fontWeight: 500, cursor: 'pointer', textAlign: 'left' }}>
+                  {theme === 'dark' ? <Sun size={16} color="#f59e0b" /> : <Moon size={16} color="#6366f1" />}
+                  {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+                </button>
+                <button onClick={() => { setIsAvatarMenuOpen(false); navigate('/admin/login'); }}
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', background: 'transparent', border: 'none', color: 'var(--pcms-text)', fontSize: 13, fontWeight: 500, cursor: 'pointer', textAlign: 'left' }}>
+                  <ShieldCheck size={16} color="#6366f1" />
+                  Switch Account
+                </button>
+                <button onClick={handleLogout}
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px 12px', background: 'transparent', border: 'none', color: '#ef4444', fontSize: 13, fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}>
+                  <LogOut size={16} color="#ef4444" />
+                  Log Out
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </header>
 
@@ -159,31 +240,59 @@ export default function MobileShell() {
         />
       </main>
 
-      {/* Floating Action Button (FAB) */}
-      <button
-        onClick={() => setIsQuickActionsOpen(true)}
+      {/* FAB Speed Dial Backdrop */}
+      <AnimatePresence>
+        {isSpeedDialOpen && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={() => setIsSpeedDialOpen(false)}
+            style={{ position: 'fixed', inset: 0, zIndex: 8800, background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Speed Dial Action Buttons */}
+      <AnimatePresence>
+        {isSpeedDialOpen && (
+          <div style={{ position: 'fixed', bottom: 138, right: 14, zIndex: 8900, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
+            {SPEED_DIAL_ACTIONS.map((action, i) => (
+              <motion.div key={action.label}
+                initial={{ opacity: 0, y: 20, scale: 0.85 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 12, scale: 0.85 }}
+                transition={{ duration: 0.18, delay: i * 0.045 }}
+                style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ background: 'var(--pcms-panel, #18181c)', border: '1px solid var(--pcms-line, rgba(255,255,255,0.12))', color: 'var(--pcms-text)', fontSize: 12, fontWeight: 600, padding: '6px 12px', borderRadius: 20, boxShadow: '0 4px 12px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
+                  {action.label}
+                </div>
+                <button onClick={() => { setIsSpeedDialOpen(false); navigate(action.route); }}
+                  style={{ width: 44, height: 44, borderRadius: 22, background: action.color + '22', border: '1.5px solid ' + action.color + '55', color: action.color, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 14px ' + action.color + '33', flexShrink: 0 }}>
+                  <action.icon size={20} />
+                </button>
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* FAB Button */}
+      <motion.button
+        onClick={() => setIsSpeedDialOpen(v => !v)}
         aria-label="Quick Actions"
+        animate={{ rotate: isSpeedDialOpen ? 45 : 0 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
         style={{
-          position: 'fixed',
-          bottom: 78,
-          right: 16,
-          zIndex: 8900,
-          width: 50,
-          height: 50,
-          borderRadius: 25,
-          background: 'linear-gradient(135deg, #6366f1, #3b82f6)',
-          border: '1px solid rgba(255, 255, 255, 0.2)',
-          color: '#ffffff',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0 8px 24px rgba(99, 102, 241, 0.5)',
-          cursor: 'pointer',
-          transition: 'all 0.2s ease',
+          position: 'fixed', bottom: 78, right: 16, zIndex: 8950,
+          width: 50, height: 50, borderRadius: 25,
+          background: isSpeedDialOpen ? 'linear-gradient(135deg, #ef4444, #f97316)' : 'linear-gradient(135deg, #6366f1, #3b82f6)',
+          border: '1px solid rgba(255,255,255,0.2)', color: '#ffffff',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: isSpeedDialOpen ? '0 8px 24px rgba(239,68,68,0.5)' : '0 8px 24px rgba(99,102,241,0.5)',
+          cursor: 'pointer', transition: 'background 0.25s ease, box-shadow 0.25s ease',
         }}
       >
         <Plus size={24} />
-      </button>
+      </motion.button>
 
       {/* Bottom Navigation */}
       <MobileNav
@@ -191,93 +300,6 @@ export default function MobileShell() {
         onSelectCategory={handleSelectCategory}
         unreadMessagesCount={stats.unreadMessages}
       />
-
-      {/* Quick Actions Bottom Sheet */}
-      <BottomSheet
-        isOpen={isQuickActionsOpen}
-        onClose={() => setIsQuickActionsOpen(false)}
-        title="Quick Actions"
-      >
-        <div className="admin-quick-actions-grid">
-          <button
-            className="admin-quick-action-card"
-            onClick={() => {
-              setIsQuickActionsOpen(false);
-              navigate('/admin/dashboard/projects');
-            }}
-          >
-            <div className="quick-action-icon" style={{ background: '#10b98120', color: '#10b981' }}>
-              <Briefcase size={22} />
-            </div>
-            <span>New Project</span>
-          </button>
-
-          <button
-            className="admin-quick-action-card"
-            onClick={() => {
-              setIsQuickActionsOpen(false);
-              navigate('/admin/dashboard/messages');
-            }}
-          >
-            <div className="quick-action-icon" style={{ background: '#6366f120', color: '#6366f1' }}>
-              <MessageSquare size={22} />
-            </div>
-            <span>Messages</span>
-          </button>
-
-          <button
-            className="admin-quick-action-card"
-            onClick={() => {
-              setIsQuickActionsOpen(false);
-              navigate('/admin/dashboard/updates');
-            }}
-          >
-            <div className="quick-action-icon" style={{ background: '#f59e0b20', color: '#f59e0b' }}>
-              <i className="ti ti-bolt" style={{ fontSize: 22 }} />
-            </div>
-            <span>New Update</span>
-          </button>
-
-          <button
-            className="admin-quick-action-card"
-            onClick={() => {
-              setIsQuickActionsOpen(false);
-              navigate('/admin/dashboard/skills');
-            }}
-          >
-            <div className="quick-action-icon" style={{ background: '#06b6d420', color: '#06b6d4' }}>
-              <i className="ti ti-star" style={{ fontSize: 22 }} />
-            </div>
-            <span>Add Skill</span>
-          </button>
-
-          <button
-            className="admin-quick-action-card"
-            onClick={() => {
-              setIsQuickActionsOpen(false);
-              navigate('/admin/dashboard/preview');
-            }}
-          >
-            <div className="quick-action-icon" style={{ background: '#8b5cf620', color: '#8b5cf6' }}>
-              <Eye size={22} />
-            </div>
-            <span>Live Preview</span>
-          </button>
-
-          <button
-            className="admin-quick-action-card"
-            onClick={() => {
-              setIsQuickActionsOpen(false);
-              navigate('/admin/login');
-            }}
-          >
-            <div className="quick-action-icon" style={{ background: '#ec489920', color: '#ec4899' }}>
-              <ShieldCheck size={22} />
-            </div>
-            <span>Admin Login</span>
-          </button>
-        </div>
-      </BottomSheet>
     </div>
   );
 }

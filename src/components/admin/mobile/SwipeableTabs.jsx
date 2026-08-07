@@ -42,9 +42,12 @@ export default function SwipeableTabs({ activeCategory, onCategoryChange, childr
         if (!isVisited) return null;
 
         return (
-          <div
+          <motion.div
             key={cat}
             className="admin-tab-panel"
+            initial={false}
+            animate={{ opacity: isActive ? 1 : 0, y: isActive ? 0 : 6 }}
+            transition={{ duration: 0.2 }}
             style={{
               display: isActive ? 'flex' : 'none',
               flexDirection: 'column',
@@ -54,7 +57,7 @@ export default function SwipeableTabs({ activeCategory, onCategoryChange, childr
             }}
           >
             {childrenMap[cat]}
-          </div>
+          </motion.div>
         );
       })}
     </motion.div>

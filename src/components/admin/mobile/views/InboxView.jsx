@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 import MessagesAdmin from '../../panels/MessagesAdmin';
 import AiChatsPanel from '../../panels/AiChatsPanel';
 
@@ -10,7 +11,7 @@ const INBOX_TABS = [
 export default function InboxView({ activeSubTab = 'messages', onSelectSubTab, unreadMessagesCount = 0 }) {
   return (
     <div className="admin-mobile-view" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
-      {/* Sub-tab Pills Switcher */}
+      {/* Sub-tab Pills Switcher with Animated Pill */}
       <div style={{
         display: 'flex',
         gap: 6,
@@ -29,36 +30,62 @@ export default function InboxView({ activeSubTab = 'messages', onSelectSubTab, u
               key={tab.key}
               onClick={() => onSelectSubTab(tab.key)}
               style={{
+                position: 'relative',
                 display: 'flex',
                 alignItems: 'center',
                 gap: 7,
                 padding: '7px 13px',
                 borderRadius: 20,
-                border: isActive ? '1px solid var(--pcms-accent)' : '1px solid var(--pcms-line)',
-                background: isActive ? 'var(--pcms-accent-dim)' : 'var(--pcms-panel)',
+                border: 'none',
+                background: 'transparent',
                 color: isActive ? 'var(--pcms-accent)' : 'var(--pcms-muted)',
                 fontSize: 12,
                 fontWeight: isActive ? 700 : 500,
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
-                transition: 'all 0.15s ease',
+                transition: 'color 0.15s ease',
               }}
             >
-              <i className={`ti ${tab.icon}`} style={{ fontSize: 13, opacity: isActive ? 1 : 0.7 }} />
-              <span>{tab.label}</span>
-              {tab.key === 'messages' && unreadMessagesCount > 0 && (
-                <span style={{
-                  background: '#ef4444',
-                  color: '#fff',
-                  fontSize: 10,
-                  fontWeight: 800,
-                  padding: '1px 6px',
-                  borderRadius: 10,
-                  marginLeft: 2,
-                }}>
-                  {unreadMessagesCount}
-                </span>
+              {isActive ? (
+                <motion.div
+                  layoutId="inboxSubTabPill"
+                  transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    borderRadius: 20,
+                    background: 'var(--pcms-accent-dim)',
+                    border: '1px solid var(--pcms-accent)',
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    borderRadius: 20,
+                    background: 'var(--pcms-panel)',
+                    border: '1px solid var(--pcms-line)',
+                  }}
+                />
               )}
+              <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 7 }}>
+                <i className={`ti ${tab.icon}`} style={{ fontSize: 13, opacity: isActive ? 1 : 0.7 }} />
+                <span>{tab.label}</span>
+                {tab.key === 'messages' && unreadMessagesCount > 0 && (
+                  <span style={{
+                    background: '#ef4444',
+                    color: '#fff',
+                    fontSize: 10,
+                    fontWeight: 800,
+                    padding: '1px 6px',
+                    borderRadius: 10,
+                    marginLeft: 2,
+                  }}>
+                    {unreadMessagesCount}
+                  </span>
+                )}
+              </span>
             </button>
           );
         })}

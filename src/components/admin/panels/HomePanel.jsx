@@ -362,8 +362,20 @@ export default function HomePanel() {
         </div>
       </motion.div>
 
-      {/* Stats Grid */}
-      <div className="pcms-stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', marginBottom: 24 }}>
+      {/* Stats Grid - Horizontal Snap-Scroll Strip on Mobile */}
+      <div
+        className="pcms-stats-grid"
+        style={{
+          display: 'flex',
+          gap: 10,
+          overflowX: 'auto',
+          scrollSnapType: 'x mandatory',
+          WebkitOverflowScrolling: 'touch',
+          scrollbarWidth: 'none',
+          paddingBottom: 4,
+          marginBottom: 20,
+        }}
+      >
         {statCards.map((card, i) => {
           const { key, ...cardProps } = card;
           return (
@@ -372,6 +384,11 @@ export default function HomePanel() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: i * 0.06 }}
+              style={{
+                flex: '0 0 calc(50% - 6px)',
+                minWidth: 135,
+                scrollSnapAlign: 'start',
+              }}
             >
               <StatCard {...cardProps} loading={stats.loading} />
             </motion.div>
