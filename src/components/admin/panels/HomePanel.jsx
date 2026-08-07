@@ -177,7 +177,7 @@ function ActivityItem({ actionTitle, resourceName, time, color, icon: Icon = Act
 }
 
 /* ── Main HomePanel ── */
-export default function HomePanel() {
+export default function HomePanel({ isMobile = false }) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const stats = useDashboardStats();
@@ -315,12 +315,16 @@ export default function HomePanel() {
           <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--pcms-accent)', marginBottom: 4 }}>
             PORTFOLIO CMS
           </div>
-          <h2 className="pcms-welcome-greeting" style={{ margin: 0, fontSize: 22, fontWeight: 700, color: 'var(--pcms-text)', fontFamily: "'Space Grotesk', sans-serif" }}>
-            {greeting}, {firstName.charAt(0).toUpperCase() + firstName.slice(1)} 👋
-          </h2>
-          <p className="pcms-welcome-date" style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--pcms-muted)' }}>
-            {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-          </p>
+          {!isMobile && (
+            <>
+              <h2 className="pcms-welcome-greeting" style={{ margin: 0, fontSize: 22, fontWeight: 700, color: 'var(--pcms-text)', fontFamily: "'Space Grotesk', sans-serif" }}>
+                {greeting}, {firstName.charAt(0).toUpperCase() + firstName.slice(1)} 👋
+              </h2>
+              <p className="pcms-welcome-date" style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--pcms-muted)' }}>
+                {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+              </p>
+            </>
+          )}
         </div>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           {siteSettings && (
