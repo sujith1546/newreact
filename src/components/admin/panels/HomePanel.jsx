@@ -118,15 +118,61 @@ function QuickAction({ icon: Icon, label, color, onClick }) {
 }
 
 /* ── Activity Item ── */
-function ActivityItem({ text, time, color }) {
+function ActivityItem({ actionTitle, resourceName, time, color, icon: Icon = Activity }) {
   return (
-    <div className="pcms-activity-item">
-      <div className="pcms-activity-dot" style={{ background: color }} />
-      <div style={{ flex: 1 }}>
-        <div className="pcms-activity-text">{text}</div>
-        <div className="pcms-activity-time">{time}</div>
+    <motion.div
+      whileHover={{ y: -1 }}
+      transition={{ duration: 0.12 }}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 12,
+        padding: '10px 12px',
+        borderRadius: 10,
+        background: 'var(--pcms-panel-2)',
+        border: '1px solid var(--pcms-line-soft)',
+        marginBottom: 6,
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flex: 1 }}>
+        <div style={{
+          width: 30,
+          height: 30,
+          borderRadius: 8,
+          background: `${color}18`,
+          color: color,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
+        }}>
+          <Icon size={15} strokeWidth={2} />
+        </div>
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--pcms-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {actionTitle}
+          </div>
+          {resourceName && (
+            <div style={{ fontSize: 11, color: 'var(--pcms-muted)', marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {resourceName}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+      <span style={{
+        fontSize: 10,
+        fontWeight: 600,
+        color: 'var(--pcms-muted)',
+        background: 'var(--pcms-panel-3)',
+        padding: '3px 8px',
+        borderRadius: 6,
+        flexShrink: 0,
+        whiteSpace: 'nowrap',
+      }}>
+        {time}
+      </span>
+    </motion.div>
   );
 }
 
@@ -234,12 +280,15 @@ export default function HomePanel() {
 
   function fmtActivityAction(action) {
     const map = {
-      CREATE_PROJECT: { text: 'New project added', color: '#10B981' },
-      UPDATE_PROJECT: { text: 'Project updated', color: '#6366F1' },
-      DELETE_PROJECT: { text: 'Project deleted', color: '#EF4444' },
-      UPDATE_SETTINGS: { text: 'Site settings changed', color: '#8B5CF6' },
+      CREATE_PROJECT: { text: 'New project added', color: '#10B981', icon: Briefcase },
+      UPDATE_PROJECT: { text: 'Project updated', color: '#6366F1', icon: Briefcase },
+      DELETE_PROJECT: { text: 'Project deleted', color: '#EF4444', icon: Activity },
+      UPDATE_SETTINGS: { text: 'Site settings changed', color: '#8B5CF6', icon: Shield },
+      CREATE_UPDATE: { text: 'Update feed posted', color: '#F59E0B', icon: Zap },
+      CREATE_SKILL: { text: 'Skill added', color: '#EC4899', icon: Star },
+      PURGE_MESSAGES: { text: 'Messages purged', color: '#EF4444', icon: MessageSquare },
     };
-    return map[action] || { text: action?.replace(/_/g, ' ').toLowerCase(), color: '#8896B3' };
+    return map[action] || { text: action?.replace(/_/g, ' ').toLowerCase(), color: '#3B82F6', icon: Activity };
   }
 
   function timeAgo(ts) {
@@ -391,9 +440,11 @@ export default function HomePanel() {
                 return (
                   <ActivityItem
                     key={i}
-                    text={`${info.text}${a.resource_name ? `: ${a.resource_name}` : ''}`}
+                    actionTitle={info.text}
+                    resourceName={a.resource_name || a.entity_type}
                     time={timeAgo(a.created_at)}
                     color={info.color}
+                    icon={info.icon}
                   />
                 );
               })
