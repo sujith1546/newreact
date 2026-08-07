@@ -226,6 +226,19 @@ export default function MobileShell() {
             </div>
             <span>Live Preview</span>
           </button>
+
+          <button
+            className="admin-quick-action-card"
+            onClick={() => {
+              setIsQuickActionsOpen(false);
+              navigate('/admin/login');
+            }}
+          >
+            <div className="quick-action-icon" style={{ background: '#ec489920', color: '#ec4899' }}>
+              <ShieldCheck size={22} />
+            </div>
+            <span>Admin Login</span>
+          </button>
         </div>
       </BottomSheet>
     </div>

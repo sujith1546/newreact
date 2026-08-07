@@ -199,6 +199,7 @@ export default function HomePanel() {
     { icon: Zap, label: 'Post an Update', sub: 'Announce something new', color: '#F59E0B', tab: 'updates' },
     { icon: Award, label: 'Add Certification', sub: 'Update credentials', color: '#F97316', tab: 'certifications' },
     { icon: Shield, label: 'Site Settings', sub: 'Configure & maintain', color: '#8B5CF6', tab: 'settings' },
+    { icon: Shield, label: 'Admin Login', sub: 'Switch account or re-auth', color: '#EC4899', route: '/admin/login' },
   ];
 
   function fmtActivityAction(action) {
@@ -321,9 +322,9 @@ export default function HomePanel() {
           <div className="pcms-panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {quickActions.map((qa) => (
               <QuickAction
-                key={qa.tab}
+                key={qa.label}
                 {...qa}
-                onClick={() => navigate(`/admin/dashboard/${qa.tab}`)}
+                onClick={() => navigate(qa.route || `/admin/dashboard/${qa.tab}`)}
               />
             ))}
           </div>
