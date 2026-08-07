@@ -198,7 +198,7 @@ export default function HomePanel() {
           .from('admin_audit_logs')
           .select('*')
           .order('created_at', { ascending: false })
-          .limit(6);
+          .limit(20);
         if (data && !error) setRecentActivity(data);
       } catch (_) {
         setRecentActivity([]);
@@ -435,19 +435,28 @@ export default function HomePanel() {
                 No activity yet. Start managing your content!
               </div>
             ) : (
-              recentActivity.map((a, i) => {
-                const info = fmtActivityAction(a.action);
-                return (
-                  <ActivityItem
-                    key={i}
-                    actionTitle={info.text}
-                    resourceName={a.resource_name || a.entity_type}
-                    time={timeAgo(a.created_at)}
-                    color={info.color}
-                    icon={info.icon}
-                  />
-                );
-              })
+              <div style={{
+                maxHeight: 236,
+                overflowY: 'auto',
+                WebkitOverflowScrolling: 'touch',
+                paddingRight: 4,
+                scrollbarWidth: 'thin',
+                scrollbarColor: 'var(--pcms-line-soft) transparent',
+              }}>
+                {recentActivity.map((a, i) => {
+                  const info = fmtActivityAction(a.action);
+                  return (
+                    <ActivityItem
+                      key={i}
+                      actionTitle={info.text}
+                      resourceName={a.resource_name || a.entity_type}
+                      time={timeAgo(a.created_at)}
+                      color={info.color}
+                      icon={info.icon}
+                    />
+                  );
+                })}
+              </div>
             )}
           </div>
         </motion.div>
