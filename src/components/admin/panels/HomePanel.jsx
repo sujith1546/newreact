@@ -66,24 +66,54 @@ function StatCard({ label, value, icon: Icon, gradient, delta, loading, onClick 
   );
 }
 
-/* ── Quick Action Card ── */
-function QuickAction({ icon: Icon, label, sub, color, onClick }) {
+/* ── Quick Action Button ── */
+function QuickAction({ icon: Icon, label, color, onClick }) {
   return (
-    <motion.div
-      whileHover={{ x: 4 }}
-      transition={{ duration: 0.15 }}
-      className="pcms-quick-action"
+    <motion.button
+      type="button"
+      whileTap={{ scale: 0.97 }}
+      whileHover={{ y: -1 }}
+      transition={{ duration: 0.12 }}
+      className="pcms-quick-action-btn"
       onClick={onClick}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 9,
+        padding: '10px 12px',
+        borderRadius: 10,
+        background: 'var(--pcms-panel-2)',
+        border: '1px solid var(--pcms-line)',
+        cursor: 'pointer',
+        textAlign: 'left',
+        width: '100%',
+        transition: 'all 0.15s ease',
+      }}
     >
-      <div className="pcms-quick-action-icon" style={{ background: `${color}22`, color }}>
-        <Icon size={16} strokeWidth={2} />
+      <div style={{
+        width: 30,
+        height: 30,
+        borderRadius: 8,
+        background: `${color}18`,
+        color: color,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+      }}>
+        <Icon size={15} strokeWidth={2} />
       </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div className="pcms-quick-action-label">{label}</div>
-        {sub && <div className="pcms-quick-action-sub">{sub}</div>}
-      </div>
-      <ChevronRight size={14} style={{ color: 'var(--pcms-muted-2)', flexShrink: 0 }} />
-    </motion.div>
+      <span style={{
+        fontSize: 12,
+        fontWeight: 600,
+        color: 'var(--pcms-text)',
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+      }}>
+        {label}
+      </span>
+    </motion.button>
   );
 }
 
@@ -319,7 +349,7 @@ export default function HomePanel() {
               </div>
             </div>
           </div>
-          <div className="pcms-panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div className="pcms-panel-body" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(135px, 1fr))', gap: 8 }}>
             {quickActions.map((qa) => (
               <QuickAction
                 key={qa.label}
