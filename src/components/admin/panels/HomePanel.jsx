@@ -310,9 +310,30 @@ export default function HomePanel({ isMobile = false }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
         className="pcms-welcome-header"
+        style={isMobile ? {
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 10,
+          marginBottom: 16,
+          padding: '10px 14px',
+          borderRadius: 14,
+          background: 'var(--pcms-panel-2)',
+          border: '1px solid var(--pcms-line-soft)',
+        } : undefined}
       >
         <div>
-          <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--pcms-accent)', marginBottom: 4 }}>
+          <div style={{
+            fontSize: 11,
+            fontWeight: 800,
+            letterSpacing: '0.08em',
+            color: 'var(--pcms-accent)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+          }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--pcms-accent)' }} />
             PORTFOLIO CMS
           </div>
           {!isMobile && (
@@ -326,21 +347,21 @@ export default function HomePanel({ isMobile = false }) {
             </>
           )}
         </div>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           {siteSettings && (
             <div style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              padding: '8px 14px', borderRadius: 8,
+              display: 'flex', alignItems: 'center', gap: 5,
+              padding: '6px 10px', borderRadius: 20,
               background: siteSettings.site_disabled ? 'rgba(239,68,68,0.12)' : 'rgba(16,185,129,0.12)',
               border: `1px solid ${siteSettings.site_disabled ? 'rgba(239,68,68,0.25)' : 'rgba(16,185,129,0.25)'}`,
             }}>
               <div style={{
-                width: 7, height: 7, borderRadius: '50%',
+                width: 6, height: 6, borderRadius: '50%',
                 background: siteSettings.site_disabled ? '#EF4444' : '#10B981',
                 boxShadow: `0 0 6px ${siteSettings.site_disabled ? '#EF4444' : '#10B981'}`,
               }} />
-              <span style={{ fontSize: 11, fontWeight: 600, color: siteSettings.site_disabled ? '#EF4444' : '#10B981' }}>
-                {siteSettings.site_disabled ? 'Site Locked' : 'Site Live'}
+              <span style={{ fontSize: 11, fontWeight: 700, color: siteSettings.site_disabled ? '#EF4444' : '#10B981' }}>
+                {siteSettings.site_disabled ? 'Locked' : 'Live'}
               </span>
             </div>
           )}
@@ -349,19 +370,25 @@ export default function HomePanel({ isMobile = false }) {
             target="_blank"
             rel="noreferrer"
             style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              padding: '8px 14px', borderRadius: 8,
-              background: 'var(--pcms-panel)',
-              border: '1px solid var(--pcms-line)',
-              fontSize: 12, fontWeight: 500, color: 'var(--pcms-muted)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '6px 12px',
+              borderRadius: 20,
+              background: 'linear-gradient(135deg, rgba(99,102,241,0.18), rgba(59,130,246,0.12))',
+              border: '1px solid rgba(99,102,241,0.35)',
+              fontSize: 11.5,
+              fontWeight: 600,
+              color: '#6366f1',
               textDecoration: 'none',
-              transition: 'all 0.15s',
+              boxShadow: '0 2px 8px rgba(99,102,241,0.15)',
+              transition: 'all 0.15s ease',
+              whiteSpace: 'nowrap',
             }}
-            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--pcms-accent)'; e.currentTarget.style.color = 'var(--pcms-text)'; }}
-            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--pcms-line)'; e.currentTarget.style.color = 'var(--pcms-muted)'; }}
           >
-            <Globe size={13} />
-            View Portfolio
+            <Globe size={13} color="#6366f1" />
+            <span>View Portfolio</span>
+            <ArrowRight size={11} color="#6366f1" style={{ opacity: 0.7 }} />
           </a>
         </div>
       </motion.div>
