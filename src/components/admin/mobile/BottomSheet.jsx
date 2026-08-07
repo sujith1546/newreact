@@ -86,6 +86,14 @@ export default function BottomSheet({ isOpen, onClose, title, children }) {
           {/* Backdrop */}
           <motion.div
             className="admin-sheet-backdrop"
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0, 0, 0, 0.7)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              zIndex: 9998,
+            }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -97,6 +105,21 @@ export default function BottomSheet({ isOpen, onClose, title, children }) {
           <motion.div
             ref={sheetRef}
             className="admin-bottom-sheet"
+            style={{
+              position: 'fixed',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              zIndex: 9999,
+              background: 'var(--pcms-panel, #121215)',
+              borderTop: '1px solid var(--pcms-line, rgba(255, 255, 255, 0.15))',
+              borderRadius: '24px 24px 0 0',
+              maxHeight: '88vh',
+              display: 'flex',
+              flexDirection: 'column',
+              boxShadow: '0 -12px 40px rgba(0, 0, 0, 0.6)',
+              overflow: 'hidden',
+            }}
             role="dialog"
             aria-modal="true"
             aria-labelledby={title ? "sheet-title" : undefined}
@@ -104,29 +127,30 @@ export default function BottomSheet({ isOpen, onClose, title, children }) {
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            transition={{ type: "spring", damping: 26, stiffness: 320 }}
           >
             {/* Handle Bar */}
-            <div className="admin-sheet-handle-bar" onClick={onClose}>
-              <div className="admin-sheet-handle" />
+            <div className="admin-sheet-handle-bar" onClick={onClose} style={{ padding: '12px 0 6px', display: 'flex', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+              <div className="admin-sheet-handle" style={{ width: 38, height: 5, borderRadius: 3, background: 'rgba(255, 255, 255, 0.25)' }} />
             </div>
 
             {/* Header */}
-            <div className="admin-sheet-header">
+            <div className="admin-sheet-header" style={{ padding: '8px 20px 14px', borderBottom: '1px solid var(--pcms-line-soft, rgba(255, 255, 255, 0.08))', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
               {title ? (
-                <h3 id="sheet-title" className="admin-sheet-title">{title}</h3>
+                <h3 id="sheet-title" className="admin-sheet-title" style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--pcms-text, #ffffff)', fontFamily: "'Space Grotesk', sans-serif" }}>{title}</h3>
               ) : <div />}
               <button
                 className="admin-sheet-close-btn"
                 onClick={onClose}
                 aria-label="Close dialog"
+                style={{ background: 'rgba(255, 255, 255, 0.08)', border: 'none', borderRadius: '50%', width: 30, height: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--pcms-muted, #a1a1aa)', cursor: 'pointer' }}
               >
-                <X size={20} />
+                <X size={18} />
               </button>
             </div>
 
             {/* Content */}
-            <div className="admin-sheet-content">
+            <div className="admin-sheet-content" style={{ padding: '16px 20px 32px', overflowY: 'auto', WebkitOverflowScrolling: 'touch', flex: 1 }}>
               {children}
             </div>
           </motion.div>

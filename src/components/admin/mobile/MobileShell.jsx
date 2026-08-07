@@ -165,8 +165,8 @@ export default function MobileShell() {
         aria-label="Quick Actions"
         style={{
           position: 'fixed',
-          bottom: 74,
-          right: 20,
+          bottom: 78,
+          right: 16,
           zIndex: 8900,
           width: 50,
           height: 50,

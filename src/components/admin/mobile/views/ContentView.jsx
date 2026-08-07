@@ -72,7 +72,7 @@ export default function ContentView({ activeSubTab = 'projects', onSelectSubTab 
         minHeight: 0,
         overflowY: 'auto',
         WebkitOverflowScrolling: 'touch',
-        padding: '14px 14px 100px',
+        padding: '14px 14px 110px',
       }}>
         {activeSubTab === 'projects' && <ProjectsPanel />}
         {activeSubTab === 'testimonials' && <TestimonialsPanel />}

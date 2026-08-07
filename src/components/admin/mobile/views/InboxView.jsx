@@ -72,7 +72,7 @@ export default function InboxView({ activeSubTab = 'messages', onSelectSubTab, u
         minHeight: 0,
         overflowY: 'auto',
         WebkitOverflowScrolling: 'touch',
-        padding: '14px 14px 100px',
+        padding: '14px 14px 110px',
       }}>
         {activeSubTab === 'messages' ? <MessagesAdmin /> : <AiChatsPanel />}
       </div>

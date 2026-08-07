@@ -26,7 +26,7 @@ export default function SystemView({ activeSubTab = 'settings', onSelectSubTab }
       </div>
 
       {/* View Content */}
-      <div className="admin-subtab-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '12px 14px 100px' }}>
+      <div className="admin-subtab-content" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', padding: '12px 14px 110px' }}>
         {activeSubTab === 'settings' && <SettingsPanel />}
       </div>
     </div>
