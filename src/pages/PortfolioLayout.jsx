@@ -1,6 +1,9 @@
 import React, { useState, useRef, useEffect, Suspense, lazy, useCallback } from 'react';
 import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
-import { FileText, Mail, Briefcase, Check } from 'lucide-react';
+import { FileText, Mail, Briefcase, Check, RefreshCw, Sparkles, CheckCircle2, Activity } from 'lucide-react';
+import { supabase } from '../lib/supabaseClient';
+import { globalDataCache, fetchPromises } from '../hooks/useRealtimeData';
+import haptic from '../lib/haptics';
 import { FaGithub } from 'react-icons/fa';
 import {
   Sidebar,
@@ -130,6 +133,78 @@ export default function PortfolioLayout() {
   const scrollRef = useRef(null);
   const navTimerRef = useRef(null);
   const [scrollProgress, setScrollProgress] = useState(0);
+
+  // ── Public Realtime Sync & Pull-To-Refresh State ──
+  const [liveNotification, setLiveNotification] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [pullDist, setPullDist] = useState(0);
+  const touchStartY = useRef(0);
+  const isPullingRef = useRef(false);
+
+  // 1. Supabase Realtime Listener for Visitors
+  useEffect(() => {
+    const channel = supabase
+      .channel('public_portfolio_realtime')
+      .on('postgres_changes', { event: '*', schema: 'public' }, (payload) => {
+        const table = payload.table || 'content';
+        const label = table.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+        haptic.medium();
+        setLiveNotification({
+          id: Date.now(),
+          text: `✨ ${label} updated! Tap to view latest.`,
+        });
+        // Soft purge caches
+        Object.keys(globalDataCache).forEach((k) => delete globalDataCache[k]);
+        Object.keys(fetchPromises).forEach((k) => delete fetchPromises[k]);
+        window.dispatchEvent(new CustomEvent('pcms_force_refresh'));
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  // 2. In-Memory Soft Refresh Handler
+  const handleSoftRefresh = useCallback(() => {
+    haptic.medium();
+    setIsRefreshing(true);
+    Object.keys(globalDataCache).forEach((k) => delete globalDataCache[k]);
+    Object.keys(fetchPromises).forEach((k) => delete fetchPromises[k]);
+    window.dispatchEvent(new CustomEvent('pcms_force_refresh'));
+    setTimeout(() => {
+      setIsRefreshing(false);
+      haptic.success();
+    }, 600);
+  }, []);
+
+  // 3. Liquid Touch Pull-To-Refresh Handlers
+  const handlePullTouchStart = useCallback((e) => {
+    if (!isMobile) return;
+    if (scrollRef.current && scrollRef.current.scrollTop <= 2) {
+      touchStartY.current = e.touches[0].clientY;
+      isPullingRef.current = true;
+    }
+  }, [isMobile]);
+
+  const handlePullTouchMove = useCallback((e) => {
+    if (!isMobile || !isPullingRef.current) return;
+    const currentY = e.touches[0].clientY;
+    const dy = currentY - touchStartY.current;
+    if (dy > 0 && scrollRef.current && scrollRef.current.scrollTop <= 2) {
+      const damped = Math.min(80, dy * 0.45);
+      setPullDist(damped);
+    }
+  }, [isMobile]);
+
+  const handlePullTouchEnd = useCallback(() => {
+    if (!isMobile || !isPullingRef.current) return;
+    if (pullDist >= 55) {
+      handleSoftRefresh();
+    }
+    setPullDist(0);
+    isPullingRef.current = false;
+  }, [isMobile, pullDist, handleSoftRefresh]);
 
   // Cursor glow effect (desktop only with rAF throttling)
   useEffect(() => {
@@ -367,9 +442,89 @@ export default function PortfolioLayout() {
       <main
         className="main-content"
         ref={scrollRef}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
+        onTouchStart={(e) => {
+          handleTouchStart(e);
+          handlePullTouchStart(e);
+        }}
+        onTouchMove={handlePullTouchMove}
+        onTouchEnd={(e) => {
+          handleTouchEnd(e);
+          handlePullTouchEnd();
+        }}
       >
+        {/* Liquid Pull-To-Refresh Indicator */}
+        {isMobile && (pullDist > 0 || isRefreshing) && (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: isRefreshing ? 48 : pullDist,
+              transition: isRefreshing ? 'height 0.25s ease' : 'none',
+              overflow: 'hidden',
+              position: 'relative',
+              zIndex: 100,
+            }}
+          >
+            <motion.div
+              animate={isRefreshing ? { rotate: 360 } : { scale: Math.min(1.1, pullDist / 55) }}
+              transition={isRefreshing ? { repeat: Infinity, duration: 0.75, ease: 'linear' } : {}}
+              style={{
+                width: 32, height: 32, borderRadius: '50%',
+                background: pullDist >= 55 || isRefreshing ? 'rgba(16,185,129,0.18)' : 'var(--bg-secondary)',
+                border: `1.5px solid ${pullDist >= 55 || isRefreshing ? '#10b981' : 'var(--border-color)'}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: pullDist >= 55 || isRefreshing ? '#10b981' : 'var(--text-muted)',
+                boxShadow: '0 4px 14px rgba(0,0,0,0.15)',
+              }}
+            >
+              <RefreshCw size={15} className={isRefreshing ? 'spinning' : ''} />
+            </motion.div>
+          </div>
+        )}
+
+        {/* Live Notification Dynamic Island Toast */}
+        <AnimatePresence>
+          {liveNotification && (
+            <motion.div
+              initial={{ opacity: 0, y: -20, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.9 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+              style={{
+                position: 'fixed', top: 68, left: 16, right: 16,
+                zIndex: 9999,
+                padding: '10px 14px', borderRadius: 16,
+                background: 'rgba(18,18,22,0.92)',
+                border: '1px solid rgba(99,102,241,0.3)',
+                backdropFilter: 'blur(16px)',
+                boxShadow: '0 10px 30px rgba(0,0,0,0.4)',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+                <Sparkles size={16} color="#6366f1" />
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#ffffff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {liveNotification.text}
+                </span>
+              </div>
+              <button
+                onClick={() => {
+                  handleSoftRefresh();
+                  setLiveNotification(null);
+                }}
+                style={{
+                  background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                  border: 'none', borderRadius: 10,
+                  color: '#fff', fontSize: 11, fontWeight: 700,
+                  padding: '5px 10px', cursor: 'pointer', flexShrink: 0,
+                }}
+              >
+                Sync Now
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
         <div className="scroll-container">
           <AnimatePresence mode={isMobile ? "sync" : "wait"} initial={false} custom={slideDirection}>
             <motion.div
