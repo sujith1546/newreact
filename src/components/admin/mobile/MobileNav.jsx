@@ -8,6 +8,7 @@ export default function MobileNav({
   unreadMessagesCount = 0,
   isSpeedDialOpen = false,
   onToggleSpeedDial,
+  hasPendingUpdate = false,
 }) {
   return (
     <nav className="mobile-nav-capsule" role="navigation" aria-label="Admin mobile navigation">
@@ -91,38 +92,63 @@ export default function MobileNav({
         whileTap={{ scale: 0.88 }}
         style={{ position: 'relative', zIndex: 5 }}
       >
-        <motion.div
-          animate={{
-            rotate: isSpeedDialOpen ? 45 : 0,
-            scale: isSpeedDialOpen ? 1.08 : 1,
-          }}
-          transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-          style={{
-            width: 34,
-            height: 34,
-            borderRadius: 17,
-            background: isSpeedDialOpen
-              ? 'linear-gradient(135deg, #ef4444, #f97316)'
-              : 'linear-gradient(135deg, var(--primary-blue, #6366f1), #8b5cf6)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#ffffff',
-            boxShadow: isSpeedDialOpen
-              ? '0 4px 14px rgba(239,68,68,0.45)'
-              : '0 4px 14px rgba(99,102,241,0.4)',
-            border: '1px solid rgba(255,255,255,0.25)',
-          }}
-        >
-          <Plus size={19} strokeWidth={2.6} />
-        </motion.div>
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <motion.div
+            animate={{
+              rotate: isSpeedDialOpen ? 45 : 0,
+              scale: isSpeedDialOpen ? 1.08 : 1,
+            }}
+            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+            style={{
+              width: 34,
+              height: 34,
+              borderRadius: 17,
+              background: isSpeedDialOpen
+                ? 'linear-gradient(135deg, #ef4444, #f97316)'
+                : hasPendingUpdate
+                ? 'linear-gradient(135deg, #10b981, #06b6d4)'
+                : 'linear-gradient(135deg, var(--primary-blue, #6366f1), #8b5cf6)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#ffffff',
+              boxShadow: isSpeedDialOpen
+                ? '0 4px 14px rgba(239,68,68,0.45)'
+                : hasPendingUpdate
+                ? '0 4px 16px rgba(16,185,129,0.55)'
+                : '0 4px 14px rgba(99,102,241,0.4)',
+              border: '1px solid rgba(255,255,255,0.25)',
+              transition: 'background 0.3s ease, box-shadow 0.3s ease',
+            }}
+          >
+            <Plus size={19} strokeWidth={2.6} />
+          </motion.div>
+          {hasPendingUpdate && !isSpeedDialOpen && (
+            <motion.span
+              animate={{ scale: [1, 1.35, 1], opacity: [1, 0.7, 1] }}
+              transition={{ repeat: Infinity, duration: 1.6, ease: 'easeInOut' }}
+              style={{
+                position: 'absolute',
+                top: -2,
+                right: -2,
+                width: 10,
+                height: 10,
+                borderRadius: 5,
+                background: '#10b981',
+                border: '2px solid #ffffff',
+                boxShadow: '0 0 8px #10b981',
+                zIndex: 4,
+              }}
+            />
+          )}
+        </div>
         <span style={{
           fontSize: 9,
           fontWeight: 600,
           marginTop: 2,
-          color: isSpeedDialOpen ? '#ef4444' : 'var(--text-muted, #8a8a86)',
+          color: isSpeedDialOpen ? '#ef4444' : hasPendingUpdate ? '#10b981' : 'var(--text-muted, #8a8a86)',
         }}>
-          {isSpeedDialOpen ? 'Close' : 'Create'}
+          {isSpeedDialOpen ? 'Close' : hasPendingUpdate ? 'Sync' : 'Create'}
         </span>
       </motion.button>
 

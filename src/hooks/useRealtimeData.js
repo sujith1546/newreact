@@ -295,10 +295,21 @@ export default function useRealtimeData(table, options = {}) {
         .subscribe();
     }, 50);
 
+    const handleForceRefresh = () => {
+      if (isMounted) {
+        delete globalDataCache[cacheKey];
+        delete fetchPromises[cacheKey];
+        fetchData();
+      }
+    };
+
+    window.addEventListener('pcms_force_refresh', handleForceRefresh);
+
     return () => {
       isMounted = false;
       clearTimeout(subTimeout);
       safeRemoveChannel(channel);
+      window.removeEventListener('pcms_force_refresh', handleForceRefresh);
     };
   }, [table, select, single, orderColumn, ascending, filter?.column, filter?.value]);
 

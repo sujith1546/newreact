@@ -43,7 +43,20 @@ export function useDashboardStats() {
         loading: false,
       });
     }
+
     loadStats();
+
+    const handleRefresh = () => {
+      loadStats();
+    };
+
+    window.addEventListener('pcms_force_refresh', handleRefresh);
+    window.addEventListener('pcms_data_updated', handleRefresh);
+
+    return () => {
+      window.removeEventListener('pcms_force_refresh', handleRefresh);
+      window.removeEventListener('pcms_data_updated', handleRefresh);
+    };
   }, []);
 
   return stats;
