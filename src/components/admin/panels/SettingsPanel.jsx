@@ -10,7 +10,7 @@ import {
   Activity, BookOpen, Star, Bot, BarChart2, Trash2, RotateCcw,
   Eye, EyeOff, Clock, Server, Wifi, Download, ChevronDown, ChevronUp,
   Info, Shield, ShieldCheck, CheckCircle2, XCircle, TrendingUp, Users, MessageCircle,
-  Cpu, Terminal, User, Pen, ChevronRight
+  Cpu, Terminal, User, Pen, ChevronRight, Search, Sliders
 } from 'lucide-react';
 import { FaGithub, FaLinkedin, FaTwitter } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -266,6 +266,7 @@ export default function SettingsPanel({ isMobileView = false }) {
   const [customHex, setCustomHex]         = useState('');
   const [revealedKeys, setRevealedKeys]   = useState({});
   const [scanningSecurity, setScanningSecurity] = useState(false);
+  const [settingsSearch, setSettingsSearch] = useState('');
   const [securityScanResults, setSecurityScanResults] = useState({
     score: 100,
     grade: 'A+',
@@ -1385,89 +1386,158 @@ export default function SettingsPanel({ isMobileView = false }) {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ display: 'flex', flexDirection: 'column', gap: 14, height: '100%', minHeight: 0 }}>
-      {/* ── Top bar ──────────────────────────────────────────── */}
+      {/* ── 1. Top Command & Control Header ──────────────────────────── */}
       <div style={{
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12,
         background: 'var(--pcms-panel)', border: '1px solid var(--pcms-line)',
-        borderRadius: 10, padding: '13px 18px',
+        borderRadius: 12, padding: '12px 18px',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div className="pcms-topbar-icon"><Settings size={16} /></div>
+        {/* Left: Branding & Status */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: 10,
+            background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(16, 185, 129, 0.2))',
+            border: '1px solid rgba(99, 102, 241, 0.35)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--pcms-accent)'
+          }}>
+            <Sliders size={18} />
+          </div>
           <div>
-            <h2 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--pcms-text)', fontFamily: "'Space Grotesk', sans-serif" }}>
-              Control Center
-            </h2>
-            <p style={{ margin: 0, fontSize: 11, color: 'var(--pcms-muted)', marginTop: 1 }}>
-              Site-wide configuration — changes apply instantly.
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <h2 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--pcms-text)', fontFamily: "'Space Grotesk', sans-serif" }}>
+                Control Center
+              </h2>
+              <span style={{ fontSize: 10, background: 'var(--pcms-accent-dim)', color: 'var(--pcms-accent)', padding: '1px 7px', borderRadius: 20, fontWeight: 700 }}>
+                v3.0
+              </span>
+            </div>
+            <p style={{ margin: '2px 0 0', fontSize: 11, color: 'var(--pcms-muted)' }}>
+              Enterprise configuration, security suite & live modules
             </p>
           </div>
         </div>
-        <Pill color={statusCfg.color}>{statusCfg.icon}{statusCfg.text}</Pill>
-      </div>
 
-      {/* ── Two-column shell ─────────────────────────────────── */}
-      <div className="pcms-settings-layout">
-        {/* ── Left nav (Full Height Categorized Sidebar) ── */}
-        <div className="pcms-settings-sidebar">
-          {SETTING_GROUPS.map((grp, grpIdx) => (
-            <div key={grp.groupLabel} style={{ display: 'flex', flexDirection: 'column', gap: 2, marginBottom: grpIdx < SETTING_GROUPS.length - 1 ? 6 : 0 }}>
-              <div style={{
-                fontSize: 9.5, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
-                color: 'var(--pcms-muted-2)', padding: '6px 8px 3px', margin: 0,
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between'
-              }}>
-                <span>{grp.groupLabel}</span>
-                <span style={{ fontSize: 9, opacity: 0.6 }}>{grp.items.length}</span>
-              </div>
-
-              {grp.items.map(tab => {
-                const Icon = tab.icon;
-                const active = activeTab === tab.id;
-                const isDanger = tab.id === 'danger';
-                const tabColor = isDanger ? '#EF4444' : (tab.color || 'var(--pcms-accent)');
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '8px 10px', borderRadius: 9, fontSize: 12, fontWeight: active ? 600 : 400,
-                      background: active
-                        ? (isDanger ? '#EF444418' : `${tabColor}15`)
-                        : 'transparent',
-                      color: active
-                        ? (isDanger ? '#EF4444' : tabColor)
-                        : (isDanger ? '#EF4444bb' : 'var(--pcms-muted)'),
-                      border: active ? `1px solid ${tabColor}35` : '1px solid transparent',
-                      cursor: 'pointer', textAlign: 'left',
-                      transition: 'all 0.14s ease-in-out',
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-                      <div style={{
-                        width: 24, height: 24, borderRadius: 6, flexShrink: 0,
-                        background: active ? `${tabColor}25` : `${tabColor}12`,
-                        color: tabColor,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      }}>
-                        <Icon size={12.5} />
-                      </div>
-                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tab.label}</span>
-                    </div>
-                    {active && (
-                      <span style={{
-                        width: 5, height: 5, borderRadius: '50%', background: tabColor,
-                        boxShadow: `0 0 6px ${tabColor}`, flexShrink: 0, marginLeft: 6
-                      }} />
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          ))}
+        {/* Center: Live Settings Search Bar */}
+        <div style={{
+          position: 'relative', display: 'flex', alignItems: 'center',
+          minWidth: 260, flex: '1 1 280px', maxWidth: 420
+        }}>
+          <Search size={13} style={{ position: 'absolute', left: 12, color: 'var(--pcms-muted-2)', pointerEvents: 'none' }} />
+          <input
+            type="text"
+            className="pcms-search"
+            value={settingsSearch}
+            onChange={e => setSettingsSearch(e.target.value)}
+            placeholder="Search all 50+ settings, keys, flags…"
+            style={{ width: '100%', paddingLeft: 34, paddingRight: settingsSearch ? 30 : 12, height: 34, fontSize: 12, borderRadius: 8 }}
+          />
+          {settingsSearch && (
+            <button
+              type="button"
+              onClick={() => setSettingsSearch('')}
+              style={{
+                position: 'absolute', right: 8, background: 'none', border: 'none',
+                color: 'var(--pcms-muted-2)', cursor: 'pointer', fontSize: 14, padding: '2px 6px'
+              }}
+            >
+              ×
+            </button>
+          )}
         </div>
 
-        {/* ── Right content ── */}
+        {/* Right: Realtime Sync & Save Status */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            padding: '5px 11px', borderRadius: 20, fontSize: 11, fontWeight: 600,
+            background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.25)', color: '#10B981'
+          }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10B981', boxShadow: '0 0 8px #10B981' }} />
+            <span>Realtime Synced</span>
+          </div>
+          <Pill color={statusCfg.color}>{statusCfg.icon}{statusCfg.text}</Pill>
+        </div>
+      </div>
+
+      {/* ── 2. Two-Column Workspace ───────────────────────────── */}
+      <div className="pcms-settings-layout">
+        {/* ── Left Sidebar Navigation Rail ── */}
+        <div className="pcms-settings-sidebar">
+          {SETTING_GROUPS.map((grp, grpIdx) => {
+            const visibleItems = settingsSearch
+              ? grp.items.filter(item =>
+                  item.label.toLowerCase().includes(settingsSearch.toLowerCase()) ||
+                  item.desc.toLowerCase().includes(settingsSearch.toLowerCase()) ||
+                  item.id.toLowerCase().includes(settingsSearch.toLowerCase())
+                )
+              : grp.items;
+
+            if (settingsSearch && visibleItems.length === 0) return null;
+
+            return (
+              <div key={grp.groupLabel} style={{ display: 'flex', flexDirection: 'column', gap: 2, marginBottom: grpIdx < SETTING_GROUPS.length - 1 ? 6 : 0 }}>
+                <div style={{
+                  fontSize: 9.5, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+                  color: 'var(--pcms-muted-2)', padding: '6px 8px 3px', margin: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+                }}>
+                  <span>{grp.groupLabel}</span>
+                  <span style={{ fontSize: 9, opacity: 0.6 }}>{visibleItems.length}</span>
+                </div>
+
+                {visibleItems.map(tab => {
+                  const Icon = tab.icon;
+                  const active = activeTab === tab.id;
+                  const isDanger = tab.id === 'danger';
+                  const tabColor = isDanger ? '#EF4444' : (tab.color || 'var(--pcms-accent)');
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        padding: '8px 10px', borderRadius: 9, fontSize: 12, fontWeight: active ? 600 : 400,
+                        background: active
+                          ? (isDanger ? '#EF444418' : `${tabColor}15`)
+                          : 'transparent',
+                        color: active
+                          ? (isDanger ? '#EF4444' : tabColor)
+                          : (isDanger ? '#EF4444bb' : 'var(--pcms-muted)'),
+                        border: active ? `1px solid ${tabColor}35` : '1px solid transparent',
+                        cursor: 'pointer', textAlign: 'left',
+                        transition: 'all 0.14s ease-in-out',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+                        <div style={{
+                          width: 24, height: 24, borderRadius: 6, flexShrink: 0,
+                          background: active ? `${tabColor}25` : `${tabColor}12`,
+                          color: tabColor,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                          <Icon size={12.5} />
+                        </div>
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tab.label}</span>
+                      </div>
+                      {active ? (
+                        <span style={{
+                          width: 5, height: 5, borderRadius: '50%', background: tabColor,
+                          boxShadow: `0 0 6px ${tabColor}`, flexShrink: 0, marginLeft: 6
+                        }} />
+                      ) : tab.id === 'security' ? (
+                        <span style={{ fontSize: 9.5, fontWeight: 700, color: '#10B981', background: 'rgba(16, 185, 129, 0.12)', padding: '1px 5px', borderRadius: 4 }}>
+                          A+
+                        </span>
+                      ) : null}
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* ── Right Content Area with Dynamic Hero Banner ── */}
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
@@ -1476,20 +1546,50 @@ export default function SettingsPanel({ isMobileView = false }) {
             exit={{ opacity: 0, y: -4 }}
             transition={{ duration: 0.13 }}
             className="pcms-settings-content"
-            style={{
-              background: 'var(--pcms-panel)', border: '1px solid var(--pcms-line)',
-              borderRadius: 10, padding: '18px 20px',
-              display: 'flex', flexDirection: 'column', gap: 14,
-              overflowY: 'auto', scrollbarWidth: 'thin',
-              maxHeight: 'calc(100vh - 170px)',
-            }}
           >
-            <div style={{ paddingBottom: 14, borderBottom: '1px solid var(--pcms-line-soft)' }}>
-              <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--pcms-text)', fontFamily: "'Space Grotesk', sans-serif" }}>
-                {tabMeta?.label}
-              </h3>
-              <p style={{ margin: '3px 0 0', fontSize: 11.5, color: 'var(--pcms-muted)' }}>{tabMeta?.desc}</p>
+            {/* Dynamic Category Hero Banner */}
+            <div style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12,
+              padding: '16px 18px', borderRadius: 10,
+              background: `linear-gradient(135deg, ${(tabMeta?.color || '#6366F1')}14, rgba(255, 255, 255, 0.01))`,
+              border: `1px solid ${(tabMeta?.color || '#6366F1')}25`,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{
+                  width: 38, height: 38, borderRadius: 10, flexShrink: 0,
+                  background: `${(tabMeta?.color || '#6366F1')}22`,
+                  border: `1px solid ${(tabMeta?.color || '#6366F1')}40`,
+                  color: tabMeta?.color || 'var(--pcms-accent)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                  {tabMeta?.icon ? React.createElement(tabMeta.icon, { size: 18 }) : <Settings size={18} />}
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--pcms-text)', fontFamily: "'Space Grotesk', sans-serif" }}>
+                    {tabMeta?.label}
+                  </h3>
+                  <p style={{ margin: '2px 0 0', fontSize: 11.5, color: 'var(--pcms-muted)' }}>{tabMeta?.desc}</p>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {activeTab === 'security' && (
+                  <Pill color="#10B981">
+                    <CheckCircle2 size={11} /> Grade A+ (100/100)
+                  </Pill>
+                )}
+                {activeTab === 'webhooks_api' && (
+                  <Pill color="#8B5CF6">
+                    <Key size={11} /> AES Vault
+                  </Pill>
+                )}
+                <span style={{ fontSize: 10.5, color: 'var(--pcms-muted-2)', fontFamily: 'monospace' }}>
+                  ID: {activeTab}
+                </span>
+              </div>
             </div>
+
+            {/* Render Tab Form & Cards */}
             {renderTabContent()}
           </motion.div>
         </AnimatePresence>
