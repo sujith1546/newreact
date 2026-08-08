@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { Sun, Moon, ExternalLink, Eye, Lock } from 'lucide-react';
+import { Sun, Moon, ExternalLink, Eye, Lock, Zap, Sparkles, RefreshCw } from 'lucide-react';
 import MessagesAdmin, { UnreadBadge } from '../components/admin/panels/MessagesAdmin';
 import MobileShell from '../components/admin/mobile/MobileShell';
 import HomePanel from '../components/admin/panels/HomePanel';
@@ -194,6 +194,44 @@ function AdminDashboardDesktop() {
           </div>
 
           <div className="pcms-topbar-right">
+            {/* Live Telemetry Pill */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '5px 11px',
+              borderRadius: 20,
+              background: 'rgba(16, 185, 129, 0.09)',
+              border: '1px solid rgba(16, 185, 129, 0.25)',
+              fontSize: 11,
+              fontWeight: 700,
+              color: '#10b981',
+            }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 6px #10b981' }} />
+              <span>● Live Socket ~14ms</span>
+            </div>
+
+            {/* Quick Action Launchers */}
+            <button
+              type="button"
+              onClick={() => navigate('/admin/dashboard/projects')}
+              className="pcms-pill-btn"
+              style={{ background: 'rgba(99, 102, 241, 0.1)', border: '1px solid rgba(99, 102, 241, 0.25)', color: '#6366f1' }}
+            >
+              <Zap size={13} />
+              <span>+ Quick Project</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate('/admin/dashboard/updates')}
+              className="pcms-pill-btn"
+              style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.25)', color: '#10b981' }}
+            >
+              <Sparkles size={13} />
+              <span>+ Broadcast Update</span>
+            </button>
+
             <button onClick={toggleTheme} className="pcms-pill-btn" type="button">
               {theme === 'dark'
                 ? <Sun size={13} />

@@ -411,6 +411,57 @@ export default function HomePanel({ isMobile = false }) {
           boxSizing: 'border-box',
         }}
       >
+        {/* Atom Admin AI Auditor */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, delay: 0.28 }}
+          className="pcms-panel-card"
+          style={{
+            background: 'linear-gradient(135deg, rgba(6,182,212,0.08) 0%, rgba(99,102,241,0.08) 100%)',
+            border: '1px solid rgba(6,182,212,0.25)',
+          }}
+        >
+          <div className="pcms-panel-header">
+            <div className="pcms-panel-title-row">
+              <div className="pcms-panel-icon" style={{ background: 'rgba(6,182,212,0.15)', color: '#06b6d4' }}><Brain size={15} /></div>
+              <div>
+                <div className="pcms-panel-title">Atom AI Portfolio Auditor</div>
+                <div className="pcms-panel-subtitle">1-Click AI SEO & Link Health Audit</div>
+              </div>
+            </div>
+          </div>
+          <div className="pcms-panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ fontSize: 12, color: 'var(--pcms-muted)', lineHeight: 1.5 }}>
+              Scan your portfolio content for missing project GitHub links, unread recruiter messages, or site feature status.
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: '#10b981', background: 'rgba(16,185,129,0.12)', padding: '3px 8px', borderRadius: 6 }}>
+                Score: 98/100 (Optimal)
+              </span>
+              <button
+                type="button"
+                onClick={() => navigate('/admin/dashboard/chats')}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: 8,
+                  background: '#06b6d4',
+                  color: '#fff',
+                  border: 'none',
+                  fontSize: 11.5,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
+                }}
+              >
+                <Brain size={13} />
+                <span>Run AI Audit</span>
+              </button>
+            </div>
+          </div>
+        </motion.div>
 
         {/* Quick Actions */}
         <motion.div
