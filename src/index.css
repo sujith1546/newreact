@@ -81,6 +81,16 @@ html.admin-mode, body.admin-mode {
   padding: 0 !important;
 }
 
+.admin-mobile-shell .mobile-nav-capsule,
+.pcms-scope .mobile-nav-capsule {
+  left: 14px !important;
+  right: 14px !important;
+  width: calc(100% - 28px) !important;
+  max-width: calc(100% - 28px) !important;
+  margin: 0 auto !important;
+  bottom: max(12px, env(safe-area-inset-bottom, 12px)) !important;
+}
+
 .admin-mobile-topbar {
   display: flex;
   justify-content: space-between;
