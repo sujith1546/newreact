@@ -1023,8 +1023,8 @@ export default function AdminLogin() {
 
             <button className={`method-card ${activeMethod === 'otp' ? 'active' : ''}`} onClick={() => { setError(""); setActiveMethod("otp"); }} type="button">
               <div className="method-num">02</div>
-              <div className="method-label">Email OTP Code</div>
-              <div className="method-sub">Instant security PIN</div>
+              <div className="method-label">Magic Link</div>
+              <div className="method-sub">One-time email link</div>
             </button>
           </div>
 
@@ -1086,7 +1086,7 @@ export default function AdminLogin() {
               </div>
             )}
 
-            {/* EMAIL OTP VIEW */}
+            {/* MAGIC LINK / ONE-TIME EMAIL LINK VIEW */}
             {activeMethod === 'otp' && (
               <div className="method-view" id="view-email-otp">
                 {!emailOtpSent ? (
@@ -1100,9 +1100,9 @@ export default function AdminLogin() {
                       }}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg>
                       </div>
-                      <h3 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 4px', color: 'var(--text)' }}>Email Security Code (OTP)</h3>
+                      <h3 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 4px', color: 'var(--text)' }}>One-Time Email Link</h3>
                       <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: 0 }}>
-                        Generate a secure 6-digit one-time security PIN sent directly to your registered inbox.
+                        We will send a secure 1-click sign-in link directly to your registered inbox.
                       </p>
                     </div>
 
@@ -1129,50 +1129,34 @@ export default function AdminLogin() {
                       </div>
                       <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#10b981', background: 'rgba(16,185,129,0.15)', padding: '4px 10px', borderRadius: 999, fontWeight: 600 }}>
                         <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981' }} />
-                        <span>Locked</span>
+                        <span>Verified</span>
                       </div>
                     </div>
 
                     <button className="submit-btn" type="submit" style={{ marginTop: 8 }} disabled={loading || lockoutTimer > 0}>
-                      {loading ? "Dispatching Security Code..." : "Send Security OTP to sujithreddy1546@gmail.com →"}
+                      {loading ? "Sending Link..." : "Send One-Time Sign-In Link to sujithreddy1546@gmail.com →"}
                     </button>
                   </form>
                 ) : (
-                  <form onSubmit={handleVerifyEmailOtp} noValidate>
-                    <div style={{ textAlign: 'center', marginBottom: 16 }}>
-                      <div style={{
-                        width: 44, height: 44, borderRadius: 12,
-                        background: 'rgba(16, 185, 129, 0.1)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        margin: '0 auto 10px', color: '#10b981'
-                      }}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                      </div>
-                      <h3 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 4px', color: 'var(--text)' }}>Enter 6-Digit Code</h3>
-                      <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: 0 }}>
-                        Security code sent to <strong style={{ color: 'var(--text)' }}>sujithreddy1546@gmail.com</strong>
-                      </p>
+                  <div style={{ textAlign: 'center', padding: '10px 0' }}>
+                    <div style={{
+                      width: 50, height: 50, borderRadius: 14,
+                      background: 'rgba(16, 185, 129, 0.1)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      margin: '0 auto 12px', color: '#10b981'
+                    }}>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
                     </div>
+                    
+                    <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 6px', color: 'var(--text)' }}>Sign-In Link Sent!</h3>
+                    <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 16px', lineHeight: 1.5 }}>
+                      We sent a one-time sign-in link to<br />
+                      <strong style={{ color: '#38bdf8' }}>sujithreddy1546@gmail.com</strong>
+                    </p>
 
-                    <div className="field">
-                      <label htmlFor="otpCodeInput">6-Digit Verification PIN</label>
-                      <div className={`input-shell ${error ? 'error' : ''}`} style={{ height: 46 }}>
-                        <input
-                          id="otpCodeInput"
-                          type="text"
-                          autoComplete="one-time-code"
-                          maxLength={6}
-                          value={emailOtpCode}
-                          onChange={(e) => setEmailOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                          placeholder="000 000"
-                          style={{ textAlign: 'center', letterSpacing: '6px', fontSize: 18, fontWeight: 700 }}
-                        />
-                      </div>
+                    <div style={{ background: 'rgba(59, 130, 246, 0.08)', border: '1px solid rgba(59, 130, 246, 0.2)', borderRadius: 10, padding: '12px 14px', marginBottom: 18, fontSize: 12.5, color: '#93c5fd', textAlign: 'left' }}>
+                      👉 <strong>Action required:</strong> Open your email inbox or spam folder and click <strong>"Sign in"</strong>. This browser will automatically log you into your Admin Dashboard!
                     </div>
-
-                    <button className="submit-btn" type="submit" style={{ marginTop: 16 }} disabled={loading || emailOtpCode.length !== 6 || lockoutTimer > 0}>
-                      {loading ? "Verifying Code..." : "Verify & Sign In →"}
-                    </button>
 
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 14, fontSize: 12 }}>
                       <button
@@ -1189,10 +1173,10 @@ export default function AdminLogin() {
                         disabled={otpTimer > 0 || loading}
                         style={{ background: 'none', border: 'none', color: otpTimer > 0 ? 'var(--text-dim)' : 'var(--green)', fontWeight: 600, cursor: otpTimer > 0 ? 'not-allowed' : 'pointer', padding: 0 }}
                       >
-                        {otpTimer > 0 ? `Resend in ${otpTimer}s` : "Resend Security Code"}
+                        {otpTimer > 0 ? `Resend link in ${otpTimer}s` : "Resend Link"}
                       </button>
                     </div>
-                  </form>
+                  </div>
                 )}
               </div>
             )}
