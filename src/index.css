@@ -6303,34 +6303,41 @@ body:has(.admin-shell) {
 ─────────────────────────────────────────────── */
 .pcms-settings-layout {
   display: grid !important;
-  grid-template-columns: 240px 1fr !important;
-  gap: 16px !important;
-  align-items: start !important;
+  grid-template-columns: 280px 1fr !important;
+  gap: 18px !important;
+  align-items: stretch !important;
+  min-height: calc(100vh - 120px) !important;
+  width: 100% !important;
 }
 .pcms-settings-sidebar {
   background: var(--pcms-panel) !important;
   border: 1px solid var(--pcms-line) !important;
-  border-radius: 10px;
-  padding: 8px 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  position: sticky;
-  top: 0;
-  overflow-y: auto;
-  scrollbar-width: none;
+  border-radius: 12px !important;
+  padding: 14px 10px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  position: sticky !important;
+  top: 14px !important;
+  overflow-y: auto !important;
+  scrollbar-width: thin !important;
 }
-.pcms-settings-sidebar::-webkit-scrollbar { display: none; }
+.pcms-settings-sidebar::-webkit-scrollbar { width: 4px; }
+.pcms-settings-sidebar::-webkit-scrollbar-thumb { background: var(--pcms-line); border-radius: 4px; }
 .pcms-settings-content {
   background: var(--pcms-panel) !important;
   border: 1px solid var(--pcms-line) !important;
-  border-radius: 10px;
-  padding: 18px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  overflow-y: auto;
-  scrollbar-width: thin;
+  border-radius: 12px !important;
+  padding: 22px 24px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+  height: 100% !important;
+  min-height: 100% !important;
+  overflow-y: auto !important;
+  scrollbar-width: thin !important;
 }
 .pcms-settings-tabs {
   display: flex; gap: 4px;

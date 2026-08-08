@@ -1397,37 +1397,64 @@ export default function SettingsPanel({ isMobileView = false }) {
 
       {/* ── Two-column shell ─────────────────────────────────── */}
       <div className="pcms-settings-layout">
-        {/* ── Left nav ── */}
-        <div className="pcms-settings-sidebar" style={{
-          background: 'var(--pcms-panel)', border: '1px solid var(--pcms-line)',
-          borderRadius: 10, padding: '8px 6px', display: 'flex', flexDirection: 'column', gap: 1,
-          position: 'sticky', top: 0, overflowY: 'auto', scrollbarWidth: 'none',
-          maxHeight: 'calc(100vh - 170px)',
-        }}>
-          <p style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--pcms-muted-2)', padding: '4px 8px 6px', margin: 0 }} className="pcms-settings-side-label">Settings</p>
-          {TABS.map(tab => {
-            const Icon = tab.icon;
-            const active = activeTab === tab.id;
-            const isDanger = tab.id === 'danger';
-            const baseColor = isDanger ? '#EF4444' : 'var(--pcms-accent)';
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  padding: '8px 10px', borderRadius: 8, fontSize: 12, fontWeight: active ? 600 : 400,
-                  background: active ? (isDanger ? '#EF444414' : 'var(--pcms-accent-dim)') : 'transparent',
-                  color: active ? baseColor : isDanger ? '#EF4444aa' : 'var(--pcms-muted)',
-                  border: 'none', cursor: 'pointer', textAlign: 'left',
-                  transition: 'all 0.12s',
-                }}
-              >
-                <Icon size={13} style={{ flexShrink: 0, opacity: active ? 1 : 0.75 }} />
-                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tab.label}</span>
-              </button>
-            );
-          })}
+        {/* ── Left nav (Full Height Categorized Sidebar) ── */}
+        <div className="pcms-settings-sidebar">
+          {SETTING_GROUPS.map((grp, grpIdx) => (
+            <div key={grp.groupLabel} style={{ display: 'flex', flexDirection: 'column', gap: 2, marginBottom: grpIdx < SETTING_GROUPS.length - 1 ? 6 : 0 }}>
+              <div style={{
+                fontSize: 9.5, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+                color: 'var(--pcms-muted-2)', padding: '6px 8px 3px', margin: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between'
+              }}>
+                <span>{grp.groupLabel}</span>
+                <span style={{ fontSize: 9, opacity: 0.6 }}>{grp.items.length}</span>
+              </div>
+
+              {grp.items.map(tab => {
+                const Icon = tab.icon;
+                const active = activeTab === tab.id;
+                const isDanger = tab.id === 'danger';
+                const tabColor = isDanger ? '#EF4444' : (tab.color || 'var(--pcms-accent)');
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '8px 10px', borderRadius: 9, fontSize: 12, fontWeight: active ? 600 : 400,
+                      background: active
+                        ? (isDanger ? '#EF444418' : `${tabColor}15`)
+                        : 'transparent',
+                      color: active
+                        ? (isDanger ? '#EF4444' : tabColor)
+                        : (isDanger ? '#EF4444bb' : 'var(--pcms-muted)'),
+                      border: active ? `1px solid ${tabColor}35` : '1px solid transparent',
+                      cursor: 'pointer', textAlign: 'left',
+                      transition: 'all 0.14s ease-in-out',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+                      <div style={{
+                        width: 24, height: 24, borderRadius: 6, flexShrink: 0,
+                        background: active ? `${tabColor}25` : `${tabColor}12`,
+                        color: tabColor,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        <Icon size={12.5} />
+                      </div>
+                      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tab.label}</span>
+                    </div>
+                    {active && (
+                      <span style={{
+                        width: 5, height: 5, borderRadius: '50%', background: tabColor,
+                        boxShadow: `0 0 6px ${tabColor}`, flexShrink: 0, marginLeft: 6
+                      }} />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
         </div>
 
         {/* ── Right content ── */}
