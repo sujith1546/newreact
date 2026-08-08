@@ -798,13 +798,25 @@ export default function AdminLogin() {
         }
       });
       if (otpError) {
-        setError(otpError.message || "Failed to send security code to email. Check Supabase rate limits or spam folder.");
+        if (otpError.status === 429 || otpError.message?.toLowerCase().includes("rate limit") || otpError.message?.toLowerCase().includes("too many") || otpError.message?.toLowerCase().includes("security purposes")) {
+          setError("⚠️ Supabase rate limit: A verification code was recently sent. Please check your inbox & spam folder, or wait 60s to request a new code.");
+          setEmailOtpSent(true);
+          setOtpTimer(60);
+        } else {
+          setError(otpError.message || "Failed to send security code to email. Check Supabase rate limits or spam folder.");
+        }
       } else {
         setEmailOtpSent(true);
         setOtpTimer(60);
       }
     } catch (err) {
-      setError(err.message || "Failed to dispatch email security code.");
+      if (err.status === 429 || err.message?.includes("429")) {
+        setError("⚠️ Rate limit reached. If a code was already sent, check your inbox/spam or wait 60s.");
+        setEmailOtpSent(true);
+        setOtpTimer(60);
+      } else {
+        setError(err.message || "Failed to dispatch email security code.");
+      }
     } finally {
       setLoading(false);
     }
