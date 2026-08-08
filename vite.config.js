@@ -87,6 +87,50 @@ function localApiDevPlugin() {
           }
         }
 
+        if (url.startsWith('/api/send-otp')) {
+          const buffers = [];
+          for await (const chunk of req) {
+            buffers.push(chunk);
+          }
+          const rawBody = Buffer.concat(buffers).toString('utf-8');
+          try {
+            req.body = rawBody ? JSON.parse(rawBody) : {};
+          } catch {
+            req.body = {};
+          }
+
+          res.setHeader('Content-Type', 'application/json');
+          try {
+            const sendOtpModule = await import('./api/send-otp.js');
+            return await sendOtpModule.default(req, res);
+          } catch (err) {
+            res.statusCode = 500;
+            return res.end(JSON.stringify({ error: 'Local OTP dispatch failed: ' + err.message }));
+          }
+        }
+
+        if (url.startsWith('/api/verify-otp')) {
+          const buffers = [];
+          for await (const chunk of req) {
+            buffers.push(chunk);
+          }
+          const rawBody = Buffer.concat(buffers).toString('utf-8');
+          try {
+            req.body = rawBody ? JSON.parse(rawBody) : {};
+          } catch {
+            req.body = {};
+          }
+
+          res.setHeader('Content-Type', 'application/json');
+          try {
+            const verifyOtpModule = await import('./api/verify-otp.js');
+            return await verifyOtpModule.default(req, res);
+          } catch (err) {
+            res.statusCode = 500;
+            return res.end(JSON.stringify({ error: 'Local OTP verification failed: ' + err.message }));
+          }
+        }
+
         next();
       });
     }

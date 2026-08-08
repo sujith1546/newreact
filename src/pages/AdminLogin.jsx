@@ -791,32 +791,37 @@ export default function AdminLogin() {
     const targetEmail = (email || "sujithreddy1546@gmail.com").trim();
     setLoading(true);
     try {
-      const { data, error: otpError } = await supabase.auth.signInWithOtp({
-        email: targetEmail,
-        options: {
-          emailRedirectTo: window.location.origin + "/admin/dashboard",
-        }
+      // 1. Send real 6-digit OTP code directly to admin inbox via Gmail SMTP API
+      const res = await fetch('/api/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: targetEmail }),
       });
-      if (otpError) {
-        if (otpError.status === 429 || otpError.message?.toLowerCase().includes("rate limit") || otpError.message?.toLowerCase().includes("too many") || otpError.message?.toLowerCase().includes("security purposes")) {
-          setError("⚠️ Supabase rate limit: A verification code was recently sent. Please check your inbox & spam folder, or wait 60s to request a new code.");
-          setEmailOtpSent(true);
-          setOtpTimer(60);
-        } else {
-          setError(otpError.message || "Failed to send security code to email. Check Supabase rate limits or spam folder.");
-        }
+      const resData = await res.json().catch(() => ({}));
+
+      // 2. Also trigger Supabase native OTP as dual redundancy
+      supabase.auth.signInWithOtp({
+        email: targetEmail,
+        options: { emailRedirectTo: window.location.origin + "/admin/dashboard" }
+      }).catch(() => {});
+
+      if (res.ok || resData.success) {
+        setEmailOtpSent(true);
+        setOtpTimer(60);
       } else {
+        // If API returned error, still show PIN input if rate-limited or fall back gracefully
+        if (res.status === 429 || resData.error?.includes("429")) {
+          setError("⚠️ Rate limit: A code was recently sent. Enter it below or wait 60s.");
+        } else {
+          setError(resData.error || "Failed to dispatch email code. Please try again.");
+        }
         setEmailOtpSent(true);
         setOtpTimer(60);
       }
     } catch (err) {
-      if (err.status === 429 || err.message?.includes("429")) {
-        setError("⚠️ Rate limit reached. If a code was already sent, check your inbox/spam or wait 60s.");
-        setEmailOtpSent(true);
-        setOtpTimer(60);
-      } else {
-        setError(err.message || "Failed to dispatch email security code.");
-      }
+      setError("Failed to dispatch 6-digit code: " + err.message);
+      setEmailOtpSent(true);
+      setOtpTimer(60);
     } finally {
       setLoading(false);
     }
@@ -827,26 +832,43 @@ export default function AdminLogin() {
     if (lockoutTimer > 0) return;
     setError("");
     const targetEmail = (email || "sujithreddy1546@gmail.com").trim();
-    if (!emailOtpCode || emailOtpCode.trim().length !== 6) {
+    const cleanCode = emailOtpCode.trim();
+    if (!cleanCode || cleanCode.length !== 6) {
       setError("Please enter the 6-digit security code received in your email.");
       return;
     }
     setLoading(true);
     try {
+      // 1. Verify via real 6-digit OTP API
+      const res = await fetch('/api/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: targetEmail, code: cleanCode }),
+      });
+      const resData = await res.json().catch(() => ({}));
+
+      if (res.ok && resData.verified) {
+        resetLockout();
+        await logTelemetry("admin_otp_user", targetEmail, true);
+        navigate("/admin/dashboard");
+        return;
+      }
+
+      // 2. Dual fallback: Check Supabase OTP token verification
       const { data, error: verifyError } = await supabase.auth.verifyOtp({
         email: targetEmail,
-        token: emailOtpCode.trim(),
+        token: cleanCode,
         type: 'email',
       });
+
       if (verifyError) {
-        // Also attempt token_hash or recovery verification in case Supabase format differs
         const { data: magicData, error: magicError } = await supabase.auth.verifyOtp({
           email: targetEmail,
-          token: emailOtpCode.trim(),
+          token: cleanCode,
           type: 'magiclink',
         });
-        if (magicError) {
-          setError(verifyError.message || "Invalid or expired security code.");
+        if (magicError && !resData.verified) {
+          setError(resData.error || verifyError.message || "Invalid or expired 6-digit security code.");
           await registerFailedAttempt();
         } else if (magicData?.user) {
           resetLockout();
@@ -1023,8 +1045,8 @@ export default function AdminLogin() {
 
             <button className={`method-card ${activeMethod === 'otp' ? 'active' : ''}`} onClick={() => { setError(""); setActiveMethod("otp"); }} type="button">
               <div className="method-num">02</div>
-              <div className="method-label">Magic Link</div>
-              <div className="method-sub">One-time email link</div>
+              <div className="method-label">Email OTP Code</div>
+              <div className="method-sub">6-digit security PIN</div>
             </button>
           </div>
 
@@ -1086,7 +1108,7 @@ export default function AdminLogin() {
               </div>
             )}
 
-            {/* MAGIC LINK / ONE-TIME EMAIL LINK VIEW */}
+            {/* EMAIL OTP VIEW */}
             {activeMethod === 'otp' && (
               <div className="method-view" id="view-email-otp">
                 {!emailOtpSent ? (
@@ -1100,9 +1122,9 @@ export default function AdminLogin() {
                       }}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg>
                       </div>
-                      <h3 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 4px', color: 'var(--text)' }}>One-Time Email Link</h3>
+                      <h3 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 4px', color: 'var(--text)' }}>Email Security Code (OTP)</h3>
                       <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: 0 }}>
-                        We will send a secure 1-click sign-in link directly to your registered inbox.
+                        Generate a secure 6-digit one-time security PIN sent directly to your registered inbox.
                       </p>
                     </div>
 
@@ -1134,29 +1156,45 @@ export default function AdminLogin() {
                     </div>
 
                     <button className="submit-btn" type="submit" style={{ marginTop: 8 }} disabled={loading || lockoutTimer > 0}>
-                      {loading ? "Sending Link..." : "Send One-Time Sign-In Link to sujithreddy1546@gmail.com →"}
+                      {loading ? "Sending 6-Digit OTP..." : "Send 6-Digit OTP to sujithreddy1546@gmail.com →"}
                     </button>
                   </form>
                 ) : (
-                  <div style={{ textAlign: 'center', padding: '10px 0' }}>
-                    <div style={{
-                      width: 50, height: 50, borderRadius: 14,
-                      background: 'rgba(16, 185, 129, 0.1)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      margin: '0 auto 12px', color: '#10b981'
-                    }}>
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+                  <form onSubmit={handleVerifyEmailOtp} noValidate>
+                    <div style={{ textAlign: 'center', marginBottom: 16 }}>
+                      <div style={{
+                        width: 44, height: 44, borderRadius: 12,
+                        background: 'rgba(16, 185, 129, 0.1)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        margin: '0 auto 10px', color: '#10b981'
+                      }}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                      </div>
+                      <h3 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 4px', color: 'var(--text)' }}>Enter 6-Digit Code</h3>
+                      <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: 0 }}>
+                        Security PIN sent to <strong style={{ color: '#38bdf8' }}>sujithreddy1546@gmail.com</strong>
+                      </p>
                     </div>
-                    
-                    <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 6px', color: 'var(--text)' }}>Sign-In Link Sent!</h3>
-                    <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: '0 0 16px', lineHeight: 1.5 }}>
-                      We sent a one-time sign-in link to<br />
-                      <strong style={{ color: '#38bdf8' }}>sujithreddy1546@gmail.com</strong>
-                    </p>
 
-                    <div style={{ background: 'rgba(59, 130, 246, 0.08)', border: '1px solid rgba(59, 130, 246, 0.2)', borderRadius: 10, padding: '12px 14px', marginBottom: 18, fontSize: 12.5, color: '#93c5fd', textAlign: 'left' }}>
-                      👉 <strong>Action required:</strong> Open your email inbox or spam folder and click <strong>"Sign in"</strong>. This browser will automatically log you into your Admin Dashboard!
+                    <div className="field">
+                      <label htmlFor="otpCodeInput">6-Digit Verification PIN</label>
+                      <div className={`input-shell ${error ? 'error' : ''}`} style={{ height: 48 }}>
+                        <input
+                          id="otpCodeInput"
+                          type="text"
+                          autoComplete="one-time-code"
+                          maxLength={6}
+                          value={emailOtpCode}
+                          onChange={(e) => setEmailOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                          placeholder="000 000"
+                          style={{ textAlign: 'center', letterSpacing: '6px', fontSize: 20, fontWeight: 700, color: 'var(--text)' }}
+                        />
+                      </div>
                     </div>
+
+                    <button className="submit-btn" type="submit" style={{ marginTop: 16 }} disabled={loading || emailOtpCode.length !== 6 || lockoutTimer > 0}>
+                      {loading ? "Verifying PIN..." : "Verify PIN & Sign In →"}
+                    </button>
 
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 14, fontSize: 12 }}>
                       <button
@@ -1173,10 +1211,10 @@ export default function AdminLogin() {
                         disabled={otpTimer > 0 || loading}
                         style={{ background: 'none', border: 'none', color: otpTimer > 0 ? 'var(--text-dim)' : 'var(--green)', fontWeight: 600, cursor: otpTimer > 0 ? 'not-allowed' : 'pointer', padding: 0 }}
                       >
-                        {otpTimer > 0 ? `Resend link in ${otpTimer}s` : "Resend Link"}
+                        {otpTimer > 0 ? `Resend OTP in ${otpTimer}s` : "Resend 6-Digit OTP"}
                       </button>
                     </div>
-                  </div>
+                  </form>
                 )}
               </div>
             )}
