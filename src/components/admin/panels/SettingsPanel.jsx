@@ -247,6 +247,16 @@ export default function SettingsPanel({ isMobileView = false }) {
   const [saveStatus, setSaveStatus]       = useState('saved'); // 'saved' | 'saving' | 'error'
   const [uploadingResume, setUploadingResume]   = useState(false);
   const [exportingBackup, setExportingBackup]   = useState(false);
+  const [backupHistory, setBackupHistory]       = useState(() => {
+    try {
+      const raw = localStorage.getItem('pcms_backup_history');
+      return raw ? JSON.parse(raw) : [];
+    } catch (_) {
+      return [];
+    }
+  });
+  const [dangerConfirm, setDangerConfirm]       = useState(null);
+  const [dangerInput, setDangerInput]           = useState('');
   const [triggeringWebhook, setTriggeringWebhook] = useState(false);
   const [activeTab, setActiveTab]         = useState('toggles');
   const [auditLogs, setAuditLogs]         = useState([]);
