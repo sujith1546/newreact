@@ -24,7 +24,7 @@ export function useDashboardStats() {
       } catch (e) { aiCount = 0; }
 
       const [messages, unread, projects, updates, skills, certs] = await Promise.all([
-        supabase.from('contact_messages').select('id', { count: 'exact', head: true }).eq('is_bot', false),
+        supabase.from('contact_messages').select('id', { count: 'exact', head: true }),
         supabase.from('contact_messages').select('id', { count: 'exact', head: true }).eq('is_read', false).eq('is_archived', false).eq('is_spam', false),
         supabase.from('projects').select('id', { count: 'exact', head: true }),
         supabase.from('updates').select('id', { count: 'exact', head: true }),

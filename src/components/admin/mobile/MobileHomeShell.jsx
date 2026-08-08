@@ -121,7 +121,6 @@ export default function MobileHomeShell() {
         supabase
           .from('contact_messages')
           .select('id, name, subject, created_at')
-          .eq('is_bot', false)
           .order('created_at', { ascending: false })
           .limit(3),
         supabase
@@ -293,8 +292,8 @@ export default function MobileHomeShell() {
           ) : activityFeed.length === 0 ? (
             <EmptyFeedState />
           ) : (
-            activityFeed.map((item, i) => (
-              <ActivityItem key={item.key} {...item} delay={0.05 + i * 0.06} />
+            activityFeed.map(({ key, ...itemProps }, i) => (
+              <ActivityItem key={key} {...itemProps} delay={0.05 + i * 0.06} />
             ))
           )}
         </div>
