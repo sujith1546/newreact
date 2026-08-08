@@ -711,23 +711,6 @@ export default function SettingsPanel({ isMobileView = false }) {
               </Card>
 
               <Card>
-                <CardHead icon={Shield} label="Two-Factor Authentication (2FA)" sub="Enforce 6-digit TOTP authenticator codes via Google Authenticator or Authy." color="#6366F1" />
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
-                  <span style={{ fontSize: 12, color: 'var(--pcms-muted)' }}>
-                    Protect your admin console with Google Authenticator, Authy, or 1Password.
-                  </span>
-                  <a
-                    href="/admin/mfa-setup"
-                    className="pcms-btn-dark"
-                    style={{ padding: '7px 14px', fontSize: 11.5, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 6 }}
-                  >
-                    <Key size={12} />
-                    <span>Manage 2FA Authenticator Setup →</span>
-                  </a>
-                </div>
-              </Card>
-
-              <Card>
                 <CardHead icon={Shield} label="Session Info" sub="Read-only metadata about the current admin session." color="#6366F1" />
                 {[
                   ['Session',  <Pill color="#10B981"><CheckCircle2 size={10} /> Authenticated</Pill>],
