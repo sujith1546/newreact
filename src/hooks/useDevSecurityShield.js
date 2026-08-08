@@ -3,50 +3,95 @@ import { supabase } from '../lib/supabaseClient';
 
 /**
  * useDevSecurityShield
- * Protects portfolio source code, blocks right-click context menu,
- * and intercepts developer tools keyboard shortcuts when enabled by admin.
+ * Enterprise Security Suite for Portfolio:
+ * 1. Anti-Inspect & Right-Click Shield (F12, Ctrl+Shift+I/J/C, Ctrl+U, Context Menu)
+ * 2. Anti-Copy & Text Selection Guard (Prevents copying and image dragging)
+ * 3. Anti-Print & PDF Export Blocker (Ctrl+P and Print Media styling)
+ * 4. Clickjacking & Frame Guard (Blocks unauthorized iframe embedding)
+ * 5. Holographic Watermark Shield
  */
 export function useDevSecurityShield() {
-  const [protectedActive, setProtectedActive] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return localStorage.getItem('pcms_disable_inspect') === 'true';
+  const [securityState, setSecurityState] = useState(() => {
+    if (typeof window === 'undefined') {
+      return {
+        disableInspect: false,
+        disableCopy: false,
+        disablePrint: false,
+        frameGuard: false,
+        securityWatermark: false,
+      };
+    }
+    return {
+      disableInspect: localStorage.getItem('pcms_disable_inspect') === 'true',
+      disableCopy: localStorage.getItem('pcms_disable_copy') === 'true',
+      disablePrint: localStorage.getItem('pcms_disable_print') === 'true',
+      frameGuard: localStorage.getItem('pcms_frame_guard') === 'true',
+      securityWatermark: localStorage.getItem('pcms_security_watermark') === 'true',
+    };
   });
 
   const [toastMessage, setToastMessage] = useState(null);
 
   useEffect(() => {
-    // 1. Sync from Supabase site_settings
-    async function fetchSecuritySetting() {
+    // 1. Sync all security settings from Supabase site_settings
+    async function fetchSecuritySettings() {
       try {
         const { data } = await supabase
           .from('site_settings')
-          .select('disable_inspect')
+          .select('disable_inspect, disable_copy, disable_print, frame_guard, security_watermark')
           .limit(1)
           .single();
-        if (data && typeof data.disable_inspect !== 'undefined') {
-          const isActive = !!data.disable_inspect;
-          localStorage.setItem('pcms_disable_inspect', String(isActive));
-          setProtectedActive(isActive);
+        if (data) {
+          const next = {
+            disableInspect: !!data.disable_inspect,
+            disableCopy: !!data.disable_copy,
+            disablePrint: !!data.disable_print,
+            frameGuard: !!data.frame_guard,
+            securityWatermark: !!data.security_watermark,
+          };
+          localStorage.setItem('pcms_disable_inspect', String(next.disableInspect));
+          localStorage.setItem('pcms_disable_copy', String(next.disableCopy));
+          localStorage.setItem('pcms_disable_print', String(next.disablePrint));
+          localStorage.setItem('pcms_frame_guard', String(next.frameGuard));
+          localStorage.setItem('pcms_security_watermark', String(next.securityWatermark));
+          setSecurityState(next);
         }
       } catch (_) {}
     }
-    fetchSecuritySetting();
+    fetchSecuritySettings();
 
     // 2. Realtime listener for site_settings changes
     const channel = supabase
-      .channel('security_shield_realtime')
+      .channel('security_suite_realtime')
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'site_settings' }, (payload) => {
-        if (payload?.new && typeof payload.new.disable_inspect !== 'undefined') {
-          const isActive = !!payload.new.disable_inspect;
-          localStorage.setItem('pcms_disable_inspect', String(isActive));
-          setProtectedActive(isActive);
+        if (payload?.new) {
+          const d = payload.new;
+          const next = {
+            disableInspect: typeof d.disable_inspect !== 'undefined' ? !!d.disable_inspect : securityState.disableInspect,
+            disableCopy: typeof d.disable_copy !== 'undefined' ? !!d.disable_copy : securityState.disableCopy,
+            disablePrint: typeof d.disable_print !== 'undefined' ? !!d.disable_print : securityState.disablePrint,
+            frameGuard: typeof d.frame_guard !== 'undefined' ? !!d.frame_guard : securityState.frameGuard,
+            securityWatermark: typeof d.security_watermark !== 'undefined' ? !!d.security_watermark : securityState.securityWatermark,
+          };
+          localStorage.setItem('pcms_disable_inspect', String(next.disableInspect));
+          localStorage.setItem('pcms_disable_copy', String(next.disableCopy));
+          localStorage.setItem('pcms_disable_print', String(next.disablePrint));
+          localStorage.setItem('pcms_frame_guard', String(next.frameGuard));
+          localStorage.setItem('pcms_security_watermark', String(next.securityWatermark));
+          setSecurityState(next);
         }
       })
       .subscribe();
 
     // 3. Local storage & custom event listener
     const syncLocal = () => {
-      setProtectedActive(localStorage.getItem('pcms_disable_inspect') === 'true');
+      setSecurityState({
+        disableInspect: localStorage.getItem('pcms_disable_inspect') === 'true',
+        disableCopy: localStorage.getItem('pcms_disable_copy') === 'true',
+        disablePrint: localStorage.getItem('pcms_disable_print') === 'true',
+        frameGuard: localStorage.getItem('pcms_frame_guard') === 'true',
+        securityWatermark: localStorage.getItem('pcms_security_watermark') === 'true',
+      });
     };
     window.addEventListener('storage', syncLocal);
     window.addEventListener('pcms_security_changed', syncLocal);
@@ -59,30 +104,97 @@ export function useDevSecurityShield() {
   }, []);
 
   useEffect(() => {
-    if (!protectedActive) return;
-
     // Check if user is currently inside Admin console (admin retains developer tools)
-    const isAdmin = window.location.pathname.startsWith('/admin');
+    const isAdmin = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
     if (isAdmin) return;
 
     let timeoutId = null;
     const showToast = (msg) => {
       if (timeoutId) clearTimeout(timeoutId);
-      setToastMessage(msg || "🛡️ Right-click & Developer Tools are protected by Admin Security.");
+      setToastMessage(msg || "🛡️ Protected by Admin Security.");
       timeoutId = setTimeout(() => setToastMessage(null), 2500);
     };
 
-    // 1. Block Context Menu (Right Click)
-    const handleContextMenu = (e) => {
-      e.preventDefault();
-      showToast("🛡️ Right-click is protected by Admin Security.");
-      return false;
+    // ─── 1. Anti-Clickjacking Frame Guard ───
+    if (securityState.frameGuard && typeof window !== 'undefined') {
+      try {
+        if (window.top !== window.self) {
+          window.top.location = window.self.location;
+        }
+      } catch (_) {}
+    }
+
+    // ─── 2. Anti-Copy & Text Selection Guard ───
+    let copyStyleTag = null;
+    if (securityState.disableCopy) {
+      copyStyleTag = document.createElement('style');
+      copyStyleTag.id = 'security-anticopy-style';
+      copyStyleTag.innerHTML = `
+        * {
+          -webkit-user-select: none !important;
+          -moz-user-select: none !important;
+          -ms-user-select: none !important;
+          user-select: none !important;
+        }
+        img, svg {
+          -webkit-user-drag: none !important;
+          user-drag: none !important;
+          pointer-events: auto;
+        }
+      `;
+      document.head.appendChild(copyStyleTag);
+    }
+
+    const handleCopy = (e) => {
+      if (securityState.disableCopy) {
+        e.preventDefault();
+        showToast("🛡️ Text copying is protected by Admin Security.");
+        return false;
+      }
     };
 
-    // 2. Block Inspect & DevTools Shortcuts
+    const handleDragStart = (e) => {
+      if (securityState.disableCopy && (e.target.nodeName === 'IMG' || e.target.nodeName === 'A')) {
+        e.preventDefault();
+        return false;
+      }
+    };
+
+    // ─── 3. Anti-Print & Screenshot Blocker ───
+    let printStyleTag = null;
+    if (securityState.disablePrint) {
+      printStyleTag = document.createElement('style');
+      printStyleTag.id = 'security-antiprint-style';
+      printStyleTag.innerHTML = `
+        @media print {
+          body { display: none !important; }
+        }
+      `;
+      document.head.appendChild(printStyleTag);
+    }
+
+    // ─── 4. Anti-Inspect & DevTools Shortcuts ───
+    const handleContextMenu = (e) => {
+      if (securityState.disableInspect) {
+        e.preventDefault();
+        showToast("🛡️ Right-click is protected by Admin Security.");
+        return false;
+      }
+    };
+
     const handleKeyDown = (e) => {
       const isMac = typeof navigator !== 'undefined' && navigator.platform?.toUpperCase().indexOf('MAC') >= 0;
       const ctrlKey = isMac ? e.metaKey : e.ctrlKey;
+
+      // Print Blocker: Ctrl + P
+      if (securityState.disablePrint && ctrlKey && (e.key === 'P' || e.key === 'p' || e.keyCode === 80)) {
+        e.preventDefault();
+        e.stopPropagation();
+        showToast("🛡️ Page printing is protected by Admin Security.");
+        return false;
+      }
+
+      if (!securityState.disableInspect) return;
 
       // F12 (DevTools)
       if (e.key === 'F12' || e.keyCode === 123) {
@@ -134,13 +246,23 @@ export function useDevSecurityShield() {
 
     document.addEventListener('contextmenu', handleContextMenu);
     document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('copy', handleCopy);
+    document.addEventListener('dragstart', handleDragStart);
 
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
       document.removeEventListener('contextmenu', handleContextMenu);
       document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('copy', handleCopy);
+      document.removeEventListener('dragstart', handleDragStart);
+      if (copyStyleTag && copyStyleTag.parentNode) copyStyleTag.parentNode.removeChild(copyStyleTag);
+      if (printStyleTag && printStyleTag.parentNode) printStyleTag.parentNode.removeChild(printStyleTag);
     };
-  }, [protectedActive]);
+  }, [securityState]);
 
-  return { protectedActive, toastMessage };
+  return {
+    ...securityState,
+    protectedActive: securityState.disableInspect,
+    toastMessage
+  };
 }
