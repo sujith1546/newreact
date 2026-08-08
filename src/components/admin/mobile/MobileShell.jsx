@@ -90,16 +90,21 @@ export default function MobileShell() {
   // Intelligent Realtime Sync & Refresh State
   const [hasPendingUpdate, setHasPendingUpdate] = useState(false);
   const [pendingUpdatesCount, setPendingUpdatesCount] = useState(0);
+  const [pendingChangesList, setPendingChangesList] = useState([]);
   const [lastSyncedAt, setLastSyncedAt] = useState(() => Date.now());
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isFullReloading, setIsFullReloading] = useState(false);
   const [syncFeedback, setSyncFeedback] = useState(null);
   const lastVisibilityRef = useRef(Date.now());
 
   // 1. Listen for realtime database changes & tab visibility re-focus
   useEffect(() => {
-    const handleDataUpdate = () => {
+    const handleDataUpdate = (e) => {
       setHasPendingUpdate(true);
       setPendingUpdatesCount((prev) => prev + 1);
+      const rawTable = e?.detail?.table || 'site_content';
+      const label = rawTable.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      setPendingChangesList((prev) => Array.from(new Set([...prev, label])));
     };
 
     const handleVisibilityChange = () => {
@@ -107,6 +112,7 @@ export default function MobileShell() {
         const elapsedSec = (Date.now() - lastVisibilityRef.current) / 1000;
         if (elapsedSec > 45) {
           setHasPendingUpdate(true);
+          setPendingChangesList((prev) => Array.from(new Set([...prev, 'Live Sync'])));
         }
       } else {
         lastVisibilityRef.current = Date.now();
@@ -137,6 +143,7 @@ export default function MobileShell() {
       setIsSyncing(false);
       setHasPendingUpdate(false);
       setPendingUpdatesCount(0);
+      setPendingChangesList([]);
       setLastSyncedAt(Date.now());
       setSyncFeedback('success');
       haptic.success();
@@ -145,6 +152,46 @@ export default function MobileShell() {
         setSyncFeedback(null);
       }, 2500);
     }, 450);
+  }, [playSound]);
+
+  // 3. Full Website Cache-Bust & Reload Engine
+  const handleFullWebsiteRefresh = useCallback(async () => {
+    haptic.success();
+    if (playSound) playSound();
+    setIsFullReloading(true);
+
+    try {
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const reg of registrations) {
+          await reg.unregister();
+        }
+      }
+
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        for (const name of cacheNames) {
+          await caches.delete(name);
+        }
+      }
+
+      try {
+        Object.keys(localStorage).forEach((key) => {
+          if (key.startsWith('swr_cache_') || key.startsWith('cache_')) {
+            localStorage.removeItem(key);
+          }
+        });
+      } catch (_) {}
+
+      Object.keys(globalDataCache).forEach((k) => delete globalDataCache[k]);
+      Object.keys(fetchPromises).forEach((k) => delete fetchPromises[k]);
+
+      window.dispatchEvent(new CustomEvent('pcms_force_refresh'));
+    } catch (_) {}
+
+    setTimeout(() => {
+      window.location.reload();
+    }, 550);
   }, [playSound]);
 
   useEffect(() => {
@@ -362,7 +409,7 @@ export default function MobileShell() {
                 border: '1px solid var(--pcms-line, rgba(255,255,255,0.14))',
                 borderRadius: 24,
                 boxShadow: '0 20px 48px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.05)',
-                maxHeight: 'min(500px, 75vh)',
+                maxHeight: 'min(520px, 78vh)',
                 overflow: 'hidden',
               }}
             >
@@ -419,7 +466,7 @@ export default function MobileShell() {
                       Control & Actions
                     </h3>
                     <p style={{ margin: '1px 0 0', fontSize: 10.5, color: 'var(--pcms-muted, #a1a1aa)', fontWeight: 500 }}>
-                      Quick shortcuts & diagnostics
+                      Quick shortcuts & live sync
                     </p>
                   </div>
                 </div>
@@ -443,20 +490,117 @@ export default function MobileShell() {
               </div>
 
               {/* Scrollable Body */}
-              <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 14, overflowY: 'auto' }}>
-                {/* 1. Live Cloud Sync & Diagnostics Hub */}
+              <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 12, overflowY: 'auto' }}>
+                
+                {/* 1. NEW UPDATES LOADED & FULL REFRESH BANNER (When updates arrive) */}
+                <AnimatePresence>
+                  {hasPendingUpdate && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                      style={{
+                        padding: '12px 14px',
+                        borderRadius: 18,
+                        background: 'linear-gradient(135deg, rgba(16,185,129,0.22), rgba(6,182,212,0.18))',
+                        border: '1px solid rgba(16,185,129,0.5)',
+                        boxShadow: '0 8px 24px rgba(16,185,129,0.28)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 10,
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span style={{ width: 8, height: 8, borderRadius: 4, background: '#10b981', boxShadow: '0 0 10px #10b981', display: 'inline-block' }} />
+                          <span style={{ fontSize: 13, fontWeight: 800, color: '#ffffff' }}>
+                            New Updates Loaded!
+                          </span>
+                        </div>
+                        <span style={{ fontSize: 9.5, fontWeight: 700, background: '#10b981', color: '#fff', padding: '2px 8px', borderRadius: 10, textTransform: 'uppercase' }}>
+                          {pendingUpdatesCount} New Change{pendingUpdatesCount > 1 ? 's' : ''}
+                        </span>
+                      </div>
+
+                      {/* Updated Entities Chips */}
+                      {pendingChangesList.length > 0 && (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                          {pendingChangesList.map((item) => (
+                            <span
+                              key={item}
+                              style={{
+                                fontSize: 10,
+                                fontWeight: 700,
+                                padding: '2px 8px',
+                                borderRadius: 8,
+                                background: 'rgba(255,255,255,0.15)',
+                                color: '#ffffff',
+                                border: '1px solid rgba(255,255,255,0.25)',
+                              }}
+                            >
+                              ✨ {item}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Full Website Refresh & Soft Sync Button Group */}
+                      <div style={{ display: 'flex', gap: 8, marginTop: 2 }}>
+                        <motion.button
+                          whileTap={{ scale: 0.94 }}
+                          onClick={handleFullWebsiteRefresh}
+                          disabled={isFullReloading}
+                          style={{
+                            flex: 1,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 6,
+                            padding: '9px 12px',
+                            borderRadius: 13,
+                            background: 'linear-gradient(135deg, #10b981, #059669)',
+                            border: '1px solid rgba(255,255,255,0.35)',
+                            color: '#ffffff',
+                            fontSize: 12,
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            boxShadow: '0 4px 16px rgba(16,185,129,0.4)',
+                          }}
+                        >
+                          <RefreshCw size={14} className={isFullReloading ? 'spinning' : ''} />
+                          <span>{isFullReloading ? 'Reloading Website...' : 'Refresh Website Now'}</span>
+                        </motion.button>
+
+                        <motion.button
+                          whileTap={{ scale: 0.94 }}
+                          onClick={handleIntelligentRefresh}
+                          disabled={isSyncing}
+                          style={{
+                            padding: '9px 12px',
+                            borderRadius: 13,
+                            background: 'rgba(255,255,255,0.12)',
+                            border: '1px solid rgba(255,255,255,0.2)',
+                            color: '#ffffff',
+                            fontSize: 11.5,
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {isSyncing ? 'Syncing...' : 'Soft Sync'}
+                        </motion.button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* 2. Live Cloud Sync & Diagnostics Hub */}
                 <motion.div
                   layout
                   style={{
-                    padding: '12px 14px',
+                    padding: '11px 13px',
                     borderRadius: 18,
-                    background: hasPendingUpdate
-                      ? 'linear-gradient(135deg, rgba(16,185,129,0.18), rgba(6,182,212,0.14))'
-                      : 'var(--pcms-bg-2, rgba(255,255,255,0.04))',
-                    border: hasPendingUpdate
-                      ? '1px solid rgba(16,185,129,0.45)'
-                      : '1px solid var(--pcms-line-soft, rgba(255,255,255,0.09))',
-                    boxShadow: hasPendingUpdate ? '0 6px 20px rgba(16,185,129,0.22)' : 'none',
+                    background: 'var(--pcms-bg-2, rgba(255,255,255,0.04))',
+                    border: '1px solid var(--pcms-line-soft, rgba(255,255,255,0.09))',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
@@ -466,13 +610,11 @@ export default function MobileShell() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
                     <div
                       style={{
-                        width: 38,
-                        height: 38,
-                        borderRadius: 14,
-                        background: hasPendingUpdate
-                          ? 'rgba(16,185,129,0.25)'
-                          : 'rgba(99,102,241,0.18)',
-                        color: hasPendingUpdate ? '#10b981' : 'var(--primary-blue, #6366f1)',
+                        width: 36,
+                        height: 36,
+                        borderRadius: 13,
+                        background: 'rgba(99,102,241,0.18)',
+                        color: 'var(--primary-blue, #6366f1)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -485,41 +627,37 @@ export default function MobileShell() {
                         style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                       >
                         {syncFeedback === 'success' ? (
-                          <CheckCircle2 size={20} color="#10b981" />
+                          <CheckCircle2 size={19} color="#10b981" />
                         ) : (
-                          <RefreshCw size={19} />
+                          <RefreshCw size={18} />
                         )}
                       </motion.div>
                     </div>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--pcms-text, #ffffff)', whiteSpace: 'nowrap' }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--pcms-text, #ffffff)', whiteSpace: 'nowrap' }}>
                           {syncFeedback === 'success'
                             ? 'Synchronized'
-                            : hasPendingUpdate
-                            ? 'Update Available'
                             : 'Live & In-Sync'}
                         </span>
                         <span
                           style={{
                             fontSize: 9,
                             fontWeight: 800,
-                            background: hasPendingUpdate ? '#10b981' : 'rgba(99,102,241,0.2)',
-                            color: hasPendingUpdate ? '#ffffff' : 'var(--primary-blue, #6366f1)',
-                            border: `1px solid ${hasPendingUpdate ? 'rgba(255,255,255,0.3)' : 'rgba(99,102,241,0.3)'}`,
+                            background: 'rgba(99,102,241,0.2)',
+                            color: 'var(--primary-blue, #6366f1)',
+                            border: '1px solid rgba(99,102,241,0.3)',
                             padding: '1px 6px',
                             borderRadius: 8,
                             textTransform: 'uppercase',
                             letterSpacing: '0.04em',
                           }}
                         >
-                          {hasPendingUpdate ? 'Live' : 'Active'}
+                          Active
                         </span>
                       </div>
-                      <p style={{ margin: '2px 0 0', fontSize: 11, color: 'var(--pcms-muted, #a1a1aa)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {hasPendingUpdate
-                          ? `${pendingUpdatesCount || 1} change(s) • Tap to refresh`
-                          : syncFeedback === 'success'
+                      <p style={{ margin: '2px 0 0', fontSize: 10.5, color: 'var(--pcms-muted, #a1a1aa)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {syncFeedback === 'success'
                           ? 'All caches & stats updated'
                           : `Last synced: ${formatSyncTime(lastSyncedAt)} • ~18ms latency`}
                       </p>
@@ -534,48 +672,43 @@ export default function MobileShell() {
                       display: 'flex',
                       alignItems: 'center',
                       gap: 6,
-                      padding: '8px 14px',
-                      borderRadius: 13,
-                      background: hasPendingUpdate
-                        ? 'linear-gradient(135deg, #10b981, #059669)'
-                        : 'var(--pcms-line-soft, rgba(255,255,255,0.08))',
-                      border: hasPendingUpdate
-                        ? '1px solid rgba(255,255,255,0.3)'
-                        : '1px solid var(--pcms-line, rgba(255,255,255,0.12))',
-                      color: '#ffffff',
-                      fontSize: 12,
+                      padding: '7px 13px',
+                      borderRadius: 12,
+                      background: 'var(--pcms-line-soft, rgba(255,255,255,0.08))',
+                      border: '1px solid var(--pcms-line, rgba(255,255,255,0.12))',
+                      color: 'var(--pcms-text, #ffffff)',
+                      fontSize: 11.5,
                       fontWeight: 700,
                       cursor: 'pointer',
-                      boxShadow: hasPendingUpdate ? '0 4px 14px rgba(16,185,129,0.35)' : 'none',
                       flexShrink: 0,
                     }}
                   >
-                    <RefreshCw size={13} className={isSyncing ? 'spinning' : ''} />
-                    <span>{isSyncing ? 'Syncing...' : hasPendingUpdate ? 'Refresh' : 'Sync'}</span>
+                    <RefreshCw size={12} className={isSyncing ? 'spinning' : ''} />
+                    <span>{isSyncing ? 'Syncing...' : 'Sync'}</span>
                   </motion.button>
                 </motion.div>
 
-                {/* 2. Section Header */}
+                {/* 3. Section Header */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2px' }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--pcms-muted)' }}>
+                  <span style={{ fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--pcms-muted)' }}>
                     Quick Navigation & Create
                   </span>
-                  <span style={{ fontSize: 10.5, color: 'var(--pcms-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ fontSize: 10, color: 'var(--pcms-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
                     <Activity size={11} color="#10b981" />
                     Realtime
                   </span>
                 </div>
 
-                {/* 3. Rich 2x3 Interactive Action Tiles */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
+                {/* 4. Rich 2x3 Interactive Action Tiles */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 9 }}>
                   {SPEED_DIAL_ACTIONS.map((action, idx) => (
                     <motion.button
                       key={action.label}
                       whileTap={{ scale: 0.94 }}
                       whileHover={{ scale: 1.02 }}
-                      initial={{ opacity: 0, y: 15 }}
+                      initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.035 }}
+                      transition={{ delay: idx * 0.03 }}
                       onClick={() => {
                         haptic.light();
                         setIsSpeedDialOpen(false);
@@ -585,9 +718,9 @@ export default function MobileShell() {
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'flex-start',
-                        gap: 8,
-                        padding: '14px 14px',
-                        borderRadius: 18,
+                        gap: 7,
+                        padding: '12px 13px',
+                        borderRadius: 17,
                         background: 'var(--pcms-bg-2, rgba(255,255,255,0.04))',
                         border: '1px solid var(--pcms-line-soft, rgba(255,255,255,0.08))',
                         color: 'var(--pcms-text)',
@@ -599,9 +732,9 @@ export default function MobileShell() {
                     >
                       <div
                         style={{
-                          width: 36,
-                          height: 36,
-                          borderRadius: 12,
+                          width: 34,
+                          height: 34,
+                          borderRadius: 11,
                           background: `${action.color}1c`,
                           border: `1px solid ${action.color}38`,
                           color: action.color,
@@ -610,13 +743,13 @@ export default function MobileShell() {
                           justifyContent: 'center',
                         }}
                       >
-                        <action.icon size={18} strokeWidth={2.2} />
+                        <action.icon size={17} strokeWidth={2.2} />
                       </div>
                       <div>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--pcms-text, #ffffff)' }}>
+                        <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--pcms-text, #ffffff)' }}>
                           {action.label}
                         </div>
-                        <div style={{ fontSize: 10.5, color: 'var(--pcms-muted, #a1a1aa)', marginTop: 2 }}>
+                        <div style={{ fontSize: 10, color: 'var(--pcms-muted, #a1a1aa)', marginTop: 1 }}>
                           {action.subtitle}
                         </div>
                       </div>
@@ -624,17 +757,17 @@ export default function MobileShell() {
                   ))}
                 </div>
 
-                {/* 4. Quick Control Footer Strip */}
+                {/* 5. Quick Control Footer Strip */}
                 <div
                   style={{
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    padding: '10px 14px',
-                    borderRadius: 16,
+                    padding: '9px 13px',
+                    borderRadius: 15,
                     background: 'rgba(255,255,255,0.03)',
                     border: '1px solid var(--pcms-line-soft, rgba(255,255,255,0.06))',
-                    marginTop: 2,
+                    marginTop: 1,
                   }}
                 >
                   <button
@@ -649,16 +782,16 @@ export default function MobileShell() {
                       background: 'transparent',
                       border: 'none',
                       color: 'var(--pcms-text)',
-                      fontSize: 12,
+                      fontSize: 11.5,
                       fontWeight: 600,
                       cursor: 'pointer',
                     }}
                   >
-                    {theme === 'dark' ? <Sun size={15} color="#f59e0b" /> : <Moon size={15} color="#6366f1" />}
+                    {theme === 'dark' ? <Sun size={14} color="#f59e0b" /> : <Moon size={14} color="#6366f1" />}
                     <span>{theme === 'dark' ? 'Light' : 'Dark'} Mode</span>
                   </button>
 
-                  <div style={{ width: 1, height: 16, background: 'var(--pcms-line-soft)' }} />
+                  <div style={{ width: 1, height: 14, background: 'var(--pcms-line-soft)' }} />
 
                   <button
                     onClick={() => {
@@ -673,12 +806,12 @@ export default function MobileShell() {
                       background: 'transparent',
                       border: 'none',
                       color: 'var(--primary-blue, #6366f1)',
-                      fontSize: 12,
+                      fontSize: 11.5,
                       fontWeight: 600,
                       cursor: 'pointer',
                     }}
                   >
-                    <ExternalLink size={14} />
+                    <ExternalLink size={13} />
                     <span>Open Website</span>
                   </button>
                 </div>
