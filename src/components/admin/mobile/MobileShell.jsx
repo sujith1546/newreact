@@ -4,7 +4,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useTheme } from '../../../context/ThemeContext';
 import { useDashboardStats } from '../shared/useDashboardStats';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut, Plus, ShieldCheck, Briefcase, Eye, MessageSquare, Zap, Star, Sun, Moon, RefreshCw, CheckCircle2, Sparkles, Activity, Settings, X, ExternalLink } from 'lucide-react';
+import { LogOut, Plus, ShieldCheck, Briefcase, Eye, MessageSquare, Zap, Star, Sun, Moon, RefreshCw, CheckCircle2, Sparkles, Activity, Settings, X, ExternalLink, Bell } from 'lucide-react';
 import SwipeableTabs from './SwipeableTabs';
 import MobileNav from './MobileNav';
 import HomeView from './views/HomeView';
@@ -87,6 +87,11 @@ export default function MobileShell() {
   const [isAvatarMenuOpen, setIsAvatarMenuOpen] = useState(false);
   const avatarMenuRef = useRef(null);
 
+  // Notification Centre State
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [notifRead, setNotifRead] = useState(false);
+
   // Intelligent Realtime Sync & Refresh State
   const [hasPendingUpdate, setHasPendingUpdate] = useState(false);
   const [pendingUpdatesCount, setPendingUpdatesCount] = useState(0);
@@ -97,7 +102,7 @@ export default function MobileShell() {
   const [syncFeedback, setSyncFeedback] = useState(null);
   const lastVisibilityRef = useRef(Date.now());
 
-  // 1. Listen for realtime database changes & tab visibility re-focus
+  // 1. Listen for realtime database changes, build notification log & tab visibility re-focus
   useEffect(() => {
     const handleDataUpdate = (e) => {
       setHasPendingUpdate(true);
@@ -105,6 +110,15 @@ export default function MobileShell() {
       const rawTable = e?.detail?.table || 'site_content';
       const label = rawTable.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
       setPendingChangesList((prev) => Array.from(new Set([...prev, label])));
+      // Push to notification log
+      setNotifications((prev) => [{
+        id: Date.now(),
+        icon: '🔄',
+        label: `${label} was updated`,
+        time: Date.now(),
+        route: null,
+      }, ...prev.slice(0, 19)]);
+      setNotifRead(false);
     };
 
     const handleVisibilityChange = () => {
@@ -272,7 +286,7 @@ export default function MobileShell() {
           </div>
         </div>
 
-        {/* Dynamic Island Status Pill & Avatar Menu */}
+        {/* Dynamic Island Status Pill, Bell & Avatar Menu */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           {/* Dynamic Island Capsule */}
           <motion.div
@@ -298,6 +312,30 @@ export default function MobileShell() {
               </span>
             )}
           </motion.div>
+
+          {/* Notification Bell */}
+          <motion.button
+            whileTap={{ scale: 0.88 }}
+            onClick={() => { haptic.light(); setNotifRead(true); setIsNotifOpen(v => !v); }}
+            aria-label="Notification centre"
+            style={{
+              position: 'relative',
+              width: 34, height: 34, borderRadius: 17,
+              background: 'var(--pcms-panel, rgba(255,255,255,0.06))',
+              border: '1px solid var(--pcms-line, rgba(255,255,255,0.1))',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', color: 'var(--pcms-text)',
+            }}
+          >
+            <Bell size={15} />
+            {!notifRead && notifications.length > 0 && (
+              <span style={{
+                position: 'absolute', top: 2, right: 2,
+                width: 8, height: 8, borderRadius: 4,
+                background: '#ef4444', border: '1.5px solid var(--pcms-bg)',
+              }} />
+            )}
+          </motion.button>
 
           {/* User Profile Avatar */}
           <div ref={avatarMenuRef} style={{ position: 'relative' }}>
@@ -360,6 +398,97 @@ export default function MobileShell() {
       </header>
 
       {/* Main Swipeable Content with Pull-To-Refresh */}
+
+      {/* ── Notification Centre Bottom Sheet ── */}
+      <AnimatePresence>
+        {isNotifOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsNotifOpen(false)}
+              style={{
+                position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)',
+                backdropFilter: 'blur(6px)', zIndex: 10100,
+              }}
+            />
+            <motion.div
+              initial={{ y: '100%', opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: '100%', opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 340, damping: 34 }}
+              style={{
+                position: 'fixed', bottom: 0, left: 14, right: 14,
+                borderRadius: '22px 22px 0 0',
+                background: 'var(--pcms-panel, #18181c)',
+                border: '1px solid var(--pcms-line, rgba(255,255,255,0.12))',
+                zIndex: 10101, padding: '14px 16px 40px',
+                maxHeight: '70vh', overflowY: 'auto',
+              }}
+            >
+              {/* Drag Handle */}
+              <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.18)', margin: '0 auto 14px' }} />
+              {/* Header */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Bell size={16} color="#6366f1" />
+                  <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--pcms-text)' }}>Notifications</span>
+                  {notifications.length > 0 && (
+                    <span style={{ fontSize: 10, fontWeight: 800, background: '#ef4444', color: '#fff', padding: '1px 6px', borderRadius: 8 }}>
+                      {notifications.length}
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={() => { setNotifications([]); setNotifRead(true); }}
+                  style={{ background: 'transparent', border: 'none', fontSize: 11, fontWeight: 600, color: '#6366f1', cursor: 'pointer' }}
+                >
+                  Clear all
+                </button>
+              </div>
+              {/* Notification list */}
+              {notifications.length === 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 0', gap: 8 }}>
+                  <div style={{ fontSize: 32 }}>🔔</div>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--pcms-muted)' }}>All caught up!</span>
+                  <span style={{ fontSize: 11, color: 'var(--pcms-muted)', opacity: 0.7 }}>Database changes will appear here in real time</span>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {notifications.map((notif, i) => {
+                    const secs = Math.floor((Date.now() - notif.time) / 1000);
+                    const timeStr = secs < 60 ? 'Just now' : secs < 3600 ? `${Math.floor(secs / 60)}m ago` : `${Math.floor(secs / 3600)}h ago`;
+                    return (
+                      <motion.div
+                        key={notif.id}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.04 }}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 12,
+                          padding: '10px 12px', borderRadius: 14,
+                          background: 'var(--pcms-bg-2, rgba(255,255,255,0.04))',
+                          border: '1px solid var(--pcms-line-soft, rgba(255,255,255,0.07))',
+                        }}
+                      >
+                        <div style={{ fontSize: 18, flexShrink: 0 }}>{notif.icon}</div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--pcms-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {notif.label}
+                          </div>
+                          <div style={{ fontSize: 10, color: 'var(--pcms-muted)', marginTop: 2 }}>{timeStr}</div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              )}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
       <main className="admin-mobile-content">
         <SwipeableTabs
           activeCategory={activeCategory}
