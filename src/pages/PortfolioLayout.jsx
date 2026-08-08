@@ -36,14 +36,14 @@ import { trackPageView } from '../lib/analyticsTracker';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const SECTIONS_DEF = [
-  { id: 'home',           Component: Home           },
-  { id: 'about',          Component: About          },
-  { id: 'skills',         Component: Skills         },
-  { id: 'projects',       Component: Projects       },
-  { id: 'education',      Component: Education      },
-  { id: 'experience',     Component: Experience     },
+  { id: 'home', Component: Home },
+  { id: 'about', Component: About },
+  { id: 'skills', Component: Skills },
+  { id: 'projects', Component: Projects },
+  { id: 'education', Component: Education },
+  { id: 'experience', Component: Experience },
   { id: 'certifications', Component: Certifications },
-  { id: 'contact',        Component: Contact        },
+  { id: 'contact', Component: Contact },
 ];
 
 const SECTION_LABELS = {
@@ -93,7 +93,7 @@ const SECTION_HEADERS = {
 };
 
 const NAV_DURATION = 0.45;
-const NAV_EASE     = [0.22, 1, 0.36, 1];
+const NAV_EASE = [0.22, 1, 0.36, 1];
 const PROGRESS_DURATION = NAV_DURATION * 0.8;
 
 const mobilePageVariants = {
@@ -277,7 +277,7 @@ export default function PortfolioLayout() {
   const handleNavClick = (id) => {
     if (id === activeSection) return;
 
-    const curIdx  = ALL_PAGES.indexOf(activeSection);
+    const curIdx = ALL_PAGES.indexOf(activeSection);
     const nextIdx = ALL_PAGES.indexOf(id);
     const dir = (curIdx !== -1 && nextIdx !== -1)
       ? (nextIdx > curIdx ? 1 : -1)
@@ -285,7 +285,7 @@ export default function PortfolioLayout() {
 
     setSlideDirection(dir);
     setIsNavActive(true);
-    
+
     const targetPath = `/${id}`;
     navigate(targetPath);
 
@@ -297,7 +297,7 @@ export default function PortfolioLayout() {
 
   const handleCopyEmail = () => {
     if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText('sujithreddy1546@gmail.com').catch(() => {});
+      navigator.clipboard.writeText('sujithreddy1546@gmail.com').catch(() => { });
     }
     setEmailCopied(true);
     setTimeout(() => setEmailCopied(false), 2000);
@@ -308,8 +308,8 @@ export default function PortfolioLayout() {
   const handleTouchStart = (e) => {
     if (!isMobile) return;
     touchStartRef.current = {
-      x:    e.touches[0].clientX,
-      y:    e.touches[0].clientY,
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
       time: Date.now(),
     };
   };
@@ -325,29 +325,29 @@ export default function PortfolioLayout() {
       const idx = SWIPE_PAGES.indexOf(activeSection);
       if (idx !== -1) {
         if (dx < 0 && idx < SWIPE_PAGES.length - 1) handleNavClick(SWIPE_PAGES[idx + 1]);
-        else if (dx > 0 && idx > 0)                  handleNavClick(SWIPE_PAGES[idx - 1]);
+        else if (dx > 0 && idx > 0) handleNavClick(SWIPE_PAGES[idx - 1]);
       }
     }
     touchStartRef.current = null;
   };
 
   const ctaMap = {
-    home:           { label: 'Hire Me',    icon: Briefcase,  action: () => handleNavClick('contact'), style: 'accent' },
-    about:          { label: 'Resume',     icon: FileText,   action: () => window.dispatchEvent(new CustomEvent('open-resume')), style: 'ghost' },
-    skills:         { label: 'Resume',     icon: FileText,   action: () => window.dispatchEvent(new CustomEvent('open-resume')), style: 'ghost' },
-    projects:       { label: 'GitHub',     icon: FaGithub,   action: () => window.open('https://github.com/sujith1546', '_blank'), style: 'ghost' },
-    education:      { label: 'Resume',     icon: FileText,   action: () => window.dispatchEvent(new CustomEvent('open-resume')), style: 'ghost' },
-    experience:     { label: 'Resume',     icon: FileText,   action: () => window.dispatchEvent(new CustomEvent('open-resume')), style: 'ghost' },
-    certifications: { label: 'Resume',     icon: FileText,   action: () => window.dispatchEvent(new CustomEvent('open-resume')), style: 'ghost' },
-    contact:        { label: emailCopied ? 'Copied!' : 'Copy Email', icon: emailCopied ? Check : Mail, action: handleCopyEmail, style: emailCopied ? 'success' : 'ghost' },
+    home: { label: 'Hire Me', icon: Briefcase, action: () => handleNavClick('contact'), style: 'accent' },
+    about: { label: 'Resume', icon: FileText, action: () => window.dispatchEvent(new CustomEvent('open-resume')), style: 'ghost' },
+    skills: { label: 'Resume', icon: FileText, action: () => window.dispatchEvent(new CustomEvent('open-resume')), style: 'ghost' },
+    projects: { label: 'GitHub', icon: FaGithub, action: () => window.open('https://github.com/sujith1546', '_blank'), style: 'ghost' },
+    education: { label: 'Resume', icon: FileText, action: () => window.dispatchEvent(new CustomEvent('open-resume')), style: 'ghost' },
+    experience: { label: 'Resume', icon: FileText, action: () => window.dispatchEvent(new CustomEvent('open-resume')), style: 'ghost' },
+    certifications: { label: 'Resume', icon: FileText, action: () => window.dispatchEvent(new CustomEvent('open-resume')), style: 'ghost' },
+    contact: { label: emailCopied ? 'Copied!' : 'Copy Email', icon: emailCopied ? Check : Mail, action: handleCopyEmail, style: emailCopied ? 'success' : 'ghost' },
   };
   const cta = ctaMap[activeSection] || ctaMap.home;
 
   const ActiveComponent = SECTIONS.find(s => s.id === activeSection)?.Component ?? Home;
 
   const mobileTransition = {
-    type:     'tween',
-    ease:     NAV_EASE,
+    type: 'tween',
+    ease: NAV_EASE,
     duration: NAV_DURATION,
   };
 
@@ -539,16 +539,16 @@ export default function PortfolioLayout() {
               transition={isMobile ? mobileTransition : { duration: 0.25, ease: 'easeInOut' }}
 
               style={{
-                width:                     '100%',
-                minHeight:                 '100%',
-                position:                  'relative',
-                willChange:                'transform',
-                backfaceVisibility:        'hidden',
-                WebkitBackfaceVisibility:  'hidden',
+                width: '100%',
+                minHeight: '100%',
+                position: 'relative',
+                willChange: 'transform',
+                backfaceVisibility: 'hidden',
+                WebkitBackfaceVisibility: 'hidden',
               }}
               className={`text-content
                 ${activeSection === 'home' ? ' home-content' : ''}
-                ${['contact','education','about','skills','experience','projects','certifications'].includes(activeSection) ? ' wide-content' : ''}
+                ${['contact', 'education', 'about', 'skills', 'experience', 'projects', 'certifications'].includes(activeSection) ? ' wide-content' : ''}
               `}
             >
               <ErrorBoundary>
