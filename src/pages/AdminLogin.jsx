@@ -537,7 +537,7 @@ export default function AdminLogin() {
   const { theme, toggleTheme } = useTheme();
 
   // Primary Auth State
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState("sujithreddy1546@gmail.com");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -1072,22 +1072,41 @@ export default function AdminLogin() {
                       }}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg>
                       </div>
-                      <h3 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 4px', color: 'var(--text)' }}>Email Security Code</h3>
+                      <h3 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 4px', color: 'var(--text)' }}>Email Security Code (OTP)</h3>
                       <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: 0 }}>
-                        We will send a 6-digit one-time security PIN directly to your inbox.
+                        Generate a secure 6-digit one-time security PIN sent directly to your registered inbox.
                       </p>
                     </div>
 
-                    <div className="field">
-                      <label htmlFor="otpEmail">Admin Email Address</label>
-                      <div className={`input-shell ${error ? 'error' : ''}`}>
-                        <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg>
-                        <input id="otpEmail" type="email" placeholder="admin@example.com" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} disabled={loading || lockoutTimer > 0} />
+                    {/* Locked Verified Admin Email Badge */}
+                    <div style={{
+                      background: 'var(--panel-2)',
+                      border: '1px solid var(--border)',
+                      borderRadius: 12,
+                      padding: '14px 16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginBottom: 18,
+                      textAlign: 'left'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(16,185,129,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981' }}>
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 10.5, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Registered Admin Account</div>
+                          <div style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--text)', fontFamily: 'var(--mono)' }}>sujithreddy1546@gmail.com</div>
+                        </div>
+                      </div>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#10b981', background: 'rgba(16,185,129,0.15)', padding: '4px 10px', borderRadius: 999, fontWeight: 600 }}>
+                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981' }} />
+                        <span>Locked</span>
                       </div>
                     </div>
 
-                    <button className="submit-btn" type="submit" style={{ marginTop: 16 }} disabled={loading || !email || lockoutTimer > 0}>
-                      {loading ? "Sending Security Code..." : "Send Security Code to Email →"}
+                    <button className="submit-btn" type="submit" style={{ marginTop: 8 }} disabled={loading || lockoutTimer > 0}>
+                      {loading ? "Dispatching Security Code..." : "Send Security OTP to sujithreddy1546@gmail.com →"}
                     </button>
                   </form>
                 ) : (
@@ -1103,7 +1122,7 @@ export default function AdminLogin() {
                       </div>
                       <h3 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 4px', color: 'var(--text)' }}>Enter 6-Digit Code</h3>
                       <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: 0 }}>
-                        Sent to <strong style={{ color: 'var(--text)' }}>{email}</strong>
+                        Security code sent to <strong style={{ color: 'var(--text)' }}>sujithreddy1546@gmail.com</strong>
                       </p>
                     </div>
 
@@ -1133,7 +1152,7 @@ export default function AdminLogin() {
                         onClick={() => setEmailOtpSent(false)}
                         style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 0 }}
                       >
-                        ← Change Email
+                        ← Back
                       </button>
 
                       <button
@@ -1142,7 +1161,7 @@ export default function AdminLogin() {
                         disabled={otpTimer > 0 || loading}
                         style={{ background: 'none', border: 'none', color: otpTimer > 0 ? 'var(--text-dim)' : 'var(--green)', fontWeight: 600, cursor: otpTimer > 0 ? 'not-allowed' : 'pointer', padding: 0 }}
                       >
-                        {otpTimer > 0 ? `Resend in ${otpTimer}s` : "Resend Code"}
+                        {otpTimer > 0 ? `Resend in ${otpTimer}s` : "Resend Security Code"}
                       </button>
                     </div>
                   </form>
