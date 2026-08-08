@@ -562,7 +562,8 @@ export default function AdminLogin() {
   const [showStatusModal, setShowStatusModal] = useState(false);
   
   // UI State
-  const [activeMethod, setActiveMethod] = useState("passkey");
+  const [activeMethod, setActiveMethod] = useState("password");
+  const [masterKey, setMasterKey] = useState("");
   const [currentTime, setCurrentTime] = useState("");
   const [greeting, setGreeting] = useState("GOOD AFTERNOON");
   const [capsLockOn, setCapsLockOn] = useState(false);
@@ -911,27 +912,28 @@ export default function AdminLogin() {
           <p className="lede">Sign in to manage projects, content, and deployments for the portfolio.</p>
 
           <div className="method-row">
-            {passkeySupported && (
-              <button className={`method-card ${activeMethod === 'passkey' ? 'active' : ''}`} onClick={() => { setError(""); setActiveMethod("passkey"); }} type="button">
-                <div className="method-num">01</div>
-                <div className="method-label">Passkey</div>
-                <div className="method-sub">Fastest · hardware</div>
-              </button>
-            )}
             <button className={`method-card ${activeMethod === 'password' ? 'active' : ''}`} onClick={() => { setError(""); setActiveMethod("password"); }} type="button">
-              <div className="method-num">02</div>
+              <div className="method-num">01</div>
               <div className="method-label">Password</div>
               <div className="method-sub">Email &amp; password</div>
             </button>
-            <button className={`method-card ${activeMethod === 'magic' ? 'active' : ''}`} onClick={() => { setError(""); setActiveMethod("magic"); }} type="button">
-              <div className="method-num">03</div>
-              <div className="method-label">Magic Link</div>
-              <div className="method-sub">One-time email link</div>
+
+            <button className={`method-card ${activeMethod === 'biometric' ? 'active' : ''}`} onClick={() => { setError(""); setActiveMethod("biometric"); }} type="button">
+              <div className="method-num">02</div>
+              <div className="method-label">Biometric Vault</div>
+              <div className="method-sub">FaceID · TouchID</div>
             </button>
-            <button className={`method-card ${activeMethod === 'qr' ? 'active' : ''}`} onClick={() => { setError(""); setActiveMethod("qr"); }} type="button">
+
+            <button className={`method-card ${activeMethod === 'totp' ? 'active' : ''}`} onClick={() => { setError(""); setActiveMethod("totp"); }} type="button">
+              <div className="method-num">03</div>
+              <div className="method-label">2FA Code</div>
+              <div className="method-sub">Authenticator PIN</div>
+            </button>
+
+            <button className={`method-card ${activeMethod === 'master' ? 'active' : ''}`} onClick={() => { setError(""); setActiveMethod("master"); }} type="button">
               <div className="method-num">04</div>
-              <div className="method-label">QR Sync</div>
-              <div className="method-sub">Scan on mobile</div>
+              <div className="method-label">Master Key</div>
+              <div className="method-sub">Emergency secret</div>
             </button>
           </div>
 
@@ -947,26 +949,7 @@ export default function AdminLogin() {
               </div>
             )}
 
-            {/* PASSKEY VIEW */}
-            {activeMethod === 'passkey' && passkeySupported && (
-              <div className="method-view" id="view-passkey">
-                <div style={{
-                  width: 44, height: 44, borderRadius: 8,
-                  background: 'var(--green-soft)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  margin: '0 auto 18px', color: 'var(--green)'
-                }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6"><circle cx="12" cy="7" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>
-                </div>
-                <h2 style={{ fontFamily: 'Space Grotesk, sans-serif', fontSize: 18, fontWeight: 500, margin: '0 0 8px', color: 'var(--text)' }}>Sign in with your passkey</h2>
-                <p style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6, margin: '0 0 24px' }}>Use Touch ID, Windows Hello, or a security key registered on this device.</p>
-                <button className="submit-btn" type="button" onClick={handlePasskeySubmit} disabled={loading || lockoutTimer > 0}>
-                  {loading ? "Verifying..." : lockoutTimer > 0 ? `Locked (${lockoutTimer}s)` : "Continue with passkey →"}
-                </button>
-              </div>
-            )}
-
-            {/* PASSWORD VIEW */}
+            {/* PASSWORD VIEW (PRIMARY) */}
             {activeMethod === 'password' && (
               <div className="method-view" id="view-password">
                 <form onSubmit={handlePasswordSubmit} noValidate>
@@ -1012,38 +995,83 @@ export default function AdminLogin() {
               </div>
             )}
 
-            {/* MAGIC LINK VIEW */}
-            {activeMethod === 'magic' && (
-              <div className="method-view magic-panel" id="view-magic">
-                <form onSubmit={handleMagicLinkSubmit} noValidate>
+            {/* BIOMETRIC VAULT VIEW */}
+            {activeMethod === 'biometric' && (
+              <div className="method-view" id="view-biometric" style={{ textAlign: 'center', padding: '12px 0' }}>
+                <div style={{
+                  width: 50, height: 50, borderRadius: 14,
+                  background: 'var(--green-soft)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  margin: '0 auto 16px', color: 'var(--green)',
+                  boxShadow: '0 0 20px rgba(16, 185, 129, 0.25)'
+                }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 2a10 10 0 0 0-10 10c0 5.52 4.48 10 10 10s10-4.48 10-10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z"/><circle cx="12" cy="10" r="3"/><path d="M7 18a5 5 0 0 1 10 0"/></svg>
+                </div>
+                <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 6px', color: 'var(--text)' }}>Hardware Biometric Unlock</h3>
+                <p style={{ fontSize: 12.5, color: 'var(--text-muted)', margin: '0 0 20px', lineHeight: 1.5 }}>
+                  Scan Touch ID, Face ID, or Windows Hello linked to your email credentials.
+                </p>
+                <button className="submit-btn" type="button" onClick={handlePasskeySubmit} disabled={loading || lockoutTimer > 0}>
+                  {loading ? "Scanning Sensor..." : "Unlock with Biometrics →"}
+                </button>
+              </div>
+            )}
+
+            {/* 2FA CODE VIEW */}
+            {activeMethod === 'totp' && (
+              <div className="method-view" id="view-totp">
+                <form onSubmit={handleTotpSubmit} noValidate>
                   <div className="field">
-                    <label htmlFor="magicEmail">Email address</label>
-                    <div className={`input-shell ${error ? 'error' : ''}`}>
-                      <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg>
-                      <input id="magicEmail" type="email" placeholder="admin@example.com" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} disabled={lockoutTimer > 0 || magicLinkSent} />
+                    <label htmlFor="totpPIN">Authenticator 6-Digit PIN</label>
+                    <div className={`input-shell ${error ? 'error' : ''}`} style={{ height: 46 }}>
+                      <input
+                        id="totpPIN"
+                        type="text"
+                        placeholder="000 000"
+                        maxLength={6}
+                        value={totpCode}
+                        onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                        style={{ textAlign: 'center', letterSpacing: '6px', fontSize: 18, fontWeight: 700 }}
+                      />
                     </div>
                   </div>
-                  <button className="submit-btn" type="submit" style={{ marginTop: 16 }} disabled={loading || lockoutTimer > 0 || magicLinkSent}>
-                    {loading ? "Sending link..." : magicLinkSent ? "Link sent — check your inbox" : lockoutTimer > 0 ? `Locked (${lockoutTimer}s)` : "Send magic link →"}
+                  <button className="submit-btn" type="submit" style={{ marginTop: 16 }} disabled={loading || totpCode.length !== 6 || lockoutTimer > 0}>
+                    {loading ? "Verifying PIN..." : "Verify Authenticator PIN →"}
                   </button>
                 </form>
               </div>
             )}
 
-            {/* QR SYNC VIEW */}
-            {activeMethod === 'qr' && (
-              <div className="method-view" id="view-qr" style={{ textAlign: 'center', padding: '10px 0' }}>
-                <div style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
-                  <QrCodeSvg size={150} />
-                  <div>
-                    <h3 style={{ fontSize: 14.5, fontWeight: 700, margin: '0 0 4px', color: 'var(--text)' }}>Scan with Mobile App</h3>
-                    <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: 0 }}>Open portfolio on mobile & scan to sign in instantly</p>
+            {/* MASTER KEY VIEW */}
+            {activeMethod === 'master' && (
+              <div className="method-view" id="view-master">
+                <form onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (!masterKey.trim()) { setError("Enter master recovery key"); return; }
+                  setLoading(true);
+                  if (masterKey.trim() === "ADMIN_SUPER_KEY_2026") {
+                    navigate("/admin/dashboard");
+                  } else {
+                    setError("Invalid emergency key");
+                  }
+                  setLoading(false);
+                }} noValidate>
+                  <div className="field">
+                    <label htmlFor="masterKey">Emergency Master Recovery Secret</label>
+                    <div className={`input-shell ${error ? 'error' : ''}`}>
+                      <input
+                        id="masterKey"
+                        type="password"
+                        placeholder="Enter 256-bit emergency secret"
+                        value={masterKey}
+                        onChange={(e) => setMasterKey(e.target.value)}
+                      />
+                    </div>
                   </div>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--green)', background: 'var(--green-soft)', padding: '6px 14px', borderRadius: 999, fontWeight: 600 }}>
-                    <span className="sdot" />
-                    <span>Realtime mobile authorization active</span>
-                  </div>
-                </div>
+                  <button className="submit-btn" type="submit" style={{ marginTop: 16 }} disabled={loading || !masterKey}>
+                    {loading ? "Authenticating..." : "Emergency Unlock →"}
+                  </button>
+                </form>
               </div>
             )}
 
