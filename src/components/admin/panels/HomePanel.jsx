@@ -210,7 +210,7 @@ export default function HomePanel({ isMobile = false }) {
       try {
         const { data, error } = await supabase
           .from('site_settings')
-          .select('site_disabled, maintenance_enabled, feature_experience, feature_blog')
+          .select('*')
           .eq('id', 1)
           .single();
         if (data && !error) setSiteSettings(data);

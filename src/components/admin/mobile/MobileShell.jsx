@@ -4,7 +4,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useTheme } from '../../../context/ThemeContext';
 import { useDashboardStats } from '../shared/useDashboardStats';
 import { motion, AnimatePresence } from 'framer-motion';
-import { LogOut, Plus, ShieldCheck, Briefcase, Eye, MessageSquare, Zap, Star, Sun, Moon, RefreshCw, CheckCircle2, Sparkles, Activity } from 'lucide-react';
+import { LogOut, Plus, ShieldCheck, Briefcase, Eye, MessageSquare, Zap, Star, Sun, Moon, RefreshCw, CheckCircle2, Sparkles, Activity, Settings, X, ExternalLink } from 'lucide-react';
 import SwipeableTabs from './SwipeableTabs';
 import MobileNav from './MobileNav';
 import HomeView from './views/HomeView';
@@ -31,11 +31,12 @@ const TAB_TO_CATEGORY = {
 };
 
 const SPEED_DIAL_ACTIONS = [
-  { icon: Briefcase, label: 'New Project', color: '#10b981', route: '/admin/dashboard/projects' },
-  { icon: MessageSquare, label: 'Messages', color: '#6366f1', route: '/admin/dashboard/messages' },
-  { icon: Zap, label: 'New Update', color: '#f59e0b', route: '/admin/dashboard/updates' },
-  { icon: Star, label: 'Add Skill', color: '#06b6d4', route: '/admin/dashboard/skills' },
-  { icon: Eye, label: 'Preview Site', color: '#8b5cf6', route: '/admin/dashboard/preview' },
+  { icon: Briefcase, label: 'New Project', subtitle: 'Add showcase work', color: '#10b981', route: '/admin/dashboard/projects' },
+  { icon: MessageSquare, label: 'Messages', subtitle: 'Inquiries & leads', color: '#6366f1', route: '/admin/dashboard/messages' },
+  { icon: Zap, label: 'Publish Update', subtitle: 'Changelog & news', color: '#f59e0b', route: '/admin/dashboard/updates' },
+  { icon: Star, label: 'Tech Skills', subtitle: 'Stack & proficiency', color: '#06b6d4', route: '/admin/dashboard/skills' },
+  { icon: Eye, label: 'Site Preview', subtitle: 'Open public website', color: '#8b5cf6', route: '/admin/dashboard/preview' },
+  { icon: Settings, label: 'Control Center', subtitle: 'System & toggles', color: '#ec4899', route: '/admin/dashboard/settings' },
 ];
 
 function getGreeting() {
@@ -91,12 +92,12 @@ export default function MobileShell() {
   const [pendingUpdatesCount, setPendingUpdatesCount] = useState(0);
   const [lastSyncedAt, setLastSyncedAt] = useState(() => Date.now());
   const [isSyncing, setIsSyncing] = useState(false);
-  const [syncFeedback, setSyncFeedback] = useState(null); // 'success' | null
+  const [syncFeedback, setSyncFeedback] = useState(null);
   const lastVisibilityRef = useRef(Date.now());
 
   // 1. Listen for realtime database changes & tab visibility re-focus
   useEffect(() => {
-    const handleDataUpdate = (e) => {
+    const handleDataUpdate = () => {
       setHasPendingUpdate(true);
       setPendingUpdatesCount((prev) => prev + 1);
     };
@@ -105,7 +106,6 @@ export default function MobileShell() {
       if (document.visibilityState === 'visible') {
         const elapsedSec = (Date.now() - lastVisibilityRef.current) / 1000;
         if (elapsedSec > 45) {
-          // If the app was idle in the background for > 45s, suggest a live sync check
           setHasPendingUpdate(true);
         }
       } else {
@@ -128,11 +128,9 @@ export default function MobileShell() {
     if (playSound) playSound();
     setIsSyncing(true);
 
-    // Clear in-memory SWR cache & pending promises
     Object.keys(globalDataCache).forEach((k) => delete globalDataCache[k]);
     Object.keys(fetchPromises).forEach((k) => delete fetchPromises[k]);
 
-    // Dispatch broadcast event so all active realtime views and stats hooks re-query fresh data
     window.dispatchEvent(new CustomEvent('pcms_force_refresh'));
 
     setTimeout(() => {
@@ -195,7 +193,6 @@ export default function MobileShell() {
   const initials = getInitials(user?.email);
   const firstName = getFirstName(user?.email);
 
-  // Time format helper for last sync
   const formatSyncTime = (timestamp) => {
     const seconds = Math.floor((Date.now() - timestamp) / 1000);
     if (seconds < 5) return 'Just now';
@@ -315,226 +312,377 @@ export default function MobileShell() {
         />
       </main>
 
-      {/* FAB Speed Dial Backdrop */}
+      {/* iOS-Grade Quick Actions & Live Diagnostics Sheet */}
       <AnimatePresence>
         {isSpeedDialOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setIsSpeedDialOpen(false)}
-            style={{
-              position: 'fixed',
-              inset: 0,
-              zIndex: 9990,
-              background: 'rgba(0, 0, 0, 0.65)',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
-            }}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Speed Dial & Intelligent Refresh Action Popover */}
-      <AnimatePresence>
-        {isSpeedDialOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: 35, scale: 0.92 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 25, scale: 0.92 }}
-            transition={{ type: 'spring', damping: 26, stiffness: 360 }}
-            style={{
-              position: 'fixed',
-              bottom: 84,
-              left: 14,
-              right: 14,
-              width: 'calc(100% - 28px)',
-              maxWidth: 'calc(100% - 28px)',
-              margin: '0 auto',
-              zIndex: 9995,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 10,
-              padding: '14px',
-              background: 'var(--pcms-panel, #18181c)',
-              border: '1px solid var(--pcms-line, rgba(255,255,255,0.14))',
-              borderRadius: 24,
-              boxShadow: '0 20px 48px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.05)',
-            }}
-          >
-            {/* 1. Intelligent Live Refresh & Sync Card */}
+          <>
+            {/* Backdrop */}
             <motion.div
-              layout
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsSpeedDialOpen(false)}
               style={{
+                position: 'fixed',
+                inset: 0,
+                zIndex: 9990,
+                background: 'rgba(0, 0, 0, 0.68)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+              }}
+            />
+
+            {/* Gesture-Enabled Bottom Sheet */}
+            <motion.div
+              drag="y"
+              dragConstraints={{ top: 0 }}
+              dragElastic={{ top: 0.05, bottom: 0.45 }}
+              onDragEnd={(e, { offset, velocity }) => {
+                if (offset.y > 90 || velocity.y > 400) {
+                  haptic.medium();
+                  setIsSpeedDialOpen(false);
+                }
+              }}
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 350, mass: 0.85 }}
+              style={{
+                position: 'fixed',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                zIndex: 9995,
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '10px 12px',
-                borderRadius: 16,
-                background: hasPendingUpdate
-                  ? 'linear-gradient(135deg, rgba(16,185,129,0.16), rgba(6,182,212,0.12))'
-                  : 'var(--pcms-bg-2, rgba(255,255,255,0.04))',
-                border: hasPendingUpdate
-                  ? '1px solid rgba(16,185,129,0.4)'
-                  : '1px solid var(--pcms-line-soft, rgba(255,255,255,0.08))',
-                boxShadow: hasPendingUpdate ? '0 4px 18px rgba(16,185,129,0.2)' : 'none',
-                transition: 'all 0.3s ease',
+                flexDirection: 'column',
+                background: 'var(--pcms-panel, #16161b)',
+                borderTop: '1px solid var(--pcms-line, rgba(255,255,255,0.14))',
+                borderRadius: '28px 28px 0 0',
+                boxShadow: '0 -16px 48px rgba(0,0,0,0.65)',
+                maxHeight: '90vh',
+                paddingBottom: 'calc(24px + env(safe-area-inset-bottom, 16px))',
+                overflow: 'hidden',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              {/* Drag Handle Bar */}
+              <div
+                style={{
+                  padding: '12px 0 6px',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                }}
+                onClick={() => setIsSpeedDialOpen(false)}
+              >
                 <div
                   style={{
-                    width: 34,
-                    height: 34,
-                    borderRadius: 12,
-                    background: hasPendingUpdate
-                      ? 'rgba(16,185,129,0.25)'
-                      : 'rgba(99,102,241,0.15)',
-                    color: hasPendingUpdate ? '#10b981' : 'var(--primary-blue, #6366f1)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
+                    width: 40,
+                    height: 5,
+                    borderRadius: 3,
+                    background: 'rgba(255, 255, 255, 0.22)',
                   }}
-                >
-                  <motion.div
-                    animate={isSyncing ? { rotate: 360 } : { rotate: 0 }}
-                    transition={isSyncing ? { repeat: Infinity, duration: 0.8, ease: 'linear' } : {}}
-                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                  >
-                    {syncFeedback === 'success' ? (
-                      <CheckCircle2 size={18} color="#10b981" />
-                    ) : hasPendingUpdate ? (
-                      <Sparkles size={18} />
-                    ) : (
-                      <RefreshCw size={17} />
-                    )}
-                  </motion.div>
-                </div>
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--pcms-text, #ffffff)' }}>
-                      {syncFeedback === 'success'
-                        ? 'Live Synchronized'
-                        : hasPendingUpdate
-                        ? 'Update Available'
-                        : 'System In-Sync'}
-                    </span>
-                    {hasPendingUpdate && (
-                      <span
-                        style={{
-                          fontSize: 9,
-                          fontWeight: 800,
-                          background: '#10b981',
-                          color: '#ffffff',
-                          padding: '1px 6px',
-                          borderRadius: 8,
-                          textTransform: 'uppercase',
-                        }}
-                      >
-                        Live
-                      </span>
-                    )}
-                  </div>
-                  <div style={{ fontSize: 11, color: 'var(--pcms-muted, #a1a1aa)', marginTop: 1 }}>
-                    {hasPendingUpdate
-                      ? `${pendingUpdatesCount || 1} change(s) • Tap to refresh`
-                      : syncFeedback === 'success'
-                      ? 'All caches & stats updated'
-                      : `Last synced: ${formatSyncTime(lastSyncedAt)}`}
-                  </div>
-                </div>
+                />
               </div>
 
-              {/* Refresh Action Button */}
-              <motion.button
-                whileTap={{ scale: 0.92 }}
-                onClick={handleIntelligentRefresh}
-                disabled={isSyncing}
+              {/* Header */}
+              <div
                 style={{
+                  padding: '6px 20px 14px',
+                  borderBottom: '1px solid var(--pcms-line-soft, rgba(255,255,255,0.08))',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 6,
-                  padding: '7px 12px',
-                  borderRadius: 12,
-                  background: hasPendingUpdate
-                    ? 'linear-gradient(135deg, #10b981, #059669)'
-                    : 'var(--pcms-line-soft, rgba(255,255,255,0.08))',
-                  border: hasPendingUpdate
-                    ? '1px solid rgba(255,255,255,0.3)'
-                    : '1px solid var(--pcms-line, rgba(255,255,255,0.12))',
-                  color: hasPendingUpdate ? '#ffffff' : 'var(--pcms-text, #ffffff)',
-                  fontSize: 11.5,
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  boxShadow: hasPendingUpdate ? '0 4px 12px rgba(16,185,129,0.35)' : 'none',
-                  transition: 'all 0.2s ease',
+                  justifyContent: 'space-between',
+                  flexShrink: 0,
                 }}
               >
-                <RefreshCw size={13} className={isSyncing ? 'spinning' : ''} />
-                <span>{isSyncing ? 'Syncing...' : hasPendingUpdate ? 'Refresh' : 'Sync'}</span>
-              </motion.button>
-            </motion.div>
-
-            {/* 2. Quick Actions Header */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '2px 4px 0' }}>
-              <span style={{ fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--pcms-muted)' }}>
-                Quick Actions
-              </span>
-              <span style={{ fontSize: 10, color: 'var(--pcms-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                <Activity size={11} color="#10b981" />
-                Realtime
-              </span>
-            </div>
-
-            {/* 3. Actions Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
-              {SPEED_DIAL_ACTIONS.map((action) => (
-                <motion.button
-                  key={action.label}
-                  whileTap={{ scale: 0.94 }}
-                  onClick={() => {
-                    setIsSpeedDialOpen(false);
-                    navigate(action.route);
-                  }}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 9,
-                    padding: '10px 12px',
-                    borderRadius: 14,
-                    background: 'var(--pcms-bg-2, rgba(255,255,255,0.04))',
-                    border: '1px solid var(--pcms-line-soft, rgba(255,255,255,0.08))',
-                    color: 'var(--pcms-text)',
-                    fontSize: 12,
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                  }}
-                >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div
                     style={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: 14,
-                      background: `${action.color}18`,
-                      border: `1px solid ${action.color}33`,
-                      color: action.color,
+                      width: 32,
+                      height: 32,
+                      borderRadius: 10,
+                      background: 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.15))',
+                      border: '1px solid rgba(99,102,241,0.3)',
+                      color: 'var(--primary-blue, #6366f1)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
+                    }}
+                  >
+                    <Sparkles size={17} />
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: 'var(--pcms-text, #ffffff)', letterSpacing: '-0.02em', fontFamily: "'Space Grotesk', sans-serif" }}>
+                      Control & Actions
+                    </h3>
+                    <p style={{ margin: '1px 0 0', fontSize: 10.5, color: 'var(--pcms-muted, #a1a1aa)', fontWeight: 500 }}>
+                      Quick shortcuts & diagnostics
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsSpeedDialOpen(false)}
+                  style={{
+                    width: 30,
+                    height: 30,
+                    borderRadius: 15,
+                    background: 'rgba(255,255,255,0.08)',
+                    border: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'var(--pcms-muted, #a1a1aa)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Scrollable Body */}
+              <div style={{ padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 14, overflowY: 'auto' }}>
+                {/* 1. Live Cloud Sync & Diagnostics Hub */}
+                <motion.div
+                  layout
+                  style={{
+                    padding: '12px 14px',
+                    borderRadius: 18,
+                    background: hasPendingUpdate
+                      ? 'linear-gradient(135deg, rgba(16,185,129,0.18), rgba(6,182,212,0.14))'
+                      : 'var(--pcms-bg-2, rgba(255,255,255,0.04))',
+                    border: hasPendingUpdate
+                      ? '1px solid rgba(16,185,129,0.45)'
+                      : '1px solid var(--pcms-line-soft, rgba(255,255,255,0.09))',
+                    boxShadow: hasPendingUpdate ? '0 6px 20px rgba(16,185,129,0.22)' : 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 12,
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+                    <div
+                      style={{
+                        width: 38,
+                        height: 38,
+                        borderRadius: 14,
+                        background: hasPendingUpdate
+                          ? 'rgba(16,185,129,0.25)'
+                          : 'rgba(99,102,241,0.18)',
+                        color: hasPendingUpdate ? '#10b981' : 'var(--primary-blue, #6366f1)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                      }}
+                    >
+                      <motion.div
+                        animate={isSyncing ? { rotate: 360 } : { rotate: 0 }}
+                        transition={isSyncing ? { repeat: Infinity, duration: 0.75, ease: 'linear' } : {}}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      >
+                        {syncFeedback === 'success' ? (
+                          <CheckCircle2 size={20} color="#10b981" />
+                        ) : (
+                          <RefreshCw size={19} />
+                        )}
+                      </motion.div>
+                    </div>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--pcms-text, #ffffff)', whiteSpace: 'nowrap' }}>
+                          {syncFeedback === 'success'
+                            ? 'Synchronized'
+                            : hasPendingUpdate
+                            ? 'Update Available'
+                            : 'Live & In-Sync'}
+                        </span>
+                        <span
+                          style={{
+                            fontSize: 9,
+                            fontWeight: 800,
+                            background: hasPendingUpdate ? '#10b981' : 'rgba(99,102,241,0.2)',
+                            color: hasPendingUpdate ? '#ffffff' : 'var(--primary-blue, #6366f1)',
+                            border: `1px solid ${hasPendingUpdate ? 'rgba(255,255,255,0.3)' : 'rgba(99,102,241,0.3)'}`,
+                            padding: '1px 6px',
+                            borderRadius: 8,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.04em',
+                          }}
+                        >
+                          {hasPendingUpdate ? 'Live' : 'Active'}
+                        </span>
+                      </div>
+                      <p style={{ margin: '2px 0 0', fontSize: 11, color: 'var(--pcms-muted, #a1a1aa)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {hasPendingUpdate
+                          ? `${pendingUpdatesCount || 1} change(s) • Tap to refresh`
+                          : syncFeedback === 'success'
+                          ? 'All caches & stats updated'
+                          : `Last synced: ${formatSyncTime(lastSyncedAt)} • ~18ms latency`}
+                      </p>
+                    </div>
+                  </div>
+
+                  <motion.button
+                    whileTap={{ scale: 0.92 }}
+                    onClick={handleIntelligentRefresh}
+                    disabled={isSyncing}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      padding: '8px 14px',
+                      borderRadius: 13,
+                      background: hasPendingUpdate
+                        ? 'linear-gradient(135deg, #10b981, #059669)'
+                        : 'var(--pcms-line-soft, rgba(255,255,255,0.08))',
+                      border: hasPendingUpdate
+                        ? '1px solid rgba(255,255,255,0.3)'
+                        : '1px solid var(--pcms-line, rgba(255,255,255,0.12))',
+                      color: '#ffffff',
+                      fontSize: 12,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      boxShadow: hasPendingUpdate ? '0 4px 14px rgba(16,185,129,0.35)' : 'none',
                       flexShrink: 0,
                     }}
                   >
-                    <action.icon size={15} />
-                  </div>
-                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {action.label}
+                    <RefreshCw size={13} className={isSyncing ? 'spinning' : ''} />
+                    <span>{isSyncing ? 'Syncing...' : hasPendingUpdate ? 'Refresh' : 'Sync'}</span>
+                  </motion.button>
+                </motion.div>
+
+                {/* 2. Section Header */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2px' }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--pcms-muted)' }}>
+                    Quick Navigation & Create
                   </span>
-                </motion.button>
-              ))}
-            </div>
-          </motion.div>
+                  <span style={{ fontSize: 10.5, color: 'var(--pcms-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <Activity size={11} color="#10b981" />
+                    Realtime
+                  </span>
+                </div>
+
+                {/* 3. Rich 2x3 Interactive Action Tiles */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}>
+                  {SPEED_DIAL_ACTIONS.map((action, idx) => (
+                    <motion.button
+                      key={action.label}
+                      whileTap={{ scale: 0.94 }}
+                      whileHover={{ scale: 1.02 }}
+                      initial={{ opacity: 0, y: 15 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: idx * 0.035 }}
+                      onClick={() => {
+                        haptic.light();
+                        setIsSpeedDialOpen(false);
+                        navigate(action.route);
+                      }}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'flex-start',
+                        gap: 8,
+                        padding: '14px 14px',
+                        borderRadius: 18,
+                        background: 'var(--pcms-bg-2, rgba(255,255,255,0.04))',
+                        border: '1px solid var(--pcms-line-soft, rgba(255,255,255,0.08))',
+                        color: 'var(--pcms-text)',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        boxShadow: '0 4px 14px rgba(0,0,0,0.15)',
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: 12,
+                          background: `${action.color}1c`,
+                          border: `1px solid ${action.color}38`,
+                          color: action.color,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <action.icon size={18} strokeWidth={2.2} />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--pcms-text, #ffffff)' }}>
+                          {action.label}
+                        </div>
+                        <div style={{ fontSize: 10.5, color: 'var(--pcms-muted, #a1a1aa)', marginTop: 2 }}>
+                          {action.subtitle}
+                        </div>
+                      </div>
+                    </motion.button>
+                  ))}
+                </div>
+
+                {/* 4. Quick Control Footer Strip */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '10px 14px',
+                    borderRadius: 16,
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid var(--pcms-line-soft, rgba(255,255,255,0.06))',
+                    marginTop: 2,
+                  }}
+                >
+                  <button
+                    onClick={() => {
+                      haptic.light();
+                      toggleTheme();
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 7,
+                      background: 'transparent',
+                      border: 'none',
+                      color: 'var(--pcms-text)',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {theme === 'dark' ? <Sun size={15} color="#f59e0b" /> : <Moon size={15} color="#6366f1" />}
+                    <span>{theme === 'dark' ? 'Light' : 'Dark'} Mode</span>
+                  </button>
+
+                  <div style={{ width: 1, height: 16, background: 'var(--pcms-line-soft)' }} />
+
+                  <button
+                    onClick={() => {
+                      haptic.light();
+                      setIsSpeedDialOpen(false);
+                      window.open('/', '_blank');
+                    }}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      background: 'transparent',
+                      border: 'none',
+                      color: 'var(--primary-blue, #6366f1)',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <ExternalLink size={14} />
+                    <span>Open Website</span>
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
 
