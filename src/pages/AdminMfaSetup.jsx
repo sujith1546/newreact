@@ -28,7 +28,17 @@ export default function AdminMfaSetup() {
   const [disableLoading, setDisableLoading] = useState(false);
 
   useEffect(() => {
+    document.documentElement.classList.add('admin-mode');
+    document.body.classList.add('admin-mode');
+    const originalBg = document.body.style.backgroundColor;
+    document.body.style.backgroundColor = '#0a0d10';
     loadFactors();
+
+    return () => {
+      document.documentElement.classList.remove('admin-mode');
+      document.body.classList.remove('admin-mode');
+      document.body.style.backgroundColor = originalBg;
+    };
   }, []);
 
   async function loadFactors() {
@@ -139,6 +149,13 @@ export default function AdminMfaSetup() {
   return (
     <div style={styles.page}>
       <style>{`
+        html, body, #root {
+          background-color: #0a0d10 !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          width: 100% !important;
+          height: 100% !important;
+        }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .spin { animation: spin 1s linear infinite; }
       `}</style>
@@ -308,10 +325,12 @@ const styles = {
     bottom: 0,
     width: "100vw",
     height: "100vh",
-    zIndex: 9999,
+    minWidth: "100vw",
+    minHeight: "100vh",
+    zIndex: 999999,
     background: "#0a0d10",
     backgroundImage: `
-      radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.12) 0%, transparent 60%),
+      radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.15) 0%, transparent 60%),
       linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
       linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)
     `,
