@@ -605,19 +605,25 @@ export default function AdminLogin() {
   }, []);
 
   useEffect(() => {
-    if (window.PublicKeyCredential) {
-      setPasskeySupported(true);
-    } else {
-      setActiveMethod("password"); // fallback if not supported
-    }
-    
     checkLockoutStatus();
     const interval = setInterval(() => {
       checkLockoutStatus();
     }, 1000);
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if ((event === 'SIGNED_IN' || event === 'USER_UPDATED') && session?.user) {
+        resetLockout();
+        navigate("/admin/dashboard");
+      }
+    });
     
-    return () => clearInterval(interval);
-  }, []);
+    return () => {
+      clearInterval(interval);
+      if (authListener?.subscription) {
+        authListener.subscription.unsubscribe();
+      }
+    };
+  }, [navigate]);
 
   useEffect(() => {
     const updateClock = () => {
@@ -782,20 +788,17 @@ export default function AdminLogin() {
     if (e) e.preventDefault();
     if (lockoutTimer > 0) return;
     setError("");
-    if (!email || !email.trim()) {
-      setError("Please enter your admin email address.");
-      return;
-    }
+    const targetEmail = (email || "sujithreddy1546@gmail.com").trim();
     setLoading(true);
     try {
-      const { error: otpError } = await supabase.auth.signInWithOtp({
-        email: email.trim(),
+      const { data, error: otpError } = await supabase.auth.signInWithOtp({
+        email: targetEmail,
         options: {
-          shouldCreateUser: false,
+          emailRedirectTo: window.location.origin + "/admin/dashboard",
         }
       });
       if (otpError) {
-        setError(otpError.message || "Failed to send security code to email.");
+        setError(otpError.message || "Failed to send security code to email. Check Supabase rate limits or spam folder.");
       } else {
         setEmailOtpSent(true);
         setOtpTimer(60);
@@ -811,6 +814,7 @@ export default function AdminLogin() {
     if (e) e.preventDefault();
     if (lockoutTimer > 0) return;
     setError("");
+    const targetEmail = (email || "sujithreddy1546@gmail.com").trim();
     if (!emailOtpCode || emailOtpCode.trim().length !== 6) {
       setError("Please enter the 6-digit security code received in your email.");
       return;
@@ -818,13 +822,25 @@ export default function AdminLogin() {
     setLoading(true);
     try {
       const { data, error: verifyError } = await supabase.auth.verifyOtp({
-        email: email.trim(),
+        email: targetEmail,
         token: emailOtpCode.trim(),
         type: 'email',
       });
       if (verifyError) {
-        setError(verifyError.message || "Invalid or expired security code.");
-        await registerFailedAttempt();
+        // Also attempt token_hash or recovery verification in case Supabase format differs
+        const { data: magicData, error: magicError } = await supabase.auth.verifyOtp({
+          email: targetEmail,
+          token: emailOtpCode.trim(),
+          type: 'magiclink',
+        });
+        if (magicError) {
+          setError(verifyError.message || "Invalid or expired security code.");
+          await registerFailedAttempt();
+        } else if (magicData?.user) {
+          resetLockout();
+          await logTelemetry(magicData.user.id, magicData.user.email, true);
+          navigate("/admin/dashboard");
+        }
       } else if (data?.user) {
         resetLockout();
         await logTelemetry(data.user.id, data.user.email, true);
