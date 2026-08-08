@@ -136,9 +136,9 @@ const Field = ({ label, children, hint, hintColor }) => (
   </div>
 );
 
-/** Two-column grid */
+/** Two-column grid with mobile responsive protection */
 const Grid2 = ({ children }) => (
-  <div className="pcms-grid-2col" style={{ gap: 12 }}>{children}</div>
+  <div className="pcms-grid-2col" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: 12 }}>{children}</div>
 );
 
 /** Status badge pill */
@@ -243,14 +243,13 @@ export default function SettingsPanel({ isMobileView = false }) {
   /* bootstrap */
   useEffect(() => {
     if (dbSettings) {
-      setSettings(prev => ({
+      setSettings({
         ...DEFAULT_SETTINGS,
         ...dbSettings,
-        ...prev,
         site_disabled: dbSettings.site_disabled ?? false,
         site_disabled_reason: dbSettings.site_disabled_reason || 'Access disabled by administrator.',
         site_disabled_at: dbSettings.site_disabled_at || null,
-      }));
+      });
     }
   }, [dbSettings]);
 
@@ -269,6 +268,10 @@ export default function SettingsPanel({ isMobileView = false }) {
     if (key === 'site_disabled_reason') localStorage.setItem('pcms_site_disabled_reason', String(value));
     if (key === 'site_disabled_at')     localStorage.setItem('pcms_site_disabled_at', String(value));
     window.dispatchEvent(new Event('storage'));
+
+    if (['site_disabled', 'site_disabled_reason', 'site_disabled_at', 'maintenance_enabled', 'maintenance_message'].includes(key)) {
+      window.dispatchEvent(new CustomEvent('pcms_lock_changed'));
+    }
 
     // Immediately patch the in-memory globalDataCache so portfolio components
     // that use useRealtimeData('site_settings') see the update before Supabase
@@ -310,7 +313,14 @@ export default function SettingsPanel({ isMobileView = false }) {
     updateSetting(key, val);
   };
   const change = (key, val) => setSettings(p => ({ ...p, [key]: val }));
-  const blur   = (key, val) => { if (dbSettings && dbSettings[key] !== val) { updateSetting(key, val); setDbSettings(p => ({ ...p, [key]: val })); } };
+  const blur   = (key, val) => {
+    updateSetting(key, val);
+    if (typeof setDbSettings === 'function') {
+      try {
+        setDbSettings(p => (p && typeof p === 'object' ? { ...p, [key]: val } : p));
+      } catch (_) {}
+    }
+  };
 
   /* resume upload */
   const handleResumeUpload = async (e) => {
