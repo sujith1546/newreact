@@ -953,13 +953,17 @@ END:VCARD`;
             />
           )}
           <motion.div
-            animate={{ scale: isMoreOpen ? 1.16 : 1, y: isMoreOpen ? -1 : 0 }}
+            animate={{
+              scale: isMoreOpen ? 1.16 : 1,
+              y: isMoreOpen ? -1 : 0,
+              rotate: isMoreOpen ? 90 : 0,
+            }}
             transition={{ type: "spring", stiffness: 400, damping: 25 }}
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
-            <MoreHorizontal size={18} aria-hidden="true" />
+            {isMoreOpen ? <X size={18} aria-hidden="true" /> : <MoreHorizontal size={18} aria-hidden="true" />}
           </motion.div>
-          <span>More</span>
+          <span>{isMoreOpen ? 'Close' : 'More'}</span>
         </motion.button>
       </nav>
 

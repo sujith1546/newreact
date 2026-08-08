@@ -3187,10 +3187,11 @@ html {
   .more-overlay-sheet {
     position: fixed;
     bottom: max(76px, calc(68px + env(safe-area-inset-bottom, 12px)));
-    left: 10px; right: 10px;
-    width: auto;
+    left: 14px; right: 14px;
+    width: calc(100% - 28px);
+    max-width: 480px;
     margin: 0 auto;
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
     border: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
@@ -3199,15 +3200,15 @@ html {
     will-change: transform;
     transform: translateZ(0);
     backface-visibility: hidden;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22), 0 4px 12px rgba(0, 0, 0, 0.06);
     box-sizing: border-box;
     display: flex; flex-direction: column;
-    max-height: min(370px, 56vh);
+    max-height: min(460px, 68vh);
     overflow: hidden;
   }
   [data-theme="dark"] .more-overlay-sheet {
-    background: rgba(24, 24, 24, 0.9);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.3);
+    background: rgba(24, 24, 24, 0.92);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55), 0 4px 12px rgba(0, 0, 0, 0.35);
     border-color: rgba(255, 255, 255, 0.12);
   }
 
