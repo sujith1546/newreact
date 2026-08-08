@@ -1475,16 +1475,32 @@ export default function SettingsPanel({ isMobileView = false }) {
             if (settingsSearch && visibleItems.length === 0) return null;
 
             return (
-              <div key={grp.groupLabel} style={{ display: 'flex', flexDirection: 'column', gap: 2, marginBottom: grpIdx < SETTING_GROUPS.length - 1 ? 6 : 0 }}>
+              <div
+                key={grp.groupLabel}
+                style={{
+                  display: 'flex', flexDirection: 'column', gap: 3,
+                  marginBottom: grpIdx < SETTING_GROUPS.length - 1 ? 14 : 0,
+                  paddingBottom: grpIdx < SETTING_GROUPS.length - 1 ? 12 : 0,
+                  borderBottom: grpIdx < SETTING_GROUPS.length - 1 ? '1px solid var(--pcms-line-soft)' : 'none'
+                }}
+              >
+                {/* Group Title with Count Pill */}
                 <div style={{
-                  fontSize: 9.5, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
-                  color: 'var(--pcms-muted-2)', padding: '6px 8px 3px', margin: 0,
+                  fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+                  color: 'var(--pcms-muted-2)', padding: '4px 8px 6px', margin: 0,
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between'
                 }}>
                   <span>{grp.groupLabel}</span>
-                  <span style={{ fontSize: 9, opacity: 0.6 }}>{visibleItems.length}</span>
+                  <span style={{
+                    fontSize: 9.5, padding: '1px 6px', borderRadius: 10,
+                    background: 'var(--pcms-panel-2)', border: '1px solid var(--pcms-line)',
+                    fontWeight: 700, color: 'var(--pcms-muted)'
+                  }}>
+                    {visibleItems.length}
+                  </span>
                 </div>
 
+                {/* Items */}
                 {visibleItems.map(tab => {
                   const Icon = tab.icon;
                   const active = activeTab === tab.id;
@@ -1496,7 +1512,7 @@ export default function SettingsPanel({ isMobileView = false }) {
                       onClick={() => setActiveTab(tab.id)}
                       style={{
                         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                        padding: '8px 10px', borderRadius: 9, fontSize: 12, fontWeight: active ? 600 : 400,
+                        padding: '9px 12px', borderRadius: 10, fontSize: 12.5, fontWeight: active ? 600 : 400,
                         background: active
                           ? (isDanger ? '#EF444418' : `${tabColor}15`)
                           : 'transparent',
@@ -1508,25 +1524,29 @@ export default function SettingsPanel({ isMobileView = false }) {
                         transition: 'all 0.14s ease-in-out',
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
                         <div style={{
-                          width: 24, height: 24, borderRadius: 6, flexShrink: 0,
+                          width: 26, height: 26, borderRadius: 7, flexShrink: 0,
                           background: active ? `${tabColor}25` : `${tabColor}12`,
                           color: tabColor,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                         }}>
-                          <Icon size={12.5} />
+                          <Icon size={13.5} />
                         </div>
                         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tab.label}</span>
                       </div>
                       {active ? (
                         <span style={{
-                          width: 5, height: 5, borderRadius: '50%', background: tabColor,
-                          boxShadow: `0 0 6px ${tabColor}`, flexShrink: 0, marginLeft: 6
+                          width: 6, height: 6, borderRadius: '50%', background: tabColor,
+                          boxShadow: `0 0 8px ${tabColor}`, flexShrink: 0, marginLeft: 6
                         }} />
                       ) : tab.id === 'security' ? (
-                        <span style={{ fontSize: 9.5, fontWeight: 700, color: '#10B981', background: 'rgba(16, 185, 129, 0.12)', padding: '1px 5px', borderRadius: 4 }}>
+                        <span style={{ fontSize: 9.5, fontWeight: 700, color: '#10B981', background: 'rgba(16, 185, 129, 0.12)', padding: '1px 6px', borderRadius: 4 }}>
                           A+
+                        </span>
+                      ) : tab.id === 'webhooks_api' ? (
+                        <span style={{ fontSize: 9, fontWeight: 700, color: '#8B5CF6', background: 'rgba(139, 92, 246, 0.12)', padding: '1px 5px', borderRadius: 4 }}>
+                          VAULT
                         </span>
                       ) : null}
                     </button>
@@ -1535,6 +1555,22 @@ export default function SettingsPanel({ isMobileView = false }) {
               </div>
             );
           })}
+
+          {/* Modular Future Expansion Slot */}
+          <div style={{
+            marginTop: 'auto', paddingTop: 10,
+            padding: '12px 14px', borderRadius: 10,
+            background: 'rgba(99, 102, 241, 0.04)',
+            border: '1px dashed rgba(99, 102, 241, 0.22)',
+            display: 'flex', alignItems: 'center', gap: 10,
+            fontSize: 11, color: 'var(--pcms-muted)',
+          }}>
+            <Sparkles size={14} color="var(--pcms-accent)" style={{ flexShrink: 0 }} />
+            <div style={{ lineHeight: 1.35 }}>
+              <span style={{ fontWeight: 700, color: 'var(--pcms-text)', display: 'block', fontSize: 11 }}>Modular Slot Ready</span>
+              <span>Open for future plugins & custom hooks</span>
+            </div>
+          </div>
         </div>
 
         {/* ── Right Content Area with Dynamic Hero Banner ── */}

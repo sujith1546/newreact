@@ -6303,8 +6303,8 @@ body:has(.admin-shell) {
 ─────────────────────────────────────────────── */
 .pcms-settings-layout {
   display: grid !important;
-  grid-template-columns: 280px 1fr !important;
-  gap: 18px !important;
+  grid-template-columns: 295px 1fr !important;
+  gap: 20px !important;
   align-items: stretch !important;
   min-height: calc(100vh - 120px) !important;
   width: 100% !important;
@@ -6312,11 +6312,11 @@ body:has(.admin-shell) {
 .pcms-settings-sidebar {
   background: var(--pcms-panel) !important;
   border: 1px solid var(--pcms-line) !important;
-  border-radius: 12px !important;
-  padding: 14px 10px !important;
+  border-radius: 14px !important;
+  padding: 16px 12px !important;
   display: flex !important;
   flex-direction: column !important;
-  gap: 12px !important;
+  gap: 16px !important;
   height: 100% !important;
   min-height: 100% !important;
   position: sticky !important;
@@ -6329,11 +6329,11 @@ body:has(.admin-shell) {
 .pcms-settings-content {
   background: var(--pcms-panel) !important;
   border: 1px solid var(--pcms-line) !important;
-  border-radius: 12px !important;
-  padding: 22px 24px !important;
+  border-radius: 14px !important;
+  padding: 24px 26px !important;
   display: flex !important;
   flex-direction: column !important;
-  gap: 16px !important;
+  gap: 18px !important;
   height: 100% !important;
   min-height: 100% !important;
   overflow-y: auto !important;
