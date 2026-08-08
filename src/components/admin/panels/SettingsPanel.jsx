@@ -22,7 +22,7 @@ import BottomSheet from '../mobile/BottomSheet';
    CONFIG
 ────────────────────────────────────────────────────────────── */
 const TABS = [
-  { id: 'toggles',       icon: Layers,        label: 'Feature Flags',        desc: 'Enable or disable site modules' },
+  { id: 'toggles',       icon: Layers,        label: 'Feature Flags',         desc: 'Enable or disable site modules' },
   { id: 'status_avail',  icon: Zap,           label: 'Status & Availability', desc: 'Project status & hiring info' },
   { id: 'banner',        icon: Bell,          label: 'Announcement',          desc: 'Global site-wide banner' },
   { id: 'seo',           icon: Globe,         label: 'SEO & Discovery',       desc: 'Meta tags & social sharing' },
@@ -30,6 +30,7 @@ const TABS = [
   { id: 'theme',         icon: Palette,       label: 'Theme & Branding',      desc: 'Accent color & identity' },
   { id: 'performance',   icon: Activity,      label: 'Performance',           desc: 'Analytics, rate limits & cache' },
   { id: 'notifications', icon: Bell,          label: 'Notifications',         desc: 'Email & alert preferences' },
+  { id: 'security',      icon: Shield,        label: 'Security & Protection', desc: 'Anti-inspect & security shield' },
   { id: 'security_lock', icon: Lock,          label: 'Security & Lock',       desc: 'Maintenance & lockdown modes' },
   { id: 'backup',        icon: Database,      label: 'Backup & Restore',      desc: 'Export & restore CMS data' },
   { id: 'webhooks_api',  icon: Key,           label: 'Webhooks & Vault',      desc: 'Deploy hooks & API keys' },
