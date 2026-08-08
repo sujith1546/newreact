@@ -481,57 +481,63 @@ END:VCARD`;
               {/* ⚡ Live Cloud Diagnostics & Sync Card */}
               <div style={{
                 margin: '10px 14px 14px',
-                padding: '12px 14px',
-                borderRadius: 18,
-                background: 'linear-gradient(135deg, rgba(99,102,241,0.14) 0%, rgba(139,92,246,0.09) 100%)',
-                border: '1px solid rgba(99,102,241,0.28)',
+                padding: '14px 16px',
+                borderRadius: 20,
+                background: 'linear-gradient(135deg, #111116 0%, #1a1a24 100%)',
+                border: '1px solid rgba(99, 102, 241, 0.35)',
+                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: 10,
+                gap: 12,
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
-                    <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', fontFamily: "'Space Grotesk', sans-serif" }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{
+                      width: 8, height: 8, borderRadius: '50%',
+                      background: '#10b981',
+                      boxShadow: '0 0 10px #10b981, 0 0 2px #10b981',
+                    }} />
+                    <span style={{ fontSize: 11.5, fontWeight: 800, color: '#ffffff', letterSpacing: '0.05em', fontFamily: "'Space Grotesk', sans-serif" }}>
                       LIVE REALTIME SYNC
                     </span>
                   </div>
                   <span style={{
-                    fontSize: 10, fontWeight: 800, color: '#6366f1',
-                    background: 'rgba(99,102,241,0.18)', border: '1px solid rgba(99,102,241,0.3)',
-                    padding: '2px 7px', borderRadius: 8,
+                    fontSize: 10, fontWeight: 800, color: '#818cf8',
+                    background: 'rgba(99, 102, 241, 0.22)', border: '1px solid rgba(99, 102, 241, 0.4)',
+                    padding: '2px 8px', borderRadius: 10,
                   }}>
                     ~18ms DB
                   </span>
                 </div>
 
-                <div style={{ fontSize: 10.5, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span>Last synced: {formatSyncTime(lastSyncedAt)}</span>
-                  <span>•</span>
-                  <span>All caches live</span>
+                <div style={{ fontSize: 11, color: 'rgba(255, 255, 255, 0.65)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span>Last synced: <strong style={{ color: '#e2e8f0' }}>{formatSyncTime(lastSyncedAt)}</strong></span>
+                  <span style={{ opacity: 0.4 }}>•</span>
+                  <span style={{ color: '#10b981', fontWeight: 600 }}>All caches live</span>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                   <motion.button
                     whileTap={{ scale: 0.94 }}
                     onClick={handleSoftSync}
                     disabled={isSyncing}
                     style={{
-                      padding: '8px 10px',
+                      padding: '9px 12px',
                       borderRadius: 12,
-                      background: 'rgba(99,102,241,0.2)',
-                      border: '1px solid rgba(99,102,241,0.35)',
+                      background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
                       color: '#ffffff',
-                      fontSize: 11,
+                      fontSize: 11.5,
                       fontWeight: 700,
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: 6,
+                      boxShadow: '0 4px 14px rgba(99, 102, 241, 0.35)',
                     }}
                   >
-                    <RefreshCw size={12} className={isSyncing ? 'spinning' : ''} />
+                    <RefreshCw size={13} className={isSyncing ? 'spinning' : ''} />
                     <span>{isSyncing ? 'Syncing...' : '⚡ Soft Sync'}</span>
                   </motion.button>
 
@@ -540,21 +546,22 @@ END:VCARD`;
                     onClick={handleFullWebsiteRefresh}
                     disabled={isFullReloading}
                     style={{
-                      padding: '8px 10px',
+                      padding: '9px 12px',
                       borderRadius: 12,
-                      background: 'rgba(16,185,129,0.18)',
-                      border: '1px solid rgba(16,185,129,0.35)',
+                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                      border: '1px solid rgba(255, 255, 255, 0.2)',
                       color: '#ffffff',
-                      fontSize: 11,
+                      fontSize: 11.5,
                       fontWeight: 700,
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       gap: 6,
+                      boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
                     }}
                   >
-                    <RefreshCw size={12} className={isFullReloading ? 'spinning' : ''} />
+                    <RefreshCw size={13} className={isFullReloading ? 'spinning' : ''} />
                     <span>{isFullReloading ? 'Reloading...' : '🚀 Hard Reload'}</span>
                   </motion.button>
                 </div>
