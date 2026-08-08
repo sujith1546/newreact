@@ -13,27 +13,18 @@ export default function SwipeableTabs({ activeCategory, onCategoryChange, childr
     }
   }, [activeCategory, visited]);
 
-  const currentIndex = CATEGORIES.indexOf(activeCategory);
-
-  const handleDragEnd = (event, info) => {
-    const swipeThreshold = 50;
-    if (info.offset.x < -swipeThreshold && currentIndex < CATEGORIES.length - 1) {
-      // Swiped left -> next category
-      onCategoryChange(CATEGORIES[currentIndex + 1]);
-    } else if (info.offset.x > swipeThreshold && currentIndex > 0) {
-      // Swiped right -> prev category
-      onCategoryChange(CATEGORIES[currentIndex - 1]);
-    }
-  };
-
   return (
-    <motion.div
+    <div
       className="admin-swipeable-container"
-      drag="x"
-      dragConstraints={{ left: 0, right: 0 }}
-      dragElastic={0.15}
-      onDragEnd={handleDragEnd}
-      style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
+      style={{
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        width: '100%',
+        maxWidth: '100%',
+        touchAction: 'pan-y',
+      }}
     >
       {CATEGORIES.map((cat) => {
         const isVisited = visited[cat];
@@ -46,20 +37,22 @@ export default function SwipeableTabs({ activeCategory, onCategoryChange, childr
             key={cat}
             className="admin-tab-panel"
             initial={false}
-            animate={{ opacity: isActive ? 1 : 0, y: isActive ? 0 : 6 }}
-            transition={{ duration: 0.2 }}
+            animate={{ opacity: isActive ? 1 : 0, y: isActive ? 0 : 8 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
             style={{
               display: isActive ? 'flex' : 'none',
               flexDirection: 'column',
               flex: 1,
               overflow: 'hidden',
               height: '100%',
+              width: '100%',
+              maxWidth: '100%',
             }}
           >
             {childrenMap[cat]}
           </motion.div>
         );
       })}
-    </motion.div>
+    </div>
   );
 }

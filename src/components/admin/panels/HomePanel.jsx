@@ -303,109 +303,86 @@ export default function HomePanel({ isMobile = false }) {
   }
 
   return (
-    <div>
-      {/* Welcome Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="pcms-welcome-header"
-        style={isMobile ? {
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: 10,
-          marginBottom: 16,
-          padding: '10px 14px',
-          borderRadius: 14,
-          background: 'var(--pcms-panel-2)',
-          border: '1px solid var(--pcms-line-soft)',
-        } : undefined}
-      >
-        <div>
-          <div style={{
-            fontSize: 11,
-            fontWeight: 800,
-            letterSpacing: '0.08em',
-            color: 'var(--pcms-accent)',
+    <div style={{ width: '100%', maxWidth: '100%', overflowX: 'hidden' }}>
+      {/* Welcome Header (Desktop Only) */}
+      {!isMobile && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="pcms-welcome-header"
+          style={{
             display: 'flex',
             alignItems: 'center',
-            gap: 6,
-          }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--pcms-accent)' }} />
-            PORTFOLIO CMS
-          </div>
-          {!isMobile && (
-            <>
-              <h2 className="pcms-welcome-greeting" style={{ margin: 0, fontSize: 22, fontWeight: 700, color: 'var(--pcms-text)', fontFamily: "'Space Grotesk', sans-serif" }}>
-                {greeting}, {firstName.charAt(0).toUpperCase() + firstName.slice(1)} 👋
-              </h2>
-              <p className="pcms-welcome-date" style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--pcms-muted)' }}>
-                {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-              </p>
-            </>
-          )}
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          {siteSettings && (
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 5,
-              padding: '6px 10px', borderRadius: 20,
-              background: siteSettings.site_disabled ? 'rgba(239,68,68,0.12)' : 'rgba(16,185,129,0.12)',
-              border: `1px solid ${siteSettings.site_disabled ? 'rgba(239,68,68,0.25)' : 'rgba(16,185,129,0.25)'}`,
-            }}>
-              <div style={{
-                width: 6, height: 6, borderRadius: '50%',
-                background: siteSettings.site_disabled ? '#EF4444' : '#10B981',
-                boxShadow: `0 0 6px ${siteSettings.site_disabled ? '#EF4444' : '#10B981'}`,
-              }} />
-              <span style={{ fontSize: 11, fontWeight: 700, color: siteSettings.site_disabled ? '#EF4444' : '#10B981' }}>
-                {siteSettings.site_disabled ? 'Locked' : 'Live'}
-              </span>
+            justifyContent: 'space-between',
+            marginBottom: 24,
+            flexWrap: 'wrap',
+            gap: 12,
+          }}
+        >
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--pcms-accent)', marginBottom: 4 }}>
+              PORTFOLIO CMS
             </div>
-          )}
-          <a
-            href="/"
-            target="_blank"
-            rel="noreferrer"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              padding: '6px 12px',
-              borderRadius: 20,
-              background: 'linear-gradient(135deg, rgba(99,102,241,0.18), rgba(59,130,246,0.12))',
-              border: '1px solid rgba(99,102,241,0.35)',
-              fontSize: 11.5,
-              fontWeight: 600,
-              color: '#6366f1',
-              textDecoration: 'none',
-              boxShadow: '0 2px 8px rgba(99,102,241,0.15)',
-              transition: 'all 0.15s ease',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            <Globe size={13} color="#6366f1" />
-            <span>View Portfolio</span>
-            <ArrowRight size={11} color="#6366f1" style={{ opacity: 0.7 }} />
-          </a>
-        </div>
-      </motion.div>
+            <h2 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: 'var(--pcms-text)', fontFamily: "'Space Grotesk', sans-serif" }}>
+              {greeting}, {firstName.charAt(0).toUpperCase() + firstName.slice(1)} 👋
+            </h2>
+            <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--pcms-muted)' }}>
+              {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
+            {siteSettings && (
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '8px 14px', borderRadius: 8,
+                background: siteSettings.site_disabled ? 'rgba(239,68,68,0.12)' : 'rgba(16,185,129,0.12)',
+                border: `1px solid ${siteSettings.site_disabled ? 'rgba(239,68,68,0.25)' : 'rgba(16,185,129,0.25)'}`,
+              }}>
+                <div style={{
+                  width: 7, height: 7, borderRadius: '50%',
+                  background: siteSettings.site_disabled ? '#EF4444' : '#10B981',
+                  boxShadow: `0 0 6px ${siteSettings.site_disabled ? '#EF4444' : '#10B981'}`,
+                }} />
+                <span style={{ fontSize: 11, fontWeight: 600, color: siteSettings.site_disabled ? '#EF4444' : '#10B981' }}>
+                  {siteSettings.site_disabled ? 'Site Locked' : 'Site Live'}
+                </span>
+              </div>
+            )}
+            <a
+              href="/"
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '8px 14px', borderRadius: 8,
+                background: 'var(--pcms-panel)',
+                border: '1px solid var(--pcms-line)',
+                fontSize: 12, fontWeight: 500, color: 'var(--pcms-muted)',
+                textDecoration: 'none',
+                transition: 'all 0.15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--pcms-accent)'; e.currentTarget.style.color = 'var(--pcms-text)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--pcms-line)'; e.currentTarget.style.color = 'var(--pcms-muted)'; }}
+            >
+              <Globe size={13} />
+              View Portfolio
+            </a>
+          </div>
+        </motion.div>
+      )}
 
-      {/* Stats Grid - Horizontal Snap-Scroll Strip on Mobile */}
+      {/* Stats Grid */}
       <div
-        className="pcms-stats-grid"
-        style={{
-          display: 'flex',
+        className={isMobile ? undefined : "pcms-stats-grid"}
+        style={isMobile ? {
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, 1fr)',
           gap: 10,
-          overflowX: 'auto',
-          scrollSnapType: 'x mandatory',
-          WebkitOverflowScrolling: 'touch',
-          scrollbarWidth: 'none',
-          paddingBottom: 4,
-          marginBottom: 20,
-        }}
+          marginBottom: 16,
+          width: '100%',
+          boxSizing: 'border-box',
+        } : undefined}
       >
         {statCards.map((card, i) => {
           const { key, ...cardProps } = card;
@@ -414,12 +391,8 @@ export default function HomePanel({ isMobile = false }) {
               key={key}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: i * 0.06 }}
-              style={{
-                flex: '0 0 calc(50% - 6px)',
-                minWidth: 135,
-                scrollSnapAlign: 'start',
-              }}
+              transition={{ duration: 0.3, delay: i * 0.05 }}
+              style={isMobile && i === statCards.length - 1 ? { gridColumn: 'span 2' } : undefined}
             >
               <StatCard {...cardProps} loading={stats.loading} />
             </motion.div>
@@ -428,7 +401,16 @@ export default function HomePanel({ isMobile = false }) {
       </div>
 
       {/* Bottom Grid */}
-      <div className="pcms-home-bottom-grid">
+      <div
+        className="pcms-home-bottom-grid"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: 16,
+          width: '100%',
+          boxSizing: 'border-box',
+        }}
+      >
 
         {/* Quick Actions */}
         <motion.div

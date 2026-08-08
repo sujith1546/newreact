@@ -65,7 +65,7 @@ export default function SystemView() {
           </div>
         </motion.div>
 
-        <SettingsPanel />
+        <SettingsPanel isMobileView={true} />
       </div>
     </div>
   );

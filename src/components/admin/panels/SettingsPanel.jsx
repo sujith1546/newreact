@@ -217,7 +217,7 @@ const DEFAULT_SETTINGS = {
   accent_color: 'blue',
 };
 
-export default function SettingsPanel() {
+export default function SettingsPanel({ isMobileView = false }) {
   const { data: dbSettings, setData: setDbSettings, loading } = useRealtimeData(
     'site_settings', { single: true, filter: { column: 'id', value: 1 } }
   );
@@ -384,14 +384,7 @@ export default function SettingsPanel() {
     setDangerConfirm(null); setDangerInput('');
   };
 
-  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth <= 768 : false);
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   if (!settings) return (
     <div style={{ padding: 60, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -905,7 +898,7 @@ export default function SettingsPanel() {
     </>
   );
 
-  if (isMobile) {
+  if (isMobileView) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14, paddingBottom: 40 }}>
         {/* Mobile Header Card */}
@@ -1023,7 +1016,7 @@ export default function SettingsPanel() {
           background: 'var(--pcms-panel)', border: '1px solid var(--pcms-line)',
           borderRadius: 10, padding: '8px 6px', display: 'flex', flexDirection: 'column', gap: 1,
           position: 'sticky', top: 0, overflowY: 'auto', scrollbarWidth: 'none',
-              maxHeight: 'calc(100vh - 160px)',
+          maxHeight: 'calc(100vh / 0.66 - 58px - 40px - 78px)',
         }}>
           <p style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--pcms-muted-2)', padding: '4px 8px 6px', margin: 0 }} className="pcms-settings-side-label">Settings</p>
           {TABS.map(tab => {
@@ -1065,7 +1058,7 @@ export default function SettingsPanel() {
               borderRadius: 10, padding: '18px 20px',
               display: 'flex', flexDirection: 'column', gap: 14,
               overflowY: 'auto', scrollbarWidth: 'thin',
-                  maxHeight: 'calc(100vh - 160px)',
+              maxHeight: 'calc(100vh / 0.66 - 58px - 40px - 78px)',
             }}
           >
             <div style={{ paddingBottom: 14, borderBottom: '1px solid var(--pcms-line-soft)' }}>
