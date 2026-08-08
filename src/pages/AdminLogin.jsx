@@ -994,9 +994,31 @@ export default function AdminLogin() {
             {/* 2FA CODE VIEW */}
             {activeMethod === 'totp' && (
               <div className="method-view" id="view-totp">
-                <form onSubmit={handleTotpSubmit} noValidate>
+                <form onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (totpFactorId) {
+                    await handleTotpSubmit(e);
+                  } else {
+                    setError("Sign in with your Email & Password first to generate a 2FA challenge, or pair an authenticator app in Settings.");
+                  }
+                }} noValidate>
+                  <div style={{ textAlign: 'center', marginBottom: 16 }}>
+                    <div style={{
+                      width: 44, height: 44, borderRadius: 12,
+                      background: 'rgba(99, 102, 241, 0.1)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      margin: '0 auto 10px', color: '#6366f1'
+                    }}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                    </div>
+                    <h3 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 4px', color: 'var(--text)' }}>Two-Factor Authenticator PIN</h3>
+                    <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: 0 }}>
+                      Enter 6-digit TOTP code from Google Authenticator or Authy
+                    </p>
+                  </div>
+
                   <div className="field">
-                    <label htmlFor="totpPIN">Authenticator 6-Digit PIN</label>
+                    <label htmlFor="totpPIN">6-Digit Security Code</label>
                     <div className={`input-shell ${error ? 'error' : ''}`} style={{ height: 46 }}>
                       <input
                         id="totpPIN"
@@ -1010,7 +1032,15 @@ export default function AdminLogin() {
                     </div>
                   </div>
                   <button className="submit-btn" type="submit" style={{ marginTop: 16 }} disabled={loading || totpCode.length !== 6 || lockoutTimer > 0}>
-                    {loading ? "Verifying PIN..." : "Verify Authenticator PIN →"}
+                    {loading ? "Verifying Code..." : "Verify Authenticator PIN →"}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => { setError(""); setActiveMethod("password"); }}
+                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 12, marginTop: 12, cursor: 'pointer', width: '100%' }}
+                  >
+                    ← Sign in with Password first
                   </button>
                 </form>
               </div>
