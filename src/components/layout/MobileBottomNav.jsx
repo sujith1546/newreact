@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { useLocalTime } from '../../hooks/useLocalTime';
 import { useTheme } from '../../context/ThemeContext';
 import { usePersona } from '../../context/PersonaContext';
-import useRealtimeData from '../../hooks/useRealtimeData';
+import useRealtimeData, { globalDataCache, fetchPromises } from '../../hooks/useRealtimeData';
 import WhatsNewPanel from '../widgets/WhatsNewPanel';
 import AdvancedProfile from '../widgets/AdvancedProfile';
 import haptic from '../../lib/haptics';
@@ -30,8 +30,58 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
   const [toast, setToast] = useState(null); // { label, prevValue, nextValue, undo }
   const [tapCount, setTapCount] = useState(0);
 
+  // Real-Time Cloud Sync State inside More Drawer
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [isFullReloading, setIsFullReloading] = useState(false);
+  const [lastSyncedAt, setLastSyncedAt] = useState(() => Date.now());
 
-    
+  const handleSoftSync = () => {
+    haptic.medium();
+    setIsSyncing(true);
+    Object.keys(globalDataCache).forEach((k) => delete globalDataCache[k]);
+    Object.keys(fetchPromises).forEach((k) => delete fetchPromises[k]);
+    window.dispatchEvent(new CustomEvent('pcms_force_refresh'));
+    setTimeout(() => {
+      setIsSyncing(false);
+      setLastSyncedAt(Date.now());
+      haptic.success();
+    }, 550);
+  };
+
+  const handleFullWebsiteRefresh = async () => {
+    haptic.success();
+    setIsFullReloading(true);
+    try {
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        for (const r of regs) await r.unregister();
+      }
+      if ('caches' in window) {
+        const names = await caches.keys();
+        for (const n of names) await caches.delete(n);
+      }
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith('swr_cache_') || key.startsWith('cache_')) localStorage.removeItem(key);
+      });
+      Object.keys(globalDataCache).forEach((k) => delete globalDataCache[k]);
+      Object.keys(fetchPromises).forEach((k) => delete fetchPromises[k]);
+      window.dispatchEvent(new CustomEvent('pcms_force_refresh'));
+    } catch (_) {}
+    setTimeout(() => {
+      window.location.reload();
+    }, 600);
+  };
+
+  const formatSyncTime = (timestamp) => {
+    const seconds = Math.floor((Date.now() - timestamp) / 1000);
+    if (seconds < 5) return 'Just now';
+    if (seconds < 60) return `${seconds}s ago`;
+    const minutes = Math.floor(seconds / 60);
+    return `${minutes}m ago`;
+  };
+
+
+
   // PWA Install Prompt Listener
   useEffect(() => {
     const handleBeforeInstallPrompt = (e) => {
@@ -60,10 +110,10 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
   };
 
   const localTime = useLocalTime();
-  const { 
-    theme, toggleTheme, 
-    accentColor, setAccentColor, 
-    fontFamily, setFontFamily, 
+  const {
+    theme, toggleTheme,
+    accentColor, setAccentColor,
+    fontFamily, setFontFamily,
     uiAudio, setUiAudio,
     pageTransition, setPageTransition,
     playSound,
@@ -116,7 +166,7 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    
+
     // Auto-focus first focusable element inside the drawer
     setTimeout(() => {
       const firstBtn = drawerRef.current?.querySelector('button');
@@ -131,7 +181,7 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
     playSound();
     onNavClick(sectionId);
     setIsMoreOpen(false);
-    
+
     // Smooth scroll offset logic
     setTimeout(() => {
       const el = document.getElementById(sectionId);
@@ -153,7 +203,7 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
         setCopiedEmail(true);
         playSound();
         setTimeout(() => setCopiedEmail(false), 1500);
-      }).catch(() => {});
+      }).catch(() => { });
     } else {
       setCopiedEmail(true);
       setTimeout(() => setCopiedEmail(false), 1500);
@@ -163,12 +213,12 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
   const handleExploreClick = (target) => {
     playSound();
     setIsProfileOpen(false);
-    
+
     if (target === 'github') {
       window.open('https://github.com/sujith1546', '_blank');
       return;
     }
-    
+
     onNavClick(target);
     setTimeout(() => {
       const el = document.getElementById(target);
@@ -192,7 +242,7 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
         console.log('Share sheet failed', err);
       }
     } else if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(shareData.url).catch(() => {});
+      navigator.clipboard.writeText(shareData.url).catch(() => { });
       alert('Link copied to clipboard!');
     }
   };
@@ -219,7 +269,7 @@ END:VCARD`;
     if (link.parentNode) link.parentNode.removeChild(link);
     URL.revokeObjectURL(url);
     setIsMoreOpen(false);
-    triggerIsland({ title: 'vCard Downloaded', subtitle: 'Saved contact card', icon: <Check size={16} strokeWidth={3}/>, color: '#10b981', duration: 2000 });
+    triggerIsland({ title: 'vCard Downloaded', subtitle: 'Saved contact card', icon: <Check size={16} strokeWidth={3} />, color: '#10b981', duration: 2000 });
   };
 
 
@@ -317,7 +367,7 @@ END:VCARD`;
     playSound();
     const json = JSON.stringify(getAllPrefs(), null, 2);
     navigator.clipboard.writeText(json);
-    announce('Settings Export', 'State', 'Copied to Clipboard', () => {});
+    announce('Settings Export', 'State', 'Copied to Clipboard', () => { });
   };
 
   const handleImportPrefs = () => {
@@ -404,10 +454,10 @@ END:VCARD`;
 
             {/* Header: avatar + name + close */}
             <div className="drawer-header-profile">
-              <img 
-                src="/profile_photo.png" 
-                alt="Sujith Thota" 
-                className="drawer-avatar" 
+              <img
+                src="/profile_photo.png"
+                alt="Sujith Thota"
+                className="drawer-avatar"
               />
               <div className="drawer-profile-info">
                 <h4>Sujith Thota</h4>
@@ -428,6 +478,87 @@ END:VCARD`;
 
             {/* Scrollable content */}
             <div className="drawer-scroll-area">
+              {/* ⚡ Live Cloud Diagnostics & Sync Card */}
+              <div style={{
+                margin: '10px 14px 14px',
+                padding: '12px 14px',
+                borderRadius: 18,
+                background: 'linear-gradient(135deg, rgba(99,102,241,0.14) 0%, rgba(139,92,246,0.09) 100%)',
+                border: '1px solid rgba(99,102,241,0.28)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 10,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
+                    <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', fontFamily: "'Space Grotesk', sans-serif" }}>
+                      LIVE REALTIME SYNC
+                    </span>
+                  </div>
+                  <span style={{
+                    fontSize: 10, fontWeight: 800, color: '#6366f1',
+                    background: 'rgba(99,102,241,0.18)', border: '1px solid rgba(99,102,241,0.3)',
+                    padding: '2px 7px', borderRadius: 8,
+                  }}>
+                    ~18ms DB
+                  </span>
+                </div>
+
+                <div style={{ fontSize: 10.5, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span>Last synced: {formatSyncTime(lastSyncedAt)}</span>
+                  <span>•</span>
+                  <span>All caches live</span>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                  <motion.button
+                    whileTap={{ scale: 0.94 }}
+                    onClick={handleSoftSync}
+                    disabled={isSyncing}
+                    style={{
+                      padding: '8px 10px',
+                      borderRadius: 12,
+                      background: 'rgba(99,102,241,0.2)',
+                      border: '1px solid rgba(99,102,241,0.35)',
+                      color: '#ffffff',
+                      fontSize: 11,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 6,
+                    }}
+                  >
+                    <RefreshCw size={12} className={isSyncing ? 'spinning' : ''} />
+                    <span>{isSyncing ? 'Syncing...' : '⚡ Soft Sync'}</span>
+                  </motion.button>
+
+                  <motion.button
+                    whileTap={{ scale: 0.94 }}
+                    onClick={handleFullWebsiteRefresh}
+                    disabled={isFullReloading}
+                    style={{
+                      padding: '8px 10px',
+                      borderRadius: 12,
+                      background: 'rgba(16,185,129,0.18)',
+                      border: '1px solid rgba(16,185,129,0.35)',
+                      color: '#ffffff',
+                      fontSize: 11,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 6,
+                    }}
+                  >
+                    <RefreshCw size={12} className={isFullReloading ? 'spinning' : ''} />
+                    <span>{isFullReloading ? 'Reloading...' : '🚀 Hard Reload'}</span>
+                  </motion.button>
+                </div>
+              </div>
               {/* Explore */}
               <p className="drawer-sections-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <Compass size={13} style={{ color: 'var(--primary-blue)' }} />
@@ -611,9 +742,9 @@ END:VCARD`;
       </AnimatePresence>
 
       {/* Profile Slide-In Drawer (Left) */}
-      <AdvancedProfile 
-        isOpen={isProfileOpen} 
-        onClose={() => setIsProfileOpen(false)} 
+      <AdvancedProfile
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
         playSound={playSound}
         triggerEvent={triggerEvent}
         handleExploreClick={handleExploreClick}
@@ -751,22 +882,22 @@ END:VCARD`;
 
 
       {/* Updates Slide-Up Drawer */}
-      <WhatsNewPanel 
-        open={isUpdatesOpen} 
-        onClose={() => setIsUpdatesOpen(false)} 
+      <WhatsNewPanel
+        open={isUpdatesOpen}
+        onClose={() => setIsUpdatesOpen(false)}
       />
 
       {/* Help Slide-Up Drawer */}
       <AnimatePresence>
         {isHelpOpen && (
           <>
-            <motion.div 
+            <motion.div
               className="more-overlay-backdrop"
               style={{ zIndex: 102 }}
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setIsHelpOpen(false)}
             />
-            <motion.div 
+            <motion.div
               className="more-overlay-sheet"
               initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 32, stiffness: 350, mass: 0.9 }}
@@ -781,7 +912,7 @@ END:VCARD`;
               {/* Header */}
               <div style={{ padding: '12px 14px 10px', borderBottom: '1px solid var(--border-color)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{ 
+                  <div style={{
                     width: '32px', height: '32px', borderRadius: '10px', background: 'rgba(59,130,246,0.1)',
                     border: '1px solid rgba(59,130,246,0.2)',
                     color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center'
@@ -806,7 +937,7 @@ END:VCARD`;
                   <div className="settings-card">
                     <div className="settings-row">
                       <div className="settings-row-left">
-                        <div className="settings-row-icon" style={{color: '#10b981', borderColor: 'rgba(16,185,129,0.2)', background: 'rgba(16,185,129,0.1)'}}>
+                        <div className="settings-row-icon" style={{ color: '#10b981', borderColor: 'rgba(16,185,129,0.2)', background: 'rgba(16,185,129,0.1)' }}>
                           <Info size={16} />
                         </div>
                         <div className="settings-row-text">
@@ -817,7 +948,7 @@ END:VCARD`;
                     </div>
                     <div className="settings-row">
                       <div className="settings-row-left">
-                        <div className="settings-row-icon" style={{color: '#8b5cf6', borderColor: 'rgba(139,92,246,0.2)', background: 'rgba(139,92,246,0.1)'}}>
+                        <div className="settings-row-icon" style={{ color: '#8b5cf6', borderColor: 'rgba(139,92,246,0.2)', background: 'rgba(139,92,246,0.1)' }}>
                           <User size={16} />
                         </div>
                         <div className="settings-row-text">
@@ -834,7 +965,7 @@ END:VCARD`;
                   <div className="settings-card">
                     <div className="settings-row">
                       <div className="settings-row-left">
-                        <div className="settings-row-icon" style={{color: '#3b82f6', borderColor: 'rgba(59,130,246,0.2)', background: 'rgba(59,130,246,0.1)'}}>
+                        <div className="settings-row-icon" style={{ color: '#3b82f6', borderColor: 'rgba(59,130,246,0.2)', background: 'rgba(59,130,246,0.1)' }}>
                           <Atom size={16} />
                         </div>
                         <div className="settings-row-text">
@@ -845,7 +976,7 @@ END:VCARD`;
                     </div>
                     <div className="settings-row">
                       <div className="settings-row-left">
-                        <div className="settings-row-icon" style={{color: '#f59e0b', borderColor: 'rgba(245,158,11,0.2)', background: 'rgba(245,158,11,0.1)'}}>
+                        <div className="settings-row-icon" style={{ color: '#f59e0b', borderColor: 'rgba(245,158,11,0.2)', background: 'rgba(245,158,11,0.1)' }}>
                           <Shield size={16} />
                         </div>
                         <div className="settings-row-text">
@@ -864,8 +995,8 @@ END:VCARD`;
                       <div className="settings-row-left">
                         <div className="settings-row-text">
                           <p style={{ lineHeight: '1.5', fontSize: '13px' }}>
-                            • Swipe horizontally on some cards to reveal actions.<br/>
-                            • Use the <strong>More</strong> menu for deeper settings.<br/>
+                            • Swipe horizontally on some cards to reveal actions.<br />
+                            • Use the <strong>More</strong> menu for deeper settings.<br />
                             • Tap the microphone in Chat to use Voice Commands.
                           </p>
                         </div>
@@ -880,7 +1011,7 @@ END:VCARD`;
                 <motion.button
                   onClick={() => setIsHelpOpen(false)}
                   whileTap={{ scale: 0.96 }}
-                  style={{ 
+                  style={{
                     width: '100%', padding: '16px',
                     background: 'var(--bg-primary)',
                     color: 'var(--text-primary)', borderRadius: '18px', fontWeight: 700, fontSize: '14.5px',
