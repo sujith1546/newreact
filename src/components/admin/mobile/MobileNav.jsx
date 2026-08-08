@@ -1,100 +1,182 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Home, MessageSquare, Plus, Briefcase, Settings } from 'lucide-react';
 
-const NAV_TABS = [
-  { key: 'home', label: 'Home', icon: 'ti-home', color: '#6366f1' },
-  { key: 'inbox', label: 'Inbox', icon: 'ti-message-circle', color: '#3b82f6' },
-  { key: 'content', label: 'Content', icon: 'ti-briefcase', color: '#10b981' },
-  { key: 'system', label: 'System', icon: 'ti-settings', color: '#ec4899' },
-];
-
-export default function MobileNav({ activeCategory, onSelectCategory, unreadMessagesCount = 0 }) {
+export default function MobileNav({
+  activeCategory,
+  onSelectCategory,
+  unreadMessagesCount = 0,
+  isSpeedDialOpen = false,
+  onToggleSpeedDial,
+}) {
   return (
-    <nav style={{
-      position: 'fixed',
-      bottom: 12,
-      left: '50%',
-      transform: 'translateX(-50%)',
-      zIndex: 9000,
-      width: 'calc(100% - 24px)',
-      maxWidth: 440,
-    }}>
-      <div style={{
-        background: 'rgba(18, 18, 22, 0.85)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        border: '1px solid rgba(255, 255, 255, 0.14)',
-        borderRadius: 24,
-        padding: '6px 8px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-around',
-        boxShadow: '0 12px 32px rgba(0, 0, 0, 0.45)',
-      }}>
-        {NAV_TABS.map((tab) => {
-          const isActive = activeCategory === tab.key;
-          return (
-            <button
-              key={tab.key}
-              onClick={() => onSelectCategory(tab.key)}
+    <nav className="mobile-nav-capsule" role="navigation" aria-label="Admin mobile navigation">
+      {/* 1. Home */}
+      <motion.button
+        onClick={() => onSelectCategory('home')}
+        className={`nav-capsule-tab${activeCategory === 'home' && !isSpeedDialOpen ? ' nav-capsule-tab-active' : ''}`}
+        aria-current={activeCategory === 'home' && !isSpeedDialOpen ? 'page' : undefined}
+        aria-label="Home"
+        whileTap={{ scale: 0.85 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+      >
+        {activeCategory === 'home' && !isSpeedDialOpen && (
+          <motion.div
+            layoutId="adminMobileActiveTabPill"
+            className="nav-capsule-active-pill"
+            transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+          />
+        )}
+        <motion.div
+          animate={{ scale: activeCategory === 'home' && !isSpeedDialOpen ? 1.16 : 1, y: activeCategory === 'home' && !isSpeedDialOpen ? -1 : 0 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        >
+          <Home size={18} aria-hidden="true" />
+        </motion.div>
+        <span>Home</span>
+      </motion.button>
+
+      {/* 2. Inbox */}
+      <motion.button
+        onClick={() => onSelectCategory('inbox')}
+        className={`nav-capsule-tab${activeCategory === 'inbox' && !isSpeedDialOpen ? ' nav-capsule-tab-active' : ''}`}
+        aria-current={activeCategory === 'inbox' && !isSpeedDialOpen ? 'page' : undefined}
+        aria-label="Inbox"
+        whileTap={{ scale: 0.85 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+      >
+        {activeCategory === 'inbox' && !isSpeedDialOpen && (
+          <motion.div
+            layoutId="adminMobileActiveTabPill"
+            className="nav-capsule-active-pill"
+            transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+          />
+        )}
+        <motion.div
+          animate={{ scale: activeCategory === 'inbox' && !isSpeedDialOpen ? 1.16 : 1, y: activeCategory === 'inbox' && !isSpeedDialOpen ? -1 : 0 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}
+        >
+          <MessageSquare size={18} aria-hidden="true" />
+          {unreadMessagesCount > 0 && (
+            <span
               style={{
-                position: 'relative',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '8px 14px',
-                borderRadius: 16,
-                border: 'none',
-                background: 'transparent',
-                cursor: 'pointer',
-                color: isActive ? tab.color : 'rgba(255, 255, 255, 0.55)',
-                transition: 'color 0.2s ease',
-                flex: 1,
+                position: 'absolute',
+                top: -4,
+                right: -9,
+                background: '#ef4444',
+                color: '#ffffff',
+                fontSize: 9,
+                fontWeight: 800,
+                padding: '1px 5px',
+                borderRadius: 10,
+                lineHeight: 1,
+                zIndex: 3,
+                boxShadow: '0 2px 5px rgba(239,68,68,0.5)',
               }}
-              aria-label={tab.label}
             >
-              {isActive && (
-                <motion.div
-                  layoutId="activeTabPill"
-                  transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    borderRadius: 16,
-                    background: `${tab.color}18`,
-                    border: `1px solid ${tab.color}33`,
-                  }}
-                />
-              )}
-              <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <div style={{ position: 'relative' }}>
-                  <i className={`ti ${tab.icon}`} style={{ fontSize: 19, color: isActive ? tab.color : 'inherit' }} />
-                  {tab.key === 'inbox' && unreadMessagesCount > 0 && (
-                    <span style={{
-                      position: 'absolute',
-                      top: -4,
-                      right: -8,
-                      background: '#ef4444',
-                      color: '#fff',
-                      fontSize: 9,
-                      fontWeight: 800,
-                      padding: '1px 5px',
-                      borderRadius: 10,
-                      lineHeight: 1,
-                    }}>
-                      {unreadMessagesCount > 99 ? '99+' : unreadMessagesCount}
-                    </span>
-                  )}
-                </div>
-                <span style={{ fontSize: 10.5, fontWeight: isActive ? 700 : 500, marginTop: 3 }}>
-                  {tab.label}
-                </span>
-              </div>
-            </button>
-          );
-        })}
-      </div>
+              {unreadMessagesCount > 99 ? '99+' : unreadMessagesCount}
+            </span>
+          )}
+        </motion.div>
+        <span>Inbox</span>
+      </motion.button>
+
+      {/* 3. Center '+' Quick Actions Button */}
+      <motion.button
+        onClick={onToggleSpeedDial}
+        className="nav-capsule-tab"
+        aria-label="Quick Actions"
+        whileTap={{ scale: 0.88 }}
+        style={{ position: 'relative', zIndex: 5 }}
+      >
+        <motion.div
+          animate={{
+            rotate: isSpeedDialOpen ? 45 : 0,
+            scale: isSpeedDialOpen ? 1.08 : 1,
+          }}
+          transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+          style={{
+            width: 34,
+            height: 34,
+            borderRadius: 17,
+            background: isSpeedDialOpen
+              ? 'linear-gradient(135deg, #ef4444, #f97316)'
+              : 'linear-gradient(135deg, var(--primary-blue, #6366f1), #8b5cf6)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#ffffff',
+            boxShadow: isSpeedDialOpen
+              ? '0 4px 14px rgba(239,68,68,0.45)'
+              : '0 4px 14px rgba(99,102,241,0.4)',
+            border: '1px solid rgba(255,255,255,0.25)',
+          }}
+        >
+          <Plus size={19} strokeWidth={2.6} />
+        </motion.div>
+        <span style={{
+          fontSize: 9,
+          fontWeight: 600,
+          marginTop: 2,
+          color: isSpeedDialOpen ? '#ef4444' : 'var(--text-muted, #8a8a86)',
+        }}>
+          {isSpeedDialOpen ? 'Close' : 'Create'}
+        </span>
+      </motion.button>
+
+      {/* 4. Content */}
+      <motion.button
+        onClick={() => onSelectCategory('content')}
+        className={`nav-capsule-tab${activeCategory === 'content' && !isSpeedDialOpen ? ' nav-capsule-tab-active' : ''}`}
+        aria-current={activeCategory === 'content' && !isSpeedDialOpen ? 'page' : undefined}
+        aria-label="Content"
+        whileTap={{ scale: 0.85 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+      >
+        {activeCategory === 'content' && !isSpeedDialOpen && (
+          <motion.div
+            layoutId="adminMobileActiveTabPill"
+            className="nav-capsule-active-pill"
+            transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+          />
+        )}
+        <motion.div
+          animate={{ scale: activeCategory === 'content' && !isSpeedDialOpen ? 1.16 : 1, y: activeCategory === 'content' && !isSpeedDialOpen ? -1 : 0 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        >
+          <Briefcase size={18} aria-hidden="true" />
+        </motion.div>
+        <span>Content</span>
+      </motion.button>
+
+      {/* 5. System */}
+      <motion.button
+        onClick={() => onSelectCategory('system')}
+        className={`nav-capsule-tab${activeCategory === 'system' && !isSpeedDialOpen ? ' nav-capsule-tab-active' : ''}`}
+        aria-current={activeCategory === 'system' && !isSpeedDialOpen ? 'page' : undefined}
+        aria-label="System"
+        whileTap={{ scale: 0.85 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+      >
+        {activeCategory === 'system' && !isSpeedDialOpen && (
+          <motion.div
+            layoutId="adminMobileActiveTabPill"
+            className="nav-capsule-active-pill"
+            transition={{ type: 'spring', stiffness: 450, damping: 32 }}
+          />
+        )}
+        <motion.div
+          animate={{ scale: activeCategory === 'system' && !isSpeedDialOpen ? 1.16 : 1, y: activeCategory === 'system' && !isSpeedDialOpen ? -1 : 0 }}
+          transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        >
+          <Settings size={18} aria-hidden="true" />
+        </motion.div>
+        <span>System</span>
+      </motion.button>
     </nav>
   );
 }

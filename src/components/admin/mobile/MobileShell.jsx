@@ -244,61 +244,108 @@ export default function MobileShell() {
       <AnimatePresence>
         {isSpeedDialOpen && (
           <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             onClick={() => setIsSpeedDialOpen(false)}
-            style={{ position: 'fixed', inset: 0, zIndex: 8800, background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              zIndex: 9990,
+              background: 'rgba(0, 0, 0, 0.55)',
+              backdropFilter: 'blur(6px)',
+              WebkitBackdropFilter: 'blur(6px)',
+            }}
           />
         )}
       </AnimatePresence>
 
-      {/* Speed Dial Action Buttons */}
+      {/* Speed Dial Action Buttons Popover */}
       <AnimatePresence>
         {isSpeedDialOpen && (
-          <div style={{ position: 'fixed', bottom: 138, right: 14, zIndex: 8900, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 10 }}>
-            {SPEED_DIAL_ACTIONS.map((action, i) => (
-              <motion.div key={action.label}
-                initial={{ opacity: 0, y: 20, scale: 0.85 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 12, scale: 0.85 }}
-                transition={{ duration: 0.18, delay: i * 0.045 }}
-                style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ background: 'var(--pcms-panel, #18181c)', border: '1px solid var(--pcms-line, rgba(255,255,255,0.12))', color: 'var(--pcms-text)', fontSize: 12, fontWeight: 600, padding: '6px 12px', borderRadius: 20, boxShadow: '0 4px 12px rgba(0,0,0,0.3)', whiteSpace: 'nowrap' }}>
-                  {action.label}
-                </div>
-                <button onClick={() => { setIsSpeedDialOpen(false); navigate(action.route); }}
-                  style={{ width: 44, height: 44, borderRadius: 22, background: action.color + '22', border: '1.5px solid ' + action.color + '55', color: action.color, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 14px ' + action.color + '33', flexShrink: 0 }}>
-                  <action.icon size={20} />
-                </button>
-              </motion.div>
-            ))}
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 30, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+            style={{
+              position: 'fixed',
+              bottom: 84,
+              left: 14,
+              right: 14,
+              maxWidth: 440,
+              margin: '0 auto',
+              zIndex: 9995,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8,
+              padding: '12px 14px',
+              background: 'var(--pcms-panel, #18181c)',
+              border: '1px solid var(--pcms-line, rgba(255,255,255,0.12))',
+              borderRadius: 22,
+              boxShadow: '0 16px 40px rgba(0,0,0,0.45)',
+            }}
+          >
+            <div style={{ fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--pcms-muted)', padding: '2px 4px 6px' }}>
+              Quick Actions
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
+              {SPEED_DIAL_ACTIONS.map((action) => (
+                <motion.button
+                  key={action.label}
+                  whileTap={{ scale: 0.94 }}
+                  onClick={() => {
+                    setIsSpeedDialOpen(false);
+                    navigate(action.route);
+                  }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 9,
+                    padding: '10px 12px',
+                    borderRadius: 14,
+                    background: 'var(--pcms-bg-2, rgba(255,255,255,0.04))',
+                    border: '1px solid var(--pcms-line-soft, rgba(255,255,255,0.08))',
+                    color: 'var(--pcms-text)',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: 14,
+                      background: `${action.color}18`,
+                      border: `1px solid ${action.color}33`,
+                      color: action.color,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <action.icon size={15} />
+                  </div>
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {action.label}
+                  </span>
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
-      {/* FAB Button */}
-      <motion.button
-        onClick={() => setIsSpeedDialOpen(v => !v)}
-        aria-label="Quick Actions"
-        animate={{ rotate: isSpeedDialOpen ? 45 : 0 }}
-        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-        style={{
-          position: 'fixed', bottom: 78, right: 16, zIndex: 8950,
-          width: 50, height: 50, borderRadius: 25,
-          background: isSpeedDialOpen ? 'linear-gradient(135deg, #ef4444, #f97316)' : 'linear-gradient(135deg, #6366f1, #3b82f6)',
-          border: '1px solid rgba(255,255,255,0.2)', color: '#ffffff',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: isSpeedDialOpen ? '0 8px 24px rgba(239,68,68,0.5)' : '0 8px 24px rgba(99,102,241,0.5)',
-          cursor: 'pointer', transition: 'background 0.25s ease, box-shadow 0.25s ease',
-        }}
-      >
-        <Plus size={24} />
-      </motion.button>
-
-      {/* Bottom Navigation */}
+      {/* Bottom Navigation Capsule with integrated + Quick Action Button */}
       <MobileNav
         activeCategory={activeCategory}
         onSelectCategory={handleSelectCategory}
         unreadMessagesCount={stats.unreadMessages}
+        isSpeedDialOpen={isSpeedDialOpen}
+        onToggleSpeedDial={() => setIsSpeedDialOpen((v) => !v)}
       />
     </div>
   );
