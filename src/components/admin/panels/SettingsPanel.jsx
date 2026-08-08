@@ -3,7 +3,6 @@ import { supabase } from '../../../lib/supabaseClient';
 import useRealtimeData from '../../../hooks/useRealtimeData';
 import { logAuditEvent } from '../../../lib/auditLogger';
 import { publishAdminMutation } from '../../../lib/broadcastSyncEngine';
-import { registerDeviceBiometric, hasStoredBiometricCredential } from '../../../lib/webAuthnEngine';
 import {
   Loader2, Check, Settings, Layers, Briefcase, Award, Sparkles, Bell,
   MessageSquare, Type, FileText, Globe, Image, Link, Mail, Upload,
@@ -240,8 +239,6 @@ export default function SettingsPanel({ isMobileView = false }) {
   const [backupHistory, setBackupHistory] = useState(() => {
     try { return JSON.parse(localStorage.getItem('pcms_backup_history') || '[]'); } catch { return []; }
   });
-  const [bioRegistering, setBioRegistering] = useState(false);
-  const [hasBioCred, setHasBioCred]       = useState(() => hasStoredBiometricCredential());
   const { accentColor, setAccentColor }   = useTheme();
 
   /* bootstrap */
@@ -711,36 +708,6 @@ export default function SettingsPanel({ isMobileView = false }) {
                     <Note color="#EF4444">Locked since {new Date(settings.site_disabled_at).toLocaleString()}</Note>
                   )}
                 </>)}
-              </Card>
-
-              <Card>
-                <CardHead icon={Zap} label="Hardware Biometrics (TouchID / FaceID / Windows Hello)" sub="Register this device sensor for 1-tap biometric login." color="#10B981" />
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
-                  <span style={{ fontSize: 12, color: 'var(--pcms-muted)' }}>
-                    {hasBioCred ? '✅ Biometric Hardware Sensor Registered on this device' : 'Register TouchID, FaceID or Windows Hello on this device'}
-                  </span>
-                  <button
-                    type="button"
-                    className="pcms-btn-dark"
-                    onClick={async () => {
-                      setBioRegistering(true);
-                      try {
-                        const res = await registerDeviceBiometric('sujithreddy1546@gmail.com');
-                        setHasBioCred(true);
-                        alert(`✅ Biometric sensor registered successfully for ${res.deviceName}! You can now sign in with 1-tap biometrics.`);
-                      } catch (err) {
-                        alert(err.message || 'Biometric registration failed.');
-                      } finally {
-                        setBioRegistering(false);
-                      }
-                    }}
-                    disabled={bioRegistering}
-                    style={{ padding: '7px 14px', fontSize: 11.5 }}
-                  >
-                    {bioRegistering ? <Loader2 size={12} className="spin" /> : <Zap size={12} />}
-                    <span>{bioRegistering ? 'Scanning Sensor...' : hasBioCred ? 'Re-Register Sensor' : 'Register Device Biometrics'}</span>
-                  </button>
-                </div>
               </Card>
 
               <Card>

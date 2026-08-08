@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { useTheme } from "../context/ThemeContext";
-import { authenticateDeviceBiometric, hasStoredBiometricCredential } from "../lib/webAuthnEngine";
 
 const ADMIN_LOGIN_STYLES = `
 .login-page-container {
@@ -919,20 +918,14 @@ export default function AdminLogin() {
               <div className="method-sub">Email &amp; password</div>
             </button>
 
-            <button className={`method-card ${activeMethod === 'biometric' ? 'active' : ''}`} onClick={() => { setError(""); setActiveMethod("biometric"); }} type="button">
-              <div className="method-num">02</div>
-              <div className="method-label">Biometric Vault</div>
-              <div className="method-sub">FaceID · TouchID</div>
-            </button>
-
             <button className={`method-card ${activeMethod === 'totp' ? 'active' : ''}`} onClick={() => { setError(""); setActiveMethod("totp"); }} type="button">
-              <div className="method-num">03</div>
+              <div className="method-num">02</div>
               <div className="method-label">2FA Code</div>
               <div className="method-sub">Authenticator PIN</div>
             </button>
 
             <button className={`method-card ${activeMethod === 'master' ? 'active' : ''}`} onClick={() => { setError(""); setActiveMethod("master"); }} type="button">
-              <div className="method-num">04</div>
+              <div className="method-num">03</div>
               <div className="method-label">Master Key</div>
               <div className="method-sub">Emergency secret</div>
             </button>
@@ -996,45 +989,7 @@ export default function AdminLogin() {
               </div>
             )}
 
-            {/* BIOMETRIC VAULT VIEW */}
-            {activeMethod === 'biometric' && (
-              <div className="method-view" id="view-biometric" style={{ textAlign: 'center', padding: '12px 0' }}>
-                <div style={{
-                  width: 50, height: 50, borderRadius: 14,
-                  background: 'var(--green-soft)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  margin: '0 auto 16px', color: 'var(--green)',
-                  boxShadow: '0 0 20px rgba(16, 185, 129, 0.25)'
-                }}>
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 2a10 10 0 0 0-10 10c0 5.52 4.48 10 10 10s10-4.48 10-10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16z"/><circle cx="12" cy="10" r="3"/><path d="M7 18a5 5 0 0 1 10 0"/></svg>
-                </div>
-                <h3 style={{ fontSize: 16, fontWeight: 700, margin: '0 0 6px', color: 'var(--text)' }}>Hardware Biometric Unlock</h3>
-                <p style={{ fontSize: 12.5, color: 'var(--text-muted)', margin: '0 0 20px', lineHeight: 1.5 }}>
-                  Scan Touch ID, Face ID, or Windows Hello linked to your email credentials.
-                </p>
-                <button className="submit-btn" type="button" onClick={async () => {
-                  setError("");
-                  setLoading(true);
-                  try {
-                    const res = await authenticateDeviceBiometric();
-                    if (res && res.success) {
-                      resetLockout();
-                      navigate("/admin/dashboard");
-                    }
-                  } catch (err) {
-                    if (err.message === 'NO_CREDENTIAL') {
-                      setError("No biometric credential registered on this device yet. Sign in with Password first, then tap 'Register Device Biometrics' in Settings!");
-                    } else {
-                      setError(err.message || "Biometric verification failed.");
-                    }
-                  } finally {
-                    setLoading(false);
-                  }
-                }} disabled={loading || lockoutTimer > 0}>
-                  {loading ? "Scanning Sensor..." : "Unlock with Biometrics →"}
-                </button>
-              </div>
-            )}
+
 
             {/* 2FA CODE VIEW */}
             {activeMethod === 'totp' && (
