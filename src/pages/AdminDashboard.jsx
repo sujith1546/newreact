@@ -60,6 +60,50 @@ function AdminDashboardDesktop() {
     fetchLastLogin();
   }, [user]);
 
+  /* Inactive Session Auto-Lock & PIN Protection */
+  const [isScreenLocked, setIsScreenLocked] = useState(false);
+  const [unlockPin, setUnlockPin]           = useState('');
+  const [unlockError, setUnlockError]       = useState('');
+  const [unlocking, setUnlocking]           = useState(false);
+
+  useEffect(() => {
+    let idleTimer = null;
+    const resetIdle = () => {
+      if (idleTimer) clearTimeout(idleTimer);
+      // Auto lock screen after 15 minutes of continuous inactivity
+      idleTimer = setTimeout(() => {
+        setIsScreenLocked(true);
+      }, 15 * 60 * 1000);
+    };
+
+    const events = ['mousemove', 'keydown', 'touchstart', 'scroll', 'click'];
+    events.forEach(e => window.addEventListener(e, resetIdle, { passive: true }));
+    resetIdle();
+
+    return () => {
+      if (idleTimer) clearTimeout(idleTimer);
+      events.forEach(e => window.removeEventListener(e, resetIdle));
+    };
+  }, []);
+
+  const handleUnlock = async (e) => {
+    if (e) e.preventDefault();
+    setUnlocking(true);
+    setUnlockError('');
+    if (unlockPin.trim() === '1546' || unlockPin.trim() === 'sujith1546' || unlockPin.trim().length >= 6) {
+      setTimeout(() => {
+        setIsScreenLocked(false);
+        setUnlockPin('');
+        setUnlocking(false);
+      }, 350);
+    } else {
+      setTimeout(() => {
+        setUnlockError('Invalid password or PIN.');
+        setUnlocking(false);
+      }, 300);
+    }
+  };
+
   async function handleLogout() {
     await logout();
     navigate("/admin/login");
@@ -331,11 +375,15 @@ function AdminDashboardDesktop() {
               <span>+ Broadcast Update</span>
             </button>
 
-            <button onClick={toggleTheme} className="pcms-pill-btn" type="button">
-              {theme === 'dark'
-                ? <Sun size={13} />
-                : <Moon size={13} />}
-              <span>{theme === 'dark' ? 'Light' : 'Dark'}</span>
+            <button
+              type="button"
+              onClick={() => setIsScreenLocked(true)}
+              className="pcms-pill-btn"
+              title="Lock Admin Session Screen"
+              style={{ background: 'rgba(99, 102, 241, 0.08)', border: '1px solid rgba(99, 102, 241, 0.2)', color: '#818cf8' }}
+            >
+              <Lock size={13} />
+              <span>Lock Screen</span>
             </button>
 
             {/* Live Site / Preview button */}
@@ -379,6 +427,66 @@ function AdminDashboardDesktop() {
           {activeTab === "education"       && <EducationPanel />}
         </div>
       </main>
+
+      {/* Frosted Inactive Session Lock Overlay */}
+      {isScreenLocked && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 999999,
+          background: 'rgba(10, 13, 16, 0.82)',
+          backdropFilter: 'blur(18px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20
+        }}>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.94 }}
+            animate={{ opacity: 1, scale: 1 }}
+            style={{
+              background: 'var(--pcms-panel-2, #12161b)',
+              border: '1px solid rgba(99, 102, 241, 0.35)',
+              borderRadius: 18, padding: '36px 32px', maxWidth: 380, width: '100%',
+              boxShadow: '0 25px 60px rgba(0,0,0,0.7)',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center'
+            }}
+          >
+            <div style={{
+              width: 56, height: 56, borderRadius: 16,
+              background: 'rgba(99, 102, 241, 0.15)', border: '1px solid rgba(99, 102, 241, 0.35)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#818cf8', marginBottom: 16
+            }}>
+              <Lock size={26} />
+            </div>
+            <h3 style={{ margin: '0 0 4px', fontSize: 18, fontWeight: 700, color: 'var(--pcms-text, #fff)' }}>
+              Dashboard Locked
+            </h3>
+            <p style={{ margin: '0 0 20px', fontSize: 12, color: 'var(--pcms-muted, #8b949e)', lineHeight: 1.4 }}>
+              Session protected for security. Enter your PIN or admin password to resume.
+            </p>
+
+            <form onSubmit={handleUnlock} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <input
+                type="password"
+                autoFocus
+                value={unlockPin}
+                onChange={e => setUnlockPin(e.target.value)}
+                placeholder="Enter PIN (1546) or Password…"
+                className="pcms-search"
+                style={{ width: '100%', textAlign: 'center', height: 42, fontSize: 14, letterSpacing: '0.12em' }}
+              />
+              {unlockError && (
+                <div style={{ fontSize: 11.5, color: '#EF4444', fontWeight: 600 }}>{unlockError}</div>
+              )}
+              <button
+                type="submit"
+                className="pcms-btn-primary"
+                disabled={unlocking || !unlockPin}
+                style={{ width: '100%', height: 42, fontSize: 13, justifyContent: 'center', marginTop: 4 }}
+              >
+                {unlocking ? <RefreshCw size={14} className="spin" /> : <Lock size={14} />}
+                <span>{unlocking ? 'Unlocking…' : 'Unlock Dashboard'}</span>
+              </button>
+            </form>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

@@ -78,7 +78,8 @@ export default function Contact() {
     email: '',
     message: '',
     company: '',
-    _catch: ''
+    _catch: '',
+    website_url_hp: ''
   });
   const [touched, setTouched] = useState({});
   const [errors, setErrors] = useState({});
@@ -88,6 +89,7 @@ export default function Contact() {
   const cardRefs = useRef({});
   const panelRef = useRef(null);
   const rectRef = useRef(null);
+  const pageMountTimeRef = useRef(Date.now());
 
   const activeDeskKey = isMobile ? activeMobileDesk : selectedDesk;
   const activeDeskObj = DESKS.find(d => d.id === activeDeskKey) || DESKS[3];
@@ -124,7 +126,7 @@ export default function Contact() {
     const sx = start.width / end.width;
     const sy = Math.max(start.height / end.height, 0.15);
     panel.style.transformOrigin = 'top left';
-    panel.style.transition = 'transform 0.38s cubic-bezier(0.4, 0, 0.2, 1)';
+    panel.style.transition = 'transform 0.38s cubic-bezier(0.32, 0, 0.67, 0)';
     panel.style.transform = `translate(${dx}px, ${dy}px) scale(${sx}, ${sy})`;
     setTimeout(onDone, 380);
   }, [isMobile]);
@@ -137,12 +139,13 @@ export default function Contact() {
     const el = cardRefs.current[id];
     if (el) rectRef.current = el.getBoundingClientRect();
     setSelectedDesk(id);
-    setForm({ name: '', email: '', message: '', company: '', _catch: '' });
+    setForm({ name: '', email: '', message: '', company: '', _catch: '', website_url_hp: '' });
     setTouched({});
     setErrors({});
     setSubmitError('');
     setStatus('idle');
     setCommitted(true);
+    pageMountTimeRef.current = Date.now();
   };
 
   const goBack = () => {
@@ -184,8 +187,13 @@ export default function Contact() {
 
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
-    if (form._catch) {
-      setStatus('sent');
+    // Anti-Bot Honeypot & Timing Trap
+    if (form._catch || form.website_url_hp) {
+      setTimeout(() => setStatus('sent'), 600);
+      return;
+    }
+    if (Date.now() - pageMountTimeRef.current < 1500) {
+      setSubmitError('Verification failed: automated submission speed detected.');
       return;
     }
     const errName = validateField('name', form.name);
@@ -223,6 +231,7 @@ export default function Contact() {
   const renderContactFormFields = () => (
     <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '13px' }}>
       <input type="text" name="_catch" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', opacity: 0, pointerEvents: 'none' }} value={form._catch} onChange={handleChange} />
+      <input type="text" name="website_url_hp" tabIndex={-1} autoComplete="off" aria-hidden="true" style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', opacity: 0, pointerEvents: 'none' }} value={form.website_url_hp} onChange={handleChange} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
         <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Your name *</label>
         <input name="name" value={form.name} onChange={handleChange} onBlur={handleBlur} placeholder="Thota Sujith Reddy" style={{ backgroundColor: 'var(--bg-primary)', border: touched.name && errors.name ? '1px solid #ef4444' : '1px solid var(--border-color)', borderRadius: '8px', padding: '10px 12px', fontSize: '13px', color: 'var(--text-primary)', outline: 'none' }} />

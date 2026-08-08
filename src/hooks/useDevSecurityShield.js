@@ -96,6 +96,14 @@ export function useDevSecurityShield() {
     window.addEventListener('storage', syncLocal);
     window.addEventListener('pcms_security_changed', syncLocal);
 
+    try {
+      console.log(
+        "%c⛔ STOP: ENTERPRISE SECURITY ACTIVE\n%cThis browser session is protected by Sujith Thota Portfolio Security Shield.\nDo not execute or paste unauthorized scripts into this console.",
+        "color: #ef4444; font-size: 18px; font-weight: 800;",
+        "color: #94a3b8; font-size: 12px; font-weight: 600; line-height: 1.6;"
+      );
+    } catch (_) {}
+
     return () => {
       window.removeEventListener('storage', syncLocal);
       window.removeEventListener('pcms_security_changed', syncLocal);
