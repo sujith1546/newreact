@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabaseClient';
 import useRealtimeData from '../../../hooks/useRealtimeData';
 import { logAuditEvent } from '../../../lib/auditLogger';
+import { publishAdminMutation } from '../../../lib/broadcastSyncEngine';
 import {
   Loader2, Check, Settings, Layers, Briefcase, Award, Sparkles, Bell,
   MessageSquare, Type, FileText, Globe, Image, Link, Mail, Upload,
@@ -284,6 +285,7 @@ export default function SettingsPanel({ isMobileView = false }) {
       }
     } catch (_) {}
     window.dispatchEvent(new CustomEvent('pcms_data_updated', { detail: { table: 'site_settings', key, value } }));
+    publishAdminMutation('site_settings', 'UPDATE', { [key]: value });
 
     const { error } = await supabase.from('site_settings').update({ [key]: value }).eq('id', 1);
     setTimeout(() => setSaveStatus(error ? 'error' : 'saved'), 500);

@@ -3,6 +3,7 @@ import { motion, AnimatePresence, useScroll, useSpring } from 'framer-motion';
 import { FileText, Mail, Briefcase, Check, RefreshCw, Sparkles, CheckCircle2, Activity } from 'lucide-react';
 import { supabase } from '../lib/supabaseClient';
 import { globalDataCache, fetchPromises } from '../hooks/useRealtimeData';
+import { subscribeToRealtimeSync } from '../lib/broadcastSyncEngine';
 import haptic from '../lib/haptics';
 import { FaGithub } from 'react-icons/fa';
 import {
@@ -141,7 +142,7 @@ export default function PortfolioLayout() {
   const touchStartY = useRef(0);
   const isPullingRef = useRef(false);
 
-  // 1. Supabase Realtime Listener for Visitors
+  // 1. Inter-Tab & Supabase Realtime Listener for Visitors
   useEffect(() => {
     const channel = supabase
       .channel('public_portfolio_realtime')
@@ -151,7 +152,7 @@ export default function PortfolioLayout() {
         haptic.medium();
         setLiveNotification({
           id: Date.now(),
-          text: `✨ ${label} updated! Tap to view latest.`,
+          text: `⚡ Live Cloud Sync: ${label} updated!`,
         });
         // Soft purge caches
         Object.keys(globalDataCache).forEach((k) => delete globalDataCache[k]);
@@ -160,8 +161,22 @@ export default function PortfolioLayout() {
       })
       .subscribe();
 
+    const unsubscribeBroadcast = subscribeToRealtimeSync((syncMsg) => {
+      const table = syncMsg.table || 'content';
+      const label = table.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+      haptic.success();
+      setLiveNotification({
+        id: Date.now(),
+        text: `⚡ Instant P2P Sync: ${label} updated (~${syncMsg.pingMs || 1}ms)`,
+      });
+      Object.keys(globalDataCache).forEach((k) => delete globalDataCache[k]);
+      Object.keys(fetchPromises).forEach((k) => delete fetchPromises[k]);
+      window.dispatchEvent(new CustomEvent('pcms_force_refresh'));
+    });
+
     return () => {
       supabase.removeChannel(channel);
+      if (typeof unsubscribeBroadcast === 'function') unsubscribeBroadcast();
     };
   }, []);
 

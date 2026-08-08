@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase, safeRemoveChannel } from '../lib/supabaseClient';
+import { subscribeToRealtimeSync } from '../lib/broadcastSyncEngine';
 
 /**
  * useRealtimeData
@@ -303,6 +304,14 @@ export default function useRealtimeData(table, options = {}) {
       }
     };
 
+    const unsubscribeBroadcast = subscribeToRealtimeSync((msg) => {
+      if (isMounted && (msg.table === table || !msg.table)) {
+        delete globalDataCache[cacheKey];
+        delete fetchPromises[cacheKey];
+        fetchData();
+      }
+    });
+
     window.addEventListener('pcms_force_refresh', handleForceRefresh);
 
     return () => {
@@ -310,6 +319,7 @@ export default function useRealtimeData(table, options = {}) {
       clearTimeout(subTimeout);
       safeRemoveChannel(channel);
       window.removeEventListener('pcms_force_refresh', handleForceRefresh);
+      if (typeof unsubscribeBroadcast === 'function') unsubscribeBroadcast();
     };
   }, [table, select, single, orderColumn, ascending, filter?.column, filter?.value]);
 

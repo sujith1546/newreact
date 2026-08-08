@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabaseClient';
+import { publishAdminMutation } from '../../../lib/broadcastSyncEngine';
 import { Loader2, Star, Edit3, Trash2, Plus, X } from 'lucide-react';
 import { styles, MODAL_STYLES } from '../shared/constants';
 import { PanelCard, EmptyState, StatCard } from '../shared/components';
@@ -125,6 +126,7 @@ export default function ProjectsPanel() {
       const { data, error } = await supabase.from('projects').update(payload).eq('id', editingProject.id).select().single();
       if (!error && data) {
         setProjects(prev => prev.map(p => p.id === data.id ? data : p));
+        publishAdminMutation('projects', 'UPDATE', data);
         showToast(`"${data.title}" updated successfully`);
         closeModal();
       } else { showToast('Failed to save changes', 'error'); }
@@ -132,6 +134,7 @@ export default function ProjectsPanel() {
       const { data, error } = await supabase.from('projects').insert([payload]).select().single();
       if (!error && data) {
         setProjects(prev => [...prev, data]);
+        publishAdminMutation('projects', 'INSERT', data);
         showToast(`"${data.title}" created successfully`);
         closeModal();
       } else { showToast('Failed to create project', 'error'); }
