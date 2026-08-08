@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { useTheme } from "../context/ThemeContext";
+import { authenticateDeviceBiometric, hasStoredBiometricCredential } from "../lib/webAuthnEngine";
 
 const ADMIN_LOGIN_STYLES = `
 .login-page-container {
@@ -1011,7 +1012,25 @@ export default function AdminLogin() {
                 <p style={{ fontSize: 12.5, color: 'var(--text-muted)', margin: '0 0 20px', lineHeight: 1.5 }}>
                   Scan Touch ID, Face ID, or Windows Hello linked to your email credentials.
                 </p>
-                <button className="submit-btn" type="button" onClick={handlePasskeySubmit} disabled={loading || lockoutTimer > 0}>
+                <button className="submit-btn" type="button" onClick={async () => {
+                  setError("");
+                  setLoading(true);
+                  try {
+                    const res = await authenticateDeviceBiometric();
+                    if (res && res.success) {
+                      resetLockout();
+                      navigate("/admin/dashboard");
+                    }
+                  } catch (err) {
+                    if (err.message === 'NO_CREDENTIAL') {
+                      setError("No biometric credential registered on this device yet. Sign in with Password first, then tap 'Register Device Biometrics' in Settings!");
+                    } else {
+                      setError(err.message || "Biometric verification failed.");
+                    }
+                  } finally {
+                    setLoading(false);
+                  }
+                }} disabled={loading || lockoutTimer > 0}>
                   {loading ? "Scanning Sensor..." : "Unlock with Biometrics →"}
                 </button>
               </div>
