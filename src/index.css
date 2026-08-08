@@ -2752,28 +2752,42 @@ html {
   }
 
   /* =========================================
-     GLOBAL UI STANDARDIZATION (Except Education)
+     PUBLIC PORTFOLIO MOBILE PAGE SCALING (Non-Admin Only)
      ========================================= */
-  
-  /* 1. Unified Headings */
-  .text-content:not(#education) h1 {
-    font-size: 18px !important;
-    margin-bottom: 4px !important;
-  }
-  .text-content:not(#education) [class$="-header"] p,
-  .text-content:not(#education) .about-intro {
-    font-size: 11.5px !important;
-    line-height: 1.4 !important;
+  html:not(.admin-mode):not(:has(.admin-shell)) .scroll-container {
+    padding: 6px !important;
+    border-radius: 18px !important;
   }
 
-  /* 2. Unified Box Sizes and Styles */
-  .mobile-skill-card, 
-  .cert-card,
-  .contact-method-card {
+  html:not(.admin-mode):not(:has(.admin-shell)) .text-content {
+    padding: 14px 12px !important;
+    border-radius: 18px !important;
+  }
+
+  html:not(.admin-mode):not(:has(.admin-shell)) .text-content:not(#education) h1 {
+    font-size: 16px !important;
+    line-height: 1.25 !important;
+    margin-bottom: 4px !important;
+  }
+
+  html:not(.admin-mode):not(:has(.admin-shell)) .text-content:not(#education) [class$="-header"] p,
+  html:not(.admin-mode):not(:has(.admin-shell)) .text-content:not(#education) .about-intro {
+    font-size: 11px !important;
+    line-height: 1.45 !important;
+  }
+
+  html:not(.admin-mode):not(:has(.admin-shell)) .hero-img-new {
+    max-height: 220px !important;
+  }
+
+  html:not(.admin-mode):not(:has(.admin-shell)) .mobile-skill-card, 
+  html:not(.admin-mode):not(:has(.admin-shell)) .cert-card,
+  html:not(.admin-mode):not(:has(.admin-shell)) .contact-method-card {
     background: var(--bg-primary) !important;
     border: 1px solid var(--border-color) !important;
-    border-radius: 20px !important;
-    min-height: 180px !important; /* Uniform height constraint */
+    border-radius: 14px !important;
+    min-height: 140px !important;
+    padding: 12px !important;
     display: flex !important;
     flex-direction: column !important;
   }
