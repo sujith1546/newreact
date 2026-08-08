@@ -762,10 +762,19 @@ export default function SettingsPanel({ isMobileView = false }) {
                     try {
                       const b = JSON.parse(text);
                       if (!b.data || !b.version) { alert('Invalid backup format.'); return; }
-                      if (!window.confirm(`Overwrite all data with backup from ${b.exported_at}?`)) return;
-                      logAuditEvent('RESTORE_BACKUP','system', b.exported_at);
-                      alert('✅ Restore initiated. Wire Supabase upserts to complete the process.');
-                    } catch { alert('Invalid JSON.'); }
+                      if (!window.confirm(`⚠️ Overwrite all portfolio data with backup from ${b.exported_at || 'file'}?`)) return;
+                      setExportingBackup(true);
+                      const tables = ['site_settings', 'projects', 'skills', 'experience', 'education', 'certifications', 'testimonials', 'updates'];
+                      for (const t of tables) {
+                        if (b.data[t] && Array.isArray(b.data[t]) && b.data[t].length > 0) {
+                          await supabase.from(t).upsert(b.data[t]);
+                        }
+                      }
+                      logAuditEvent('RESTORE_BACKUP', 'system', b.exported_at || new Date().toISOString());
+                      alert('✅ CMS Data successfully restored from backup!');
+                      window.location.reload();
+                    } catch (err) { alert('Restore failed: ' + err.message); }
+                    setExportingBackup(false);
                     e.target.value = '';
                   }} />
                   <button className="pcms-btn-dark" style={{ padding: '6px 16px', fontSize: 11.5 }} onClick={() => document.getElementById('restore-file').click()}>
@@ -1026,7 +1035,7 @@ export default function SettingsPanel({ isMobileView = false }) {
           background: 'var(--pcms-panel)', border: '1px solid var(--pcms-line)',
           borderRadius: 10, padding: '8px 6px', display: 'flex', flexDirection: 'column', gap: 1,
           position: 'sticky', top: 0, overflowY: 'auto', scrollbarWidth: 'none',
-          maxHeight: 'calc(100vh / 0.66 - 58px - 40px - 78px)',
+          maxHeight: 'calc(100vh - 170px)',
         }}>
           <p style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--pcms-muted-2)', padding: '4px 8px 6px', margin: 0 }} className="pcms-settings-side-label">Settings</p>
           {TABS.map(tab => {
@@ -1068,7 +1077,7 @@ export default function SettingsPanel({ isMobileView = false }) {
               borderRadius: 10, padding: '18px 20px',
               display: 'flex', flexDirection: 'column', gap: 14,
               overflowY: 'auto', scrollbarWidth: 'thin',
-              maxHeight: 'calc(100vh / 0.66 - 58px - 40px - 78px)',
+              maxHeight: 'calc(100vh - 170px)',
             }}
           >
             <div style={{ paddingBottom: 14, borderBottom: '1px solid var(--pcms-line-soft)' }}>
