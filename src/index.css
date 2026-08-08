@@ -4063,9 +4063,10 @@ html.admin-mode, body.admin-mode {
 .admin-sheet-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-  z-index: 2000;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 10000 !important;
 }
 
 .admin-bottom-sheet {
@@ -4076,7 +4077,7 @@ html.admin-mode, body.admin-mode {
   background: var(--bg-secondary);
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
-  z-index: 2001;
+  z-index: 10001 !important;
   max-height: 85vh;
   display: flex;
   flex-direction: column;

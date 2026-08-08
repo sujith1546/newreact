@@ -92,7 +92,7 @@ export default function BottomSheet({ isOpen, onClose, title, children }) {
               background: 'rgba(0, 0, 0, 0.7)',
               backdropFilter: 'blur(8px)',
               WebkitBackdropFilter: 'blur(8px)',
-              zIndex: 9998,
+              zIndex: 10000,
             }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -110,7 +110,7 @@ export default function BottomSheet({ isOpen, onClose, title, children }) {
               bottom: 0,
               left: 0,
               right: 0,
-              zIndex: 9999,
+              zIndex: 10001,
               background: 'var(--pcms-panel, #121215)',
               borderTop: '1px solid var(--pcms-line, rgba(255, 255, 255, 0.15))',
               borderRadius: '24px 24px 0 0',
@@ -119,6 +119,7 @@ export default function BottomSheet({ isOpen, onClose, title, children }) {
               flexDirection: 'column',
               boxShadow: '0 -12px 40px rgba(0, 0, 0, 0.6)',
               overflow: 'hidden',
+              paddingBottom: 'calc(24px + env(safe-area-inset-bottom, 16px))',
             }}
             role="dialog"
             aria-modal="true"
@@ -150,7 +151,7 @@ export default function BottomSheet({ isOpen, onClose, title, children }) {
             </div>
 
             {/* Content */}
-            <div className="admin-sheet-content" style={{ padding: '16px 20px 32px', overflowY: 'auto', WebkitOverflowScrolling: 'touch', flex: 1 }}>
+            <div className="admin-sheet-content" style={{ padding: '16px 20px 36px', overflowY: 'auto', WebkitOverflowScrolling: 'touch', flex: 1 }}>
               {children}
             </div>
           </motion.div>
