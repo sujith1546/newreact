@@ -349,18 +349,20 @@ export default function MobileShell() {
               transition={{ type: 'spring', damping: 30, stiffness: 350, mass: 0.85 }}
               style={{
                 position: 'fixed',
-                bottom: 0,
-                left: 0,
-                right: 0,
+                bottom: 'max(76px, calc(68px + env(safe-area-inset-bottom, 12px)))',
+                left: 14,
+                right: 14,
+                width: 'calc(100% - 28px)',
+                maxWidth: 'calc(100% - 28px)',
+                margin: '0 auto',
                 zIndex: 9995,
                 display: 'flex',
                 flexDirection: 'column',
                 background: 'var(--pcms-panel, #16161b)',
-                borderTop: '1px solid var(--pcms-line, rgba(255,255,255,0.14))',
-                borderRadius: '28px 28px 0 0',
-                boxShadow: '0 -16px 48px rgba(0,0,0,0.65)',
-                maxHeight: '90vh',
-                paddingBottom: 'calc(24px + env(safe-area-inset-bottom, 16px))',
+                border: '1px solid var(--pcms-line, rgba(255,255,255,0.14))',
+                borderRadius: 24,
+                boxShadow: '0 20px 48px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.05)',
+                maxHeight: 'min(500px, 75vh)',
                 overflow: 'hidden',
               }}
             >
