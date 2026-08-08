@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { Sun, Moon, ExternalLink, Eye, Lock, Zap, Sparkles, RefreshCw } from 'lucide-react';
+import { Sun, Moon, ExternalLink, Eye, Lock, Zap, Sparkles, RefreshCw, LogOut } from 'lucide-react';
 import MessagesAdmin, { UnreadBadge } from '../components/admin/panels/MessagesAdmin';
 import MobileShell from '../components/admin/mobile/MobileShell';
 import HomePanel from '../components/admin/panels/HomePanel';
@@ -139,28 +139,127 @@ function AdminDashboardDesktop() {
         </div>
 
         {/* Sidebar Footer */}
-        <div className="pcms-sidebar-foot">
-          <div className="pcms-user-row">
-            <div className="pcms-user-avatar">
-              {user?.email?.[0]?.toUpperCase() || 'A'}
-            </div>
-            <div style={{ minWidth: 0, flex: 1, overflow: 'hidden' }}>
-              <div className="pcms-user-name" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {user?.email || 'admin@portfolio.dev'}
+        <div className="pcms-sidebar-foot" style={{ padding: '12px 14px' }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            padding: '10px 12px',
+            borderRadius: 14,
+            background: 'var(--pcms-panel-2)',
+            border: '1px solid var(--pcms-line)',
+            boxShadow: '0 4px 14px rgba(0, 0, 0, 0.05)',
+          }}>
+            {/* Avatar Container */}
+            <div style={{ position: 'relative', flexShrink: 0 }}>
+              <img
+                src="/profile_photo.png"
+                alt="Sujith Thota"
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  border: '1.5px solid var(--pcms-accent, #6366f1)',
+                  boxShadow: '0 0 10px rgba(99, 102, 241, 0.2)',
+                }}
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  if (e.currentTarget.nextSibling) e.currentTarget.nextSibling.style.display = 'flex';
+                }}
+              />
+              <div style={{
+                display: 'none',
+                width: 36,
+                height: 36,
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
+                color: '#ffffff',
+                fontWeight: 800,
+                fontSize: 14,
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                S
               </div>
-              <div className="pcms-user-role">⬤ Super admin</div>
+              <span style={{
+                position: 'absolute',
+                bottom: 0,
+                right: 0,
+                width: 10,
+                height: 10,
+                borderRadius: '50%',
+                background: '#10b981',
+                border: '2px solid var(--pcms-panel-2)',
+                boxShadow: '0 0 6px #10b981',
+              }} />
             </div>
-            <svg
+
+            {/* Name & Role */}
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{
+                fontSize: 12.5,
+                fontWeight: 700,
+                color: 'var(--pcms-text)',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                lineHeight: 1.25,
+              }}>
+                Sujith Thota
+              </div>
+              <div style={{
+                fontSize: 10,
+                color: 'var(--pcms-muted)',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                margin: '1px 0 3px',
+              }}>
+                {user?.email || 'sujithreddy1546@gmail.com'}
+              </div>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
+                fontSize: 9.5,
+                fontWeight: 800,
+                color: '#10b981',
+                background: 'rgba(16, 185, 129, 0.12)',
+                border: '1px solid rgba(16, 185, 129, 0.25)',
+                padding: '1px 6px',
+                borderRadius: 6,
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+              }}>
+                Super Admin
+              </div>
+            </div>
+
+            {/* Logout Button */}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              whileHover={{ scale: 1.05 }}
               onClick={handleLogout}
-              className="pcms-user-exit"
-              width="16" height="16"
-              viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" strokeWidth="1.8"
-              title="Sign out"
+              type="button"
+              title="Sign Out"
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 10,
+                background: 'rgba(239, 68, 68, 0.12)',
+                border: '1px solid rgba(239, 68, 68, 0.25)',
+                color: '#ef4444',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                flexShrink: 0,
+                transition: 'all 0.15s ease',
+              }}
             >
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <path d="M16 17l5-5-5-5M21 12H9" />
-            </svg>
+              <LogOut size={14} />
+            </motion.button>
           </div>
         </div>
       </aside>
