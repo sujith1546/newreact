@@ -1,5 +1,6 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Search, Sparkles, Filter } from 'lucide-react';
 import ProjectsPanel from '../../panels/ProjectsPanel';
 import UpdatesPanel from '../../panels/UpdatesPanel';
 import SkillsPanel from '../../panels/SkillsPanel';
@@ -8,6 +9,7 @@ import EducationPanel from '../../panels/EducationPanel';
 import CertificationsPanel from '../../panels/CertificationsPanel';
 import TestimonialsPanel from '../../panels/TestimonialsPanel';
 import PortfolioPreviewPanel from '../../panels/PortfolioPreviewPanel';
+import haptic from '../../../../lib/haptics';
 
 const CONTENT_TABS = [
   { key: 'projects', label: 'Projects', icon: 'ti-briefcase' },
@@ -21,6 +23,38 @@ const CONTENT_TABS = [
 ];
 
 export default function ContentView({ activeSubTab = 'projects', onSelectSubTab }) {
+  const touchStartXRef = useRef(0);
+  const touchStartYRef = useRef(0);
+  const [filterMode, setFilterMode] = useState('all');
+
+  const currentIndex = CONTENT_TABS.findIndex((t) => t.key === activeSubTab);
+
+  const handleTouchStart = (e) => {
+    touchStartXRef.current = e.touches[0].clientX;
+    touchStartYRef.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e) => {
+    if (!touchStartXRef.current) return;
+    const diffX = e.changedTouches[0].clientX - touchStartXRef.current;
+    const diffY = e.changedTouches[0].clientY - touchStartYRef.current;
+
+    // Only trigger if horizontal swipe is dominant
+    if (Math.abs(diffX) > 60 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
+      if (diffX < 0 && currentIndex < CONTENT_TABS.length - 1) {
+        // Swipe Left -> Next Tab
+        haptic.light();
+        onSelectSubTab(CONTENT_TABS[currentIndex + 1].key);
+      } else if (diffX > 0 && currentIndex > 0) {
+        // Swipe Right -> Previous Tab
+        haptic.light();
+        onSelectSubTab(CONTENT_TABS[currentIndex - 1].key);
+      }
+    }
+    touchStartXRef.current = 0;
+    touchStartYRef.current = 0;
+  };
+
   return (
     <div className="admin-mobile-view" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
       {/* Horizontal Carousel Sub-tab Bar with Animated Pill */}
@@ -40,7 +74,10 @@ export default function ContentView({ activeSubTab = 'projects', onSelectSubTab 
           return (
             <button
               key={tab.key}
-              onClick={() => onSelectSubTab(tab.key)}
+              onClick={() => {
+                haptic.light();
+                onSelectSubTab(tab.key);
+              }}
               style={{
                 position: 'relative',
                 display: 'flex',
@@ -91,24 +128,40 @@ export default function ContentView({ activeSubTab = 'projects', onSelectSubTab 
         })}
       </div>
 
-      {/* View Content */}
-      <div className="admin-subtab-content" style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        minHeight: 0,
-        overflowY: 'auto',
-        WebkitOverflowScrolling: 'touch',
-        padding: '14px 14px 110px',
-      }}>
-        {activeSubTab === 'projects' && <ProjectsPanel />}
-        {activeSubTab === 'testimonials' && <TestimonialsPanel />}
-        {activeSubTab === 'updates' && <UpdatesPanel />}
-        {activeSubTab === 'skills' && <SkillsPanel />}
-        {activeSubTab === 'experience' && <ExperiencePanel />}
-        {activeSubTab === 'education' && <EducationPanel />}
-        {activeSubTab === 'certifications' && <CertificationsPanel />}
-        {activeSubTab === 'preview' && <PortfolioPreviewPanel />}
+      {/* Swipeable View Content with Touch Left/Right Gestures */}
+      <div
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        className="admin-subtab-content"
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: 0,
+          overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch',
+          padding: '14px 14px 110px',
+        }}
+      >
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeSubTab}
+            initial={{ opacity: 0, x: 12 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -12 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
+            style={{ width: '100%' }}
+          >
+            {activeSubTab === 'projects' && <ProjectsPanel />}
+            {activeSubTab === 'testimonials' && <TestimonialsPanel />}
+            {activeSubTab === 'updates' && <UpdatesPanel />}
+            {activeSubTab === 'skills' && <SkillsPanel />}
+            {activeSubTab === 'experience' && <ExperiencePanel />}
+            {activeSubTab === 'education' && <EducationPanel />}
+            {activeSubTab === 'certifications' && <CertificationsPanel />}
+            {activeSubTab === 'preview' && <PortfolioPreviewPanel />}
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   );

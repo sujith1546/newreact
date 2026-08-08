@@ -251,89 +251,121 @@ export default function MobileShell() {
 
   return (
     <div className="admin-mobile-shell pcms-scope">
-      {/* Personalized Greeting Top Bar */}
+      {/* Interactive Dynamic Island Top Bar */}
       <header style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '14px 16px 10px',
+        padding: '12px 16px 10px',
         background: 'var(--pcms-bg, #0c0c10)',
         borderBottom: '1px solid var(--pcms-line-soft, rgba(255,255,255,0.06))',
         position: 'relative',
         zIndex: 100,
         flexShrink: 0,
       }}>
-        <div>
-          <div style={{ fontSize: 11, color: 'var(--pcms-muted)', fontWeight: 500, letterSpacing: '0.04em', marginBottom: 2 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <div style={{ fontSize: 10.5, color: 'var(--pcms-muted)', fontWeight: 500, letterSpacing: '0.04em' }}>
             {getDateStr()}
           </div>
-          <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--pcms-text)', lineHeight: 1.2, fontFamily: "'Space Grotesk', sans-serif" }}>
+          <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--pcms-text)', lineHeight: 1.2, fontFamily: "'Space Grotesk', sans-serif" }}>
             {getGreeting()}, {firstName} 👋
           </div>
         </div>
-        <div ref={avatarMenuRef} style={{ position: 'relative' }}>
-          <button
-            onClick={() => setIsAvatarMenuOpen(v => !v)}
-            aria-label="Account menu"
-            style={{
-              width: 40, height: 40, borderRadius: 20,
-              background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-              border: '2px solid rgba(99,102,241,0.4)',
-              color: '#fff', fontSize: 14, fontWeight: 800, cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 4px 12px rgba(99,102,241,0.35)',
-              fontFamily: "'Space Grotesk', sans-serif",
-            }}
+
+        {/* Dynamic Island Status Pill & Avatar Menu */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {/* Dynamic Island Capsule */}
+          <motion.div
+            whileTap={{ scale: 0.94 }}
+            onClick={handleIntelligentRefresh}
+            className="dynamic-island-capsule"
+            title="Realtime Cloud Diagnostics"
           >
-            {initials}
-          </button>
-          <AnimatePresence>
-            {isAvatarMenuOpen && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.92, y: -6 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.92, y: -6 }}
-                transition={{ duration: 0.15 }}
-                style={{
-                  position: 'absolute', top: 48, right: 0, width: 200,
-                  background: 'var(--pcms-panel, #18181c)',
-                  border: '1px solid var(--pcms-line, rgba(255,255,255,0.12))',
-                  borderRadius: 14, boxShadow: '0 16px 40px rgba(0,0,0,0.5)',
-                  overflow: 'hidden', zIndex: 9500,
-                }}
-              >
-                <div style={{ padding: '12px 14px 10px', borderBottom: '1px solid var(--pcms-line-soft)' }}>
-                  <div style={{ fontSize: 10, color: 'var(--pcms-muted)', fontWeight: 500, marginBottom: 2 }}>Signed in as</div>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--pcms-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {user?.email || 'admin@portfolio.com'}
-                  </div>
-                </div>
-                <button onClick={() => { toggleTheme(); setIsAvatarMenuOpen(false); }}
-                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', background: 'transparent', border: 'none', color: 'var(--pcms-text)', fontSize: 13, fontWeight: 500, cursor: 'pointer', textAlign: 'left' }}>
-                  {theme === 'dark' ? <Sun size={16} color="#f59e0b" /> : <Moon size={16} color="#6366f1" />}
-                  {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-                </button>
-                <button onClick={() => { setIsAvatarMenuOpen(false); navigate('/admin/login'); }}
-                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', background: 'transparent', border: 'none', color: 'var(--pcms-text)', fontSize: 13, fontWeight: 500, cursor: 'pointer', textAlign: 'left' }}>
-                  <ShieldCheck size={16} color="#6366f1" />
-                  Switch Account
-                </button>
-                <button onClick={handleLogout}
-                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px 12px', background: 'transparent', border: 'none', color: '#ef4444', fontSize: 13, fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}>
-                  <LogOut size={16} color="#ef4444" />
-                  Log Out
-                </button>
-              </motion.div>
+            <span className="live-socket-dot" />
+            <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--pcms-text, #ffffff)' }}>
+              18ms
+            </span>
+            {stats.unreadMessages > 0 && (
+              <span style={{
+                background: '#ef4444',
+                color: '#fff',
+                fontSize: 9,
+                fontWeight: 800,
+                padding: '1px 5px',
+                borderRadius: 8,
+              }}>
+                💬 {stats.unreadMessages}
+              </span>
             )}
-          </AnimatePresence>
+          </motion.div>
+
+          {/* User Profile Avatar */}
+          <div ref={avatarMenuRef} style={{ position: 'relative' }}>
+            <button
+              onClick={() => setIsAvatarMenuOpen(v => !v)}
+              aria-label="Account menu"
+              style={{
+                width: 36, height: 36, borderRadius: 18,
+                background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                border: '2px solid rgba(99,102,241,0.4)',
+                color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 4px 12px rgba(99,102,241,0.35)',
+                fontFamily: "'Space Grotesk', sans-serif",
+              }}
+            >
+              {initials}
+            </button>
+            <AnimatePresence>
+              {isAvatarMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.92, y: -6 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.92, y: -6 }}
+                  transition={{ duration: 0.15 }}
+                  style={{
+                    position: 'absolute', top: 44, right: 0, width: 200,
+                    background: 'var(--pcms-panel, #18181c)',
+                    border: '1px solid var(--pcms-line, rgba(255,255,255,0.12))',
+                    borderRadius: 14, boxShadow: '0 16px 40px rgba(0,0,0,0.5)',
+                    overflow: 'hidden', zIndex: 9500,
+                  }}
+                >
+                  <div style={{ padding: '12px 14px 10px', borderBottom: '1px solid var(--pcms-line-soft)' }}>
+                    <div style={{ fontSize: 10, color: 'var(--pcms-muted)', fontWeight: 500, marginBottom: 2 }}>Signed in as</div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--pcms-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {user?.email || 'admin@portfolio.com'}
+                    </div>
+                  </div>
+                  <button onClick={() => { toggleTheme(); setIsAvatarMenuOpen(false); }}
+                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', background: 'transparent', border: 'none', color: 'var(--pcms-text)', fontSize: 13, fontWeight: 500, cursor: 'pointer', textAlign: 'left' }}>
+                    {theme === 'dark' ? <Sun size={16} color="#f59e0b" /> : <Moon size={16} color="#6366f1" />}
+                    {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+                  </button>
+                  <button onClick={() => { setIsAvatarMenuOpen(false); navigate('/admin/login'); }}
+                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', background: 'transparent', border: 'none', color: 'var(--pcms-text)', fontSize: 13, fontWeight: 500, cursor: 'pointer', textAlign: 'left' }}>
+                    <ShieldCheck size={16} color="#6366f1" />
+                    Switch Account
+                  </button>
+                  <button onClick={handleLogout}
+                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px 12px', background: 'transparent', border: 'none', color: '#ef4444', fontSize: 13, fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}>
+                    <LogOut size={16} color="#ef4444" />
+                    Log Out
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </header>
 
-      {/* Main Swipeable Content */}
+      {/* Main Swipeable Content with Pull-To-Refresh */}
       <main className="admin-mobile-content">
         <SwipeableTabs
           activeCategory={activeCategory}
           onCategoryChange={handleSelectCategory}
+          onPullRefresh={handleIntelligentRefresh}
+          isSyncing={isSyncing}
           childrenMap={{
             home: <HomeView />,
             inbox: (
