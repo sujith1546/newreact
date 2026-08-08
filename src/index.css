@@ -2755,29 +2755,30 @@ html {
      PUBLIC PORTFOLIO MOBILE PAGE SCALING (Non-Admin Only)
      ========================================= */
   html:not(.admin-mode):not(:has(.admin-shell)) .scroll-container {
-    padding: 6px !important;
-    border-radius: 18px !important;
+    padding: 4px !important;
+    border-radius: 16px !important;
   }
 
   html:not(.admin-mode):not(:has(.admin-shell)) .text-content {
-    padding: 14px 12px !important;
-    border-radius: 18px !important;
+    zoom: 0.86;
+    padding: 10px 8px !important;
+    border-radius: 16px !important;
   }
 
   html:not(.admin-mode):not(:has(.admin-shell)) .text-content:not(#education) h1 {
-    font-size: 16px !important;
+    font-size: 14.5px !important;
     line-height: 1.25 !important;
     margin-bottom: 4px !important;
   }
 
   html:not(.admin-mode):not(:has(.admin-shell)) .text-content:not(#education) [class$="-header"] p,
   html:not(.admin-mode):not(:has(.admin-shell)) .text-content:not(#education) .about-intro {
-    font-size: 11px !important;
-    line-height: 1.45 !important;
+    font-size: 10.5px !important;
+    line-height: 1.4 !important;
   }
 
   html:not(.admin-mode):not(:has(.admin-shell)) .hero-img-new {
-    max-height: 220px !important;
+    max-height: 170px !important;
   }
 
   html:not(.admin-mode):not(:has(.admin-shell)) .mobile-skill-card, 
@@ -2785,9 +2786,9 @@ html {
   html:not(.admin-mode):not(:has(.admin-shell)) .contact-method-card {
     background: var(--bg-primary) !important;
     border: 1px solid var(--border-color) !important;
-    border-radius: 14px !important;
-    min-height: 140px !important;
-    padding: 12px !important;
+    border-radius: 12px !important;
+    min-height: 110px !important;
+    padding: 10px !important;
     display: flex !important;
     flex-direction: column !important;
   }
