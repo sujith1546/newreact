@@ -270,72 +270,92 @@ export default function Contact() {
 
         {isMobile ? (
           <div style={{ maxWidth: '480px', margin: '0 auto', width: '100%' }}>
-            {selectedDesk === null ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                {DESKS.map((desk) => {
-                  const IconComp = desk.icon;
-                  return (
-                    <motion.div
-                      key={desk.id}
-                      onClick={() => chooseDesk(desk.id)}
-                      whileTap={{ scale: 0.98 }}
-                      style={{
-                        backgroundColor: 'var(--bg-secondary)',
-                        border: '1px solid var(--border-color)',
-                        borderRadius: '14px',
-                        padding: '16px 14px',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'space-between',
-                        minHeight: '95px',
-                        boxShadow: '0 3px 12px rgba(0, 0, 0, 0.025)'
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                        <div style={{ width: '30px', height: '30px', borderRadius: '8px', backgroundColor: desk.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: desk.iconColor }}>
-                          <IconComp size={15} />
+            <AnimatePresence mode="wait">
+              {selectedDesk === null ? (
+                <motion.div
+                  key="mobile-desk-cards"
+                  initial={{ opacity: 0, y: 16, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -16, scale: 0.97 }}
+                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}
+                >
+                  {DESKS.map((desk, idx) => {
+                    const IconComp = desk.icon;
+                    return (
+                      <motion.div
+                        key={desk.id}
+                        initial={{ opacity: 0, y: 14 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: idx * 0.05, type: "spring", stiffness: 400, damping: 28 }}
+                        onClick={() => chooseDesk(desk.id)}
+                        whileHover={{ scale: 1.015 }}
+                        whileTap={{ scale: 0.97 }}
+                        style={{
+                          backgroundColor: 'var(--bg-secondary)',
+                          border: '1px solid var(--border-color)',
+                          borderRadius: '14px',
+                          padding: '16px 14px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between',
+                          minHeight: '95px',
+                          boxShadow: '0 3px 12px rgba(0, 0, 0, 0.025)'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                          <div style={{ width: '30px', height: '30px', borderRadius: '8px', backgroundColor: desk.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: desk.iconColor }}>
+                            <IconComp size={15} />
+                          </div>
+                          <span style={{ fontSize: '9.5px', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: '0.08em' }}>{desk.tag}</span>
                         </div>
-                        <span style={{ fontSize: '9.5px', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: '0.08em' }}>{desk.tag}</span>
+                        <div>
+                          <h3 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 3px', letterSpacing: '-0.01em' }}>{desk.title}</h3>
+                          <p style={{ fontSize: '11.5px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>{desk.desc}</p>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </motion.div>
+              ) : (
+                <motion.div
+                  key={`mobile-form-${selectedDesk}`}
+                  initial={{ opacity: 0, y: 22, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 22, scale: 0.96 }}
+                  transition={{ type: "spring", stiffness: 360, damping: 28 }}
+                >
+                  <motion.button
+                    whileTap={{ scale: 0.92 }}
+                    type="button"
+                    onClick={goBack}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 600, cursor: 'pointer', marginBottom: '12px', padding: '4px 6px', marginLeft: '-4px', borderRadius: '6px' }}
+                  >
+                    <ArrowLeft size={14} /> Choose different option
+                  </motion.button>
+                  <div style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '18px', padding: '18px 16px', boxShadow: '0 8px 24px rgba(0, 0, 0, 0.05)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px', paddingBottom: '12px', borderBottom: '1px solid var(--border-color)' }}>
+                      <div style={{ width: '30px', height: '30px', borderRadius: '8px', backgroundColor: activeDeskObj.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: activeDeskObj.iconColor }}>
+                        {React.createElement(activeDeskObj.icon, { size: 15 })}
                       </div>
                       <div>
-                        <h3 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', margin: '0 0 3px', letterSpacing: '-0.01em' }}>{desk.title}</h3>
-                        <p style={{ fontSize: '11.5px', color: 'var(--text-secondary)', margin: 0, lineHeight: 1.4 }}>{desk.desc}</p>
+                        <span style={{ fontSize: '9.5px', fontWeight: 800, color: activeDeskObj.iconColor, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{activeDeskObj.tag}</span>
+                        <h2 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>{activeDeskObj.title}</h2>
                       </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div>
-                <button
-                  type="button"
-                  onClick={goBack}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '12px', fontWeight: 600, cursor: 'pointer', marginBottom: '12px', padding: '4px 6px', marginLeft: '-4px', borderRadius: '6px' }}
-                >
-                  <ArrowLeft size={14} /> Choose different option
-                </button>
-                <div style={{ backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '18px', padding: '18px 16px', boxShadow: '0 8px 24px rgba(0, 0, 0, 0.05)' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px', paddingBottom: '12px', borderBottom: '1px solid var(--border-color)' }}>
-                    <div style={{ width: '30px', height: '30px', borderRadius: '8px', backgroundColor: activeDeskObj.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: activeDeskObj.iconColor }}>
-                      {React.createElement(activeDeskObj.icon, { size: 15 })}
                     </div>
-                    <div>
-                      <span style={{ fontSize: '9.5px', fontWeight: 800, color: activeDeskObj.iconColor, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{activeDeskObj.tag}</span>
-                      <h2 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>{activeDeskObj.title}</h2>
-                    </div>
+                    {status === 'sent' ? (
+                      <div style={{ textAlign: 'center', padding: '20px 8px' }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(16, 185, 129, 0.12)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}><Check size={26} strokeWidth={2.5} /></div>
+                        <h3 style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 4px' }}>Message delivered!</h3>
+                        <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '0 0 16px', lineHeight: 1.5 }}>Thank you for reaching out regarding <strong>{activeDeskObj.title}</strong>. I'll get back to you within 24 hours.</p>
+                        <button type="button" onClick={() => { setForm({ name: '', email: '', message: '', company: '', _catch: '' }); setStatus('idle'); setTouched({}); setErrors({}); }} style={{ padding: '8px 18px', borderRadius: '999px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>Send another message</button>
+                      </div>
+                    ) : renderContactFormFields()}
                   </div>
-                  {status === 'sent' ? (
-                    <div style={{ textAlign: 'center', padding: '20px 8px' }}>
-                      <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(16, 185, 129, 0.12)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}><Check size={26} strokeWidth={2.5} /></div>
-                      <h3 style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 4px' }}>Message delivered!</h3>
-                      <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '0 0 16px', lineHeight: 1.5 }}>Thank you for reaching out regarding <strong>{activeDeskObj.title}</strong>. I'll get back to you within 24 hours.</p>
-                      <button type="button" onClick={() => { setForm({ name: '', email: '', message: '', company: '', _catch: '' }); setStatus('idle'); setTouched({}); setErrors({}); }} style={{ padding: '8px 18px', borderRadius: '999px', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)', fontSize: '12px', fontWeight: 700, cursor: 'pointer' }}>Send another message</button>
-                    </div>
-                  ) : renderContactFormFields()}
-                </div>
-              </div>
-            )}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         ) : (
           <div style={{ position: 'relative' }}>
