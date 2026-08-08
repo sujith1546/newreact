@@ -694,9 +694,9 @@ export default function SettingsPanel({ isMobileView = false }) {
                 <CardHead icon={Palette} label="Accent Color" sub="Primary color for highlights, links and CTA buttons." />
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
                   {ACCENT_OPTIONS.map(opt => {
-                    const sel = accentColor === opt.id;
+                    const sel = (settings?.accent_color || 'blue') === opt.id;
                     return (
-                      <button key={opt.id} type="button" onClick={() => { setAccentColor(opt.id); updateSetting('accent_color', opt.id); }} style={{
+                      <button key={opt.id} type="button" onClick={() => { change('accent_color', opt.id); updateSetting('accent_color', opt.id); }} style={{
                         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
                         padding: '10px 4px', borderRadius: 9,
                         background: sel ? `${opt.hex}14` : 'transparent',
