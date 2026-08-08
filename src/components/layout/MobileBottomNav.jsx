@@ -477,97 +477,84 @@ END:VCARD`;
             </div>
 
             {/* Scrollable content */}
-            <div className="drawer-scroll-area">
-              {/* ⚡ Live Cloud Diagnostics & Sync Card */}
+            <div className="drawer-scroll-area" style={{ padding: '0 14px 20px' }}>
+              {/* ⚡ Live Cloud Diagnostics & Telemetry Bar */}
               <div style={{
-                margin: '10px 14px 14px',
-                padding: '14px 16px',
-                borderRadius: 20,
-                background: 'linear-gradient(135deg, #111116 0%, #1a1a24 100%)',
-                border: '1px solid rgba(99, 102, 241, 0.35)',
-                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+                margin: '8px 0 14px',
+                padding: '10px 12px',
+                borderRadius: 16,
+                background: 'var(--bg-secondary)',
+                border: '1px solid var(--border-color)',
+                boxShadow: '0 4px 14px rgba(0, 0, 0, 0.04)',
                 display: 'flex',
-                flexDirection: 'column',
-                gap: 12,
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 8,
               }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{
-                      width: 8, height: 8, borderRadius: '50%',
-                      background: '#10b981',
-                      boxShadow: '0 0 10px #10b981, 0 0 2px #10b981',
-                    }} />
-                    <span style={{ fontSize: 11.5, fontWeight: 800, color: '#ffffff', letterSpacing: '0.05em', fontFamily: "'Space Grotesk', sans-serif" }}>
-                      LIVE REALTIME SYNC
-                    </span>
-                  </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
                   <span style={{
-                    fontSize: 10, fontWeight: 800, color: '#818cf8',
-                    background: 'rgba(99, 102, 241, 0.22)', border: '1px solid rgba(99, 102, 241, 0.4)',
-                    padding: '2px 8px', borderRadius: 10,
-                  }}>
-                    ~18ms DB
+                    width: 7, height: 7, borderRadius: '50%',
+                    background: '#10b981',
+                    boxShadow: '0 0 8px #10b981',
+                    flexShrink: 0,
+                  }} />
+                  <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
+                    Live Sync
+                  </span>
+                  <span style={{ fontSize: 9.5, color: 'var(--text-muted)', background: 'var(--bg-primary)', padding: '1px 6px', borderRadius: 6, border: '1px solid var(--border-color)' }}>
+                    ~18ms
                   </span>
                 </div>
 
-                <div style={{ fontSize: 11, color: 'rgba(255, 255, 255, 0.65)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span>Last synced: <strong style={{ color: '#e2e8f0' }}>{formatSyncTime(lastSyncedAt)}</strong></span>
-                  <span style={{ opacity: 0.4 }}>•</span>
-                  <span style={{ color: '#10b981', fontWeight: 600 }}>All caches live</span>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
                   <motion.button
-                    whileTap={{ scale: 0.94 }}
+                    whileTap={{ scale: 0.92 }}
                     onClick={handleSoftSync}
                     disabled={isSyncing}
                     style={{
-                      padding: '9px 12px',
-                      borderRadius: 12,
-                      background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                      color: '#ffffff',
-                      fontSize: 11.5,
+                      padding: '5px 9px',
+                      borderRadius: 8,
+                      background: 'rgba(99,102,241,0.12)',
+                      border: '1px solid rgba(99,102,241,0.25)',
+                      color: 'var(--primary-blue, #6366f1)',
+                      fontSize: 10.5,
                       fontWeight: 700,
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 6,
-                      boxShadow: '0 4px 14px rgba(99, 102, 241, 0.35)',
+                      gap: 4,
                     }}
                   >
-                    <RefreshCw size={13} className={isSyncing ? 'spinning' : ''} />
-                    <span>{isSyncing ? 'Syncing...' : '⚡ Soft Sync'}</span>
+                    <RefreshCw size={11} className={isSyncing ? 'spinning' : ''} />
+                    <span>{isSyncing ? 'Syncing' : 'Soft Sync'}</span>
                   </motion.button>
 
                   <motion.button
-                    whileTap={{ scale: 0.94 }}
+                    whileTap={{ scale: 0.92 }}
                     onClick={handleFullWebsiteRefresh}
                     disabled={isFullReloading}
                     style={{
-                      padding: '9px 12px',
-                      borderRadius: 12,
-                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                      border: '1px solid rgba(255, 255, 255, 0.2)',
-                      color: '#ffffff',
-                      fontSize: 11.5,
+                      padding: '5px 9px',
+                      borderRadius: 8,
+                      background: 'rgba(16,185,129,0.12)',
+                      border: '1px solid rgba(16,185,129,0.25)',
+                      color: '#10b981',
+                      fontSize: 10.5,
                       fontWeight: 700,
                       cursor: 'pointer',
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 6,
-                      boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
+                      gap: 4,
                     }}
                   >
-                    <RefreshCw size={13} className={isFullReloading ? 'spinning' : ''} />
-                    <span>{isFullReloading ? 'Reloading...' : '🚀 Hard Reload'}</span>
+                    <RefreshCw size={11} className={isFullReloading ? 'spinning' : ''} />
+                    <span>{isFullReloading ? 'Reloading' : 'Hard Reload'}</span>
                   </motion.button>
                 </div>
               </div>
-              {/* Explore */}
-              <p className="drawer-sections-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+
+              {/* Explore Navigation Row */}
+              <p className="drawer-sections-label" style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '12px 0 8px' }}>
                 <Compass size={13} style={{ color: 'var(--primary-blue)' }} />
                 <span>EXPLORE</span>
               </p>
@@ -615,22 +602,12 @@ END:VCARD`;
                   <div className="drawer-item-box"><FaGithub size={17} /></div>
                   <span>GitHub</span>
                 </motion.button>
-
-                <motion.button
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.93 }}
-                  onClick={() => { haptic.light(); playSound(); setIsMoreOpen(false); window.dispatchEvent(new CustomEvent('open-chatbot')); }}
-                  className="drawer-explore-item"
-                >
-                  <div className="drawer-item-box" style={{ color: '#06b6d4', background: 'rgba(6,182,212,0.1)', borderColor: 'rgba(6,182,212,0.2)' }}><Atom size={17} /></div>
-                  <span>Atom AI</span>
-                </motion.button>
               </div>
 
               <div className="drawer-divider" />
 
-              {/* Actions */}
-              <p className="drawer-sections-label" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              {/* Feature Actions Grid */}
+              <p className="drawer-sections-label" style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '12px 0 8px' }}>
                 <Zap size={13} style={{ color: '#f59e0b' }} />
                 <span>QUICK ACTIONS</span>
               </p>
@@ -638,13 +615,13 @@ END:VCARD`;
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.92 }}
-                  onClick={() => { haptic.light(); playSound(); handleInstallClick(); setIsMoreOpen(false); }}
+                  onClick={() => { haptic.light(); playSound(); setIsMoreOpen(false); window.dispatchEvent(new CustomEvent('open-chatbot')); }}
                   className="drawer-explore-item"
                 >
-                  <div className="drawer-item-box" style={{ color: '#3b82f6', background: 'rgba(59,130,246,0.1)', borderColor: 'rgba(59,130,246,0.2)' }}>
-                    <FileDown size={17} />
+                  <div className="drawer-item-box" style={{ color: '#06b6d4', background: 'rgba(6,182,212,0.12)', borderColor: 'rgba(6,182,212,0.25)' }}>
+                    <Atom size={17} />
                   </div>
-                  <span>Install App</span>
+                  <span>Atom AI</span>
                 </motion.button>
 
                 <motion.button
@@ -653,7 +630,7 @@ END:VCARD`;
                   onClick={() => { haptic.light(); triggerEvent('open-resume'); }}
                   className="drawer-explore-item"
                 >
-                  <div className="drawer-item-box" style={{ color: '#8b5cf6', background: 'rgba(139,92,246,0.1)', borderColor: 'rgba(139,92,246,0.2)' }}>
+                  <div className="drawer-item-box" style={{ color: '#8b5cf6', background: 'rgba(139,92,246,0.12)', borderColor: 'rgba(139,92,246,0.25)' }}>
                     <FileText size={17} />
                   </div>
                   <span>Resume</span>
@@ -665,7 +642,7 @@ END:VCARD`;
                   onClick={() => { haptic.light(); handleDownloadVCard(); }}
                   className="drawer-explore-item"
                 >
-                  <div className="drawer-item-box" style={{ color: '#10b981', background: 'rgba(16,185,129,0.1)', borderColor: 'rgba(16,185,129,0.2)' }}>
+                  <div className="drawer-item-box" style={{ color: '#10b981', background: 'rgba(16,185,129,0.12)', borderColor: 'rgba(16,185,129,0.25)' }}>
                     <UserPlus size={17} />
                   </div>
                   <span>Contact</span>
@@ -677,7 +654,7 @@ END:VCARD`;
                   onClick={() => { haptic.light(); handleShare(); }}
                   className="drawer-explore-item"
                 >
-                  <div className="drawer-item-box" style={{ color: '#06b6d4', background: 'rgba(6,182,212,0.1)', borderColor: 'rgba(6,182,212,0.2)' }}>
+                  <div className="drawer-item-box" style={{ color: '#3b82f6', background: 'rgba(59,130,246,0.12)', borderColor: 'rgba(59,130,246,0.25)' }}>
                     <Share size={17} />
                   </div>
                   <span>Share</span>
@@ -686,10 +663,22 @@ END:VCARD`;
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.92 }}
+                  onClick={() => { haptic.light(); playSound(); handleInstallClick(); setIsMoreOpen(false); }}
+                  className="drawer-explore-item"
+                >
+                  <div className="drawer-item-box" style={{ color: '#ec4899', background: 'rgba(236,72,153,0.12)', borderColor: 'rgba(236,72,153,0.25)' }}>
+                    <FileDown size={17} />
+                  </div>
+                  <span>Install App</span>
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.92 }}
                   onClick={() => { haptic.light(); playSound(); setIsProfileOpen(true); setIsMoreOpen(false); }}
                   className="drawer-explore-item"
                 >
-                  <div className="drawer-item-box" style={{ color: '#6366f1', background: 'rgba(99,102,241,0.1)', borderColor: 'rgba(99,102,241,0.2)' }}>
+                  <div className="drawer-item-box" style={{ color: '#6366f1', background: 'rgba(99,102,241,0.12)', borderColor: 'rgba(99,102,241,0.25)' }}>
                     <User size={17} />
                   </div>
                   <span>Profile</span>
@@ -698,22 +687,10 @@ END:VCARD`;
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.92 }}
-                  onClick={() => { haptic.light(); playSound(); setIsUpdatesOpen(true); setIsMoreOpen(false); }}
-                  className="drawer-explore-item"
-                >
-                  <div className="drawer-item-box" style={{ color: '#ec4899', background: 'rgba(236,72,153,0.1)', borderColor: 'rgba(236,72,153,0.2)' }}>
-                    <Sparkles size={17} />
-                  </div>
-                  <span>Updates</span>
-                </motion.button>
-
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.92 }}
                   onClick={() => { haptic.light(); playSound(); window.dispatchEvent(new CustomEvent('open-all-settings')); setIsMoreOpen(false); }}
                   className="drawer-explore-item"
                 >
-                  <div className="drawer-item-box" style={{ color: '#64748b', background: 'rgba(100,116,139,0.1)', borderColor: 'rgba(100,116,139,0.2)' }}>
+                  <div className="drawer-item-box" style={{ color: '#64748b', background: 'rgba(100,116,139,0.12)', borderColor: 'rgba(100,116,139,0.25)' }}>
                     <Settings size={17} />
                   </div>
                   <span>Settings</span>
@@ -722,27 +699,15 @@ END:VCARD`;
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.92 }}
-                  onClick={() => { haptic.light(); playSound(); setIsHelpOpen(true); setIsMoreOpen(false); }}
-                  className="drawer-explore-item"
-                >
-                  <div className="drawer-item-box" style={{ color: '#f59e0b', background: 'rgba(245,158,11,0.1)', borderColor: 'rgba(245,158,11,0.2)' }}>
-                    <HelpCircle size={20} />
-                  </div>
-                  <span>Help</span>
-                </motion.button>
-
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.92 }}
                   onClick={() => { haptic.light(); playSound(); setIsMoreOpen(false); navigate('/admin/login'); }}
                   className="drawer-explore-item"
                 >
-                  <div className="drawer-item-box" style={{ color: '#ef4444', background: 'rgba(239,68,68,0.1)', borderColor: 'rgba(239,68,68,0.2)' }}>
+                  <div className="drawer-item-box" style={{ color: '#ef4444', background: 'rgba(239,68,68,0.12)', borderColor: 'rgba(239,68,68,0.25)' }}>
                     <Shield size={17} />
                   </div>
-                  <span>Admin Login</span>
+                  <span>Admin</span>
                 </motion.button>
-              </div>
+            </div>
             </div>
           </motion.div>
         )}
