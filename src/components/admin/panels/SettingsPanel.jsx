@@ -9,7 +9,7 @@ import {
   Zap, Lock, Database, Key, Palette, Send, RefreshCw, AlertTriangle,
   Activity, BookOpen, Star, Bot, BarChart2, Trash2, RotateCcw,
   Eye, EyeOff, Clock, Server, Wifi, Download, ChevronDown, ChevronUp,
-  Info, Shield, CheckCircle2, XCircle, TrendingUp, Users, MessageCircle,
+  Info, Shield, ShieldCheck, CheckCircle2, XCircle, TrendingUp, Users, MessageCircle,
   Cpu, Terminal, User, Pen, ChevronRight
 } from 'lucide-react';
 import { FaGithub, FaLinkedin, FaTwitter } from 'react-icons/fa';

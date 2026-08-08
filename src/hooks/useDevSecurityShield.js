@@ -36,18 +36,18 @@ export function useDevSecurityShield() {
     // 1. Sync all security settings from Supabase site_settings
     async function fetchSecuritySettings() {
       try {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from('site_settings')
-          .select('disable_inspect, disable_copy, disable_print, frame_guard, security_watermark')
+          .select('*')
           .limit(1)
           .single();
-        if (data) {
+        if (data && !error) {
           const next = {
-            disableInspect: !!data.disable_inspect,
-            disableCopy: !!data.disable_copy,
-            disablePrint: !!data.disable_print,
-            frameGuard: !!data.frame_guard,
-            securityWatermark: !!data.security_watermark,
+            disableInspect: typeof data.disable_inspect !== 'undefined' ? !!data.disable_inspect : (localStorage.getItem('pcms_disable_inspect') === 'true'),
+            disableCopy: typeof data.disable_copy !== 'undefined' ? !!data.disable_copy : (localStorage.getItem('pcms_disable_copy') === 'true'),
+            disablePrint: typeof data.disable_print !== 'undefined' ? !!data.disable_print : (localStorage.getItem('pcms_disable_print') === 'true'),
+            frameGuard: typeof data.frame_guard !== 'undefined' ? !!data.frame_guard : (localStorage.getItem('pcms_frame_guard') === 'true'),
+            securityWatermark: typeof data.security_watermark !== 'undefined' ? !!data.security_watermark : (localStorage.getItem('pcms_security_watermark') === 'true'),
           };
           localStorage.setItem('pcms_disable_inspect', String(next.disableInspect));
           localStorage.setItem('pcms_disable_copy', String(next.disableCopy));
