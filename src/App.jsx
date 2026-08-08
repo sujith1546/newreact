@@ -21,6 +21,37 @@ import { prefetchTable } from "./hooks/useRealtimeData";
 
 import PWAInstallPrompt from './components/widgets/PWAInstallPrompt';
 import SiteDisabledGate from './components/SiteDisabledGate';
+import { useDevSecurityShield } from './hooks/useDevSecurityShield';
+
+function SecurityToast({ message }) {
+  if (!message) return null;
+  return (
+    <div style={{
+      position: 'fixed',
+      bottom: 24,
+      left: '50%',
+      transform: 'translateX(-50%)',
+      zIndex: 99999999,
+      background: 'rgba(15, 23, 42, 0.95)',
+      backdropFilter: 'blur(12px)',
+      WebkitBackdropFilter: 'blur(12px)',
+      border: '1px solid rgba(59, 130, 246, 0.35)',
+      color: '#f8fafc',
+      padding: '10px 20px',
+      borderRadius: 999,
+      fontSize: 13,
+      fontWeight: 600,
+      display: 'flex',
+      alignItems: 'center',
+      gap: 8,
+      boxShadow: '0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(59, 130, 246, 0.25)',
+      pointerEvents: 'none',
+      letterSpacing: '0.01em'
+    }}>
+      <span>{message}</span>
+    </div>
+  );
+}
 
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 const AdminLogin = React.lazy(() => import('./pages/AdminLogin'));
@@ -97,6 +128,7 @@ function AppContent() {
   const { reduceMotion } = useTheme();
   const [appReady, setAppReady] = useState(false);
   const [showContent, setShowContent] = useState(false);
+  const { toastMessage } = useDevSecurityShield();
 
   useEffect(() => {
     let mounted = true;
@@ -191,6 +223,7 @@ function AppContent() {
               <DynamicIsland />
               <DevToolsDetector />
               <PWAInstallPrompt />
+              <SecurityToast message={toastMessage} />
               <Suspense fallback={<Loader />}>
                 <AnimatedRoutes />
               </Suspense>

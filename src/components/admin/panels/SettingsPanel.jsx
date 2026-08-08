@@ -59,7 +59,8 @@ const SETTING_GROUPS = [
     items: [
       { id: 'performance', icon: Activity, label: 'Performance', desc: 'Analytics, rate limits & cache', color: '#3B82F6' },
       { id: 'notifications', icon: Mail, label: 'Notifications', desc: 'Email & alert preferences', color: '#F59E0B' },
-      { id: 'security_lock', icon: Lock, label: 'Security & Lock', desc: 'Maintenance & lockdown modes', color: '#EF4444' },
+      { id: 'security', icon: Shield, label: 'Security & Protection', desc: 'Anti-inspect & right-click shield', color: '#3B82F6' },
+      { id: 'security_lock', icon: Lock, label: 'Site Lockdown', desc: 'Maintenance & lockdown modes', color: '#EF4444' },
     ],
   },
   {
@@ -197,6 +198,7 @@ const AuditRow = ({ row, isLast }) => {
 ────────────────────────────────────────────────────────────── */
 const DEFAULT_SETTINGS = {
   id: 1,
+  disable_inspect: false,
   feature_experience: true,
   feature_certifications: true,
   feature_blog: true,
@@ -268,6 +270,10 @@ export default function SettingsPanel({ isMobileView = false }) {
     if (key === 'site_disabled')        localStorage.setItem('pcms_site_disabled', String(value));
     if (key === 'site_disabled_reason') localStorage.setItem('pcms_site_disabled_reason', String(value));
     if (key === 'site_disabled_at')     localStorage.setItem('pcms_site_disabled_at', String(value));
+    if (key === 'disable_inspect') {
+      localStorage.setItem('pcms_disable_inspect', String(value));
+      window.dispatchEvent(new CustomEvent('pcms_security_changed'));
+    }
     window.dispatchEvent(new Event('storage'));
 
     if (['site_disabled', 'site_disabled_reason', 'site_disabled_at', 'maintenance_enabled', 'maintenance_message'].includes(key)) {
@@ -300,6 +306,10 @@ export default function SettingsPanel({ isMobileView = false }) {
   const toggle = (key, val) => {
     setSettings(p => ({ ...p, [key]: val }));
     // Sync localStorage immediately so portfolio window reacts without Supabase round-trip.
+    if (key === 'disable_inspect') {
+      localStorage.setItem('pcms_disable_inspect', String(val));
+      window.dispatchEvent(new CustomEvent('pcms_security_changed'));
+    }
     if (key === 'maintenance_enabled') {
       localStorage.setItem('pcms_maint_enabled', String(val));
       if (val) localStorage.setItem('pcms_maint_at', new Date().toISOString());
@@ -653,15 +663,90 @@ export default function SettingsPanel({ isMobileView = false }) {
               </Card>
             </>)}
 
-            {/* ─────────────── SECURITY & LOCK ─────────────── */}
+            {/* ─────────────── SECURITY & DEV PROTECTION ─────────────── */}
+            {activeTab === 'security' && (<>
+              <Card>
+                <CardHead icon={ShieldCheck} label="Developer & Source Protection" sub="Prevent unauthorized inspection, right-click, and DevTools shortcuts." color="#3B82F6" />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <PremiumToggle
+                    icon={EyeOff}
+                    color="#3B82F6"
+                    label="Anti-Inspect & Right-Click Shield"
+                    description="Blocks right-click context menu, F12, Ctrl+Shift+I, and source viewing across the website."
+                    checked={settings?.disable_inspect ?? false}
+                    onChange={v => toggle('disable_inspect', v)}
+                  />
+
+                  {settings?.disable_inspect ? (
+                    <div style={{
+                      background: 'rgba(59, 130, 246, 0.1)',
+                      border: '1px solid rgba(59, 130, 246, 0.25)',
+                      borderRadius: 8,
+                      padding: '12px 14px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      fontSize: 12,
+                      color: '#93c5fd'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#3b82f6', boxShadow: '0 0 8px #3b82f6' }} />
+                        <span><strong>Protection Active:</strong> Right-click, F12, Ctrl+Shift+I/J/C, and Ctrl+U are blocked globally.</span>
+                      </div>
+                      <Pill color="#3B82F6">Active</Pill>
+                    </div>
+                  ) : (
+                    <Note color="#3B82F6">
+                      🛡️ When enabled, visitors cannot right-click images, copy source, or open developer tools on your portfolio. Admin console retains full access.
+                    </Note>
+                  )}
+                </div>
+              </Card>
+
+              <Card>
+                <CardHead icon={Shield} label="Blocked Shortcuts & Security Rules" sub="List of hardware and keyboard events intercepted." color="#10B981" />
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 }}>
+                  {[
+                    ['Right-Click Context Menu', 'Blocked'],
+                    ['F12 Developer Tools', 'Blocked'],
+                    ['Ctrl+Shift+I (Inspect)', 'Blocked'],
+                    ['Ctrl+Shift+J (Console)', 'Blocked'],
+                    ['Ctrl+Shift+C (Element)', 'Blocked'],
+                    ['Ctrl+U (Page Source)', 'Blocked'],
+                  ].map(([rule, stat]) => (
+                    <div key={rule} style={{ background: 'var(--pcms-panel)', border: '1px solid var(--pcms-line)', borderRadius: 8, padding: '10px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: 11.5, color: 'var(--pcms-text)' }}>{rule}</span>
+                      <span style={{ fontSize: 10, fontFamily: 'monospace', color: settings?.disable_inspect ? '#10B981' : 'var(--pcms-muted-2)', fontWeight: 700 }}>{settings?.disable_inspect ? stat : 'Inactive'}</span>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+
+              <Card>
+                <CardHead icon={Shield} label="Session & TLS Info" sub="Read-only metadata about the current admin session." color="#6366F1" />
+                {[
+                  ['Session',  <Pill color="#10B981"><CheckCircle2 size={10} /> Authenticated</Pill>],
+                  ['HTTPS',    <Pill color="#10B981"><CheckCircle2 size={10} /> Active</Pill>],
+                  ['CSP',      <Pill color="#6366F1">Enforced</Pill>],
+                  ['Last seen', new Date().toLocaleString()],
+                ].map(([k, v]) => (
+                  <div key={k} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: '1px solid var(--pcms-line-soft)' }}>
+                    <span style={{ fontSize: 12, color: 'var(--pcms-muted)' }}>{k}</span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--pcms-text)' }}>{v}</span>
+                  </div>
+                ))}
+              </Card>
+            </>)}
+
+            {/* ─────────────── SITE LOCKDOWN & MAINTENANCE ─────────────── */}
             {activeTab === 'security_lock' && (<>
               <Card>
-                <CardHead icon={Lock} label="Site Access State" sub="Admin console (/admin/*) always stays accessible." color="#EF4444" />
+                <CardHead icon={Lock} label="Live Mode & Access Control" sub="Put site in maintenance or emergency lockdown." color="#EF4444" />
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
                   {[
-                    { id: 'live',     label: '🟢 Live Site',   active: !settings?.site_disabled && !settings?.maintenance_enabled },
-                    { id: 'maint',    label: '🟡 Maintenance', active: !settings?.site_disabled && !!settings?.maintenance_enabled },
-                    { id: 'lockdown', label: '🔴 Full Lock',   active: !!settings?.site_disabled },
+                    { id: 'live',     label: '🟢 Live',        active: !settings?.site_disabled && !settings?.maintenance_enabled },
+                    { id: 'maint',    label: '🟡 Maintenance', active: !settings?.site_disabled &&  settings?.maintenance_enabled },
+                    { id: 'disabled', label: '🔴 Lockdown',    active:  settings?.site_disabled },
                   ].map(m => (
                     <button key={m.id} type="button" onClick={() => {
                       if (m.id === 'live') {
@@ -708,21 +793,6 @@ export default function SettingsPanel({ isMobileView = false }) {
                     <Note color="#EF4444">Locked since {new Date(settings.site_disabled_at).toLocaleString()}</Note>
                   )}
                 </>)}
-              </Card>
-
-              <Card>
-                <CardHead icon={Shield} label="Session Info" sub="Read-only metadata about the current admin session." color="#6366F1" />
-                {[
-                  ['Session',  <Pill color="#10B981"><CheckCircle2 size={10} /> Authenticated</Pill>],
-                  ['HTTPS',    <Pill color="#10B981"><CheckCircle2 size={10} /> Active</Pill>],
-                  ['CSP',      <Pill color="#6366F1">Enforced</Pill>],
-                  ['Last seen', new Date().toLocaleString()],
-                ].map(([k, v]) => (
-                  <div key={k} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: '1px solid var(--pcms-line-soft)' }}>
-                    <span style={{ fontSize: 12, color: 'var(--pcms-muted)' }}>{k}</span>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--pcms-text)' }}>{v}</span>
-                  </div>
-                ))}
               </Card>
             </>)}
 
@@ -823,7 +893,7 @@ export default function SettingsPanel({ isMobileView = false }) {
             </>)}
 
             {/* ─────────────── AUDIT LOG ─────────────── */}
-            {activeTab === 'audit' && (
+            {activeTab === 'audit' && (<>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {/* Filter + refresh row */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
@@ -860,10 +930,10 @@ export default function SettingsPanel({ isMobileView = false }) {
                 </div>
                 <p style={{ fontSize: 11, color: 'var(--pcms-muted-2)', margin: 0 }}>Showing {filteredAudit.length} events · Logs retained indefinitely</p>
               </div>
-            )}
+            </>)}
 
             {/* ─────────────── DANGER ZONE ─────────────── */}
-            {activeTab === 'danger' && (
+            {activeTab === 'danger' && (<>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <Note color="#EF4444">All actions below are <strong>irreversible</strong>. Proceed with extreme caution.</Note>
 
@@ -915,7 +985,7 @@ export default function SettingsPanel({ isMobileView = false }) {
                   );
                 })}
               </div>
-            )}
+            </>)}
     </>
   );
 
