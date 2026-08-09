@@ -150,10 +150,9 @@ export default function PortfolioLayout() {
         const table = payload.table || 'content';
         const label = table.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
         haptic.medium();
-        setLiveNotification({
-          id: Date.now(),
-          text: `⚡ Live Cloud Sync: ${label} updated!`,
-        });
+        window.dispatchEvent(new CustomEvent('pcms_sync_event', {
+          detail: { label, message: `${label} synchronized via cloud` }
+        }));
         // Soft purge caches
         Object.keys(globalDataCache).forEach((k) => delete globalDataCache[k]);
         Object.keys(fetchPromises).forEach((k) => delete fetchPromises[k]);
@@ -165,10 +164,9 @@ export default function PortfolioLayout() {
       const table = syncMsg.table || 'content';
       const label = table.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
       haptic.success();
-      setLiveNotification({
-        id: Date.now(),
-        text: `⚡ Instant P2P Sync: ${label} updated (~${syncMsg.pingMs || 1}ms)`,
-      });
+      window.dispatchEvent(new CustomEvent('pcms_sync_event', {
+        detail: { label, message: `P2P sync (~${syncMsg.pingMs || 1}ms)` }
+      }));
       Object.keys(globalDataCache).forEach((k) => delete globalDataCache[k]);
       Object.keys(fetchPromises).forEach((k) => delete fetchPromises[k]);
       window.dispatchEvent(new CustomEvent('pcms_force_refresh'));
@@ -506,84 +504,7 @@ export default function PortfolioLayout() {
           </div>
         )}
 
-        {/* Live Notification Dynamic Glass Pill Toast */}
-        <AnimatePresence>
-          {liveNotification && (
-            <motion.div
-              initial={{ opacity: 0, y: -16, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -16, scale: 0.95 }}
-              transition={{ type: 'spring', stiffness: 450, damping: 30 }}
-              style={{
-                position: 'fixed',
-                top: isMobile ? 12 : 20,
-                right: isMobile ? 12 : 24,
-                left: isMobile ? 12 : 'auto',
-                maxWidth: isMobile ? 'calc(100vw - 24px)' : 380,
-                zIndex: 9999,
-                padding: '8px 14px',
-                borderRadius: 12,
-                background: 'rgba(15, 17, 23, 0.88)',
-                border: '1px solid rgba(99, 102, 241, 0.35)',
-                backdropFilter: 'blur(16px)',
-                WebkitBackdropFilter: 'blur(16px)',
-                boxShadow: '0 12px 32px -4px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(99, 102, 241, 0.15)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 7, minWidth: 0, flex: 1 }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#6366f1', boxShadow: '0 0 8px #6366f1', flexShrink: 0 }} />
-                <span style={{ fontSize: 11.5, fontWeight: 600, color: '#f8fafc', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {liveNotification.text.replace('⚡ ', '')}
-                </span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleSoftRefresh();
-                    setLiveNotification(null);
-                  }}
-                  style={{
-                    background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                    border: 'none',
-                    borderRadius: 7,
-                    color: '#fff',
-                    fontSize: 10.5,
-                    fontWeight: 700,
-                    padding: '4px 9px',
-                    cursor: 'pointer',
-                    letterSpacing: '0.02em',
-                    boxShadow: '0 2px 8px rgba(99,102,241,0.3)',
-                  }}
-                >
-                  Sync
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLiveNotification(null)}
-                  title="Dismiss notification"
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    color: 'rgba(255,255,255,0.4)',
-                    cursor: 'pointer',
-                    fontSize: 14,
-                    padding: '2px 4px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    lineHeight: 1,
-                  }}
-                >
-                  ×
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+
         <div className="scroll-container">
           <AnimatePresence mode={isMobile ? "sync" : "wait"} initial={false} custom={slideDirection}>
             <motion.div

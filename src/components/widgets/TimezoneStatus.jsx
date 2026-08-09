@@ -4,6 +4,7 @@ import DarkModeToggle from '../ui/DarkModeToggle';
 import SettingsDropdown from '../ui/SettingsDropdown';
 import GetInTouchDropdown from './GetInTouchDropdown';
 import NetworkSignalWidget from './NetworkSignalWidget';
+import SyncNotificationBell from '../ui/SyncNotificationBell';
 import { useSupabasePresence } from '../../hooks/useSupabasePresence';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -429,8 +430,7 @@ export default function TimezoneStatus() {
           </span>
         </div>
 
-
-
+        <SyncNotificationBell />
         <NetworkSignalWidget />
         <DarkModeToggle />
         <SettingsDropdown />
