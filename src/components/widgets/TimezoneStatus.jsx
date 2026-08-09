@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DarkModeToggle from '../ui/DarkModeToggle';
 import SettingsDropdown from '../ui/SettingsDropdown';
 import GetInTouchDropdown from './GetInTouchDropdown';
 import NetworkSignalWidget from './NetworkSignalWidget';
-import SyncNotificationBell from '../ui/SyncNotificationBell';
+import NotificationCenter from '../ui/NotificationCenter';
 import { useSupabasePresence } from '../../hooks/useSupabasePresence';
 import { useTheme } from '../../context/ThemeContext';
+import { supabase } from '../../lib/supabaseClient';
+import { subscribeToRealtimeSync } from '../../lib/broadcastSyncEngine';
 
 export default function TimezoneStatus() {
   const { visitorCount } = useSupabasePresence();
@@ -88,6 +90,97 @@ export default function TimezoneStatus() {
       console.error("Timezone logic failed", e);
     }
   }, []);
+
+  // ── Notification Center State & Storage ──
+  const [notifications, setNotifications] = useState(() => {
+    try {
+      const raw = localStorage.getItem('pcms_spec_notifications_v3');
+      if (raw) return JSON.parse(raw);
+    } catch (_) {}
+    return [
+      {
+        id: 'init_sync_1',
+        category: 'sync',
+        title: 'Cloud Sync Engine Connected',
+        description: 'Realtime database & P2P channels active.',
+        timestamp: Date.now() - 120000,
+        read: false,
+      }
+    ];
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('pcms_spec_notifications_v3', JSON.stringify(notifications.slice(0, 30)));
+    } catch (_) {}
+  }, [notifications]);
+
+  const handleMarkAllRead = useCallback(() => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  }, []);
+
+  const handleMarkOneRead = useCallback((id) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+    );
+  }, []);
+
+  const pushNotification = useCallback((category, title, description) => {
+    const id = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random());
+    setNotifications((prev) => [
+      {
+        id,
+        category,
+        title,
+        description,
+        timestamp: Date.now(),
+        read: false,
+      },
+      ...prev.slice(0, 29),
+    ]);
+  }, []);
+
+  // Realtime Events Listener
+  useEffect(() => {
+    const channel = supabase
+      .channel('header_notif_center_spec')
+      .on('postgres_changes', { event: '*', schema: 'public' }, (payload) => {
+        const table = payload.table || 'Site Settings';
+        const label = table.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+        pushNotification('sync', `${label} synced`, 'Theme and layout changes pushed live.');
+      })
+      .subscribe();
+
+    const unsubscribeBroadcast = subscribeToRealtimeSync((syncMsg) => {
+      const table = syncMsg.table || 'site_settings';
+      const label = table.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+      pushNotification('sync', `${label} updated`, `P2P sync event (~${syncMsg.pingMs || 1}ms)`);
+    });
+
+    const onSecurity = (e) => {
+      pushNotification('security', e.detail?.title || 'Security Shield Alert', e.detail?.message || 'DevTools trap or auth alert');
+    };
+
+    const onMessage = (e) => {
+      pushNotification('leads', `New Lead: ${e.detail?.name || 'Visitor'}`, e.detail?.message || 'New contact inquiry received');
+    };
+
+    const onSync = (e) => {
+      pushNotification('sync', `${e.detail?.label || 'Site Settings'} synced`, e.detail?.message || 'Theme and layout changes pushed live.');
+    };
+
+    window.addEventListener('pcms_security_alert', onSecurity);
+    window.addEventListener('pcms_new_message', onMessage);
+    window.addEventListener('pcms_sync_event', onSync);
+
+    return () => {
+      supabase.removeChannel(channel);
+      if (typeof unsubscribeBroadcast === 'function') unsubscribeBroadcast();
+      window.removeEventListener('pcms_security_alert', onSecurity);
+      window.removeEventListener('pcms_new_message', onMessage);
+      window.removeEventListener('pcms_sync_event', onSync);
+    };
+  }, [pushNotification]);
 
   return (
     <>
@@ -430,7 +523,11 @@ export default function TimezoneStatus() {
           </span>
         </div>
 
-        <SyncNotificationBell />
+        <NotificationCenter
+          notifications={notifications}
+          onMarkAllRead={handleMarkAllRead}
+          onMarkOneRead={handleMarkOneRead}
+        />
         <NetworkSignalWidget />
         <DarkModeToggle />
         <SettingsDropdown />
