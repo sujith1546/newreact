@@ -20,6 +20,7 @@ import {
   ParticleCanvas,
   SectionSpotlight
 } from '../components';
+import ErrorBoundary from '../components/ui/ErrorBoundary';
 import CommandPaletteModal from '../components/ui/CommandPaletteModal';
 
 const Home = lazy(() => import('./Home'));
