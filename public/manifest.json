@@ -1,21 +1,21 @@
 {
-  "short_name": "Sujith Portfolio",
-  "name": "Sujith Thota Portfolio",
+  "short_name": "Sujith Thota",
+  "name": "Sujith Thota — Portfolio & Command Center",
   "icons": [
     {
       "src": "/profile_photo.png",
-      "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "sizes": "192x192"
     },
     {
       "src": "/profile_photo.png",
-      "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "sizes": "512x512"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
+  "background_color": "#09090b",
+  "theme_color": "#6366f1",
   "display": "standalone",
-  "theme_color": "#007bff",
-  "background_color": "#f4f4f4"
+  "orientation": "portrait"
 }

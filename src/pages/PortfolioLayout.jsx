@@ -20,9 +20,9 @@ import {
   ParticleCanvas,
   SectionSpotlight
 } from '../components';
-import ErrorBoundary from '../components/ui/ErrorBoundary';
+import CommandPaletteModal from '../components/ui/CommandPaletteModal';
 
-import Home from './Home';
+const Home = lazy(() => import('./Home'));
 const About = lazy(() => import('./About'));
 const Skills = lazy(() => import('./Skills'));
 const Projects = lazy(() => import('./Projects'));
@@ -320,6 +320,11 @@ export default function PortfolioLayout() {
     if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText('sujithreddy1546@gmail.com').catch(() => { });
     }
+    try {
+      import('../utils/conversionTracker').then(({ trackRecruiterIntent }) => {
+        trackRecruiterIntent('email_copy', 'Recruiter copied contact email');
+      });
+    } catch (_) {}
     setEmailCopied(true);
     setTimeout(() => setEmailCopied(false), 2000);
   };
@@ -589,6 +594,7 @@ export default function PortfolioLayout() {
       {!isMobile && <TimezoneStatus />}
       <ChatBot />
       <CommandPalette />
+      <CommandPaletteModal />
       <SettingsSidebar />
 
       {isMobile && <MobileStatusPanel isOpen={isStatusOpen} onClose={() => setIsStatusOpen(false)} />}

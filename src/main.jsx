@@ -10,6 +10,10 @@ if (import.meta.env.DEV && 'serviceWorker' in navigator) {
       registration.unregister();
     }
   });
+} else if ('serviceWorker' in navigator && !import.meta.env.DEV) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
 }
 
 createRoot(document.getElementById('root')).render(
