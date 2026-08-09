@@ -312,13 +312,34 @@ export default function useRealtimeData(table, options = {}) {
       }
     });
 
+    const handleDataUpdated = (e) => {
+      if (!isMounted) return;
+      const { table: evtTable, key, value } = e.detail || {};
+      if (evtTable === table || !evtTable) {
+        if (single && key !== undefined) {
+          setData((prev) => {
+            const next = prev && typeof prev === 'object' ? { ...prev, [key]: value } : prev;
+            globalDataCache[cacheKey] = next;
+            setStorageCache(cacheKey, next);
+            return next;
+          });
+        } else {
+          delete globalDataCache[cacheKey];
+          delete fetchPromises[cacheKey];
+          fetchData();
+        }
+      }
+    };
+
     window.addEventListener('pcms_force_refresh', handleForceRefresh);
+    window.addEventListener('pcms_data_updated', handleDataUpdated);
 
     return () => {
       isMounted = false;
       clearTimeout(subTimeout);
       safeRemoveChannel(channel);
       window.removeEventListener('pcms_force_refresh', handleForceRefresh);
+      window.removeEventListener('pcms_data_updated', handleDataUpdated);
       if (typeof unsubscribeBroadcast === 'function') unsubscribeBroadcast();
     };
   }, [table, select, single, orderColumn, ascending, filter?.column, filter?.value]);

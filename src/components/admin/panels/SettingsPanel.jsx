@@ -384,32 +384,49 @@ export default function SettingsPanel({ isMobileView = false }) {
       localStorage.setItem(`pcms_${key}`, String(value));
       window.dispatchEvent(new CustomEvent('pcms_security_changed'));
     }
+    if (key === 'accent_color') {
+      try {
+        localStorage.setItem('accentColor', String(value));
+        const colorMap = { blue: '#3b82f6', purple: '#8b5cf6', emerald: '#10b981', rose: '#f43f5e', amber: '#f59e0b', cyan: '#06b6d4' };
+        const hex = colorMap[value] || value;
+        document.documentElement.style.setProperty('--primary-blue', hex);
+      } catch (_) {}
+    }
     window.dispatchEvent(new Event('storage'));
 
     if (['site_disabled', 'site_disabled_reason', 'site_disabled_at', 'maintenance_enabled', 'maintenance_message'].includes(key)) {
       window.dispatchEvent(new CustomEvent('pcms_lock_changed'));
     }
 
-    // Immediately patch the in-memory globalDataCache so portfolio components
-    // that use useRealtimeData('site_settings') see the update before Supabase
-    // realtime fires (same-browser instant update).
+    // Instantly sync local setDbSettings state if passed from parent
+    if (typeof setDbSettings === 'function') {
+      try {
+        setDbSettings(p => (p && typeof p === 'object' ? { ...p, [key]: value } : p));
+      } catch (_) {}
+    }
+
+    // Immediately patch globalDataCache & notify local listeners
     try {
       const { globalDataCache } = await import('../../../hooks/useRealtimeData');
-      const cacheKey = `site_settings_${JSON.stringify({ select: '*', single: true, orderColumn: 'id', ascending: true, filter: { column: 'id', value: 1 } })}`;
-      if (globalDataCache[cacheKey]) {
-        globalDataCache[cacheKey] = { ...globalDataCache[cacheKey], [key]: value };
-      }
+      Object.keys(globalDataCache).forEach(cacheKey => {
+        if (cacheKey.startsWith('site_settings_')) {
+          globalDataCache[cacheKey] = { ...globalDataCache[cacheKey], [key]: value };
+        }
+      });
     } catch (_) {}
+
     window.dispatchEvent(new CustomEvent('pcms_data_updated', { detail: { table: 'site_settings', key, value } }));
-    publishAdminMutation('site_settings', 'UPDATE', { [key]: value });
 
     const { error } = await supabase.from('site_settings').update({ [key]: value }).eq('id', 1);
-    setTimeout(() => setSaveStatus(error ? 'error' : 'saved'), 500);
-
+    
+    if (!error) {
+      publishAdminMutation('site_settings', 'UPDATE', { [key]: value });
+      logAuditEvent('UPDATE_SETTINGS', 'site_settings', key);
+    }
+    
+    setSaveStatus(error ? 'error' : 'saved');
     if (error && !error.message?.includes('schema cache') && error.code !== 'PGRST204') {
       console.error(`Save error [${key}]:`, error.message);
-    } else if (!error) {
-      logAuditEvent('UPDATE_SETTINGS', 'site_settings', key);
     }
   };
 
