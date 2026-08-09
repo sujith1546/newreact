@@ -183,16 +183,15 @@ function AdminDashboardDesktop() {
         </div>
 
         {/* Sidebar Footer */}
-        <div className="pcms-sidebar-foot" style={{ padding: '12px 14px' }}>
+        <div className="pcms-sidebar-foot" style={{ padding: '6px 4px' }}>
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: 10,
-            padding: '10px 12px',
-            borderRadius: 14,
+            gap: 8,
+            padding: '6px 8px',
+            borderRadius: 10,
             background: 'var(--pcms-panel-2)',
             border: '1px solid var(--pcms-line)',
-            boxShadow: '0 4px 14px rgba(0, 0, 0, 0.05)',
           }}>
             {/* Avatar Container */}
             <div style={{ position: 'relative', flexShrink: 0 }}>
@@ -200,12 +199,11 @@ function AdminDashboardDesktop() {
                 src="/profile_photo.png"
                 alt="Sujith Thota"
                 style={{
-                  width: 36,
-                  height: 36,
+                  width: 28,
+                  height: 28,
                   borderRadius: '50%',
                   objectFit: 'cover',
                   border: '1.5px solid var(--pcms-accent, #6366f1)',
-                  boxShadow: '0 0 10px rgba(99, 102, 241, 0.2)',
                 }}
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
@@ -214,13 +212,13 @@ function AdminDashboardDesktop() {
               />
               <div style={{
                 display: 'none',
-                width: 36,
-                height: 36,
+                width: 28,
+                height: 28,
                 borderRadius: '50%',
                 background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
                 color: '#ffffff',
                 fontWeight: 800,
-                fontSize: 14,
+                fontSize: 12,
                 alignItems: 'center',
                 justifyContent: 'center',
               }}>
@@ -230,12 +228,11 @@ function AdminDashboardDesktop() {
                 position: 'absolute',
                 bottom: 0,
                 right: 0,
-                width: 10,
-                height: 10,
+                width: 8,
+                height: 8,
                 borderRadius: '50%',
                 background: '#10b981',
-                border: '2px solid var(--pcms-panel-2)',
-                boxShadow: '0 0 6px #10b981',
+                border: '1.5px solid var(--pcms-panel-2)',
               }} />
             </div>
 

@@ -180,6 +180,14 @@ export default function PortfolioLayout() {
     };
   }, []);
 
+  // Auto-dismiss live notification toast after 5s
+  useEffect(() => {
+    if (liveNotification) {
+      const timer = setTimeout(() => setLiveNotification(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [liveNotification]);
+
   // 2. In-Memory Soft Refresh Handler
   const handleSoftRefresh = useCallback(() => {
     haptic.medium();
@@ -498,45 +506,81 @@ export default function PortfolioLayout() {
           </div>
         )}
 
-        {/* Live Notification Dynamic Island Toast */}
+        {/* Live Notification Dynamic Glass Pill Toast */}
         <AnimatePresence>
           {liveNotification && (
             <motion.div
-              initial={{ opacity: 0, y: -20, scale: 0.9 }}
+              initial={{ opacity: 0, y: -16, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -20, scale: 0.9 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 28 }}
+              exit={{ opacity: 0, y: -16, scale: 0.95 }}
+              transition={{ type: 'spring', stiffness: 450, damping: 30 }}
               style={{
-                position: 'fixed', top: 68, left: 16, right: 16,
+                position: 'fixed',
+                top: isMobile ? 12 : 20,
+                right: isMobile ? 12 : 24,
+                left: isMobile ? 12 : 'auto',
+                maxWidth: isMobile ? 'calc(100vw - 24px)' : 380,
                 zIndex: 9999,
-                padding: '10px 14px', borderRadius: 16,
-                background: 'rgba(18,18,22,0.92)',
-                border: '1px solid rgba(99,102,241,0.3)',
+                padding: '8px 14px',
+                borderRadius: 12,
+                background: 'rgba(15, 17, 23, 0.88)',
+                border: '1px solid rgba(99, 102, 241, 0.35)',
                 backdropFilter: 'blur(16px)',
-                boxShadow: '0 10px 30px rgba(0,0,0,0.4)',
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
+                WebkitBackdropFilter: 'blur(16px)',
+                boxShadow: '0 12px 32px -4px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(99, 102, 241, 0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-                <Sparkles size={16} color="#6366f1" />
-                <span style={{ fontSize: 12, fontWeight: 600, color: '#ffffff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {liveNotification.text}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7, minWidth: 0, flex: 1 }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#6366f1', boxShadow: '0 0 8px #6366f1', flexShrink: 0 }} />
+                <span style={{ fontSize: 11.5, fontWeight: 600, color: '#f8fafc', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {liveNotification.text.replace('⚡ ', '')}
                 </span>
               </div>
-              <button
-                onClick={() => {
-                  handleSoftRefresh();
-                  setLiveNotification(null);
-                }}
-                style={{
-                  background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                  border: 'none', borderRadius: 10,
-                  color: '#fff', fontSize: 11, fontWeight: 700,
-                  padding: '5px 10px', cursor: 'pointer', flexShrink: 0,
-                }}
-              >
-                Sync Now
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleSoftRefresh();
+                    setLiveNotification(null);
+                  }}
+                  style={{
+                    background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                    border: 'none',
+                    borderRadius: 7,
+                    color: '#fff',
+                    fontSize: 10.5,
+                    fontWeight: 700,
+                    padding: '4px 9px',
+                    cursor: 'pointer',
+                    letterSpacing: '0.02em',
+                    boxShadow: '0 2px 8px rgba(99,102,241,0.3)',
+                  }}
+                >
+                  Sync
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLiveNotification(null)}
+                  title="Dismiss notification"
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'rgba(255,255,255,0.4)',
+                    cursor: 'pointer',
+                    fontSize: 14,
+                    padding: '2px 4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    lineHeight: 1,
+                  }}
+                >
+                  ×
+                </button>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

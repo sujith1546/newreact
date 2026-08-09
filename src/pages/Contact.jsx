@@ -6,6 +6,7 @@ import {
 import { ScrollReveal } from '../components';
 import EmailDomainSuggest from '../components/ui/EmailDomainSuggest';
 import CharacterCounter from '../components/ui/CharacterCounter';
+import { computePow, generateChallenge } from '../utils/sha256pow';
 
 const DESKS = [
   {
@@ -205,6 +206,10 @@ export default function Contact() {
     setStatus('sending');
     setSubmitError('');
     try {
+      // Background SHA-256 PoW challenge (difficulty=2, ~50-150ms, invisible to user)
+      const challenge = generateChallenge(form.email.trim());
+      const { nonce, hash } = await computePow(challenge, 2);
+
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 
@@ -216,7 +221,9 @@ export default function Contact() {
           email: form.email.trim(),
           message: form.message.trim(),
           inquiry_type: activeDeskObj.title,
-          company: form.company.trim()
+          company: form.company.trim(),
+          pow_nonce: nonce,
+          pow_hash: hash
         })
       });
       if (!res.ok) throw new Error('Failed to deliver message. Please try again.');

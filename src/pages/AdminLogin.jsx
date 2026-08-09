@@ -536,6 +536,21 @@ export default function AdminLogin() {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
 
+  // ─── Suspicious Login Email Alert Helper ───────────────────────
+  const sendLoginAlert = async (userEmail) => {
+    try {
+      await fetch('/api/login-alert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: userEmail || 'sujithreddy1546@gmail.com',
+          userAgent: navigator.userAgent,
+          timestamp: new Date().toISOString(),
+        })
+      });
+    } catch (_) { /* non-blocking — never fail login flow */ }
+  };
+
   // Primary Auth State
   const [email, setEmail] = useState("sujithreddy1546@gmail.com");
   const [password, setPassword] = useState("");
@@ -711,6 +726,7 @@ export default function AdminLogin() {
 
     resetLockout();
     await logTelemetry(user.id, user.email, true);
+    sendLoginAlert(user.email);
     navigate("/admin/dashboard");
   };
 
@@ -850,6 +866,7 @@ export default function AdminLogin() {
       if (res.ok && resData.verified) {
         resetLockout();
         await logTelemetry("admin_otp_user", targetEmail, true);
+        sendLoginAlert(targetEmail);
         navigate("/admin/dashboard");
         return;
       }
@@ -873,11 +890,13 @@ export default function AdminLogin() {
         } else if (magicData?.user) {
           resetLockout();
           await logTelemetry(magicData.user.id, magicData.user.email, true);
+          sendLoginAlert(magicData.user.email);
           navigate("/admin/dashboard");
         }
       } else if (data?.user) {
         resetLockout();
         await logTelemetry(data.user.id, data.user.email, true);
+        sendLoginAlert(data.user.email);
         navigate("/admin/dashboard");
       }
     } catch (err) {

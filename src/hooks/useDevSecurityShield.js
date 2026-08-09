@@ -116,6 +116,28 @@ export function useDevSecurityShield() {
     const isAdmin = typeof window !== 'undefined' && window.location.pathname.startsWith('/admin');
     if (isAdmin) return;
 
+    // ─── DevTools Width-Ratio Detection Trap ───
+    let devToolsOpen = false;
+    const detectDevTools = () => {
+      const threshold = 160;
+      const widthDiff = window.outerWidth - window.innerWidth;
+      const heightDiff = window.outerHeight - window.innerHeight;
+      const opened = widthDiff > threshold || heightDiff > threshold;
+      if (opened && !devToolsOpen) {
+        devToolsOpen = true;
+        try {
+          console.log(
+            '%c⛔ DEVTOOLS DETECTED\n%cAccess to this console is monitored. Unauthorized script execution may result in session termination.',
+            'color: #ef4444; font-size: 20px; font-weight: 900; text-transform: uppercase;',
+            'color: #94a3b8; font-size: 12px; font-weight: 600; line-height: 1.6;'
+          );
+        } catch (_) {}
+      } else if (!opened) {
+        devToolsOpen = false;
+      }
+    };
+    const devToolsInterval = setInterval(detectDevTools, 1000);
+
     let timeoutId = null;
     const showToast = (msg) => {
       if (timeoutId) clearTimeout(timeoutId);
@@ -259,6 +281,7 @@ export function useDevSecurityShield() {
 
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
+      clearInterval(devToolsInterval);
       document.removeEventListener('contextmenu', handleContextMenu);
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('copy', handleCopy);

@@ -4,6 +4,7 @@ import useRealtimeData from '../../../hooks/useRealtimeData';
 import { logAuditEvent } from '../../../lib/auditLogger';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Edit2, Trash2, GripVertical, Loader2, Users, X, Save, Eye, EyeOff } from 'lucide-react';
+import { sanitizeText } from '../../../utils/sanitize';
 
 const BLANK = { name: '', role: '', company: '', avatar_url: '', message: '', display_order: 0, is_visible: true };
 
@@ -150,12 +151,12 @@ export default function TestimonialsPanel() {
             <motion.div key={t.id} layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
               style={{ background: 'var(--pcms-panel-2)', border: '1px solid var(--pcms-line)', borderRadius: 10, padding: '16px 18px', display: 'flex', gap: 14, alignItems: 'flex-start', opacity: deleting === t.id ? 0.5 : 1 }}
             >
-              <Avatar name={t.name} url={t.avatar_url} size={40} />
+              <Avatar name={sanitizeText(t.name)} url={t.avatar_url} size={40} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
                   <div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--pcms-text)' }}>{t.name}</div>
-                    <div style={{ fontSize: 12, color: 'var(--pcms-muted)' }}>{t.role}{t.company ? ` · ${t.company}` : ''}</div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--pcms-text)' }}>{sanitizeText(t.name)}</div>
+                    <div style={{ fontSize: 12, color: 'var(--pcms-muted)' }}>{sanitizeText(t.role)}{t.company ? ` · ${sanitizeText(t.company)}` : ''}</div>
                   </div>
                   <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
                     <button onClick={() => handleVisibility(t)} title={t.is_visible ? 'Hide' : 'Show'} className="pcms-icon-btn" style={{ color: t.is_visible ? 'var(--pcms-green)' : 'var(--pcms-muted)' }}>
@@ -169,7 +170,7 @@ export default function TestimonialsPanel() {
                     </button>
                   </div>
                 </div>
-                <p style={{ margin: '8px 0 0', fontSize: 12.5, color: 'var(--pcms-text)', lineHeight: 1.5, opacity: 0.9 }}>"{t.message}"</p>
+                <p style={{ margin: '8px 0 0', fontSize: 12.5, color: 'var(--pcms-text)', lineHeight: 1.5, opacity: 0.9 }}>"{sanitizeText(t.message)}"</p>
               </div>
             </motion.div>
           ))}
