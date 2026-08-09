@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabaseClient';
+import { notifyDataMutation } from '../../../lib/syncDispatcher';
 import { Loader2, Award, ExternalLink, Edit3, Trash2, X } from 'lucide-react';
 import { styles, MODAL_STYLES } from '../shared/constants';
 import { PanelCard, EmptyState, StatCard } from '../shared/components';
@@ -47,6 +48,7 @@ export default function CertificationsPanel() {
     const { error } = await supabase.from('certifications').delete().eq('id', id);
     if (!error) {
       setCerts(certs.filter(c => c.id !== id));
+      notifyDataMutation('certifications', 'DELETE', { id, title });
       showToast(`"${title}" deleted`, 'error');
     } else showToast('Failed to delete', 'error');
   };
@@ -67,6 +69,7 @@ export default function CertificationsPanel() {
       const { data, error } = await supabase.from('certifications').update(payload).eq('id', payload.id).select().single();
       if (!error && data) {
         setCerts(certs.map(c => c.id === data.id ? data : c).sort((a,b) => a.display_order - b.display_order));
+        notifyDataMutation('certifications', 'UPDATE', data);
         showToast('Certification updated');
         closeModal();
       } else showToast('Failed to update', 'error');
@@ -74,6 +77,7 @@ export default function CertificationsPanel() {
       const { data, error } = await supabase.from('certifications').insert([payload]).select().single();
       if (!error && data) {
         setCerts([...certs, data].sort((a,b) => a.display_order - b.display_order));
+        notifyDataMutation('certifications', 'INSERT', data);
         showToast('Certification added');
         closeModal();
       } else showToast('Failed to add', 'error');

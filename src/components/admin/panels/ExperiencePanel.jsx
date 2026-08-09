@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabaseClient';
+import { notifyDataMutation } from '../../../lib/syncDispatcher';
 import { Loader2, Briefcase, Edit3, Trash2, X, ImageIcon, Plus } from 'lucide-react';
 import { styles, MODAL_STYLES } from '../shared/constants';
 import { PanelCard, EmptyState, StatCard } from '../shared/components';
@@ -70,6 +71,7 @@ export default function ExperiencePanel() {
     const { error } = await supabase.from('experience').delete().eq('id', id);
     if (!error) {
       setExperiences(experiences.filter(e => e.id !== id));
+      notifyDataMutation('experience', 'DELETE', { id, role });
       showToast(`"${role}" deleted`, 'error');
     } else showToast('Failed to delete', 'error');
   };
@@ -100,6 +102,7 @@ export default function ExperiencePanel() {
       const { data, error } = await supabase.from('experience').update(payload).eq('id', editingExp.id).select().single();
       if (!error && data) {
         setExperiences(experiences.map(e => e.id === data.id ? data : e).sort((a, b) => a.display_order - b.display_order));
+        notifyDataMutation('experience', 'UPDATE', data);
         showToast('Experience updated successfully');
         closeModal();
       } else showToast('Failed to save', 'error');
@@ -107,6 +110,7 @@ export default function ExperiencePanel() {
       const { data, error } = await supabase.from('experience').insert([payload]).select().single();
       if (!error && data) {
         setExperiences([...experiences, data].sort((a, b) => a.display_order - b.display_order));
+        notifyDataMutation('experience', 'INSERT', data);
         showToast('Experience added successfully');
         closeModal();
       } else showToast('Failed to create', 'error');

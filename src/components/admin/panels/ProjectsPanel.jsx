@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabaseClient';
-import { publishAdminMutation } from '../../../lib/broadcastSyncEngine';
+import { notifyDataMutation } from '../../../lib/syncDispatcher';
 import { Loader2, Star, Edit3, Trash2, Plus, X } from 'lucide-react';
 import { styles, MODAL_STYLES } from '../shared/constants';
 import { PanelCard, EmptyState, StatCard } from '../shared/components';
@@ -60,6 +60,7 @@ export default function ProjectsPanel() {
     const { error } = await supabase.from('projects').delete().eq('id', id);
     if (!error) {
       setProjects(prev => prev.filter(p => p.id !== id));
+      notifyDataMutation('projects', 'DELETE', { id, title });
       showToast(`"${title}" deleted successfully`, 'error');
     } else {
       showToast('Failed to delete project', 'error');
@@ -70,7 +71,9 @@ export default function ProjectsPanel() {
     const newVal = !proj.featured;
     const { error } = await supabase.from('projects').update({ featured: newVal }).eq('id', proj.id);
     if (!error) {
-      setProjects(prev => prev.map(p => p.id === proj.id ? { ...p, featured: newVal } : p));
+      const updated = { ...proj, featured: newVal };
+      setProjects(prev => prev.map(p => p.id === proj.id ? updated : p));
+      notifyDataMutation('projects', 'UPDATE', updated);
       showToast(newVal ? `"${proj.title}" is now featured` : `"${proj.title}" unfeatured`);
     }
   };
@@ -126,7 +129,7 @@ export default function ProjectsPanel() {
       const { data, error } = await supabase.from('projects').update(payload).eq('id', editingProject.id).select().single();
       if (!error && data) {
         setProjects(prev => prev.map(p => p.id === data.id ? data : p));
-        publishAdminMutation('projects', 'UPDATE', data);
+        notifyDataMutation('projects', 'UPDATE', data);
         showToast(`"${data.title}" updated successfully`);
         closeModal();
       } else { showToast('Failed to save changes', 'error'); }
@@ -134,7 +137,7 @@ export default function ProjectsPanel() {
       const { data, error } = await supabase.from('projects').insert([payload]).select().single();
       if (!error && data) {
         setProjects(prev => [...prev, data]);
-        publishAdminMutation('projects', 'INSERT', data);
+        notifyDataMutation('projects', 'INSERT', data);
         showToast(`"${data.title}" created successfully`);
         closeModal();
       } else { showToast('Failed to create project', 'error'); }

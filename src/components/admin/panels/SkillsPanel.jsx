@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabaseClient';
+import { notifyDataMutation } from '../../../lib/syncDispatcher';
 import { Loader2, ChevronRight, ChevronDown, Star, Edit3, Trash2, Briefcase, Layers, X, Plus } from 'lucide-react';
 import { styles, MODAL_STYLES, SKILL_CATEGORIES, SKILL_LEVELS } from '../shared/constants';
 import { PanelCard, EmptyState, StatCard } from '../shared/components';
@@ -57,6 +58,7 @@ export default function SkillsPanel() {
     const { error } = await supabase.from('skills').delete().eq('id', id);
     if (!error) {
       setSkills(skills.filter(s => s.id !== id));
+      notifyDataMutation('skills', 'DELETE', { id, name });
       showToast(`"${name}" deleted`, 'error');
     } else showToast('Failed to delete', 'error');
   };
@@ -81,6 +83,7 @@ export default function SkillsPanel() {
       const { data, error } = await supabase.from('skills').update(payload).eq('id', editingSkill.id).select().single();
       if (!error && data) {
         setSkills(skills.map(s => s.id === data.id ? data : s).sort((a, b) => a.order_index - b.order_index));
+        notifyDataMutation('skills', 'UPDATE', data);
         showToast(`"${data.name}" updated successfully`);
         closeModal();
       } else showToast('Failed to save', 'error');
@@ -88,6 +91,7 @@ export default function SkillsPanel() {
       const { data, error } = await supabase.from('skills').insert([payload]).select().single();
       if (!error && data) {
         setSkills([...skills, data].sort((a, b) => a.order_index - b.order_index));
+        notifyDataMutation('skills', 'INSERT', data);
         showToast(`"${data.name}" added successfully`);
         closeModal();
       } else showToast('Failed to create', 'error');

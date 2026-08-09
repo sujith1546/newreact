@@ -314,20 +314,50 @@ export default function useRealtimeData(table, options = {}) {
 
     const handleDataUpdated = (e) => {
       if (!isMounted) return;
-      const { table: evtTable, key, value } = e.detail || {};
+      const { table: evtTable, eventType, payload, key, value, id } = e.detail || {};
       if (evtTable === table || !evtTable) {
-        if (single && key !== undefined) {
-          setData((prev) => {
-            const next = prev && typeof prev === 'object' ? { ...prev, [key]: value } : prev;
-            globalDataCache[cacheKey] = next;
-            setStorageCache(cacheKey, next);
-            return next;
-          });
-        } else {
-          delete globalDataCache[cacheKey];
-          delete fetchPromises[cacheKey];
-          fetchData();
-        }
+        setData((prev) => {
+          let next = prev;
+
+          if (single) {
+            if (key !== undefined) {
+              next = prev && typeof prev === 'object' ? { ...prev, [key]: value } : prev;
+            } else if (payload && typeof payload === 'object') {
+              next = prev && typeof prev === 'object' ? { ...prev, ...payload } : payload;
+            }
+          } else if (Array.isArray(prev)) {
+            if (eventType === 'INSERT' && payload) {
+              const payloadId = payload.id || id;
+              if (payloadId && prev.some((item) => item.id === payloadId)) {
+                next = prev.map((item) => (item.id === payloadId ? { ...item, ...payload } : item));
+              } else {
+                next = [payload, ...prev];
+              }
+            } else if (eventType === 'UPDATE' && payload) {
+              const payloadId = payload.id || id;
+              next = prev.map((item) => (item.id === payloadId ? { ...item, ...payload } : item));
+            } else if (eventType === 'DELETE') {
+              const targetId = id || payload?.id;
+              if (targetId) {
+                next = prev.filter((item) => item.id !== targetId);
+              } else {
+                delete globalDataCache[cacheKey];
+                delete fetchPromises[cacheKey];
+                fetchData();
+                return prev;
+              }
+            } else {
+              delete globalDataCache[cacheKey];
+              delete fetchPromises[cacheKey];
+              fetchData();
+              return prev;
+            }
+          }
+
+          globalDataCache[cacheKey] = next;
+          setStorageCache(cacheKey, next);
+          return next;
+        });
       }
     };
 

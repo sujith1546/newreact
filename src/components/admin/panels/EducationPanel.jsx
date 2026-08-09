@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabaseClient';
+import { notifyDataMutation } from '../../../lib/syncDispatcher';
 import { Loader2, Edit3, Trash2, BookOpen, X, Plus } from 'lucide-react';
 import { styles, MODAL_STYLES } from '../shared/constants';
 import { PanelCard, EmptyState, StatCard } from '../shared/components';
@@ -55,6 +56,7 @@ export default function EducationPanel() {
     const { error } = await supabase.from('education').delete().eq('id', id);
     if (!error) {
       setEdu(edu.filter(c => c.id !== id));
+      notifyDataMutation('education', 'DELETE', { id, title });
       showToast(`"${title}" deleted`, 'error');
     } else showToast('Failed to delete', 'error');
   };
@@ -88,6 +90,7 @@ export default function EducationPanel() {
       const { data, error } = await supabase.from('education').update(payload).eq('id', payload.id).select().single();
       if (!error && data) {
         setEdu(edu.map(c => c.id === data.id ? data : c).sort((a,b) => a.display_order - b.display_order));
+        notifyDataMutation('education', 'UPDATE', data);
         showToast('Education updated');
         closeModal();
       } else showToast('Failed to update', 'error');
@@ -95,6 +98,7 @@ export default function EducationPanel() {
       const { data, error } = await supabase.from('education').insert([payload]).select().single();
       if (!error && data) {
         setEdu([...edu, data].sort((a,b) => a.display_order - b.display_order));
+        notifyDataMutation('education', 'INSERT', data);
         showToast('Education added');
         closeModal();
       } else showToast('Failed to add', 'error');

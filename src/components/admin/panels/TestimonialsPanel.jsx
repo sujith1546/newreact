@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Edit2, Trash2, GripVertical, Loader2, Users, X, Save, Eye, EyeOff } from 'lucide-react';
 import { sanitizeText } from '../../../utils/sanitize';
 
+import { notifyDataMutation } from '../../../lib/syncDispatcher';
+
 const BLANK = { name: '', role: '', company: '', avatar_url: '', message: '', display_order: 0, is_visible: true };
 
 function Avatar({ name, url, size = 40 }) {
@@ -31,13 +33,15 @@ export default function TestimonialsPanel() {
     const { name, role, company, avatar_url, message, display_order, is_visible } = form;
     const payload = { name, role, company: company || null, avatar_url: avatar_url || null, message, display_order: Number(display_order) || 0, is_visible };
     let error;
+    let data;
     if (form.id) {
-      ({ error } = await supabase.from('testimonials').update(payload).eq('id', form.id));
+      ({ data, error } = await supabase.from('testimonials').update(payload).eq('id', form.id).select().single());
     } else {
-      ({ error } = await supabase.from('testimonials').insert(payload));
+      ({ data, error } = await supabase.from('testimonials').insert(payload).select().single());
     }
     setSaving(false);
     if (error) { alert('Error: ' + error.message); return; }
+    notifyDataMutation('testimonials', form.id ? 'UPDATE' : 'INSERT', data || payload);
     logAuditEvent(form.id ? 'UPDATE_TESTIMONIAL' : 'ADD_TESTIMONIAL', 'testimonials', name);
     setEditing(null);
   };
@@ -46,12 +50,15 @@ export default function TestimonialsPanel() {
     if (!confirm(`Delete testimonial from "${name}"?`)) return;
     setDeleting(id);
     await supabase.from('testimonials').delete().eq('id', id);
+    notifyDataMutation('testimonials', 'DELETE', { id, name });
     logAuditEvent('DELETE_TESTIMONIAL', 'testimonials', name);
     setDeleting(null);
   };
 
   const handleVisibility = async (t) => {
-    await supabase.from('testimonials').update({ is_visible: !t.is_visible }).eq('id', t.id);
+    const nextVal = !t.is_visible;
+    await supabase.from('testimonials').update({ is_visible: nextVal }).eq('id', t.id);
+    notifyDataMutation('testimonials', 'UPDATE', { ...t, is_visible: nextVal });
     logAuditEvent('TOGGLE_TESTIMONIAL_VISIBILITY', 'testimonials', t.name);
   };
 

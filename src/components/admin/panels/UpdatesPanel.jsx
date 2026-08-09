@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabaseClient';
+import { notifyDataMutation } from '../../../lib/syncDispatcher';
 import { Loader2, Edit3, Trash2, Zap, X, Plus, Eye, EyeOff } from 'lucide-react';
 import { styles } from '../shared/constants';
 import { PanelCard, EmptyState } from '../shared/components';
@@ -84,6 +85,7 @@ export default function UpdatesPanel() {
     const nextList = updates.filter(u => String(u.id) !== String(id));
     setUpdates(nextList);
     setLocalUpdates(nextList);
+    notifyDataMutation('updates', 'DELETE', { id, title });
     showToast(`Deleted successfully`, 'error');
   };
 
@@ -92,6 +94,7 @@ export default function UpdatesPanel() {
     const nextList = updates.map(u => String(u.id) === String(update.id) ? { ...u, published: nextVal } : u);
     setUpdates(nextList);
     setLocalUpdates(nextList);
+    notifyDataMutation('updates', 'UPDATE', { ...update, published: nextVal });
 
     try {
       await supabase.from('updates').update({ published: nextVal }).eq('id', update.id);
@@ -174,6 +177,7 @@ export default function UpdatesPanel() {
 
     setUpdates(nextList);
     setLocalUpdates(nextList);
+    notifyDataMutation('updates', editingUpdate ? 'UPDATE' : 'INSERT', payload);
     showToast(editingUpdate ? 'Release updated successfully' : 'Release published successfully');
     closeModal();
     setSaving(false);
