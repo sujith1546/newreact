@@ -293,6 +293,17 @@ export default function Projects() {
           display: flex; align-items: center; justify-content: space-between;
           border-top: 1px solid var(--border-color); padding-top: 14px; margin-top: auto;
         }
+        .pc-cta-pill {
+          display: inline-flex; align-items: center; gap: 6px;
+          padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;
+          border: 1px solid var(--border-color); background: var(--bg-primary);
+          color: var(--text-primary); cursor: pointer; transition: all 0.2s ease;
+        }
+        .pc-cta-pill:hover {
+          background: var(--primary-blue); color: #ffffff;
+          border-color: var(--primary-blue);
+          box-shadow: 0 4px 12px rgba(59,130,246,0.25);
+        }
         .project-links-right { display: flex; align-items: center; gap: 14px; }
         .project-link {
           display: flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 600;

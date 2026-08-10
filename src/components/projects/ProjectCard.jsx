@@ -1,4 +1,4 @@
-﻿import React, { useRef } from "react";
+import React, { useRef } from "react";
 import {
   ExternalLink, Cpu, Sliders, Layout, Database, Sparkles, Trees, Brain,
   ArrowRight, ShieldCheck, TrendingUp, Newspaper, Eye, Smile, Receipt, Layers, GitMerge
@@ -103,19 +103,35 @@ export default function ProjectCard({ project, onCardClick }) {
           <div
             className="pc-monogram-art"
             style={{
-              background: `radial-gradient(ellipse at 28% 38%, hsl(${hue},72%,58%) 0%, hsl(${hue2},62%,44%) 52%, hsl(${hue3},58%,32%) 100%)`,
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              position: "relative",
             }}
           >
-            <div className="pc-monogram-grid" aria-hidden="true">
-              {Array.from({ length: 20 }).map((_, i) => (
-                <div key={i} className="pc-monogram-dot" />
-              ))}
+            <div
+              className="pc-monogram-badge"
+              style={{
+                width: "46px",
+                height: "46px",
+                borderRadius: "12px",
+                background: "var(--bg-secondary)",
+                color: "var(--primary-blue)",
+                border: "1px solid var(--border-color)",
+                boxShadow: "0 4px 14px rgba(0,0,0,0.08)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontWeight: 800,
+                fontSize: "15px",
+                letterSpacing: "-0.02em",
+                zIndex: 2,
+              }}
+            >
+              {initials}
             </div>
-            <div className="pc-monogram-rings" aria-hidden="true">
-              <div className="pc-monogram-ring" />
-              <div className="pc-monogram-ring pc-monogram-ring--2" />
-            </div>
-            <span className="pc-monogram-letter">{initials}</span>
           </div>
         )}
       </div>
