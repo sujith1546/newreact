@@ -175,7 +175,8 @@ function AppContent() {
             prefetchTable('projects', { orderColumn: 'created_at', ascending: true }),
             prefetchTable('experience', { orderColumn: 'display_order', ascending: true }),
             prefetchTable('skills', { orderColumn: 'order_index', ascending: true }),
-            prefetchTable('education', { orderColumn: 'display_order', ascending: true })
+            prefetchTable('education', { orderColumn: 'display_order', ascending: true }),
+            prefetchTable('certifications', { orderColumn: 'display_order', ascending: true })
           );
         } else {
           // Route-specific intelligent prefetching for constrained connections
@@ -188,6 +189,8 @@ function AppContent() {
             corePromises.push(prefetchTable('skills', { orderColumn: 'order_index', ascending: true }));
           } else if (path.startsWith('/education')) {
             corePromises.push(prefetchTable('education', { orderColumn: 'display_order', ascending: true }));
+          } else if (path.startsWith('/certifications')) {
+            corePromises.push(prefetchTable('certifications', { orderColumn: 'display_order', ascending: true }));
           }
         }
 
@@ -205,7 +208,8 @@ function AppContent() {
               prefetchTable('projects', { orderColumn: 'created_at', ascending: true }),
               prefetchTable('experience', { orderColumn: 'display_order', ascending: true }),
               prefetchTable('skills', { orderColumn: 'order_index', ascending: true }),
-              prefetchTable('education', { orderColumn: 'display_order', ascending: true })
+              prefetchTable('education', { orderColumn: 'display_order', ascending: true }),
+              prefetchTable('certifications', { orderColumn: 'display_order', ascending: true })
             ]);
           } catch (err) {}
         }, 800);

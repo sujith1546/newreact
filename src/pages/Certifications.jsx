@@ -294,23 +294,17 @@ export default function Certifications() {
 
   return (
     <ScrollReveal className="wide-content">
-      {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '40px 0' }}>
-          <Loader2 className="spin" size={32} color="var(--primary-blue)" />
-        </div>
-      ) : (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: '20px',
-          maxWidth: '920px',
-          margin: '0',
-        }}>
-          {certifications.map(cert => (
-            <CertCard key={cert.id || cert.credentialId} cert={cert} />
-          ))}
-        </div>
-      )}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(2, 1fr)',
+        gap: '20px',
+        maxWidth: '920px',
+        margin: '0',
+      }}>
+        {certifications.map(cert => (
+          <CertCard key={cert.id || cert.credentialId} cert={cert} />
+        ))}
+      </div>
     </ScrollReveal>
   );
 }
