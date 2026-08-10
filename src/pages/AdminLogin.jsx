@@ -2,556 +2,549 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { useTheme } from "../context/ThemeContext";
+import {
+  Lock,
+  Mail,
+  Eye,
+  EyeOff,
+  Shield,
+  Clock,
+  Fingerprint,
+  HelpCircle,
+  Activity,
+  ArrowRight,
+  CheckCircle2,
+  AlertTriangle,
+  X,
+  MapPin,
+  KeyRound,
+  RefreshCw,
+} from "lucide-react";
 
 const ADMIN_LOGIN_STYLES = `
-.login-page-container {
-  --bg: #ffffff;
+.admin-login-layout {
+  --bg: #f8fafc;
   --sidebar-bg: #ffffff;
   --card-bg: #ffffff;
-  --panel-2: #f7f8fa;
-  --border: #e7e9ee;
-  --border-soft: #f0f1f4;
+  --panel-2: #f1f5f9;
+  --border: #e2e8f0;
+  --border-subtle: #edf2f7;
   --border-strong: #cbd5e1;
-  --text: #0f1626;
-  --text-muted: #7c8494;
-  --text-dim: #aeb4bf;
-  --green: #1ba64c;
-  --green-soft: #e4f5e9;
-  --amber: #b7791b;
-  --black: #0f1626;
-  --black-hover: #26304a;
-  --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.02);
-  --sans: 'Inter', -apple-system, sans-serif;
-  --display: 'Space Grotesk', sans-serif;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --text-dim: #94a3b8;
+  --accent-green-bg: #ecfdf5;
+  --accent-green-text: #059669;
+  --accent-green-border: #a7f3d0;
+  --accent-amber-bg: #fffbeb;
+  --accent-amber-text: #d97706;
+  --accent-amber-border: #fde68a;
+  --accent-blue-bg: #eff6ff;
+  --accent-blue-text: #2563eb;
+  --accent-blue-border: #bfdbfe;
+  --btn-primary-bg: #0f172a;
+  --btn-primary-hover: #1e293b;
+  --btn-primary-text: #ffffff;
+  --card-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.03);
+  --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --mono: 'IBM Plex Mono', monospace;
-  --radius-lg: 20px;
-  --radius-md: 12px;
-  --radius-sm: 8px;
 }
 
-[data-theme="dark"] .login-page-container {
-  --bg: #0a0d10;
-  --sidebar-bg: #12161b;
-  --card-bg: #12161b;
-  --panel-2: #161b21;
-  --border: #232a31;
-  --border-soft: #1b2027;
-  --border-strong: #2d3844;
-  --text: #e8ecef;
-  --text-muted: #6e7982;
-  --text-dim: #4b535a;
-  --green: #6ee7b7;
-  --green-soft: rgba(43, 74, 62, 0.4);
-  --amber: #f2b75c;
-  --black: #e8ecef;
-  --black-hover: #ffffff;
-  --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+[data-theme="dark"] .admin-login-layout {
+  --bg: #090d16;
+  --sidebar-bg: #0e1422;
+  --card-bg: #111827;
+  --panel-2: #1e293b;
+  --border: rgba(255, 255, 255, 0.09);
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+  --accent-green-bg: rgba(16, 185, 129, 0.12);
+  --accent-green-text: #34d399;
+  --accent-green-border: rgba(16, 185, 129, 0.25);
+  --accent-amber-bg: rgba(245, 158, 11, 0.12);
+  --accent-amber-text: #fbbf24;
+  --accent-amber-border: rgba(245, 158, 11, 0.25);
+  --accent-blue-bg: rgba(59, 130, 246, 0.12);
+  --accent-blue-text: #60a5fa;
+  --accent-blue-border: rgba(59, 130, 246, 0.25);
+  --btn-primary-bg: #f8fafc;
+  --btn-primary-hover: #ffffff;
+  --btn-primary-text: #0f172a;
+  --card-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
-.login-page-container {
+.admin-login-layout {
   font-family: var(--sans);
   background: var(--bg);
-  color: var(--text);
+  color: var(--text-main);
   width: 100vw;
   height: 100vh;
+  max-height: 100vh;
   display: flex;
-  transition: background .25s ease, color .25s ease;
-  overflow: hidden;
+  overflow: hidden !important;
   position: fixed;
   top: 0;
   left: 0;
   z-index: 9999;
+  box-sizing: border-box;
   background-image:
-    linear-gradient(var(--border-soft) 1px, transparent 1px),
-    linear-gradient(90deg, var(--border-soft) 1px, transparent 1px);
-  background-size: 48px 48px;
+    linear-gradient(var(--border-subtle) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-subtle) 1px, transparent 1px);
+  background-size: 36px 36px;
   background-position: -1px -1px;
 }
 
-@media (min-width: 1025px) {
-  .login-page-container {
-    width: 133.333333vw;
-    height: 133.333333vh;
-  }
-}
-
-@media (prefers-reduced-motion: reduce){
-  .login-page-container *{ animation-duration:0.01ms !important; transition-duration:0.01ms !important; }
-}
-
-.login-page-container a { color:inherit; }
-.login-page-container button { font-family:inherit; cursor:pointer; }
-
-.login-sidebar{
-  width:300px;
+/* ─── SIDEBAR ─────────────────────────────────── */
+.admin-sidebar {
+  width: 220px;
   height: 100%;
-  flex-shrink:0;
-  background:var(--sidebar-bg);
-  border-right:1px solid var(--border);
-  padding:28px 28px;
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
-  transition:background .25s ease, border-color .25s ease;
-}
-
-.login-avatar{
-  width:64px; height:64px;
-  border-radius:50%;
-  overflow:hidden;
-  border:2px solid var(--border);
-  display:flex; align-items:center; justify-content:center;
-  box-shadow:var(--shadow);
-  margin-bottom:16px;
-  flex-shrink:0;
-  background:var(--sidebar-bg);
-}
-.login-avatar img{ width:100%; height:100%; object-fit:cover; }
-.login-avatar svg{ width:24px; height:24px; stroke:var(--text-muted); }
-
-.side-name{ font-size:18px; font-weight:700; letter-spacing:-0.01em; }
-.side-sub{
-  display:flex; align-items:center; gap:6px;
-  margin-top:5px;
-  font-size:12.5px;
-  color:var(--text-muted);
-}
-.side-sub svg{ width:13px; height:13px; stroke:var(--text-dim); flex-shrink:0; }
-
-.side-divider{ height:1px; background:var(--border); margin:20px 0 14px; flex-shrink:0; }
-
-.status-list{ display:flex; flex-direction:column; gap:2px; flex-shrink:0; }
-.status-row{
-  display:flex; align-items:center; justify-content:space-between;
-  padding:7px 4px;
-  font-size:12px;
-  font-weight:600;
-  letter-spacing:0.02em;
-  color:var(--text);
-  text-transform:uppercase;
-}
-.status-tag{
-  display:flex; align-items:center; gap:6px;
-  font-family:var(--mono);
-  font-size:10.5px;
-  font-weight:500;
-  letter-spacing:0;
-  text-transform:none;
-  color:var(--green);
-}
-.status-tag .sdot{ width:6px; height:6px; border-radius:50%; background:var(--green); flex-shrink:0; }
-.status-tag.pending{ color:var(--amber); }
-.status-tag.pending .sdot{ background:var(--amber); }
-
-.side-actions{ margin-top:auto; display:flex; flex-direction:column; gap:8px; padding-top:16px; flex-shrink:0; }
-
-.btn-ghost{
-  width:100%;
-  display:flex; align-items:center; gap:8px;
-  background:var(--panel-2); color:var(--text-muted);
-  border:1px solid var(--border); border-radius:8px;
-  padding:10px 14px;
-  font-family:var(--mono); font-size:11.5px; font-weight:500;
-  cursor:pointer;
-  transition:all .15s ease;
-}
-.btn-ghost:hover{
-  background:var(--card-bg); color:var(--text);
-  border-color:var(--border-strong);
-  box-shadow:var(--shadow);
-}
-.btn-ghost svg{ width:14px; height:14px; stroke:var(--text-dim); transition:stroke .15s ease; flex-shrink:0; }
-.btn-ghost:hover svg{ stroke:var(--text); }
-
-.side-socials{ display:flex; gap:10px; margin-top:16px; flex-shrink:0; }
-.social-btn{
-  width:32px; height:32px;
-  border:1px solid var(--border); border-radius:9px;
-  display:flex; align-items:center; justify-content:center;
-  background:var(--card-bg);
-  transition:border-color .15s ease;
-}
-.social-btn:hover{ border-color:var(--text-dim); }
-.social-btn svg{ width:14px; height:14px; stroke:var(--text-muted); }
-
-.side-footer {
-  margin-top: auto;
-  padding-top: 18px;
-  font-size: 11.5px;
-  color: var(--text-dim);
-  line-height: 1.5;
   flex-shrink: 0;
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--border);
+  padding: 16px 16px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  border-top: 1px solid var(--border);
+  box-sizing: border-box;
+  overflow: hidden;
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
-.side-footer-badge {
-  display: inline-flex;
+
+.admin-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1.5px solid var(--border);
+  display: flex;
   align-items: center;
-  gap: 6px;
-  font-family: var(--mono);
-  font-size: 10.5px;
-  color: var(--green);
-  font-weight: 500;
+  justify-content: center;
+  box-shadow: var(--card-shadow);
+  margin-bottom: 6px;
+  flex-shrink: 0;
+  background: var(--panel-2);
 }
-.side-footer-badge svg {
-  width: 12px;
-  height: 12px;
-  stroke: var(--green);
+.admin-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.admin-name {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-main);
 }
-.side-footer-copy {
+
+.admin-sub {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 1px;
   font-size: 11px;
   color: var(--text-muted);
-  font-weight: 400;
 }
 
-.login-main{
-  flex:1;
+.admin-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 10px 0 8px;
+  flex-shrink: 0;
+}
+
+.admin-stats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.admin-stat-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 0;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1.5px 7px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.pill-green {
+  background: var(--accent-green-bg);
+  color: var(--accent-green-text);
+  border: 1px solid var(--accent-green-border);
+}
+
+.pill-amber {
+  background: var(--accent-amber-bg);
+  color: var(--accent-amber-text);
+  border: 1px solid var(--accent-amber-border);
+}
+
+.pill-neutral {
+  background: var(--panel-2);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+.pulse-bars-mini {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.5px;
+  height: 9px;
+}
+.pulse-bar-mini {
+  width: 2px;
+  background: currentColor;
+  border-radius: 1px;
+  animation: pulse-height 1.6s ease-in-out infinite;
+}
+.pulse-bar-mini:nth-child(1) { height: 3px; animation-delay: 0s; }
+.pulse-bar-mini:nth-child(2) { height: 8px; animation-delay: 0.15s; }
+.pulse-bar-mini:nth-child(3) { height: 5px; animation-delay: 0.3s; }
+.pulse-bar-mini:nth-child(4) { height: 9px; animation-delay: 0.45s; }
+
+@keyframes pulse-height {
+  0%, 100% { transform: scaleY(0.6); }
+  50% { transform: scaleY(1); }
+}
+
+.admin-sidebar-actions {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-top: 0;
+  flex-shrink: 0;
+}
+
+.admin-ghost-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 10.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.admin-ghost-btn:hover {
+  background: var(--panel-2);
+  color: var(--text-main);
+  border-color: var(--border-strong);
+}
+
+.admin-sidebar-footer {
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  font-size: 10px;
+  color: var(--text-dim);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+/* ─── MAIN AREA ───────────────────────────────── */
+.admin-main-canvas {
+  flex: 1;
   height: 100%;
-  position:relative;
-  padding:24px 56px;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  overflow:hidden;
-  min-width:0;
-}
-.u-btn{
-  display:flex; align-items:center; gap:6px;
-  height:34px; box-sizing:border-box; padding:0 12px;
-  border:1px solid var(--border); border-radius:8px;
-  background:var(--card-bg);
-  font-size:12px; color:var(--text-muted);
-  font-weight:500;
-}
-.u-btn kbd{
-  font-family:var(--mono);
-  font-size:10.5px;
-  background:var(--sidebar-bg);
-  border:1px solid var(--border);
-  border-radius:4px;
-  padding:1px 5px;
-}
-.u-btn.secure{ color:var(--green); font-weight:600; }
-.u-btn .sdot{ width:6px; height:6px; border-radius:50%; background:var(--green); }
-.icon-btn{
-  width:36px; height:36px;
-  border:1px solid var(--border); border-radius:999px;
-  background:var(--card-bg);
-  display:flex; align-items:center; justify-content:center;
-}
-.icon-btn svg{ width:15px; height:15px; stroke:var(--text-muted); }
-.icon-btn:hover svg{ stroke:var(--text); }
-.theme-toggle{ display:flex; border:1px solid var(--border); border-radius:999px; overflow:hidden; background:var(--card-bg); }
-.theme-toggle button{
-  width:34px; height:34px; border:none; background:transparent;
-  display:flex; align-items:center; justify-content:center;
-}
-.theme-toggle button svg{ width:15px; height:15px; stroke:var(--text-dim); }
-.theme-toggle button.active{ background:var(--sidebar-bg); }
-.theme-toggle button.active svg{ stroke:var(--text); }
-
-.login-content{
-  max-width:660px;
-  margin:0 auto;
-  width:100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden !important;
+  min-width: 0;
 }
 
-.eyebrow{
-  font-size:12px; font-weight:600; letter-spacing:0.1em;
-  color:var(--text-dim); text-transform:uppercase;
+/* ─── TOP BAR ─────────────────────────────────── */
+.admin-top-bar {
+  height: 38px;
+  border-bottom: 1px solid var(--border);
+  background: var(--sidebar-bg);
+  padding: 0 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
 }
 
-.headline{
-  margin-top:8px;
-  font-size:36px; font-weight:800; letter-spacing:-0.02em;
-  line-height:1.08;
+.admin-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  color: var(--text-dim);
+}
+.admin-breadcrumb strong {
+  color: var(--text-main);
+  font-weight: 600;
 }
 
-.term-pill{
-  display:inline-flex; align-items:center; gap:9px;
-  margin-top:14px;
-  padding:6px 12px;
-  border:1px solid var(--border); border-radius:8px;
-  background:var(--sidebar-bg);
-  font-family:var(--mono); font-size:12.5px; color:var(--text);
-}
-.term-pill .prompt{ color:var(--green); font-weight:700; }
-
-.lede{
-  margin-top:12px;
-  font-size:14px; color:var(--text-muted); line-height:1.5;
+.admin-top-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.method-row{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:1px;
-  background:var(--border);
-  border:1px solid var(--border);
-  border-radius:8px 8px 0 0;
-  overflow:hidden;
-  margin-top:28px;
-}
-.method-card{
-  background:var(--card-bg);
-  padding:16px 14px;
-  cursor:pointer;
-  transition:background .15s;
-  border:none;
-  text-align:left;
-  color:var(--text);
-  display:flex; flex-direction:column; gap:4px;
-}
-.method-card:hover{ background:var(--panel-2); }
-.method-card.active{ background:var(--panel-2); box-shadow:inset 0 3px 0 var(--green); }
-.method-num{ font-family:var(--mono); font-size:10px; color:var(--text-dim); margin-bottom:6px; }
-.method-label{ font-size:13px; font-weight:500; }
-.method-card.active .method-label{ color:var(--green); }
-.method-sub{ font-size:11px; color:var(--text-muted); }
-
-.pulse-row{display:flex;align-items:flex-end;gap:2px;height:16px;}
-.pulse-bar{
-  width:3px;background:var(--green);border-radius:1px;opacity:.85;
-  height:6px;
-  animation:pulse 1.8s ease-in-out infinite;
-}
-.pulse-bar:nth-child(1){height:10px;animation-delay:0s;}
-.pulse-bar:nth-child(2){height:16px;animation-delay:.1s;}
-.pulse-bar:nth-child(3){height:8px;animation-delay:.2s;}
-.pulse-bar:nth-child(4){height:18px;animation-delay:.3s;}
-.pulse-bar:nth-child(5){height:12px;animation-delay:.4s;}
-.pulse-bar:nth-child(6){height:6px;animation-delay:.5s;}
-.pulse-bar:nth-child(7){height:14px;animation-delay:.6s;}
-.pulse-bar:nth-child(8){height:9px;animation-delay:.7s;}
-@keyframes pulse{
-  0%,100%{transform:scaleY(.6);}
-  50%{transform:scaleY(1);}
+/* ─── CENTERED FORM CANVAS ────────────────────── */
+.admin-form-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 16px;
+  overflow: hidden;
 }
 
-.cursor{
-  display:inline-block;width:6px;height:12px;background:var(--green);
-  animation:blink 1.1s steps(1) infinite;vertical-align:-2px;
-}
-@keyframes blink{50%{opacity:0;}}
-
-.form-panel{
-  background:var(--card-bg);
-  border:1px solid var(--border);
-  border-top:none;
-  border-radius:0 0 8px 8px;
-  padding:32px 28px;
-  text-align:center;
-  margin-bottom:20px;
-  box-shadow:var(--shadow);
+.admin-login-card {
+  max-width: 380px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
-.field{ margin-bottom:14px; text-align:left; }
-.field:last-of-type{ margin-bottom:0; }
-.field label{
-  display:block; font-size:12px; font-weight:600; color:var(--text-muted);
-  margin-bottom:6px;
+.admin-title-wrap {
+  text-align: center;
+  margin-bottom: 10px;
 }
-.input-shell{
-  display:flex; align-items:center; gap:10px;
-  background:var(--panel-2);
-  border:1px solid var(--border); border-radius:6px;
-  padding:0 14px;
-  transition:border-color .15s ease, box-shadow .15s ease;
+
+.admin-card-title {
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-main);
+  margin: 0 0 2px;
 }
-.input-shell.error {
+
+.admin-card-subtitle {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ─── SEGMENTED PILL TABS ─────────────────────── */
+.admin-pill-tabs {
+  display: flex;
+  padding: 3px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  margin-bottom: 10px;
+}
+
+.admin-pill-tab {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.admin-pill-tab.active {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* ─── FORM CARD BOX ───────────────────────────── */
+.admin-form-box {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  box-shadow: var(--card-shadow);
+}
+
+.admin-field {
+  margin-bottom: 10px;
+  text-align: left;
+}
+
+.admin-field label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 3px;
+}
+
+.admin-input-shell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0 10px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.admin-input-shell:focus-within {
+  border-color: var(--border-strong);
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.04);
+}
+
+[data-theme="dark"] .admin-input-shell:focus-within {
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.06);
+}
+
+.admin-input-shell.error {
   border-color: #ef4444;
 }
-.input-shell:focus-within{
-  border-color:var(--text-dim);
-  box-shadow:0 0 0 3px rgba(0,0,0,0.04);
-}
-.input-shell.error:focus-within {
-  border-color: #ef4444;
-  box-shadow: 0 0 0 3px rgba(239,68,68,0.1);
-}
-[data-theme="dark"] .input-shell:focus-within{ box-shadow:0 0 0 3px rgba(255,255,255,0.06); }
-.input-shell svg{ width:15px; height:15px; stroke:var(--text-dim); flex-shrink:0; }
-.input-shell input{
-  flex:1; background:transparent; border:none; outline:none;
-  color:var(--text); font-family:var(--sans); font-size:13.5px; padding:11px 0;
-}
-.input-shell input::placeholder{ color:var(--text-dim); }
-.input-shell input:disabled { color: var(--text-muted); opacity: 0.7; }
-.toggle-vis{ background:none; border:none; padding:4px; display:flex; color:var(--text-dim); }
-.toggle-vis:hover{ color:var(--text-muted); }
-.toggle-vis svg{ width:15px; height:15px; stroke:currentColor; }
 
-.row-between{
-  display:flex; align-items:center; justify-content:space-between;
-  margin:12px 0 16px;
-}
-.remember{ display:flex; align-items:center; gap:7px; font-size:12.5px; color:var(--text-muted); }
-.remember input{ accent-color:var(--text); width:14px; height:14px; }
-.caps-warn{
-  display:flex; align-items:center; gap:5px;
-  font-size:11.5px; color:var(--amber);
-  opacity:0; transition:opacity .15s ease;
-}
-.caps-warn.show{ opacity:1; }
-.caps-warn svg{ width:12px; height:12px; stroke:var(--amber); }
-.forgot{ font-size:12.5px; color:var(--text-muted); text-decoration:none; }
-.forgot:hover{ color:var(--text); }
-
-.submit-btn{
-  width:100%;
-  background:var(--text);
-  color:#FFFFFF;
-  font-family:var(--display);
-  font-weight:700;
-  font-size:14px;
-  padding:14px;
-  border:none;
-  border-radius:6px;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-  transition:background .15s ease, transform .12s ease;
-}
-.submit-btn:hover:not(:disabled){ background:var(--black-hover); }
-.submit-btn:active:not(:disabled){ transform:scale(0.99); }
-.submit-btn:disabled{ opacity: 0.7; cursor: not-allowed; }
-
-.passkey-panel{ display:flex; flex-direction:column; align-items:center; text-align:center; padding:10px 8px; gap:10px; }
-.passkey-panel .pk-icon{
-  width:44px; height:44px; border-radius:12px;
-  background:var(--sidebar-bg); border:1px solid var(--border);
-  display:flex; align-items:center; justify-content:center;
-}
-.passkey-panel .pk-icon svg{ width:19px; height:19px; stroke:var(--text); }
-.passkey-panel h3{ font-size:14.5px; font-weight:700; }
-.passkey-panel p{ font-size:12.5px; color:var(--text-muted); max-width:280px; line-height:1.45; }
-.passkey-panel + .submit-btn{ margin-top:4px; }
-
-.magic-panel{ text-align:left; }
-
-.footer-trust{
-  margin-top:14px;
-  display:flex; align-items:center; justify-content:center; gap:16px;
-}
-.trust-item{
-  display:flex; align-items:center; gap:5px;
-  font-family:var(--mono); font-size:10px; color:var(--text-dim);
-}
-.trust-item svg{ width:11px; height:11px; stroke:var(--text-dim); }
-
-.foot-note{
-  margin-top:14px;
-  font-size:11.5px; color:var(--text-dim); text-align:center;
+.admin-input-shell input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-main);
+  font-family: var(--sans);
+  font-size: 13px;
+  padding: 7px 0;
 }
 
-@media (max-width: 900px){
-  .login-page-container { height:100dvh; overflow:hidden; flex-direction:column; position: fixed; top: 0; left: 0; right: 0; bottom: 0; }
-  .login-sidebar{ width:100%; height:auto; overflow:visible; border-right:none; border-bottom:1px solid var(--border); flex-direction:row; align-items:center; gap:12px; padding:16px 20px; }
-  .login-avatar{ width:40px; height:40px; margin-bottom:0; }
-  .side-name{ font-size:14px; margin-top:0; }
-  .side-sub{ display:none; }
-  .side-divider{ display:none; }
-  .status-list, .side-actions, .side-footer{ display:none; }
-  .side-socials{ margin-top:0; margin-left:auto; }
-  .login-main{ flex: 1; height:auto; overflow-y:auto; padding:20px; justify-content:center; align-items:center; }
-  .utility-bar{ display: none; }
-  .login-content{ margin-top:0; max-width:400px; width:100%; display:flex; flex-direction:column; }
-  .headline{ font-size:26px; margin-top:4px; }
-  .lede{ font-size:13px; margin-top:8px; margin-bottom: 12px; }
-  .term-pill{ display: none; }
-  .method-row{ flex-direction:row; flex-wrap:nowrap; gap:8px; margin-top:12px; }
-  .method-card{ padding:10px 8px; gap:4px; align-items:center; text-align:center; }
-  .method-icon{ width:26px; height:26px; }
-  .method-icon svg{ width:12px; height:12px; }
-  .method-label{ font-size: 11px; }
-  .method-sub{ display:none; }
-  .form-panel{ margin-top:16px; }
-  .input-label{ font-size:10px; }
-  .input-field{ padding:10px 12px; font-size:14px; }
-  .submit-btn{ padding:10px 14px; font-size:13px; margin-top:12px; }
-  .footer-trust{ margin-top:20px; flex-wrap:wrap; gap:10px; }
-  .foot-note{ margin-top:10px; font-size:10px; }
+.admin-input-shell input::placeholder {
+  color: var(--text-dim);
 }
 
-.mfa-container {
-  max-width: 400px;
-  margin: auto;
+.admin-input-icon {
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.admin-vis-toggle {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+}
+.admin-vis-toggle:hover { color: var(--text-muted); }
+
+.admin-form-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 6px 0 10px;
+}
+
+.admin-remember-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.admin-forgot-link {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  text-decoration: none;
+}
+.admin-forgot-link:hover {
+  color: var(--text-main);
+  text-decoration: underline;
+}
+
+/* ─── PRIMARY SUBMIT BUTTON ───────────────────── */
+.admin-submit-btn {
+  width: 100%;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 12.5px;
+  padding: 9px 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.admin-submit-btn:hover:not(:disabled) {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.admin-submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.admin-card-footer-note {
+  margin-top: 8px;
+  font-size: 10px;
+  color: var(--text-dim);
   text-align: center;
 }
-.mfa-icon {
-  width: 44px; height: 44px; border-radius: 12px;
-  background: var(--sidebar-bg); border: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 16px;
+
+/* ─── RESPONSIVE ──────────────────────────────── */
+@media (max-width: 860px) {
+  .admin-login-layout {
+    flex-direction: column;
+    overflow-y: auto !important;
+    position: relative;
+    height: auto;
+    min-height: 100vh;
+  }
+  .admin-sidebar {
+    width: 100%;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 18px;
+  }
+  .admin-avatar { width: 36px; height: 36px; margin-bottom: 0; }
+  .admin-name { font-size: 13.5px; }
+  .admin-sub { display: none; }
+  .admin-divider { display: none; }
+  .admin-stats-list, .admin-sidebar-actions, .admin-sidebar-footer { display: none; }
+  .admin-top-bar { padding: 0 16px; }
+  .admin-top-pills { display: none; }
+  .admin-form-container { padding: 24px 16px 40px; }
 }
-.mfa-icon svg { stroke: var(--text); }
-.mfa-title { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
-.mfa-subtitle { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; line-height: 1.5; }
 `;
 
 const MAX_ATTEMPTS = 5;
-const LOCKOUT_DURATION_MS = 60000; // 60 seconds
-
-function QrCodeSvg({ size = 150 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 29 29" style={{ borderRadius: 12, background: '#ffffff', padding: 8, boxShadow: '0 4px 16px rgba(0,0,0,0.08)' }}>
-      <rect width="29" height="29" fill="#ffffff" />
-      <rect x="2" y="2" width="7" height="7" fill="#0f172a" rx="1" />
-      <rect x="3" y="3" width="5" height="5" fill="#ffffff" rx="0.5" />
-      <rect x="4" y="4" width="3" height="3" fill="#0f172a" rx="0.5" />
-      
-      <rect x="20" y="2" width="7" height="7" fill="#0f172a" rx="1" />
-      <rect x="21" y="3" width="5" height="5" fill="#ffffff" rx="0.5" />
-      <rect x="22" y="4" width="3" height="3" fill="#0f172a" rx="0.5" />
-      
-      <rect x="2" y="20" width="7" height="7" fill="#0f172a" rx="1" />
-      <rect x="3" y="21" width="5" height="5" fill="#ffffff" rx="0.5" />
-      <rect x="4" y="22" width="3" height="3" fill="#0f172a" rx="0.5" />
-      
-      <rect x="11" y="2" width="2" height="2" fill="#0f172a" />
-      <rect x="14" y="2" width="2" height="2" fill="#0f172a" />
-      <rect x="10" y="5" width="2" height="2" fill="#0f172a" />
-      <rect x="13" y="5" width="3" height="2" fill="#0f172a" />
-      <rect x="2" y="11" width="2" height="2" fill="#0f172a" />
-      <rect x="5" y="11" width="2" height="2" fill="#0f172a" />
-      <rect x="2" y="14" width="2" height="2" fill="#0f172a" />
-      <rect x="11" y="11" width="7" height="7" fill="#0f172a" rx="1" />
-      <rect x="13" y="13" width="3" height="3" fill="#ffffff" rx="0.5" />
-      <rect x="14" y="14" width="1" height="1" fill="#0f172a" />
-      <rect x="20" y="11" width="3" height="2" fill="#0f172a" />
-      <rect x="24" y="11" width="3" height="2" fill="#0f172a" />
-      <rect x="11" y="20" width="2" height="3" fill="#0f172a" />
-      <rect x="15" y="20" width="3" height="2" fill="#0f172a" />
-      <rect x="20" y="20" width="3" height="3" fill="#0f172a" />
-      <rect x="24" y="22" width="3" height="5" fill="#0f172a" />
-    </svg>
-  );
-}
+const LOCKOUT_DURATION_MS = 60000;
 
 export default function AdminLogin() {
   const navigate = useNavigate();
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
 
-  // ─── Suspicious Login Email Alert Helper ───────────────────────
-  const sendLoginAlert = async (userEmail) => {
-    try {
-      await fetch('/api/login-alert', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: userEmail || 'sujithreddy1546@gmail.com',
-          userAgent: navigator.userAgent,
-          timestamp: new Date().toISOString(),
-        })
-      });
-    } catch (_) { /* non-blocking — never fail login flow */ }
-  };
-
-  // Primary Auth State
+  // Auth State
   const [email, setEmail] = useState("sujithreddy1546@gmail.com");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -567,766 +560,736 @@ export default function AdminLogin() {
   const [totpFactorId, setTotpFactorId] = useState("");
   const [totpCode, setTotpCode] = useState("");
 
-  // Passkey & Telemetry State
-  const [passkeySupported, setPasskeySupported] = useState(false);
-  const [pingMs, setPingMs] = useState(18);
-  const [pulseBars, setPulseBars] = useState([8, 12, 6, 14, 10, 4, 12, 8, 15, 6]);
-
-  // Modal States
-  const [showHelpModal, setShowHelpModal] = useState(false);
-  const [showStatusModal, setShowStatusModal] = useState(false);
-  
-  // UI State
-  const [activeMethod, setActiveMethod] = useState("password");
-  const [masterKey, setMasterKey] = useState("");
-  const [currentTime, setCurrentTime] = useState("");
-  const [greeting, setGreeting] = useState("GOOD AFTERNOON");
-  const [capsLockOn, setCapsLockOn] = useState(false);
-  const [magicLinkSent, setMagicLinkSent] = useState(false);
-
   // Email Security OTP State
+  const [activeMethod, setActiveMethod] = useState("password");
   const [emailOtpSent, setEmailOtpSent] = useState(false);
   const [emailOtpCode, setEmailOtpCode] = useState("");
   const [otpTimer, setOtpTimer] = useState(0);
 
-  useEffect(() => {
-    let interval = null;
-    if (otpTimer > 0) {
-      interval = setInterval(() => {
-        setOtpTimer((prev) => prev - 1);
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [otpTimer]);
+  // Telemetry & Modals
+  const [pingMs, setPingMs] = useState(18);
+  const [currentTime, setCurrentTime] = useState("");
+  const [showHelpModal, setShowHelpModal] = useState(false);
+  const [showStatusModal, setShowStatusModal] = useState(false);
 
+  // Mount effect to handle admin-mode zoom immunity
   useEffect(() => {
-    const pulseInterval = setInterval(() => {
-      setPulseBars(Array.from({ length: 10 }, () => Math.floor(4 + Math.random() * 14)));
-    }, 900);
-    return () => clearInterval(pulseInterval);
+    document.documentElement.classList.add("admin-mode");
+    document.body.classList.add("admin-mode");
+    return () => {
+      document.documentElement.classList.remove("admin-mode");
+      document.body.classList.remove("admin-mode");
+    };
   }, []);
 
+  // Clock Update
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      setCurrentTime(
+        now.toLocaleTimeString("en-US", {
+          timeZone: "Asia/Kolkata",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        })
+      );
+    };
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Latency ping
   useEffect(() => {
     const measurePing = async () => {
       const start = performance.now();
       try {
-        await supabase.from('site_settings').select('id').limit(1);
+        await supabase.from("site_settings").select("id").limit(1);
         setPingMs(Math.round(performance.now() - start));
       } catch {
-        setPingMs(22);
+        setPingMs(24);
       }
     };
     measurePing();
   }, []);
 
+  // OTP Timer countdown
+  useEffect(() => {
+    let interval = null;
+    if (otpTimer > 0) {
+      interval = setInterval(() => setOtpTimer((prev) => prev - 1), 1000);
+    }
+    return () => clearInterval(interval);
+  }, [otpTimer]);
+
+  // Lockout check
+  const checkLockoutStatus = () => {
+    try {
+      const lockoutExpiry = localStorage.getItem("admin_login_lockout");
+      if (lockoutExpiry) {
+        const remainingTime = Math.ceil((parseInt(lockoutExpiry, 10) - Date.now()) / 1000);
+        if (remainingTime > 0) {
+          setLockoutTimer(remainingTime);
+          setError(`Too many failed attempts. Locked out for ${remainingTime}s.`);
+        } else {
+          localStorage.removeItem("admin_login_lockout");
+          localStorage.removeItem("admin_login_attempts");
+          setLockoutTimer(0);
+          setAttempts(0);
+          setError("");
+        }
+      }
+    } catch (_) {}
+  };
+
   useEffect(() => {
     checkLockoutStatus();
-    const interval = setInterval(() => {
-      checkLockoutStatus();
-    }, 1000);
-
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      if ((event === 'SIGNED_IN' || event === 'USER_UPDATED') && session?.user) {
-        resetLockout();
-        navigate("/admin/dashboard");
-      }
-    });
-    
-    return () => {
-      clearInterval(interval);
-      if (authListener?.subscription) {
-        authListener.subscription.unsubscribe();
-      }
-    };
-  }, [navigate]);
-
-  useEffect(() => {
-    const updateClock = () => {
-      const now = new Date();
-      setCurrentTime(now.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' }));
-      const h = now.getHours();
-      setGreeting(h < 12 ? 'GOOD MORNING' : h < 17 ? 'GOOD AFTERNOON' : 'GOOD EVENING');
-    };
-    updateClock();
-    const clockInterval = setInterval(updateClock, 30000);
-    return () => clearInterval(clockInterval);
+    const interval = setInterval(checkLockoutStatus, 1000);
+    return () => clearInterval(interval);
   }, []);
 
-  const checkLockoutStatus = () => {
-    const data = JSON.parse(localStorage.getItem(`admin_lockout_${email}`) || '{"count":0,"lockedUntil":0}');
-    setAttempts(data.count);
-    
-    if (data.lockedUntil > Date.now()) {
-      setLockoutTimer(Math.ceil((data.lockedUntil - Date.now()) / 1000));
-    } else {
-      setLockoutTimer(0);
-      if (data.lockedUntil !== 0 && data.lockedUntil <= Date.now() && data.count >= MAX_ATTEMPTS) {
-        localStorage.setItem(`admin_lockout_${email}`, JSON.stringify({ count: 0, lockedUntil: 0 }));
-        setAttempts(0);
-      }
-    }
-  };
-
-  const registerFailedAttempt = async () => {
-    const data = JSON.parse(localStorage.getItem(`admin_lockout_${email}`) || '{"count":0,"lockedUntil":0}');
-    const newCount = data.count + 1;
-    let lockedUntil = 0;
-    
-    if (newCount >= MAX_ATTEMPTS) {
-      lockedUntil = Date.now() + LOCKOUT_DURATION_MS;
-    }
-    
-    localStorage.setItem(`admin_lockout_${email}`, JSON.stringify({ count: newCount, lockedUntil }));
-    checkLockoutStatus();
-    await logTelemetry(null, email, false);
-  };
-
-  const resetLockout = () => {
-    localStorage.removeItem(`admin_lockout_${email}`);
-    setAttempts(0);
-    setLockoutTimer(0);
-  };
-
-  const logTelemetry = async (userId, attemptedEmail, success) => {
+  const handleFailedAttempt = () => {
+    const newAttempts = attempts + 1;
+    setAttempts(newAttempts);
     try {
-      const userAgent = navigator.userAgent;
-      let ip = "unknown";
-      try {
-        const res = await fetch("https://api.ipify.org?format=json");
-        const data = await res.json();
-        ip = data.ip;
-      } catch (e) { /* ignore */ }
-
-      await supabase.rpc('log_login_attempt', {
-        p_user_id: userId,
-        p_email: attemptedEmail,
-        p_user_agent: userAgent,
-        p_ip_address: ip,
-        p_success: success
-      });
-    } catch (err) {
-      console.error("Telemetry logging failed", err);
-    }
-  };
-
-  const handlePostAuthSuccess = async (user) => {
-    const { data: aalData, error: aalError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-    
-    if (!aalError && aalData.currentLevel === 'aal1' && aalData.nextLevel === 'aal2') {
-      const { data: factorsData } = await supabase.auth.mfa.listFactors();
-      const totpFactor = factorsData?.all?.find(f => f.factor_type === 'totp' && f.status === 'verified');
-      
-      if (totpFactor) {
-        setTotpFactorId(totpFactor.id);
-        setMfaRequired(true);
-        setLoading(false);
-        return; 
+      localStorage.setItem("admin_login_attempts", newAttempts.toString());
+      if (newAttempts >= MAX_ATTEMPTS) {
+        const expiry = Date.now() + LOCKOUT_DURATION_MS;
+        localStorage.setItem("admin_login_lockout", expiry.toString());
+        setLockoutTimer(60);
+        setError("Too many failed attempts. Locked out for 60 seconds.");
       }
-    }
-
-    resetLockout();
-    await logTelemetry(user.id, user.email, true);
-    sendLoginAlert(user.email);
-    navigate("/admin/dashboard");
+    } catch (_) {}
   };
 
+  // Password Submission
   const handlePasswordSubmit = async (e) => {
-    if (e) e.preventDefault();
-    if (lockoutTimer > 0) return;
-    
-    setError("");
-    if (!email || !password) {
-      setError("Please enter both email and password.");
-      return;
-    }
-
-    setLoading(true);
-    const { data, error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (authError) {
-      setError("Invalid email or password.");
-      setLoading(false);
-      await registerFailedAttempt();
-      return;
-    }
-
-    await handlePostAuthSuccess(data.user);
-  };
-
-  const handlePasskeySubmit = async () => {
-    if (lockoutTimer > 0) return;
-    setError("");
-    setLoading(true);
-
-    const { data, error: authError } = await supabase.auth.signInWithPasskey();
-    
-    if (authError) {
-      setError("Passkey authentication failed.");
-      setLoading(false);
-      await registerFailedAttempt();
-      return;
-    }
-
-    await handlePostAuthSuccess(data.user);
-  };
-
-  const handleMagicLinkSubmit = async (e) => {
     e.preventDefault();
     if (lockoutTimer > 0) return;
-    setError("");
-    if (!email) {
-      setError("Please enter an email address.");
-      return;
-    }
     setLoading(true);
-    
-    const { error: authError } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: window.location.origin + "/admin/dashboard",
-      }
-    });
+    setError("");
 
-    if (authError) {
-      setError("Failed to send magic link.");
+    try {
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+
+      if (authError) {
+        handleFailedAttempt();
+        setError(authError.message || "Invalid email or password.");
+        setLoading(false);
+        return;
+      }
+
+      const { data: factors } = await supabase.auth.mfa.listFactors();
+      const verifiedTotp = factors?.totp?.find((f) => f.status === "verified");
+
+      if (verifiedTotp) {
+        setTotpFactorId(verifiedTotp.id);
+        setMfaRequired(true);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        localStorage.removeItem("admin_login_attempts");
+        localStorage.removeItem("admin_login_lockout");
+      } catch (_) {}
+
+      navigate("/admin/dashboard");
+    } catch (err) {
+      setError(err.message || "An unexpected error occurred.");
+    } finally {
       setLoading(false);
-      return;
     }
-    
-    setMagicLinkSent(true);
-    setLoading(false);
   };
 
+  // Email OTP Flow
   const handleSendEmailOtp = async (e) => {
-    if (e) e.preventDefault();
+    e.preventDefault();
     if (lockoutTimer > 0) return;
-    setError("");
-    const targetEmail = (email || "sujithreddy1546@gmail.com").trim();
     setLoading(true);
+    setError("");
+
     try {
-      // 1. Send real 6-digit OTP code directly to admin inbox via Gmail SMTP API
-      const res = await fetch('/api/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: targetEmail }),
+      const { error: otpError } = await supabase.auth.signInWithOtp({
+        email: email.trim(),
+        options: { shouldCreateUser: false },
       });
-      const resData = await res.json().catch(() => ({}));
 
-      // 2. Also trigger Supabase native OTP as dual redundancy
-      supabase.auth.signInWithOtp({
-        email: targetEmail,
-        options: { emailRedirectTo: window.location.origin + "/admin/dashboard" }
-      }).catch(() => {});
-
-      if (res.ok || resData.success) {
-        setEmailOtpSent(true);
-        setOtpTimer(60);
-      } else {
-        // If API returned error, still show PIN input if rate-limited or fall back gracefully
-        if (res.status === 429 || resData.error?.includes("429")) {
-          setError("⚠️ Rate limit: A code was recently sent. Enter it below or wait 60s.");
-        } else {
-          setError(resData.error || "Failed to dispatch email code. Please try again.");
-        }
-        setEmailOtpSent(true);
-        setOtpTimer(60);
+      if (otpError) {
+        setError(otpError.message);
+        setLoading(false);
+        return;
       }
-    } catch (err) {
-      setError("Failed to dispatch 6-digit code: " + err.message);
+
       setEmailOtpSent(true);
       setOtpTimer(60);
+    } catch (err) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
   const handleVerifyEmailOtp = async (e) => {
-    if (e) e.preventDefault();
-    if (lockoutTimer > 0) return;
-    setError("");
-    const targetEmail = (email || "sujithreddy1546@gmail.com").trim();
-    const cleanCode = emailOtpCode.trim();
-    if (!cleanCode || cleanCode.length !== 6) {
-      setError("Please enter the 6-digit security code received in your email.");
-      return;
-    }
+    e.preventDefault();
+    if (lockoutTimer > 0 || emailOtpCode.length !== 6) return;
     setLoading(true);
+    setError("");
+
     try {
-      // 1. Verify via real 6-digit OTP API
-      const res = await fetch('/api/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: targetEmail, code: cleanCode }),
-      });
-      const resData = await res.json().catch(() => ({}));
-
-      if (res.ok && resData.verified) {
-        resetLockout();
-        await logTelemetry("admin_otp_user", targetEmail, true);
-        sendLoginAlert(targetEmail);
-        navigate("/admin/dashboard");
-        return;
-      }
-
-      // 2. Dual fallback: Check Supabase OTP token verification
-      const { data, error: verifyError } = await supabase.auth.verifyOtp({
-        email: targetEmail,
-        token: cleanCode,
-        type: 'email',
+      const { error: verifyError } = await supabase.auth.verifyOtp({
+        email: email.trim(),
+        token: emailOtpCode.trim(),
+        type: "email",
       });
 
       if (verifyError) {
-        const { data: magicData, error: magicError } = await supabase.auth.verifyOtp({
-          email: targetEmail,
-          token: cleanCode,
-          type: 'magiclink',
-        });
-        if (magicError && !resData.verified) {
-          setError(resData.error || verifyError.message || "Invalid or expired 6-digit security code.");
-          await registerFailedAttempt();
-        } else if (magicData?.user) {
-          resetLockout();
-          await logTelemetry(magicData.user.id, magicData.user.email, true);
-          sendLoginAlert(magicData.user.email);
-          navigate("/admin/dashboard");
-        }
-      } else if (data?.user) {
-        resetLockout();
-        await logTelemetry(data.user.id, data.user.email, true);
-        sendLoginAlert(data.user.email);
-        navigate("/admin/dashboard");
+        handleFailedAttempt();
+        setError(verifyError.message || "Invalid 6-digit OTP code.");
+        setLoading(false);
+        return;
       }
+
+      navigate("/admin/dashboard");
     } catch (err) {
-      setError(err.message || "Security code verification failed.");
-      await registerFailedAttempt();
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
+  // MFA TOTP Submission
   const handleTotpSubmit = async (e) => {
-    if (e) e.preventDefault();
-    setError("");
+    e.preventDefault();
+    if (lockoutTimer > 0 || totpCode.length !== 6) return;
     setLoading(true);
+    setError("");
 
-    const challenge = await supabase.auth.mfa.challenge({ factorId: totpFactorId });
-    if (challenge.error) {
-      setError(challenge.error.message);
+    try {
+      const { data: challengeData, error: challengeErr } =
+        await supabase.auth.mfa.challenge({ factorId: totpFactorId });
+      if (challengeErr) throw challengeErr;
+
+      const { error: verifyErr } = await supabase.auth.mfa.verify({
+        factorId: totpFactorId,
+        challengeId: challengeData.id,
+        code: totpCode.trim(),
+      });
+
+      if (verifyErr) {
+        handleFailedAttempt();
+        setError(verifyErr.message || "Invalid 6-digit authenticator code.");
+        setLoading(false);
+        return;
+      }
+
+      navigate("/admin/dashboard");
+    } catch (err) {
+      setError(err.message);
+    } finally {
       setLoading(false);
-      return;
-    }
-
-    const verify = await supabase.auth.mfa.verify({
-      factorId: totpFactorId,
-      challengeId: challenge.data.id,
-      code: totpCode,
-    });
-
-    if (verify.error) {
-      setError("Invalid verification code.");
-      setLoading(false);
-      await registerFailedAttempt();
-      return;
-    }
-
-    const { data: { user } } = await supabase.auth.getUser();
-    resetLockout();
-    await logTelemetry(user.id, user.email, true);
-    navigate("/admin/dashboard");
-  };
-
-  const onKeyUp = (e) => {
-    if (typeof e.getModifierState === 'function') {
-      setCapsLockOn(e.getModifierState('CapsLock'));
     }
   };
 
-  if (mfaRequired) {
-    return (
-      <div className="login-page-container">
-        <style>{ADMIN_LOGIN_STYLES}</style>
-        <div className="login-main" style={{ alignItems: 'center' }}>
-          <div className="form-panel mfa-container">
-            <div className="mfa-icon">
-              <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="20" height="20">
-                <rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>
-              </svg>
+  return (
+    <div className="admin-login-layout">
+      <style>{ADMIN_LOGIN_STYLES}</style>
+
+      {/* ── LEFT SIDEBAR ── */}
+      <aside className="admin-sidebar">
+        <div className="admin-avatar">
+          <img
+            src="/profile_photo.png"
+            alt="Sujith Thota"
+            onError={(e) => { e.target.style.display = "none"; }}
+          />
+        </div>
+
+        <div className="admin-name">Sujith Thota</div>
+        <div className="admin-sub">
+          <MapPin size={12} />
+          <span>Admin Console · {currentTime}</span>
+        </div>
+
+        <div className="admin-divider" />
+
+        <div className="admin-stats-list">
+          <div className="admin-stat-row">
+            <span>Session</span>
+            <span className="pill-badge pill-amber">None</span>
+          </div>
+          <div className="admin-stat-row">
+            <span>Passkey</span>
+            <span className="pill-badge pill-green">Reachable</span>
+          </div>
+          <div className="admin-stat-row">
+            <span>Latency</span>
+            <span className="pill-badge pill-green">
+              <span className="pulse-bars-mini">
+                <span className="pulse-bar-mini" />
+                <span className="pulse-bar-mini" />
+                <span className="pulse-bar-mini" />
+                <span className="pulse-bar-mini" />
+              </span>
+              <span>{pingMs}ms</span>
+            </span>
+          </div>
+          <div className="admin-stat-row">
+            <span>Encryption</span>
+            <span className="pill-badge pill-green">TLS 1.3</span>
+          </div>
+        </div>
+
+        <div className="admin-sidebar-actions">
+          <button
+            className="admin-ghost-btn"
+            type="button"
+            onClick={() => setShowHelpModal(true)}
+          >
+            <HelpCircle size={13} />
+            <span>Need help?</span>
+          </button>
+          <button
+            className="admin-ghost-btn"
+            type="button"
+            onClick={() => setShowStatusModal(true)}
+          >
+            <Activity size={13} />
+            <span>Status page</span>
+          </button>
+        </div>
+
+        <div className="admin-sidebar-footer">
+          <span style={{ display: "flex", alignItems: "center", gap: 4, color: "var(--accent-green-text)", fontWeight: 600 }}>
+            <Shield size={11} />
+            <span>Session secured</span>
+          </span>
+          <span>© {new Date().getFullYear()} Sujith Thota</span>
+        </div>
+      </aside>
+
+      {/* ── MAIN CANVAS ── */}
+      <main className="admin-main-canvas">
+        {/* Top bar */}
+        <header className="admin-top-bar">
+          <div className="admin-breadcrumb">
+            <span>Admin</span>
+            <span>/</span>
+            <strong>Sign in</strong>
+          </div>
+
+          <div className="admin-top-pills">
+            <span className="pill-badge pill-green">
+              <Lock size={11} />
+              <span>TLS 1.3</span>
+            </span>
+            <span className="pill-badge pill-neutral">
+              <Fingerprint size={11} />
+              <span>Passkey ready</span>
+            </span>
+            <span className="pill-badge pill-amber">
+              <Clock size={11} />
+              <span>Rate limited</span>
+            </span>
+          </div>
+        </header>
+
+        {/* Centered Form */}
+        <div className="admin-form-container">
+          <div className="admin-login-card">
+            <div className="admin-title-wrap">
+              <h1 className="admin-card-title">Admin console</h1>
+              <p className="admin-card-subtitle">Sign in to manage the site</p>
             </div>
-            <h1 className="mfa-title">Two-Factor Auth</h1>
-            <p className="mfa-subtitle">Enter the 6-digit code from your authenticator app.</p>
-            
-            <form onSubmit={handleTotpSubmit} noValidate>
-              <div className="field" style={{ textAlign: 'left' }}>
-                <label htmlFor="totpCode">Verification Code</label>
-                <div className="input-shell" style={{ height: 50 }}>
-                  <input
-                    id="totpCode"
-                    type="text"
-                    autoComplete="one-time-code"
-                    placeholder="000000"
-                    value={totpCode}
-                    onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    style={{ textAlign: 'center', letterSpacing: '8px', fontSize: 20, fontWeight: 700 }}
-                  />
-                </div>
-              </div>
-              {error && <p className="caps-warn show" style={{ color: '#ef4444', marginTop: 8 }}>{error}</p>}
-              <button type="submit" disabled={loading || totpCode.length !== 6 || lockoutTimer > 0} className="submit-btn" style={{ marginTop: 24 }}>
-                {loading ? "Verifying..." : lockoutTimer > 0 ? `Locked (${lockoutTimer}s)` : "Verify Code"}
-                {!loading && lockoutTimer === 0 && <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>}
+
+            {/* Segmented Pill Tabs */}
+            <div className="admin-pill-tabs">
+              <button
+                type="button"
+                className={`admin-pill-tab ${activeMethod === "password" ? "active" : ""}`}
+                onClick={() => { setError(""); setActiveMethod("password"); }}
+              >
+                <KeyRound size={13} />
+                <span>Password</span>
               </button>
-              <button type="button" onClick={() => { setMfaRequired(false); supabase.auth.signOut(); }} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', fontSize: 13, marginTop: 16, cursor: 'pointer' }}>
+              <button
+                type="button"
+                className={`admin-pill-tab ${activeMethod === "otp" ? "active" : ""}`}
+                onClick={() => { setError(""); setActiveMethod("otp"); }}
+              >
+                <Mail size={13} />
+                <span>Email OTP</span>
+              </button>
+            </div>
+
+            {/* Form Box */}
+            <div className="admin-form-box">
+              {error && (
+                <div style={{
+                  padding: "8px 12px",
+                  background: "rgba(239,68,68,0.1)",
+                  color: "#ef4444",
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                  marginBottom: "12px",
+                  fontWeight: 500,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px"
+                }}>
+                  <AlertTriangle size={13} />
+                  <span>{error}</span>
+                </div>
+              )}
+
+              {attempts > 0 && attempts < MAX_ATTEMPTS && (
+                <div style={{
+                  padding: "6px 10px",
+                  background: "var(--accent-amber-bg)",
+                  color: "var(--accent-amber-text)",
+                  borderRadius: "8px",
+                  fontSize: "11.5px",
+                  marginBottom: "12px",
+                  fontWeight: 500,
+                }}>
+                  {MAX_ATTEMPTS - attempts} attempts remaining before lockout.
+                </div>
+              )}
+
+              {/* PASSWORD TAB VIEW */}
+              {activeMethod === "password" && (
+                <form onSubmit={handlePasswordSubmit} noValidate>
+                  <div className="admin-field">
+                    <label htmlFor="email">Email address</label>
+                    <div className={`admin-input-shell ${error ? "error" : ""}`}>
+                      <Mail size={14} className="admin-input-icon" />
+                      <input
+                        id="email"
+                        type="email"
+                        placeholder="sujithreddy1546@gmail.com"
+                        autoComplete="username"
+                        required
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        disabled={lockoutTimer > 0}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="admin-field">
+                    <label htmlFor="password">Password</label>
+                    <div className={`admin-input-shell ${error ? "error" : ""}`}>
+                      <Lock size={14} className="admin-input-icon" />
+                      <input
+                        id="password"
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Enter your password"
+                        autoComplete="current-password"
+                        required
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        disabled={lockoutTimer > 0}
+                      />
+                      <button
+                        type="button"
+                        className="admin-vis-toggle"
+                        onClick={() => setShowPassword(!showPassword)}
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                      >
+                        {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="admin-form-options">
+                    <label className="admin-remember-label" htmlFor="rememberMe">
+                      <input id="rememberMe" type="checkbox" style={{ accentColor: "var(--text-main)" }} />
+                      <span>Remember me</span>
+                    </label>
+                    <a className="admin-forgot-link" href="#forgot" onClick={(e) => { e.preventDefault(); setActiveMethod("otp"); }}>
+                      Forgot?
+                    </a>
+                  </div>
+
+                  <button
+                    className="admin-submit-btn"
+                    type="submit"
+                    disabled={loading || lockoutTimer > 0}
+                  >
+                    <span>{loading ? "Signing in..." : lockoutTimer > 0 ? `Locked (${lockoutTimer}s)` : "Sign in"}</span>
+                    <ArrowRight size={14} />
+                  </button>
+                </form>
+              )}
+
+              {/* EMAIL OTP TAB VIEW */}
+              {activeMethod === "otp" && (
+                <div>
+                  {!emailOtpSent ? (
+                    <form onSubmit={handleSendEmailOtp} noValidate>
+                      <div className="admin-field">
+                        <label htmlFor="otpEmail">Registered Admin Email</label>
+                        <div className="admin-input-shell">
+                          <Mail size={14} className="admin-input-icon" />
+                          <input
+                            id="otpEmail"
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <p style={{ fontSize: "11.5px", color: "var(--text-muted)", margin: "0 0 14px", lineHeight: 1.45 }}>
+                        A one-time 6-digit security code will be sent directly to your verified inbox.
+                      </p>
+
+                      <button
+                        className="admin-submit-btn"
+                        type="submit"
+                        disabled={loading || lockoutTimer > 0}
+                      >
+                        <span>{loading ? "Sending Code..." : "Send 6-digit OTP"}</span>
+                        <ArrowRight size={14} />
+                      </button>
+                    </form>
+                  ) : (
+                    <form onSubmit={handleVerifyEmailOtp} noValidate>
+                      <div className="admin-field">
+                        <label htmlFor="otpCode">6-digit Security PIN</label>
+                        <div className={`admin-input-shell ${error ? "error" : ""}`}>
+                          <Shield size={14} className="admin-input-icon" />
+                          <input
+                            id="otpCode"
+                            type="text"
+                            maxLength={6}
+                            value={emailOtpCode}
+                            onChange={(e) => setEmailOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                            placeholder="000 000"
+                            style={{ textAlign: "center", letterSpacing: "4px", fontWeight: 700, fontSize: "15px" }}
+                            autoFocus
+                          />
+                        </div>
+                      </div>
+
+                      <button
+                        className="admin-submit-btn"
+                        type="submit"
+                        style={{ marginTop: "12px" }}
+                        disabled={loading || emailOtpCode.length !== 6 || lockoutTimer > 0}
+                      >
+                        <span>{loading ? "Verifying..." : "Verify & Sign in"}</span>
+                        <ArrowRight size={14} />
+                      </button>
+
+                      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "12px", fontSize: "11.5px" }}>
+                        <button
+                          type="button"
+                          onClick={() => setEmailOtpSent(false)}
+                          style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer" }}
+                        >
+                          ← Back
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleSendEmailOtp}
+                          disabled={otpTimer > 0 || loading}
+                          style={{ background: "none", border: "none", color: otpTimer > 0 ? "var(--text-dim)" : "var(--accent-green-text)", fontWeight: 600, cursor: otpTimer > 0 ? "not-allowed" : "pointer" }}
+                        >
+                          {otpTimer > 0 ? `Resend in ${otpTimer}s` : "Resend code"}
+                        </button>
+                      </div>
+                    </form>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <p className="admin-card-footer-note">
+              Restricted access · authorized personnel only
+            </p>
+          </div>
+        </div>
+      </main>
+
+      {/* ── MFA MODAL ── */}
+      {mfaRequired && (
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 10000,
+          background: "rgba(0,0,0,0.6)",
+          backdropFilter: "blur(8px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 20,
+        }}>
+          <div style={{
+            background: "var(--card-bg)",
+            border: "1px solid var(--border)",
+            borderRadius: 16,
+            maxWidth: 380,
+            width: "100%",
+            padding: 24,
+            boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
+            color: "var(--text-main)",
+            textAlign: "center",
+          }}>
+            <div style={{
+              width: 44,
+              height: 44,
+              borderRadius: 12,
+              background: "var(--panel-2)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 12px",
+            }}>
+              <Lock size={20} />
+            </div>
+            <h3 style={{ margin: "0 0 4px", fontSize: 18, fontWeight: 700 }}>Two-Factor Auth</h3>
+            <p style={{ margin: "0 0 16px", fontSize: 12.5, color: "var(--text-muted)" }}>
+              Enter the 6-digit code from your authenticator app.
+            </p>
+
+            <form onSubmit={handleTotpSubmit} noValidate>
+              <div className="admin-input-shell" style={{ marginBottom: 12 }}>
+                <input
+                  type="text"
+                  maxLength={6}
+                  value={totpCode}
+                  onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  placeholder="000 000"
+                  style={{ textAlign: "center", letterSpacing: "5px", fontSize: "16px", fontWeight: 700 }}
+                  autoFocus
+                />
+              </div>
+
+              {error && <p style={{ color: "#ef4444", fontSize: 12, margin: "0 0 10px" }}>{error}</p>}
+
+              <button
+                type="submit"
+                className="admin-submit-btn"
+                disabled={loading || totpCode.length !== 6 || lockoutTimer > 0}
+              >
+                <span>{loading ? "Verifying..." : "Verify Code"}</span>
+                <ArrowRight size={14} />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => { setMfaRequired(false); supabase.auth.signOut(); }}
+                style={{ background: "none", border: "none", color: "var(--text-muted)", fontSize: 12, marginTop: 12, cursor: "pointer" }}
+              >
                 Cancel and go back
               </button>
             </form>
           </div>
         </div>
-      </div>
-    );
-  }
+      )}
 
-  return (
-    <div className="login-page-container">
-      <style>{ADMIN_LOGIN_STYLES}</style>
-      {/* SIDEBAR */}
-      <aside className="login-sidebar">
-        <div className="login-avatar">
-          <img src="/profile_photo.png" alt="Sujith Thota" onError={(e) => { e.target.style.display = 'none'; }} />
-          <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-        </div>
-        <div className="side-name">Sujith Thota</div>
-        <div className="side-sub">
-          <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 6-9 12-9 12s-9-6-9-12a9 9 0 0 1 18 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-          <span>Admin Console · <span>{currentTime}</span></span>
-        </div>
-
-        <div className="side-divider"></div>
-
-        <div className="status-list">
-          <div className="status-row">Session
-            <span className="status-tag pending"><span className="sdot"></span>none</span>
-          </div>
-          <div className="status-row">Passkey service
-            <span className="status-tag"><span className="sdot"></span>reachable</span>
-          </div>
-          <div className="status-row">Latency ping
-            <span className="status-tag" style={{ gap: 6 }}>
-              <span className="pulse-row">
-                <span className="pulse-bar" /><span className="pulse-bar" /><span className="pulse-bar" /><span className="pulse-bar" /><span className="pulse-bar" /><span className="pulse-bar" /><span className="pulse-bar" /><span className="pulse-bar" />
-              </span>
-              <span>{pingMs}ms</span>
-            </span>
-          </div>
-          <div className="status-row">Encryption
-            <span className="status-tag"><span className="sdot"></span>TLS 1.3</span>
-          </div>
-        </div>
-
-        <div className="side-actions">
-          <button className="btn-ghost" type="button" onClick={() => setShowHelpModal(true)}>
-            <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 2-3 4M12 17h.01"/></svg>
-            <span>Need Help?</span>
-          </button>
-          <button className="btn-ghost" type="button" onClick={() => setShowStatusModal(true)}>
-            <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5M12 7v5l4 2"/></svg>
-            <span>Status Page</span>
-          </button>
-        </div>
-
-        <div className="side-footer">
-          <div className="side-footer-badge">
-            <svg viewBox="0 0 24 24" fill="none" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            <span>Session Secured · TLS 1.3</span>
-          </div>
-          <div className="side-footer-copy">
-            © {new Date().getFullYear()} Sujith Thota. All rights reserved.
-          </div>
-        </div>
-      </aside>
-
-      {/* MAIN CONTENT */}
-      <main className="login-main">
-
-        <div className="login-content">
-          <h1 className="headline">Admin Console</h1>
-
-          <p className="lede">Sign in to manage projects, content, and deployments for the portfolio.</p>
-
-          <div className="method-row">
-            <button className={`method-card ${activeMethod === 'password' ? 'active' : ''}`} onClick={() => { setError(""); setActiveMethod("password"); }} type="button">
-              <div className="method-num">01</div>
-              <div className="method-label">Password</div>
-              <div className="method-sub">Email &amp; password</div>
-            </button>
-
-            <button className={`method-card ${activeMethod === 'otp' ? 'active' : ''}`} onClick={() => { setError(""); setActiveMethod("otp"); }} type="button">
-              <div className="method-num">02</div>
-              <div className="method-label">Email OTP Code</div>
-              <div className="method-sub">6-digit security PIN</div>
-            </button>
-          </div>
-
-          <div className="form-panel">
-            {error && (
-              <div style={{ padding: '8px 12px', background: 'rgba(239,68,68,0.1)', color: '#ef4444', borderRadius: 8, fontSize: 13, marginBottom: 16, fontWeight: 500 }}>
-                {error}
-              </div>
-            )}
-            {attempts > 0 && attempts < MAX_ATTEMPTS && (
-              <div style={{ padding: '8px 12px', background: 'rgba(217,119,6,0.1)', color: '#d97706', borderRadius: 8, fontSize: 13, marginBottom: 16, fontWeight: 500 }}>
-                {MAX_ATTEMPTS - attempts} attempts remaining before lockout.
-              </div>
-            )}
-
-            {/* PASSWORD VIEW (PRIMARY) */}
-            {activeMethod === 'password' && (
-              <div className="method-view" id="view-password">
-                <form onSubmit={handlePasswordSubmit} noValidate>
-                  <div className="field">
-                    <label htmlFor="email">Email address</label>
-                    <div className={`input-shell ${error ? 'error' : ''}`}>
-                      <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg>
-                      <input id="email" type="email" placeholder="admin@example.com" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} disabled={lockoutTimer > 0} />
-                    </div>
-                  </div>
-                  <div className="field">
-                    <label htmlFor="password">Password</label>
-                    <div className={`input-shell ${error ? 'error' : ''}`}>
-                      <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
-                      <input id="password" type={showPassword ? "text" : "password"} placeholder="Enter your password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} onKeyUp={onKeyUp} onBlur={() => setCapsLockOn(false)} disabled={lockoutTimer > 0} style={{ letterSpacing: showPassword || !password ? 'normal' : '2px' }} />
-                      <button type="button" className="toggle-vis" aria-label={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword(!showPassword)}>
-                        <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          {showPassword ? (
-                            <>
-                              <path d="M17.94 17.94A10.94 10.94 0 0 1 12 19c-7 0-11-7-11-7a21.6 21.6 0 0 1 5.06-5.94M9.9 4.24A10.6 10.6 0 0 1 12 4c7 0 11 7 11 7a21.5 21.5 0 0 1-2.61 3.66M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/>
-                            </>
-                          ) : (
-                            <>
-                              <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/>
-                            </>
-                          )}
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                  <div className="row-between">
-                    <label className="remember" htmlFor="rememberMe"><input id="rememberMe" type="checkbox" /> Remember me</label>
-                    <span className={`caps-warn ${capsLockOn ? 'show' : ''}`}>
-                      <svg viewBox="0 0 24 24" fill="none" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 9v4M12 17h.01M10.3 3.86 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.86a2 2 0 0 0-3.4 0Z"/></svg>
-                      Caps Lock on
-                    </span>
-                    <a className="forgot" href="#">Forgot?</a>
-                  </div>
-                  <button className="submit-btn" type="submit" disabled={loading || lockoutTimer > 0}>
-                    {loading ? "Signing in..." : lockoutTimer > 0 ? `Locked (${lockoutTimer}s)` : "Sign in →"}
-                  </button>
-                </form>
-              </div>
-            )}
-
-            {/* EMAIL OTP VIEW */}
-            {activeMethod === 'otp' && (
-              <div className="method-view" id="view-email-otp">
-                {!emailOtpSent ? (
-                  <form onSubmit={handleSendEmailOtp} noValidate>
-                    <div style={{ textAlign: 'center', marginBottom: 16 }}>
-                      <div style={{
-                        width: 44, height: 44, borderRadius: 12,
-                        background: 'rgba(59, 130, 246, 0.1)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        margin: '0 auto 10px', color: '#3b82f6'
-                      }}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg>
-                      </div>
-                      <h3 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 4px', color: 'var(--text)' }}>Email Security Code (OTP)</h3>
-                      <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: 0 }}>
-                        Generate a secure 6-digit one-time security PIN sent directly to your registered inbox.
-                      </p>
-                    </div>
-
-                    {/* Locked Verified Admin Email Badge */}
-                    <div style={{
-                      background: 'var(--panel-2)',
-                      border: '1px solid var(--border)',
-                      borderRadius: 12,
-                      padding: '14px 16px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      marginBottom: 18,
-                      textAlign: 'left'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(16,185,129,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981' }}>
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                        </div>
-                        <div>
-                          <div style={{ fontSize: 10.5, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>Registered Admin Account</div>
-                          <div style={{ fontSize: 13.5, fontWeight: 700, color: 'var(--text)', fontFamily: 'var(--mono)' }}>sujithreddy1546@gmail.com</div>
-                        </div>
-                      </div>
-                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 11, color: '#10b981', background: 'rgba(16,185,129,0.15)', padding: '4px 10px', borderRadius: 999, fontWeight: 600 }}>
-                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981' }} />
-                        <span>Verified</span>
-                      </div>
-                    </div>
-
-                    <button className="submit-btn" type="submit" style={{ marginTop: 8 }} disabled={loading || lockoutTimer > 0}>
-                      {loading ? "Sending 6-Digit OTP..." : "Send 6-Digit OTP to sujithreddy1546@gmail.com →"}
-                    </button>
-                  </form>
-                ) : (
-                  <form onSubmit={handleVerifyEmailOtp} noValidate>
-                    <div style={{ textAlign: 'center', marginBottom: 16 }}>
-                      <div style={{
-                        width: 44, height: 44, borderRadius: 12,
-                        background: 'rgba(16, 185, 129, 0.1)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        margin: '0 auto 10px', color: '#10b981'
-                      }}>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                      </div>
-                      <h3 style={{ fontSize: 15, fontWeight: 700, margin: '0 0 4px', color: 'var(--text)' }}>Enter 6-Digit Code</h3>
-                      <p style={{ fontSize: 12, color: 'var(--text-muted)', margin: 0 }}>
-                        Security PIN sent to <strong style={{ color: '#38bdf8' }}>sujithreddy1546@gmail.com</strong>
-                      </p>
-                    </div>
-
-                    <div className="field">
-                      <label htmlFor="otpCodeInput">6-Digit Verification PIN</label>
-                      <div className={`input-shell ${error ? 'error' : ''}`} style={{ height: 48 }}>
-                        <input
-                          id="otpCodeInput"
-                          type="text"
-                          autoComplete="one-time-code"
-                          maxLength={6}
-                          value={emailOtpCode}
-                          onChange={(e) => setEmailOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                          placeholder="000 000"
-                          style={{ textAlign: 'center', letterSpacing: '6px', fontSize: 20, fontWeight: 700, color: 'var(--text)' }}
-                        />
-                      </div>
-                    </div>
-
-                    <button className="submit-btn" type="submit" style={{ marginTop: 16 }} disabled={loading || emailOtpCode.length !== 6 || lockoutTimer > 0}>
-                      {loading ? "Verifying PIN..." : "Verify PIN & Sign In →"}
-                    </button>
-
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 14, fontSize: 12 }}>
-                      <button
-                        type="button"
-                        onClick={() => setEmailOtpSent(false)}
-                        style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 0 }}
-                      >
-                        ← Back
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={handleSendEmailOtp}
-                        disabled={otpTimer > 0 || loading}
-                        style={{ background: 'none', border: 'none', color: otpTimer > 0 ? 'var(--text-dim)' : 'var(--green)', fontWeight: 600, cursor: otpTimer > 0 ? 'not-allowed' : 'pointer', padding: 0 }}
-                      >
-                        {otpTimer > 0 ? `Resend OTP in ${otpTimer}s` : "Resend 6-Digit OTP"}
-                      </button>
-                    </div>
-                  </form>
-                )}
-              </div>
-            )}
-
-
-
-
-
-          </div>
-
-          <div className="footer-trust">
-            <span>🔒 TLS 1.3</span>
-            <span>◇ Passkey ready</span>
-            <span>◷ Rate limited</span>
-          </div>
-
-          <p className="foot-note">Restricted access · authorized personnel only</p>
-        </div>
-      </main>
-
-      {/* NEED HELP MODAL */}
+      {/* ── HELP MODAL ── */}
       {showHelpModal && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 10000, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-          <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 20, maxWidth: 440, width: '100%', padding: 28, boxShadow: '0 20px 40px rgba(0,0,0,0.2)', color: 'var(--text)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(59,130,246,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2" width="20" height="20"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 2-3 4M12 17h.01"/></svg>
-                </div>
-                <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>Admin Help & Shortcuts</h3>
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 10000,
+          background: "rgba(0,0,0,0.6)",
+          backdropFilter: "blur(8px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 20,
+        }}>
+          <div style={{
+            background: "var(--card-bg)",
+            border: "1px solid var(--border)",
+            borderRadius: 16,
+            maxWidth: 400,
+            width: "100%",
+            padding: 24,
+            boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
+            color: "var(--text-main)",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <HelpCircle size={18} color="#3b82f6" />
+                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Admin Help</h3>
               </div>
-              <button onClick={() => setShowHelpModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-dim)', padding: 4 }}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              <button onClick={() => setShowHelpModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-dim)" }}>
+                <X size={16} />
               </button>
             </div>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 13 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--sidebar-bg)', borderRadius: 10, border: '1px solid var(--border)' }}>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: 12.5 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 12px", background: "var(--panel-2)", borderRadius: 8 }}>
                 <span>Command Palette</span>
-                <kbd style={{ fontFamily: 'var(--mono)', fontSize: 11, background: 'var(--card-bg)', padding: '2px 8px', borderRadius: 4, border: '1px solid var(--border)' }}>Ctrl + K</kbd>
+                <kbd style={{ fontFamily: "var(--mono)", fontSize: 11, background: "var(--card-bg)", padding: "1px 6px", borderRadius: 4, border: "1px solid var(--border)" }}>Ctrl + K</kbd>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--sidebar-bg)', borderRadius: 10, border: '1px solid var(--border)' }}>
-                <span>Toggle Light / Dark Mode</span>
-                <kbd style={{ fontFamily: 'var(--mono)', fontSize: 11, background: 'var(--card-bg)', padding: '2px 8px', borderRadius: 4, border: '1px solid var(--border)' }}>Shift + T</kbd>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--sidebar-bg)', borderRadius: 10, border: '1px solid var(--border)' }}>
-                <span>Emergency Sign Out</span>
-                <kbd style={{ fontFamily: 'var(--mono)', fontSize: 11, background: 'var(--card-bg)', padding: '2px 8px', borderRadius: 4, border: '1px solid var(--border)' }}>Esc</kbd>
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 12px", background: "var(--panel-2)", borderRadius: 8 }}>
+                <span>Theme Mode</span>
+                <kbd style={{ fontFamily: "var(--mono)", fontSize: 11, background: "var(--card-bg)", padding: "1px 6px", borderRadius: 4, border: "1px solid var(--border)" }}>Shift + T</kbd>
               </div>
             </div>
 
-            <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid var(--border)', fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
-              For support or emergency access credentials, reach out to <a href="mailto:sujithreddy1546@gmail.com" style={{ color: 'var(--text)', textDecoration: 'underline' }}>sujithreddy1546@gmail.com</a>.
+            <div style={{ marginTop: 16, paddingTop: 12, borderTop: "1px solid var(--border)", fontSize: 11.5, color: "var(--text-muted)" }}>
+              Contact <a href="mailto:sujithreddy1546@gmail.com" style={{ color: "var(--text-main)", textDecoration: "underline" }}>sujithreddy1546@gmail.com</a> for emergency access.
             </div>
           </div>
         </div>
       )}
 
-      {/* STATUS PAGE MODAL */}
+      {/* ── STATUS MODAL ── */}
       {showStatusModal && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 10000, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-          <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border)', borderRadius: 20, maxWidth: 460, width: '100%', padding: 28, boxShadow: '0 20px 40px rgba(0,0,0,0.2)', color: 'var(--text)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(34,197,94,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2" width="20" height="20"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                </div>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>System Telemetry & Status</h3>
-                  <p style={{ margin: 0, fontSize: 11, color: 'var(--green)', fontWeight: 600 }}>All Systems Operational</p>
-                </div>
+        <div style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: 10000,
+          background: "rgba(0,0,0,0.6)",
+          backdropFilter: "blur(8px)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 20,
+        }}>
+          <div style={{
+            background: "var(--card-bg)",
+            border: "1px solid var(--border)",
+            borderRadius: 16,
+            maxWidth: 420,
+            width: "100%",
+            padding: 24,
+            boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
+            color: "var(--text-main)",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Activity size={18} color="#10b981" />
+                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>System Status</h3>
               </div>
-              <button onClick={() => setShowStatusModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-dim)', padding: 4 }}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              <button onClick={() => setShowStatusModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-dim)" }}>
+                <X size={16} />
               </button>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 13 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', background: 'var(--sidebar-bg)', borderRadius: 10, border: '1px solid var(--border)' }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: 12.5 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 12px", background: "var(--panel-2)", borderRadius: 8 }}>
                 <span>Database Connection</span>
-                <span style={{ color: 'var(--green)', fontWeight: 600, fontSize: 12, display: 'flex', alignItems: 'center', gap: 6 }}><span className="sdot"/> 100% · Connected</span>
+                <span className="pill-badge pill-green">Connected</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', background: 'var(--sidebar-bg)', borderRadius: 10, border: '1px solid var(--border)' }}>
-                <span>Edge Auth Latency</span>
-                <span style={{ fontFamily: 'var(--mono)', fontSize: 12, fontWeight: 600, color: 'var(--text)' }}>{pingMs}ms ping</span>
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 12px", background: "var(--panel-2)", borderRadius: 8 }}>
+                <span>Auth Edge Latency</span>
+                <span style={{ fontFamily: "var(--mono)", fontWeight: 600 }}>{pingMs}ms</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', background: 'var(--sidebar-bg)', borderRadius: 10, border: '1px solid var(--border)' }}>
-                <span>Passkey Hardware Trust</span>
-                <span style={{ color: 'var(--text)', fontWeight: 600, fontSize: 12 }}>TPM 2.0 Active</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', background: 'var(--sidebar-bg)', borderRadius: 10, border: '1px solid var(--border)' }}>
-                <span>Build Environment</span>
-                <span style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--text-muted)' }}>Vite 8.0 · Production</span>
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 12px", background: "var(--panel-2)", borderRadius: 8 }}>
+                <span>Hardware Trust</span>
+                <span>TPM 2.0 Active</span>
               </div>
             </div>
           </div>
