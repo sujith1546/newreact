@@ -196,9 +196,9 @@ function SiteDisabledOverlay({ reason, disabledAt }) {
         </div>
         <div style={{ borderTop: '1px solid #F0F1F4', paddingTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span style={{ fontSize: 11, color: '#AEB4BF' }}>Portfolio CMS Security System</span>
-          <Link to="/admin/login" target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 500, color: '#0F1626', textDecoration: 'none', padding: '6px 12px', borderRadius: 6, background: '#F7F8FA', border: '1px solid #E7E9EE' }}>
+          <button onClick={() => window.dispatchEvent(new CustomEvent('open-admin-login'))} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 500, color: '#0F1626', textDecoration: 'none', padding: '6px 12px', borderRadius: 6, background: '#F7F8FA', border: '1px solid #E7E9EE', cursor: 'pointer' }}>
             <span>Admin Sign In</span><ArrowRight size={13} />
-          </Link>
+          </button>
         </div>
       </div>
     </div>

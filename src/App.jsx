@@ -56,8 +56,18 @@ function SecurityToast({ message }) {
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 const AdminLogin = React.lazy(() => import('./pages/AdminLogin'));
 const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
-const AdminMfaSetup = React.lazy(() => import('./pages/AdminMfaSetup'));
 const ResumePreview = React.lazy(() => import('./pages/ResumePreview'));
+
+function AdminLoginRedirect() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    navigate('/', { replace: true });
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('open-admin-login'));
+    }, 120);
+  }, [navigate]);
+  return null;
+}
 
 function DynamicMainLayout() {
   return <PortfolioLayout />;
@@ -104,7 +114,7 @@ function AnimatedRoutes() {
             <Route path="contact" element={null} />
           </Route>
           <Route path="/resume-preview" element={<ResumePreview />} />
-          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/login" element={<AdminLoginRedirect />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/admin/dashboard/:tab" element={<AdminDashboard />} />

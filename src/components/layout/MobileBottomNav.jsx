@@ -699,7 +699,7 @@ END:VCARD`;
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.92 }}
-                  onClick={() => { haptic.light(); playSound(); setIsMoreOpen(false); navigate('/admin/login'); }}
+                  onClick={() => { haptic.light(); playSound(); setIsMoreOpen(false); window.dispatchEvent(new CustomEvent('open-admin-login')); }}
                   className="drawer-explore-item"
                 >
                   <div className="drawer-item-box" style={{ color: '#ef4444', background: 'rgba(239,68,68,0.12)', borderColor: 'rgba(239,68,68,0.25)' }}>

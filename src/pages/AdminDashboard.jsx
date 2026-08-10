@@ -106,7 +106,7 @@ function AdminDashboardDesktop() {
 
   async function handleLogout() {
     await logout();
-    navigate("/admin/login");
+    navigate("/");
   }
 
   const activeNavItem = ALL_NAV_ITEMS.find(n => n.key === activeTab);

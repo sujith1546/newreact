@@ -248,7 +248,7 @@ export default function MobileShell() {
   const handleLogout = async () => {
     setIsAvatarMenuOpen(false);
     await logout();
-    navigate('/admin/login');
+    navigate('/');
   };
 
   const initials = getInitials(user?.email);
@@ -380,7 +380,7 @@ export default function MobileShell() {
                     {theme === 'dark' ? <Sun size={16} color="#f59e0b" /> : <Moon size={16} color="#6366f1" />}
                     {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
                   </button>
-                  <button onClick={() => { setIsAvatarMenuOpen(false); navigate('/admin/login'); }}
+                  <button onClick={() => { setIsAvatarMenuOpen(false); window.dispatchEvent(new CustomEvent('open-admin-login')); }}
                     style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', background: 'transparent', border: 'none', color: 'var(--pcms-text)', fontSize: 13, fontWeight: 500, cursor: 'pointer', textAlign: 'left' }}>
                     <ShieldCheck size={16} color="#6366f1" />
                     Switch Account
