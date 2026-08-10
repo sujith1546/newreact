@@ -390,7 +390,6 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                     width: "26px",
                     height: "26px",
                     borderRadius: "50%",
-                    overflow: "hidden",
                     background: "#1d4ed8",
                     color: "#ffffff",
                     fontWeight: "700",
@@ -401,13 +400,7 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                     flexShrink: 0,
                   }}
                 >
-                  <img
-                    src="/profile_photo.png"
-                    alt="Sujith Thota"
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                    onError={(e) => { e.target.style.display = "none"; }}
-                  />
-                  <span>ST</span>
+                  ST
                 </div>
                 <div>
                   <div style={{ fontSize: "12px", fontWeight: "500", color: "var(--modal-text)", lineHeight: 1.2 }}>
