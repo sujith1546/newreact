@@ -484,7 +484,13 @@ export default function HomePanel({ isMobile = false }) {
               <QuickAction
                 key={qa.label}
                 {...qa}
-                onClick={() => navigate(qa.route || `/admin/dashboard/${qa.tab}`)}
+                onClick={() => {
+                  if (qa.route === '/admin/login') {
+                    window.dispatchEvent(new CustomEvent('open-admin-login'));
+                  } else {
+                    navigate(qa.route || `/admin/dashboard/${qa.tab}`);
+                  }
+                }}
               />
             ))}
           </div>
