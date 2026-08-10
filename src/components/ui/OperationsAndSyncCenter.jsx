@@ -1,40 +1,36 @@
 /**
  * ============================================================================
- * OPERATIONS AND SYNC CENTER — Advanced Edition
+ * OPERATIONS AND SYNC CENTER — Advanced Edition (Adaptive Theme)
  * ============================================================================
- *
- * Mission-control operations center for the portfolio header:
+ * 
+ * Clean, minimal, pill-styled mission-control widget matching the portfolio UI:
  *   1. Smart Rollup Engine   — Batches rapid-fire sync events into one digest
- *   2. Anomaly Detection      — Flags suspicious sequences of security events as scrapers/actors
+ *   2. Anomaly Detection      — Flags suspicious sequences of security events
  *   3. Lead Scoring           — Ranks inbound messages Hot / Warm / Cold (0-100 score)
  *   4. Tamper-evident export  — JSON/CSV export with rolling SHA-256 hash chains
  *   5. Real network telemetry — Actual round-trip HEAD latency measurement
- *   6. Web Audio Chime        — Subtle audio alert with mute toggle
+ *   6. Web Audio Alert        — Subtle audio alert with mute toggle
  *   7. Full Real-Time Wiring  — Supabase Realtime + BroadcastChannel + Security Events
  * ============================================================================
  */
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Bell, 
-  Sparkles, 
-  RefreshCw, 
-  Shield, 
-  MessageSquare, 
-  Activity, 
-  Download, 
-  Copy, 
-  Volume2, 
-  VolumeX, 
-  X, 
-  Check, 
-  AlertTriangle, 
-  ArrowUpRight, 
-  Zap, 
-  Globe, 
-  Clock, 
-  FileText 
+import {
+  Zap,
+  ShieldCheck,
+  MessageSquare,
+  X,
+  Bell,
+  BellOff,
+  RefreshCw,
+  ShieldAlert,
+  Mail,
+  Circle,
+  Download,
+  ChevronDown,
+  ArrowUpRight,
+  Copy,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { subscribeToRealtimeSync } from '../../lib/broadcastSyncEngine';
@@ -50,13 +46,13 @@ const LATENCY_PING_INTERVAL_MS = 15_000;
 const MAX_EVENTS_KEPT = 200;
 
 // ---------------------------------------------------------------------------
-// UTIL: SHA-256 Web Crypto Hash for Tamper-Evident Logs
+// UTIL
 // ---------------------------------------------------------------------------
 async function sha256(text) {
   if (typeof crypto === 'undefined' || !crypto.subtle) {
     let hash = 0;
     for (let i = 0; i < text.length; i++) {
-      hash = ((hash << 5) - hash) + text.charCodeAt(i);
+      hash = (hash << 5) - hash + text.charCodeAt(i);
       hash |= 0;
     }
     return Math.abs(hash).toString(16).padStart(64, '0');
@@ -82,20 +78,20 @@ function relativeTime(ts) {
 }
 
 // ---------------------------------------------------------------------------
-// INTELLIGENCE: Lead Scoring (0 - 100)
+// INTELLIGENCE: Lead Scoring
 // ---------------------------------------------------------------------------
 const FREE_EMAIL_DOMAINS = new Set([
   'gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'icloud.com', 'proton.me', 'mail.com'
 ]);
 
 function scoreLead(lead) {
-  let score = 20; // baseline
+  let score = 20;
   const email = (lead.email || '').toLowerCase().trim();
   const domain = email.split('@')[1] || '';
   const msg = (lead.message || '').trim();
 
-  if (domain && !FREE_EMAIL_DOMAINS.has(domain)) score += 30; // Corporate domain signal
-  if (msg.length > 120) score += 15;                          // High effort signal
+  if (domain && !FREE_EMAIL_DOMAINS.has(domain)) score += 30;
+  if (msg.length > 120) score += 15;
   if (/hire|role|position|opportunity|interview|contract|offer|opening|candidate/i.test(msg)) score += 20;
   if (/project|case study|portfolio|freelance|consult|architecture/i.test(msg)) score += 10;
   if (lead.source === 'recruiter_chat' || lead.source === 'instant_booking') score += 15;
@@ -115,14 +111,14 @@ function detectAnomaly(events) {
   if (recent.length >= ANOMALY_THRESHOLD && distinctTypes.size >= 2) {
     return {
       flagged: true,
-      summary: `Automated actor suspected — ${recent.length} evasive actions (${[...distinctTypes].join(', ')}) in ${Math.round(ANOMALY_WINDOW_MS / 1000)}s`,
+      summary: `Automated activity suspected — ${recent.length} evasive actions in ${Math.round(ANOMALY_WINDOW_MS / 1000)}s`,
     };
   }
   return { flagged: false, summary: null };
 }
 
 // ---------------------------------------------------------------------------
-// HOOK: useSyncChannel — Cloud Sync & PostgreSQL Realtime
+// HOOK: useSyncChannel
 // ---------------------------------------------------------------------------
 function useSyncChannel(supabaseClient) {
   const [events, setEvents] = useState(() => {
@@ -130,8 +126,8 @@ function useSyncChannel(supabaseClient) {
       {
         id: 'init_sync_engine',
         type: 'sync',
-        table: 'site_settings',
-        op: 'CONNECTED',
+        table: 'site settings',
+        op: 'connected',
         ts: Date.now() - 30000,
       }
     ];
@@ -154,7 +150,7 @@ function useSyncChannel(supabaseClient) {
                 type: 'rollup',
                 ts: Date.now(),
                 count: batch.length,
-                tables: [...new Set(batch.map((b) => b.table || 'site_settings'))],
+                tables: [...new Set(batch.map((b) => b.table || 'site settings'))],
               }]
             : batch.map(b => ({ ...b, type: 'sync' }));
         return [...rolled, ...prev].slice(0, MAX_EVENTS_KEPT);
@@ -163,38 +159,35 @@ function useSyncChannel(supabaseClient) {
   }, []);
 
   useEffect(() => {
-    // 1. Supabase Postgres Realtime Subscription across tables
     let channel = null;
     if (supabaseClient) {
       channel = supabaseClient
         .channel('ops-center-db-sync')
         .on('postgres_changes', { event: '*', schema: 'public' }, (payload) => {
-          const table = payload.table || 'site_settings';
+          const table = (payload.table || 'site settings').replace(/_/g, ' ');
           pushEvent({
             id: payload.commit_timestamp || String(Date.now() + Math.random()),
             table,
-            op: payload.eventType || 'UPDATE',
+            op: payload.eventType?.toLowerCase() || 'updated',
           });
         })
         .subscribe();
     }
 
-    // 2. Inter-tab P2P BroadcastChannel Subscription (<2ms)
     const unsubscribeBroadcast = subscribeToRealtimeSync((syncMsg) => {
       pushEvent({
         id: `p2p-${Date.now()}`,
-        table: syncMsg.table || 'site_settings',
-        op: syncMsg.eventType || 'UPDATE',
+        table: (syncMsg.table || 'site settings').replace(/_/g, ' '),
+        op: syncMsg.eventType?.toLowerCase() || 'synced',
         pingMs: syncMsg.pingMs,
       });
     });
 
-    // 3. Custom Sync Event Listener
     const onCustomSync = (e) => {
       pushEvent({
         id: `custom-${Date.now()}`,
-        table: e.detail?.table || 'site_settings',
-        op: e.detail?.eventType || 'UPDATE',
+        table: (e.detail?.table || 'site settings').replace(/_/g, ' '),
+        op: e.detail?.eventType?.toLowerCase() || 'synced',
       });
     };
     window.addEventListener('pcms_data_updated', onCustomSync);
@@ -212,14 +205,14 @@ function useSyncChannel(supabaseClient) {
 }
 
 // ---------------------------------------------------------------------------
-// HOOK: useSecurityChannel — Security Operations
+// HOOK: useSecurityChannel
 // ---------------------------------------------------------------------------
-function useSecurityChannel() {
+function useSecurityChannel(shieldEmitter) {
   const [events, setEvents] = useState(() => {
     return [
       {
         id: 'init_sec_guard',
-        type: 'auth_session_check',
+        type: 'auth session check',
         detail: 'Enterprise security shield active',
         ts: Date.now() - 60000,
       }
@@ -231,8 +224,12 @@ function useSecurityChannel() {
   }, []);
 
   useEffect(() => {
+    if (shieldEmitter) {
+      shieldEmitter.on('security-event', pushEvent);
+      return () => shieldEmitter.off('security-event', pushEvent);
+    }
     const onSecurityAlert = (e) => {
-      const type = e.detail?.type || 'devtools_trap';
+      const type = (e.detail?.type || 'devtools trap').replace(/_/g, ' ');
       pushEvent({
         id: `sec-${Date.now()}`,
         type,
@@ -242,19 +239,19 @@ function useSecurityChannel() {
 
     window.addEventListener('pcms_security_alert', onSecurityAlert);
     return () => window.removeEventListener('pcms_security_alert', onSecurityAlert);
-  }, [pushEvent]);
+  }, [shieldEmitter, pushEvent]);
 
   const anomaly = useMemo(() => detectAnomaly(events), [events]);
   return { events, anomaly, pushEvent };
 }
 
 // ---------------------------------------------------------------------------
-// HOOK: useLeadsChannel — Leads & Inquiries with Scoring
+// HOOK: useLeadsChannel
 // ---------------------------------------------------------------------------
 function useLeadsChannel(supabaseClient) {
   const [leads, setLeads] = useState(() => {
     try {
-      const raw = localStorage.getItem('pcms_ops_leads_v1');
+      const raw = localStorage.getItem('pcms_ops_leads_v2');
       if (raw) return JSON.parse(raw);
     } catch (_) {}
     return [
@@ -262,7 +259,7 @@ function useLeadsChannel(supabaseClient) {
         id: 'lead_demo_1',
         name: 'Tech Talent Acquisition',
         email: 'recruiter@techstack.io',
-        message: 'Reviewing your Full Stack & ML portfolio. Would love to discuss upcoming engineering opportunities.',
+        message: 'Reviewed your Full Stack & Data Science portfolio. We would like to discuss contract & full-time opportunities.',
         source: 'recruiter_chat',
         ts: Date.now() - 3600000,
         score: 85,
@@ -283,14 +280,13 @@ function useLeadsChannel(supabaseClient) {
     setLeads((prev) => {
       const updated = [scored, ...prev.filter(l => l.id !== scored.id)].slice(0, MAX_EVENTS_KEPT);
       try {
-        localStorage.setItem('pcms_ops_leads_v1', JSON.stringify(updated.slice(0, 30)));
+        localStorage.setItem('pcms_ops_leads_v2', JSON.stringify(updated.slice(0, 30)));
       } catch (_) {}
       return updated;
     });
   }, []);
 
   useEffect(() => {
-    // 1. Supabase listener for leads / contact submissions
     let channel = null;
     if (supabaseClient) {
       channel = supabaseClient
@@ -301,7 +297,6 @@ function useLeadsChannel(supabaseClient) {
         .subscribe();
     }
 
-    // 2. Custom window event from contact form submissions
     const onNewMessage = (e) => {
       if (e.detail) {
         pushLead({
@@ -325,10 +320,10 @@ function useLeadsChannel(supabaseClient) {
 }
 
 // ---------------------------------------------------------------------------
-// HOOK: useNetworkLatency — Real Round-Trip Ping
+// HOOK: useNetworkLatency
 // ---------------------------------------------------------------------------
 function useNetworkLatency(pingUrl) {
-  const [latency, setLatency] = useState(18);
+  const [latency, setLatency] = useState(14);
 
   useEffect(() => {
     let cancelled = false;
@@ -341,7 +336,7 @@ function useNetworkLatency(pingUrl) {
           setLatency(Math.max(4, delta));
         }
       } catch {
-        if (!cancelled) setLatency(22);
+        if (!cancelled) setLatency(18);
       }
     };
     ping();
@@ -356,7 +351,7 @@ function useNetworkLatency(pingUrl) {
 }
 
 // ---------------------------------------------------------------------------
-// EXPORT: Tamper-Evident JSON/CSV with Rolling SHA-256 Hash Chains
+// EXPORT: Tamper-Evident Logs
 // ---------------------------------------------------------------------------
 async function buildHashChain(entries) {
   let prevHash = 'GENESIS';
@@ -388,17 +383,100 @@ function toCSV(entries) {
 }
 
 // ---------------------------------------------------------------------------
+// UI PRIMITIVES
+// ---------------------------------------------------------------------------
+function Badge({ children, tone = 'neutral' }) {
+  const tones = {
+    neutral: { bg: 'rgba(128, 128, 128, 0.12)', color: 'var(--text-secondary, #6b7280)' },
+    hot: { bg: 'rgba(239, 68, 68, 0.12)', color: '#dc2626' },
+    warm: { bg: 'rgba(245, 158, 11, 0.14)', color: '#b45309' },
+    cold: { bg: 'rgba(59, 130, 246, 0.12)', color: '#2563eb' },
+    ok: { bg: 'rgba(16, 185, 129, 0.12)', color: '#059669' },
+  };
+  const current = tones[tone] || tones.neutral;
+
+  return (
+    <span
+      style={{
+        fontSize: '11px',
+        padding: '2px 8px',
+        borderRadius: '9999px',
+        fontWeight: 600,
+        backgroundColor: current.bg,
+        color: current.color,
+        display: 'inline-flex',
+        alignItems: 'center',
+      }}
+    >
+      {children}
+    </span>
+  );
+}
+
+function TabButton({ active, onClick, icon: Icon, children, count }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        flex: 1,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '6px',
+        fontSize: '12.5px',
+        fontWeight: active ? 600 : 500,
+        padding: '7px 0',
+        borderRadius: '10px',
+        border: 'none',
+        cursor: 'pointer',
+        transition: 'all 0.15s ease',
+        backgroundColor: active ? 'var(--text-primary, #0f172a)' : 'transparent',
+        color: active ? 'var(--bg-primary, #ffffff)' : 'var(--text-secondary, #64748b)',
+      }}
+    >
+      <Icon size={14} />
+      <span>{children}</span>
+      {count > 0 && (
+        <span
+          style={{
+            fontSize: '10px',
+            borderRadius: '9999px',
+            padding: '1px 6px',
+            lineHeight: '14px',
+            fontWeight: 700,
+            backgroundColor: active ? 'rgba(255, 255, 255, 0.25)' : 'rgba(128, 128, 128, 0.15)',
+            color: active ? '#ffffff' : 'var(--text-secondary, #64748b)',
+          }}
+        >
+          {count}
+        </span>
+      )}
+    </button>
+  );
+}
+
+function EmptyState({ label }) {
+  return (
+    <p style={{ textAlign: 'center', fontSize: '13px', color: 'var(--text-muted, #94a3b8)', padding: '32px 0', margin: 0 }}>
+      {label}
+    </p>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // MAIN COMPONENT: OperationsAndSyncCenter
 // ---------------------------------------------------------------------------
 export default function OperationsAndSyncCenter({
   supabaseClient = supabase,
+  shieldEmitter = null,
   adminEmail = 'sujithreddy1546@gmail.com',
   pingUrl = null,
   onPurgeCache = null,
   onSecurityAudit = null,
 }) {
   const [open, setOpen] = useState(false);
-  const [tab, setTab] = useState('sync'); // 'sync' | 'security' | 'leads'
+  const [tab, setTab] = useState('sync');
   const [unreadOnly, setUnreadOnly] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(() => {
     try {
@@ -411,38 +489,13 @@ export default function OperationsAndSyncCenter({
 
   const { visitorCount } = useSupabasePresence();
   const syncEvents = useSyncChannel(supabaseClient);
-  const { events: securityEvents, anomaly } = useSecurityChannel();
+  const { events: securityEvents, anomaly } = useSecurityChannel(shieldEmitter);
   const { leads, setLeads } = useLeadsChannel(supabaseClient);
   const latency = useNetworkLatency(pingUrl);
 
-  const panelRef = useRef(null);
-  const triggerRef = useRef(null);
   const audioCtxRef = useRef(null);
   const prevTotalRef = useRef(0);
-
-  // Close on outside click / Escape key
-  useEffect(() => {
-    if (!open) return;
-    const handleClick = (e) => {
-      if (
-        panelRef.current &&
-        !panelRef.current.contains(e.target) &&
-        triggerRef.current &&
-        !triggerRef.current.contains(e.target)
-      ) {
-        setOpen(false);
-      }
-    };
-    const handleKey = (e) => {
-      if (e.key === 'Escape') setOpen(false);
-    };
-    document.addEventListener('mousedown', handleClick);
-    document.addEventListener('keydown', handleKey);
-    return () => {
-      document.removeEventListener('mousedown', handleClick);
-      document.removeEventListener('keydown', handleKey);
-    };
-  }, [open]);
+  const popoverRef = useRef(null);
 
   // Web Audio Chime on new incoming events
   const total = syncEvents.length + securityEvents.length + leads.length;
@@ -454,18 +507,27 @@ export default function OperationsAndSyncCenter({
         if (ctx.state === 'suspended') ctx.resume();
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
-        osc.frequency.value = 880; // A5 pitch
+        osc.frequency.value = 880;
         gain.gain.setValueAtTime(0.04, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
         osc.connect(gain).connect(ctx.destination);
         osc.start();
-        osc.stop(ctx.currentTime + 0.22);
-      } catch {
-        /* audio not supported */
-      }
+        osc.stop(ctx.currentTime + 0.2);
+      } catch {}
     }
     prevTotalRef.current = total;
   }, [total, audioEnabled]);
+
+  // Click outside to close popover
+  useEffect(() => {
+    const onClick = (e) => {
+      if (popoverRef.current && !popoverRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    if (open) document.addEventListener('mousedown', onClick);
+    return () => document.removeEventListener('mousedown', onClick);
+  }, [open]);
 
   const toggleAudio = () => {
     setAudioEnabled((prev) => {
@@ -477,14 +539,14 @@ export default function OperationsAndSyncCenter({
     });
   };
 
-  // Timezone & Availability calculation (IST -> Local)
   const availability = useMemo(() => {
     try {
       const nowIST = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }));
       const hour = nowIST.getHours();
-      const isWorkHours = hour >= 9 && hour < 23;
-      const localLabel = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      return { isWorkHours, localLabel };
+      return {
+        isWorkHours: hour >= 9 && hour < 23,
+        localLabel: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      };
     } catch {
       return { isWorkHours: true, localLabel: 'Local Time' };
     }
@@ -502,18 +564,18 @@ export default function OperationsAndSyncCenter({
       window.dispatchEvent(new CustomEvent('pcms_force_refresh'));
     }
     if (onPurgeCache) onPurgeCache();
-    setCopyStatus('🔄 Caches Purged & Live Refetched');
-    setTimeout(() => setCopyStatus(null), 2500);
+    setCopyStatus('Cache purged, refetching live');
+    setTimeout(() => setCopyStatus(null), 2200);
   };
 
-  const handleCopyEmail = async (emailToCopy) => {
+  const handleCopyEmail = async (email) => {
     try {
-      await navigator.clipboard.writeText(emailToCopy);
-      setCopyStatus(`✓ Copied: ${emailToCopy}`);
+      await navigator.clipboard.writeText(email);
+      setCopyStatus(`Copied ${email}`);
     } catch {
-      setCopyStatus(`✓ ${emailToCopy}`);
+      setCopyStatus(email);
     }
-    setTimeout(() => setCopyStatus(null), 2500);
+    setTimeout(() => setCopyStatus(null), 2200);
   };
 
   const handleExport = async (format) => {
@@ -525,9 +587,9 @@ export default function OperationsAndSyncCenter({
 
     const chained = await buildHashChain(merged);
     if (format === 'json') {
-      downloadFile(`ops-audit-log-${Date.now()}.json`, JSON.stringify(chained, null, 2), 'application/json');
+      downloadFile(`ops-log-${Date.now()}.json`, JSON.stringify(chained, null, 2), 'application/json');
     } else {
-      downloadFile(`ops-audit-log-${Date.now()}.csv`, toCSV(chained), 'text/csv');
+      downloadFile(`ops-log-${Date.now()}.csv`, toCSV(chained), 'text/csv');
     }
   };
 
@@ -536,187 +598,119 @@ export default function OperationsAndSyncCenter({
   };
 
   const hotLeadCount = leads.filter((l) => l.bucket === 'Hot' && !l.read).length;
-  const totalUnread = leads.filter((l) => !l.read).length;
   const badgeCount = hotLeadCount + (anomaly.flagged ? 1 : 0);
-
-  // Filtered lists
   const displayLeads = unreadOnly ? leads.filter((l) => !l.read) : leads;
 
   return (
-    <div className="ops-center-wrapper" style={{ position: 'relative', display: 'inline-block' }}>
+    <div style={{ position: 'relative', display: 'inline-block' }} ref={popoverRef}>
       <style>{`
-        .ops-trigger-btn {
-          height: 34px;
-          border-radius: 17px;
-          background: rgba(243, 244, 246, 0.85);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border: 1px solid var(--border-color, rgba(128, 128, 128, 0.2));
-          box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-          display: flex;
+        .ops-pill-trigger {
+          display: inline-flex;
           align-items: center;
           gap: 6px;
-          padding: 0 10px;
-          cursor: pointer;
-          font-family: inherit;
+          padding: 0 11px 0 9px;
+          height: 34px;
+          border-radius: 9999px;
+          border: 1px solid var(--border-color, #e2e8f0);
+          background: var(--bg-secondary, #ffffff);
           color: var(--text-primary, #0f172a);
-          font-size: 12.5px;
-          font-weight: 700;
-          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
           outline: none;
-          position: relative;
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
         }
 
-        [data-theme="dark"] .ops-trigger-btn {
-          background: rgba(30, 30, 30, 0.5);
-          border-color: rgba(255, 255, 255, 0.08);
-          box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        .ops-pill-trigger:hover {
+          border-color: var(--text-muted, #94a3b8);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
         }
 
-        .ops-trigger-btn:hover {
-          border-color: var(--primary-blue, #3b82f6);
-          transform: translateY(-1.5px);
-          box-shadow: 0 6px 20px rgba(59, 130, 246, 0.2);
-        }
-
-        .ops-badge-dot {
+        .ops-dot-status {
           width: 7px;
           height: 7px;
           border-radius: 50%;
           flex-shrink: 0;
         }
-        .ops-badge-dot.ok {
+        .ops-dot-status.ok {
           background: #10b981;
-          box-shadow: 0 0 6px #10b981;
         }
-        .ops-badge-dot.anomaly {
+        .ops-dot-status.anomaly {
           background: #ef4444;
-          box-shadow: 0 0 8px #ef4444;
-          animation: opsPulse 1.2s infinite;
+          animation: dotPulseAnim 1.2s infinite;
         }
 
-        @keyframes opsPulse {
+        @keyframes dotPulseAnim {
           0%, 100% { transform: scale(1); opacity: 1; }
           50% { transform: scale(1.3); opacity: 0.6; }
         }
 
-        .ops-counter-pill {
-          position: absolute;
-          top: -3px;
-          right: -3px;
-          min-width: 15px;
-          height: 15px;
-          border-radius: 10px;
-          background: #ef4444;
-          color: #fff;
-          font-size: 9px;
-          font-weight: 800;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 0 3px;
-          border: 1.5px solid var(--bg-secondary, #0b0d10);
-          box-shadow: 0 0 8px rgba(239, 68, 68, 0.6);
-        }
-
-        .ops-popover-panel {
+        .ops-popover-card {
           position: absolute;
           top: 44px;
           right: 0;
-          width: 380px;
+          width: 390px;
           max-width: 92vw;
-          background: var(--bg-secondary, #121316);
-          border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12));
-          border-radius: 16px;
-          box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(59, 130, 246, 0.15);
-          backdrop-filter: blur(24px);
-          -webkit-backdrop-filter: blur(24px);
+          background: var(--bg-secondary, #ffffff);
+          border: 1px solid var(--border-color, #e2e8f0);
+          border-radius: 18px;
+          box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.06);
           z-index: 5000;
           overflow: hidden;
           font-family: inherit;
         }
-
-        .ops-tab-btn {
-          flex: 1;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 5px;
-          padding: 7px 0;
-          border-radius: 8px;
-          font-size: 11.5px;
-          font-weight: 600;
-          border: none;
-          background: transparent;
-          color: var(--text-muted, #94a3b8);
-          cursor: pointer;
-          transition: all 0.15s ease;
-        }
-
-        .ops-tab-btn.active {
-          background: color-mix(in srgb, var(--primary-blue, #3b82f6) 16%, var(--bg-primary, #000));
-          color: var(--primary-blue, #3b82f6);
-          font-weight: 700;
-        }
-
-        .ops-badge-hot {
-          background: rgba(239, 68, 68, 0.15);
-          color: #ef4444;
-          border: 1px solid rgba(239, 68, 68, 0.3);
-          border-radius: 6px;
-          padding: 1px 6px;
-          font-size: 10px;
-          font-weight: 800;
-        }
-
-        .ops-badge-warm {
-          background: rgba(245, 158, 11, 0.15);
-          color: #f59e0b;
-          border: 1px solid rgba(245, 158, 11, 0.3);
-          border-radius: 6px;
-          padding: 1px 6px;
-          font-size: 10px;
-          font-weight: 800;
-        }
-
-        .ops-badge-cold {
-          background: rgba(59, 130, 246, 0.15);
-          color: #3b82f6;
-          border: 1px solid rgba(59, 130, 246, 0.3);
-          border-radius: 6px;
-          padding: 1px 6px;
-          font-size: 10px;
-          font-weight: 800;
-        }
       `}</style>
 
-      {/* Trigger Button */}
+      {/* Trigger — matches site's existing pill-button language */}
       <button
-        ref={triggerRef}
         type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="ops-trigger-btn"
-        aria-label="Operations and Sync Center"
-        title="Live Operations & Sync Hub"
+        onClick={() => setOpen((o) => !o)}
+        aria-label="Operations and sync center"
+        className="ops-pill-trigger"
       >
-        <span className={`ops-badge-dot ${anomaly.flagged ? 'anomaly' : 'ok'}`} />
-        <span style={{ fontFamily: 'monospace', letterSpacing: '0.04em' }}>OPS</span>
+        <span className={`ops-dot-status ${anomaly.flagged ? 'anomaly' : 'ok'}`} />
+        <span>OPS</span>
         {badgeCount > 0 && (
-          <span className="ops-counter-pill">
+          <span
+            style={{
+              marginLeft: '2px',
+              backgroundColor: '#ef4444',
+              color: '#ffffff',
+              fontSize: '10px',
+              fontWeight: 800,
+              width: '16px',
+              height: '16px',
+              borderRadius: '9999px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             {badgeCount > 9 ? '9+' : badgeCount}
           </span>
         )}
+        <ChevronDown
+          size={13}
+          style={{
+            color: 'var(--text-muted, #94a3b8)',
+            transform: open ? 'rotate(180deg)' : 'none',
+            transition: 'transform 0.2s ease',
+          }}
+        />
       </button>
 
-      {/* Popover Mission Control Panel */}
+      {/* Popover Dropdown Card */}
       <AnimatePresence>
         {open && (
           <motion.div
-            ref={panelRef}
-            className="ops-popover-panel"
-            initial={{ opacity: 0, y: -10, scale: 0.96 }}
+            className="ops-popover-card"
+            initial={{ opacity: 0, y: -8, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.96 }}
+            exit={{ opacity: 0, y: -8, scale: 0.97 }}
             transition={{ type: 'spring', stiffness: 450, damping: 30 }}
           >
             {/* Header */}
@@ -725,213 +719,218 @@ export default function OperationsAndSyncCenter({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                padding: '12px 16px',
-                borderBottom: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
-                background: 'color-mix(in srgb, var(--primary-blue, #3b82f6) 6%, var(--bg-secondary, #121316))',
+                padding: '14px 16px',
+                borderBottom: '1px solid var(--border-color, #f1f5f9)',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Sparkles size={16} color="var(--primary-blue, #3b82f6)" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div
+                  style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    backgroundColor: 'var(--text-primary, #0f172a)',
+                    color: 'var(--bg-primary, #ffffff)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Zap size={15} />
+                </div>
                 <div>
-                  <div style={{ fontSize: 13.5, fontWeight: 800, color: 'var(--text-primary, #fff)', letterSpacing: '-0.01em' }}>
-                    Operations & Sync Center
-                  </div>
-                  <div style={{ fontSize: 10.5, color: 'var(--text-muted, #94a3b8)', fontWeight: 500 }}>
-                    Live Autonomous Mission Control
-                  </div>
+                  <p style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: 'var(--text-primary, #0f172a)' }}>
+                    Operations and sync center
+                  </p>
+                  <p style={{ margin: '1px 0 0', fontSize: '12px', color: 'var(--text-muted, #94a3b8)' }}>
+                    Live mission control
+                  </p>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <button
                   type="button"
                   onClick={toggleAudio}
-                  title={audioEnabled ? 'Mute Audio Chime' : 'Enable Audio Chime on Events'}
+                  aria-label="Toggle audio alerts"
+                  title={audioEnabled ? 'Mute Audio' : 'Enable Audio'}
                   style={{
-                    background: audioEnabled ? 'color-mix(in srgb, var(--primary-blue, #3b82f6) 16%, transparent)' : 'transparent',
-                    border: '1px solid var(--border-color, rgba(255,255,255,0.1))',
-                    borderRadius: 6,
-                    width: 28,
-                    height: 28,
+                    width: '28px',
+                    height: '28px',
+                    borderRadius: '50%',
+                    border: 'none',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     cursor: 'pointer',
-                    color: audioEnabled ? 'var(--primary-blue, #3b82f6)' : 'var(--text-muted, #94a3b8)',
+                    backgroundColor: audioEnabled ? 'rgba(128, 128, 128, 0.12)' : 'transparent',
+                    color: audioEnabled ? 'var(--text-primary, #0f172a)' : 'var(--text-muted, #94a3b8)',
+                    transition: 'all 0.15s ease',
                   }}
                 >
-                  {audioEnabled ? <Volume2 size={13} /> : <VolumeX size={13} />}
+                  {audioEnabled ? <Bell size={14} /> : <BellOff size={14} />}
                 </button>
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
                   style={{
-                    background: 'transparent',
+                    width: '28px',
+                    height: '28px',
+                    borderRadius: '50%',
                     border: 'none',
-                    color: 'var(--text-muted, #94a3b8)',
-                    cursor: 'pointer',
-                    padding: 4,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    cursor: 'pointer',
+                    backgroundColor: 'transparent',
+                    color: 'var(--text-muted, #94a3b8)',
+                    transition: 'all 0.15s ease',
                   }}
                 >
-                  <X size={16} />
+                  <X size={14} />
                 </button>
               </div>
             </div>
 
-            {/* Anomaly Detection Banner */}
+            {/* Anomaly Banner */}
             {anomaly.flagged && (
               <div
                 style={{
-                  padding: '9px 14px',
-                  backgroundColor: 'rgba(239, 68, 68, 0.14)',
-                  borderBottom: '1px solid rgba(239, 68, 68, 0.25)',
                   display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: 8,
-                  fontSize: 11.5,
-                  color: '#ef4444',
-                  fontWeight: 600,
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '9px 16px',
+                  backgroundColor: 'rgba(239, 68, 68, 0.08)',
+                  borderBottom: '1px solid rgba(239, 68, 68, 0.18)',
+                  fontSize: '12px',
+                  color: '#dc2626',
+                  fontWeight: 500,
                 }}
               >
-                <AlertTriangle size={14} style={{ flexShrink: 0, marginTop: 2 }} />
+                <ShieldAlert size={14} style={{ flexShrink: 0 }} />
                 <span>{anomaly.summary}</span>
               </div>
             )}
 
-            {/* Navigation Tabs */}
-            <div
-              style={{
-                display: 'flex',
-                gap: 4,
-                padding: '8px 12px 6px',
-                borderBottom: '1px solid var(--border-color, rgba(255, 255, 255, 0.06))',
-                background: 'rgba(0,0,0,0.1)',
-              }}
-            >
-              <button
-                type="button"
-                className={`ops-tab-btn ${tab === 'sync' ? 'active' : ''}`}
-                onClick={() => setTab('sync')}
-              >
-                <Zap size={12} /> Sync ({syncEvents.length})
-              </button>
-              <button
-                type="button"
-                className={`ops-tab-btn ${tab === 'security' ? 'active' : ''}`}
-                onClick={() => setTab('security')}
-              >
-                <Shield size={12} /> Security ({securityEvents.length})
-              </button>
-              <button
-                type="button"
-                className={`ops-tab-btn ${tab === 'leads' ? 'active' : ''}`}
-                onClick={() => setTab('leads')}
-              >
-                <MessageSquare size={12} /> Leads {hotLeadCount > 0 && <span className="ops-badge-hot">{hotLeadCount} HOT</span>}
-              </button>
+            {/* Tabs */}
+            <div style={{ display: 'flex', gap: '6px', padding: '10px 14px 4px' }}>
+              <TabButton active={tab === 'sync'} onClick={() => setTab('sync')} icon={Zap} count={syncEvents.length}>
+                Sync
+              </TabButton>
+              <TabButton active={tab === 'security'} onClick={() => setTab('security')} icon={ShieldCheck} count={securityEvents.length}>
+                Security
+              </TabButton>
+              <TabButton active={tab === 'leads'} onClick={() => setTab('leads')} icon={MessageSquare} count={hotLeadCount}>
+                Leads
+              </TabButton>
             </div>
 
-            {/* Sub-header Filter & Tamper-Evident Export Row */}
+            {/* Filter Row */}
             <div
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                padding: '6px 14px',
-                fontSize: 11,
+                padding: '8px 16px 4px',
+                fontSize: '12px',
                 color: 'var(--text-muted, #94a3b8)',
-                borderBottom: '1px solid var(--border-color, rgba(255, 255, 255, 0.04))',
               }}
             >
-              <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
                 <input
                   type="checkbox"
                   checked={unreadOnly}
                   onChange={(e) => setUnreadOnly(e.target.checked)}
-                  style={{ cursor: 'pointer', accentColor: 'var(--primary-blue, #3b82f6)' }}
+                  style={{ width: '13px', height: '13px', cursor: 'pointer', accentColor: 'var(--text-primary, #0f172a)' }}
                 />
                 <span>Unread only</span>
               </label>
 
-              <div style={{ display: 'flex', gap: 8 }}>
+              <div style={{ display: 'flex', gap: '12px' }}>
                 <button
                   type="button"
                   onClick={() => handleExport('json')}
-                  title="Export with rolling SHA-256 hash chains"
                   style={{
-                    background: 'transparent',
+                    background: 'none',
                     border: 'none',
-                    color: 'var(--text-muted, #94a3b8)',
-                    fontSize: 10.5,
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 3,
-                    fontWeight: 600,
+                    gap: '4px',
+                    fontSize: '12px',
+                    color: 'var(--text-muted, #94a3b8)',
+                    fontWeight: 500,
                   }}
                 >
-                  <Download size={11} /> JSON
+                  <Download size={12} /> JSON
                 </button>
                 <button
                   type="button"
                   onClick={() => handleExport('csv')}
-                  title="Export audit logs as CSV"
                   style={{
-                    background: 'transparent',
+                    background: 'none',
                     border: 'none',
-                    color: 'var(--text-muted, #94a3b8)',
-                    fontSize: 10.5,
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 3,
-                    fontWeight: 600,
+                    gap: '4px',
+                    fontSize: '12px',
+                    color: 'var(--text-muted, #94a3b8)',
+                    fontWeight: 500,
                   }}
                 >
-                  <Download size={11} /> CSV
+                  <Download size={12} /> CSV
                 </button>
               </div>
             </div>
 
-            {/* List Body */}
-            <div style={{ maxHeight: 260, overflowY: 'auto', padding: '6px 10px' }}>
+            {/* Body List */}
+            <div style={{ maxHeight: '260px', overflowY: 'auto', padding: '6px 12px 10px' }}>
               {/* TAB 1: SYNC */}
               {tab === 'sync' && (
-                <div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
                   {syncEvents.length === 0 ? (
-                    <EmptyState label="No sync events yet" />
+                    <EmptyState label="No sync activity yet" />
                   ) : (
                     syncEvents.map((e) => (
                       <div
                         key={e.id}
                         style={{
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: '10px',
                           padding: '8px 10px',
-                          borderRadius: 8,
-                          marginBottom: 4,
-                          backgroundColor: 'rgba(255, 255, 255, 0.02)',
-                          border: '1px solid var(--border-color, rgba(255, 255, 255, 0.04))',
+                          borderRadius: '12px',
+                          fontSize: '13px',
+                          backgroundColor: 'rgba(128, 128, 128, 0.04)',
                         }}
                       >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary, #fff)' }}>
-                            {e.type === 'rollup' ? (
-                              <>🧠 {e.count} Live Syncs Buffered</>
-                            ) : (
-                              <>⚡ {e.table?.replace(/_/g, ' ').toUpperCase()} ({e.op})</>
-                            )}
-                          </span>
-                          <span style={{ fontSize: 10, color: 'var(--text-muted, #94a3b8)' }}>
-                            {relativeTime(e.ts)}
-                          </span>
+                        <div
+                          style={{
+                            width: '24px',
+                            height: '24px',
+                            borderRadius: '50%',
+                            backgroundColor: 'rgba(59, 130, 246, 0.12)',
+                            color: '#2563eb',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                            marginTop: '2px',
+                          }}
+                        >
+                          <Zap size={12} />
                         </div>
-                        <p style={{ margin: '2px 0 0', fontSize: 11, color: 'var(--text-muted, #94a3b8)' }}>
-                          {e.type === 'rollup'
-                            ? `Tables: ${e.tables?.join(', ')}`
-                            : `PostgreSQL WebSocket mutation synced (~${e.pingMs || 1}ms)`}
-                        </p>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ margin: 0, fontWeight: 500, color: 'var(--text-primary, #0f172a)' }}>
+                            {e.type === 'rollup'
+                              ? `${e.count} live syncs buffered — ${e.tables.join(', ')}`
+                              : `${e.table} ${e.op}`}
+                          </p>
+                          <p style={{ margin: '2px 0 0', fontSize: '11px', color: 'var(--text-muted, #94a3b8)' }}>
+                            {relativeTime(e.ts)}
+                          </p>
+                        </div>
                       </div>
                     ))
                   )}
@@ -940,76 +939,84 @@ export default function OperationsAndSyncCenter({
 
               {/* TAB 2: SECURITY */}
               {tab === 'security' && (
-                <div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
                   {securityEvents.length === 0 ? (
-                    <EmptyState label="No security events detected" />
+                    <EmptyState label="No security events yet" />
                   ) : (
                     securityEvents.map((e) => (
                       <div
                         key={e.id}
                         style={{
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: '10px',
                           padding: '8px 10px',
-                          borderRadius: 8,
-                          marginBottom: 4,
-                          backgroundColor: 'rgba(239, 68, 68, 0.03)',
-                          border: '1px solid rgba(239, 68, 68, 0.12)',
+                          borderRadius: '12px',
+                          fontSize: '13px',
+                          backgroundColor: 'rgba(128, 128, 128, 0.04)',
                         }}
                       >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary, #fff)', display: 'flex', alignItems: 'center', gap: 5 }}>
-                            <Shield size={12} color="#ef4444" />
-                            {e.type?.replaceAll('_', ' ').toUpperCase()}
-                          </span>
-                          <span style={{ fontSize: 10, color: 'var(--text-muted, #94a3b8)' }}>
-                            {relativeTime(e.ts)}
-                          </span>
+                        <div
+                          style={{
+                            width: '24px',
+                            height: '24px',
+                            borderRadius: '50%',
+                            backgroundColor: 'rgba(128, 128, 128, 0.12)',
+                            color: 'var(--text-primary, #0f172a)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                            marginTop: '2px',
+                          }}
+                        >
+                          <ShieldCheck size={12} />
                         </div>
-                        <p style={{ margin: '2px 0 0', fontSize: 11, color: 'var(--text-muted, #94a3b8)' }}>
-                          {e.detail || 'Client session security event intercepted'}
-                        </p>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ margin: 0, fontWeight: 500, color: 'var(--text-primary, #0f172a)', textTransform: 'capitalize' }}>
+                            {e.type}
+                          </p>
+                          <p style={{ margin: '2px 0 0', fontSize: '11px', color: 'var(--text-muted, #94a3b8)' }}>
+                            {relativeTime(e.ts)}
+                          </p>
+                        </div>
                       </div>
                     ))
                   )}
                 </div>
               )}
 
-              {/* TAB 3: LEADS & INQUIRIES */}
+              {/* TAB 3: LEADS */}
               {tab === 'leads' && (
-                <div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   {displayLeads.length === 0 ? (
-                    <EmptyState label="No leads or inquiries" />
+                    <EmptyState label="No inquiries yet" />
                   ) : (
                     displayLeads.map((l) => (
                       <div
                         key={l.id}
                         onClick={() => markLeadRead(l.id)}
                         style={{
-                          padding: '10px',
-                          borderRadius: 9,
-                          marginBottom: 5,
-                          backgroundColor: l.read ? 'rgba(255, 255, 255, 0.01)' : 'color-mix(in srgb, var(--primary-blue, #3b82f6) 6%, rgba(255,255,255,0.02))',
-                          border: `1px solid ${l.read ? 'var(--border-color, rgba(255, 255, 255, 0.04))' : 'var(--primary-blue, #3b82f6)'}`,
+                          padding: '10px 12px',
+                          borderRadius: '12px',
+                          fontSize: '13px',
+                          backgroundColor: 'rgba(128, 128, 128, 0.04)',
                           cursor: 'pointer',
                         }}
                       >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 6 }}>
-                          <div>
-                            <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary, #fff)' }}>
-                              {l.name || l.email}
-                            </div>
-                            <div style={{ fontSize: 10.5, color: 'var(--text-muted, #94a3b8)' }}>{l.email}</div>
-                          </div>
-                          <span className={`ops-badge-${(l.bucket || 'warm').toLowerCase()}`}>
-                            {l.bucket} · {l.score}pts
-                          </span>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <p style={{ margin: 0, fontWeight: 600, color: 'var(--text-primary, #0f172a)' }}>
+                            {l.name || l.email}
+                          </p>
+                          <Badge tone={l.bucket?.toLowerCase()}>{l.bucket} · {l.score}</Badge>
                         </div>
-                        <p style={{ margin: '6px 0 6px', fontSize: 11, color: 'var(--text-secondary, #cbd5e1)', lineHeight: 1.35 }}>
+                        <p style={{ margin: '3px 0 0', fontSize: '12px', color: 'var(--text-secondary, #475569)', lineHeight: 1.4 }}>
                           {l.message}
                         </p>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 4 }}>
-                          <span style={{ fontSize: 10, color: 'var(--text-muted, #94a3b8)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '6px' }}>
+                          <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-muted, #94a3b8)' }}>
                             {relativeTime(l.ts)}
-                          </span>
+                          </p>
                           <button
                             type="button"
                             onClick={(e) => {
@@ -1017,20 +1024,19 @@ export default function OperationsAndSyncCenter({
                               handleCopyEmail(l.email);
                             }}
                             style={{
-                              background: 'rgba(59, 130, 246, 0.1)',
-                              border: '1px solid rgba(59, 130, 246, 0.25)',
-                              borderRadius: 5,
-                              color: 'var(--primary-blue, #3b82f6)',
-                              fontSize: 10,
-                              fontWeight: 700,
-                              padding: '2px 7px',
+                              background: 'none',
+                              border: 'none',
                               cursor: 'pointer',
                               display: 'flex',
                               alignItems: 'center',
-                              gap: 3,
+                              gap: '4px',
+                              fontSize: '11px',
+                              color: 'var(--text-secondary, #64748b)',
+                              fontWeight: 500,
+                              padding: 0,
                             }}
                           >
-                            <Copy size={10} /> Copy Email
+                            <Mail size={11} /> Copy email
                           </button>
                         </div>
                       </div>
@@ -1040,36 +1046,36 @@ export default function OperationsAndSyncCenter({
               )}
             </div>
 
-            {/* Quick Actions Grid */}
+            {/* Quick Action Buttons */}
             <div
               style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(3, 1fr)',
-                gap: 6,
-                padding: '10px 12px',
-                borderTop: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
-                background: 'rgba(0,0,0,0.15)',
+                gap: '8px',
+                padding: '10px 14px',
+                borderTop: '1px solid var(--border-color, #f1f5f9)',
               }}
             >
               <button
                 type="button"
                 onClick={handlePurgeCache}
                 style={{
-                  padding: '7px 4px',
-                  borderRadius: 7,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  border: '1px solid var(--border-color, rgba(255, 255, 255, 0.1))',
-                  background: 'var(--bg-primary, rgba(255, 255, 255, 0.04))',
-                  color: 'var(--text-primary, #fff)',
-                  cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: 4,
+                  gap: '5px',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                  padding: '6px 0',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-color, #e2e8f0)',
+                  backgroundColor: 'var(--bg-secondary, #ffffff)',
+                  color: 'var(--text-primary, #0f172a)',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
                 }}
               >
-                <RefreshCw size={11} /> Purge Cache
+                <RefreshCw size={12} /> Purge cache
               </button>
               <button
                 type="button"
@@ -1078,88 +1084,79 @@ export default function OperationsAndSyncCenter({
                   else window.location.href = '/admin/dashboard';
                 }}
                 style={{
-                  padding: '7px 4px',
-                  borderRadius: 7,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  border: '1px solid var(--border-color, rgba(255, 255, 255, 0.1))',
-                  background: 'var(--bg-primary, rgba(255, 255, 255, 0.04))',
-                  color: 'var(--text-primary, #fff)',
-                  cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: 4,
+                  gap: '5px',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                  padding: '6px 0',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-color, #e2e8f0)',
+                  backgroundColor: 'var(--bg-secondary, #ffffff)',
+                  color: 'var(--text-primary, #0f172a)',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
                 }}
               >
-                <Shield size={11} /> Security Audit
+                <ShieldCheck size={12} /> Security audit
               </button>
               <button
                 type="button"
                 onClick={() => handleCopyEmail(adminEmail)}
                 style={{
-                  padding: '7px 4px',
-                  borderRadius: 7,
-                  fontSize: 11,
-                  fontWeight: 700,
-                  border: '1px solid var(--border-color, rgba(255, 255, 255, 0.1))',
-                  background: 'var(--bg-primary, rgba(255, 255, 255, 0.04))',
-                  color: 'var(--text-primary, #fff)',
-                  cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: 4,
+                  gap: '5px',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                  padding: '6px 0',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-color, #e2e8f0)',
+                  backgroundColor: 'var(--bg-secondary, #ffffff)',
+                  color: 'var(--text-primary, #0f172a)',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
                 }}
               >
-                <Copy size={11} /> Copy My Email
+                <Mail size={12} /> Copy my email
               </button>
             </div>
 
-            {/* Toast Feedback */}
             {copyStatus && (
-              <div style={{ textAlign: 'center', fontSize: 11, color: '#10b981', fontWeight: 600, paddingBottom: 6 }}>
+              <p style={{ textAlign: 'center', fontSize: '11px', color: '#059669', margin: '0 0 6px', fontWeight: 600 }}>
                 {copyStatus}
-              </div>
+              </p>
             )}
 
-            {/* Footer Live Telemetry Strip */}
+            {/* Footer Telemetry Strip */}
             <div
               style={{
-                padding: '8px 14px',
-                borderTop: '1px solid var(--border-color, rgba(255, 255, 255, 0.08))',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                fontSize: 10.5,
-                color: 'var(--text-muted, #94a3b8)',
-                background: 'var(--bg-primary, #090a0d)',
+                padding: '9px 16px',
+                borderTop: '1px solid var(--border-color, #f1f5f9)',
+                backgroundColor: 'rgba(128, 128, 128, 0.04)',
+                fontSize: '11px',
+                color: 'var(--text-muted, #64748b)',
               }}
             >
-              <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 6px #10b981' }} />
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Circle size={7} style={{ fill: '#10b981', color: '#10b981' }} />
                 <span>{visitorCount || 1} active session{visitorCount === 1 ? '' : 's'}</span>
               </span>
               <span style={{ fontFamily: 'monospace' }}>
-                {latency !== null ? `⚡ ${latency}ms` : '⚡ 18ms'}
+                {latency !== null ? `${latency}ms` : '14ms'}
               </span>
-              <span style={{ color: availability.isWorkHours ? '#10b981' : 'var(--text-muted, #94a3b8)' }}>
-                {availability.isWorkHours ? '● Available' : '○ Off hours'} · {availability.localLabel}
+              <span style={{ color: availability.isWorkHours ? '#059669' : 'var(--text-muted, #94a3b8)', fontWeight: availability.isWorkHours ? 600 : 400 }}>
+                {availability.isWorkHours ? 'Available now' : 'Off hours'} · {availability.localLabel}
               </span>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
-  );
-}
-
-function EmptyState({ label }) {
-  return (
-    <div style={{ padding: '24px 12px', textAlign: 'center', color: 'var(--text-muted, #94a3b8)' }}>
-      <Activity size={20} style={{ opacity: 0.3, marginBottom: 4 }} />
-      <div style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--text-primary, #fff)' }}>{label}</div>
-      <div style={{ fontSize: 10, marginTop: 2 }}>All systems normal & monitored</div>
     </div>
   );
 }
