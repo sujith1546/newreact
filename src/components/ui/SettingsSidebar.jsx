@@ -18,12 +18,9 @@ import {
   Info,
   ExternalLink,
   Zap,
-  Shield,
-  Sliders,
   CheckCircle2,
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
-import { usePersona } from '../../context/PersonaContext';
 
 /* ─── Accent palette ─────────────────────────────────────── */
 const ACCENTS = [
@@ -118,13 +115,13 @@ export default function SettingsSidebar() {
         width: '42px',
         height: '24px',
         borderRadius: '9999px',
-        backgroundColor: checked ? color : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'),
+        backgroundColor: checked ? color : (isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.15)'),
         border: 'none',
         cursor: 'pointer',
         position: 'relative',
         transition: 'background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
         flexShrink: 0,
-        boxShadow: checked ? `0 0 10px ${color}40` : 'none',
+        boxShadow: checked ? `0 0 12px ${color}55` : 'none',
       }}
     >
       <motion.div
@@ -138,7 +135,7 @@ export default function SettingsSidebar() {
           position: 'absolute',
           top: '3px',
           left: checked ? '21px' : '3px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.25)',
+          boxShadow: '0 1px 4px rgba(0,0,0,0.35)',
         }}
       />
     </button>
@@ -151,35 +148,35 @@ export default function SettingsSidebar() {
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '12px 14px',
-        borderRadius: '12px',
-        backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-        border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}`,
+        borderRadius: '14px',
+        backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)',
+        border: `1px solid ${isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)'}`,
         marginBottom: '8px',
-        transition: 'background-color 0.15s ease',
+        transition: 'all 0.15s ease',
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
         <div
           style={{
-            width: '32px',
-            height: '32px',
-            borderRadius: '9px',
+            width: '34px',
+            height: '34px',
+            borderRadius: '10px',
             flexShrink: 0,
-            backgroundColor: danger ? 'rgba(239,68,68,0.12)' : `${iconColor}16`,
+            backgroundColor: danger ? 'rgba(239,68,68,0.15)' : `${iconColor}20`,
             color: danger ? '#ef4444' : iconColor,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
           }}
         >
-          <Icon size={15} />
+          <Icon size={16} />
         </div>
         <div>
           <div
             style={{
-              fontSize: '13px',
+              fontSize: '13.5px',
               fontWeight: 600,
-              color: danger ? '#ef4444' : (isDark ? '#f1f5f9' : '#0f172a'),
+              color: danger ? '#ef4444' : (isDark ? '#f8fafc' : '#0f172a'),
             }}
           >
             {label}
@@ -226,31 +223,31 @@ export default function SettingsSidebar() {
         alignItems: 'center',
         gap: '12px',
         padding: '12px 14px',
-        borderRadius: '12px',
-        border: `1px solid ${danger ? 'rgba(239,68,68,0.2)' : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)')}`,
+        borderRadius: '14px',
+        border: `1px solid ${danger ? 'rgba(239,68,68,0.25)' : (isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)')}`,
         cursor: 'pointer',
-        backgroundColor: danger ? 'rgba(239,68,68,0.06)' : (isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'),
+        backgroundColor: danger ? 'rgba(239,68,68,0.08)' : (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)'),
         marginBottom: '8px',
         textAlign: 'left',
         transition: 'all 0.15s ease',
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.backgroundColor = danger
-          ? 'rgba(239,68,68,0.12)'
-          : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)');
+          ? 'rgba(239,68,68,0.16)'
+          : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)');
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.backgroundColor = danger
-          ? 'rgba(239,68,68,0.06)'
-          : (isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)');
+          ? 'rgba(239,68,68,0.08)'
+          : (isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)');
       }}
     >
       <div
         style={{
-          width: '32px',
-          height: '32px',
-          borderRadius: '9px',
-          backgroundColor: danger ? 'rgba(239,68,68,0.12)' : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'),
+          width: '34px',
+          height: '34px',
+          borderRadius: '10px',
+          backgroundColor: danger ? 'rgba(239,68,68,0.15)' : (isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)'),
           color: danger ? '#ef4444' : (isDark ? '#e2e8f0' : '#475569'),
           display: 'flex',
           alignItems: 'center',
@@ -258,10 +255,10 @@ export default function SettingsSidebar() {
           flexShrink: 0,
         }}
       >
-        <Icon size={15} />
+        <Icon size={16} />
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: '13px', fontWeight: 600, color: danger ? '#ef4444' : (isDark ? '#f1f5f9' : '#0f172a') }}>
+        <div style={{ fontSize: '13.5px', fontWeight: 600, color: danger ? '#ef4444' : (isDark ? '#f8fafc' : '#0f172a') }}>
           {label}
         </div>
         {sublabel && (
@@ -292,8 +289,10 @@ export default function SettingsSidebar() {
               style={{
                 padding: '14px',
                 borderRadius: '14px',
-                border: !isDark ? `2px solid ${currentAccent}` : `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
-                backgroundColor: !isDark ? 'rgba(59,130,246,0.04)' : (isDark ? 'rgba(255,255,255,0.02)' : '#ffffff'),
+                border: !isDark ? `2px solid ${currentAccent}` : `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}`,
+                backgroundColor: !isDark
+                  ? `${currentAccent}0c`
+                  : (isDark ? '#131b2e' : '#ffffff'),
                 cursor: 'pointer',
                 display: 'flex',
                 flexDirection: 'column',
@@ -308,7 +307,7 @@ export default function SettingsSidebar() {
                   width: '40px',
                   height: '40px',
                   borderRadius: '50%',
-                  backgroundColor: '#f1f5f9',
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : '#f1f5f9',
                   color: '#f59e0b',
                   display: 'flex',
                   alignItems: 'center',
@@ -317,7 +316,7 @@ export default function SettingsSidebar() {
               >
                 <Sun size={20} />
               </div>
-              <span style={{ fontSize: '13px', fontWeight: 600, color: isDark ? '#e2e8f0' : '#0f172a' }}>
+              <span style={{ fontSize: '13px', fontWeight: 600, color: isDark ? '#cbd5e1' : '#0f172a' }}>
                 Light
               </span>
               {!isDark && (
@@ -352,7 +351,9 @@ export default function SettingsSidebar() {
                 padding: '14px',
                 borderRadius: '14px',
                 border: isDark ? `2px solid ${currentAccent}` : `1px solid rgba(0,0,0,0.08)`,
-                backgroundColor: isDark ? 'rgba(59,130,246,0.08)' : '#f8fafc',
+                backgroundColor: isDark
+                  ? `${currentAccent}18`
+                  : '#f8fafc',
                 cursor: 'pointer',
                 display: 'flex',
                 flexDirection: 'column',
@@ -367,7 +368,7 @@ export default function SettingsSidebar() {
                   width: '40px',
                   height: '40px',
                   borderRadius: '50%',
-                  backgroundColor: '#1e293b',
+                  backgroundColor: isDark ? 'rgba(56, 189, 248, 0.15)' : '#1e293b',
                   color: '#38bdf8',
                   display: 'flex',
                   alignItems: 'center',
@@ -376,7 +377,7 @@ export default function SettingsSidebar() {
               >
                 <Moon size={20} />
               </div>
-              <span style={{ fontSize: '13px', fontWeight: 600, color: isDark ? '#e2e8f0' : '#0f172a' }}>
+              <span style={{ fontSize: '13px', fontWeight: 600, color: isDark ? '#f8fafc' : '#0f172a' }}>
                 Dark
               </span>
               {isDark && (
@@ -405,10 +406,10 @@ export default function SettingsSidebar() {
           <SectionHeading title="Accent Color" />
           <div
             style={{
-              padding: '12px 14px',
+              padding: '14px',
               borderRadius: '14px',
-              backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-              border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}`,
+              backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)',
+              border: `1px solid ${isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)'}`,
               marginBottom: '14px',
             }}
           >
@@ -434,7 +435,9 @@ export default function SettingsSidebar() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       position: 'relative',
-                      boxShadow: isSelected ? `0 0 0 3px ${isDark ? '#0f172a' : '#ffffff'}, 0 0 0 5px ${acc.hex}` : 'none',
+                      boxShadow: isSelected
+                        ? `0 0 0 3px ${isDark ? '#0b0f19' : '#ffffff'}, 0 0 0 5.5px ${acc.hex}, 0 0 14px ${acc.hex}80`
+                        : 'none',
                       transform: isSelected ? 'scale(1.08)' : 'scale(1)',
                       transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
                     }}
@@ -452,14 +455,14 @@ export default function SettingsSidebar() {
             style={{
               padding: '14px',
               borderRadius: '14px',
-              backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-              border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)'}`,
+              backgroundColor: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)',
+              border: `1px solid ${isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)'}`,
               marginBottom: '8px',
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-              <Layers size={14} style={{ color: currentAccent }} />
-              <span style={{ fontSize: '12.5px', fontWeight: 600, color: isDark ? '#cbd5e1' : '#475569' }}>
+              <Layers size={15} style={{ color: currentAccent }} />
+              <span style={{ fontSize: '13px', fontWeight: 600, color: isDark ? '#e2e8f0' : '#475569' }}>
                 Blur Intensity
               </span>
               <span
@@ -469,7 +472,7 @@ export default function SettingsSidebar() {
                   fontWeight: 700,
                   padding: '2px 8px',
                   borderRadius: '9999px',
-                  backgroundColor: `${currentAccent}18`,
+                  backgroundColor: `${currentAccent}22`,
                   color: currentAccent,
                   textTransform: 'capitalize',
                 }}
@@ -492,13 +495,13 @@ export default function SettingsSidebar() {
                     cursor: 'pointer',
                     border: 'none',
                     backgroundColor: glassIntensity === lvl
-                      ? `${currentAccent}22`
-                      : (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'),
-                    color: glassIntensity === lvl ? currentAccent : (isDark ? '#94a3b8' : '#64748b'),
+                      ? `${currentAccent}26`
+                      : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)'),
+                    color: glassIntensity === lvl ? currentAccent : (isDark ? '#cbd5e1' : '#64748b'),
                     fontWeight: 700,
                     fontSize: '12px',
                     textTransform: 'capitalize',
-                    boxShadow: glassIntensity === lvl ? `inset 0 0 0 1px ${currentAccent}55` : 'none',
+                    boxShadow: glassIntensity === lvl ? `inset 0 0 0 1px ${currentAccent}60` : 'none',
                     transition: 'all 0.15s ease',
                   }}
                 >
@@ -527,6 +530,7 @@ export default function SettingsSidebar() {
                 setAiAutoNav(v);
                 showToast(v ? 'Auto-nav enabled' : 'Auto-nav disabled');
               }}
+              color="#10b981"
             />
           </SettingRow>
 
@@ -559,13 +563,13 @@ export default function SettingsSidebar() {
             style={{
               padding: '14px',
               borderRadius: '14px',
-              backgroundColor: isDark ? 'rgba(139,92,246,0.08)' : 'rgba(139,92,246,0.05)',
-              border: `1px solid ${isDark ? 'rgba(139,92,246,0.2)' : 'rgba(139,92,246,0.15)'}`,
+              backgroundColor: isDark ? 'rgba(139,92,246,0.12)' : 'rgba(139,92,246,0.05)',
+              border: `1px solid ${isDark ? 'rgba(139,92,246,0.28)' : 'rgba(139,92,246,0.15)'}`,
             }}
           >
             <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-              <Info size={15} style={{ color: '#8b5cf6', marginTop: '2px', flexShrink: 0 }} />
-              <p style={{ margin: 0, fontSize: '12px', lineHeight: 1.6, color: isDark ? '#cbd5e1' : '#475569' }}>
+              <Info size={16} style={{ color: '#a78bfa', marginTop: '2px', flexShrink: 0 }} />
+              <p style={{ margin: 0, fontSize: '12px', lineHeight: 1.6, color: isDark ? '#e2e8f0' : '#475569' }}>
                 Powered by <strong style={{ color: isDark ? '#c4b5fd' : '#7c3aed' }}>Groq LLaMA 3.3</strong> with
                 local vector similarity embeddings. Grounded on Sujith's project knowledge.
               </p>
@@ -630,8 +634,8 @@ export default function SettingsSidebar() {
             style={{
               padding: '14px',
               borderRadius: '14px',
-              backgroundColor: 'rgba(239,68,68,0.06)',
-              border: '1px solid rgba(239,68,68,0.18)',
+              backgroundColor: isDark ? 'rgba(239,68,68,0.1)' : 'rgba(239,68,68,0.06)',
+              border: `1px solid ${isDark ? 'rgba(239,68,68,0.25)' : 'rgba(239,68,68,0.18)'}`,
             }}
           >
             <p style={{ margin: '0 0 12px', fontSize: '12px', color: isDark ? '#fca5a5' : '#b91c1c', lineHeight: 1.5 }}>
@@ -644,8 +648,8 @@ export default function SettingsSidebar() {
                 width: '100%',
                 padding: '10px',
                 borderRadius: '10px',
-                border: '1px solid rgba(239,68,68,0.3)',
-                backgroundColor: 'rgba(239,68,68,0.12)',
+                border: `1px solid ${isDark ? 'rgba(239,68,68,0.4)' : 'rgba(239,68,68,0.3)'}`,
+                backgroundColor: isDark ? 'rgba(239,68,68,0.2)' : 'rgba(239,68,68,0.12)',
                 color: '#ef4444',
                 fontWeight: 700,
                 fontSize: '13px',
@@ -656,8 +660,8 @@ export default function SettingsSidebar() {
                 gap: '8px',
                 transition: 'all 0.15s ease',
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.22)')}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.12)')}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = isDark ? 'rgba(239,68,68,0.3)' : 'rgba(239,68,68,0.22)')}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = isDark ? 'rgba(239,68,68,0.2)' : 'rgba(239,68,68,0.12)')}
             >
               <Trash2 size={15} />
               <span>Factory Reset Preferences</span>
@@ -684,7 +688,7 @@ export default function SettingsSidebar() {
               position: 'fixed',
               inset: 0,
               zIndex: 2000000,
-              backgroundColor: isDark ? 'rgba(0,0,0,0.6)' : 'rgba(15,23,42,0.3)',
+              backgroundColor: isDark ? 'rgba(0,0,0,0.7)' : 'rgba(15,23,42,0.3)',
               backdropFilter: 'blur(8px)',
               WebkitBackdropFilter: 'blur(8px)',
             }}
@@ -704,9 +708,9 @@ export default function SettingsSidebar() {
               bottom: 0,
               width: '100%',
               maxWidth: '390px',
-              backgroundColor: isDark ? 'rgba(15,23,42,0.96)' : 'rgba(255,255,255,0.97)',
+              backgroundColor: isDark ? '#0b0f19' : 'rgba(255,255,255,0.98)',
               borderLeft: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
-              boxShadow: isDark ? '-20px 0 50px rgba(0,0,0,0.6)' : '-16px 0 40px rgba(0,0,0,0.1)',
+              boxShadow: isDark ? '-24px 0 60px rgba(0,0,0,0.8)' : '-16px 0 40px rgba(0,0,0,0.1)',
               backdropFilter: 'blur(16px)',
               WebkitBackdropFilter: 'blur(16px)',
               zIndex: 2000001,
@@ -722,7 +726,7 @@ export default function SettingsSidebar() {
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 padding: '18px 20px 14px',
-                borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
+                borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)'}`,
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -731,7 +735,7 @@ export default function SettingsSidebar() {
                     width: '34px',
                     height: '34px',
                     borderRadius: '10px',
-                    backgroundColor: `${currentAccent}18`,
+                    backgroundColor: `${currentAccent}22`,
                     color: currentAccent,
                     display: 'flex',
                     alignItems: 'center',
@@ -762,7 +766,7 @@ export default function SettingsSidebar() {
                   height: '32px',
                   borderRadius: '50%',
                   border: 'none',
-                  backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)',
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
                   color: isDark ? '#94a3b8' : '#64748b',
                   display: 'flex',
                   alignItems: 'center',
@@ -771,11 +775,11 @@ export default function SettingsSidebar() {
                   transition: 'all 0.15s ease',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)';
+                  e.currentTarget.style.backgroundColor = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)';
                   e.currentTarget.style.color = isDark ? '#ffffff' : '#0f172a';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)';
+                  e.currentTarget.style.backgroundColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)';
                   e.currentTarget.style.color = isDark ? '#94a3b8' : '#64748b';
                 }}
               >
@@ -789,7 +793,7 @@ export default function SettingsSidebar() {
                 display: 'flex',
                 padding: '8px 16px',
                 gap: '4px',
-                borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
+                borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)'}`,
                 backgroundColor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)',
               }}
             >
@@ -845,12 +849,12 @@ export default function SettingsSidebar() {
             <div
               style={{
                 padding: '11px 18px',
-                borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
+                borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)'}`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '6px',
-                backgroundColor: isDark ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.02)',
+                backgroundColor: isDark ? 'rgba(0,0,0,0.25)' : 'rgba(0,0,0,0.02)',
               }}
             >
               <CheckCircle2 size={13} style={{ color: '#10b981' }} />
@@ -875,7 +879,7 @@ export default function SettingsSidebar() {
                   left: '50%',
                   transform: 'translateX(-50%)',
                   zIndex: 2000002,
-                  backgroundColor: isDark ? 'rgba(15,23,42,0.95)' : 'rgba(15,23,42,0.92)',
+                  backgroundColor: isDark ? 'rgba(15,23,42,0.96)' : 'rgba(15,23,42,0.92)',
                   color: '#ffffff',
                   padding: '9px 16px',
                   borderRadius: '9999px',
