@@ -4,7 +4,7 @@ import DarkModeToggle from '../ui/DarkModeToggle';
 import SettingsDropdown from '../ui/SettingsDropdown';
 import GetInTouchDropdown from './GetInTouchDropdown';
 import NetworkSignalWidget from './NetworkSignalWidget';
-import OperationsAndSyncCenter from '../ui/OperationsAndSyncCenter';
+import NotificationCenter from '../ui/NotificationCenter';
 import { useSupabasePresence } from '../../hooks/useSupabasePresence';
 import { useTheme } from '../../context/ThemeContext';
 import { supabase } from '../../lib/supabaseClient';
@@ -523,15 +523,10 @@ export default function TimezoneStatus() {
           </span>
         </div>
 
-        <OperationsAndSyncCenter
-          supabaseClient={supabase}
-          adminEmail="sujithreddy1546@gmail.com"
-          onPurgeCache={() => {
-            window.dispatchEvent(new CustomEvent('pcms_force_refresh'));
-          }}
-          onSecurityAudit={() => {
-            window.location.href = '/admin/dashboard';
-          }}
+        <NotificationCenter
+          notifications={notifications}
+          onMarkAllRead={handleMarkAllRead}
+          onMarkOneRead={handleMarkOneRead}
         />
         <NetworkSignalWidget />
         <DarkModeToggle />
