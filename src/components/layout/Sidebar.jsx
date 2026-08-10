@@ -265,25 +265,9 @@ export default function Sidebar({ activeSection, onNavClick }) {
       <div className="sidebar-divider"></div>
 
       <button
+        type="button"
+        className="share-portfolio-btn"
         onClick={() => setQrOpen(true)}
-        style={{
-          background: "#111111",
-          color: "#ffffff",
-          border: "none",
-          borderRadius: "10px",
-          padding: "11px 20px",
-          fontSize: "14px",
-          fontWeight: 500,
-          width: "100%",
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "8px",
-          cursor: "pointer",
-          transition: "transform 0.15s ease, background 0.15s ease",
-        }}
-        onMouseEnter={(e) => (e.currentTarget.style.background = "#222222")}
-        onMouseLeave={(e) => (e.currentTarget.style.background = "#111111")}
       >
         <QrCode size={16} />
         Share Portfolio

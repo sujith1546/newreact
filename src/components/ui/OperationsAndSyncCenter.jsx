@@ -330,7 +330,7 @@ function useNetworkLatency(pingUrl) {
     const ping = async () => {
       const start = performance.now();
       try {
-        await fetch(pingUrl || '/favicon.ico', { method: 'HEAD', cache: 'no-store' });
+        await fetch(pingUrl || '/favicon.svg', { method: 'HEAD', cache: 'no-store' });
         if (!cancelled) {
           const delta = Math.round(performance.now() - start);
           setLatency(Math.max(4, delta));

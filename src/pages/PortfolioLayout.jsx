@@ -21,7 +21,6 @@ import {
   SectionSpotlight
 } from '../components';
 import ErrorBoundary from '../components/ui/ErrorBoundary';
-import CommandPaletteModal from '../components/ui/CommandPaletteModal';
 
 const Home = lazy(() => import('./Home'));
 const About = lazy(() => import('./About'));
@@ -595,7 +594,6 @@ export default function PortfolioLayout() {
       {!isMobile && <TimezoneStatus />}
       <ChatBot />
       <CommandPalette />
-      <CommandPaletteModal />
       <SettingsSidebar />
 
       {isMobile && <MobileStatusPanel isOpen={isStatusOpen} onClose={() => setIsStatusOpen(false)} />}
