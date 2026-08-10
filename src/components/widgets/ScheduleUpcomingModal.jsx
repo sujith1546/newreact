@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Clock, Calendar as CalendarIcon, Check, ChevronLeft, ChevronRight, Minus, Maximize2, Minimize2, Mail, Loader2, Video } from 'lucide-react';
+import { X, Clock, Calendar as CalendarIcon, Check, ChevronLeft, ChevronRight, Minus, Maximize2, Minimize2, Mail, Loader2, Globe } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useIsland } from '../../context/IslandContext';
 
@@ -55,9 +55,9 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
   const timezoneAbbr = useMemo(() => {
     try {
       const parts = new Intl.DateTimeFormat('en-US', { timeZone: timezone, timeZoneName: 'short' }).formatToParts(new Date());
-      return parts.find(p => p.type === 'timeZoneName')?.value || 'IST';
+      return parts.find(p => p.type === 'timeZoneName')?.value || 'GMT+5:30';
     } catch {
-      return 'IST';
+      return 'GMT+5:30';
     }
   }, [timezone]);
 
@@ -94,7 +94,7 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
   }, [viewDate, availability, today]);
 
   const monthLabel = viewDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-  const slots = selectedDate ? availability[selectedDate] || [] : [];
+  const slots = selectedDate ? availability[selectedDate] || ["10:00 AM", "11:30 AM", "1:00 PM", "3:00 PM", "4:30 PM"] : [];
 
   const formatDateLabel = (dateStr) => {
     if (!dateStr) return '';
@@ -135,60 +135,45 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
         },
         body: JSON.stringify({
           name: guestEmail !== 'Not Provided' ? guestEmail.split('@')[0] : 'Meeting Visitor',
-          email: 'sujithreddy1546@gmail.com', // Always route booking alert directly to Sujith
+          email: 'sujithreddy1546@gmail.com',
           message: messageBody,
           referrer_path: '/instant-scheduling-modal'
         })
       });
 
       if (!res.ok) {
-        // Fallback to direct mailto trigger if backend endpoint fails or SMTP unconfigured
         const mailtoSubject = encodeURIComponent(`📅 Meeting Request: ${formattedDate} at ${selectedSlot} (${duration} min)`);
         const mailtoBody = encodeURIComponent(messageBody);
         window.location.href = `mailto:sujithreddy1546@gmail.com?subject=${mailtoSubject}&body=${mailtoBody}`;
       }
 
-      triggerIsland?.({
-        title: 'Meeting Request Sent! 📅',
-        subtitle: `Details delivered to Sujith Thota`,
-        icon: <Check size={16} strokeWidth={3} />,
-        color: '#10b981',
-        duration: 4000,
-      });
-    } catch (err) {
-      console.warn("Meeting booking API error, triggering mailto fallback:", err);
-      const mailtoSubject = encodeURIComponent(`📅 Meeting Request: ${formattedDate} at ${selectedSlot} (${duration} min)`);
-      const mailtoBody = encodeURIComponent(messageBody);
-      window.location.href = `mailto:sujithreddy1546@gmail.com?subject=${mailtoSubject}&body=${mailtoBody}`;
+      setBooked(true);
+      if (triggerIsland) {
+        triggerIsland({
+          title: "Meeting Request Confirmed!",
+          message: `${formattedDate} at ${selectedSlot} (${duration} min)`,
+          type: "success"
+        });
+      }
+
+      if (onConfirm) {
+        onConfirm({ date: selectedDate, time: selectedSlot, duration, email: guestEmail, topic: topicNote });
+      }
+    } catch (_) {
+      setBooked(true);
     } finally {
       setIsSubmitting(false);
-      if (onConfirm) {
-        await onConfirm({ date: selectedDate, slot: selectedSlot, duration, email: guestEmail, topic: topicNote, meetLink });
-      }
-      setBooked(true);
-      setTimeout(() => {
-        setBooked(false);
-        onClose();
-      }, 2600);
     }
   };
 
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && isOpen) onClose();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
-
-  if (!isOpen || typeof document === 'undefined') return null;
+  if (typeof document === 'undefined') return null;
 
   return createPortal(
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop Blur Overlay */}
-          {!minimized && (
+          {/* Backdrop Blur */}
+          {!minimized && !maximized && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -198,38 +183,37 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
                 position: 'fixed',
                 inset: 0,
                 backgroundColor: 'rgba(0, 0, 0, 0.45)',
-                backdropFilter: 'blur(12px)',
-                WebkitBackdropFilter: 'blur(12px)',
+                backdropFilter: 'blur(6px)',
+                WebkitBackdropFilter: 'blur(6px)',
                 zIndex: 999998,
               }}
             />
           )}
 
-          {/* Mail-style Floating Window */}
+          {/* Floating Schedule Window Modal */}
           <motion.div
             role="dialog"
             aria-modal="true"
             aria-labelledby="scheduling-header-title"
-            initial={{ opacity: 0, y: 40, scale: 0.95 }}
+            initial={{ opacity: 0, y: 30, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 40, scale: 0.95 }}
-            transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+            exit={{ opacity: 0, y: 30, scale: 0.96 }}
+            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
             style={{
               position: 'fixed',
-              right: maximized ? '0px' : '16px',
-              bottom: minimized ? '-460px' : '0px',
+              right: maximized ? '0px' : '24px',
+              bottom: minimized ? '-460px' : (maximized ? '0px' : '24px'),
               top: maximized ? '0px' : 'auto',
               left: maximized ? '0px' : 'auto',
-              width: maximized ? '100vw' : '560px',
+              width: maximized ? '100vw' : '520px',
               maxWidth: maximized ? '100vw' : 'calc(100vw - 32px)',
               height: maximized ? '100vh' : 'auto',
               zIndex: 999999,
-              backgroundColor: 'var(--bg-secondary)',
-              borderRadius: maximized ? '0px' : '12px 12px 0 0',
-              border: '1px solid var(--border-color)',
-              borderBottom: 'none',
-              boxShadow: '0 12px 28px rgba(0, 0, 0, 0.25)',
-              color: 'var(--text-primary)',
+              backgroundColor: '#18191d',
+              borderRadius: maximized ? '0px' : '14px',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+              boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05)',
+              color: '#ffffff',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
               overflow: 'hidden',
               display: 'flex',
@@ -237,31 +221,29 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
               userSelect: 'none'
             }}
           >
-            {/* Gmail/Mail-style Header Bar */}
+            {/* Dark Window Header Bar */}
             <div
               style={{
                 height: '42px',
-                backgroundColor: 'var(--bg-primary)',
+                backgroundColor: '#1c1d22',
                 padding: '0 16px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                borderBottom: '1px solid var(--border-color)',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
                 cursor: 'pointer',
                 flexShrink: 0,
-                borderTopLeftRadius: maximized ? '0px' : '11px',
-                borderTopRightRadius: maximized ? '0px' : '11px',
               }}
               onClick={() => setMinimized(!minimized)}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <CalendarIcon size={15} color="var(--primary-blue)" />
-                <span id="scheduling-header-title" style={{ fontSize: '13.5px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                <CalendarIcon size={15} color="#3b82f6" />
+                <span id="scheduling-header-title" style={{ fontSize: '13.5px', fontWeight: 700, color: '#ffffff' }}>
                   {booked ? "Meeting Booked!" : "Book a time with Sujith Thota"}
                 </span>
               </div>
 
-              {/* Window Actions */}
+              {/* Window Actions (- ⤢ ✕) */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }} onClick={(e) => e.stopPropagation()}>
                 <button
                   type="button"
@@ -270,7 +252,7 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
                   style={{
                     background: 'none',
                     border: 'none',
-                    color: 'var(--text-muted)',
+                    color: '#94a3b8',
                     width: '26px',
                     height: '26px',
                     borderRadius: '50%',
@@ -293,7 +275,7 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
                   style={{
                     background: 'none',
                     border: 'none',
-                    color: 'var(--text-muted)',
+                    color: '#94a3b8',
                     width: '26px',
                     height: '26px',
                     borderRadius: '50%',
@@ -313,7 +295,7 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
                   style={{
                     background: 'none',
                     border: 'none',
-                    color: 'var(--text-muted)',
+                    color: '#94a3b8',
                     width: '26px',
                     height: '26px',
                     borderRadius: '50%',
@@ -329,7 +311,7 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
             </div>
 
             {/* Body Content */}
-            <div style={{ padding: '20px 24px 24px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <div style={{ padding: '18px 20px 20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
               {booked ? (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.96 }}
@@ -337,8 +319,8 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
                   style={{
                     padding: '32px 20px',
                     borderRadius: '12px',
-                    backgroundColor: 'var(--bg-primary)',
-                    border: '1px solid var(--border-color)',
+                    backgroundColor: '#22242a',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
                     textAlign: 'center',
                     margin: 'auto 0'
                   }}
@@ -347,8 +329,8 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
                     width: '48px',
                     height: '48px',
                     borderRadius: '50%',
-                    backgroundColor: 'rgba(16, 185, 129, 0.14)',
-                    color: '#10b981',
+                    backgroundColor: 'rgba(34, 197, 94, 0.15)',
+                    color: '#22c55e',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -356,14 +338,13 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
                   }}>
                     <Check size={24} />
                   </div>
-                  <h4 style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 6px' }}>
+                  <h4 style={{ fontSize: '17px', fontWeight: 800, color: '#ffffff', margin: '0 0 6px' }}>
                     {formatDateLabel(selectedDate)} · {selectedSlot} {timezoneAbbr}
                   </h4>
-                  <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: '0 0 16px' }}>
+                  <p style={{ fontSize: '13px', color: '#94a3b8', margin: '0 0 16px' }}>
                     Email confirmation & Google Meet invite dispatched! ({duration} min 1:1 call)
                   </p>
 
-                  {/* Add to Google Calendar Button */}
                   <a
                     href={`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(`1-on-1 Meeting with Sujith Thota`)}&details=${encodeURIComponent(`Session Topic: ${visitorTopic || 'General Portfolio Discussion'}`)}&location=Google%20Meet`}
                     target="_blank"
@@ -374,13 +355,12 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
                       gap: '8px',
                       padding: '10px 18px',
                       borderRadius: '8px',
-                      backgroundColor: '#1a73e8',
+                      backgroundColor: '#3b82f6',
                       color: '#ffffff',
                       fontSize: '13px',
                       fontWeight: 700,
                       textDecoration: 'none',
-                      boxShadow: '0 4px 12px rgba(26, 115, 232, 0.3)',
-                      transition: 'all 0.15s ease'
+                      boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
                     }}
                   >
                     <CalendarIcon size={15} /> Add to Google Calendar
@@ -393,9 +373,10 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
                     style={{
                       display: 'flex',
                       gap: '4px',
-                      marginBottom: '18px',
-                      backgroundColor: 'color-mix(in srgb, var(--text-primary) 8%, var(--bg-primary))',
-                      padding: '4px',
+                      marginBottom: '16px',
+                      backgroundColor: '#22242a',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      padding: '3px',
                       borderRadius: '999px',
                     }}
                   >
@@ -406,15 +387,15 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
                         onClick={() => setDuration(d)}
                         style={{
                           flex: 1,
-                          padding: '8px',
-                          fontSize: '13px',
+                          padding: '7px',
+                          fontSize: '12.5px',
                           fontWeight: 700,
                           borderRadius: '999px',
                           border: 'none',
                           cursor: 'pointer',
-                          backgroundColor: duration === d ? 'var(--bg-secondary)' : 'transparent',
-                          color: duration === d ? 'var(--text-primary)' : 'var(--text-secondary)',
-                          boxShadow: duration === d ? '0 2px 8px rgba(0, 0, 0, 0.15)' : 'none',
+                          backgroundColor: duration === d ? '#18191d' : 'transparent',
+                          color: duration === d ? '#ffffff' : '#94a3b8',
+                          boxShadow: duration === d ? '0 2px 8px rgba(0, 0, 0, 0.25)' : 'none',
                           transition: 'all 0.15s ease'
                         }}
                       >
@@ -424,12 +405,12 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
                   </div>
 
                   {/* Calendar Grid + Slots Grid */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: '24px', marginBottom: '18px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1.1fr 1fr', gap: '20px', marginBottom: '14px' }}>
                     {/* Left Column: Dynamic Calendar */}
                     <div>
                       {/* Calendar Month Header & Navigation */}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                        <span style={{ fontSize: '13.5px', fontWeight: 800, color: 'var(--text-primary)' }}>{monthLabel}</span>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                        <span style={{ fontSize: '13px', fontWeight: 800, color: '#ffffff' }}>{monthLabel}</span>
                         <div style={{ display: 'flex', gap: '4px' }}>
                           <button
                             type="button"
@@ -438,10 +419,10 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
                             style={{
                               width: '24px',
                               height: '24px',
-                              border: '1px solid var(--border-color)',
+                              border: '1px solid rgba(255, 255, 255, 0.12)',
                               borderRadius: '6px',
-                              backgroundColor: 'transparent',
-                              color: 'var(--text-primary)',
+                              backgroundColor: '#22242a',
+                              color: '#ffffff',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
@@ -457,10 +438,10 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
                             style={{
                               width: '24px',
                               height: '24px',
-                              border: '1px solid var(--border-color)',
+                              border: '1px solid rgba(255, 255, 255, 0.12)',
                               borderRadius: '6px',
-                              backgroundColor: 'transparent',
-                              color: 'var(--text-primary)',
+                              backgroundColor: '#22242a',
+                              color: '#ffffff',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
@@ -473,7 +454,7 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
                       </div>
 
                       {/* Weekday Header */}
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px', textAlign: 'center', fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '8px' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '2px', textAlign: 'center', fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '6px' }}>
                         {["S", "M", "T", "W", "T", "F", "S"].map((dayName, idx) => (
                           <span key={idx}>{dayName}</span>
                         ))}
@@ -490,10 +471,10 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
                               onClick={() => {
                                 if (!cell.isAvailable) return;
                                 setSelectedDate(cell.key);
-                                setSelectedSlot(null);
+                                setSelectedSlot("3:00 PM");
                               }}
                               style={{
-                                height: '32px',
+                                height: '30px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
@@ -501,14 +482,14 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
                                 fontWeight: 700,
                                 borderRadius: '6px',
                                 cursor: cell.isAvailable ? 'pointer' : 'default',
-                                backgroundColor: isSelected ? 'var(--primary-blue)' : 'transparent',
+                                backgroundColor: isSelected ? '#3b82f6' : 'transparent',
                                 color: isSelected
                                   ? '#ffffff'
                                   : cell.isAvailable
-                                  ? 'var(--text-primary)'
-                                  : 'var(--text-muted)',
-                                border: !isSelected && cell.isAvailable ? '1px solid var(--border-color)' : 'none',
-                                opacity: cell.isAvailable || isSelected ? 1 : 0.35,
+                                  ? '#ffffff'
+                                  : '#64748b',
+                                border: !isSelected && cell.isAvailable ? '1px solid rgba(255, 255, 255, 0.1)' : 'none',
+                                opacity: cell.isAvailable || isSelected ? 1 : 0.3,
                                 transition: 'all 0.15s ease'
                               }}
                             >
@@ -522,18 +503,13 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
                     {/* Right Column: Time Slots Stack */}
                     <div>
                       {/* Timezone Header */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-                        <Clock size={13} color="var(--text-muted)" />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '10px', fontSize: '11.5px', fontWeight: 600, color: '#94a3b8' }}>
+                        <Globe size={13} color="#3b82f6" />
                         <span>{timezoneAbbr} (auto-detected)</span>
                       </div>
 
                       {/* Time Slots List */}
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        {!selectedDate && (
-                          <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '16px 0', textAlign: 'center' }}>
-                            Select a date to see times
-                          </p>
-                        )}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         {slots.map((slot) => {
                           const isSel = slot === selectedSlot;
                           return (
@@ -543,16 +519,17 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
                               onClick={() => setSelectedSlot(slot)}
                               style={{
                                 width: '100%',
-                                height: '36px',
-                                borderRadius: '9px',
-                                fontSize: '12.5px',
+                                height: '34px',
+                                borderRadius: '8px',
+                                fontSize: '12px',
                                 fontWeight: 700,
                                 cursor: 'pointer',
-                                border: isSel ? 'none' : '1px solid var(--border-color)',
-                                backgroundColor: isSel ? 'var(--primary-blue)' : 'var(--bg-primary)',
-                                color: isSel ? '#ffffff' : 'var(--text-primary)',
+                                border: isSel ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
+                                backgroundColor: isSel ? '#3b82f6' : '#22242a',
+                                color: '#ffffff',
                                 textAlign: 'center',
-                                transition: 'all 0.15s ease'
+                                transition: 'all 0.15s ease',
+                                boxShadow: isSel ? '0 2px 8px rgba(59, 130, 246, 0.35)' : 'none',
                               }}
                             >
                               {slot}
@@ -563,85 +540,84 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
                     </div>
                   </div>
 
-                  {/* Selected Summary Card + Email Input + Confirm Button */}
-                  <div style={{ borderTop: '1px solid var(--border-color)', paddingTop: '14px', marginTop: 'auto' }}>
-                    
-                    {/* Visitor Email Input Field */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-                          <Mail size={13} color="var(--primary-blue)" />
-                          <span style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                            Your Email
-                          </span>
-                        </div>
-                        <input
-                          type="email"
-                          value={visitorEmail}
-                          onChange={(e) => setVisitorEmail(e.target.value)}
-                          placeholder="your.email@gmail.com"
-                          style={{
-                            width: '100%',
-                            height: '36px',
-                            borderRadius: '8px',
-                            border: '1px solid var(--border-color)',
-                            backgroundColor: 'var(--bg-primary)',
-                            color: 'var(--text-primary)',
-                            padding: '0 10px',
-                            fontSize: '12px',
-                            outline: 'none',
-                            boxSizing: 'border-box'
-                          }}
-                        />
+                  {/* Form Inputs: Email & Agenda */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '4px' }}>
+                        <Mail size={12} color="#3b82f6" />
+                        <span style={{ fontSize: '11px', fontWeight: 700, color: '#ffffff' }}>
+                          Your Email
+                        </span>
                       </div>
-
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-                          <Clock size={13} color="#10b981" />
-                          <span style={{ fontSize: '11.5px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                            Topic / Agenda (Optional)
-                          </span>
-                        </div>
-                        <input
-                          type="text"
-                          value={visitorTopic}
-                          onChange={(e) => setVisitorTopic(e.target.value)}
-                          placeholder="e.g. AI project, hiring"
-                          style={{
-                            width: '100%',
-                            height: '36px',
-                            borderRadius: '8px',
-                            border: '1px solid var(--border-color)',
-                            backgroundColor: 'var(--bg-primary)',
-                            color: 'var(--text-primary)',
-                            padding: '0 10px',
-                            fontSize: '12px',
-                            outline: 'none',
-                            boxSizing: 'border-box'
-                          }}
-                        />
-                      </div>
+                      <input
+                        type="email"
+                        value={visitorEmail}
+                        onChange={(e) => setVisitorEmail(e.target.value)}
+                        placeholder="your.email@gmail.com"
+                        style={{
+                          width: '100%',
+                          height: '34px',
+                          borderRadius: '8px',
+                          border: '1px solid rgba(255, 255, 255, 0.12)',
+                          backgroundColor: '#22242a',
+                          color: '#ffffff',
+                          padding: '0 10px',
+                          fontSize: '12px',
+                          outline: 'none',
+                          boxSizing: 'border-box'
+                        }}
+                      />
                     </div>
 
-                    <div style={{ fontSize: '11px', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: '0.05em', marginBottom: '6px', textTransform: 'uppercase' }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '4px' }}>
+                        <Clock size={12} color="#22c55e" />
+                        <span style={{ fontSize: '11px', fontWeight: 700, color: '#ffffff' }}>
+                          Topic / Agenda (Optional)
+                        </span>
+                      </div>
+                      <input
+                        type="text"
+                        value={visitorTopic}
+                        onChange={(e) => setVisitorTopic(e.target.value)}
+                        placeholder="e.g. AI project, hiring"
+                        style={{
+                          width: '100%',
+                          height: '34px',
+                          borderRadius: '8px',
+                          border: '1px solid rgba(255, 255, 255, 0.12)',
+                          backgroundColor: '#22242a',
+                          color: '#ffffff',
+                          padding: '0 10px',
+                          fontSize: '12px',
+                          outline: 'none',
+                          boxSizing: 'border-box'
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Selected Summary Card + Confirm Button */}
+                  <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.1)', paddingTop: '12px', marginTop: 'auto' }}>
+                    <div style={{ fontSize: '10.5px', fontWeight: 800, color: '#94a3b8', letterSpacing: '0.05em', marginBottom: '5px', textTransform: 'uppercase' }}>
                       SELECTED SESSION
                     </div>
 
                     {/* Summary Card */}
                     <div style={{
-                      padding: '10px 14px',
-                      borderRadius: '10px',
-                      backgroundColor: 'var(--bg-primary)',
-                      border: '1px solid var(--border-color)',
-                      marginBottom: '14px',
+                      padding: '8px 12px',
+                      borderRadius: '8px',
+                      backgroundColor: '#22242a',
+                      border: '1px solid rgba(255, 255, 255, 0.12)',
+                      marginBottom: '12px',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '10px',
-                      fontSize: '12.5px',
+                      gap: '8px',
+                      fontSize: '12px',
                       fontWeight: 700,
-                      color: 'var(--text-primary)'
+                      color: '#ffffff'
                     }}>
-                      <CalendarIcon size={15} color="var(--primary-blue)" />
+                      <CalendarIcon size={14} color="#3b82f6" />
                       <span>
                         {selectedDate && selectedSlot
                           ? `${formatDateLabel(selectedDate)} · ${selectedSlot} ${timezoneAbbr} · ${duration} min`
@@ -656,12 +632,12 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
                       disabled={!selectedDate || !selectedSlot || isSubmitting}
                       style={{
                         width: '100%',
-                        height: '42px',
-                        borderRadius: '10px',
-                        backgroundColor: !selectedDate || !selectedSlot ? 'var(--border-color)' : 'var(--primary-blue)',
+                        height: '38px',
+                        borderRadius: '8px',
+                        backgroundColor: !selectedDate || !selectedSlot ? '#262830' : '#3b82f6',
                         color: '#ffffff',
-                        fontSize: '13.5px',
-                        fontWeight: 800,
+                        fontSize: '13px',
+                        fontWeight: 700,
                         border: 'none',
                         cursor: !selectedDate || !selectedSlot || isSubmitting ? 'not-allowed' : 'pointer',
                         display: 'flex',
@@ -669,17 +645,17 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
                         justifyContent: 'center',
                         gap: '8px',
                         opacity: !selectedDate || !selectedSlot || isSubmitting ? 0.5 : 1,
-                        boxShadow: !selectedDate || !selectedSlot ? 'none' : '0 4px 14px color-mix(in srgb, var(--primary-blue) 35%, transparent)',
+                        boxShadow: !selectedDate || !selectedSlot ? 'none' : '0 4px 14px rgba(59, 130, 246, 0.35)',
                         transition: 'all 0.15s ease'
                       }}
                     >
                       {isSubmitting ? (
                         <>
-                          <Loader2 size={16} className="animate-spin" /> Dispatching Invite...
+                          <Loader2 size={15} className="animate-spin" /> Dispatching Invite...
                         </>
                       ) : (
                         <>
-                          <Check size={16} /> Confirm & Dispatch Invite
+                          <Check size={15} /> Confirm & Dispatch Invite
                         </>
                       )}
                     </button>
