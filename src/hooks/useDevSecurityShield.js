@@ -149,7 +149,23 @@ export function useDevSecurityShield() {
     if (securityState.frameGuard && typeof window !== 'undefined') {
       try {
         if (window.top !== window.self) {
-          window.top.location = window.self.location;
+          // Check if parent window is on the same origin or in simulator preview mode
+          let isSameOrigin = false;
+          try {
+            if (window.top.location.origin === window.location.origin) {
+              isSameOrigin = true;
+            }
+          } catch (_) {
+            isSameOrigin = false;
+          }
+
+          const isSimPreview = window.location.search.includes('preview=mobile') || 
+                               window.location.search.includes('sim=1') ||
+                               isSameOrigin;
+
+          if (!isSimPreview) {
+            window.top.location = window.self.location;
+          }
         }
       } catch (_) {}
     }

@@ -9,7 +9,7 @@ import HeroSection from '../components/HeroSection';
 export default function Home({ onNavClick }) {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
   const { data: settings } = useRealtimeData('site_settings', { single: true, filter: { column: 'id', value: 1 } });
-  const nameText = useGlitchText("Sujith Thota", 100);
+  const nameText = useGlitchText(settings?.owner_name || "Sujith Thota", 100);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 900);

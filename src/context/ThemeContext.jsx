@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { flushSync } from 'react-dom';
+import { supabase } from '../lib/supabaseClient';
+import { subscribeToRealtimeSync } from '../lib/broadcastSyncEngine';
 
 const ThemeContext = createContext();
 
@@ -90,14 +92,18 @@ export function ThemeProvider({ children }) {
     }
   });
 
-  // Accent Colors dictionary
+  // Accent Colors dictionary matching all options
   const colors = {
-    blue:    '#3b82f6',
-    purple:  '#8b5cf6',
-    emerald: '#10b981',
-    rose:    '#f43f5e',
-    amber:   '#f59e0b',
-    cyan:    '#06b6d4',
+    blue:    '#3B82F6',
+    indigo:  '#6366F1',
+    emerald: '#10B981',
+    cyan:    '#06B6D4',
+    rose:    '#EC4899',
+    amber:   '#F59E0B',
+    purple:  '#8B5CF6',
+    violet:  '#8B5CF6',
+    orange:  '#F97316',
+    teal:    '#14B8A6',
   };
 
   // Fonts dictionary
@@ -117,13 +123,135 @@ export function ThemeProvider({ children }) {
     } catch(e) {}
   };
 
+  // Real-time synchronization for site branding and accent colors
+  useEffect(() => {
+    let isMounted = true;
+
+    // 1. Initial DB fetch to sync active branding
+    async function syncInitialBranding() {
+      try {
+        const { data } = await supabase
+          .from('site_settings')
+          .select('accent_color, custom_accent_hex')
+          .eq('id', 1)
+          .maybeSingle();
+
+        if (isMounted && data) {
+          const activeColor = data.custom_accent_hex || data.accent_color;
+          if (activeColor) {
+            setAccentColor(activeColor);
+            safeStorage.setItem('accentColor', activeColor);
+          }
+        }
+      } catch (_) {}
+    }
+    syncInitialBranding();
+
+    // 2. Cross-tab BroadcastChannel real-time sync (sub-millisecond instant update)
+    const unsubscribeBroadcast = subscribeToRealtimeSync((syncMsg) => {
+      if (syncMsg?.table === 'site_settings' && syncMsg.payload) {
+        const newColor = syncMsg.payload.custom_accent_hex || syncMsg.payload.accent_color;
+        if (newColor) {
+          setAccentColor(newColor);
+          safeStorage.setItem('accentColor', newColor);
+          const hex = colors[newColor] || newColor;
+          document.documentElement.style.setProperty('--primary-blue', hex);
+          document.documentElement.style.setProperty('--pcms-accent', hex);
+        }
+      }
+    });
+
+    // 3. Supabase Cloud Postgres Realtime subscription
+    const channel = supabase
+      .channel('public_theme_branding_sync')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'site_settings' }, (payload) => {
+        if (payload.new) {
+          const newColor = payload.new.custom_accent_hex || payload.new.accent_color;
+          if (newColor) {
+            setAccentColor(newColor);
+            safeStorage.setItem('accentColor', newColor);
+            const hex = colors[newColor] || newColor;
+            document.documentElement.style.setProperty('--primary-blue', hex);
+            document.documentElement.style.setProperty('--pcms-accent', hex);
+          }
+        }
+      })
+      .subscribe();
+
+    // 4. Same-tab and Window Custom Event listeners
+    const handleCustomUpdate = (e) => {
+      const detail = e?.detail;
+      if (!detail) return;
+      if (detail.table === 'site_settings') {
+        if (detail.key === 'accent_color' || detail.key === 'custom_accent_hex') {
+          const val = detail.value;
+          if (val) {
+            setAccentColor(val);
+            safeStorage.setItem('accentColor', val);
+            const hex = colors[val] || val;
+            document.documentElement.style.setProperty('--primary-blue', hex);
+            document.documentElement.style.setProperty('--pcms-accent', hex);
+          }
+        } else if (detail.payload) {
+          const newColor = detail.payload.custom_accent_hex || detail.payload.accent_color;
+          if (newColor) {
+            setAccentColor(newColor);
+            safeStorage.setItem('accentColor', newColor);
+            const hex = colors[newColor] || newColor;
+            document.documentElement.style.setProperty('--primary-blue', hex);
+            document.documentElement.style.setProperty('--pcms-accent', hex);
+          }
+        }
+      }
+    };
+
+    const handleAccentDirect = (e) => {
+      const color = e?.detail?.accentColor || e?.detail?.color;
+      if (color) {
+        setAccentColor(color);
+        safeStorage.setItem('accentColor', color);
+        const hex = colors[color] || color;
+        document.documentElement.style.setProperty('--primary-blue', hex);
+        document.documentElement.style.setProperty('--pcms-accent', hex);
+      }
+    };
+
+    // 5. Cross-tab localStorage native event listener
+    const handleStorageChange = (e) => {
+      if (e.key === 'accentColor' || e.key === 'accent_color') {
+        if (e.newValue) {
+          setAccentColor(e.newValue);
+          const hex = colors[e.newValue] || e.newValue;
+          document.documentElement.style.setProperty('--primary-blue', hex);
+          document.documentElement.style.setProperty('--pcms-accent', hex);
+        }
+      }
+    };
+
+    window.addEventListener('pcms_data_updated', handleCustomUpdate);
+    window.addEventListener('pcms_accent_changed', handleAccentDirect);
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      isMounted = false;
+      if (typeof unsubscribeBroadcast === 'function') unsubscribeBroadcast();
+      supabase.removeChannel(channel);
+      window.removeEventListener('pcms_data_updated', handleCustomUpdate);
+      window.removeEventListener('pcms_accent_changed', handleAccentDirect);
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
   useEffect(() => {
     const root = document.documentElement;
     root.setAttribute('data-theme', theme);
     
-    // Check if the current accentColor is in the default dict or is a dynamic photo color
-    const hexColor = colors[accentColor] || accentColor;
+    // Check if the current accentColor is in the default dict or is a custom hex
+    const hexColor = colors[accentColor] || accentColor || '#6366F1';
     root.style.setProperty('--primary-blue', hexColor);
+    root.style.setProperty('--accent-blue', hexColor);
+    root.style.setProperty('--pcms-accent', hexColor);
+    root.style.setProperty('--accent-color', hexColor);
     root.style.setProperty('--app-font', fonts[fontFamily]);
     
     // Apply CSS variables for glass intensity and contrast

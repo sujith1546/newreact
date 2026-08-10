@@ -76,7 +76,8 @@ const SETTING_GROUPS = [
 ];
 
 const ACCENT_OPTIONS = [
-  { id: 'blue',    label: 'Indigo',   hex: '#6366F1' },
+  { id: 'blue',    label: 'Blue',     hex: '#3B82F6' },
+  { id: 'indigo',  label: 'Indigo',   hex: '#6366F1' },
   { id: 'emerald', label: 'Emerald',  hex: '#10B981' },
   { id: 'cyan',    label: 'Cyan',     hex: '#06B6D4' },
   { id: 'rose',    label: 'Rose',     hex: '#EC4899' },
@@ -363,6 +364,9 @@ export default function SettingsPanel({ isMobileView = false }) {
         site_disabled_reason: dbSettings.site_disabled_reason || 'Access disabled by administrator.',
         site_disabled_at: dbSettings.site_disabled_at || null,
       });
+      if (dbSettings.custom_accent_hex || (dbSettings.accent_color && dbSettings.accent_color.startsWith('#'))) {
+        setCustomHex(dbSettings.custom_accent_hex || dbSettings.accent_color);
+      }
     }
   }, [dbSettings]);
 
@@ -384,12 +388,27 @@ export default function SettingsPanel({ isMobileView = false }) {
       localStorage.setItem(`pcms_${key}`, String(value));
       window.dispatchEvent(new CustomEvent('pcms_security_changed'));
     }
-    if (key === 'accent_color') {
+    if (key === 'accent_color' || key === 'custom_accent_hex') {
       try {
         localStorage.setItem('accentColor', String(value));
-        const colorMap = { blue: '#3b82f6', purple: '#8b5cf6', emerald: '#10b981', rose: '#f43f5e', amber: '#f59e0b', cyan: '#06b6d4' };
+        localStorage.setItem('accent_color', String(value));
+        const colorMap = {
+          blue:    '#3B82F6',
+          indigo:  '#6366F1',
+          emerald: '#10B981',
+          cyan:    '#06B6D4',
+          rose:    '#EC4899',
+          amber:   '#F59E0B',
+          purple:  '#8B5CF6',
+          orange:  '#F97316',
+          teal:    '#14B8A6'
+        };
         const hex = colorMap[value] || value;
         document.documentElement.style.setProperty('--primary-blue', hex);
+        document.documentElement.style.setProperty('--accent-blue', hex);
+        document.documentElement.style.setProperty('--pcms-accent', hex);
+        document.documentElement.style.setProperty('--accent-color', hex);
+        window.dispatchEvent(new CustomEvent('pcms_accent_changed', { detail: { accentColor: value, hex } }));
       } catch (_) {}
     }
     window.dispatchEvent(new Event('storage'));
@@ -709,7 +728,7 @@ export default function SettingsPanel({ isMobileView = false }) {
             {activeTab === 'theme' && (<>
               <Card>
                 <CardHead icon={Palette} label="Accent Color" sub="Primary color for highlights, links and CTA buttons." />
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(76px, 1fr))', gap: 8 }}>
                   {ACCENT_OPTIONS.map(opt => {
                     const sel = (settings?.accent_color || 'blue') === opt.id;
                     return (
@@ -734,7 +753,22 @@ export default function SettingsPanel({ isMobileView = false }) {
                     <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
                       <input type="color" value={customHex || '#6366F1'} onChange={e => setCustomHex(e.target.value)} style={{ width: 38, height: 36, border: '1px solid var(--pcms-line)', borderRadius: 7, cursor: 'pointer', background: 'transparent' }} />
                       <input type="text" className="pcms-search" value={customHex} onChange={e => setCustomHex(e.target.value)} placeholder="#6366F1" style={{ flex: 1 }} />
-                      <button className="pcms-btn-dark" style={{ padding: '6px 14px', fontSize: 11.5 }} onClick={() => { if (/^#[0-9A-F]{6}$/i.test(customHex)) { updateSetting('custom_accent_hex', customHex); } else alert('Invalid hex.'); }}>Apply</button>
+                      <button
+                        type="button"
+                        className="pcms-btn-dark"
+                        style={{ padding: '6px 14px', fontSize: 11.5 }}
+                        onClick={() => {
+                          if (/^#[0-9A-F]{6}$/i.test(customHex)) {
+                            updateSetting('custom_accent_hex', customHex);
+                            updateSetting('accent_color', customHex);
+                            change('accent_color', customHex);
+                          } else {
+                            alert('Invalid hex. Format should be #RRGGBB');
+                          }
+                        }}
+                      >
+                        Apply
+                      </button>
                     </div>
                   )}
                 </div>

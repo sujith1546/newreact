@@ -5,7 +5,9 @@ import { X, Smartphone, Tablet, RotateCw, RefreshCw, Apple, Smartphone as Androi
 import { useTheme } from '../../context/ThemeContext';
 
 const DEVICES = {
-  "iphone-16": { id: "iphone-16", label: "iPhone 16", icon: "apple", portrait: { w: 393, h: 852 }, defaultOrientation: "portrait" },
+  "iphone-16": { id: "iphone-16", label: "iPhone 16 Pro", icon: "apple", portrait: { w: 393, h: 852 }, defaultOrientation: "portrait" },
+  "pixel-9": { id: "pixel-9", label: "Pixel 9 Pro", icon: "android", portrait: { w: 412, h: 915 }, defaultOrientation: "portrait" },
+  "galaxy-s24": { id: "galaxy-s24", label: "Galaxy S24", icon: "android", portrait: { w: 360, h: 780 }, defaultOrientation: "portrait" },
   "ipad-air": { id: "ipad-air", label: "iPad Air", icon: "tablet", portrait: { w: 820, h: 1180 }, defaultOrientation: "landscape" },
 };
 
@@ -14,7 +16,7 @@ export default function MobilePreviewModal({ isOpen, onClose }) {
   const [deviceKey, setDeviceKey] = useState("iphone-16");
   // Auto-initialize orientation from device's defaultOrientation
   const [orientation, setOrientation] = useState(DEVICES["iphone-16"].defaultOrientation);
-  const [zoomScale, setZoomScale] = useState(0.85); // 0.85
+  const [zoomScale, setZoomScale] = useState(0.85);
   const [reloadKey, setReloadKey] = useState(0);
 
   const device = DEVICES[deviceKey] || DEVICES["iphone-16"];
@@ -33,6 +35,7 @@ export default function MobilePreviewModal({ isOpen, onClose }) {
 
   const siteUrl = typeof window !== 'undefined' ? window.location.origin : 'https://sujiththota.dev';
   const siteDomain = typeof window !== 'undefined' ? window.location.host : 'sujiththota.dev';
+  const previewUrl = `${siteUrl}/?preview=mobile&sim=1`;
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -163,7 +166,7 @@ export default function MobilePreviewModal({ isOpen, onClose }) {
               <DeviceFrame dims={dims} isPortrait={orientation === "portrait"} zoomScale={zoomScale}>
                 <iframe
                   key={reloadKey}
-                  src={siteUrl}
+                  src={previewUrl}
                   title="Live portfolio mobile preview"
                   width={dims.w}
                   height={dims.h}
@@ -171,7 +174,7 @@ export default function MobilePreviewModal({ isOpen, onClose }) {
                     width: `${dims.w}px`,
                     height: `${dims.h}px`,
                     border: "none",
-                    backgroundColor: "#ffffff",
+                    backgroundColor: "var(--bg-primary, #ffffff)",
                     display: "block"
                   }}
                 />
@@ -294,9 +297,12 @@ function DeviceSimulatorSidebar({ deviceKey, setDeviceKey, orientation, setOrien
       {/* Frame Zoom Scale Selector */}
       <div>
         <p style={sectionLabelStyle}>Frame Size Zoom</p>
-        <div style={{ display: "flex" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "4px" }}>
           {[
-            { id: 0.85, label: "85%" }
+            { id: "auto", label: "Auto" },
+            { id: 0.75, label: "75%" },
+            { id: 0.85, label: "85%" },
+            { id: 1.0, label: "100%" }
           ].map((z) => {
             const active = zoomScale === z.id;
             return (
@@ -305,15 +311,14 @@ function DeviceSimulatorSidebar({ deviceKey, setDeviceKey, orientation, setOrien
                 type="button"
                 onClick={() => setZoomScale(z.id)}
                 style={{
-                  width: "100%",
-                  padding: "8px 12px",
-                  borderRadius: "8px",
-                  fontSize: "12px",
-                  fontWeight: 700,
+                  padding: "7px 4px",
+                  borderRadius: "7px",
+                  fontSize: "11.5px",
+                  fontWeight: active ? 700 : 500,
                   cursor: "pointer",
-                  border: "1px solid var(--primary-blue)",
-                  backgroundColor: "color-mix(in srgb, var(--primary-blue) 14%, var(--bg-primary))",
-                  color: "var(--primary-blue)",
+                  border: active ? "1px solid var(--primary-blue)" : "1px solid var(--border-color)",
+                  backgroundColor: active ? "color-mix(in srgb, var(--primary-blue) 14%, var(--bg-primary))" : "var(--bg-primary)",
+                  color: active ? "var(--primary-blue)" : "var(--text-secondary)",
                   textAlign: "center",
                   transition: "all 0.15s ease"
                 }}

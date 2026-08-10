@@ -12,12 +12,15 @@ import { usePersona } from '../../context/PersonaContext';
 
 /* ─── Accent palette ─────────────────────────────────────── */
 const ACCENTS = [
-  { key: 'blue',    hex: '#3b82f6', label: 'Blue'    },
-  { key: 'purple',  hex: '#8b5cf6', label: 'Violet'  },
-  { key: 'emerald', hex: '#10b981', label: 'Emerald' },
-  { key: 'rose',    hex: '#f43f5e', label: 'Rose'    },
-  { key: 'amber',   hex: '#f59e0b', label: 'Amber'   },
-  { key: 'cyan',    hex: '#06b6d4', label: 'Cyan'    },
+  { key: 'blue',    hex: '#3B82F6', label: 'Blue'    },
+  { key: 'indigo',  hex: '#6366F1', label: 'Indigo'  },
+  { key: 'emerald', hex: '#10B981', label: 'Emerald' },
+  { key: 'cyan',    hex: '#06B6D4', label: 'Cyan'    },
+  { key: 'rose',    hex: '#EC4899', label: 'Rose'    },
+  { key: 'amber',   hex: '#F59E0B', label: 'Amber'   },
+  { key: 'purple',  hex: '#8B5CF6', label: 'Purple'  },
+  { key: 'orange',  hex: '#F97316', label: 'Orange'  },
+  { key: 'teal',    hex: '#14B8A6', label: 'Teal'    },
 ];
 
 /* ─── Tabs config ────────────────────────────────────────── */
@@ -58,7 +61,7 @@ export default function SettingsSidebar() {
   const { persona, setPersona } = usePersona();
 
   const isDark = theme === 'dark';
-  const accent = ACCENTS.find(a => a.key === accentColor)?.hex ?? '#8b5cf6';
+  const accent = ACCENTS.find(a => a.key === accentColor)?.hex ?? (accentColor?.startsWith('#') ? accentColor : '#6366F1');
 
   /* ── Event listeners ── */
   useEffect(() => {

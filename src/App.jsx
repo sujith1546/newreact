@@ -126,8 +126,12 @@ const Loader = () => (
 
 function AppContent() {
   const { reduceMotion } = useTheme();
-  const [appReady, setAppReady] = useState(false);
-  const [showContent, setShowContent] = useState(false);
+  const isSim = typeof window !== 'undefined' && (
+    window.location.search.includes('preview=mobile') || 
+    window.location.search.includes('sim=1')
+  );
+  const [appReady, setAppReady] = useState(isSim);
+  const [showContent, setShowContent] = useState(isSim);
   const { toastMessage } = useDevSecurityShield();
 
   useEffect(() => {
@@ -140,6 +144,11 @@ function AppContent() {
         document.body.style.overflow = 'unset';
       }
     };
+
+    if (isSim) {
+      forceUnlock();
+      return () => { mounted = false; };
+    }
 
     // Safety fallback timer: force show content after 1200ms max, regardless of network speed/mobile latency
     const safetyTimer = setTimeout(forceUnlock, 1200);
