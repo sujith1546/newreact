@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "../../lib/supabaseClient";
+import { useTheme } from "../../context/ThemeContext";
 import {
   Lock,
   Mail,
@@ -22,6 +23,7 @@ const LOCKOUT_DURATION_MS = 60000;
 
 export default function AdminLoginModal({ isOpen, onClose }) {
   const navigate = useNavigate();
+  const { theme } = useTheme();
   const emailInputRef = useRef(null);
 
   // Auth State
@@ -278,12 +280,14 @@ export default function AdminLoginModal({ isOpen, onClose }) {
 
   if (typeof document === "undefined") return null;
 
+  const isDarkMode = theme === "dark" || (typeof document !== "undefined" && document.documentElement.getAttribute("data-theme") === "dark");
+
   return createPortal(
     <AnimatePresence>
       {isOpen && (
         <motion.div
           key="admin-modal-backdrop"
-          className="backdrop"
+          className="admin-modal-backdrop"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -303,9 +307,53 @@ export default function AdminLoginModal({ isOpen, onClose }) {
           }}
           onClick={onClose}
         >
+          <style>{`
+            .admin-modal-card {
+              --modal-bg: #ffffff;
+              --modal-border: #e2e8f0;
+              --modal-text: #0f172a;
+              --modal-muted: #64748b;
+              --modal-field-bg: #f8fafc;
+              --modal-field-border: #cbd5e1;
+              --modal-tab-track: #f1f5f9;
+              --modal-tab-active-bg: #0f172a;
+              --modal-tab-active-text: #ffffff;
+              --modal-btn-bg: #0f172a;
+              --modal-btn-hover: #1e293b;
+              --modal-btn-text: #ffffff;
+              --modal-shadow: 0 8px 24px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.1);
+              color-scheme: light;
+            }
+
+            .admin-modal-card.dark-mode {
+              --modal-bg: #18191d;
+              --modal-border: rgba(255, 255, 255, 0.12);
+              --modal-text: #ffffff;
+              --modal-muted: #94a3b8;
+              --modal-field-bg: #22242a;
+              --modal-field-border: rgba(255, 255, 255, 0.14);
+              --modal-tab-track: #141518;
+              --modal-tab-active-bg: #ffffff;
+              --modal-tab-active-text: #0f172a;
+              --modal-btn-bg: #ffffff;
+              --modal-btn-hover: #f1f5f9;
+              --modal-btn-text: #0f172a;
+              --modal-shadow: 0 12px 36px rgba(0, 0, 0, 0.45), 0 2px 10px rgba(0, 0, 0, 0.2);
+              color-scheme: dark;
+            }
+
+            .admin-modal-card input:-webkit-autofill,
+            .admin-modal-card input:-webkit-autofill:hover,
+            .admin-modal-card input:-webkit-autofill:focus {
+              -webkit-text-fill-color: var(--modal-text) !important;
+              -webkit-box-shadow: 0 0 0px 1000px var(--modal-field-bg) inset !important;
+              transition: background-color 5000s ease-in-out 0s;
+            }
+          `}</style>
+
           <motion.div
             key="admin-modal-content"
-            className="modal"
+            className={`modal admin-modal-card ${isDarkMode ? "dark-mode" : "light-mode"}`}
             role="dialog"
             aria-modal="true"
             aria-labelledby="admin-modal-title"
@@ -318,12 +366,12 @@ export default function AdminLoginModal({ isOpen, onClose }) {
               position: "relative",
               maxWidth: "400px",
               width: "100%",
-              background: "var(--bg-secondary, #18191d)",
-              border: "0.5px solid var(--border-color, rgba(255, 255, 255, 0.12))",
+              background: "var(--modal-bg)",
+              border: "0.5px solid var(--modal-border)",
               borderRadius: "16px",
-              boxShadow: "0 8px 24px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1)",
+              boxShadow: "var(--modal-shadow)",
               overflow: "hidden",
-              color: "var(--text-primary, #ffffff)",
+              color: "var(--modal-text)",
               fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif",
             }}
           >
@@ -362,7 +410,7 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                   <span>ST</span>
                 </div>
                 <div>
-                  <div style={{ fontSize: "12px", fontWeight: "500", color: "var(--text-primary, #ffffff)", lineHeight: 1.2 }}>
+                  <div style={{ fontSize: "12px", fontWeight: "500", color: "var(--modal-text)", lineHeight: 1.2 }}>
                     Sujith Thota
                   </div>
                   <div style={{ fontSize: "10.5px", color: "#22c55e", fontWeight: "500", lineHeight: 1.2 }}>
@@ -378,7 +426,7 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                 style={{
                   background: "none",
                   border: "none",
-                  color: "var(--text-muted, #94a3b8)",
+                  color: "var(--modal-muted)",
                   cursor: "pointer",
                   padding: 0,
                   width: "26px",
@@ -389,8 +437,8 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                   borderRadius: "50%",
                   transition: "color 0.15s ease",
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--text-primary, #ffffff)")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--text-muted, #94a3b8)")}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "var(--modal-text)")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "var(--modal-muted)")}
               >
                 <X size={16} />
               </button>
@@ -403,14 +451,14 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                 style={{
                   fontSize: "22px",
                   fontWeight: "700",
-                  color: "var(--text-primary, #ffffff)",
+                  color: "var(--modal-text)",
                   margin: "0 0 4px",
                   letterSpacing: "-0.02em",
                 }}
               >
                 Admin console
               </h3>
-              <p style={{ fontSize: "12px", color: "var(--text-muted, #94a3b8)", margin: "0 0 14px" }}>
+              <p style={{ fontSize: "12px", color: "var(--modal-muted)", margin: "0 0 14px" }}>
                 Sign in to manage the portfolio
               </p>
 
@@ -443,9 +491,9 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                     fontWeight: "600",
                     padding: "3px 9px",
                     borderRadius: "99px",
-                    background: "#262830",
-                    color: "#e2e8f0",
-                    border: "1px solid rgba(255, 255, 255, 0.12)",
+                    background: "var(--modal-field-bg)",
+                    color: "var(--modal-text)",
+                    border: "1px solid var(--modal-border)",
                   }}
                 >
                   <Fingerprint size={11} />
@@ -477,8 +525,8 @@ export default function AdminLoginModal({ isOpen, onClose }) {
               style={{
                 display: "flex",
                 padding: "3px",
-                background: "#22242a",
-                border: "1px solid rgba(255, 255, 255, 0.1)",
+                background: "var(--modal-tab-track)",
+                border: "1px solid var(--modal-border)",
                 borderRadius: "99px",
                 margin: "0 20px 14px",
               }}
@@ -492,8 +540,8 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                 style={{
                   flex: 1,
                   border: "none",
-                  background: activeMethod === "password" ? "var(--btn-primary-bg, #ffffff)" : "transparent",
-                  color: activeMethod === "password" ? "var(--btn-primary-text, #0f172a)" : "var(--text-secondary, #94a3b8)",
+                  background: activeMethod === "password" ? "var(--modal-tab-active-bg)" : "transparent",
+                  color: activeMethod === "password" ? "var(--modal-tab-active-text)" : "var(--modal-muted)",
                   padding: "7px 12px",
                   borderRadius: "99px",
                   fontSize: "12px",
@@ -504,6 +552,7 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                   alignItems: "center",
                   justifyContent: "center",
                   gap: "6px",
+                  boxShadow: activeMethod === "password" ? "0 1px 3px rgba(0,0,0,0.15)" : "none",
                 }}
               >
                 <KeyRound size={13} />
@@ -518,8 +567,8 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                 style={{
                   flex: 1,
                   border: "none",
-                  background: activeMethod === "otp" ? "var(--btn-primary-bg, #ffffff)" : "transparent",
-                  color: activeMethod === "otp" ? "var(--btn-primary-text, #0f172a)" : "var(--text-secondary, #94a3b8)",
+                  background: activeMethod === "otp" ? "var(--modal-tab-active-bg)" : "transparent",
+                  color: activeMethod === "otp" ? "var(--modal-tab-active-text)" : "var(--modal-muted)",
                   padding: "7px 12px",
                   borderRadius: "99px",
                   fontSize: "12px",
@@ -530,6 +579,7 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                   alignItems: "center",
                   justifyContent: "center",
                   gap: "6px",
+                  boxShadow: activeMethod === "otp" ? "0 1px 3px rgba(0,0,0,0.15)" : "none",
                 }}
               >
                 <Mail size={13} />
@@ -587,7 +637,7 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                         display: "block",
                         fontSize: "12px",
                         fontWeight: "500",
-                        color: "var(--text-primary, #ffffff)",
+                        color: "var(--modal-text)",
                         marginBottom: "5px",
                       }}
                     >
@@ -598,15 +648,15 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                         position: "relative",
                         display: "flex",
                         alignItems: "center",
-                        background: "#22242a",
-                        border: "1px solid rgba(255, 255, 255, 0.12)",
+                        background: "var(--modal-field-bg)",
+                        border: "1px solid var(--modal-field-border)",
                         borderRadius: "8px",
                         height: "36px",
                       }}
                     >
                       <Mail
                         size={15}
-                        color="#64748b"
+                        color="var(--modal-muted)"
                         style={{
                           position: "absolute",
                           left: "11px",
@@ -629,8 +679,9 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                           background: "transparent",
                           border: "none",
                           outline: "none",
-                          color: "#ffffff",
+                          color: "var(--modal-text)",
                           fontSize: "13px",
+                          fontWeight: "400",
                           paddingLeft: "32px",
                           paddingRight: "12px",
                           boxSizing: "border-box",
@@ -646,7 +697,7 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                         display: "block",
                         fontSize: "12px",
                         fontWeight: "500",
-                        color: "var(--text-primary, #ffffff)",
+                        color: "var(--modal-text)",
                         marginBottom: "5px",
                       }}
                     >
@@ -657,15 +708,15 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                         position: "relative",
                         display: "flex",
                         alignItems: "center",
-                        background: "#22242a",
-                        border: "1px solid rgba(255, 255, 255, 0.12)",
+                        background: "var(--modal-field-bg)",
+                        border: "1px solid var(--modal-field-border)",
                         borderRadius: "8px",
                         height: "36px",
                       }}
                     >
                       <Lock
                         size={15}
-                        color="#64748b"
+                        color="var(--modal-muted)"
                         style={{
                           position: "absolute",
                           left: "11px",
@@ -687,8 +738,9 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                           background: "transparent",
                           border: "none",
                           outline: "none",
-                          color: "#ffffff",
+                          color: "var(--modal-text)",
                           fontSize: "13px",
+                          fontWeight: "400",
                           paddingLeft: "32px",
                           paddingRight: "32px",
                           boxSizing: "border-box",
@@ -703,7 +755,7 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                           right: "8px",
                           background: "none",
                           border: "none",
-                          color: "#64748b",
+                          color: "var(--modal-muted)",
                           cursor: "pointer",
                           padding: "2px",
                           display: "flex",
@@ -731,7 +783,7 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                         alignItems: "center",
                         gap: "6px",
                         fontSize: "12px",
-                        color: "#cbd5e1",
+                        color: "var(--modal-muted)",
                         cursor: "pointer",
                         whiteSpace: "nowrap",
                       }}
@@ -739,7 +791,7 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                       <input
                         id="modal-rememberMe"
                         type="checkbox"
-                        style={{ accentColor: "#ffffff" }}
+                        style={{ accentColor: "var(--modal-btn-bg)" }}
                       />
                       <span style={{ whiteSpace: "nowrap" }}>Remember me</span>
                     </label>
@@ -751,7 +803,7 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                       }}
                       style={{
                         fontSize: "12px",
-                        color: "var(--text-accent, #38bdf8)",
+                        color: "#3b82f6",
                         textDecoration: "underline",
                         fontWeight: "500",
                       }}
@@ -767,8 +819,8 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                     style={{
                       width: "100%",
                       height: "38px",
-                      background: "var(--btn-primary-bg, #ffffff)",
-                      color: "var(--btn-primary-text, #0f172a)",
+                      background: "var(--modal-btn-bg)",
+                      color: "var(--modal-btn-text)",
                       fontWeight: "600",
                       fontSize: "13px",
                       border: "none",
@@ -779,17 +831,18 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                       alignItems: "center",
                       justifyContent: "center",
                       gap: "6px",
+                      boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
                       transition: "all 0.15s ease",
                     }}
                     onMouseEnter={(e) => {
                       if (!loading && lockoutTimer <= 0) {
-                        e.currentTarget.style.opacity = "0.92";
+                        e.currentTarget.style.background = "var(--modal-btn-hover)";
                         e.currentTarget.style.transform = "translateY(-1px)";
                       }
                     }}
                     onMouseLeave={(e) => {
                       if (!loading && lockoutTimer <= 0) {
-                        e.currentTarget.style.opacity = "1";
+                        e.currentTarget.style.background = "var(--modal-btn-bg)";
                         e.currentTarget.style.transform = "translateY(0)";
                       }
                     }}
@@ -818,7 +871,7 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                             display: "block",
                             fontSize: "12px",
                             fontWeight: "500",
-                            color: "var(--text-primary, #ffffff)",
+                            color: "var(--modal-text)",
                             marginBottom: "5px",
                           }}
                         >
@@ -829,15 +882,15 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                             position: "relative",
                             display: "flex",
                             alignItems: "center",
-                            background: "#22242a",
-                            border: "1px solid rgba(255, 255, 255, 0.12)",
+                            background: "var(--modal-field-bg)",
+                            border: "1px solid var(--modal-field-border)",
                             borderRadius: "8px",
                             height: "36px",
                           }}
                         >
                           <Mail
                             size={15}
-                            color="#64748b"
+                            color="var(--modal-muted)"
                             style={{ position: "absolute", left: "11px", pointerEvents: "none" }}
                           />
                           <input
@@ -852,8 +905,9 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                               background: "transparent",
                               border: "none",
                               outline: "none",
-                              color: "#ffffff",
+                              color: "var(--modal-text)",
                               fontSize: "13px",
+                              fontWeight: "400",
                               paddingLeft: "32px",
                               paddingRight: "12px",
                               boxSizing: "border-box",
@@ -865,7 +919,7 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                       <p
                         style={{
                           fontSize: "12px",
-                          color: "var(--text-muted, #94a3b8)",
+                          color: "var(--modal-muted)",
                           margin: "0 0 14px",
                           lineHeight: 1.45,
                         }}
@@ -879,8 +933,8 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                         style={{
                           width: "100%",
                           height: "38px",
-                          background: "var(--btn-primary-bg, #ffffff)",
-                          color: "var(--btn-primary-text, #0f172a)",
+                          background: "var(--modal-btn-bg)",
+                          color: "var(--modal-btn-text)",
                           fontWeight: "600",
                           fontSize: "13px",
                           border: "none",
@@ -907,7 +961,7 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                             display: "block",
                             fontSize: "12px",
                             fontWeight: "500",
-                            color: "var(--text-primary, #ffffff)",
+                            color: "var(--modal-text)",
                             marginBottom: "5px",
                           }}
                         >
@@ -918,15 +972,15 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                             position: "relative",
                             display: "flex",
                             alignItems: "center",
-                            background: "#22242a",
-                            border: "1px solid rgba(255, 255, 255, 0.12)",
+                            background: "var(--modal-field-bg)",
+                            border: "1px solid var(--modal-field-border)",
                             borderRadius: "8px",
                             height: "36px",
                           }}
                         >
                           <Shield
                             size={15}
-                            color="#64748b"
+                            color="var(--modal-muted)"
                             style={{ position: "absolute", left: "11px", pointerEvents: "none" }}
                           />
                           <input
@@ -944,7 +998,7 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                               background: "transparent",
                               border: "none",
                               outline: "none",
-                              color: "#ffffff",
+                              color: "var(--modal-text)",
                               textAlign: "center",
                               letterSpacing: "4px",
                               fontWeight: 700,
@@ -964,8 +1018,8 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                         style={{
                           width: "100%",
                           height: "38px",
-                          background: "var(--btn-primary-bg, #ffffff)",
-                          color: "var(--btn-primary-text, #0f172a)",
+                          background: "var(--modal-btn-bg)",
+                          color: "var(--modal-btn-text)",
                           fontWeight: "600",
                           fontSize: "13px",
                           border: "none",
@@ -1001,7 +1055,7 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                           style={{
                             background: "none",
                             border: "none",
-                            color: "var(--text-muted, #94a3b8)",
+                            color: "var(--modal-muted)",
                             cursor: "pointer",
                           }}
                         >
@@ -1014,7 +1068,7 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                           style={{
                             background: "none",
                             border: "none",
-                            color: otpTimer > 0 ? "#64748b" : "#22c55e",
+                            color: otpTimer > 0 ? "var(--modal-muted)" : "#22c55e",
                             fontWeight: 600,
                             cursor: otpTimer > 0 ? "not-allowed" : "pointer",
                           }}
@@ -1032,7 +1086,7 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                 style={{
                   margin: "14px 0 0",
                   fontSize: "11px",
-                  color: "var(--text-muted, #94a3b8)",
+                  color: "var(--modal-muted)",
                   textAlign: "center",
                 }}
               >
