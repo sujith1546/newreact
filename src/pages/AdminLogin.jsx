@@ -46,16 +46,18 @@ function StatusPill({ label, value, dark }) {
         alignItems: "center",
         justifyContent: "space-between",
         borderRadius: "12px",
-        padding: "12px 16px",
-        fontSize: "13px",
-        backgroundColor: dark ? "rgba(255, 255, 255, 0.05)" : "var(--bg-primary, #f8fafc)",
+        padding: "11px 14px",
+        fontSize: "12px",
+        backgroundColor: dark ? "rgba(255, 255, 255, 0.04)" : "var(--bg-primary, #f8fafc)",
         border: dark ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid var(--border-color, #e2e8f0)",
-        color: dark ? "rgba(255, 255, 255, 0.7)" : "var(--text-secondary, #64748b)",
+        color: dark ? "rgba(255, 255, 255, 0.65)" : "var(--text-secondary, #64748b)",
         transition: "all 0.15s ease",
+        backdropFilter: dark ? "blur(8px)" : "none",
+        WebkitBackdropFilter: dark ? "blur(8px)" : "none",
       }}
     >
-      <span style={{ display: "flex", alignItems: "center", gap: "9px" }}>
-        <span style={{ width: "7px", height: "7px", borderRadius: "50%", backgroundColor: "#34d399", flexShrink: 0 }} />
+      <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <span style={{ width: "6.5px", height: "6.5px", borderRadius: "50%", backgroundColor: "#34d399", flexShrink: 0 }} />
         {label}
       </span>
       <span style={{ color: dark ? "#ffffff" : "var(--text-primary, #0f172a)", fontWeight: 600 }}>{value}</span>
@@ -70,9 +72,9 @@ function StepItem({ index, label, active, onClick }) {
       onClick={onClick}
       style={{
         flex: 1,
-        paddingTop: "10px",
+        paddingTop: "8px",
         paddingBottom: "6px",
-        borderTop: active ? "2.5px solid #10b981" : "2.5px solid var(--border-color, #e2e8f0)",
+        borderTop: active ? "2px solid #10b981" : "2px solid var(--border-color, #e2e8f0)",
         borderLeft: "none",
         borderRight: "none",
         borderBottom: "none",
@@ -83,11 +85,11 @@ function StepItem({ index, label, active, onClick }) {
         whiteSpace: "nowrap",
       }}
     >
-      <span style={{ fontSize: "12px", color: "var(--text-muted, #94a3b8)", marginRight: "6px", fontWeight: 600 }}>{index}</span>
+      <span style={{ fontSize: "11px", color: "var(--text-muted, #94a3b8)", marginRight: "5px", fontWeight: 600 }}>{index}</span>
       <span
         style={{
-          fontSize: "13.5px",
-          fontWeight: active ? 700 : 500,
+          fontSize: "13px",
+          fontWeight: active ? 600 : 500,
           color: active ? "var(--text-primary, #0f172a)" : "var(--text-muted, #94a3b8)",
         }}
       >
@@ -103,14 +105,14 @@ function TrustBadge({ icon: Icon, children, tone = "muted" }) {
       style={{
         display: "inline-flex",
         alignItems: "center",
-        gap: "5px",
-        fontSize: "12px",
+        gap: "4px",
+        fontSize: "11.5px",
         color: tone === "success" ? "#059669" : "var(--text-muted, #64748b)",
         fontWeight: 500,
         whiteSpace: "nowrap",
       }}
     >
-      <Icon size={14} />
+      <Icon size={12} />
       {children}
     </span>
   );
@@ -473,40 +475,41 @@ export default function AdminLogin({
         height: "100dvh",
         zIndex: 9999,
         overflow: "hidden",
-        display: "flex",
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
         margin: 0,
         padding: 0,
       }}
-      className="login-viewport-container"
+      className="login-viewport-grid"
     >
       <style>{`
-        .login-viewport-container {
-          flex-direction: row;
+        .login-viewport-grid {
+          grid-template-columns: 48% 52%;
         }
 
-        .login-left-panel {
-          width: 44%;
-          min-width: 380px;
+        .login-left-pane {
           background-color: #0b0c0e;
+          background-image: 
+            radial-gradient(circle at 25% 30%, rgba(59, 130, 246, 0.08) 0%, transparent 60%),
+            radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+          background-size: 100% 100%, 24px 24px;
           color: #ffffff;
           display: flex;
           flex-direction: column;
           justify-content: space-between;
-          padding: 52px 48px;
+          padding: 48px 48px;
           box-sizing: border-box;
           border-right: 1px solid rgba(255, 255, 255, 0.08);
           overflow: hidden;
         }
 
-        .login-right-panel {
-          flex: 1;
+        .login-right-pane {
           background-color: var(--bg-secondary, #ffffff);
           color: var(--text-primary, #0f172a);
           display: flex;
           flex-direction: column;
-          justify-content: center;
-          align-items: center;
+          justify-content: space-between;
           padding: 40px 48px;
           box-sizing: border-box;
           overflow-y: auto;
@@ -514,29 +517,27 @@ export default function AdminLogin({
           -ms-overflow-style: none;
         }
 
-        .login-right-panel::-webkit-scrollbar {
+        .login-right-pane::-webkit-scrollbar {
           display: none;
         }
 
         @media (max-width: 900px) {
-          .login-viewport-container {
-            flex-direction: column !important;
+          .login-viewport-grid {
+            grid-template-columns: 1fr !important;
             overflow-y: auto !important;
             position: relative !important;
             min-height: 100vh !important;
             height: auto !important;
           }
-          .login-left-panel {
+          .login-left-pane {
             width: 100% !important;
-            max-width: 100% !important;
-            min-width: 0 !important;
-            padding: 28px 24px !important;
+            padding: 24px 20px !important;
             border-right: none !important;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
           }
-          .login-right-panel {
+          .login-right-pane {
             width: 100% !important;
-            padding: 36px 24px !important;
+            padding: 32px 20px !important;
           }
           .login-feed-block {
             display: none !important;
@@ -545,13 +546,13 @@ export default function AdminLogin({
 
         .login-input-box {
           width: 100%;
-          height: 44px;
+          height: 42px;
           border-radius: 10px;
           border: 1px solid var(--border-color, #e2e8f0);
           background: var(--bg-primary, #f8fafc);
           color: var(--text-primary, #0f172a);
-          padding: 0 14px 0 40px;
-          font-size: 13.5px;
+          padding: 0 12px 0 38px;
+          font-size: 13px;
           outline: none;
           transition: all 0.15s ease;
           box-sizing: border-box;
@@ -565,12 +566,12 @@ export default function AdminLogin({
 
         .primary-login-btn {
           width: 100%;
-          height: 46px;
-          border-radius: 11px;
+          height: 44px;
+          border-radius: 10px;
           background: var(--text-primary, #0f172a);
           color: var(--bg-primary, #ffffff);
           border: none;
-          font-size: 14.5px;
+          font-size: 13.5px;
           font-weight: 600;
           display: flex;
           align-items: center;
@@ -578,7 +579,7 @@ export default function AdminLogin({
           gap: 8px;
           cursor: pointer;
           transition: all 0.2s ease;
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
         }
 
         .primary-login-btn:hover:not(:disabled) {
@@ -593,78 +594,80 @@ export default function AdminLogin({
       `}</style>
 
       {/* ---------------------------------------------------------------- */}
-      {/* LEFT — TELEMETRY & SYSTEM IDENTITY (DARK PANEL, ~44% WIDTH)     */}
+      {/* LEFT PANE — TELEMETRY & SYSTEM IDENTITY (48% WIDTH)              */}
       {/* ---------------------------------------------------------------- */}
-      <div className="login-left-panel">
-        <div style={{ maxWidth: "520px", width: "100%" }}>
-          {/* Identity */}
-          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "32px" }}>
-            <div
-              style={{
-                width: "34px",
-                height: "34px",
-                borderRadius: "9px",
-                backgroundColor: "#ffffff",
-                color: "#0b0c0e",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "13px",
-                fontWeight: 800,
-              }}
-            >
-              {adminInitials}
+      <div className="login-left-pane">
+        <div style={{ maxWidth: "480px", width: "100%", margin: "0 auto", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+          {/* Top Identity Block */}
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "28px" }}>
+              <div
+                style={{
+                  width: "30px",
+                  height: "30px",
+                  borderRadius: "8px",
+                  backgroundColor: "#ffffff",
+                  color: "#0b0c0e",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "12px",
+                  fontWeight: 700,
+                }}
+              >
+                {adminInitials}
+              </div>
+              <span style={{ fontSize: "13px", color: "rgba(255, 255, 255, 0.7)", fontWeight: 500 }}>
+                {adminName} · Admin console {currentTime ? `· ${currentTime} IST` : ""}
+              </span>
             </div>
-            <span style={{ fontSize: "13.5px", color: "rgba(255, 255, 255, 0.7)", fontWeight: 500 }}>
-              {adminName} · Admin console {currentTime ? `· ${currentTime} IST` : ""}
-            </span>
+
+            <h1 style={{ fontSize: "26px", fontWeight: 600, color: "#ffffff", margin: "0 0 10px", letterSpacing: "-0.02em", lineHeight: 1.3 }}>
+              Real-time operations, secured end to end
+            </h1>
+            <p style={{ fontSize: "13.5px", color: "rgba(255, 255, 255, 0.55)", margin: 0, lineHeight: 1.55 }}>
+              Live telemetry from the sync engine, security shield, and lead pipeline — visible the moment you sign in.
+            </p>
           </div>
 
-          <h1 style={{ fontSize: "28px", fontWeight: 700, color: "#ffffff", margin: "0 0 12px", letterSpacing: "-0.02em", lineHeight: 1.25 }}>
-            Real-time operations, secured end to end
-          </h1>
-          <p style={{ fontSize: "14px", color: "rgba(255, 255, 255, 0.55)", margin: "0 0 32px", lineHeight: 1.6 }}>
-            Live telemetry from the sync engine, security shield, and lead pipeline — visible the moment you sign in.
-          </p>
-
-          {/* 4 Status Pill Cards */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "9px" }}>
+          {/* Middle Status Stack (4 Pill Cards) */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px", margin: "24px 0" }}>
             <StatusPill label="Session" value="Protected" dark />
             <StatusPill label="Passkey service" value="Reachable" dark />
             <StatusPill label="Latency" value={latency !== null ? `${latency}ms` : "14ms"} dark />
             <StatusPill label="Encryption" value="AES-256 · TLS 1.3" dark />
           </div>
-        </div>
 
-        {/* Live Monospace Console Feed */}
-        <div className="login-feed-block" style={{ maxWidth: "520px", width: "100%", marginTop: "24px" }}>
-          <p style={{ margin: "0 0 8px", fontSize: "11px", color: "rgba(255, 255, 255, 0.4)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700 }}>
-            Live console feed
-          </p>
-          <div
-            style={{
-              fontFamily: "'SF Mono', Monaco, Consolas, monospace",
-              fontSize: "12px",
-              color: "rgba(255, 255, 255, 0.6)",
-              lineHeight: 1.85,
-              height: "90px",
-              overflow: "hidden",
-            }}
-          >
-            {feedLines.map((line, i) => (
-              <div key={i}>
-                <span style={{ color: "#34d399" }}>[{new Date().toLocaleTimeString([], { hour12: false })}]</span> {line}
-              </div>
-            ))}
+          {/* Bottom Live Monospace Console Feed */}
+          <div className="login-feed-block">
+            <p style={{ margin: "0 0 6px", fontSize: "11px", color: "rgba(255, 255, 255, 0.4)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>
+              Live console feed
+            </p>
+            <div
+              style={{
+                fontFamily: "'SF Mono', Monaco, Consolas, monospace",
+                fontSize: "11px",
+                color: "rgba(255, 255, 255, 0.55)",
+                lineHeight: 1.85,
+                height: "80px",
+                overflow: "hidden",
+              }}
+            >
+              {feedLines.map((line, i) => (
+                <div key={i}>
+                  <span style={{ color: "#34d399" }}>[{new Date().toLocaleTimeString([], { hour12: false })}]</span> {line}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
 
       {/* ---------------------------------------------------------------- */}
-      {/* RIGHT — AUTH FORM & INTERACTIVE STEPS (~56% WIDTH)              */}
+      {/* RIGHT PANE — AUTH PORTAL & FORM (52% WIDTH)                      */}
       {/* ---------------------------------------------------------------- */}
-      <div className="login-right-panel">
-        <div style={{ maxWidth: "460px", width: "100%", display: "flex", flexDirection: "column", gap: "18px" }}>
+      <div className="login-right-pane">
+        <div style={{ maxWidth: "440px", width: "100%", margin: "0 auto", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
           {/* Top Bar Row */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <button
@@ -674,7 +677,7 @@ export default function AdminLogin({
                 display: "flex",
                 alignItems: "center",
                 gap: "6px",
-                fontSize: "13px",
+                fontSize: "12.5px",
                 color: "var(--text-secondary, #64748b)",
                 background: "none",
                 border: "none",
@@ -691,8 +694,8 @@ export default function AdminLogin({
                 type="button"
                 onClick={() => setShowHelpModal(true)}
                 style={{
-                  height: "30px",
-                  padding: "0 12px",
+                  height: "28px",
+                  padding: "0 10px",
                   borderRadius: "9999px",
                   border: "1px solid var(--border-color, #e2e8f0)",
                   background: "transparent",
@@ -701,7 +704,7 @@ export default function AdminLogin({
                   fontWeight: 500,
                   display: "flex",
                   alignItems: "center",
-                  gap: "5px",
+                  gap: "4px",
                   cursor: "pointer",
                 }}
               >
@@ -712,8 +715,8 @@ export default function AdminLogin({
                 onClick={toggleTheme}
                 aria-label="Toggle theme"
                 style={{
-                  width: "30px",
-                  height: "30px",
+                  width: "28px",
+                  height: "28px",
                   borderRadius: "9999px",
                   border: "1px solid var(--border-color, #e2e8f0)",
                   background: "transparent",
@@ -729,325 +732,328 @@ export default function AdminLogin({
             </div>
           </div>
 
-          {/* Heading */}
-          <div>
-            <h2 style={{ fontSize: "24px", fontWeight: 700, color: "var(--text-primary, #0f172a)", margin: "0 0 4px", letterSpacing: "-0.02em" }}>
-              Sign in to admin
-            </h2>
-            <p style={{ fontSize: "13.5px", color: "var(--text-muted, #64748b)", margin: 0 }}>
-              Authenticate to access telemetry, CMS, and settings.
-            </p>
-          </div>
-
-          {/* 3 Steps */}
-          <div style={{ display: "flex", gap: "10px" }}>
-            <StepItem index="01" label="Password" active={step === 1} onClick={() => { setStep(1); setError(null); }} />
-            <StepItem index="02" label="Email OTP" active={step === 2} onClick={() => { setStep(2); setError(null); }} />
-            <StepItem index="03" label="Passkey" active={step === 3} onClick={() => { setStep(3); setError(null); }} />
-          </div>
-
-          {/* Error Message */}
-          {error && (
-            <div
-              style={{
-                padding: "10px 14px",
-                borderRadius: "10px",
-                backgroundColor: "rgba(239, 68, 68, 0.08)",
-                border: "1px solid rgba(239, 68, 68, 0.2)",
-                color: "#ef4444",
-                fontSize: "12.5px",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-              }}
-            >
-              <AlertTriangle size={15} style={{ flexShrink: 0 }} />
-              <span>{error}</span>
+          {/* Middle Form Area */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px", margin: "auto 0", width: "100%" }}>
+            {/* Heading */}
+            <div>
+              <h2 style={{ fontSize: "23px", fontWeight: 600, color: "var(--text-primary, #0f172a)", margin: "0 0 4px", letterSpacing: "-0.02em" }}>
+                Sign in to admin
+              </h2>
+              <p style={{ fontSize: "13px", color: "var(--text-muted, #64748b)", margin: 0 }}>
+                Authenticate to access telemetry, CMS, and settings.
+              </p>
             </div>
-          )}
 
-          {lockoutTimer > 0 && (
-            <div
-              style={{
-                padding: "10px 14px",
-                borderRadius: "10px",
-                backgroundColor: "rgba(245, 158, 11, 0.08)",
-                border: "1px solid rgba(245, 158, 11, 0.2)",
-                color: "#d97706",
-                fontSize: "12.5px",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-              }}
-            >
-              <Clock size={15} style={{ flexShrink: 0 }} />
-              <span>Too many attempts. Cooldown active: {lockoutTimer}s remaining.</span>
+            {/* 3 Steps */}
+            <div style={{ display: "flex", gap: "8px", width: "100%" }}>
+              <StepItem index="01" label="Password" active={step === 1} onClick={() => { setStep(1); setError(null); }} />
+              <StepItem index="02" label="Email OTP" active={step === 2} onClick={() => { setStep(2); setError(null); }} />
+              <StepItem index="03" label="Passkey" active={step === 3} onClick={() => { setStep(3); setError(null); }} />
             </div>
-          )}
 
-          {/* MFA TOTP Challenge */}
-          {mfaRequired ? (
-            <form onSubmit={handleTotpSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-              <div style={{ textAlign: "center" }}>
-                <ShieldCheck size={30} color="#10b981" style={{ margin: "0 auto 8px" }} />
-                <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 700 }}>Two-Factor Authentication</h3>
-                <p style={{ margin: "4px 0 0", fontSize: "13px", color: "var(--text-muted, #64748b)" }}>
-                  Enter the 6-digit code from your authenticator app.
-                </p>
+            {/* Error Message */}
+            {error && (
+              <div
+                style={{
+                  padding: "8px 12px",
+                  borderRadius: "8px",
+                  backgroundColor: "rgba(239, 68, 68, 0.08)",
+                  border: "1px solid rgba(239, 68, 68, 0.2)",
+                  color: "#ef4444",
+                  fontSize: "12px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                <AlertTriangle size={14} style={{ flexShrink: 0 }} />
+                <span>{error}</span>
               </div>
+            )}
 
-              <div style={{ position: "relative" }}>
-                <Key size={16} style={{ position: "absolute", left: 14, top: 14, color: "var(--text-muted, #94a3b8)" }} />
-                <input
-                  type="text"
-                  maxLength={6}
-                  value={totpCode}
-                  onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ""))}
-                  placeholder="000 000"
-                  className="login-input-box"
-                  style={{ textAlign: "center", letterSpacing: "5px", fontSize: "17px", fontWeight: 700 }}
-                />
+            {lockoutTimer > 0 && (
+              <div
+                style={{
+                  padding: "8px 12px",
+                  borderRadius: "8px",
+                  backgroundColor: "rgba(245, 158, 11, 0.08)",
+                  border: "1px solid rgba(245, 158, 11, 0.2)",
+                  color: "#d97706",
+                  fontSize: "12px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                <Clock size={14} style={{ flexShrink: 0 }} />
+                <span>Too many attempts. Cooldown active: {lockoutTimer}s remaining.</span>
               </div>
+            )}
 
-              <button type="submit" className="primary-login-btn" disabled={submitting || totpCode.length !== 6}>
-                {submitting ? <RefreshCw size={15} className="animate-spin" /> : <>Verify & Access Console <ArrowRight size={15} /></>}
-              </button>
-            </form>
-          ) : (
-            <>
-              {/* STEP 1: PASSWORD */}
-              {step === 1 && (
-                <form onSubmit={handlePasswordSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-                  <div>
-                    <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary, #475569)", marginBottom: "6px", fontWeight: 600 }}>
-                      Email address
-                    </label>
-                    <div style={{ position: "relative" }}>
-                      <Mail size={16} style={{ position: "absolute", left: 14, top: 14, color: "var(--text-muted, #94a3b8)" }} />
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="you@yourdomain.com"
-                        required
-                        className="login-input-box"
-                        autoComplete="username"
-                      />
-                    </div>
-                  </div>
+            {/* MFA TOTP Challenge */}
+            {mfaRequired ? (
+              <form onSubmit={handleTotpSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                <div style={{ textAlign: "center" }}>
+                  <ShieldCheck size={28} color="#10b981" style={{ margin: "0 auto 8px" }} />
+                  <h3 style={{ margin: 0, fontSize: "15px", fontWeight: 700 }}>Two-Factor Authentication</h3>
+                  <p style={{ margin: "4px 0 0", fontSize: "12px", color: "var(--text-muted, #64748b)" }}>
+                    Enter the 6-digit code from your authenticator app.
+                  </p>
+                </div>
 
-                  <div>
-                    <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary, #475569)", marginBottom: "6px", fontWeight: 600 }}>
-                      Password
-                    </label>
-                    <div style={{ position: "relative" }}>
-                      <Lock size={16} style={{ position: "absolute", left: 14, top: 14, color: "var(--text-muted, #94a3b8)" }} />
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        onKeyUp={onKeyUp}
-                        placeholder="Enter your password"
-                        required
-                        className="login-input-box"
-                        autoComplete="current-password"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        aria-label="Toggle password visibility"
-                        style={{
-                          position: "absolute",
-                          right: 12,
-                          top: 11,
-                          background: "none",
-                          border: "none",
-                          cursor: "pointer",
-                          color: "var(--text-muted, #94a3b8)",
-                          padding: 2,
-                        }}
-                      >
-                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                      </button>
-                    </div>
-                  </div>
+                <div style={{ position: "relative" }}>
+                  <Key size={15} style={{ position: "absolute", left: 12, top: 13, color: "var(--text-muted, #94a3b8)" }} />
+                  <input
+                    type="text"
+                    maxLength={6}
+                    value={totpCode}
+                    onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ""))}
+                    placeholder="000 000"
+                    className="login-input-box"
+                    style={{ textAlign: "center", letterSpacing: "4px", fontSize: "16px", fontWeight: 700 }}
+                  />
+                </div>
 
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "13px", width: "100%" }}>
-                    <label style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--text-secondary, #64748b)", cursor: "pointer", whiteSpace: "nowrap" }}>
-                      <input
-                        type="checkbox"
-                        checked={remember}
-                        onChange={(e) => setRemember(e.target.checked)}
-                        style={{ accentColor: "var(--text-primary, #0f172a)", width: "14px", height: "14px" }}
-                      />
-                      <span>Remember session</span>
-                    </label>
-                    {capsLockOn ? (
-                      <span style={{ color: "#d97706", fontSize: "12px", fontWeight: 600, display: "flex", alignItems: "center", gap: 4 }}>
-                        <AlertTriangle size={13} /> Caps Lock ON
-                      </span>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => setStep(2)}
-                        style={{ background: "none", border: "none", color: "var(--primary-blue, #3b82f6)", fontSize: "13px", cursor: "pointer", padding: 0 }}
-                      >
-                        Use OTP code
-                      </button>
-                    )}
-                  </div>
-
-                  <button type="submit" disabled={submitting || lockoutTimer > 0} className="primary-login-btn" style={{ marginTop: "6px" }}>
-                    {submitting ? (
-                      <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        <RefreshCw size={15} className="animate-spin" /> Signing in…
-                      </span>
-                    ) : (
-                      <>Sign in <ArrowRight size={16} /></>
-                    )}
-                  </button>
-                </form>
-              )}
-
-              {/* STEP 2: EMAIL OTP */}
-              {step === 2 && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-                  {!emailOtpSent ? (
-                    <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-                      <div>
-                        <label style={{ display: "block", fontSize: "13px", color: "var(--text-secondary, #475569)", marginBottom: "6px", fontWeight: 600 }}>
-                          Admin Email
-                        </label>
-                        <div style={{ position: "relative" }}>
-                          <Mail size={16} style={{ position: "absolute", left: 14, top: 14, color: "var(--text-muted, #94a3b8)" }} />
-                          <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="admin@domain.com"
-                            className="login-input-box"
-                          />
-                        </div>
-                      </div>
-
-                      <p style={{ margin: 0, fontSize: "13px", color: "var(--text-muted, #64748b)", lineHeight: 1.5 }}>
-                        A direct 6-digit one-time passcode will be delivered to your registered inbox.
-                      </p>
-
-                      <button
-                        type="button"
-                        onClick={handleSendEmailOtp}
-                        className="primary-login-btn"
-                        disabled={submitting || lockoutTimer > 0}
-                      >
-                        {submitting ? "Dispatching Code..." : <>Send Security OTP <ArrowRight size={16} /></>}
-                      </button>
-                    </div>
-                  ) : (
-                    <form onSubmit={handleVerifyEmailOtp} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-                      <div style={{ textAlign: "center" }}>
-                        <p style={{ margin: 0, fontSize: "13px", color: "var(--text-secondary, #475569)" }}>
-                          Enter the 6-digit code sent to <strong>{email}</strong>
-                        </p>
-                      </div>
-
+                <button type="submit" className="primary-login-btn" disabled={submitting || totpCode.length !== 6}>
+                  {submitting ? <RefreshCw size={14} className="animate-spin" /> : <>Verify & Access Console <ArrowRight size={14} /></>}
+                </button>
+              </form>
+            ) : (
+              <>
+                {/* STEP 1: PASSWORD */}
+                {step === 1 && (
+                  <form onSubmit={handlePasswordSubmit} style={{ display: "flex", flexDirection: "column", gap: "13px" }}>
+                    <div>
+                      <label style={{ display: "block", fontSize: "12px", color: "var(--text-secondary, #475569)", marginBottom: "5px", fontWeight: 500 }}>
+                        Email address
+                      </label>
                       <div style={{ position: "relative" }}>
-                        <Key size={16} style={{ position: "absolute", left: 14, top: 14, color: "var(--text-muted, #94a3b8)" }} />
+                        <Mail size={15} style={{ position: "absolute", left: 12, top: 13, color: "var(--text-muted, #94a3b8)" }} />
                         <input
-                          type="text"
-                          maxLength={6}
-                          value={emailOtpCode}
-                          onChange={(e) => setEmailOtpCode(e.target.value.replace(/\D/g, ""))}
-                          placeholder="000 000"
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="you@yourdomain.com"
+                          required
                           className="login-input-box"
-                          style={{ textAlign: "center", letterSpacing: "6px", fontSize: "17px", fontWeight: 700 }}
-                          autoComplete="one-time-code"
+                          autoComplete="username"
                         />
                       </div>
+                    </div>
 
-                      <button
-                        type="submit"
-                        className="primary-login-btn"
-                        disabled={submitting || emailOtpCode.length !== 6 || lockoutTimer > 0}
-                      >
-                        {submitting ? "Verifying..." : <>Verify OTP & Sign In <ArrowRight size={16} /></>}
-                      </button>
-
-                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", color: "var(--text-muted, #64748b)" }}>
+                    <div>
+                      <label style={{ display: "block", fontSize: "12px", color: "var(--text-secondary, #475569)", marginBottom: "5px", fontWeight: 500 }}>
+                        Password
+                      </label>
+                      <div style={{ position: "relative" }}>
+                        <Lock size={15} style={{ position: "absolute", left: 12, top: 13, color: "var(--text-muted, #94a3b8)" }} />
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          onKeyUp={onKeyUp}
+                          placeholder="Enter your password"
+                          required
+                          className="login-input-box"
+                          autoComplete="current-password"
+                        />
                         <button
                           type="button"
-                          onClick={() => setEmailOtpSent(false)}
-                          style={{ background: "none", border: "none", color: "var(--text-muted, #64748b)", cursor: "pointer", padding: 0 }}
+                          onClick={() => setShowPassword(!showPassword)}
+                          aria-label="Toggle password visibility"
+                          style={{
+                            position: "absolute",
+                            right: 10,
+                            top: 11,
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            color: "var(--text-muted, #94a3b8)",
+                            padding: 2,
+                          }}
                         >
-                          ← Change Email
+                          {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
                         </button>
+                      </div>
+                    </div>
+
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "12px", width: "100%" }}>
+                      <label style={{ display: "flex", alignItems: "center", gap: "7px", color: "var(--text-secondary, #64748b)", cursor: "pointer", whiteSpace: "nowrap" }}>
+                        <input
+                          type="checkbox"
+                          checked={remember}
+                          onChange={(e) => setRemember(e.target.checked)}
+                          style={{ accentColor: "var(--text-primary, #0f172a)", width: "14px", height: "14px" }}
+                        />
+                        <span>Remember session</span>
+                      </label>
+                      {capsLockOn ? (
+                        <span style={{ color: "#d97706", fontSize: "11px", fontWeight: 600, display: "flex", alignItems: "center", gap: 3 }}>
+                          <AlertTriangle size={11} /> Caps Lock ON
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setStep(2)}
+                          style={{ background: "none", border: "none", color: "var(--primary-blue, #3b82f6)", fontSize: "12px", cursor: "pointer", padding: 0 }}
+                        >
+                          Use OTP code
+                        </button>
+                      )}
+                    </div>
+
+                    <button type="submit" disabled={submitting || lockoutTimer > 0} className="primary-login-btn" style={{ marginTop: "4px" }}>
+                      {submitting ? (
+                        <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <RefreshCw size={14} className="animate-spin" /> Signing in…
+                        </span>
+                      ) : (
+                        <>Sign in <ArrowRight size={15} /></>
+                      )}
+                    </button>
+                  </form>
+                )}
+
+                {/* STEP 2: EMAIL OTP */}
+                {step === 2 && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "13px" }}>
+                    {!emailOtpSent ? (
+                      <div style={{ display: "flex", flexDirection: "column", gap: "13px" }}>
+                        <div>
+                          <label style={{ display: "block", fontSize: "12px", color: "var(--text-secondary, #475569)", marginBottom: "5px", fontWeight: 500 }}>
+                            Admin Email
+                          </label>
+                          <div style={{ position: "relative" }}>
+                            <Mail size={15} style={{ position: "absolute", left: 12, top: 13, color: "var(--text-muted, #94a3b8)" }} />
+                            <input
+                              type="email"
+                              value={email}
+                              onChange={(e) => setEmail(e.target.value)}
+                              placeholder="admin@domain.com"
+                              className="login-input-box"
+                            />
+                          </div>
+                        </div>
+
+                        <p style={{ margin: 0, fontSize: "12.5px", color: "var(--text-muted, #64748b)", lineHeight: 1.5 }}>
+                          A direct 6-digit one-time passcode will be delivered to your registered inbox.
+                        </p>
+
                         <button
                           type="button"
                           onClick={handleSendEmailOtp}
-                          disabled={otpTimer > 0 || submitting}
-                          style={{
-                            background: "none",
-                            border: "none",
-                            color: otpTimer > 0 ? "var(--text-muted, #94a3b8)" : "var(--primary-blue, #3b82f6)",
-                            cursor: otpTimer > 0 ? "not-allowed" : "pointer",
-                            fontWeight: 600,
-                            padding: 0,
-                          }}
+                          className="primary-login-btn"
+                          disabled={submitting || lockoutTimer > 0}
                         >
-                          {otpTimer > 0 ? `Resend in ${otpTimer}s` : "Resend Code"}
+                          {submitting ? "Dispatching Code..." : <>Send Security OTP <ArrowRight size={14} /></>}
                         </button>
                       </div>
-                    </form>
-                  )}
-                </div>
-              )}
+                    ) : (
+                      <form onSubmit={handleVerifyEmailOtp} style={{ display: "flex", flexDirection: "column", gap: "13px" }}>
+                        <div style={{ textAlign: "center" }}>
+                          <p style={{ margin: 0, fontSize: "12.5px", color: "var(--text-secondary, #475569)" }}>
+                            Enter the 6-digit code sent to <strong>{email}</strong>
+                          </p>
+                        </div>
 
-              {/* STEP 3: PASSKEY */}
-              {step === 3 && (
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: "14px" }}>
-                  <div
-                    style={{
-                      width: "48px",
-                      height: "48px",
-                      borderRadius: "50%",
-                      backgroundColor: "rgba(59, 130, 246, 0.1)",
-                      color: "var(--primary-blue, #3b82f6)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Fingerprint size={24} />
+                        <div style={{ position: "relative" }}>
+                          <Key size={15} style={{ position: "absolute", left: 12, top: 13, color: "var(--text-muted, #94a3b8)" }} />
+                          <input
+                            type="text"
+                            maxLength={6}
+                            value={emailOtpCode}
+                            onChange={(e) => setEmailOtpCode(e.target.value.replace(/\D/g, ""))}
+                            placeholder="000 000"
+                            className="login-input-box"
+                            style={{ textAlign: "center", letterSpacing: "5px", fontSize: "16px", fontWeight: 700 }}
+                            autoComplete="one-time-code"
+                          />
+                        </div>
+
+                        <button
+                          type="submit"
+                          className="primary-login-btn"
+                          disabled={submitting || emailOtpCode.length !== 6 || lockoutTimer > 0}
+                        >
+                          {submitting ? "Verifying..." : <>Verify OTP & Sign In <ArrowRight size={14} /></>}
+                        </button>
+
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", color: "var(--text-muted, #64748b)" }}>
+                          <button
+                            type="button"
+                            onClick={() => setEmailOtpSent(false)}
+                            style={{ background: "none", border: "none", color: "var(--text-muted, #64748b)", cursor: "pointer", padding: 0 }}
+                          >
+                            ← Change Email
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleSendEmailOtp}
+                            disabled={otpTimer > 0 || submitting}
+                            style={{
+                              background: "none",
+                              border: "none",
+                              color: otpTimer > 0 ? "var(--text-muted, #94a3b8)" : "var(--primary-blue, #3b82f6)",
+                              cursor: otpTimer > 0 ? "not-allowed" : "pointer",
+                              fontWeight: 600,
+                              padding: 0,
+                            }}
+                          >
+                            {otpTimer > 0 ? `Resend in ${otpTimer}s` : "Resend Code"}
+                          </button>
+                        </div>
+                      </form>
+                    )}
                   </div>
+                )}
 
-                  <div>
-                    <h4 style={{ margin: 0, fontSize: "15px", fontWeight: 700 }}>Hardware Passkey & WebAuthn</h4>
-                    <p style={{ margin: "4px 0 0", fontSize: "13px", color: "var(--text-muted, #64748b)", maxWidth: "300px" }}>
-                      Authenticate with Touch ID, Face ID, Windows Hello, or your FIDO2 security key.
-                    </p>
+                {/* STEP 3: PASSKEY */}
+                {step === 3 && (
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: "12px" }}>
+                    <div
+                      style={{
+                        width: "44px",
+                        height: "44px",
+                        borderRadius: "50%",
+                        backgroundColor: "rgba(59, 130, 246, 0.1)",
+                        color: "var(--primary-blue, #3b82f6)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Fingerprint size={22} />
+                    </div>
+
+                    <div>
+                      <h4 style={{ margin: 0, fontSize: "14px", fontWeight: 700 }}>Hardware Passkey & WebAuthn</h4>
+                      <p style={{ margin: "4px 0 0", fontSize: "12px", color: "var(--text-muted, #64748b)", maxWidth: "280px" }}>
+                        Authenticate with Touch ID, Face ID, Windows Hello, or your FIDO2 security key.
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handlePasskeySubmit}
+                      className="primary-login-btn"
+                      disabled={submitting || lockoutTimer > 0}
+                    >
+                      {submitting ? "Waiting for Biometrics..." : <>Authenticate with Passkey <Fingerprint size={14} /></>}
+                    </button>
                   </div>
+                )}
+              </>
+            )}
+          </div>
 
-                  <button
-                    type="button"
-                    onClick={handlePasskeySubmit}
-                    className="primary-login-btn"
-                    disabled={submitting || lockoutTimer > 0}
-                  >
-                    {submitting ? "Waiting for Biometrics..." : <>Authenticate with Passkey <Fingerprint size={16} /></>}
-                  </button>
-                </div>
-              )}
-            </>
-          )}
-
-          {/* Footer Trust Badges */}
-          <div style={{ marginTop: "12px", paddingTop: "16px", borderTop: "1px solid var(--border-color, #e2e8f0)" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "16px" }}>
+          {/* Bottom Trust Badges */}
+          <div style={{ paddingTop: "14px", borderTop: "1px solid var(--border-color, #e2e8f0)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "14px" }}>
               <TrustBadge icon={ShieldCheck} tone="success">TLS 1.3</TrustBadge>
               <TrustBadge icon={Fingerprint}>Passkey ready</TrustBadge>
               <TrustBadge icon={Clock}>Rate limited</TrustBadge>
             </div>
-            <p style={{ textAlign: "center", fontSize: "11.5px", color: "var(--text-muted, #94a3b8)", margin: "8px 0 0" }}>
+            <p style={{ textAlign: "center", fontSize: "11px", color: "var(--text-muted, #94a3b8)", margin: "6px 0 0" }}>
               Restricted access — authorized personnel only.
             </p>
           </div>
@@ -1078,16 +1084,16 @@ export default function AdminLogin({
                 background: "var(--bg-secondary, #ffffff)",
                 border: "1px solid var(--border-color, #e2e8f0)",
                 borderRadius: 16,
-                maxWidth: 420,
+                maxWidth: 400,
                 width: "100%",
-                padding: 24,
+                padding: 22,
                 boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
                 color: "var(--text-primary, #0f172a)",
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-                <h3 style={{ margin: 0, fontSize: "16px", fontWeight: 700, display: "flex", alignItems: "center", gap: 8 }}>
-                  <HelpCircle size={18} color="var(--primary-blue, #3b82f6)" /> Admin Shortcuts & Help
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, display: "flex", alignItems: "center", gap: 8 }}>
+                  <HelpCircle size={17} color="var(--primary-blue, #3b82f6)" /> Admin Shortcuts & Help
                 </h3>
                 <button
                   type="button"
@@ -1098,18 +1104,18 @@ export default function AdminLogin({
                 </button>
               </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: "13px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 14px", background: "var(--bg-primary, #f8fafc)", borderRadius: 8 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: 12.5 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 12px", background: "var(--bg-primary, #f8fafc)", borderRadius: 8 }}>
                   <span>Command Palette</span>
-                  <kbd style={{ fontFamily: "monospace", fontSize: 11, background: "var(--bg-secondary, #fff)", padding: "2px 8px", borderRadius: 4, border: "1px solid var(--border-color, #e2e8f0)" }}>Ctrl + K</kbd>
+                  <kbd style={{ fontFamily: "monospace", fontSize: 11, background: "var(--bg-secondary, #fff)", padding: "1px 6px", borderRadius: 4, border: "1px solid var(--border-color, #e2e8f0)" }}>Ctrl + K</kbd>
                 </div>
-                <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 14px", background: "var(--bg-primary, #f8fafc)", borderRadius: 8 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 12px", background: "var(--bg-primary, #f8fafc)", borderRadius: 8 }}>
                   <span>Toggle Theme</span>
-                  <kbd style={{ fontFamily: "monospace", fontSize: 11, background: "var(--bg-secondary, #fff)", padding: "2px 8px", borderRadius: 4, border: "1px solid var(--border-color, #e2e8f0)" }}>Shift + T</kbd>
+                  <kbd style={{ fontFamily: "monospace", fontSize: 11, background: "var(--bg-secondary, #fff)", padding: "1px 6px", borderRadius: 4, border: "1px solid var(--border-color, #e2e8f0)" }}>Shift + T</kbd>
                 </div>
               </div>
 
-              <div style={{ marginTop: 16, paddingTop: 12, borderTop: "1px solid var(--border-color, #e2e8f0)", fontSize: "12px", color: "var(--text-muted, #64748b)" }}>
+              <div style={{ marginTop: 14, paddingTop: 10, borderTop: "1px solid var(--border-color, #e2e8f0)", fontSize: 11.5, color: "var(--text-muted, #64748b)" }}>
                 Emergency support: <a href="mailto:sujithreddy1546@gmail.com" style={{ color: "var(--text-primary, #0f172a)", fontWeight: 600 }}>sujithreddy1546@gmail.com</a>
               </div>
             </motion.div>
