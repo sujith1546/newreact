@@ -18,6 +18,7 @@ import UpdatesModal from '../widgets/UpdatesModal';
 import MobilePreviewModal from '../widgets/MobilePreviewModal';
 import CraftedWithLoveModal from '../widgets/CraftedWithLoveModal';
 import ScheduleUpcomingModal from '../widgets/ScheduleUpcomingModal';
+import AdminLoginModal from '../admin/AdminLoginModal';
 import { useSupabasePresence } from '../../hooks/useSupabasePresence';
 import { useAuth } from '../../context/AuthContext';
 
@@ -106,6 +107,7 @@ export default function Sidebar({ activeSection, onNavClick }) {
   const [isMobilePreviewOpen, setIsMobilePreviewOpen] = useState(false);
   const [isCraftedModalOpen, setIsCraftedModalOpen] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [isAdminLoginModalOpen, setIsAdminLoginModalOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const isMainPage = location.pathname === '/';
@@ -116,26 +118,33 @@ export default function Sidebar({ activeSection, onNavClick }) {
     const handleOpenMobilePreview = () => setIsMobilePreviewOpen(true);
     const handleOpenCrafted = () => setIsCraftedModalOpen(true);
     const handleOpenSchedule = () => setIsScheduleModalOpen(true);
+    const handleOpenAdminLogin = () => setIsAdminLoginModalOpen(true);
     window.addEventListener('open-github', handleOpenGithub);
     window.addEventListener('open-updates', handleOpenUpdates);
     window.addEventListener('open-mobile-preview', handleOpenMobilePreview);
     window.addEventListener('open-crafted-modal', handleOpenCrafted);
     window.addEventListener('open-schedule', handleOpenSchedule);
+    window.addEventListener('open-admin-login', handleOpenAdminLogin);
     return () => {
       window.removeEventListener('open-github', handleOpenGithub);
       window.removeEventListener('open-updates', handleOpenUpdates);
       window.removeEventListener('open-mobile-preview', handleOpenMobilePreview);
       window.removeEventListener('open-crafted-modal', handleOpenCrafted);
       window.removeEventListener('open-schedule', handleOpenSchedule);
+      window.removeEventListener('open-admin-login', handleOpenAdminLogin);
     };
   }, []);
 
-  // Keyboard shortcut: Ctrl+D or Cmd+D to toggle System Diagnostics
+  // Keyboard shortcuts: Ctrl+D for Diagnostics, Ctrl+Shift+A for Admin Login
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'd') {
         e.preventDefault();
         setIsDiagnosticsOpen((prev) => !prev);
+      }
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
+        e.preventDefault();
+        setIsAdminLoginModalOpen(true);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -556,8 +565,14 @@ export default function Sidebar({ activeSection, onNavClick }) {
         <button
           type="button"
           className="social-icon-box"
-          onClick={() => window.open(isAdminActive ? '/admin/dashboard' : '/admin/login', '_blank')}
-          title="Admin login"
+          onClick={() => {
+            if (isAdminActive) {
+              navigate('/admin/dashboard');
+            } else {
+              setIsAdminLoginModalOpen(true);
+            }
+          }}
+          title={isAdminActive ? "Admin Dashboard" : "Admin Login"}
           aria-label="Admin login"
           style={{
             cursor: 'pointer',
@@ -688,6 +703,7 @@ export default function Sidebar({ activeSection, onNavClick }) {
       <MobilePreviewModal isOpen={isMobilePreviewOpen} onClose={() => setIsMobilePreviewOpen(false)} />
       <CraftedWithLoveModal isOpen={isCraftedModalOpen} onClose={() => setIsCraftedModalOpen(false)} />
       <ScheduleUpcomingModal isOpen={isScheduleModalOpen} onClose={() => setIsScheduleModalOpen(false)} />
+      <AdminLoginModal isOpen={isAdminLoginModalOpen} onClose={() => setIsAdminLoginModalOpen(false)} />
 
       {/* Build Tag Footer */}
       <div className="sidebar-build-tag">

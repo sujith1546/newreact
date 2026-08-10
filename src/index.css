@@ -254,7 +254,7 @@ body {
   overflow: hidden !important;
   margin-bottom: 0;
   object-fit: cover !important;
-  border: 2px solid var(--accent-color);
+  border: none !important;
   box-sizing: border-box;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -1868,7 +1868,7 @@ button.btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
   overflow: hidden !important;
   clip-path: circle(50% at 50% 50%) !important;
   -webkit-clip-path: circle(50% at 50% 50%) !important;
-  border: 2px solid var(--accent-color);
+  border: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
   box-sizing: border-box;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
