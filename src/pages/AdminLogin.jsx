@@ -372,27 +372,34 @@ export default function AdminLogin() {
     <div
       style={{
         minHeight: "100vh",
+        minHeight: "100dvh",
         width: "100%",
-        backgroundColor: "var(--bg-primary, #ffffff)",
+        backgroundColor: "var(--bg-primary, #f8fafc)",
+        backgroundImage: `
+          radial-gradient(circle at 50% 35%, rgba(59, 130, 246, 0.04) 0%, transparent 65%),
+          radial-gradient(var(--border-color, #e2e8f0) 1px, transparent 1px)
+        `,
+        backgroundSize: "100% 100%, 28px 28px",
         color: "var(--text-primary, #0f172a)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-        padding: "24px 16px",
+        padding: "32px 20px",
         boxSizing: "border-box",
-        margin: "0 auto",
+        margin: "0",
       }}
     >
       <style>{`
         .admin-login-card-wrapper {
           width: 100%;
-          max-width: 780px;
-          margin: 0 auto;
+          max-width: 820px;
+          margin: auto 0;
           display: flex;
           flex-direction: column;
           gap: 12px;
+          box-sizing: border-box;
         }
 
         .admin-login-card {
@@ -400,14 +407,16 @@ export default function AdminLogin() {
           border-radius: 20px;
           border: 1px solid var(--border-color, #e2e8f0);
           background: var(--bg-secondary, #ffffff);
-          box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.04);
+          box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.08), 0 2px 10px rgba(0, 0, 0, 0.03);
           display: grid;
-          grid-template-columns: 240px 1fr;
+          grid-template-columns: 250px 1fr;
           overflow: hidden;
           box-sizing: border-box;
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
         }
 
-        @media (max-width: 680px) {
+        @media (max-width: 720px) {
           .admin-login-card {
             grid-template-columns: 1fr;
           }
@@ -426,12 +435,12 @@ export default function AdminLogin() {
 
         .login-input {
           width: 100%;
-          height: 40px;
+          height: 42px;
           border-radius: 10px;
           border: 1px solid var(--border-color, #e2e8f0);
           background: var(--bg-primary, #f8fafc);
           color: var(--text-primary, #0f172a);
-          padding: 0 12px 0 36px;
+          padding: 0 12px 0 38px;
           font-size: 13px;
           font-family: inherit;
           outline: none;
@@ -451,7 +460,7 @@ export default function AdminLogin() {
           align-items: center;
           justify-content: center;
           gap: 6px;
-          padding: 8px 0;
+          padding: 9px 0;
           font-size: 12px;
           font-weight: 600;
           border: none;
@@ -475,7 +484,7 @@ export default function AdminLogin() {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 6.5px 10px;
+          padding: 7px 10px;
           border-radius: 9999px;
           background: var(--bg-secondary, #ffffff);
           border: 1px solid var(--border-color, #e2e8f0);
@@ -504,12 +513,12 @@ export default function AdminLogin() {
           gap: 8px;
           cursor: pointer;
           transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
         }
 
         .primary-cta-btn:hover:not(:disabled) {
           transform: translateY(-1px);
-          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
           opacity: 0.94;
         }
 
@@ -598,7 +607,7 @@ export default function AdminLogin() {
           <div
             className="admin-login-sidebar"
             style={{
-              padding: "24px 18px",
+              padding: "26px 20px",
               borderRight: "1px solid var(--border-color, #e2e8f0)",
               backgroundColor: "var(--bg-primary, #f8fafc)",
               display: "flex",
@@ -610,8 +619,8 @@ export default function AdminLogin() {
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <div
                 style={{
-                  width: 40,
-                  height: 40,
+                  width: 42,
+                  height: 42,
                   borderRadius: "50%",
                   backgroundColor: "var(--text-primary, #0f172a)",
                   color: "var(--bg-primary, #ffffff)",
@@ -705,11 +714,11 @@ export default function AdminLogin() {
           </div>
 
           {/* Right Column: Title, Stepper, Form, and Trust Badges */}
-          <div style={{ padding: "28px 28px", display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
+          <div style={{ padding: "30px 32px", display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
             <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: 16 }}>
               {/* Header */}
               <div>
-                <h1 style={{ margin: 0, fontSize: 22, fontWeight: 600, color: "var(--text-primary, #0f172a)", letterSpacing: "-0.02em" }}>
+                <h1 style={{ margin: 0, fontSize: 23, fontWeight: 600, color: "var(--text-primary, #0f172a)", letterSpacing: "-0.02em" }}>
                   Admin Portal
                 </h1>
                 <p style={{ margin: "4px 0 0", fontSize: 12.5, color: "var(--text-muted, #64748b)" }}>
@@ -797,7 +806,7 @@ export default function AdminLogin() {
                   </div>
 
                   <div className="login-input-wrap">
-                    <Key size={15} style={{ position: "absolute", left: 12, top: 12, color: "var(--text-muted, #94a3b8)" }} />
+                    <Key size={15} style={{ position: "absolute", left: 12, top: 13, color: "var(--text-muted, #94a3b8)" }} />
                     <input
                       type="text"
                       maxLength={6}
@@ -817,13 +826,13 @@ export default function AdminLogin() {
                 <>
                   {/* STEP 1: PASSWORD FORM */}
                   {activeStep === 0 && (
-                    <form onSubmit={handlePasswordSubmit} style={{ display: "flex", flexDirection: "column", gap: 12, width: "100%" }}>
+                    <form onSubmit={handlePasswordSubmit} style={{ display: "flex", flexDirection: "column", gap: 13, width: "100%" }}>
                       <div>
                         <label style={{ display: "block", fontSize: 12, fontWeight: 500, marginBottom: 6, color: "var(--text-secondary, #475569)" }}>
                           Email Address
                         </label>
                         <div className="login-input-wrap">
-                          <Mail size={15} style={{ position: "absolute", left: 12, top: 12, color: "var(--text-muted, #94a3b8)" }} />
+                          <Mail size={15} style={{ position: "absolute", left: 12, top: 13, color: "var(--text-muted, #94a3b8)" }} />
                           <input
                             type="email"
                             value={email}
@@ -840,7 +849,7 @@ export default function AdminLogin() {
                           Password
                         </label>
                         <div className="login-input-wrap">
-                          <Lock size={15} style={{ position: "absolute", left: 12, top: 12, color: "var(--text-muted, #94a3b8)" }} />
+                          <Lock size={15} style={{ position: "absolute", left: 12, top: 13, color: "var(--text-muted, #94a3b8)" }} />
                           <input
                             type={showPassword ? "text" : "password"}
                             value={password}
@@ -856,7 +865,7 @@ export default function AdminLogin() {
                             style={{
                               position: "absolute",
                               right: 10,
-                              top: 10,
+                              top: 11,
                               background: "none",
                               border: "none",
                               cursor: "pointer",
@@ -895,15 +904,15 @@ export default function AdminLogin() {
 
                   {/* STEP 2: EMAIL OTP FORM */}
                   {activeStep === 1 && (
-                    <div style={{ display: "flex", flexDirection: "column", gap: 12, width: "100%" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 13, width: "100%" }}>
                       {!emailOtpSent ? (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
                           <div>
                             <label style={{ display: "block", fontSize: 12, fontWeight: 500, marginBottom: 6, color: "var(--text-secondary, #475569)" }}>
                               Admin Email
                             </label>
                             <div className="login-input-wrap">
-                              <Mail size={15} style={{ position: "absolute", left: 12, top: 12, color: "var(--text-muted, #94a3b8)" }} />
+                              <Mail size={15} style={{ position: "absolute", left: 12, top: 13, color: "var(--text-muted, #94a3b8)" }} />
                               <input
                                 type="email"
                                 value={email}
@@ -928,7 +937,7 @@ export default function AdminLogin() {
                           </button>
                         </div>
                       ) : (
-                        <form onSubmit={handleVerifyEmailOtp} style={{ display: "flex", flexDirection: "column", gap: 12, width: "100%" }}>
+                        <form onSubmit={handleVerifyEmailOtp} style={{ display: "flex", flexDirection: "column", gap: 13, width: "100%" }}>
                           <div style={{ textAlign: "center" }}>
                             <p style={{ margin: 0, fontSize: 12, color: "var(--text-secondary, #475569)" }}>
                               Enter the 6-digit code sent to <strong>{email}</strong>
@@ -936,7 +945,7 @@ export default function AdminLogin() {
                           </div>
 
                           <div className="login-input-wrap">
-                            <Key size={15} style={{ position: "absolute", left: 12, top: 12, color: "var(--text-muted, #94a3b8)" }} />
+                            <Key size={15} style={{ position: "absolute", left: 12, top: 13, color: "var(--text-muted, #94a3b8)" }} />
                             <input
                               type="text"
                               maxLength={6}
