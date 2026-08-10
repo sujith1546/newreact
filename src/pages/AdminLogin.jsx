@@ -45,9 +45,9 @@ function StatusPill({ label, value, dark }) {
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        borderRadius: "12px",
-        padding: "11px 14px",
-        fontSize: "12px",
+        borderRadius: "10px",
+        padding: "9px 12px",
+        fontSize: "11.5px",
         backgroundColor: dark ? "rgba(255, 255, 255, 0.04)" : "var(--bg-primary, #f8fafc)",
         border: dark ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid var(--border-color, #e2e8f0)",
         color: dark ? "rgba(255, 255, 255, 0.65)" : "var(--text-secondary, #64748b)",
@@ -56,11 +56,11 @@ function StatusPill({ label, value, dark }) {
         WebkitBackdropFilter: dark ? "blur(8px)" : "none",
       }}
     >
-      <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        <span style={{ width: "6.5px", height: "6.5px", borderRadius: "50%", backgroundColor: "#34d399", flexShrink: 0 }} />
+      <span style={{ display: "flex", alignItems: "center", gap: "7px" }}>
+        <span style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "#34d399", flexShrink: 0 }} />
         {label}
       </span>
-      <span style={{ color: dark ? "#ffffff" : "var(--text-primary, #0f172a)", fontWeight: 600 }}>{value}</span>
+      <span style={{ color: dark ? "#ffffff" : "var(--text-primary, #0f172a)", fontWeight: 600, fontSize: "11.5px" }}>{value}</span>
     </div>
   );
 }
@@ -157,6 +157,16 @@ export default function AdminLogin({
 
   // Modals
   const [showHelpModal, setShowHelpModal] = useState(false);
+
+  // Ensure 100% full desktop viewport and native 1.0 zoom
+  useEffect(() => {
+    document.documentElement.classList.add('admin-mode');
+    document.body.classList.add('admin-mode');
+    return () => {
+      document.documentElement.classList.remove('admin-mode');
+      document.body.classList.remove('admin-mode');
+    };
+  }, []);
 
   // Measure Real Latency
   useEffect(() => {
@@ -476,7 +486,7 @@ export default function AdminLogin({
         zIndex: 9999,
         overflow: "hidden",
         display: "grid",
-        gridTemplateColumns: "1fr 1fr",
+        gridTemplateColumns: "30% 70%",
         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
         margin: 0,
         padding: 0,
@@ -485,7 +495,7 @@ export default function AdminLogin({
     >
       <style>{`
         .login-viewport-grid {
-          grid-template-columns: 48% 52%;
+          grid-template-columns: 30% 70%;
         }
 
         .login-left-pane {
@@ -498,7 +508,7 @@ export default function AdminLogin({
           display: flex;
           flex-direction: column;
           justify-content: space-between;
-          padding: 48px 48px;
+          padding: 38px 28px;
           box-sizing: border-box;
           border-right: 1px solid rgba(255, 255, 255, 0.08);
           overflow: hidden;
@@ -510,7 +520,7 @@ export default function AdminLogin({
           display: flex;
           flex-direction: column;
           justify-content: space-between;
-          padding: 40px 48px;
+          padding: 36px 48px;
           box-sizing: border-box;
           overflow-y: auto;
           scrollbar-width: none;
@@ -579,7 +589,7 @@ export default function AdminLogin({
           gap: 8px;
           cursor: pointer;
           transition: all 0.2s ease;
-          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
         }
 
         .primary-login-btn:hover:not(:disabled) {
@@ -594,44 +604,45 @@ export default function AdminLogin({
       `}</style>
 
       {/* ---------------------------------------------------------------- */}
-      {/* LEFT PANE — TELEMETRY & SYSTEM IDENTITY (48% WIDTH)              */}
+      {/* LEFT PANE — TELEMETRY & SYSTEM IDENTITY (30% WIDTH)              */}
       {/* ---------------------------------------------------------------- */}
       <div className="login-left-pane">
-        <div style={{ maxWidth: "480px", width: "100%", margin: "0 auto", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+        <div style={{ maxWidth: "340px", width: "100%", margin: "0 auto", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
           {/* Top Identity Block */}
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "28px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "22px" }}>
               <div
                 style={{
-                  width: "30px",
-                  height: "30px",
-                  borderRadius: "8px",
+                  width: "28px",
+                  height: "28px",
+                  borderRadius: "7px",
                   backgroundColor: "#ffffff",
                   color: "#0b0c0e",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: "12px",
+                  fontSize: "11.5px",
                   fontWeight: 700,
+                  flexShrink: 0,
                 }}
               >
                 {adminInitials}
               </div>
-              <span style={{ fontSize: "13px", color: "rgba(255, 255, 255, 0.7)", fontWeight: 500 }}>
-                {adminName} · Admin console {currentTime ? `· ${currentTime} IST` : ""}
+              <span style={{ fontSize: "12px", color: "rgba(255, 255, 255, 0.7)", fontWeight: 500, lineHeight: 1.3 }}>
+                {adminName} · Admin console {currentTime ? `· ${currentTime}` : ""}
               </span>
             </div>
 
-            <h1 style={{ fontSize: "26px", fontWeight: 600, color: "#ffffff", margin: "0 0 10px", letterSpacing: "-0.02em", lineHeight: 1.3 }}>
+            <h1 style={{ fontSize: "20px", fontWeight: 600, color: "#ffffff", margin: "0 0 8px", letterSpacing: "-0.02em", lineHeight: 1.3 }}>
               Real-time operations, secured end to end
             </h1>
-            <p style={{ fontSize: "13.5px", color: "rgba(255, 255, 255, 0.55)", margin: 0, lineHeight: 1.55 }}>
-              Live telemetry from the sync engine, security shield, and lead pipeline — visible the moment you sign in.
+            <p style={{ fontSize: "12.5px", color: "rgba(255, 255, 255, 0.55)", margin: 0, lineHeight: 1.5 }}>
+              Live telemetry from the sync engine, security shield, and lead pipeline.
             </p>
           </div>
 
           {/* Middle Status Stack (4 Pill Cards) */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px", margin: "24px 0" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "7px", margin: "20px 0" }}>
             <StatusPill label="Session" value="Protected" dark />
             <StatusPill label="Passkey service" value="Reachable" dark />
             <StatusPill label="Latency" value={latency !== null ? `${latency}ms` : "14ms"} dark />
@@ -640,16 +651,16 @@ export default function AdminLogin({
 
           {/* Bottom Live Monospace Console Feed */}
           <div className="login-feed-block">
-            <p style={{ margin: "0 0 6px", fontSize: "11px", color: "rgba(255, 255, 255, 0.4)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>
+            <p style={{ margin: "0 0 6px", fontSize: "10.5px", color: "rgba(255, 255, 255, 0.4)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>
               Live console feed
             </p>
             <div
               style={{
                 fontFamily: "'SF Mono', Monaco, Consolas, monospace",
-                fontSize: "11px",
+                fontSize: "10.5px",
                 color: "rgba(255, 255, 255, 0.55)",
-                lineHeight: 1.85,
-                height: "80px",
+                lineHeight: 1.8,
+                height: "76px",
                 overflow: "hidden",
               }}
             >
@@ -664,10 +675,10 @@ export default function AdminLogin({
       </div>
 
       {/* ---------------------------------------------------------------- */}
-      {/* RIGHT PANE — AUTH PORTAL & FORM (52% WIDTH)                      */}
+      {/* RIGHT PANE — AUTH PORTAL & FORM (70% WIDTH)                      */}
       {/* ---------------------------------------------------------------- */}
       <div className="login-right-pane">
-        <div style={{ maxWidth: "440px", width: "100%", margin: "0 auto", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+        <div style={{ maxWidth: "460px", width: "100%", margin: "0 auto", height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
           {/* Top Bar Row */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <button
@@ -736,7 +747,7 @@ export default function AdminLogin({
           <div style={{ display: "flex", flexDirection: "column", gap: "16px", margin: "auto 0", width: "100%" }}>
             {/* Heading */}
             <div>
-              <h2 style={{ fontSize: "23px", fontWeight: 600, color: "var(--text-primary, #0f172a)", margin: "0 0 4px", letterSpacing: "-0.02em" }}>
+              <h2 style={{ fontSize: "24px", fontWeight: 600, color: "var(--text-primary, #0f172a)", margin: "0 0 4px", letterSpacing: "-0.02em" }}>
                 Sign in to admin
               </h2>
               <p style={{ fontSize: "13px", color: "var(--text-muted, #64748b)", margin: 0 }}>

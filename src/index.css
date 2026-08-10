@@ -187,9 +187,10 @@ body {
 }
 
 /* Apply zoom at the html level so it's resolved before first paint,
-   preventing the visible "compression" flash on load. */
+   preventing the visible "compression" flash on load.
+   Admin dashboard and Admin login run at native 1.0 zoom (100% full viewport). */
 @media (min-width: 1025px) {
-  html:not(.admin-mode):not(:has(.admin-shell)) {
+  html:not(.admin-mode):not(:has(.admin-shell)):not(:has(.login-viewport-grid)) {
     zoom: 0.72;
     /* Counteract font boosting that some engines apply after zoom */
     -webkit-text-size-adjust: 100%;
