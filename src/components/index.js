@@ -1,6 +1,5 @@
 // =================================================================
 // CENTRAL COMPONENT RE-EXPORT INDEX
-// Provides 100% backward compatibility & clean domain imports
 // =================================================================
 
 // 1. Layout & Shell Components
