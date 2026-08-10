@@ -257,9 +257,9 @@ export default function AdminLoginModal({ isOpen, onClose }) {
             position: "fixed",
             inset: 0,
             zIndex: 999999,
-            background: "rgba(0, 0, 0, 0.6)",
-            backdropFilter: "blur(14px)",
-            WebkitBackdropFilter: "blur(14px)",
+            background: "rgba(0, 0, 0, 0.72)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -270,239 +270,274 @@ export default function AdminLoginModal({ isOpen, onClose }) {
         >
           <motion.div
             key="admin-modal-content"
-            initial={{ opacity: 0, scale: 0.94, y: 16 }}
+            initial={{ opacity: 0, scale: 0.94, y: 14 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.94, y: 16 }}
-            transition={{ type: "spring", damping: 26, stiffness: 320 }}
+            exit={{ opacity: 0, scale: 0.94, y: 14 }}
+            transition={{ type: "spring", damping: 28, stiffness: 340 }}
             onClick={(e) => e.stopPropagation()}
             style={{
               position: "relative",
-              maxWidth: "400px",
+              maxWidth: "410px",
               width: "100%",
-              background: "var(--bg-secondary, #ffffff)",
-              border: "1px solid var(--border-color, #e2e8f0)",
-              borderRadius: "16px",
-              boxShadow: "0 20px 45px -10px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255,255,255,0.08)",
+              background: "#18191d",
+              border: "1px solid rgba(255, 255, 255, 0.12)",
+              borderRadius: "18px",
+              boxShadow: "0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05)",
               overflow: "hidden",
-              color: "var(--text-primary, #0f172a)",
-              fontFamily: "var(--font-sans, 'Inter', sans-serif)",
+              color: "#ffffff",
+              fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif",
             }}
           >
-            {/* Modal Header Bar */}
+            {/* Header User Profile & Close */}
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "12px 16px",
-                borderBottom: "1px solid var(--border-color, #e2e8f0)",
-                background: "color-mix(in srgb, var(--bg-primary, #f8fafc) 60%, transparent)",
+                padding: "16px 20px 10px",
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <span
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <div
                   style={{
-                    display: "inline-flex",
+                    width: "34px",
+                    height: "34px",
+                    borderRadius: "50%",
+                    background: "#1d4ed8",
+                    color: "#ffffff",
+                    fontWeight: "800",
+                    fontSize: "12.5px",
+                    display: "flex",
                     alignItems: "center",
-                    gap: "4px",
-                    fontSize: "10px",
-                    fontWeight: 600,
-                    padding: "2px 7px",
-                    borderRadius: "999px",
-                    background: "rgba(16, 185, 129, 0.12)",
-                    color: "#10b981",
-                    border: "1px solid rgba(16, 185, 129, 0.25)",
+                    justifyContent: "center",
+                    flexShrink: 0,
                   }}
                 >
-                  <Lock size={10} />
-                  <span>TLS 1.3</span>
-                </span>
-                <span
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "4px",
-                    fontSize: "10px",
-                    fontWeight: 600,
-                    padding: "2px 7px",
-                    borderRadius: "999px",
-                    background: "var(--bg-primary, #f1f5f9)",
-                    color: "var(--text-secondary, #64748b)",
-                    border: "1px solid var(--border-color, #e2e8f0)",
-                  }}
-                >
-                  <Fingerprint size={10} />
-                  <span>Passkey ready</span>
-                </span>
+                  ST
+                </div>
+                <div>
+                  <div style={{ fontSize: "14px", fontWeight: "700", color: "#ffffff", lineHeight: 1.2 }}>
+                    Sujith Thota
+                  </div>
+                  <div style={{ fontSize: "11px", color: "#22c55e", fontWeight: "600", lineHeight: 1.2 }}>
+                    Secure · reachable
+                  </div>
+                </div>
               </div>
 
               <button
                 type="button"
                 onClick={onClose}
-                aria-label="Close"
+                aria-label="Close modal"
                 style={{
-                  background: "transparent",
+                  background: "none",
                   border: "none",
-                  borderRadius: "50%",
-                  width: "28px",
-                  height: "28px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  color: "#94a3b8",
                   cursor: "pointer",
-                  color: "var(--text-secondary, #64748b)",
-                  transition: "background 0.15s ease",
+                  padding: "4px",
+                  display: "flex",
+                  borderRadius: "50%",
+                  transition: "color 0.15s ease",
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(128,128,128,0.12)")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "#ffffff")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "#94a3b8")}
               >
-                <X size={16} />
+                <X size={18} />
               </button>
             </div>
 
-            {/* Modal Body */}
-            <div style={{ padding: "18px 20px 20px" }}>
-              {/* Title */}
-              <div style={{ textAlign: "center", marginBottom: "14px" }}>
-                <h2
-                  style={{
-                    margin: "0 0 2px",
-                    fontSize: "20px",
-                    fontWeight: 700,
-                    letterSpacing: "-0.02em",
-                    color: "var(--text-primary, #0f172a)",
-                  }}
-                >
-                  Admin console
-                </h2>
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: "12.5px",
-                    color: "var(--text-secondary, #64748b)",
-                  }}
-                >
-                  Sign in to manage the portfolio
-                </p>
-              </div>
-
-              {/* Segmented Pill Tabs */}
-              <div
+            {/* Title & Centered Status Pills */}
+            <div style={{ textAlign: "center", padding: "0 20px 14px" }}>
+              <h2
                 style={{
-                  display: "flex",
-                  padding: "3px",
-                  background: "var(--bg-primary, #f1f5f9)",
-                  border: "1px solid var(--border-color, #e2e8f0)",
-                  borderRadius: "999px",
-                  marginBottom: "12px",
+                  fontSize: "23px",
+                  fontWeight: "800",
+                  color: "#ffffff",
+                  margin: "0 0 4px",
+                  letterSpacing: "-0.02em",
                 }}
               >
-                <button
-                  type="button"
-                  onClick={() => {
-                    setError("");
-                    setActiveMethod("password");
-                  }}
+                Admin console
+              </h2>
+              <p style={{ fontSize: "12.5px", color: "#94a3b8", margin: "0 0 14px" }}>
+                Sign in to manage the portfolio
+              </p>
+
+              {/* Status Badges Row */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
+                <span
                   style={{
-                    flex: 1,
-                    border: "none",
-                    background: activeMethod === "password" ? "var(--text-primary, #0f172a)" : "transparent",
-                    color: activeMethod === "password" ? "var(--bg-secondary, #ffffff)" : "var(--text-secondary, #64748b)",
-                    padding: "6px 10px",
-                    borderRadius: "999px",
-                    fontSize: "11.5px",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    transition: "all 0.18s ease",
-                    display: "flex",
+                    display: "inline-flex",
                     alignItems: "center",
-                    justifyContent: "center",
                     gap: "5px",
-                    boxShadow: activeMethod === "password" ? "0 1px 3px rgba(0,0,0,0.12)" : "none",
+                    fontSize: "11px",
+                    fontWeight: "700",
+                    padding: "3px 10px",
+                    borderRadius: "999px",
+                    background: "rgba(34, 197, 94, 0.15)",
+                    color: "#22c55e",
+                    border: "1px solid rgba(34, 197, 94, 0.3)",
                   }}
                 >
-                  <KeyRound size={13} />
-                  <span>Password</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setError("");
-                    setActiveMethod("otp");
-                  }}
+                  <Lock size={11} />
+                  <span>TLS 1.3</span>
+                </span>
+
+                <span
                   style={{
-                    flex: 1,
-                    border: "none",
-                    background: activeMethod === "otp" ? "var(--text-primary, #0f172a)" : "transparent",
-                    color: activeMethod === "otp" ? "var(--bg-secondary, #ffffff)" : "var(--text-secondary, #64748b)",
-                    padding: "6px 10px",
-                    borderRadius: "999px",
-                    fontSize: "11.5px",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    transition: "all 0.18s ease",
-                    display: "flex",
+                    display: "inline-flex",
                     alignItems: "center",
-                    justifyContent: "center",
                     gap: "5px",
-                    boxShadow: activeMethod === "otp" ? "0 1px 3px rgba(0,0,0,0.12)" : "none",
+                    fontSize: "11px",
+                    fontWeight: "700",
+                    padding: "3px 10px",
+                    borderRadius: "999px",
+                    background: "#262830",
+                    color: "#e2e8f0",
+                    border: "1px solid rgba(255, 255, 255, 0.12)",
                   }}
                 >
-                  <Mail size={13} />
-                  <span>Email OTP</span>
-                </button>
+                  <Fingerprint size={11} />
+                  <span>Passkey ready</span>
+                </span>
+
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "5px",
+                    fontSize: "11px",
+                    fontWeight: "700",
+                    padding: "3px 10px",
+                    borderRadius: "999px",
+                    background: "rgba(245, 158, 11, 0.15)",
+                    color: "#f59e0b",
+                    border: "1px solid rgba(245, 158, 11, 0.3)",
+                  }}
+                >
+                  <Clock size={11} />
+                  <span>Rate limited</span>
+                </span>
               </div>
+            </div>
 
-              {/* Error Notice */}
-              {error && (
-                <div
-                  style={{
-                    padding: "8px 12px",
-                    background: "rgba(239,68,68,0.1)",
-                    color: "#ef4444",
-                    borderRadius: "8px",
-                    fontSize: "12px",
-                    marginBottom: "12px",
-                    fontWeight: 500,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "6px",
-                  }}
-                >
-                  <AlertTriangle size={13} />
-                  <span>{error}</span>
-                </div>
-              )}
+            {/* Segmented Pill Tabs */}
+            <div
+              style={{
+                display: "flex",
+                padding: "3px",
+                background: "#22242a",
+                border: "1px solid rgba(255, 255, 255, 0.1)",
+                borderRadius: "999px",
+                margin: "0 20px 16px",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  setError("");
+                  setActiveMethod("password");
+                }}
+                style={{
+                  flex: 1,
+                  border: "none",
+                  background: activeMethod === "password" ? "#ffffff" : "transparent",
+                  color: activeMethod === "password" ? "#0f172a" : "#94a3b8",
+                  padding: "7px 12px",
+                  borderRadius: "999px",
+                  fontSize: "12px",
+                  fontWeight: "700",
+                  cursor: "pointer",
+                  transition: "all 0.18s ease",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "6px",
+                }}
+              >
+                <KeyRound size={13} />
+                <span>Password</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setError("");
+                  setActiveMethod("otp");
+                }}
+                style={{
+                  flex: 1,
+                  border: "none",
+                  background: activeMethod === "otp" ? "#ffffff" : "transparent",
+                  color: activeMethod === "otp" ? "#0f172a" : "#94a3b8",
+                  padding: "7px 12px",
+                  borderRadius: "999px",
+                  fontSize: "12px",
+                  fontWeight: "700",
+                  cursor: "pointer",
+                  transition: "all 0.18s ease",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "6px",
+                }}
+              >
+                <Mail size={13} />
+                <span>Email OTP</span>
+              </button>
+            </div>
 
-              {/* Attempts Notice */}
-              {attempts > 0 && attempts < MAX_ATTEMPTS && (
-                <div
-                  style={{
-                    padding: "6px 10px",
-                    background: "rgba(245, 158, 11, 0.12)",
-                    color: "#d97706",
-                    borderRadius: "8px",
-                    fontSize: "11.5px",
-                    marginBottom: "12px",
-                    fontWeight: 500,
-                  }}
-                >
-                  {MAX_ATTEMPTS - attempts} attempts remaining before lockout.
-                </div>
-              )}
+            {/* Error Notice */}
+            {error && (
+              <div
+                style={{
+                  margin: "0 20px 12px",
+                  padding: "8px 12px",
+                  background: "rgba(239,68,68,0.15)",
+                  color: "#ef4444",
+                  borderRadius: "8px",
+                  fontSize: "12px",
+                  fontWeight: 500,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }}
+              >
+                <AlertTriangle size={13} />
+                <span>{error}</span>
+              </div>
+            )}
 
+            {/* Attempts Notice */}
+            {attempts > 0 && attempts < MAX_ATTEMPTS && (
+              <div
+                style={{
+                  margin: "0 20px 12px",
+                  padding: "6px 10px",
+                  background: "rgba(245, 158, 11, 0.15)",
+                  color: "#f59e0b",
+                  borderRadius: "8px",
+                  fontSize: "11.5px",
+                  fontWeight: 500,
+                }}
+              >
+                {MAX_ATTEMPTS - attempts} attempts remaining before lockout.
+              </div>
+            )}
+
+            {/* Form Content */}
+            <div style={{ padding: "0 20px 20px" }}>
               {/* PASSWORD TAB VIEW */}
               {activeMethod === "password" && (
                 <form onSubmit={handlePasswordSubmit} noValidate>
-                  <div style={{ marginBottom: "10px", textAlign: "left" }}>
+                  <div style={{ marginBottom: "14px", textAlign: "left" }}>
                     <label
                       htmlFor="modal-email"
                       style={{
                         display: "block",
-                        fontSize: "11px",
-                        fontWeight: 600,
-                        color: "var(--text-secondary, #64748b)",
-                        marginBottom: "3px",
+                        fontSize: "12px",
+                        fontWeight: "700",
+                        color: "#ffffff",
+                        marginBottom: "5px",
                       }}
                     >
                       Email address
@@ -511,14 +546,15 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                       style={{
                         display: "flex",
                         alignItems: "center",
-                        gap: "8px",
-                        background: "var(--bg-primary, #f1f5f9)",
-                        border: "1px solid var(--border-color, #e2e8f0)",
-                        borderRadius: "8px",
-                        padding: "0 10px",
+                        gap: "10px",
+                        background: "#22242a",
+                        border: "1px solid rgba(255, 255, 255, 0.12)",
+                        borderRadius: "9px",
+                        padding: "0 12px",
+                        height: "42px",
                       }}
                     >
-                      <Mail size={14} color="var(--text-secondary, #94a3b8)" />
+                      <Mail size={15} color="#64748b" />
                       <input
                         id="modal-email"
                         type="email"
@@ -533,23 +569,23 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                           background: "transparent",
                           border: "none",
                           outline: "none",
-                          color: "var(--text-primary, #0f172a)",
-                          fontSize: "13px",
-                          padding: "7px 0",
+                          color: "#ffffff",
+                          fontSize: "13.5px",
+                          fontWeight: "600",
                         }}
                       />
                     </div>
                   </div>
 
-                  <div style={{ marginBottom: "10px", textAlign: "left" }}>
+                  <div style={{ marginBottom: "14px", textAlign: "left" }}>
                     <label
                       htmlFor="modal-password"
                       style={{
                         display: "block",
-                        fontSize: "11px",
-                        fontWeight: 600,
-                        color: "var(--text-secondary, #64748b)",
-                        marginBottom: "3px",
+                        fontSize: "12px",
+                        fontWeight: "700",
+                        color: "#ffffff",
+                        marginBottom: "5px",
                       }}
                     >
                       Password
@@ -558,14 +594,15 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                       style={{
                         display: "flex",
                         alignItems: "center",
-                        gap: "8px",
-                        background: "var(--bg-primary, #f1f5f9)",
-                        border: "1px solid var(--border-color, #e2e8f0)",
-                        borderRadius: "8px",
-                        padding: "0 10px",
+                        gap: "10px",
+                        background: "#22242a",
+                        border: "1px solid rgba(255, 255, 255, 0.12)",
+                        borderRadius: "9px",
+                        padding: "0 12px",
+                        height: "42px",
                       }}
                     >
-                      <Lock size={14} color="var(--text-secondary, #94a3b8)" />
+                      <Lock size={15} color="#64748b" />
                       <input
                         id="modal-password"
                         type={showPassword ? "text" : "password"}
@@ -580,9 +617,8 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                           background: "transparent",
                           border: "none",
                           outline: "none",
-                          color: "var(--text-primary, #0f172a)",
-                          fontSize: "13px",
-                          padding: "7px 0",
+                          color: "#ffffff",
+                          fontSize: "13.5px",
                         }}
                       />
                       <button
@@ -592,13 +628,13 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                         style={{
                           background: "none",
                           border: "none",
-                          color: "var(--text-secondary, #94a3b8)",
+                          color: "#64748b",
                           cursor: "pointer",
                           padding: "2px",
                           display: "flex",
                         }}
                       >
-                        {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                        {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
                       </button>
                     </div>
                   </div>
@@ -608,7 +644,7 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "space-between",
-                      margin: "6px 0 12px",
+                      marginBottom: "16px",
                     }}
                   >
                     <label
@@ -616,16 +652,16 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                       style={{
                         display: "flex",
                         alignItems: "center",
-                        gap: "5px",
-                        fontSize: "11.5px",
-                        color: "var(--text-secondary, #64748b)",
+                        gap: "6px",
+                        fontSize: "12px",
+                        color: "#cbd5e1",
                         cursor: "pointer",
                       }}
                     >
                       <input
                         id="modal-rememberMe"
                         type="checkbox"
-                        style={{ accentColor: "var(--text-primary, #0f172a)" }}
+                        style={{ accentColor: "#ffffff" }}
                       />
                       <span>Remember me</span>
                     </label>
@@ -636,37 +672,37 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                         setActiveMethod("otp");
                       }}
                       style={{
-                        fontSize: "11.5px",
-                        color: "var(--text-secondary, #64748b)",
-                        textDecoration: "none",
+                        fontSize: "12px",
+                        color: "#38bdf8",
+                        textDecoration: "underline",
+                        fontWeight: "600",
                       }}
-                      onMouseEnter={(e) => (e.currentTarget.style.textDecoration = "underline")}
-                      onMouseLeave={(e) => (e.currentTarget.style.textDecoration = "none")}
                     >
                       Forgot?
                     </a>
                   </div>
 
+                  {/* Primary Bright White Action Button */}
                   <button
                     type="submit"
                     disabled={loading || lockoutTimer > 0}
                     style={{
                       width: "100%",
-                      background: "var(--text-primary, #0f172a)",
-                      color: "var(--bg-secondary, #ffffff)",
-                      fontWeight: 600,
-                      fontSize: "12.5px",
-                      padding: "9px 14px",
+                      height: "42px",
+                      background: "#ffffff",
+                      color: "#0f172a",
+                      fontWeight: "700",
+                      fontSize: "13.5px",
                       border: "none",
-                      borderRadius: "8px",
+                      borderRadius: "10px",
                       cursor: loading || lockoutTimer > 0 ? "not-allowed" : "pointer",
                       opacity: loading || lockoutTimer > 0 ? 0.6 : 1,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       gap: "6px",
-                      transition: "all 0.15s ease",
-                      boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+                      boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
+                      transition: "transform 0.15s ease, opacity 0.15s ease",
                     }}
                   >
                     <span>
@@ -676,7 +712,7 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                         ? `Locked (${lockoutTimer}s)`
                         : "Sign in"}
                     </span>
-                    <ArrowRight size={14} />
+                    <ArrowRight size={15} />
                   </button>
                 </form>
               )}
@@ -686,15 +722,15 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                 <div>
                   {!emailOtpSent ? (
                     <form onSubmit={handleSendEmailOtp} noValidate>
-                      <div style={{ marginBottom: "10px", textAlign: "left" }}>
+                      <div style={{ marginBottom: "14px", textAlign: "left" }}>
                         <label
                           htmlFor="modal-otpEmail"
                           style={{
                             display: "block",
-                            fontSize: "11px",
-                            fontWeight: 600,
-                            color: "var(--text-secondary, #64748b)",
-                            marginBottom: "3px",
+                            fontSize: "12px",
+                            fontWeight: "700",
+                            color: "#ffffff",
+                            marginBottom: "5px",
                           }}
                         >
                           Registered Admin Email
@@ -703,14 +739,15 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                           style={{
                             display: "flex",
                             alignItems: "center",
-                            gap: "8px",
-                            background: "var(--bg-primary, #f1f5f9)",
-                            border: "1px solid var(--border-color, #e2e8f0)",
-                            borderRadius: "8px",
-                            padding: "0 10px",
+                            gap: "10px",
+                            background: "#22242a",
+                            border: "1px solid rgba(255, 255, 255, 0.12)",
+                            borderRadius: "9px",
+                            padding: "0 12px",
+                            height: "42px",
                           }}
                         >
-                          <Mail size={14} color="var(--text-secondary, #94a3b8)" />
+                          <Mail size={15} color="#64748b" />
                           <input
                             id="modal-otpEmail"
                             type="email"
@@ -722,9 +759,9 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                               background: "transparent",
                               border: "none",
                               outline: "none",
-                              color: "var(--text-primary, #0f172a)",
-                              fontSize: "13px",
-                              padding: "7px 0",
+                              color: "#ffffff",
+                              fontSize: "13.5px",
+                              fontWeight: "600",
                             }}
                           />
                         </div>
@@ -732,9 +769,9 @@ export default function AdminLoginModal({ isOpen, onClose }) {
 
                       <p
                         style={{
-                          fontSize: "11.5px",
-                          color: "var(--text-secondary, #64748b)",
-                          margin: "0 0 12px",
+                          fontSize: "12px",
+                          color: "#94a3b8",
+                          margin: "0 0 14px",
                           lineHeight: 1.45,
                         }}
                       >
@@ -746,37 +783,37 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                         disabled={loading || lockoutTimer > 0}
                         style={{
                           width: "100%",
-                          background: "var(--text-primary, #0f172a)",
-                          color: "var(--bg-secondary, #ffffff)",
-                          fontWeight: 600,
-                          fontSize: "12.5px",
-                          padding: "9px 14px",
+                          height: "42px",
+                          background: "#ffffff",
+                          color: "#0f172a",
+                          fontWeight: "700",
+                          fontSize: "13.5px",
                           border: "none",
-                          borderRadius: "8px",
+                          borderRadius: "10px",
                           cursor: loading || lockoutTimer > 0 ? "not-allowed" : "pointer",
                           opacity: loading || lockoutTimer > 0 ? 0.6 : 1,
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "center",
                           gap: "6px",
-                          transition: "all 0.15s ease",
+                          boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
                         }}
                       >
                         <span>{loading ? "Sending Code..." : "Send 6-digit OTP"}</span>
-                        <ArrowRight size={14} />
+                        <ArrowRight size={15} />
                       </button>
                     </form>
                   ) : (
                     <form onSubmit={handleVerifyEmailOtp} noValidate>
-                      <div style={{ marginBottom: "10px", textAlign: "left" }}>
+                      <div style={{ marginBottom: "14px", textAlign: "left" }}>
                         <label
                           htmlFor="modal-otpCode"
                           style={{
                             display: "block",
-                            fontSize: "11px",
-                            fontWeight: 600,
-                            color: "var(--text-secondary, #64748b)",
-                            marginBottom: "3px",
+                            fontSize: "12px",
+                            fontWeight: "700",
+                            color: "#ffffff",
+                            marginBottom: "5px",
                           }}
                         >
                           6-digit Security PIN
@@ -785,14 +822,15 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                           style={{
                             display: "flex",
                             alignItems: "center",
-                            gap: "8px",
-                            background: "var(--bg-primary, #f1f5f9)",
-                            border: "1px solid var(--border-color, #e2e8f0)",
-                            borderRadius: "8px",
-                            padding: "0 10px",
+                            gap: "10px",
+                            background: "#22242a",
+                            border: "1px solid rgba(255, 255, 255, 0.12)",
+                            borderRadius: "9px",
+                            padding: "0 12px",
+                            height: "42px",
                           }}
                         >
-                          <Shield size={14} color="var(--text-secondary, #94a3b8)" />
+                          <Shield size={15} color="#64748b" />
                           <input
                             id="modal-otpCode"
                             type="text"
@@ -807,12 +845,11 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                               background: "transparent",
                               border: "none",
                               outline: "none",
-                              color: "var(--text-primary, #0f172a)",
+                              color: "#ffffff",
                               textAlign: "center",
                               letterSpacing: "4px",
                               fontWeight: 700,
-                              fontSize: "14px",
-                              padding: "7px 0",
+                              fontSize: "15px",
                             }}
                             autoFocus
                           />
@@ -824,14 +861,13 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                         disabled={loading || emailOtpCode.length !== 6 || lockoutTimer > 0}
                         style={{
                           width: "100%",
-                          background: "var(--text-primary, #0f172a)",
-                          color: "var(--bg-secondary, #ffffff)",
-                          fontWeight: 600,
-                          fontSize: "12.5px",
-                          padding: "9px 14px",
+                          height: "42px",
+                          background: "#ffffff",
+                          color: "#0f172a",
+                          fontWeight: "700",
+                          fontSize: "13.5px",
                           border: "none",
-                          borderRadius: "8px",
-                          marginTop: "8px",
+                          borderRadius: "10px",
                           cursor:
                             loading || emailOtpCode.length !== 6 || lockoutTimer > 0
                               ? "not-allowed"
@@ -842,18 +878,19 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                           alignItems: "center",
                           justifyContent: "center",
                           gap: "6px",
+                          boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
                         }}
                       >
                         <span>{loading ? "Verifying..." : "Verify & Sign in"}</span>
-                        <ArrowRight size={14} />
+                        <ArrowRight size={15} />
                       </button>
 
                       <div
                         style={{
                           display: "flex",
                           justifyContent: "space-between",
-                          marginTop: "10px",
-                          fontSize: "11.5px",
+                          marginTop: "12px",
+                          fontSize: "12px",
                         }}
                       >
                         <button
@@ -862,7 +899,7 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                           style={{
                             background: "none",
                             border: "none",
-                            color: "var(--text-secondary, #64748b)",
+                            color: "#94a3b8",
                             cursor: "pointer",
                           }}
                         >
@@ -875,7 +912,7 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                           style={{
                             background: "none",
                             border: "none",
-                            color: otpTimer > 0 ? "var(--text-secondary, #94a3b8)" : "#10b981",
+                            color: otpTimer > 0 ? "#64748b" : "#22c55e",
                             fontWeight: 600,
                             cursor: otpTimer > 0 ? "not-allowed" : "pointer",
                           }}
@@ -888,17 +925,16 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                 </div>
               )}
 
-              {/* Footer Notice */}
+              {/* Footer Note */}
               <p
                 style={{
-                  marginTop: "12px",
-                  marginBottom: 0,
-                  fontSize: "10px",
-                  color: "var(--text-secondary, #94a3b8)",
+                  margin: "14px 0 0",
+                  fontSize: "11px",
+                  color: "#64748b",
                   textAlign: "center",
                 }}
               >
-                Restricted access · authorized personnel only
+                Restricted access · authorized personnel only.
               </p>
             </div>
           </motion.div>
