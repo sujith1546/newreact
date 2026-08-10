@@ -34,6 +34,21 @@ function stringToHue(str = "") {
   return Math.abs(hash) % 360;
 }
 
+function getProjectCategory(project) {
+  if (project.category) return project.category;
+  
+  const tagsStr = (project.tags || []).join(" ").toLowerCase();
+  const titleStr = (project.title || "").toLowerCase();
+  
+  if (tagsStr.includes("rag") || tagsStr.includes("gemini") || tagsStr.includes("llm") || titleStr.includes("rag")) return "AI / RAG";
+  if (tagsStr.includes("nlp") || tagsStr.includes("finbert") || tagsStr.includes("sentiment") || titleStr.includes("sentiment")) return "NLP / AI";
+  if (tagsStr.includes("xgboost") || tagsStr.includes("lightgbm") || tagsStr.includes("scikit") || tagsStr.includes("machine learning") || titleStr.includes("predict")) return "AI / ML";
+  if (tagsStr.includes("react") || tagsStr.includes("fastapi") || tagsStr.includes("streamlit")) return "Full Stack";
+  
+  const nonPythonTag = (project.tags || []).find((t) => t !== "Python");
+  return nonPythonTag || "AI / ML";
+}
+
 export default function ProjectCard({ project, onCardClick }) {
   const cardRef = useRef(null);
   const rafRef = useRef(null);
@@ -62,6 +77,7 @@ export default function ProjectCard({ project, onCardClick }) {
   const hue2 = (hue + 65) % 360;
   const hue3 = (hue + 150) % 360;
   const initials = project.title.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+  const categoryLabel = getProjectCategory(project);
 
   return (
     <div
@@ -88,8 +104,8 @@ export default function ProjectCard({ project, onCardClick }) {
       {/* Image / Visual Header */}
       <div className="project-image-area">
         <div className="pc-category-tag">
-          <GitMerge size={11} />
-          <span>{project.tags?.[0] || "Engineering"}</span>
+          <Sparkles size={11} />
+          <span>{categoryLabel}</span>
         </div>
 
         {project.image ? (
