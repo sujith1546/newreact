@@ -56,6 +56,7 @@ function SecurityToast({ message }) {
 const NotFound = React.lazy(() => import('./pages/NotFound'));
 const AdminLogin = React.lazy(() => import('./pages/AdminLogin'));
 const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
+const AdminMfaSetup = React.lazy(() => import('./pages/AdminMfaSetup'));
 const ResumePreview = React.lazy(() => import('./pages/ResumePreview'));
 
 function AdminLoginRedirect() {
