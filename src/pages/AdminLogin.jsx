@@ -70,7 +70,8 @@ function StepItem({ index, label, active, onClick }) {
       onClick={onClick}
       style={{
         flex: 1,
-        paddingTop: "8px",
+        paddingTop: "6px",
+        paddingBottom: "4px",
         borderTop: active ? "2px solid #10b981" : "2px solid var(--border-color, #e2e8f0)",
         borderLeft: "none",
         borderRight: "none",
@@ -79,19 +80,19 @@ function StepItem({ index, label, active, onClick }) {
         textAlign: "left",
         cursor: "pointer",
         transition: "all 0.15s ease",
+        whiteSpace: "nowrap",
       }}
     >
-      <p style={{ margin: 0, fontSize: "11px", color: "var(--text-muted, #94a3b8)" }}>{index}</p>
-      <p
+      <span style={{ fontSize: "11px", color: "var(--text-muted, #94a3b8)", marginRight: "5px", fontWeight: 600 }}>{index}</span>
+      <span
         style={{
-          margin: "2px 0 0",
-          fontSize: "13px",
+          fontSize: "12.5px",
           fontWeight: active ? 600 : 500,
           color: active ? "var(--text-primary, #0f172a)" : "var(--text-muted, #94a3b8)",
         }}
       >
         {label}
-      </p>
+      </span>
     </button>
   );
 }
@@ -103,9 +104,10 @@ function TrustBadge({ icon: Icon, children, tone = "muted" }) {
         display: "inline-flex",
         alignItems: "center",
         gap: "4px",
-        fontSize: "11.5px",
+        fontSize: "11px",
         color: tone === "success" ? "#059669" : "var(--text-muted, #64748b)",
         fontWeight: 500,
+        whiteSpace: "nowrap",
       }}
     >
       <Icon size={12} />
@@ -469,7 +471,7 @@ export default function AdminLogin({
         width: "100vw",
         height: "100vh",
         height: "100dvh",
-        zIndex: 50,
+        zIndex: 9999,
         overflow: "hidden",
         display: "flex",
         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
@@ -484,18 +486,18 @@ export default function AdminLogin({
         }
 
         .login-left-panel {
-          width: 40%;
-          min-width: 340px;
-          max-width: 460px;
+          width: 38%;
+          min-width: 330px;
+          max-width: 440px;
           background-color: #0b0c0e;
           color: #ffffff;
           display: flex;
           flex-direction: column;
           justify-content: space-between;
-          padding: 44px 38px;
+          padding: 40px 36px;
           box-sizing: border-box;
           border-right: 1px solid rgba(255, 255, 255, 0.08);
-          overflow-y: auto;
+          overflow: hidden;
         }
 
         .login-right-panel {
@@ -506,9 +508,15 @@ export default function AdminLogin({
           flex-direction: column;
           justify-content: center;
           align-items: center;
-          padding: 44px 52px;
+          padding: 24px 44px;
           box-sizing: border-box;
           overflow-y: auto;
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+
+        .login-right-panel::-webkit-scrollbar {
+          display: none;
         }
 
         @media (max-width: 900px) {
@@ -538,12 +546,12 @@ export default function AdminLogin({
 
         .login-input-box {
           width: 100%;
-          height: 42px;
-          border-radius: 10px;
+          height: 40px;
+          border-radius: 9px;
           border: 1px solid var(--border-color, #e2e8f0);
           background: var(--bg-primary, #f8fafc);
           color: var(--text-primary, #0f172a);
-          padding: 0 12px 0 38px;
+          padding: 0 12px 0 36px;
           font-size: 13px;
           outline: none;
           transition: all 0.15s ease;
@@ -558,8 +566,8 @@ export default function AdminLogin({
 
         .primary-login-btn {
           width: 100%;
-          height: 44px;
-          border-radius: 10px;
+          height: 42px;
+          border-radius: 9px;
           background: var(--text-primary, #0f172a);
           color: var(--bg-primary, #ffffff);
           border: none;
@@ -571,7 +579,7 @@ export default function AdminLogin({
           gap: 8px;
           cursor: pointer;
           transition: all 0.2s ease;
-          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
         }
 
         .primary-login-btn:hover:not(:disabled) {
@@ -586,12 +594,12 @@ export default function AdminLogin({
       `}</style>
 
       {/* ---------------------------------------------------------------- */}
-      {/* LEFT — TELEMETRY & SYSTEM IDENTITY (DARK PANEL, ~40% WIDTH)     */}
+      {/* LEFT — TELEMETRY & SYSTEM IDENTITY (DARK PANEL, ~38% WIDTH)     */}
       {/* ---------------------------------------------------------------- */}
       <div className="login-left-panel">
         <div>
           {/* Identity */}
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "28px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "24px" }}>
             <div
               style={{
                 width: "28px",
@@ -616,13 +624,13 @@ export default function AdminLogin({
           <h1 style={{ fontSize: "22px", fontWeight: 600, color: "#ffffff", margin: "0 0 8px", letterSpacing: "-0.02em", lineHeight: 1.3 }}>
             Real-time operations, secured end to end
           </h1>
-          <p style={{ fontSize: "13px", color: "rgba(255, 255, 255, 0.5)", margin: "0 0 24px", lineHeight: 1.5 }}>
+          <p style={{ fontSize: "12.5px", color: "rgba(255, 255, 255, 0.5)", margin: "0 0 20px", lineHeight: 1.5 }}>
             Live telemetry from the sync engine, security shield, and lead pipeline — visible the moment you sign in.
           </p>
         </div>
 
         {/* 4 Status Pill Cards */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "7px" }}>
           <StatusPill label="Session" value="Protected" dark />
           <StatusPill label="Passkey service" value="Reachable" dark />
           <StatusPill label="Latency" value={latency !== null ? `${latency}ms` : "14ms"} dark />
@@ -630,8 +638,8 @@ export default function AdminLogin({
         </div>
 
         {/* Live Monospace Console Feed */}
-        <div className="login-feed-block" style={{ marginTop: "24px" }}>
-          <p style={{ margin: "0 0 6px", fontSize: "11px", color: "rgba(255, 255, 255, 0.4)", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>
+        <div className="login-feed-block" style={{ marginTop: "20px" }}>
+          <p style={{ margin: "0 0 6px", fontSize: "10.5px", color: "rgba(255, 255, 255, 0.4)", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>
             Live console feed
           </p>
           <div
@@ -639,8 +647,8 @@ export default function AdminLogin({
               fontFamily: "'SF Mono', Monaco, Consolas, monospace",
               fontSize: "11px",
               color: "rgba(255, 255, 255, 0.55)",
-              lineHeight: 1.85,
-              height: "80px",
+              lineHeight: 1.8,
+              height: "78px",
               overflow: "hidden",
             }}
           >
@@ -654,10 +662,10 @@ export default function AdminLogin({
       </div>
 
       {/* ---------------------------------------------------------------- */}
-      {/* RIGHT — AUTH FORM & INTERACTIVE STEPS (~60% WIDTH)              */}
+      {/* RIGHT — AUTH FORM & INTERACTIVE STEPS (~62% WIDTH)              */}
       {/* ---------------------------------------------------------------- */}
       <div className="login-right-panel">
-        <div style={{ maxWidth: "420px", width: "100%", display: "flex", flexDirection: "column", gap: "18px" }}>
+        <div style={{ maxWidth: "420px", width: "100%", display: "flex", flexDirection: "column", gap: "14px" }}>
           {/* Top Bar Row */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <button
@@ -684,13 +692,13 @@ export default function AdminLogin({
                 type="button"
                 onClick={() => setShowHelpModal(true)}
                 style={{
-                  height: "28px",
+                  height: "26px",
                   padding: "0 10px",
                   borderRadius: "9999px",
                   border: "1px solid var(--border-color, #e2e8f0)",
                   background: "transparent",
                   color: "var(--text-secondary, #64748b)",
-                  fontSize: "12px",
+                  fontSize: "11.5px",
                   fontWeight: 500,
                   display: "flex",
                   alignItems: "center",
@@ -705,8 +713,8 @@ export default function AdminLogin({
                 onClick={toggleTheme}
                 aria-label="Toggle theme"
                 style={{
-                  width: "28px",
-                  height: "28px",
+                  width: "26px",
+                  height: "26px",
                   borderRadius: "9999px",
                   border: "1px solid var(--border-color, #e2e8f0)",
                   background: "transparent",
@@ -724,10 +732,10 @@ export default function AdminLogin({
 
           {/* Heading */}
           <div>
-            <h2 style={{ fontSize: "22px", fontWeight: 600, color: "var(--text-primary, #0f172a)", margin: "0 0 4px", letterSpacing: "-0.02em" }}>
+            <h2 style={{ fontSize: "21px", fontWeight: 600, color: "var(--text-primary, #0f172a)", margin: "0 0 3px", letterSpacing: "-0.02em" }}>
               Sign in to admin
             </h2>
-            <p style={{ fontSize: "13px", color: "var(--text-muted, #64748b)", margin: 0 }}>
+            <p style={{ fontSize: "12.5px", color: "var(--text-muted, #64748b)", margin: 0 }}>
               Authenticate to access telemetry, CMS, and settings.
             </p>
           </div>
@@ -780,17 +788,17 @@ export default function AdminLogin({
 
           {/* MFA TOTP Challenge */}
           {mfaRequired ? (
-            <form onSubmit={handleTotpSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            <form onSubmit={handleTotpSubmit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               <div style={{ textAlign: "center" }}>
-                <ShieldCheck size={28} color="#10b981" style={{ margin: "0 auto 8px" }} />
-                <h3 style={{ margin: 0, fontSize: "15px", fontWeight: 700 }}>Two-Factor Authentication</h3>
-                <p style={{ margin: "4px 0 0", fontSize: "12px", color: "var(--text-muted, #64748b)" }}>
+                <ShieldCheck size={26} color="#10b981" style={{ margin: "0 auto 6px" }} />
+                <h3 style={{ margin: 0, fontSize: "14px", fontWeight: 700 }}>Two-Factor Authentication</h3>
+                <p style={{ margin: "3px 0 0", fontSize: "12px", color: "var(--text-muted, #64748b)" }}>
                   Enter the 6-digit code from your authenticator app.
                 </p>
               </div>
 
               <div style={{ position: "relative" }}>
-                <Key size={15} style={{ position: "absolute", left: 12, top: 13, color: "var(--text-muted, #94a3b8)" }} />
+                <Key size={15} style={{ position: "absolute", left: 12, top: 12, color: "var(--text-muted, #94a3b8)" }} />
                 <input
                   type="text"
                   maxLength={6}
@@ -798,7 +806,7 @@ export default function AdminLogin({
                   onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ""))}
                   placeholder="000 000"
                   className="login-input-box"
-                  style={{ textAlign: "center", letterSpacing: "4px", fontSize: "16px", fontWeight: 700 }}
+                  style={{ textAlign: "center", letterSpacing: "4px", fontSize: "15px", fontWeight: 700 }}
                 />
               </div>
 
@@ -810,13 +818,13 @@ export default function AdminLogin({
             <>
               {/* STEP 1: PASSWORD */}
               {step === 1 && (
-                <form onSubmit={handlePasswordSubmit} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                <form onSubmit={handlePasswordSubmit} style={{ display: "flex", flexDirection: "column", gap: "11px" }}>
                   <div>
-                    <label style={{ display: "block", fontSize: "12px", color: "var(--text-secondary, #475569)", marginBottom: "4px" }}>
+                    <label style={{ display: "block", fontSize: "12px", color: "var(--text-secondary, #475569)", marginBottom: "4px", fontWeight: 500 }}>
                       Email address
                     </label>
                     <div style={{ position: "relative" }}>
-                      <Mail size={15} style={{ position: "absolute", left: 12, top: 13, color: "var(--text-muted, #94a3b8)" }} />
+                      <Mail size={15} style={{ position: "absolute", left: 12, top: 12, color: "var(--text-muted, #94a3b8)" }} />
                       <input
                         type="email"
                         value={email}
@@ -830,11 +838,11 @@ export default function AdminLogin({
                   </div>
 
                   <div>
-                    <label style={{ display: "block", fontSize: "12px", color: "var(--text-secondary, #475569)", marginBottom: "4px" }}>
+                    <label style={{ display: "block", fontSize: "12px", color: "var(--text-secondary, #475569)", marginBottom: "4px", fontWeight: 500 }}>
                       Password
                     </label>
                     <div style={{ position: "relative" }}>
-                      <Lock size={15} style={{ position: "absolute", left: 12, top: 13, color: "var(--text-muted, #94a3b8)" }} />
+                      <Lock size={15} style={{ position: "absolute", left: 12, top: 12, color: "var(--text-muted, #94a3b8)" }} />
                       <input
                         type={showPassword ? "text" : "password"}
                         value={password}
@@ -852,7 +860,7 @@ export default function AdminLogin({
                         style={{
                           position: "absolute",
                           right: 10,
-                          top: 11,
+                          top: 10,
                           background: "none",
                           border: "none",
                           cursor: "pointer",
@@ -865,24 +873,32 @@ export default function AdminLogin({
                     </div>
                   </div>
 
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "12px" }}>
-                    <label style={{ display: "flex", alignItems: "center", gap: "6px", color: "var(--text-secondary, #64748b)", cursor: "pointer" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "12px", width: "100%" }}>
+                    <label style={{ display: "flex", alignItems: "center", gap: "7px", color: "var(--text-secondary, #64748b)", cursor: "pointer", whiteSpace: "nowrap" }}>
                       <input
                         type="checkbox"
                         checked={remember}
                         onChange={(e) => setRemember(e.target.checked)}
-                        style={{ accentColor: "var(--text-primary, #0f172a)" }}
+                        style={{ accentColor: "var(--text-primary, #0f172a)", width: "13px", height: "13px" }}
                       />
-                      Remember session
+                      <span>Remember session</span>
                     </label>
-                    {capsLockOn && (
-                      <span style={{ color: "#d97706", fontSize: "11.5px", fontWeight: 600, display: "flex", alignItems: "center", gap: 4 }}>
-                        <AlertTriangle size={12} /> Caps Lock ON
+                    {capsLockOn ? (
+                      <span style={{ color: "#d97706", fontSize: "11px", fontWeight: 600, display: "flex", alignItems: "center", gap: 3 }}>
+                        <AlertTriangle size={11} /> Caps Lock ON
                       </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setStep(2)}
+                        style={{ background: "none", border: "none", color: "var(--primary-blue, #3b82f6)", fontSize: "12px", cursor: "pointer", padding: 0 }}
+                      >
+                        Use OTP code
+                      </button>
                     )}
                   </div>
 
-                  <button type="submit" disabled={submitting || lockoutTimer > 0} className="primary-login-btn">
+                  <button type="submit" disabled={submitting || lockoutTimer > 0} className="primary-login-btn" style={{ marginTop: "4px" }}>
                     {submitting ? (
                       <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
                         <RefreshCw size={14} className="animate-spin" /> Signing in…
@@ -896,15 +912,15 @@ export default function AdminLogin({
 
               {/* STEP 2: EMAIL OTP */}
               {step === 2 && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: "11px" }}>
                   {!emailOtpSent ? (
-                    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "11px" }}>
                       <div>
-                        <label style={{ display: "block", fontSize: "12px", color: "var(--text-secondary, #475569)", marginBottom: "4px" }}>
+                        <label style={{ display: "block", fontSize: "12px", color: "var(--text-secondary, #475569)", marginBottom: "4px", fontWeight: 500 }}>
                           Admin Email
                         </label>
                         <div style={{ position: "relative" }}>
-                          <Mail size={15} style={{ position: "absolute", left: 12, top: 13, color: "var(--text-muted, #94a3b8)" }} />
+                          <Mail size={15} style={{ position: "absolute", left: 12, top: 12, color: "var(--text-muted, #94a3b8)" }} />
                           <input
                             type="email"
                             value={email}
@@ -929,7 +945,7 @@ export default function AdminLogin({
                       </button>
                     </div>
                   ) : (
-                    <form onSubmit={handleVerifyEmailOtp} style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                    <form onSubmit={handleVerifyEmailOtp} style={{ display: "flex", flexDirection: "column", gap: "11px" }}>
                       <div style={{ textAlign: "center" }}>
                         <p style={{ margin: 0, fontSize: "12px", color: "var(--text-secondary, #475569)" }}>
                           Enter the 6-digit code sent to <strong>{email}</strong>
@@ -937,7 +953,7 @@ export default function AdminLogin({
                       </div>
 
                       <div style={{ position: "relative" }}>
-                        <Key size={15} style={{ position: "absolute", left: 12, top: 13, color: "var(--text-muted, #94a3b8)" }} />
+                        <Key size={15} style={{ position: "absolute", left: 12, top: 12, color: "var(--text-muted, #94a3b8)" }} />
                         <input
                           type="text"
                           maxLength={6}
@@ -945,7 +961,7 @@ export default function AdminLogin({
                           onChange={(e) => setEmailOtpCode(e.target.value.replace(/\D/g, ""))}
                           placeholder="000 000"
                           className="login-input-box"
-                          style={{ textAlign: "center", letterSpacing: "5px", fontSize: "16px", fontWeight: 700 }}
+                          style={{ textAlign: "center", letterSpacing: "5px", fontSize: "15px", fontWeight: 700 }}
                           autoComplete="one-time-code"
                         />
                       </div>
@@ -989,11 +1005,11 @@ export default function AdminLogin({
 
               {/* STEP 3: PASSKEY */}
               {step === 3 && (
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: "12px" }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: "11px" }}>
                   <div
                     style={{
-                      width: "44px",
-                      height: "44px",
+                      width: "42px",
+                      height: "42px",
                       borderRadius: "50%",
                       backgroundColor: "rgba(59, 130, 246, 0.1)",
                       color: "var(--primary-blue, #3b82f6)",
@@ -1002,12 +1018,12 @@ export default function AdminLogin({
                       justifyContent: "center",
                     }}
                   >
-                    <Fingerprint size={22} />
+                    <Fingerprint size={20} />
                   </div>
 
                   <div>
-                    <h4 style={{ margin: 0, fontSize: "14px", fontWeight: 700 }}>Hardware Passkey & WebAuthn</h4>
-                    <p style={{ margin: "4px 0 0", fontSize: "12px", color: "var(--text-muted, #64748b)", maxWidth: "280px" }}>
+                    <h4 style={{ margin: 0, fontSize: "13.5px", fontWeight: 700 }}>Hardware Passkey & WebAuthn</h4>
+                    <p style={{ margin: "3px 0 0", fontSize: "12px", color: "var(--text-muted, #64748b)", maxWidth: "280px" }}>
                       Authenticate with Touch ID, Face ID, Windows Hello, or your FIDO2 security key.
                     </p>
                   </div>
@@ -1026,13 +1042,13 @@ export default function AdminLogin({
           )}
 
           {/* Footer Trust Badges */}
-          <div style={{ marginTop: "12px", paddingTop: "14px", borderTop: "1px solid var(--border-color, #e2e8f0)" }}>
+          <div style={{ marginTop: "8px", paddingTop: "12px", borderTop: "1px solid var(--border-color, #e2e8f0)" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "14px" }}>
               <TrustBadge icon={ShieldCheck} tone="success">TLS 1.3</TrustBadge>
               <TrustBadge icon={Fingerprint}>Passkey ready</TrustBadge>
               <TrustBadge icon={Clock}>Rate limited</TrustBadge>
             </div>
-            <p style={{ textAlign: "center", fontSize: "11px", color: "var(--text-muted, #94a3b8)", margin: "8px 0 0" }}>
+            <p style={{ textAlign: "center", fontSize: "11px", color: "var(--text-muted, #94a3b8)", margin: "6px 0 0" }}>
               Restricted access — authorized personnel only.
             </p>
           </div>
