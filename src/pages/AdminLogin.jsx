@@ -45,17 +45,17 @@ function StatusPill({ label, value, dark }) {
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        borderRadius: "12px",
-        padding: "10px 14px",
-        fontSize: "12px",
+        borderRadius: "10px",
+        padding: "8px 12px",
+        fontSize: "11.5px",
         backgroundColor: dark ? "rgba(255, 255, 255, 0.05)" : "var(--bg-primary, #f8fafc)",
-        border: dark ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid var(--border-color, #e2e8f0)",
-        color: dark ? "rgba(255, 255, 255, 0.6)" : "var(--text-secondary, #64748b)",
+        border: dark ? "1px solid rgba(255, 255, 255, 0.07)" : "1px solid var(--border-color, #e2e8f0)",
+        color: dark ? "rgba(255, 255, 255, 0.65)" : "var(--text-secondary, #64748b)",
         transition: "all 0.15s ease",
       }}
     >
-      <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        <span style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "#34d399" }} />
+      <span style={{ display: "flex", alignItems: "center", gap: "7px" }}>
+        <span style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "#34d399", flexShrink: 0 }} />
         {label}
       </span>
       <span style={{ color: dark ? "#ffffff" : "var(--text-primary, #0f172a)", fontWeight: 600 }}>{value}</span>
@@ -417,7 +417,7 @@ export default function AdminLogin({
       setError(err.message || "Security code verification failed.");
       await registerFailedAttempt();
     } finally {
-      setSubmitting(false);
+      setLoading(false);
     }
   };
 
@@ -461,9 +461,16 @@ export default function AdminLogin({
   return (
     <div
       style={{
-        minHeight: "100vh",
-        minHeight: "100dvh",
-        width: "100%",
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: "100vw",
+        height: "100vh",
+        height: "100dvh",
+        zIndex: 50,
+        overflow: "hidden",
         display: "flex",
         fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
         margin: 0,
@@ -477,25 +484,29 @@ export default function AdminLogin({
         }
 
         .login-left-panel {
-          width: 54%;
+          width: 40%;
+          min-width: 340px;
+          max-width: 460px;
           background-color: #0b0c0e;
           color: #ffffff;
           display: flex;
           flex-direction: column;
           justify-content: space-between;
-          padding: 48px 48px;
+          padding: 44px 38px;
           box-sizing: border-box;
           border-right: 1px solid rgba(255, 255, 255, 0.08);
+          overflow-y: auto;
         }
 
         .login-right-panel {
-          width: 46%;
+          flex: 1;
           background-color: var(--bg-secondary, #ffffff);
           color: var(--text-primary, #0f172a);
           display: flex;
           flex-direction: column;
           justify-content: center;
-          padding: 48px 56px;
+          align-items: center;
+          padding: 44px 52px;
           box-sizing: border-box;
           overflow-y: auto;
         }
@@ -503,9 +514,15 @@ export default function AdminLogin({
         @media (max-width: 900px) {
           .login-viewport-container {
             flex-direction: column !important;
+            overflow-y: auto !important;
+            position: relative !important;
+            min-height: 100vh !important;
+            height: auto !important;
           }
           .login-left-panel {
             width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
             padding: 24px 20px !important;
             border-right: none !important;
             border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
@@ -569,16 +586,16 @@ export default function AdminLogin({
       `}</style>
 
       {/* ---------------------------------------------------------------- */}
-      {/* LEFT — TELEMETRY & SYSTEM IDENTITY (DARK PANEL, ~54% WIDTH)     */}
+      {/* LEFT — TELEMETRY & SYSTEM IDENTITY (DARK PANEL, ~40% WIDTH)     */}
       {/* ---------------------------------------------------------------- */}
       <div className="login-left-panel">
         <div>
           {/* Identity */}
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "36px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "28px" }}>
             <div
               style={{
-                width: "30px",
-                height: "30px",
+                width: "28px",
+                height: "28px",
                 borderRadius: "8px",
                 backgroundColor: "#ffffff",
                 color: "#0b0c0e",
@@ -591,21 +608,21 @@ export default function AdminLogin({
             >
               {adminInitials}
             </div>
-            <span style={{ fontSize: "13px", color: "rgba(255, 255, 255, 0.65)", fontWeight: 500 }}>
+            <span style={{ fontSize: "12.5px", color: "rgba(255, 255, 255, 0.65)", fontWeight: 500 }}>
               {adminName} · Admin console {currentTime ? `· ${currentTime} IST` : ""}
             </span>
           </div>
 
-          <h1 style={{ fontSize: "25px", fontWeight: 600, color: "#ffffff", margin: "0 0 8px", letterSpacing: "-0.02em", maxWidth: "420px" }}>
+          <h1 style={{ fontSize: "22px", fontWeight: 600, color: "#ffffff", margin: "0 0 8px", letterSpacing: "-0.02em", lineHeight: 1.3 }}>
             Real-time operations, secured end to end
           </h1>
-          <p style={{ fontSize: "13.5px", color: "rgba(255, 255, 255, 0.5)", margin: "0 0 32px", lineHeight: 1.5, maxWidth: "420px" }}>
+          <p style={{ fontSize: "13px", color: "rgba(255, 255, 255, 0.5)", margin: "0 0 24px", lineHeight: 1.5 }}>
             Live telemetry from the sync engine, security shield, and lead pipeline — visible the moment you sign in.
           </p>
         </div>
 
         {/* 4 Status Pill Cards */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "8px", maxWidth: "420px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           <StatusPill label="Session" value="Protected" dark />
           <StatusPill label="Passkey service" value="Reachable" dark />
           <StatusPill label="Latency" value={latency !== null ? `${latency}ms` : "14ms"} dark />
@@ -613,17 +630,17 @@ export default function AdminLogin({
         </div>
 
         {/* Live Monospace Console Feed */}
-        <div className="login-feed-block" style={{ marginTop: "28px" }}>
-          <p style={{ margin: "0 0 8px", fontSize: "11px", color: "rgba(255, 255, 255, 0.4)", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>
+        <div className="login-feed-block" style={{ marginTop: "24px" }}>
+          <p style={{ margin: "0 0 6px", fontSize: "11px", color: "rgba(255, 255, 255, 0.4)", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600 }}>
             Live console feed
           </p>
           <div
             style={{
               fontFamily: "'SF Mono', Monaco, Consolas, monospace",
-              fontSize: "11.5px",
+              fontSize: "11px",
               color: "rgba(255, 255, 255, 0.55)",
               lineHeight: 1.85,
-              height: "82px",
+              height: "80px",
               overflow: "hidden",
             }}
           >
@@ -637,10 +654,10 @@ export default function AdminLogin({
       </div>
 
       {/* ---------------------------------------------------------------- */}
-      {/* RIGHT — AUTH FORM & INTERACTIVE STEPS (~46% WIDTH)              */}
+      {/* RIGHT — AUTH FORM & INTERACTIVE STEPS (~60% WIDTH)              */}
       {/* ---------------------------------------------------------------- */}
       <div className="login-right-panel">
-        <div style={{ maxWidth: "440px", width: "100%", margin: "0 auto", display: "flex", flexDirection: "column", gap: "18px" }}>
+        <div style={{ maxWidth: "420px", width: "100%", display: "flex", flexDirection: "column", gap: "18px" }}>
           {/* Top Bar Row */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <button
