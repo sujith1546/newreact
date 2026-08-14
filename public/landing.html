@@ -170,7 +170,7 @@
 
   /* ===== 3D GROWW-STYLE PERSPECTIVE CARD ARC ===== */
   .curve-showcase-section{
-    padding:120px 0 140px;
+    padding:120px 0 100px;
     background:radial-gradient(ellipse 90% 50% at 50% 50%, rgba(106,27,255,0.08), transparent 75%);
     position:relative;
     overflow:hidden;
@@ -199,7 +199,7 @@
     font-size:0.88rem;
     font-weight:600;
     color:var(--text-dim);
-    margin-bottom:50px;
+    margin-bottom:40px;
     cursor:pointer;
     transition:all 0.3s ease;
   }
@@ -219,7 +219,7 @@
     perspective:1600px;
     perspective-origin:50% 50%;
     position:relative;
-    padding:40px 0 60px;
+    padding:30px 0 50px;
     display:flex;
     justify-content:center;
     align-items:center;
@@ -306,6 +306,129 @@
   .arc-card:nth-child(4){ transform:rotateY(-11deg) translateZ(-20px); }
   .arc-card:nth-child(5){ transform:rotateY(-22deg) translateZ(-60px); }
   .arc-card:nth-child(6){ transform:rotateY(-30deg) translateZ(-110px); }
+
+  /* ===== DARK LUXURY ECOSYSTEM CARDS (GROWW FAMILY STYLE) ===== */
+  .eco-section{
+    padding:80px 6vw 140px;
+    text-align:center;
+    position:relative;
+  }
+  .eco-header{
+    margin-bottom:60px;
+  }
+  .eco-header h2{
+    font-size:clamp(2.2rem, 4.4vw, 3.2rem);
+    font-weight:700;
+    letter-spacing:-0.02em;
+    color:#ffffff;
+  }
+  .eco-grid{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:28px;
+    max-width:1180px;
+    margin:0 auto;
+  }
+  .eco-card{
+    background:#0d0c18;
+    border:1px solid #231f45;
+    border-radius:28px;
+    height:380px;
+    position:relative;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transition:all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow:0 20px 50px rgba(0,0,0,0.6);
+  }
+  .eco-card:hover{
+    transform:translateY(-10px) scale(1.02);
+    border-color:var(--brand-2);
+    box-shadow:0 30px 70px -10px rgba(106,27,255,0.4);
+  }
+
+  /* Card 1: Emerald Matrix Mesh */
+  .eco-card.eco-1{
+    background:radial-gradient(circle at 50% 50%, #062319 0%, #06110d 100%);
+    border-color:#134e39;
+  }
+  .eco-card.eco-1 .eco-bg-pattern{
+    position:absolute;inset:0;
+    background-image:linear-gradient(rgba(0,230,168,0.08) 1px, transparent 1px),linear-gradient(90deg, rgba(0,230,168,0.08) 1px, transparent 1px);
+    background-size:24px 24px;
+    mask-image:radial-gradient(circle, black 40%, transparent 80%);
+  }
+  .eco-card.eco-1 .eco-hero-text{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:4.8rem;
+    font-weight:800;
+    background:linear-gradient(135deg, #a7f3d0, #10b981);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    letter-spacing:-0.04em;
+    z-index:2;
+  }
+
+  /* Card 2: Luxury Gold Mandala Pattern */
+  .eco-card.eco-2{
+    background:radial-gradient(circle at 50% 50%, #20180a 0%, #0e0a04 100%);
+    border-color:#54411b;
+  }
+  .eco-card.eco-2 .eco-bg-pattern{
+    position:absolute;inset:0;
+    background-image:radial-gradient(circle, rgba(234,179,8,0.12) 1px, transparent 1px);
+    background-size:20px 20px;
+    mask-image:radial-gradient(circle, black 50%, transparent 85%);
+  }
+  .eco-card.eco-2 .eco-hero-text{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:5.4rem;
+    font-weight:800;
+    background:linear-gradient(135deg, #fef08a, #ca8a04);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    letter-spacing:-0.04em;
+    z-index:2;
+  }
+
+  /* Card 3: Cyan Pulse Matrix */
+  .eco-card.eco-3{
+    background:radial-gradient(circle at 50% 50%, #061e2b 0%, #030e16 100%);
+    border-color:#155e75;
+  }
+  .eco-card.eco-3 .eco-bg-pattern{
+    position:absolute;inset:0;
+    background-image:linear-gradient(rgba(6,182,212,0.08) 1px, transparent 1px),linear-gradient(90deg, rgba(6,182,212,0.08) 1px, transparent 1px);
+    background-size:28px 28px;
+    mask-image:radial-gradient(circle, black 40%, transparent 80%);
+  }
+  .eco-card.eco-3 .eco-hero-text{
+    display:flex;flex-direction:column;align-items:center;gap:6px;z-index:2;
+  }
+  .eco-circle-emblem{
+    width:36px;height:36px;border-radius:50%;
+    border:3px solid #06b6d4;box-shadow:0 0 18px rgba(6,182,212,0.6);
+    display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(circle, #22d3ee, #0891b2);
+  }
+  .eco-card.eco-3 .eco-brand-title{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:3.4rem;
+    font-weight:800;
+    color:#ffffff;
+    letter-spacing:-0.03em;
+  }
+
+  .eco-card .eco-sub-label{
+    position:absolute;bottom:28px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:0.8rem;
+    color:var(--text-dim);
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+    z-index:2;
+  }
 
   /* section headers */
   .sec-head{max-width:660px;margin-bottom:70px;}
@@ -410,13 +533,14 @@
 
   @media (max-width:900px){
     .nav-links{display:none;}
-    .about-grid,.skills-grid,.projects-grid{grid-template-columns:1fr;}
+    .about-grid,.skills-grid,.projects-grid,.eco-grid{grid-template-columns:1fr;}
     .stats-bar{grid-template-columns:repeat(2,1fr);}
     .process-item{grid-template-columns:1fr;}
     section{padding:90px 6vw;}
     .cta-section{margin:0 4vw;padding:70px 6vw;}
     .arc-track{padding:0 20px;}
     .arc-card{width:240px;height:360px;}
+    .eco-card{height:300px;}
   }
   @media (prefers-reduced-motion: reduce){
     *{animation-duration:.001ms !important; transition-duration:.001ms !important;}
@@ -432,6 +556,7 @@
   <div class="logo"><span class="logo-dot"></span>sujith.dev</div>
   <div class="nav-links">
     <a href="#showcase">Pillars</a>
+    <a href="#ecosystem">Ecosystem</a>
     <a href="#about">About</a>
     <a href="#skills">Skills</a>
     <a href="#projects">Projects</a>
@@ -576,6 +701,40 @@
   </div>
 </div>
 
+<!-- ===== DARK LUXURY ECOSYSTEM CARDS (MORE FROM SUJITH) ===== -->
+<div class="eco-section reveal" id="ecosystem">
+  <div class="eco-header">
+    <div class="eyebrow">Core Ecosystem & Labs</div>
+    <h2>More from the engineering family</h2>
+  </div>
+
+  <div class="eco-grid">
+    <!-- Eco Card 1: 98.2 (Neural Vision) -->
+    <div class="eco-card eco-1" onclick="window.location.href='/'">
+      <div class="eco-bg-pattern"></div>
+      <div class="eco-hero-text">98.2</div>
+      <div class="eco-sub-label">Neural Vision Accuracy</div>
+    </div>
+
+    <!-- Eco Card 2: W / VIT (Academic Honors) -->
+    <div class="eco-card eco-2" onclick="window.location.href='/'">
+      <div class="eco-bg-pattern"></div>
+      <div class="eco-hero-text">VIT</div>
+      <div class="eco-sub-label">8.7 CGPA Data Science</div>
+    </div>
+
+    <!-- Eco Card 3: Sync (Realtime Hub) -->
+    <div class="eco-card eco-3" onclick="window.location.href='/'">
+      <div class="eco-bg-pattern"></div>
+      <div class="eco-hero-text">
+        <div class="eco-circle-emblem"></div>
+        <div class="eco-brand-title">Sync</div>
+      </div>
+      <div class="eco-sub-label">P2P Broadcast Engine</div>
+    </div>
+  </div>
+</div>
+
 <!-- ABOUT -->
 <section id="about">
   <div class="about-grid">
@@ -634,7 +793,7 @@
         <div class="tag">GenAI & Financial Tech</div>
         <h3>AI Financial Advisor & RAG Assistant</h3>
         <p>Interactive portfolio assistant with streaming Groq Llama 3 inference, ChromaDB vector retrieval, and 1-click CMS data backup.</p>
-        <a href="/" class="proj-link">Explore in interactive app <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg></a>
+        <a href="/" class="proj-link">Explore in interactive app <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7H8M17 7V16"/></svg></a>
       </div>
     </div>
     <div class="proj-card reveal">
@@ -643,7 +802,7 @@
         <div class="tag">Deep Learning & Vision</div>
         <h3>Brain Tumor MRI Classification</h3>
         <p>Deep Convolutional Neural Network utilizing transfer learning (ResNet50) for high-confidence multi-class MRI tumor classification.</p>
-        <a href="/" class="proj-link">View architecture specs <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg></a>
+        <a href="/" class="proj-link">View architecture specs <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7H8M17 7V16"/></svg></a>
       </div>
     </div>
     <div class="proj-card reveal">
@@ -652,7 +811,7 @@
         <div class="tag">Distributed Systems</div>
         <h3>Realtime Operations & Sync Hub</h3>
         <p>P2P BroadcastChannel state replication with Supabase Postgres change streams, live latency telemetry, and zero-crash boundaries.</p>
-        <a href="/" class="proj-link">Launch live demo <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg></a>
+        <a href="/" class="proj-link">Launch live demo <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7H8M17 7V16"/></svg></a>
       </div>
     </div>
   </div>
