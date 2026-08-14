@@ -1,8 +1,7 @@
 -- ============================================================================
--- SUPABASE ENTERPRISE DATABASE SCHEMA ENHANCEMENT (v2.0)
+-- SUPABASE ENTERPRISE DATABASE SCHEMA ENHANCEMENT (v2.0 - Resilient Migration)
 -- Sujith Thota Portfolio & AI Assistant Architecture
--- Includes: RLS Security Policies, Lead Scoring Triggers, High-Speed Indexes,
---           Vector RAG Extension, and Auto-Changelog Mutation Listeners.
+-- Includes: Safe Column Patching, RLS Policies, Lead Scoring, High-Speed Indexes
 -- ============================================================================
 
 -- 0. ENABLE CORE EXTENSIONS
@@ -11,10 +10,10 @@ create extension if not exists "pgcrypto";
 create extension if not exists "vector";
 
 -- ============================================================================
--- 1. CORE CONTENT & CMS TABLES
+-- 1. CORE TABLES (CREATE IF NOT EXISTS + COLUMN SAFETY PATCHES)
 -- ============================================================================
 
--- 1.1 Site Settings (Single-Row Global State)
+-- 1.1 Site Settings
 create table if not exists site_settings (
   id int primary key default 1,
   site_disabled boolean default false,
@@ -31,7 +30,17 @@ create table if not exists site_settings (
   updated_at timestamptz default now()
 );
 
--- Ensure default single row exists
+-- Safety column patches for existing site_settings table
+alter table site_settings add column if not exists site_disabled boolean default false;
+alter table site_settings add column if not exists maintenance_mode boolean default false;
+alter table site_settings add column if not exists maintenance_message text default 'Under scheduled maintenance. Check back soon!';
+alter table site_settings add column if not exists hero_headline text default 'Full-Stack Developer & Data Science Specialist';
+alter table site_settings add column if not exists short_bio text default 'B.Tech CSE (Data Science) graduate from VIT University.';
+alter table site_settings add column if not exists feature_experience boolean default true;
+alter table site_settings add column if not exists feature_certifications boolean default true;
+alter table site_settings add column if not exists feature_ai_assistant boolean default true;
+
+-- Ensure default row exists
 insert into site_settings (id) values (1) on conflict (id) do nothing;
 
 -- 1.2 Projects Table
@@ -53,11 +62,21 @@ create table if not exists projects (
   created_at timestamptz default now()
 );
 
+-- Safety column patches for existing projects table
+alter table projects add column if not exists category text default 'AI / ML';
+alter table projects add column if not exists featured boolean default false;
+alter table projects add column if not exists display_order int default 0;
+alter table projects add column if not exists stats jsonb default '[]'::jsonb;
+alter table projects add column if not exists pipeline jsonb default '[]'::jsonb;
+alter table projects add column if not exists architecture jsonb default '[]'::jsonb;
+alter table projects add column if not exists code text;
+alter table projects add column if not exists created_at timestamptz default now();
+
 -- 1.3 Technical Skills Table
 create table if not exists skills (
   id text primary key,
   name text not null,
-  category text not null, -- 'Languages' | 'AI & ML' | 'Frameworks' | 'Cloud & Tools'
+  category text not null,
   proficiency_level int default 85,
   order_index int default 0,
   icon text,
@@ -66,7 +85,15 @@ create table if not exists skills (
   created_at timestamptz default now()
 );
 
--- 1.4 Work & Timeline Experience
+-- Safety column patches for existing skills table
+alter table skills add column if not exists proficiency_level int default 85;
+alter table skills add column if not exists order_index int default 0;
+alter table skills add column if not exists icon text;
+alter table skills add column if not exists related_tools text[] default '{}';
+alter table skills add column if not exists projects text[] default '{}';
+alter table skills add column if not exists created_at timestamptz default now();
+
+-- 1.4 Experience Table
 create table if not exists experience (
   id text primary key,
   role text not null,
@@ -79,6 +106,13 @@ create table if not exists experience (
   display_order int default 0,
   created_at timestamptz default now()
 );
+
+-- Safety column patches for existing experience table
+alter table experience add column if not exists location text default 'Remote';
+alter table experience add column if not exists is_education boolean default false;
+alter table experience add column if not exists description_bullets text[] default '{}';
+alter table experience add column if not exists display_order int default 0;
+alter table experience add column if not exists created_at timestamptz default now();
 
 -- 1.5 Education Table
 create table if not exists education (
@@ -95,6 +129,15 @@ create table if not exists education (
   created_at timestamptz default now()
 );
 
+-- Safety column patches for existing education table
+alter table education add column if not exists field_of_study text;
+alter table education add column if not exists cgpa text;
+alter table education add column if not exists location text;
+alter table education add column if not exists highlights text[] default '{}';
+alter table education add column if not exists back_stats jsonb default '[]'::jsonb;
+alter table education add column if not exists display_order int default 0;
+alter table education add column if not exists created_at timestamptz default now();
+
 -- 1.6 Certifications Table
 create table if not exists certifications (
   id text primary key,
@@ -107,6 +150,11 @@ create table if not exists certifications (
   created_at timestamptz default now()
 );
 
+-- Safety column patches for existing certifications table
+alter table certifications add column if not exists badge_image text;
+alter table certifications add column if not exists display_order int default 0;
+alter table certifications add column if not exists created_at timestamptz default now();
+
 -- 1.7 Updates & Changelog Table
 create table if not exists updates (
   id serial primary key,
@@ -114,19 +162,30 @@ create table if not exists updates (
   label text,
   title text not null,
   description text,
-  impact text default 'Minor', -- 'Major' | 'Minor' | 'Patch'
-  category text default 'feature', -- 'feature' | 'improvement' | 'fix'
+  impact text default 'Minor',
+  category text default 'feature',
   items text[] default '{}',
   reactions jsonb default '{"rocket": 0, "party": 0, "heart": 0, "thumbs": 0}'::jsonb,
   published boolean default true,
   created_at timestamptz default now()
 );
 
+-- Safety column patches for existing updates table
+alter table updates add column if not exists version text default 'v1.3.0';
+alter table updates add column if not exists label text;
+alter table updates add column if not exists description text;
+alter table updates add column if not exists impact text default 'Minor';
+alter table updates add column if not exists category text default 'feature';
+alter table updates add column if not exists items text[] default '{}';
+alter table updates add column if not exists reactions jsonb default '{"rocket": 0, "party": 0, "heart": 0, "thumbs": 0}'::jsonb;
+alter table updates add column if not exists published boolean default true;
+alter table updates add column if not exists created_at timestamptz default now();
+
 -- ============================================================================
--- 2. TELEMETRY, LEADS & SECURITY AUDIT TABLES
+-- 2. TELEMETRY, LEADS & SECURITY TABLES
 -- ============================================================================
 
--- 2.1 Contact Messages & Lead Intelligence
+-- 2.1 Contact Messages Table
 create table if not exists contact_messages (
   id uuid primary key default gen_random_uuid(),
   name text not null,
@@ -135,7 +194,7 @@ create table if not exists contact_messages (
   message text not null,
   inquiry_type text default 'General',
   lead_score int default 50,
-  intent_tier text default 'General', -- 'Recruiter (High)' | 'Collab' | 'General'
+  intent_tier text default 'General',
   company_detected text,
   is_read boolean default false,
   is_archived boolean default false,
@@ -146,18 +205,22 @@ create table if not exists contact_messages (
   created_at timestamptz default now()
 );
 
--- Ensure columns exist if table was previously created
+-- Safety column patches for existing contact_messages table
 alter table contact_messages add column if not exists lead_score int default 50;
 alter table contact_messages add column if not exists intent_tier text default 'General';
 alter table contact_messages add column if not exists company_detected text;
 alter table contact_messages add column if not exists is_read boolean default false;
 alter table contact_messages add column if not exists is_archived boolean default false;
 alter table contact_messages add column if not exists is_spam boolean default false;
+alter table contact_messages add column if not exists spam_score int default 0;
+alter table contact_messages add column if not exists ip_address text;
+alter table contact_messages add column if not exists location text;
+alter table contact_messages add column if not exists created_at timestamptz default now();
 
--- 2.2 Immutable Administrative Audit Log
+-- 2.2 Admin Audit Logs
 create table if not exists admin_audit_logs (
   id uuid primary key default gen_random_uuid(),
-  action text not null, -- 'ADMIN_INSERT_PROJECTS', 'ADMIN_UPDATE_SITE_SETTINGS', etc.
+  action text not null,
   entity_type text,
   entity_id text,
   details jsonb default '{}'::jsonb,
@@ -165,16 +228,16 @@ create table if not exists admin_audit_logs (
   created_at timestamptz default now()
 );
 
--- 2.3 Recruiter Engagement Telemetry
+-- 2.3 Recruiter Events
 create table if not exists recruiter_events (
   id uuid primary key default gen_random_uuid(),
-  event_type text not null, -- 'resume_download', 'contact_click', 'project_demo', 'github_click'
+  event_type text not null,
   event_detail text,
   session_id text,
   created_at timestamptz default now()
 );
 
--- 2.4 Visitor Analytics
+-- 2.4 Analytics
 create table if not exists portfolio_analytics (
   id uuid primary key default gen_random_uuid(),
   page_path text not null,
@@ -185,7 +248,7 @@ create table if not exists portfolio_analytics (
   created_at timestamptz default now()
 );
 
--- 2.5 Admin Login History & Security Ledger
+-- 2.5 Login History
 create table if not exists login_history (
   id uuid primary key default gen_random_uuid(),
   email text not null,
@@ -200,7 +263,6 @@ create table if not exists login_history (
 -- 3. AI CHATBOT & VECTOR RAG TABLES
 -- ============================================================================
 
--- 3.1 Chat Sessions
 create table if not exists chat_sessions (
   id text primary key,
   visitor_ip text,
@@ -208,17 +270,15 @@ create table if not exists chat_sessions (
   created_at timestamptz default now()
 );
 
--- 3.2 Chat Messages
 create table if not exists chat_messages (
   id text primary key,
   session_id text references chat_sessions(id) on delete cascade,
-  role text not null, -- 'user' | 'assistant' | 'system'
+  role text not null,
   content text not null,
   tokens_used int default 0,
   created_at timestamptz default now()
 );
 
--- 3.3 Vector Knowledge Base Chunks
 create table if not exists kb_chunks (
   id uuid primary key default gen_random_uuid(),
   source text not null,
@@ -228,7 +288,6 @@ create table if not exists kb_chunks (
   created_at timestamptz default now()
 );
 
--- 3.4 Knowledge Base Gaps Tracker
 create table if not exists kb_gaps (
   id uuid primary key default gen_random_uuid(),
   query text not null,
@@ -240,29 +299,27 @@ create table if not exists kb_gaps (
 );
 
 -- ============================================================================
--- 4. INTELLIGENT AUTOMATION TRIGGERS & FUNCTIONS
+-- 4. AUTOMATION TRIGGERS
 -- ============================================================================
 
--- 4.1 Automated Recruiter Intent & Lead Scoring Trigger
+-- 4.1 Lead Scoring Trigger
 create or replace function score_incoming_lead()
 returns trigger as $$
 begin
-  -- 1. Boost score for high-intent hiring keywords
   if new.message ilike any(array['%interview%', '%hire%', '%hiring%', '%job%', '%opportunity%', '%role%', '%salary%', '%vit%', '%offer%', '%ctc%'])
      or new.subject ilike any(array['%job%', '%interview%', '%opportunity%', '%hire%', '%role%']) then
-    new.lead_score := new.lead_score + 40;
+    new.lead_score := coalesce(new.lead_score, 50) + 40;
     new.intent_tier := 'Recruiter (High)';
   end if;
 
-  -- 2. Detect corporate domains vs free webmail
   if new.email not ilike '%@gmail.com' 
      and new.email not ilike '%@yahoo.com' 
      and new.email not ilike '%@outlook.com' 
      and new.email not ilike '%@hotmail.com' 
      and new.email not ilike '%@icloud.com' then
     new.company_detected := initcap(split_part(split_part(new.email, '@', 2), '.', 1));
-    new.lead_score := new.lead_score + 15;
-    if new.intent_tier = 'General' then
+    new.lead_score := coalesce(new.lead_score, 50) + 15;
+    if coalesce(new.intent_tier, 'General') = 'General' then
       new.intent_tier := 'Corporate / Collab';
     end if;
   end if;
@@ -276,40 +333,10 @@ create trigger trigger_score_lead
 before insert on contact_messages
 for each row execute function score_incoming_lead();
 
--- 4.2 Auto-Changelog Mutation Trigger on Projects
-create or replace function auto_log_project_mutation()
-returns trigger as $$
-declare
-  v_count int;
-begin
-  if (tg_op = 'INSERT') then
-    select count(*) into v_count from updates;
-    insert into updates (title, version, impact, category, published, description, items, created_at)
-    values (
-      'Added Project: ' || new.title,
-      'v1.3.' || (coalesce(v_count, 0) + 1),
-      'Feature',
-      'feature',
-      true,
-      coalesce(substring(new.description from 1 for 140) || '...', 'New technical project published with repository details.'),
-      array['[Feature] Added ' || new.title || ' with live pipeline visualizer.'],
-      now()
-    );
-  end if;
-  return new;
-end;
-$$ language plpgsql;
-
-drop trigger if exists trigger_auto_log_projects on projects;
-create trigger trigger_auto_log_projects
-after insert on projects
-for each row execute function auto_log_project_mutation();
-
 -- ============================================================================
--- 5. HIGH-SPEED PERFORMANCE INDEXES (< 15ms Query Response)
+-- 5. HIGH-SPEED PERFORMANCE INDEXES
 -- ============================================================================
 
--- Content Table Ordering Indexes
 create index if not exists idx_projects_order on projects (display_order, created_at desc);
 create index if not exists idx_skills_order on skills (order_index);
 create index if not exists idx_experience_order on experience (display_order);
@@ -317,14 +344,13 @@ create index if not exists idx_education_order on education (display_order);
 create index if not exists idx_certifications_order on certifications (display_order);
 create index if not exists idx_updates_published on updates (published, created_at desc);
 
--- Admin & Telemetry Query Indexes
 create index if not exists idx_messages_inbox on contact_messages (is_archived, is_read, created_at desc);
 create index if not exists idx_audit_recent on admin_audit_logs (created_at desc);
 create index if not exists idx_recruiter_recent on recruiter_events (created_at desc);
 create index if not exists idx_chat_messages_session on chat_messages (session_id, created_at asc);
 
--- Full-Text Search GIN Index for Projects
-create index if not exists idx_projects_search on projects using gin(to_tsvector('english', title || ' ' || coalesce(description, '')));
+-- Full-Text Search GIN Index
+create index if not exists idx_projects_search on projects using gin(to_tsvector('english', coalesce(title, '') || ' ' || coalesce(description, '')));
 
 -- Vector Similarity Index
 create index if not exists idx_kb_chunks_embedding on kb_chunks using ivfflat (embedding vector_cosine_ops);
@@ -333,7 +359,7 @@ create index if not exists idx_kb_chunks_embedding on kb_chunks using ivfflat (e
 -- 6. ROW LEVEL SECURITY (RLS) POLICIES
 -- ============================================================================
 
--- Enable RLS across all tables
+-- Enable RLS
 alter table site_settings enable row level security;
 alter table projects enable row level security;
 alter table skills enable row level security;
@@ -350,7 +376,7 @@ alter table chat_messages enable row level security;
 alter table kb_chunks enable row level security;
 alter table kb_gaps enable row level security;
 
--- 6.1 Public Read Policies (Visitors can view public portfolio content)
+-- 6.1 Public Read Policies
 drop policy if exists "Public can read site settings" on site_settings;
 create policy "Public can read site settings" on site_settings for select using (true);
 
@@ -393,14 +419,14 @@ create policy "Public can start chat sessions" on chat_sessions for all using (t
 drop policy if exists "Public can exchange chat messages" on chat_messages;
 create policy "Public can exchange chat messages" on chat_messages for all using (true) with check (true);
 
--- 6.3 Append-Only Audit Trail (No updates or deletes permitted)
+-- 6.3 Append-Only Audit Trail
 drop policy if exists "Audit logs are append-only" on admin_audit_logs;
 create policy "Audit logs are append-only" on admin_audit_logs for insert with check (true);
 
 drop policy if exists "Authenticated users can read audit logs" on admin_audit_logs;
 create policy "Authenticated users can read audit logs" on admin_audit_logs for select to authenticated using (true);
 
--- 6.4 Full Admin Write Access (Authenticated Admin Session)
+-- 6.4 Full Admin Access (Authenticated Session)
 drop policy if exists "Admin full access site_settings" on site_settings;
 create policy "Admin full access site_settings" on site_settings for all to authenticated using (true) with check (true);
 
