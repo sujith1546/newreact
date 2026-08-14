@@ -98,81 +98,122 @@ export function useOperationsSyncCenter() {
     const combined = [];
 
     try {
-      // 1. Fetch Audit Logs (Sync & Admin mutations)
-      const auditPromise = supabase
-        .from('admin_audit_logs')
-        .select('id, action, entity_type, entity_id, details, created_at')
-        .order('created_at', { ascending: false })
-        .limit(20)
-        .then(({ data }) => {
-          if (data && Array.isArray(data)) {
-            data.forEach((row) => {
-              const isSecurity = row.action?.toLowerCase().includes('auth') || row.action?.toLowerCase().includes('login') || row.action?.toLowerCase().includes('security');
-              const actionLabel = (row.action || 'DATABASE_UPDATE').replace(/_/g, ' ');
-              const entityLabel = (row.entity_type || 'System').replace(/_/g, ' ');
-              
-              combined.push({
-                id: `audit_${row.id}`,
-                category: isSecurity ? 'security' : 'sync',
-                title: `${entityLabel}: ${actionLabel}`,
-                description: row.details?.message || `Entity ID: ${row.entity_id || 'Global'} updated in cloud database.`,
-                timestamp: new Date(row.created_at).getTime(),
-                read: readIds.has(`audit_${row.id}`),
-                metadata: row,
-              });
-            });
-          }
-        })
-        .catch(() => {});
+      // Check if admin auth session is active
+      let isAdmin = false;
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        isAdmin = !!session;
+      } catch {}
 
-      // 2. Fetch Contact Inquiries (Leads)
-      const messagesPromise = supabase
-        .from('contact_messages')
-        .select('id, name, email, subject, message, created_at, is_read')
-        .order('created_at', { ascending: false })
-        .limit(15)
-        .then(({ data }) => {
-          if (data && Array.isArray(data)) {
-            data.forEach((msg) => {
-              combined.push({
-                id: `msg_${msg.id}`,
-                category: 'leads',
-                title: `Lead Inquiry: ${msg.name || 'Visitor'}`,
-                description: msg.subject ? `${msg.subject} • ${msg.email}` : (msg.message || 'Contact form inquiry received.').slice(0, 80),
-                timestamp: new Date(msg.created_at).getTime(),
-                read: msg.is_read || readIds.has(`msg_${msg.id}`),
-                metadata: msg,
-              });
-            });
-          }
-        })
-        .catch(() => {});
+      const promises = [];
 
-      // 3. Fetch Recruiter Engagement Events
-      const recruiterPromise = supabase
-        .from('recruiter_events')
-        .select('id, event_type, event_detail, created_at')
-        .order('created_at', { ascending: false })
-        .limit(15)
-        .then(({ data }) => {
-          if (data && Array.isArray(data)) {
-            data.forEach((ev) => {
-              const typeLabel = (ev.event_type || 'Engagement').replace(/_/g, ' ').toUpperCase();
-              combined.push({
-                id: `recruiter_${ev.id}`,
-                category: 'leads',
-                title: `Recruiter Action: ${typeLabel}`,
-                description: ev.event_detail || 'Visitor interacted with resume / recruiter assets.',
-                timestamp: new Date(ev.created_at).getTime(),
-                read: readIds.has(`recruiter_${ev.id}`),
-                metadata: ev,
+      // 1. Fetch System Updates & Releases (Publicly available)
+      promises.push(
+        supabase
+          .from('updates')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(10)
+          .then(({ data, error }) => {
+            if (!error && data && Array.isArray(data)) {
+              data.forEach((up) => {
+                combined.push({
+                  id: `up_${up.id}`,
+                  category: up.category === 'feature' ? 'leads' : 'sync',
+                  title: up.title || `Release ${up.version || ''}`,
+                  description: up.description || 'System update published.',
+                  timestamp: new Date(up.created_at || up.date || Date.now()).getTime(),
+                  read: readIds.has(`up_${up.id}`),
+                  metadata: up,
+                });
               });
-            });
-          }
-        })
-        .catch(() => {});
+            }
+          })
+          .catch(() => {})
+      );
 
-      await Promise.allSettled([auditPromise, messagesPromise, recruiterPromise]);
+      // 2. Fetch Recruiter Engagement Events (Publicly available)
+      promises.push(
+        supabase
+          .from('recruiter_events')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(10)
+          .then(({ data, error }) => {
+            if (!error && data && Array.isArray(data)) {
+              data.forEach((ev) => {
+                const typeLabel = (ev.event_type || 'Engagement').replace(/_/g, ' ').toUpperCase();
+                combined.push({
+                  id: `recruiter_${ev.id}`,
+                  category: 'leads',
+                  title: `Recruiter Action: ${typeLabel}`,
+                  description: ev.event_detail || 'Visitor interacted with resume / recruiter assets.',
+                  timestamp: new Date(ev.created_at || Date.now()).getTime(),
+                  read: readIds.has(`recruiter_${ev.id}`),
+                  metadata: ev,
+                });
+              });
+            }
+          })
+          .catch(() => {})
+      );
+
+      // 3. Admin-Only Feeds (Audit Logs & Contact Inquiries)
+      if (isAdmin) {
+        promises.push(
+          supabase
+            .from('admin_audit_logs')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(15)
+            .then(({ data, error }) => {
+              if (!error && data && Array.isArray(data)) {
+                data.forEach((row) => {
+                  const isSecurity = (row.action || '').toLowerCase().includes('auth') || (row.action || '').toLowerCase().includes('login') || (row.action || '').toLowerCase().includes('security');
+                  const actionLabel = (row.action || 'DATABASE_UPDATE').replace(/_/g, ' ');
+                  const entityLabel = (row.entity_type || 'System').replace(/_/g, ' ');
+                  
+                  combined.push({
+                    id: `audit_${row.id}`,
+                    category: isSecurity ? 'security' : 'sync',
+                    title: `${entityLabel}: ${actionLabel}`,
+                    description: row.details?.message || `Entity ID: ${row.entity_id || 'Global'} updated in cloud database.`,
+                    timestamp: new Date(row.created_at || Date.now()).getTime(),
+                    read: readIds.has(`audit_${row.id}`),
+                    metadata: row,
+                  });
+                });
+              }
+            })
+            .catch(() => {})
+        );
+
+        promises.push(
+          supabase
+            .from('contact_messages')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(10)
+            .then(({ data, error }) => {
+              if (!error && data && Array.isArray(data)) {
+                data.forEach((msg) => {
+                  combined.push({
+                    id: `msg_${msg.id}`,
+                    category: 'leads',
+                    title: `Lead Inquiry: ${msg.name || 'Visitor'}`,
+                    description: msg.subject ? `${msg.subject} • ${msg.email}` : (msg.message || 'Contact form inquiry received.').slice(0, 80),
+                    timestamp: new Date(msg.created_at || Date.now()).getTime(),
+                    read: msg.is_read || readIds.has(`msg_${msg.id}`),
+                    metadata: msg,
+                  });
+                });
+              }
+            })
+            .catch(() => {})
+        );
+      }
+
+      await Promise.allSettled(promises);
 
       if (combined.length > 0) {
         combined.sort((a, b) => b.timestamp - a.timestamp);
