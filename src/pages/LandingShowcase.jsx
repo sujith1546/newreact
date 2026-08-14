@@ -28,6 +28,25 @@ const TERMINAL_LINES = [
   { p: '$ ', t: 'status: open to ML & Full-Stack roles — say hello' },
 ];
 
+// ─── Carousel Radius Hook ────────────────────────────────────────────────────
+// Mirrors the reference HTML's JS: radius = (cardWidth/2) / tan(PI/n) + 40
+// Sets --ls-r3d on the wrapper and injects rotateY + translateZ per card.
+function useCarousel(wrapperRef, n) {
+  useEffect(() => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
+    const isMobile = window.innerWidth <= 640;
+    const cardW = isMobile ? 140 : 190;
+    const radius = Math.round((cardW / 2) / Math.tan(Math.PI / n)) + 40;
+    const step = 360 / n;
+    wrapper.style.setProperty('--ls-r3d', radius + 'px');
+    const cards = wrapper.querySelectorAll('.ls-cyl-card');
+    cards.forEach((card, i) => {
+      card.style.transform = `rotateY(${i * step}deg) translateZ(${radius}px)`;
+    });
+  }, [wrapperRef, n]);
+}
+
 // ─── Neural Canvas Hook ───────────────────────────────────────────────────────
 function useNeuralCanvas(canvasRef) {
   useEffect(() => {
@@ -187,6 +206,45 @@ function MagneticBtn({ className, onClick, href, children, style }) {
   const props = { ref, className, onMouseMove: onMove, onMouseLeave: onLeave, style };
   if (href) return <a href={href} {...props}>{children}</a>;
   return <button onClick={onClick} {...props}>{children}</button>;
+}
+
+// ─── Carousel Section Component ──────────────────────────────────────────────
+// Isolated so useCarousel fires after this subtree mounts (cards already in DOM).
+function CarouselSection({ navigate }) {
+  const wrapperRef = useRef(null);
+  useCarousel(wrapperRef, CAROUSEL_CARDS.length);
+
+  return (
+    <div className="ls-carousel-section ls-reveal" id="showcase">
+      <div className="ls-section-header">
+        <div className="ls-eyebrow">Interactive 3D Pillar Showcase</div>
+        <h2>Engineering simplified,<br />across every dimension</h2>
+        <p>10 domains · one revolving cylinder · hover to pause</p>
+        <div className="ls-live-pill" onClick={() => navigate('/')}>
+          <span className="ls-live-dot" />
+          Explore Interactive Portfolio
+        </div>
+      </div>
+      <div className="ls-carousel-wrapper" ref={wrapperRef}>
+        <div className="ls-carousel-track">
+          {CAROUSEL_CARDS.map((c, i) => (
+            <div
+              key={i}
+              className={`ls-cyl-card ls-${c.tone}`}
+              onClick={() => navigate('/')}
+              // transform will be overwritten by useCarousel after mount
+            >
+              <span className="ls-cc-glyph" />
+              <span className="ls-cc-tag">{c.tag}</span>
+              <span className="ls-cc-title">{c.title}</span>
+              <span className="ls-cc-desc">{c.desc}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      <p className="ls-carousel-hint">{CAROUSEL_CARDS.length} pillars · pure CSS transform</p>
+    </div>
+  );
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -487,31 +545,7 @@ export default function LandingShowcase() {
       </div>
 
       {/* ─── 3D CAROUSEL ─── */}
-      <div className="ls-carousel-section ls-reveal" id="showcase">
-        <div className="ls-section-header">
-          <div className="ls-eyebrow">Interactive 3D Pillar Showcase</div>
-          <h2>Engineering simplified,<br />across every dimension</h2>
-          <p>10 domains. One revolving cylinder. Hover to pause, click to explore.</p>
-          <div className="ls-live-pill" onClick={() => navigate('/')}>
-            <span className="ls-live-dot" />
-            Explore Interactive Portfolio
-          </div>
-        </div>
-        <div className="ls-carousel-wrapper">
-          <div className="ls-carousel-track">
-            {CAROUSEL_CARDS.map((c, i) => (
-              <div key={i} className={`ls-cyl-card ls-${c.tone}`} onClick={() => navigate('/')}>
-                <span className="ls-cc-glyph" />
-                <div>
-                  <div className="ls-cc-tag">{c.tag}</div>
-                  <div className="ls-cc-title">{c.title}</div>
-                </div>
-                <div className="ls-cc-desc">{c.desc}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      <CarouselSection navigate={navigate} />
 
       {/* ─── ENGINEERING FAMILY CARDS ─── */}
       <div className="ls-family-section ls-reveal" id="ecosystem">

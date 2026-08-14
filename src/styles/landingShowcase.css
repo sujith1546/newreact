@@ -369,67 +369,86 @@
   width: 8px; height: 8px; border-radius: 50%; background: #ef4444;
   animation: lsSonar 1.5s ease-out infinite; box-shadow: 0 0 0 0 rgba(239,68,68,.5);
 }
+.ls-carousel-hint {
+  color: var(--ls-dimmer); font-size: .78rem; letter-spacing: .04em;
+  margin: 0 auto; padding-top: 8px;
+}
 
 /* 3D Carousel */
 .ls-carousel-wrapper {
-  --card-w: 225px; --card-h: 305px; --ls-r3d: 490px;
-  width: 100%; max-width: 1200px; height: 430px;
+  /* --ls-r3d is set dynamically by JS via inline style */
+  --card-w: 190px; --card-h: 265px;
+  width: 100%; max-width: 1200px; height: 380px;
   margin: 0 auto 20px; position: relative;
-  perspective: 1450px; perspective-origin: 50% 44%;
-  display: flex; align-items: center; justify-content: center; overflow: hidden;
+  perspective: 1400px; perspective-origin: 50% 40%;
+  overflow: hidden;
 }
 .ls-carousel-wrapper::before, .ls-carousel-wrapper::after {
-  content: ''; position: absolute; top: 0; bottom: 0; width: 180px; z-index: 10; pointer-events: none;
+  content: ''; position: absolute; top: 0; bottom: 0; width: 160px; z-index: 10; pointer-events: none;
 }
 .ls-carousel-wrapper::before { left: 0; background: linear-gradient(90deg,#f8fafc,rgba(248,250,252,0)); }
 .ls-carousel-wrapper::after  { right:0; background: linear-gradient(270deg,#f8fafc,rgba(248,250,252,0)); }
+
+/*
+ * CORRECT KEYFRAME:
+ * The entire track is pushed BACK by -radius so the ring's centre is
+ * behind the screen plane. Each card then pushes FORWARD +radius.
+ * Front card lands near Z=0 → large/close; back card at Z=-2r → small/far.
+ * Without the translateZ(-r) the whole ring floats in FRONT of the camera
+ * and depth is inside-out.
+ */
 .ls-carousel-track {
   position: absolute; top: 50%; left: 50%; width: 0; height: 0;
-  transform-style: preserve-3d; animation: lsSpin 28s linear infinite;
-  transition: animation-play-state .3s;
+  transform-style: preserve-3d;
+  animation: lsSpin 26s linear infinite;
 }
 .ls-carousel-wrapper:hover .ls-carousel-track { animation-play-state: paused; }
-@keyframes lsSpin { from{transform:rotateY(0deg);} to{transform:rotateY(-360deg);} }
+@keyframes lsSpin {
+  from { transform: translateZ(calc(var(--ls-r3d, 340px) * -1)) rotateY(0deg); }
+  to   { transform: translateZ(calc(var(--ls-r3d, 340px) * -1)) rotateY(-360deg); }
+}
+
+/* Each card's transform is injected as an inline style by JS:
+   rotateY(i * step) translateZ(+radius)
+   The --ca custom prop is also set inline for the hover override. */
 .ls-cyl-card {
   position: absolute; top: 0; left: 0;
   width: var(--card-w); height: var(--card-h);
-  margin-left: calc(var(--card-w)/-2); margin-top: calc(var(--card-h)/-2);
-  border-radius: 22px; background: #fff; border: 1px solid var(--ls-line);
+  margin-left: calc(var(--card-w) / -2); margin-top: calc(var(--card-h) / -2);
+  border-radius: 16px; background: #fff; border: 1px solid var(--ls-line);
   overflow: hidden; backface-visibility: hidden;
-  display: flex; flex-direction: column; justify-content: space-between;
-  padding: 26px 22px; box-shadow: 0 20px 50px -16px rgba(15,23,42,.14);
+  display: flex; flex-direction: column; justify-content: flex-end;
+  padding: 22px 20px; box-shadow: 0 20px 40px -20px rgba(15,23,42,.18);
   cursor: pointer; user-select: none; text-align: left;
-  transition: transform .4s cubic-bezier(.2,1,.3,1), box-shadow .4s, border-color .4s;
+  transition: box-shadow .4s, border-color .4s;
 }
+/* Hover: pop the card forward by an extra 32px.  */
 .ls-cyl-card:hover {
-  transform: rotateY(var(--ca)) translateZ(calc(var(--ls-r3d) + 32px)) scale(1.06) !important;
-  box-shadow: 0 32px 70px -10px rgba(0,208,156,.42); border-color: var(--ls-brand); z-index: 50;
+  box-shadow: 0 32px 70px -10px rgba(0,208,156,.35);
+  border-color: var(--ls-brand); z-index: 50;
 }
 .ls-cyl-card .ls-cc-glyph {
-  position: absolute; top: 18px; right: 18px; width: 10px; height: 10px;
+  position: absolute; top: 16px; right: 16px; width: 10px; height: 10px;
   border-radius: 50%; background: var(--ls-brand);
   box-shadow: 0 0 10px rgba(0,208,156,.7); animation: lsSonar 2s infinite;
 }
-.ls-cyl-card .ls-cc-tag  { font-family: 'JetBrains Mono',monospace; font-size:.76rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:#059669; margin-bottom:7px; }
-.ls-cyl-card .ls-cc-title{ font-family: 'Space Grotesk',sans-serif; font-size:1.28rem; font-weight:800; line-height:1.2; letter-spacing:-.03em; color:#0f172a; margin-bottom:6px; }
-.ls-cyl-card .ls-cc-desc { font-size:.81rem; line-height:1.55; color:#64748b; margin-top:auto; }
+.ls-cyl-card .ls-cc-tag  { font-family: 'JetBrains Mono',monospace; font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:#059669; margin-bottom:6px; }
+.ls-cyl-card .ls-cc-title{ font-family: 'Space Grotesk',sans-serif; font-size:1.18rem; font-weight:800; line-height:1.2; letter-spacing:-.02em; color:#0f172a; margin-bottom:5px; }
+.ls-cyl-card .ls-cc-desc { font-size:.78rem; line-height:1.5; color:#64748b; }
 /* tones */
 .ls-te { background:linear-gradient(160deg,#fff,#f0fdf4 92%); border-color:rgba(16,185,129,.25); }
 .ls-ti { background:linear-gradient(160deg,#fff,#eef2ff 92%); border-color:rgba(99,102,241,.25); }
 .ls-ta { background:linear-gradient(160deg,#fff,#fffbeb 92%); border-color:rgba(245,158,11,.25); }
 .ls-tc { background:linear-gradient(160deg,#fff,#ecfeff 92%); border-color:rgba(6,182,212,.25); }
 .ls-tr { background:linear-gradient(160deg,#fff,#fff1f2 92%); border-color:rgba(244,63,94,.25); }
-/* positions */
-.ls-cyl-card:nth-child(1)  { --ca:0deg;   transform:rotateY(0deg)   translateZ(var(--ls-r3d)); }
-.ls-cyl-card:nth-child(2)  { --ca:36deg;  transform:rotateY(36deg)  translateZ(var(--ls-r3d)); }
-.ls-cyl-card:nth-child(3)  { --ca:72deg;  transform:rotateY(72deg)  translateZ(var(--ls-r3d)); }
-.ls-cyl-card:nth-child(4)  { --ca:108deg; transform:rotateY(108deg) translateZ(var(--ls-r3d)); }
-.ls-cyl-card:nth-child(5)  { --ca:144deg; transform:rotateY(144deg) translateZ(var(--ls-r3d)); }
-.ls-cyl-card:nth-child(6)  { --ca:180deg; transform:rotateY(180deg) translateZ(var(--ls-r3d)); }
-.ls-cyl-card:nth-child(7)  { --ca:216deg; transform:rotateY(216deg) translateZ(var(--ls-r3d)); }
-.ls-cyl-card:nth-child(8)  { --ca:252deg; transform:rotateY(252deg) translateZ(var(--ls-r3d)); }
-.ls-cyl-card:nth-child(9)  { --ca:288deg; transform:rotateY(288deg) translateZ(var(--ls-r3d)); }
-.ls-cyl-card:nth-child(10) { --ca:324deg; transform:rotateY(324deg) translateZ(var(--ls-r3d)); }
+
+@media (max-width: 640px) {
+  .ls-carousel-wrapper { --card-w:140px; --card-h:200px; height:280px; }
+  .ls-cyl-card .ls-cc-title { font-size:1rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ls-carousel-track { animation: none !important; }
+}
 
 /* ─── Family Section ─── */
 .ls-family-section {
