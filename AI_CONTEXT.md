@@ -2,7 +2,9 @@
 
 This file serves as a rapid context index for AI coding assistants (Gemini, Claude, GPT, Cursor, Copilot) working on this repository.
 
-> **Full Documentation File**: Refer to [`PROJECT_DOCUMENTATION.md`](file:///c:/Users/Sujith%20Thota/OneDrive/Desktop/reactportfolio-main/PROJECT_DOCUMENTATION.md) for exhaustive page specifications, schema designs, and component mechanics.
+> **Full Documentation Files**:
+> - [`PROJECT_DOCUMENTATION.md`](file:///c:/Users/Sujith%20Thota/OneDrive/Desktop/reactportfolio-main/PROJECT_DOCUMENTATION.md) for exhaustive page specifications, schema designs, and component mechanics.
+> - [`DATABASE.md`](file:///c:/Users/Sujith%20Thota/OneDrive/Desktop/reactportfolio-main/DATABASE.md) for the master Supabase PostgreSQL database architecture, column dictionaries, RLS matrix, and trigger specifications.
 
 ---
 
