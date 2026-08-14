@@ -2,9 +2,26 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../styles/landingShowcase.css';
 
-const TECHS = [
-  'Python', 'PyTorch', 'React 18', 'TypeScript', 'LangChain',
-  'PostgreSQL', 'Supabase', 'Groq LLM', 'ChromaDB', 'Docker', 'FastAPI', 'Git', 'Redis',
+const MARQUEE_ROW1 = [
+  { name: 'PyTorch', tag: 'Deep Learning', icon: '🔥', dot: '#ee4c2c' },
+  { name: 'Groq LLaMA 3', tag: '70B Tokens/s', icon: '⚡', dot: '#f55036' },
+  { name: 'LangChain', tag: 'RAG Pipeline', icon: '🦜', dot: '#2b5b84' },
+  { name: 'ChromaDB', tag: 'Vector Memory', icon: '🔮', dot: '#a855f7' },
+  { name: 'ResNet-50', tag: '98.2% MRI Vision', icon: '🧠', dot: '#00d09c' },
+  { name: 'FastAPI', tag: 'Async Inference', icon: '🚀', dot: '#059669' },
+  { name: 'Python', tag: 'Data Science Core', icon: '🐍', dot: '#3b82f6' },
+  { name: 'HuggingFace', tag: 'NLP Transformers', icon: '🤗', dot: '#f59e0b' },
+];
+
+const MARQUEE_ROW2 = [
+  { name: 'React 18', tag: 'Concurrent Engine', icon: '⚛️', dot: '#61dafb' },
+  { name: 'TypeScript', tag: 'Type Safety', icon: '🔷', dot: '#3178c6' },
+  { name: 'Supabase', tag: 'Postgres CDC Streams', icon: '⚡', dot: '#3ecf8e' },
+  { name: 'Docker', tag: 'Containerized Edge', icon: '🐳', dot: '#2496ed' },
+  { name: 'Redis', tag: 'Sub-ms Memory Cache', icon: '🟥', dot: '#dc2626' },
+  { name: 'PostgreSQL', tag: 'Relational Schemas', icon: '🐘', dot: '#336791' },
+  { name: 'Tailwind CSS', tag: 'Design Tokens', icon: '🎨', dot: '#38bdf8' },
+  { name: 'BroadcastChannel', tag: '<1ms P2P Sync', icon: '📡', dot: '#6366f1' },
 ];
 
 const CAROUSEL_CARDS = [
@@ -592,11 +609,38 @@ export default function LandingShowcase() {
             </div>
           ))}
         </div>
-        <div className="ls-marquee-wrap ls-reveal">
-          <div className="ls-marquee">
-            {[...TECHS, ...TECHS].map((t, i) => (
-              <span key={i}><b>{t}</b> ✦</span>
-            ))}
+        {/* Advanced Bi-Directional Dual Marquee */}
+        <div className="ls-marquee-container ls-reveal">
+          {/* Row 1: AI, Models & Inference (Slides Left) */}
+          <div className="ls-marquee-row ls-mq-left">
+            <div className="ls-marquee-track">
+              {[...MARQUEE_ROW1, ...MARQUEE_ROW1, ...MARQUEE_ROW1].map((item, i) => (
+                <div key={i} className="ls-mq-pill">
+                  <span className="ls-mq-icon">{item.icon}</span>
+                  <div className="ls-mq-info">
+                    <span className="ls-mq-name">{item.name}</span>
+                    <span className="ls-mq-tag">{item.tag}</span>
+                  </div>
+                  <span className="ls-mq-dot" style={{ background: item.dot }} />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Row 2: Full-Stack, Realtime & Cloud Infrastructure (Slides Right) */}
+          <div className="ls-marquee-row ls-mq-right">
+            <div className="ls-marquee-track ls-mq-reverse">
+              {[...MARQUEE_ROW2, ...MARQUEE_ROW2, ...MARQUEE_ROW2].map((item, i) => (
+                <div key={i} className="ls-mq-pill">
+                  <span className="ls-mq-icon">{item.icon}</span>
+                  <div className="ls-mq-info">
+                    <span className="ls-mq-name">{item.name}</span>
+                    <span className="ls-mq-tag">{item.tag}</span>
+                  </div>
+                  <span className="ls-mq-dot" style={{ background: item.dot }} />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
