@@ -162,14 +162,8 @@
   /* 2. Staggered Card Entrance Animation */
   .stocksSection_cardContainer,
   .stagger-card-entry{
-    opacity:0;transform:translateY(9%);
-    transition:opacity 500ms cubic-bezier(0.16, 1, 0.3, 1), transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
-    will-change:transform, opacity;
-  }
-  .reveal.in .stocksSection_cardContainer,
-  .reveal.in .stagger-card-entry{
-    opacity:1;transform:translateY(0px);
-    transition-delay:calc(var(--index, 0) * 100ms);
+    opacity:1 !important;transform:translateY(0) !important;
+    transition:transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease;
   }
 
   /* ===== ISOMETRIC AI CITY METROPOLIS ===== */
@@ -786,34 +780,37 @@
   </div>
 </div>
 
-<!-- ===== DARK LUXURY ECOSYSTEM CARDS ===== -->
-<div class="eco-section reveal" id="ecosystem">
-  <div class="eco-header">
-    <div class="eyebrow" style="background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.2);color:#34d399;">Core Ecosystem & Labs</div>
-    <h2>More from the engineering family</h2>
-  </div>
+<!-- ===== MORE FROM THE ENGINEERING FAMILY (EXACT GROWW LUXURY CARDS) ===== -->
+<div class="groww-family-section reveal" id="ecosystem">
+  <h2 class="section-title">More from the engineering family</h2>
 
-  <div class="eco-grid">
-    <div class="eco-card eco-1 stocksSection_cardContainer stagger-card-entry" style="--index: 0" onclick="window.location.href='/'">
-      <div class="eco-bg-pattern"></div>
-      <div class="eco-hero-text">98.2</div>
-      <div class="eco-sub-label">Neural Vision Accuracy</div>
-    </div>
-
-    <div class="eco-card eco-2 stocksSection_cardContainer stagger-card-entry" style="--index: 1" onclick="window.location.href='/'">
-      <div class="eco-bg-pattern"></div>
-      <div class="eco-hero-text">VIT</div>
-      <div class="eco-sub-label">8.7 CGPA Data Science</div>
-    </div>
-
-    <div class="eco-card eco-3 stocksSection_cardContainer stagger-card-entry" style="--index: 2" onclick="window.location.href='/'">
-      <div class="eco-bg-pattern"></div>
-      <div class="eco-hero-text">
-        <div class="eco-circle-emblem"></div>
-        <div class="eco-brand-title">Sync</div>
+  <div class="cards-container">
+    <!-- Card 1: 98.2 Neural Vision -->
+    <a href="/" class="groww-family-card stocksSection_cardContainer stagger-card-entry" style="--index: 0">
+      <div class="card-content">
+        <span class="logo-text text-teal">98.2</span>
       </div>
-      <div class="eco-sub-label">P2P Broadcast Engine</div>
-    </div>
+      <div class="card-sub-footer">Neural Vision Accuracy</div>
+    </a>
+
+    <!-- Card 2: VIT Honors -->
+    <a href="/" class="groww-family-card stocksSection_cardContainer stagger-card-entry" style="--index: 1">
+      <div class="card-content">
+        <span class="logo-text text-gold">VIT</span>
+      </div>
+      <div class="card-sub-footer">8.7 CGPA Data Science</div>
+    </a>
+
+    <!-- Card 3: Sync P2P Engine -->
+    <a href="/" class="groww-family-card stocksSection_cardContainer stagger-card-entry" style="--index: 2">
+      <div class="card-content">
+        <div class="credit-logo">
+          <div class="groww-icon"></div>
+          <span class="credit-text">Sync</span>
+        </div>
+      </div>
+      <div class="card-sub-footer">P2P Broadcast Engine</div>
+    </a>
   </div>
 </div>
 

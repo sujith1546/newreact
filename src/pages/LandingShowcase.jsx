@@ -511,45 +511,48 @@ export default function LandingShowcase() {
         </div>
       </div>
 
-      {/* ===== DARK LUXURY ECOSYSTEM CARDS ===== */}
-      <div className="eco-section" id="ecosystem">
-        <div className="eco-header">
-          <div className="landing-eyebrow">Core Ecosystem & Labs</div>
-          <h2>More from the engineering family</h2>
-        </div>
+      {/* ===== MORE FROM THE ENGINEERING FAMILY (EXACT GROWW LUXURY CARDS) ===== */}
+      <div className="groww-family-section" id="ecosystem">
+        <h2 className="section-title">More from the engineering family</h2>
 
-        <div className="eco-grid">
+        <div className="cards-container">
+          {/* Card 1: 98.2 Neural Vision */}
           <div
-            className="eco-card eco-1 stocksSection_cardContainer stagger-card-entry"
+            className="groww-family-card stocksSection_cardContainer stagger-card-entry"
             style={{ '--index': 0 }}
             onClick={() => navigate('/')}
           >
-            <div className="eco-bg-pattern" />
-            <div className="eco-hero-text">98.2</div>
-            <div className="eco-sub-label">Neural Vision Accuracy</div>
+            <div className="card-content">
+              <span className="logo-text text-teal">98.2</span>
+            </div>
+            <div className="card-sub-footer">Neural Vision Accuracy</div>
           </div>
 
+          {/* Card 2: VIT Honors */}
           <div
-            className="eco-card eco-2 stocksSection_cardContainer stagger-card-entry"
+            className="groww-family-card stocksSection_cardContainer stagger-card-entry"
             style={{ '--index': 1 }}
             onClick={() => navigate('/')}
           >
-            <div className="eco-bg-pattern" />
-            <div className="eco-hero-text">VIT</div>
-            <div className="eco-sub-label">8.7 CGPA Data Science</div>
+            <div className="card-content">
+              <span className="logo-text text-gold">VIT</span>
+            </div>
+            <div className="card-sub-footer">8.7 CGPA Data Science</div>
           </div>
 
+          {/* Card 3: Sync P2P Engine */}
           <div
-            className="eco-card eco-3 stocksSection_cardContainer stagger-card-entry"
+            className="groww-family-card stocksSection_cardContainer stagger-card-entry"
             style={{ '--index': 2 }}
             onClick={() => navigate('/')}
           >
-            <div className="eco-bg-pattern" />
-            <div className="eco-hero-text">
-              <div className="eco-circle-emblem" />
-              <div className="eco-brand-title">Sync</div>
+            <div className="card-content">
+              <div className="credit-logo">
+                <div className="groww-icon" />
+                <span className="credit-text">Sync</span>
+              </div>
             </div>
-            <div className="eco-sub-label">P2P Broadcast Engine</div>
+            <div className="card-sub-footer">P2P Broadcast Engine</div>
           </div>
         </div>
       </div>
