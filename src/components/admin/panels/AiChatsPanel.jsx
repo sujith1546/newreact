@@ -197,7 +197,7 @@ export default function AiChatsPanel() {
                       <span style={{ fontSize: 10.5, color: 'var(--pcms-muted)' }}>{new Date(session.created_at).toLocaleDateString()}</span>
                     </div>
                     <div style={{ fontSize: 11, color: 'var(--pcms-muted)', fontFamily: "'IBM Plex Mono', monospace", textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                      ID: {session.id.split('-')[0]}...
+                      ID: {String(session?.id || 'session').split('-')[0]}...
                     </div>
                   </div>
                 ))}

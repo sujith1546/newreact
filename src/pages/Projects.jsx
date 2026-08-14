@@ -14,8 +14,8 @@ const projectAccents = ['#007bff', '#8b5cf6', '#16a34a'];
 
 /* Mobile Project Row card */
 function MobileProjectRow({ project, index, onTap, onLongPress }) {
-  const accent = projectAccents[index % projectAccents.length];
-  const initials = project.title.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
+  const title = project?.title || 'Project';
+  const initials = title.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
   
   const longPressProps = useLongPress({
     onLongPress: () => onLongPress(project),

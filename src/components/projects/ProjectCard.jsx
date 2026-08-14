@@ -73,11 +73,12 @@ export default function ProjectCard({ project, onCardClick }) {
     { label: "Live Output", iconName: "TrendingUp" },
   ];
 
-  const hue = stringToHue(project.title);
+  const title = project?.title || "Project";
+  const hue = stringToHue(title);
   const hue2 = (hue + 65) % 360;
   const hue3 = (hue + 150) % 360;
-  const initials = project.title.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
-  const categoryLabel = getProjectCategory(project);
+  const initials = title.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
+  const categoryLabel = getProjectCategory(project || {});
 
   return (
     <div

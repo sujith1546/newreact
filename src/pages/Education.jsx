@@ -1043,7 +1043,7 @@ export default function Education() {
                   className={`edu-rail-dot-label ${index === activeIndex ? 'active' : ''}`}
                   onClick={() => handleCardClick(index)}
                 >
-                  {item.year.split(' – ')[1] || item.year}
+                  {item?.year ? (item.year.includes(' – ') ? item.year.split(' – ')[1] : item.year) : ''}
                 </span>
               </div>
             ))}
