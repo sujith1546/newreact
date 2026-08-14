@@ -11,6 +11,7 @@ const NotFound = React.lazy(() => import('../pages/NotFound'));
 const AdminDashboard = React.lazy(() => import('../pages/AdminDashboard'));
 const AdminMfaSetup = React.lazy(() => import('../pages/AdminMfaSetup'));
 const ResumePreview = React.lazy(() => import('../pages/ResumePreview'));
+const LandingShowcase = React.lazy(() => import('../pages/LandingShowcase'));
 
 export function AdminLoginRedirect() {
   const navigate = useNavigate();
@@ -57,8 +58,9 @@ export default function AppRoutes({ location }) {
               <Route path="contact" element={null} />
             </Route>
 
-            {/* Resume Viewer */}
+            {/* Resume Viewer & Landing Showcase */}
             <Route path="/resume-preview" element={<ResumePreview />} />
+            <Route path="/landing" element={<LandingShowcase />} />
 
             {/* Admin Authentication & Console */}
             <Route path="/admin/login" element={<AdminLoginRedirect />} />
