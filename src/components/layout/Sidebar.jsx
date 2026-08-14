@@ -715,7 +715,32 @@ export default function Sidebar({ activeSection, onNavClick }) {
       </div>
 
       <p className="sidebar-copyright">
-        &copy; {new Date().getFullYear()} All Rights Reserved Sujith
+        &copy; {new Date().getFullYear()} All Rights Reserved{' '}
+        <a
+          href="/landing.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            color: 'var(--text-primary)',
+            fontWeight: 600,
+            textDecoration: 'none',
+            borderBottom: '1px dashed var(--primary-blue, #3b82f6)',
+            paddingBottom: '1px',
+            transition: 'all 0.2s ease',
+            cursor: 'pointer',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = 'var(--primary-blue, #3b82f6)';
+            e.currentTarget.style.borderBottomStyle = 'solid';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = 'var(--text-primary)';
+            e.currentTarget.style.borderBottomStyle = 'dashed';
+          }}
+          title="Open Visual Showcase Landing Page"
+        >
+          Sujith ✨
+        </a>
       </p>
 
       <QRModal 
