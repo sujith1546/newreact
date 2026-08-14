@@ -20,7 +20,6 @@ export { default as NotificationCenter } from './ui/NotificationCenter';
 export { default as GetInTouchDropdown } from './widgets/GetInTouchDropdown';
 export { default as WelcomeModal } from './widgets/WelcomeModal';
 export { default as QRModal } from './widgets/QRModal';
-export { default as ResumeQuickLook } from './widgets/ResumeQuickLook';
 export { default as MobileStatusPanel } from './widgets/MobileStatusPanel';
 export { default as MobileDashboard } from './widgets/MobileDashboard';
 export { default as ScheduleUpcomingModal } from './widgets/ScheduleUpcomingModal';

@@ -245,13 +245,23 @@ export default function Experience() {
                       {exp.start_date} — {exp.end_date || 'Present'}
                     </div>
                   </div>
-                  {exp.description_bullets && exp.description_bullets.length > 0 && (
-                    <ul className="timeline-bullets">
-                      {exp.description_bullets.map((bullet, i) => (
-                        <li key={i}>{bullet}</li>
-                      ))}
-                    </ul>
-                  )}
+                  {(() => {
+                    let bullets = [];
+                    try {
+                      bullets = Array.isArray(exp.description_bullets)
+                        ? exp.description_bullets
+                        : (typeof exp.description_bullets === 'string' ? JSON.parse(exp.description_bullets) : []);
+                    } catch {
+                      bullets = [];
+                    }
+                    return bullets && bullets.length > 0 ? (
+                      <ul className="timeline-bullets">
+                        {bullets.map((bullet, i) => (
+                          <li key={i}>{bullet}</li>
+                        ))}
+                      </ul>
+                    ) : null;
+                  })()}
                 </div>
               </div>
             ))}

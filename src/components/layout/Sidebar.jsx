@@ -1,9 +1,9 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { QrCode, Download, MapPin, Loader2, CheckCircle, FileText, Eye, X, Cpu, Layers, Wifi, RefreshCw, ExternalLink, ShieldCheck, FileDown, Check, Sparkles, Clock, Bot, Zap, PlusCircle, Terminal, Gauge, Info, Calendar, Smartphone, Sun, Moon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import ResumeQuickLook from '../widgets/ResumeQuickLook';
+const ResumeQuickLook = lazy(() => import('../widgets/ResumeQuickLook'));
 import { useLocalTime } from '../../hooks/useLocalTime';
 import QRModal from '../widgets/QRModal';
 import { useTheme } from '../../context/ThemeContext';
@@ -498,13 +498,15 @@ export default function Sidebar({ activeSection, onNavClick }) {
 
       {/* Glassmorphism Resume Preview Modal */}
       {isPreviewOpen && (
-        <ResumeQuickLook
-          fileUrl="/resume.pdf"
-          fileName="Thota_Sujith_Resume.pdf"
-          onClose={() => setIsPreviewOpen(false)}
-          onShare={handleWhatsAppShare}
-          onDownload={handleDownloadClick}
-        />
+        <Suspense fallback={null}>
+          <ResumeQuickLook
+            fileUrl="/resume.pdf"
+            fileName="Thota_Sujith_Resume.pdf"
+            onClose={() => setIsPreviewOpen(false)}
+            onShare={handleWhatsAppShare}
+            onDownload={handleDownloadClick}
+          />
+        </Suspense>
       )}
 
       <div className="social-icons-row">
