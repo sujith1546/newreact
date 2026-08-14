@@ -7,7 +7,7 @@
 <meta name="description" content="Portfolio of Sujith Thota. B.Tech Computer Science (Data Science) from VIT University (8.7 CGPA). Machine Learning, Neural Networks & Full-Stack Systems.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#0a0912;
@@ -21,7 +21,7 @@
     --text-dim:#948fb3;
     --text-dimmer:#5f5a80;
     --line:#26224a;
-    --radius:18px;
+    --radius:20px;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   html{scroll-behavior:smooth;}
@@ -45,8 +45,8 @@
 
   /* cursor glow */
   #glow{
-    position:fixed;top:0;left:0;width:600px;height:600px;
-    background:radial-gradient(circle, rgba(106,27,255,0.16) 0%, rgba(106,27,255,0) 70%);
+    position:fixed;top:0;left:0;width:650px;height:650px;
+    background:radial-gradient(circle, rgba(106,27,255,0.18) 0%, rgba(106,27,255,0) 70%);
     pointer-events:none;z-index:0;transform:translate(-50%,-50%);
     transition:opacity .3s;
   }
@@ -140,7 +140,7 @@
   }
   .btn-secondary:hover{color:var(--text);border-color:var(--text-dimmer);}
 
-  /* live terminal ticker - signature element */
+  /* live terminal ticker */
   .live-ticker{
     margin-top:64px;max-width:560px;
     background:var(--card);border:1px solid var(--line);border-radius:12px;
@@ -167,6 +167,145 @@
   .stat .num{font-family:'Space Grotesk',sans-serif;font-size:clamp(2rem,3.4vw,2.8rem);font-weight:700;
     background:linear-gradient(100deg,#fff,var(--text-dim));-webkit-background-clip:text;background-clip:text;color:transparent;}
   .stat .lbl{color:var(--text-dimmer);font-size:.85rem;margin-top:6px;}
+
+  /* ===== 3D GROWW-STYLE PERSPECTIVE CARD ARC ===== */
+  .curve-showcase-section{
+    padding:120px 0 140px;
+    background:radial-gradient(ellipse 90% 50% at 50% 50%, rgba(106,27,255,0.08), transparent 75%);
+    position:relative;
+    overflow:hidden;
+    text-align:center;
+  }
+  .curve-header{
+    max-width:760px;
+    margin:0 auto 30px;
+    padding:0 6vw;
+  }
+  .curve-header h2{
+    font-size:clamp(2.4rem, 5vw, 3.8rem);
+    font-weight:800;
+    letter-spacing:-0.03em;
+    line-height:1.1;
+    margin-bottom:16px;
+  }
+  .curve-pill{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 20px;
+    border-radius:100px;
+    background:rgba(255,255,255,0.05);
+    border:1px solid var(--line);
+    font-size:0.88rem;
+    font-weight:600;
+    color:var(--text-dim);
+    margin-bottom:50px;
+    cursor:pointer;
+    transition:all 0.3s ease;
+  }
+  .curve-pill:hover{
+    border-color:var(--accent);
+    color:var(--accent);
+    background:rgba(0,230,168,0.08);
+  }
+  .curve-pill-icon{
+    width:16px;height:16px;border-radius:50%;background:#ef4444;display:flex;align-items:center;justify-content:center;
+    box-shadow:0 0 10px rgba(239,68,68,0.5);
+  }
+
+  /* 3D Cylindrical Arc Stage */
+  .arc-stage{
+    width:100%;
+    perspective:1600px;
+    perspective-origin:50% 50%;
+    position:relative;
+    padding:40px 0 60px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+  }
+  .arc-track{
+    display:flex;
+    gap:22px;
+    transform-style:preserve-3d;
+    transition:transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    padding:0 8vw;
+    width:max-content;
+  }
+  .arc-card{
+    width:280px;
+    height:420px;
+    border-radius:24px;
+    position:relative;
+    overflow:hidden;
+    padding:30px 24px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    text-align:left;
+    cursor:pointer;
+    user-select:none;
+    box-shadow:0 25px 60px -15px rgba(0,0,0,0.7);
+    transition:all 0.45s cubic-bezier(0.2, 1, 0.3, 1);
+    border:1px solid rgba(255,255,255,0.12);
+  }
+  .arc-card:hover{
+    transform:translateY(-16px) scale(1.05) rotateY(0deg) !important;
+    z-index:50 !important;
+    box-shadow:0 35px 80px -10px rgba(106,27,255,0.5);
+    border-color:rgba(255,255,255,0.3);
+  }
+  .arc-card .card-top-tag{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:1.65rem;
+    font-weight:800;
+    line-height:1.15;
+    letter-spacing:-0.02em;
+    margin-bottom:12px;
+  }
+  .arc-card .card-sub{
+    font-size:0.86rem;
+    line-height:1.55;
+    opacity:0.85;
+  }
+  .arc-card .card-art{
+    position:relative;
+    width:100%;
+    height:190px;
+    border-radius:18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-top:auto;
+    overflow:hidden;
+  }
+
+  /* Card Color Themes */
+  .c-gold{ background:linear-gradient(170deg, #fef3c7, #eab308 90%); color:#1c1917; }
+  .c-gold .card-art{ background:rgba(0,0,0,0.06); }
+
+  .c-noir{ background:linear-gradient(170deg, #181726, #0d0c18); color:#f3f1fb; border-color:#38326b; }
+  .c-noir .card-art{ background:rgba(106,27,255,0.15); border:1px solid rgba(106,27,255,0.3); }
+
+  .c-olive{ background:linear-gradient(170deg, #d9f99d, #65a30d 95%); color:#142900; }
+  .c-olive .card-art{ background:rgba(0,0,0,0.08); }
+
+  .c-darkgreen{ background:linear-gradient(170deg, #092c1d, #02120b); color:#f3f1fb; border-color:#0f5132; }
+  .c-darkgreen .card-art{ background:rgba(0,230,168,0.12); border:1px solid rgba(0,230,168,0.25); }
+
+  .c-rose{ background:linear-gradient(170deg, #ffe4e6, #f43f5e 95%); color:#4c0519; }
+  .c-rose .card-art{ background:rgba(0,0,0,0.06); }
+
+  .c-cyan{ background:linear-gradient(170deg, #cffafe, #06b6d4 95%); color:#083344; }
+  .c-cyan .card-art{ background:rgba(0,0,0,0.08); }
+
+  /* 3D Arc Angles */
+  .arc-card:nth-child(1){ transform:rotateY(22deg) translateZ(-60px); }
+  .arc-card:nth-child(2){ transform:rotateY(11deg) translateZ(-20px); }
+  .arc-card:nth-child(3){ transform:rotateY(0deg) translateZ(30px); }
+  .arc-card:nth-child(4){ transform:rotateY(-11deg) translateZ(-20px); }
+  .arc-card:nth-child(5){ transform:rotateY(-22deg) translateZ(-60px); }
+  .arc-card:nth-child(6){ transform:rotateY(-30deg) translateZ(-110px); }
 
   /* section headers */
   .sec-head{max-width:660px;margin-bottom:70px;}
@@ -276,6 +415,8 @@
     .process-item{grid-template-columns:1fr;}
     section{padding:90px 6vw;}
     .cta-section{margin:0 4vw;padding:70px 6vw;}
+    .arc-track{padding:0 20px;}
+    .arc-card{width:240px;height:360px;}
   }
   @media (prefers-reduced-motion: reduce){
     *{animation-duration:.001ms !important; transition-duration:.001ms !important;}
@@ -290,10 +431,10 @@
 <nav id="nav">
   <div class="logo"><span class="logo-dot"></span>sujith.dev</div>
   <div class="nav-links">
+    <a href="#showcase">Pillars</a>
     <a href="#about">About</a>
     <a href="#skills">Skills</a>
     <a href="#projects">Projects</a>
-    <a href="#process">Process</a>
     <a href="#contact">Contact</a>
   </div>
   <a href="/" class="nav-cta">Launch Full App →</a>
@@ -332,6 +473,107 @@
   <div class="stat"><div class="num" data-count="8" data-suffix=".7">0</div><div class="lbl">CGPA (VIT University)</div></div>
   <div class="stat"><div class="num" data-count="3">0</div><div class="lbl">Years building ML & Web</div></div>
   <div class="stat"><div class="num" data-count="10">0</div><div class="lbl">Core frameworks mastered</div></div>
+</div>
+
+<!-- ===== 3D GROWW-STYLE PERSPECTIVE CARD ARC ===== -->
+<div class="curve-showcase-section reveal" id="showcase">
+  <div class="curve-header">
+    <div class="eyebrow">Interactive 3D Perspective Arc</div>
+    <h2>Engineering simplified, across every dimension</h2>
+    <div class="curve-pill" onclick="window.location.href='/'">
+      <span class="curve-pill-icon"><svg width="8" height="8" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></span>
+      <span>Explore Interactive Portfolio</span>
+    </div>
+  </div>
+
+  <!-- Cylindrical 3D Arc Deck -->
+  <div class="arc-stage" id="arcStage">
+    <div class="arc-track" id="arcTrack">
+      
+      <!-- Card 1: Deep Learning -->
+      <div class="arc-card c-gold" onclick="window.location.href='/'">
+        <div>
+          <div class="card-top-tag">Deep Learning & Vision</div>
+          <div class="card-sub">ResNet50 MRI Tumor Classification</div>
+        </div>
+        <div class="card-art">
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#78350f" stroke-width="1.8">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M12 3v18M3 12h18M7 7l10 10M17 7L7 17"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Card 2: Campus & Academic Rigor -->
+      <div class="arc-card c-noir" onclick="window.location.href='/'">
+        <div>
+          <div class="card-top-tag">Campus & Research</div>
+          <div class="card-sub">VIT University • 8.7 CGPA Honors</div>
+        </div>
+        <div class="card-art">
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="var(--brand-2)" stroke-width="1.8">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+            <path d="M6 12v5c0 3 6 3 6 3s6 0 6-3v-5"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Card 3: Generative AI & RAG -->
+      <div class="arc-card c-olive" onclick="window.location.href='/'">
+        <div>
+          <div class="card-top-tag">Generative AI & LLMs</div>
+          <div class="card-sub">Groq Llama 3 • ChromaDB Vector RAG</div>
+        </div>
+        <div class="card-art">
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#27500a" stroke-width="1.8">
+            <path d="M12 2a8 8 0 0 0-8 8c0 3.4 2.1 6.3 5.1 7.4L9 22l4-2 4 2-.1-4.6c3-1.1 5.1-4 5.1-7.4a8 8 0 0 0-8-8z"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Card 4: Realtime Systems -->
+      <div class="arc-card c-darkgreen" onclick="window.location.href='/'">
+        <div>
+          <div class="card-top-tag">Realtime Systems</div>
+          <div class="card-sub">P2P Broadcast & Supabase Telemetry</div>
+        </div>
+        <div class="card-art">
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8">
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Card 5: Full-Stack Architecture -->
+      <div class="arc-card c-rose" onclick="window.location.href='/'">
+        <div>
+          <div class="card-top-tag">Reactive UI Craft</div>
+          <div class="card-sub">React 18 • TypeScript • Zero-Crash</div>
+        </div>
+        <div class="card-art">
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#881337" stroke-width="1.8">
+            <rect x="2" y="3" width="20" height="14" rx="2"/>
+            <line x1="8" y1="21" x2="16" y2="21"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Card 6: Cloud & DevOps -->
+      <div class="arc-card c-cyan" onclick="window.location.href='/'">
+        <div>
+          <div class="card-top-tag">Cloud & Edge</div>
+          <div class="card-sub">Docker • Redis • CI/CD Pipelines</div>
+        </div>
+        <div class="card-art">
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#155e75" stroke-width="1.8">
+            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
+          </svg>
+        </div>
+      </div>
+
+    </div>
+  </div>
 </div>
 
 <!-- ABOUT -->
@@ -517,7 +759,22 @@
   const seq = [...techs, ...techs].map(t=>`<span><b>${t}</b> ✦</span>`).join('');
   marquee.innerHTML = seq;
 
-  // typing terminal ticker — real telemetry
+  // 3D Arc Mouse Tilt Interaction
+  const arcStage = document.getElementById('arcStage');
+  const arcTrack = document.getElementById('arcTrack');
+  if(arcStage && arcTrack){
+    arcStage.addEventListener('mousemove', (e)=>{
+      const rect = arcStage.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const rotateDeg = x * 12;
+      arcTrack.style.transform = `rotateY(${rotateDeg}deg)`;
+    });
+    arcStage.addEventListener('mouseleave', ()=>{
+      arcTrack.style.transform = 'rotateY(0deg)';
+    });
+  }
+
+  // typing terminal ticker
   const lines = [
     { p:'$ ', t:'checking telemetry status...', delay:0 },
     { p:'> ', t:'training: Brain Tumor CNN (ResNet50)', delay:1200 },
