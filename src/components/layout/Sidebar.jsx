@@ -721,25 +721,12 @@ export default function Sidebar({ activeSection, onNavClick }) {
           target="_blank"
           rel="noopener noreferrer"
           style={{
-            color: 'var(--text-primary)',
-            fontWeight: 600,
+            color: 'inherit',
             textDecoration: 'none',
-            borderBottom: '1px dashed var(--primary-blue, #3b82f6)',
-            paddingBottom: '1px',
-            transition: 'all 0.2s ease',
             cursor: 'pointer',
           }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.color = 'var(--primary-blue, #3b82f6)';
-            e.currentTarget.style.borderBottomStyle = 'solid';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.color = 'var(--text-primary)';
-            e.currentTarget.style.borderBottomStyle = 'dashed';
-          }}
-          title="Open Visual Showcase Landing Page"
         >
-          Sujith ✨
+          Sujith
         </a>
       </p>
 
