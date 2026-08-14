@@ -169,7 +169,7 @@ export default function LandingShowcase() {
           <h1>
             <span className="line"><span>Engineering intelligent</span></span>
             <span className="line">
-              <span>systems with <span className="landing-grad-text">precision.</span></span>
+              <span>systems with <span className="landing-grad-text homeHero_animatedWord">precision.</span></span>
             </span>
           </h1>
           <p className="sub">
@@ -191,13 +191,14 @@ export default function LandingShowcase() {
             </a>
           </div>
 
-          {/* ===== ISOMETRIC AI CITY METROPOLIS ===== */}
-          <div
-            className="isometric-city-container"
-            ref={isoContainerRef}
-            onMouseMove={handleIsoMouseMove}
-            onMouseLeave={handleIsoMouseLeave}
-          >
+          {/* ===== ISOMETRIC AI CITY METROPOLIS WITH HERO FADE & SLIDE ===== */}
+          <div className="homeHero_imageAnimationWrapper">
+            <div
+              className="isometric-city-container"
+              ref={isoContainerRef}
+              onMouseMove={handleIsoMouseMove}
+              onMouseLeave={handleIsoMouseLeave}
+            >
             <div
               className={`iso-tooltip ${isoTooltip.active ? 'active' : ''}`}
               style={{ left: `${isoTooltip.x}px`, top: `${isoTooltip.y}px` }}
@@ -347,6 +348,7 @@ export default function LandingShowcase() {
               </g>
             </svg>
           </div>
+        </div>
 
           {/* Signature Live Telemetry Terminal */}
           <div className="landing-ticker">
@@ -499,19 +501,31 @@ export default function LandingShowcase() {
         </div>
 
         <div className="eco-grid">
-          <div className="eco-card eco-1" onClick={() => navigate('/')}>
+          <div
+            className="eco-card eco-1 stocksSection_cardContainer stagger-card-entry"
+            style={{ '--index': 0 }}
+            onClick={() => navigate('/')}
+          >
             <div className="eco-bg-pattern" />
             <div className="eco-hero-text">98.2</div>
             <div className="eco-sub-label">Neural Vision Accuracy</div>
           </div>
 
-          <div className="eco-card eco-2" onClick={() => navigate('/')}>
+          <div
+            className="eco-card eco-2 stocksSection_cardContainer stagger-card-entry"
+            style={{ '--index': 1 }}
+            onClick={() => navigate('/')}
+          >
             <div className="eco-bg-pattern" />
             <div className="eco-hero-text">VIT</div>
             <div className="eco-sub-label">8.7 CGPA Data Science</div>
           </div>
 
-          <div className="eco-card eco-3" onClick={() => navigate('/')}>
+          <div
+            className="eco-card eco-3 stocksSection_cardContainer stagger-card-entry"
+            style={{ '--index': 2 }}
+            onClick={() => navigate('/')}
+          >
             <div className="eco-bg-pattern" />
             <div className="eco-hero-text">
               <div className="eco-circle-emblem" />
