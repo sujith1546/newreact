@@ -734,16 +734,24 @@
 .ls-cta-h2 { font-size: clamp(2.2rem,5vw,3.8rem); font-weight: 800; letter-spacing: -.04em; margin-bottom: 20px; color: #fff; }
 .ls-cta-p  { color: #94a3b8; max-width: 530px; margin: 0 auto 44px; font-size: 1.08rem; line-height: 1.7; }
 
-/* ─── Footer ─── */
+/* ─── Footer (Compact & Sleek) ─── */
 .ls-footer {
-  padding: 60px 6vw 40px; display: flex; justify-content: space-between;
-  align-items: center; border-top: 1px solid var(--ls-line);
-  margin-top: 60px; flex-wrap: wrap; gap: 20px; background: #f8fafc; position: relative; z-index: 2;
+  padding: 22px 6vw;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--ls-line);
+  margin-top: 0;
+  flex-wrap: wrap;
+  gap: 16px;
+  background: #ffffff;
+  position: relative;
+  z-index: 2;
 }
-.ls-footer-links { display: flex; gap: 26px; }
-.ls-footer-links a { color: #64748b; font-size: .9rem; font-weight: 500; transition: color .2s; }
+.ls-footer-links { display: flex; gap: 22px; }
+.ls-footer-links a { color: #64748b; font-size: 0.85rem; font-weight: 500; transition: color .2s; }
 .ls-footer-links a:hover { color: var(--ls-brand); }
-.ls-copy { color: #94a3b8; font-size: .84rem; }
+.ls-copy { color: #94a3b8; font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; }
 
 /* ─── Scroll Reveal ─── */
 .ls-reveal   { opacity: 0; transform: translateY(28px);  transition: opacity .7s cubic-bezier(.16,1,.3,1), transform .7s cubic-bezier(.16,1,.3,1); }

@@ -695,7 +695,7 @@ export default function LandingShowcase() {
       </section>
 
       {/* ─── CTA ─── */}
-      <section style={{ padding: '0 6vw 80px' }}>
+      <section style={{ padding: '0 6vw 40px' }}>
         <div className="ls-cta ls-reveal">
           <div className="ls-cta-glow" />
           <div className="ls-cta-grid" />
