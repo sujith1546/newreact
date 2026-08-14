@@ -281,27 +281,6 @@
 }
 .ls-iso-tooltip.ls-active { opacity: 1; transform: translate(-50%,-120%) scale(1); }
 
-/* ─── Terminal ─── */
-.ls-ticker {
-  margin: 38px auto 0; max-width: 600px;
-  background: #0a0e1a; border: 1px solid #1e293b;
-  border-radius: 16px; overflow: hidden;
-  box-shadow: 0 20px 50px rgba(15,23,42,.18); text-align: left;
-}
-.ls-ticker-head {
-  display: flex; align-items: center; gap: 8px; padding: 12px 20px;
-  border-bottom: 1px solid #1e293b; background: #060a14;
-}
-.ls-ticker-dot { width: 11px; height: 11px; border-radius: 50%; }
-.ls-ticker-head span { font-size: .74rem; color: #475569; margin-left: 8px; font-family: 'JetBrains Mono', monospace; }
-.ls-ticker-body { padding: 16px 22px; font-family: 'JetBrains Mono', monospace; font-size: .85rem; line-height: 2; color: #94a3b8; min-height: 90px; }
-.ls-ticker-prompt { color: #00d09c; font-weight: 700; }
-.ls-ticker-cursor {
-  display: inline-block; width: 8px; height: 15px; background: #00d09c;
-  vertical-align: middle; margin-left: 3px; animation: lsBlink 1s step-end infinite;
-}
-@keyframes lsBlink { 50%{opacity:0;} }
-
 /* ─── Stats Band ─── */
 .ls-stats-band {
   padding: 70px 6vw;

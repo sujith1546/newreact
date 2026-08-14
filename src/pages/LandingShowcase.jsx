@@ -37,13 +37,7 @@ const CAROUSEL_CARDS = [
   { tag: '10 • Telemetry',  title: 'Telemetry Hub',    desc: '24ms Database Heartbeat Monitor',       tone: 'tr' },
 ];
 
-const TERMINAL_LINES = [
-  { p: '$ ', t: 'checking telemetry status...' },
-  { p: '> ', t: 'training: Brain Tumor CNN (ResNet50)' },
-  { p: '> ', t: 'loss convergence: optimal ✓' },
-  { p: '> ', t: 'deployed: Groq Llama 3 RAG Assistant' },
-  { p: '$ ', t: 'status: open to ML & Full-Stack roles — say hello' },
-];
+
 
 // ─── Carousel Radius Hook ────────────────────────────────────────────────────
 // Mirrors the reference HTML's JS: radius = (cardWidth/2) / tan(PI/n) + 40
@@ -131,43 +125,7 @@ function useNeuralCanvas(canvasRef) {
   }, [canvasRef]);
 }
 
-// ─── Typewriter Hook ──────────────────────────────────────────────────────────
-function useTypewriter(termRef) {
-  useEffect(() => {
-    const el = termRef.current;
-    if (!el) return;
-    let cancelled = false;
-    function typeLine(line, cb) {
-      const row = document.createElement('div');
-      const prompt = document.createElement('span');
-      prompt.className = 'ls-ticker-prompt';
-      prompt.textContent = line.p;
-      row.appendChild(prompt);
-      const span = document.createElement('span');
-      row.appendChild(span);
-      el.appendChild(row);
-      let i = 0;
-      const iv = setInterval(() => {
-        if (cancelled) { clearInterval(iv); return; }
-        span.textContent += line.t[i]; i++;
-        if (i >= line.t.length) { clearInterval(iv); cb && cb(); }
-      }, 22);
-    }
-    function run(idx) {
-      if (cancelled || idx >= TERMINAL_LINES.length) {
-        if (!cancelled) {
-          const cur = document.createElement('span');
-          cur.className = 'ls-ticker-cursor';
-          el.appendChild(cur);
-        }
-        return;
-      }
-      setTimeout(() => typeLine(TERMINAL_LINES[idx], () => run(idx + 1)), idx === 0 ? 300 : 180);
-    }
-    run(0);
-    return () => { cancelled = true; };
-  }, [termRef]);
-}
+
 
 // ─── Scroll Reveal Hook ───────────────────────────────────────────────────────
 function useScrollReveal() {
@@ -268,7 +226,6 @@ function CarouselSection({ navigate }) {
 export default function LandingShowcase() {
   const navigate = useNavigate();
   const canvasRef = useRef(null);
-  const termRef = useRef(null);
   const isoRef = useRef(null);
   const statsRef = useRef(null);
 
@@ -281,8 +238,6 @@ export default function LandingShowcase() {
 
   // Neural canvas
   useNeuralCanvas(canvasRef);
-  // Typewriter terminal
-  useTypewriter(termRef);
   // Scroll reveals
   useScrollReveal();
 
@@ -502,17 +457,6 @@ export default function LandingShowcase() {
                 </g>
               </svg>
             </div>
-          </div>
-
-          {/* Terminal */}
-          <div className="ls-ticker">
-            <div className="ls-ticker-head">
-              <span className="ls-ticker-dot" style={{ background: '#ff5f56' }} />
-              <span className="ls-ticker-dot" style={{ background: '#ffbd2e' }} />
-              <span className="ls-ticker-dot" style={{ background: '#27c93f' }} />
-              <span>sujith_telemetry.log — live</span>
-            </div>
-            <div className="ls-ticker-body" ref={termRef} />
           </div>
         </div>
       </section>
