@@ -254,7 +254,6 @@ export default function LandingShowcase() {
   const termRef = useRef(null);
   const isoRef = useRef(null);
   const statsRef = useRef(null);
-  const cursorRingRef = useRef(null);
 
   const [scrollPct, setScrollPct] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -262,8 +261,6 @@ export default function LandingShowcase() {
   const [isoTilt, setIsoTilt] = useState({ x: 0, y: 0 });
   const [tooltip, setTooltip] = useState({ active: false, text: '', x: 0, y: 0 });
   const [stats, setStats] = useState({ p: 0, c: '0', y: 0, f: 0 });
-  const [hovering, setHovering] = useState(false);
-  const ringPos = useRef({ x: 0, y: 0 });
 
   // Neural canvas
   useNeuralCanvas(canvasRef);
@@ -271,21 +268,6 @@ export default function LandingShowcase() {
   useTypewriter(termRef);
   // Scroll reveals
   useScrollReveal();
-
-  // Cursor ring spring
-  useEffect(() => {
-    let animId;
-    function tick() {
-      const el = cursorRingRef.current; if (!el) { animId = requestAnimationFrame(tick); return; }
-      ringPos.current.x += (mousePos.x - ringPos.current.x) * .12;
-      ringPos.current.y += (mousePos.y - ringPos.current.y) * .12;
-      el.style.left = ringPos.current.x + 'px';
-      el.style.top = ringPos.current.y + 'px';
-      animId = requestAnimationFrame(tick);
-    }
-    animId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(animId);
-  }, [mousePos]);
 
   // Scroll + mouse
   useEffect(() => {
@@ -342,13 +324,9 @@ export default function LandingShowcase() {
   const hideTip = () => setTooltip(t => ({ ...t, active: false }));
 
   return (
-    <div className="ls-wrap" onMouseEnter={() => setHovering(false)}>
+    <div className="ls-wrap">
       {/* Neural canvas */}
       <canvas ref={canvasRef} className="ls-canvas" />
-
-      {/* Cursor glow */}
-      <div className="ls-cursor-glow" style={{ left: mousePos.x, top: mousePos.y }} />
-      <div ref={cursorRingRef} className={`ls-cursor-ring${hovering ? ' ls-hovering' : ''}`} />
 
       {/* Progress */}
       <div className="ls-progress" style={{ width: `${scrollPct}%` }} />

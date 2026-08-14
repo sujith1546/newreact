@@ -38,23 +38,6 @@
   pointer-events: none; opacity: 0.5;
 }
 
-/* ─── Cursor ─── */
-.ls-cursor-glow {
-  position: fixed; width: 500px; height: 500px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(0,208,156,.09) 0%, rgba(99,102,241,.05) 40%, transparent 70%);
-  pointer-events: none; z-index: 1;
-  transform: translate(-50%, -50%); filter: blur(1px);
-}
-.ls-cursor-ring {
-  position: fixed; width: 28px; height: 28px; border-radius: 50%;
-  border: 1.5px solid rgba(0,208,156,.7);
-  pointer-events: none; z-index: 999;
-  transform: translate(-50%, -50%);
-  transition: width .2s, height .2s, border-color .2s;
-  mix-blend-mode: difference;
-}
-.ls-cursor-ring.ls-hovering { width: 48px; height: 48px; border-color: rgba(99,102,241,.9); }
-
 /* ─── Progress Bar ─── */
 .ls-progress {
   position: fixed; top: 0; left: 0; height: 3px;
