@@ -405,89 +405,107 @@ export default function LandingShowcase() {
           </div>
         </div>
 
-        {/* 3D Rotating Carousel Ring Stage (Merry-Go-Round) */}
-        <div className="carousel-ring-stage">
-          <div className="carousel-ring-inner">
+        {/* ===== ADVANCED 10-CARD 3D ROTATING CYLINDER CAROUSEL ===== */}
+        <div className="carousel-wrapper">
+          <div className="carousel-track">
             {/* Card 1 */}
-            <div className="carousel-card-item c-gold" onClick={() => navigate('/')}>
+            <div className="carousel-cylinder-card tone-emerald" onClick={() => navigate('/')}>
+              <span className="card-glyph" />
               <div>
-                <div className="card-top-tag">Deep Learning & Vision</div>
-                <div className="card-sub">ResNet50 MRI Tumor Classification</div>
+                <div className="card-tag">01 • GenAI</div>
+                <div className="card-title">NewsTrader AI</div>
               </div>
-              <div className="card-art">
-                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#78350f" strokeWidth="1.8">
-                  <circle cx="12" cy="12" r="9" />
-                  <path d="M12 3v18M3 12h18M7 7l10 10M17 7L7 17" />
-                </svg>
-              </div>
+              <div className="card-desc">Groq Llama 3 • ChromaDB Vector RAG</div>
             </div>
 
             {/* Card 2 */}
-            <div className="carousel-card-item c-noir" onClick={() => navigate('/')}>
+            <div className="carousel-cylinder-card tone-indigo" onClick={() => navigate('/')}>
+              <span className="card-glyph" />
               <div>
-                <div className="card-top-tag">Campus & Research</div>
-                <div className="card-sub">VIT University • 8.7 CGPA Honors</div>
+                <div className="card-tag">02 • Vision</div>
+                <div className="card-title">Brain Tumor CNN</div>
               </div>
-              <div className="card-art">
-                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="1.8">
-                  <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
-                  <path d="M6 12v5c0 3 6 3 6 3s6 0 6-3v-5" />
-                </svg>
-              </div>
+              <div className="card-desc">ResNet50 MRI • 98.2% Accuracy</div>
             </div>
 
             {/* Card 3 */}
-            <div className="carousel-card-item c-olive" onClick={() => navigate('/')}>
+            <div className="carousel-cylinder-card tone-amber" onClick={() => navigate('/')}>
+              <span className="card-glyph" />
               <div>
-                <div className="card-top-tag">Generative AI & LLMs</div>
-                <div className="card-sub">Groq Llama 3 • ChromaDB Vector RAG</div>
+                <div className="card-tag">03 • Realtime</div>
+                <div className="card-title">P2P Sync Hub</div>
               </div>
-              <div className="card-art">
-                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#14532d" strokeWidth="1.8">
-                  <path d="M12 2a8 8 0 0 0-8 8c0 3.4 2.1 6.3 5.1 7.4L9 22l4-2 4 2-.1-4.6c3-1.1 5.1-4 5.1-7.4a8 8 0 0 0-8-8z" />
-                </svg>
-              </div>
+              <div className="card-desc">BroadcastChannel • &lt;1ms Replication</div>
             </div>
 
             {/* Card 4 */}
-            <div className="carousel-card-item c-darkgreen" onClick={() => navigate('/')}>
+            <div className="carousel-cylinder-card tone-cyan" onClick={() => navigate('/')}>
+              <span className="card-glyph" />
               <div>
-                <div className="card-top-tag">Realtime Systems</div>
-                <div className="card-sub">P2P Broadcast & Supabase Telemetry</div>
+                <div className="card-tag">04 • Academia</div>
+                <div className="card-title">VIT Research</div>
               </div>
-              <div className="card-art">
-                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#00d09c" strokeWidth="1.8">
-                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
-                </svg>
-              </div>
+              <div className="card-desc">8.7 CGPA • Data Science Honors</div>
             </div>
 
             {/* Card 5 */}
-            <div className="carousel-card-item c-rose" onClick={() => navigate('/')}>
+            <div className="carousel-cylinder-card tone-rose" onClick={() => navigate('/')}>
+              <span className="card-glyph" />
               <div>
-                <div className="card-top-tag">Reactive UI Craft</div>
-                <div className="card-sub">React 18 • TypeScript • Zero-Crash</div>
+                <div className="card-tag">05 • Inference</div>
+                <div className="card-title">Groq LLM Core</div>
               </div>
-              <div className="card-art">
-                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#881337" strokeWidth="1.8">
-                  <rect x="2" y="3" width="20" height="14" rx="2" />
-                  <line x1="8" y1="21" x2="16" y2="21" />
-                  <line x1="12" y1="17" x2="12" y2="21" />
-                </svg>
-              </div>
+              <div className="card-desc">70B Tokens/s • Live Streaming RAG</div>
             </div>
 
             {/* Card 6 */}
-            <div className="carousel-card-item c-cyan" onClick={() => navigate('/')}>
+            <div className="carousel-cylinder-card tone-emerald" onClick={() => navigate('/')}>
+              <span className="card-glyph" />
               <div>
-                <div className="card-top-tag">Cloud & Edge</div>
-                <div className="card-sub">Docker • Redis • CI/CD Pipelines</div>
+                <div className="card-tag">06 • Database</div>
+                <div className="card-title">Supabase Stream</div>
               </div>
-              <div className="card-art">
-                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#0e7490" strokeWidth="1.8">
-                  <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" />
-                </svg>
+              <div className="card-desc">PostgreSQL CDC • Live Change Stream</div>
+            </div>
+
+            {/* Card 7 */}
+            <div className="carousel-cylinder-card tone-indigo" onClick={() => navigate('/')}>
+              <span className="card-glyph" />
+              <div>
+                <div className="card-tag">07 • Security</div>
+                <div className="card-title">Admin CMS & MFA</div>
               </div>
+              <div className="card-desc">TOTP 2FA • Immutable Audit Trails</div>
+            </div>
+
+            {/* Card 8 */}
+            <div className="carousel-cylinder-card tone-amber" onClick={() => navigate('/')}>
+              <span className="card-glyph" />
+              <div>
+                <div className="card-tag">08 • Embeddings</div>
+                <div className="card-title">Vector Memory</div>
+              </div>
+              <div className="card-desc">ChromaDB + LangChain Pipeline</div>
+            </div>
+
+            {/* Card 9 */}
+            <div className="carousel-cylinder-card tone-cyan" onClick={() => navigate('/')}>
+              <span className="card-glyph" />
+              <div>
+                <div className="card-tag">09 • Cloud</div>
+                <div className="card-title">Edge & Container</div>
+              </div>
+              <div className="card-desc">Docker, Redis • Zero-Lag Pipelines</div>
+            </div>
+
+            {/* Card 10 */}
+            <div className="carousel-cylinder-card tone-rose" onClick={() => navigate('/')}>
+              <span className="card-glyph" />
+              <div>
+                <div className="card-tag">10 • Telemetry</div>
+                <div className="card-title">Telemetry Hub</div>
+              </div>
+              <div className="card-desc">24ms Database Heartbeat Monitor</div>
             </div>
           </div>
         </div>

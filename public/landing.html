@@ -266,69 +266,83 @@
     box-shadow:0 0 10px rgba(239,68,68,0.4);
   }
 
-  /* 3D Rotating Carousel Ring Stage (Merry-go-round) */
-  .carousel-ring-stage{
-    width:100%;height:520px;perspective:1200px;perspective-origin:50% 50%;
-    position:relative;display:flex;justify-content:center;align-items:center;
-    overflow:hidden;margin:10px 0 30px;
+  /* ===== ADVANCED 10-CARD 3D ROTATING CYLINDER CAROUSEL ===== */
+  .carousel-wrapper{
+    --card-w:220px;
+    --card-h:300px;
+    --radius-3d:480px;
+    width:100%;max-width:1180px;height:420px;margin:20px auto 30px;
+    position:relative;perspective:1400px;perspective-origin:50% 45%;
+    display:flex;align-items:center;justify-content:center;overflow:hidden;
   }
-  .carousel-ring-inner{
-    position:absolute;width:280px;height:420px;transform-style:preserve-3d;
-    animation:rotateCarouselRing 30s linear infinite;transition:animation-play-state 0.3s ease;
+  .carousel-wrapper::before,
+  .carousel-wrapper::after{
+    content:"";position:absolute;top:0;bottom:0;width:160px;z-index:10;pointer-events:none;
   }
-  .carousel-ring-stage:hover .carousel-ring-inner{
+  .carousel-wrapper::before{
+    left:0;background:linear-gradient(90deg, #ffffff, rgba(255,255,255,0));
+  }
+  .carousel-wrapper::after{
+    right:0;background:linear-gradient(270deg, #ffffff, rgba(255,255,255,0));
+  }
+  .carousel-track{
+    position:absolute;top:50%;left:50%;width:0;height:0;
+    transform-style:preserve-3d;animation:spinCarouselTrack 26s linear infinite;
+    transition:animation-play-state 0.3s ease;
+  }
+  .carousel-wrapper:hover .carousel-track{
     animation-play-state:paused;
   }
-  @keyframes rotateCarouselRing{
+  @keyframes spinCarouselTrack{
     from{transform:rotateY(0deg);}
     to{transform:rotateY(-360deg);}
   }
-  .carousel-card-item{
-    position:absolute;width:280px;height:420px;left:0;top:0;border-radius:24px;overflow:hidden;
-    padding:30px 24px;display:flex;flex-direction:column;justify-content:space-between;
-    text-align:left;cursor:pointer;user-select:none;
-    box-shadow:0 20px 45px -10px rgba(0,0,0,0.12);
+  .carousel-cylinder-card{
+    position:absolute;top:0;left:0;width:var(--card-w);height:var(--card-h);
+    margin-left:calc(var(--card-w) / -2);margin-top:calc(var(--card-h) / -2);
+    border-radius:20px;background:#ffffff;border:1px solid #e2e8f0;overflow:hidden;
+    backface-visibility:hidden;display:flex;flex-direction:column;justify-content:space-between;
+    padding:24px 20px;box-shadow:0 20px 45px -15px rgba(15,23,42,0.12);
+    cursor:pointer;user-select:none;
     transition:transform 0.4s cubic-bezier(0.2, 1, 0.3, 1), box-shadow 0.4s, border-color 0.4s;
-    border:1px solid rgba(0,0,0,0.08);backface-visibility:visible;
+    text-align:left;
   }
-  .carousel-card-item:hover{
-    transform:rotateY(var(--card-rot)) translateZ(510px) scale(1.04) !important;
-    box-shadow:0 30px 65px -10px rgba(0,208,156,0.4);border-color:#00d09c;z-index:100;
+  .carousel-cylinder-card:hover{
+    transform:rotateY(var(--card-angle)) translateZ(calc(var(--radius-3d) + 30px)) scale(1.06) !important;
+    box-shadow:0 30px 65px -10px rgba(0,208,156,0.4);border-color:#00d09c;z-index:50;
   }
-  .carousel-card-item .card-top-tag{
-    font-family:'Space Grotesk',sans-serif;font-size:1.65rem;font-weight:800;
-    line-height:1.15;letter-spacing:-0.02em;margin-bottom:12px;
+  .carousel-cylinder-card .card-glyph{
+    position:absolute;top:20px;right:20px;width:10px;height:10px;border-radius:50%;
+    background:#00d09c;box-shadow:0 0 10px rgba(0,208,156,0.7);animation:pulse 2s infinite;
   }
-  .carousel-card-item .card-sub{font-size:.88rem;line-height:1.55;opacity:.9;}
-  .carousel-card-item .card-art{
-    position:relative;width:100%;height:190px;border-radius:18px;
-    display:flex;align-items:center;justify-content:center;margin-top:auto;overflow:hidden;
+  .carousel-cylinder-card .card-tag{
+    font-family:'JetBrains Mono',monospace;font-size:0.78rem;font-weight:700;
+    text-transform:uppercase;letter-spacing:0.1em;color:#059669;margin-bottom:6px;
+  }
+  .carousel-cylinder-card .card-title{
+    font-family:'Space Grotesk',sans-serif;font-size:1.28rem;font-weight:700;
+    line-height:1.22;letter-spacing:-0.02em;color:#0f172a;margin-bottom:8px;
+  }
+  .carousel-cylinder-card .card-desc{
+    font-size:0.82rem;line-height:1.5;color:#64748b;margin-top:auto;
   }
 
-  .c-gold{ background:linear-gradient(170deg, #fef3c7, #fbbf24 95%); color:#451a03; }
-  .c-gold .card-art{ background:rgba(255,255,255,0.5); }
+  .carousel-cylinder-card.tone-emerald{ background:linear-gradient(170deg, #ffffff, #f0fdf4 90%); border-color:rgba(16,185,129,0.25); }
+  .carousel-cylinder-card.tone-indigo{ background:linear-gradient(170deg, #ffffff, #eef2ff 90%); border-color:rgba(99,102,241,0.25); }
+  .carousel-cylinder-card.tone-amber{ background:linear-gradient(170deg, #ffffff, #fffbeb 90%); border-color:rgba(245,158,11,0.25); }
+  .carousel-cylinder-card.tone-cyan{ background:linear-gradient(170deg, #ffffff, #ecfeff 90%); border-color:rgba(6,182,212,0.25); }
+  .carousel-cylinder-card.tone-rose{ background:linear-gradient(170deg, #ffffff, #fff1f2 90%); border-color:rgba(244,63,94,0.25); }
 
-  .c-noir{ background:linear-gradient(170deg, #1e1b4b, #0f172a); color:#f8fafc; border-color:#312e81; }
-  .c-noir .card-art{ background:rgba(99,102,241,0.18); border:1px solid rgba(99,102,241,0.3); }
-
-  .c-olive{ background:linear-gradient(170deg, #dcfce7, #86efac 95%); color:#14532d; }
-  .c-olive .card-art{ background:rgba(255,255,255,0.5); }
-
-  .c-darkgreen{ background:linear-gradient(170deg, #064e3b, #022c22); color:#f0fdf4; border-color:#047857; }
-  .c-darkgreen .card-art{ background:rgba(0,208,156,0.15); border:1px solid rgba(0,208,156,0.3); }
-
-  .c-rose{ background:linear-gradient(170deg, #ffe4e6, #fda4af 95%); color:#881337; }
-  .c-rose .card-art{ background:rgba(255,255,255,0.5); }
-
-  .c-cyan{ background:linear-gradient(170deg, #cffafe, #67e8f9 95%); color:#164e63; }
-  .c-cyan .card-art{ background:rgba(255,255,255,0.5); }
-
-  .carousel-card-item:nth-child(1){ --card-rot: 0deg; transform:rotateY(0deg) translateZ(480px); }
-  .carousel-card-item:nth-child(2){ --card-rot: 60deg; transform:rotateY(60deg) translateZ(480px); }
-  .carousel-card-item:nth-child(3){ --card-rot: 120deg; transform:rotateY(120deg) translateZ(480px); }
-  .carousel-card-item:nth-child(4){ --card-rot: 180deg; transform:rotateY(180deg) translateZ(480px); }
-  .carousel-card-item:nth-child(5){ --card-rot: 240deg; transform:rotateY(240deg) translateZ(480px); }
-  .carousel-card-item:nth-child(6){ --card-rot: 300deg; transform:rotateY(300deg) translateZ(480px); }
+  .carousel-cylinder-card:nth-child(1)  { --card-angle:0deg;   transform:rotateY(0deg)   translateZ(var(--radius-3d)); }
+  .carousel-cylinder-card:nth-child(2)  { --card-angle:36deg;  transform:rotateY(36deg)  translateZ(var(--radius-3d)); }
+  .carousel-cylinder-card:nth-child(3)  { --card-angle:72deg;  transform:rotateY(72deg)  translateZ(var(--radius-3d)); }
+  .carousel-cylinder-card:nth-child(4)  { --card-angle:108deg; transform:rotateY(108deg) translateZ(var(--radius-3d)); }
+  .carousel-cylinder-card:nth-child(5)  { --card-angle:144deg; transform:rotateY(144deg) translateZ(var(--radius-3d)); }
+  .carousel-cylinder-card:nth-child(6)  { --card-angle:180deg; transform:rotateY(180deg) translateZ(var(--radius-3d)); }
+  .carousel-cylinder-card:nth-child(7)  { --card-angle:216deg; transform:rotateY(216deg) translateZ(var(--radius-3d)); }
+  .carousel-cylinder-card:nth-child(8)  { --card-angle:252deg; transform:rotateY(252deg) translateZ(var(--radius-3d)); }
+  .carousel-cylinder-card:nth-child(9)  { --card-angle:288deg; transform:rotateY(288deg) translateZ(var(--radius-3d)); }
+  .carousel-cylinder-card:nth-child(10) { --card-angle:324deg; transform:rotateY(324deg) translateZ(var(--radius-3d)); }
 
   /* ===== DARK LUXURY ECOSYSTEM CARDS ===== */
   .eco-section{
@@ -666,92 +680,108 @@
     </div>
   </div>
 
-  <!-- 3D Rotating Carousel Ring Stage (Merry-Go-Round) -->
-  <div class="carousel-ring-stage">
-    <div class="carousel-ring-inner">
-      
+  <!-- ===== ADVANCED 10-CARD 3D ROTATING CYLINDER CAROUSEL ===== -->
+  <div class="carousel-wrapper">
+    <div class="carousel-track">
       <!-- Card 1 -->
-      <div class="carousel-card-item c-gold" onclick="window.location.href='/'">
+      <div class="carousel-cylinder-card tone-emerald" onclick="window.location.href='/'">
+        <span class="card-glyph"></span>
         <div>
-          <div class="card-top-tag">Deep Learning & Vision</div>
-          <div class="card-sub">ResNet50 MRI Tumor Classification</div>
+          <div class="card-tag">01 • GenAI</div>
+          <div class="card-title">NewsTrader AI</div>
         </div>
-        <div class="card-art">
-          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#78350f" stroke-width="1.8">
-            <circle cx="12" cy="12" r="9"/>
-            <path d="M12 3v18M3 12h18M7 7l10 10M17 7L7 17"/>
-          </svg>
-        </div>
+        <div class="card-desc">Groq Llama 3 • ChromaDB Vector RAG</div>
       </div>
 
       <!-- Card 2 -->
-      <div class="carousel-card-item c-noir" onclick="window.location.href='/'">
+      <div class="carousel-cylinder-card tone-indigo" onclick="window.location.href='/'">
+        <span class="card-glyph"></span>
         <div>
-          <div class="card-top-tag">Campus & Research</div>
-          <div class="card-sub">VIT University • 8.7 CGPA Honors</div>
+          <div class="card-tag">02 • Vision</div>
+          <div class="card-title">Brain Tumor CNN</div>
         </div>
-        <div class="card-art">
-          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="1.8">
-            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
-            <path d="M6 12v5c0 3 6 3 6 3s6 0 6-3v-5"/>
-          </svg>
-        </div>
+        <div class="card-desc">ResNet50 MRI • 98.2% Accuracy</div>
       </div>
 
       <!-- Card 3 -->
-      <div class="carousel-card-item c-olive" onclick="window.location.href='/'">
+      <div class="carousel-cylinder-card tone-amber" onclick="window.location.href='/'">
+        <span class="card-glyph"></span>
         <div>
-          <div class="card-top-tag">Generative AI & LLMs</div>
-          <div class="card-sub">Groq Llama 3 • ChromaDB Vector RAG</div>
+          <div class="card-tag">03 • Realtime</div>
+          <div class="card-title">P2P Sync Hub</div>
         </div>
-        <div class="card-art">
-          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#14532d" stroke-width="1.8">
-            <path d="M12 2a8 8 0 0 0-8 8c0 3.4 2.1 6.3 5.1 7.4L9 22l4-2 4 2-.1-4.6c3-1.1 5.1-4 5.1-7.4a8 8 0 0 0-8-8z"/>
-          </svg>
-        </div>
+        <div class="card-desc">BroadcastChannel • &lt;1ms Replication</div>
       </div>
 
       <!-- Card 4 -->
-      <div class="carousel-card-item c-darkgreen" onclick="window.location.href='/'">
+      <div class="carousel-cylinder-card tone-cyan" onclick="window.location.href='/'">
+        <span class="card-glyph"></span>
         <div>
-          <div class="card-top-tag">Realtime Systems</div>
-          <div class="card-sub">P2P Broadcast & Supabase Telemetry</div>
+          <div class="card-tag">04 • Academia</div>
+          <div class="card-title">VIT Research</div>
         </div>
-        <div class="card-art">
-          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#00d09c" stroke-width="1.8">
-            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-          </svg>
-        </div>
+        <div class="card-desc">8.7 CGPA • Data Science Honors</div>
       </div>
 
       <!-- Card 5 -->
-      <div class="carousel-card-item c-rose" onclick="window.location.href='/'">
+      <div class="carousel-cylinder-card tone-rose" onclick="window.location.href='/'">
+        <span class="card-glyph"></span>
         <div>
-          <div class="card-top-tag">Reactive UI Craft</div>
-          <div class="card-sub">React 18 • TypeScript • Zero-Crash</div>
+          <div class="card-tag">05 • Inference</div>
+          <div class="card-title">Groq LLM Core</div>
         </div>
-        <div class="card-art">
-          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#881337" stroke-width="1.8">
-            <rect x="2" y="3" width="20" height="14" rx="2"/>
-            <line x1="8" y1="21" x2="16" y2="21"/>
-            <line x1="12" y1="17" x2="12" y2="21"/>
-          </svg>
-        </div>
+        <div class="card-desc">70B Tokens/s • Live Streaming RAG</div>
       </div>
 
       <!-- Card 6 -->
-      <div class="carousel-card-item c-cyan" onclick="window.location.href='/'">
+      <div class="carousel-cylinder-card tone-emerald" onclick="window.location.href='/'">
+        <span class="card-glyph"></span>
         <div>
-          <div class="card-top-tag">Cloud & Edge</div>
-          <div class="card-sub">Docker • Redis • CI/CD Pipelines</div>
+          <div class="card-tag">06 • Database</div>
+          <div class="card-title">Supabase Stream</div>
         </div>
-        <div class="card-art">
-          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#0e7490" stroke-width="1.8">
-            <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
-          </svg>
-        </div>
+        <div class="card-desc">PostgreSQL CDC • Live Change Stream</div>
       </div>
 
+      <!-- Card 7 -->
+      <div class="carousel-cylinder-card tone-indigo" onclick="window.location.href='/'">
+        <span class="card-glyph"></span>
+        <div>
+          <div class="card-tag">07 • Security</div>
+          <div class="card-title">Admin CMS & MFA</div>
+        </div>
+        <div class="card-desc">TOTP 2FA • Immutable Audit Trails</div>
+      </div>
+
+      <!-- Card 8 -->
+      <div class="carousel-cylinder-card tone-amber" onclick="window.location.href='/'">
+        <span class="card-glyph"></span>
+        <div>
+          <div class="card-tag">08 • Embeddings</div>
+          <div class="card-title">Vector Memory</div>
+        </div>
+        <div class="card-desc">ChromaDB + LangChain Pipeline</div>
+      </div>
+
+      <!-- Card 9 -->
+      <div class="carousel-cylinder-card tone-cyan" onclick="window.location.href='/'">
+        <span class="card-glyph"></span>
+        <div>
+          <div class="card-tag">09 • Cloud</div>
+          <div class="card-title">Edge & Container</div>
+        </div>
+        <div class="card-desc">Docker, Redis • Zero-Lag Pipelines</div>
+      </div>
+
+      <!-- Card 10 -->
+      <div class="carousel-cylinder-card tone-rose" onclick="window.location.href='/'">
+        <span class="card-glyph"></span>
+        <div>
+          <div class="card-tag">10 • Telemetry</div>
+          <div class="card-title">Telemetry Hub</div>
+        </div>
+        <div class="card-desc">24ms Database Heartbeat Monitor</div>
+      </div>
     </div>
   </div>
 </div>
