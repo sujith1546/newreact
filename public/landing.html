@@ -92,10 +92,17 @@
     border-radius:100px;background:rgba(0,230,168,0.06);
   }
 
-  /* ===== HERO ===== */
+  /* ===== HERO WITH ISOMETRIC METROPOLIS ===== */
   .hero{
-    min-height:100vh;display:flex;flex-direction:column;justify-content:center;
-    padding-top:160px;position:relative;overflow:hidden;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding-top:140px;
+    position:relative;
+    overflow:hidden;
   }
   .hero-bg-grid{
     position:absolute;inset:0;
@@ -106,16 +113,16 @@
   }
   .hero-blob{
     position:absolute;width:900px;height:900px;border-radius:50%;
-    background:radial-gradient(circle, rgba(106,27,255,0.35) 0%, rgba(106,27,255,0) 60%);
+    background:radial-gradient(circle, rgba(106,27,255,0.3) 0%, rgba(106,27,255,0) 60%);
     top:-350px;right:-250px;z-index:-1;filter:blur(20px);
     animation:float 12s ease-in-out infinite;
   }
   @keyframes float{0%,100%{transform:translate(0,0);}50%{transform:translate(-40px,50px);}}
-  .hero-content{max-width:920px;}
+  .hero-content{max-width:920px;margin:0 auto;}
   .hero h1{
     font-size:clamp(2.8rem, 6.4vw, 5.4rem);
     font-weight:700;line-height:1.04;letter-spacing:-0.03em;
-    margin-bottom:26px;
+    margin-bottom:24px;
   }
   .hero h1 .line{display:block;overflow:hidden;}
   .hero h1 .line span{display:inline-block;transform:translateY(110%);animation:riseUp .9s cubic-bezier(.19,1,.22,1) forwards;}
@@ -123,12 +130,12 @@
   .hero h1 .line:nth-child(2) span{animation-delay:.18s;}
   @keyframes riseUp{to{transform:translateY(0);}}
   .grad-text{background:linear-gradient(100deg, var(--brand-2), var(--accent) 80%);-webkit-background-clip:text;background-clip:text;color:transparent;}
-  .hero p.sub{font-size:1.15rem;color:var(--text-dim);max-width:580px;margin-bottom:40px;line-height:1.65;
+  .hero p.sub{font-size:1.15rem;color:var(--text-dim);max-width:620px;margin:0 auto 36px;line-height:1.65;
     opacity:0;animation:fadeUp .8s .5s forwards;}
   @keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
-  .hero-ctas{display:flex;gap:16px;align-items:center;opacity:0;animation:fadeUp .8s .65s forwards;flex-wrap:wrap;}
+  .hero-ctas{display:flex;gap:16px;align-items:center;justify-content:center;opacity:0;animation:fadeUp .8s .65s forwards;flex-wrap:wrap;}
   .btn-primary{
-    padding:15px 30px;border-radius:100px;background:var(--brand);font-weight:600;
+    padding:15px 32px;border-radius:100px;background:var(--brand);font-weight:600;
     font-size:.95rem;display:inline-flex;align-items:center;gap:10px;
     box-shadow:0 8px 30px -8px rgba(106,27,255,0.6);
     transition:transform .3s, box-shadow .3s;
@@ -140,12 +147,84 @@
   }
   .btn-secondary:hover{color:var(--text);border-color:var(--text-dimmer);}
 
+  /* ===== ISOMETRIC AI CITY METROPOLIS CANVAS ===== */
+  .isometric-city-container{
+    width:100%;
+    max-width:980px;
+    margin:50px auto 0;
+    position:relative;
+    opacity:0;
+    animation:fadeUp 1s .75s forwards;
+    cursor:crosshair;
+  }
+  .iso-svg{
+    width:100%;
+    height:auto;
+    overflow:visible;
+    filter:drop-shadow(0 25px 50px rgba(0,0,0,0.6));
+    transition:transform 0.4s ease-out;
+  }
+  .iso-building{
+    cursor:pointer;
+    transition:all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .iso-building:hover{
+    filter:drop-shadow(0 0 16px rgba(0,230,168,0.7));
+    transform:translateY(-6px);
+  }
+  
+  /* Animated Data Cars & Pulse Beacons */
+  @keyframes carDrive1{
+    0%{ transform:translate(380px, 320px); opacity:0; }
+    10%{ opacity:1; }
+    90%{ opacity:1; }
+    100%{ transform:translate(560px, 410px); opacity:0; }
+  }
+  @keyframes carDrive2{
+    0%{ transform:translate(620px, 340px); opacity:0; }
+    10%{ opacity:1; }
+    90%{ opacity:1; }
+    100%{ transform:translate(440px, 250px); opacity:0; }
+  }
+  @keyframes towerLaser{
+    0%,100%{ opacity:0.4; transform:scaleY(0.9); }
+    50%{ opacity:1; transform:scaleY(1.1); }
+  }
+  .iso-car-1{ animation:carDrive1 6s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+  .iso-car-2{ animation:carDrive2 7s cubic-bezier(0.4, 0, 0.2, 1) 2s infinite; }
+  .iso-laser{ animation:towerLaser 3s ease-in-out infinite; transform-origin:center; }
+
+  /* Floating Building Tooltip */
+  .iso-tooltip{
+    position:absolute;
+    padding:8px 14px;
+    border-radius:10px;
+    background:rgba(15,14,26,0.92);
+    border:1px solid var(--accent);
+    color:#ffffff;
+    font-size:0.78rem;
+    font-family:'JetBrains Mono',monospace;
+    pointer-events:none;
+    opacity:0;
+    transform:translate(-50%, -100%) scale(0.9);
+    transition:opacity 0.2s, transform 0.2s;
+    z-index:100;
+    box-shadow:0 10px 25px rgba(0,230,168,0.3);
+    white-space:nowrap;
+  }
+  .iso-tooltip.active{
+    opacity:1;
+    transform:translate(-50%, -120%) scale(1);
+  }
+
   /* live terminal ticker */
   .live-ticker{
-    margin-top:64px;max-width:560px;
+    margin:40px auto 0;
+    max-width:560px;
     background:var(--card);border:1px solid var(--line);border-radius:12px;
-    overflow:hidden;opacity:0;animation:fadeUp .8s .8s forwards;
+    overflow:hidden;opacity:0;animation:fadeUp .8s .9s forwards;
     box-shadow:0 20px 60px -20px rgba(0,0,0,0.6);
+    text-align:left;
   }
   .ticker-head{
     display:flex;align-items:center;gap:8px;padding:11px 16px;
@@ -307,7 +386,7 @@
   .arc-card:nth-child(5){ transform:rotateY(-22deg) translateZ(-60px); }
   .arc-card:nth-child(6){ transform:rotateY(-30deg) translateZ(-110px); }
 
-  /* ===== DARK LUXURY ECOSYSTEM CARDS (GROWW FAMILY STYLE) ===== */
+  /* ===== DARK LUXURY ECOSYSTEM CARDS ===== */
   .eco-section{
     padding:80px 6vw 140px;
     text-align:center;
@@ -350,7 +429,6 @@
     box-shadow:0 30px 70px -10px rgba(106,27,255,0.4);
   }
 
-  /* Card 1: Emerald Matrix Mesh */
   .eco-card.eco-1{
     background:radial-gradient(circle at 50% 50%, #062319 0%, #06110d 100%);
     border-color:#134e39;
@@ -371,7 +449,6 @@
     z-index:2;
   }
 
-  /* Card 2: Luxury Gold Mandala Pattern */
   .eco-card.eco-2{
     background:radial-gradient(circle at 50% 50%, #20180a 0%, #0e0a04 100%);
     border-color:#54411b;
@@ -392,7 +469,6 @@
     z-index:2;
   }
 
-  /* Card 3: Cyan Pulse Matrix */
   .eco-card.eco-3{
     background:radial-gradient(circle at 50% 50%, #061e2b 0%, #030e16 100%);
     border-color:#155e75;
@@ -541,6 +617,7 @@
     .arc-track{padding:0 20px;}
     .arc-card{width:240px;height:360px;}
     .eco-card{height:300px;}
+    .isometric-city-container{margin-top:20px;}
   }
   @media (prefers-reduced-motion: reduce){
     *{animation-duration:.001ms !important; transition-duration:.001ms !important;}
@@ -565,7 +642,7 @@
   <a href="/" class="nav-cta">Launch Full App →</a>
 </nav>
 
-<!-- HERO -->
+<!-- HERO WITH ISOMETRIC AI METROPOLIS (GROWW HERO STYLE) -->
 <section class="hero">
   <div class="hero-bg-grid"></div>
   <div class="hero-blob"></div>
@@ -576,10 +653,136 @@
       <span class="line"><span>systems with <span class="grad-text">precision.</span></span></span>
     </h1>
     <p class="sub">I'm <strong>Sujith Thota</strong> — a Data Science graduate from VIT University (8.7 CGPA). I architect scalable neural pipelines, interactive RAG models, and sub-millisecond real-time web applications.</p>
+    
     <div class="hero-ctas">
       <a href="/" class="btn-primary">Launch Interactive Portfolio →</a>
       <a href="mailto:sujithreddy1546@gmail.com" class="btn-secondary">Email me</a>
     </div>
+
+    <!-- ===== ISOMETRIC AI CITY METROPOLIS ILLUSTRATION ===== -->
+    <div class="isometric-city-container" id="isoCity">
+      <div class="iso-tooltip" id="isoTooltip">Building info</div>
+      <svg class="iso-svg" viewBox="0 0 1000 640" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="roadGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#1b1836"/>
+            <stop offset="100%" stop-color="#0f0e1c"/>
+          </linearGradient>
+          <linearGradient id="towerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#6a1bff"/>
+            <stop offset="50%" stop-color="#3b82f6"/>
+            <stop offset="100%" stop-color="#00e6a8"/>
+          </linearGradient>
+          <linearGradient id="domeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#00e6a8"/>
+            <stop offset="100%" stop-color="#065f46"/>
+          </linearGradient>
+          <linearGradient id="vitGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#2d2955"/>
+            <stop offset="100%" stop-color="#17152e"/>
+          </linearGradient>
+          <linearGradient id="neonGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#00e6a8"/>
+            <stop offset="100%" stop-color="#6a1bff"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Isometric Base Grid Island -->
+        <polygon points="500,80 940,300 500,520 60,300" fill="url(#roadGrad)" stroke="#2d285a" stroke-width="2"/>
+        <polygon points="500,520 940,300 940,330 500,550" fill="#0d0c18" stroke="#221e42" stroke-width="1.5"/>
+        <polygon points="500,520 60,300 60,330 500,550" fill="#090812" stroke="#221e42" stroke-width="1.5"/>
+
+        <!-- Isometric Road Network -->
+        <path d="M500,120 L860,300 L500,480 L140,300 Z" fill="none" stroke="#2a2456" stroke-width="32" stroke-linejoin="round"/>
+        <path d="M500,120 L860,300 L500,480 L140,300 Z" fill="none" stroke="rgba(0,230,168,0.2)" stroke-width="2" stroke-dasharray="8 12"/>
+        
+        <!-- Cross Connectors -->
+        <line x1="320" y1="210" x2="680" y2="390" stroke="#2a2456" stroke-width="24"/>
+        <line x1="320" y1="210" x2="680" y2="390" stroke="rgba(106,27,255,0.3)" stroke-width="2" stroke-dasharray="6 8"/>
+
+        <!-- Animated Data Vehicles / Packets on Roads -->
+        <g class="iso-car-1">
+          <circle cx="0" cy="0" r="5" fill="#00e6a8" filter="drop-shadow(0 0 8px #00e6a8)"/>
+        </g>
+        <g class="iso-car-2">
+          <circle cx="0" cy="0" r="5" fill="#a855f7" filter="drop-shadow(0 0 8px #a855f7)"/>
+        </g>
+
+        <!-- 1. NEURAL COMPUTE TOWER (GPU & GROQ CORE) -->
+        <g class="iso-building" data-tip="⚡ Neural Compute Core • Groq Llama 3 (70B Tokens/s)">
+          <!-- Tall Cylinder Tower -->
+          <path d="M360,260 L420,230 L420,100 L360,130 Z" fill="#201b44" stroke="#483d8b" stroke-width="1.5"/>
+          <path d="M420,230 L480,260 L480,130 L420,100 Z" fill="#2f2863" stroke="#483d8b" stroke-width="1.5"/>
+          <polygon points="420,100 480,130 420,160 360,130" fill="url(#towerGrad)" stroke="#6a1bff" stroke-width="2"/>
+          
+          <!-- Tower Windows & Neon Strips -->
+          <line x1="375" y1="150" x2="405" y2="135" stroke="#00e6a8" stroke-width="2.5" opacity="0.85"/>
+          <line x1="375" y1="180" x2="405" y2="165" stroke="#00e6a8" stroke-width="2.5" opacity="0.85"/>
+          <line x1="375" y1="210" x2="405" y2="195" stroke="#00e6a8" stroke-width="2.5" opacity="0.85"/>
+
+          <line x1="435" y1="165" x2="465" y2="180" stroke="#a855f7" stroke-width="2.5" opacity="0.85"/>
+          <line x1="435" y1="195" x2="465" y2="210" stroke="#a855f7" stroke-width="2.5" opacity="0.85"/>
+          <line x1="435" y1="225" x2="465" y2="240" stroke="#a855f7" stroke-width="2.5" opacity="0.85"/>
+
+          <!-- Laser Antenna -->
+          <line x1="420" y1="130" x2="420" y2="60" stroke="#00e6a8" stroke-width="2" class="iso-laser"/>
+          <circle cx="420" cy="60" r="4" fill="#00e6a8" filter="drop-shadow(0 0 10px #00e6a8)"/>
+        </g>
+
+        <!-- 2. ACADEMIC & DATA SCIENCE HUB (VIT VELLORE CAMPUS) -->
+        <g class="iso-building" data-tip="🎓 Academic Center • VIT University (8.7 CGPA Honors)">
+          <!-- Classical Building Facade -->
+          <polygon points="460,330 580,270 580,350 460,410" fill="url(#vitGrad)" stroke="#3f3875" stroke-width="1.5"/>
+          <polygon points="580,270 660,310 660,390 580,350" fill="#1d1a38" stroke="#3f3875" stroke-width="1.5"/>
+          <polygon points="460,330 580,270 660,310 540,370" fill="#38326a" stroke="#524a8f" stroke-width="2"/>
+          
+          <!-- Columns -->
+          <line x1="480" y1="345" x2="480" y2="395" stroke="#a5b4fc" stroke-width="3"/>
+          <line x1="510" y1="330" x2="510" y2="380" stroke="#a5b4fc" stroke-width="3"/>
+          <line x1="540" y1="315" x2="540" y2="365" stroke="#a5b4fc" stroke-width="3"/>
+          <line x1="570" y1="300" x2="570" y2="350" stroke="#a5b4fc" stroke-width="3"/>
+
+          <!-- Campus Cap Emblem -->
+          <polygon points="580,245 610,260 580,275 550,260" fill="#eab308" filter="drop-shadow(0 0 8px rgba(234,179,8,0.6))"/>
+        </g>
+
+        <!-- 3. DEEP LEARNING VISION DOME (MRI BRAIN TUMOR RESEARCH) -->
+        <g class="iso-building" data-tip="🧠 Medical AI Dome • ResNet50 MRI Vision (98.2% Accuracy)">
+          <ellipse cx="680" cy="270" rx="60" ry="35" fill="url(#domeGrad)" opacity="0.85" stroke="#00e6a8" stroke-width="2"/>
+          <path d="M620,270 C620,220 740,220 740,270 Z" fill="rgba(0,230,168,0.25)" stroke="#00e6a8" stroke-width="1.5"/>
+          <ellipse cx="680" cy="245" rx="35" ry="20" fill="none" stroke="#ffffff" stroke-width="1" stroke-dasharray="4 4"/>
+          <circle cx="680" cy="235" r="5" fill="#ffffff" filter="drop-shadow(0 0 10px #00e6a8)"/>
+        </g>
+
+        <!-- 4. CLOCK TOWER & TELEMETRY MONOLITH -->
+        <g class="iso-building" data-tip="⏱️ Telemetry Monolith • 🟢 24ms Live Database Heartbeat">
+          <polygon points="260,330 290,315 290,410 260,425" fill="#1b1836" stroke="#483d8b" stroke-width="1.5"/>
+          <polygon points="290,315 320,330 320,425 290,410" fill="#2a2552" stroke="#483d8b" stroke-width="1.5"/>
+          <polygon points="260,330 290,315 320,330 290,345" fill="#3b82f6" stroke="#60a5fa" stroke-width="1.5"/>
+          <!-- Clock Face -->
+          <circle cx="275" cy="355" r="6" fill="#00e6a8" opacity="0.9"/>
+          <circle cx="305" cy="355" r="6" fill="#00e6a8" opacity="0.9"/>
+        </g>
+
+        <!-- 5. ISOMETRIC CYBER TREES & PARK GREENERY -->
+        <g>
+          <polygon points="340,370 380,350 420,370 380,390" fill="#064e3b" stroke="#059669" stroke-width="1"/>
+          <circle cx="380" cy="355" r="8" fill="#10b981"/>
+          <polygon points="680,410 720,390 760,410 720,430" fill="#064e3b" stroke="#059669" stroke-width="1"/>
+          <circle cx="720" cy="395" r="8" fill="#10b981"/>
+          <circle cx="745" cy="405" r="6" fill="#34d399"/>
+        </g>
+
+        <!-- 6. BILLBOARD SIGNPOST -->
+        <g class="iso-building" data-tip="📢 Operations Center • P2P Sync & WebSocket Broadcast">
+          <polygon points="760,230 820,200 820,240 760,270" fill="#059669" stroke="#10b981" stroke-width="1.5"/>
+          <line x1="770" y1="265" x2="770" y2="305" stroke="#4b5563" stroke-width="3"/>
+          <line x1="810" y1="245" x2="810" y2="285" stroke="#4b5563" stroke-width="3"/>
+          <text x="770" y="240" fill="#ffffff" font-family="'Space Grotesk',sans-serif" font-size="10" font-weight="700">P2P SYNC</text>
+        </g>
+      </svg>
+    </div>
+
     <div class="live-ticker">
       <div class="ticker-head">
         <span class="ticker-dot" style="background:#ff5f56;"></span>
@@ -701,7 +904,7 @@
   </div>
 </div>
 
-<!-- ===== DARK LUXURY ECOSYSTEM CARDS (MORE FROM SUJITH) ===== -->
+<!-- ===== DARK LUXURY ECOSYSTEM CARDS ===== -->
 <div class="eco-section reveal" id="ecosystem">
   <div class="eco-header">
     <div class="eyebrow">Core Ecosystem & Labs</div>
@@ -793,7 +996,7 @@
         <div class="tag">GenAI & Financial Tech</div>
         <h3>AI Financial Advisor & RAG Assistant</h3>
         <p>Interactive portfolio assistant with streaming Groq Llama 3 inference, ChromaDB vector retrieval, and 1-click CMS data backup.</p>
-        <a href="/" class="proj-link">Explore in interactive app <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7H8M17 7V16"/></svg></a>
+        <a href="/" class="proj-link">Explore in interactive app <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg></a>
       </div>
     </div>
     <div class="proj-card reveal">
@@ -802,7 +1005,7 @@
         <div class="tag">Deep Learning & Vision</div>
         <h3>Brain Tumor MRI Classification</h3>
         <p>Deep Convolutional Neural Network utilizing transfer learning (ResNet50) for high-confidence multi-class MRI tumor classification.</p>
-        <a href="/" class="proj-link">View architecture specs <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7H8M17 7V16"/></svg></a>
+        <a href="/" class="proj-link">View architecture specs <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg></a>
       </div>
     </div>
     <div class="proj-card reveal">
@@ -811,7 +1014,7 @@
         <div class="tag">Distributed Systems</div>
         <h3>Realtime Operations & Sync Hub</h3>
         <p>P2P BroadcastChannel state replication with Supabase Postgres change streams, live latency telemetry, and zero-crash boundaries.</p>
-        <a href="/" class="proj-link">Launch live demo <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7H8M17 7V16"/></svg></a>
+        <a href="/" class="proj-link">Launch live demo <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M17 7H8M17 7V16"/></svg></a>
       </div>
     </div>
   </div>
@@ -930,6 +1133,45 @@
     });
     arcStage.addEventListener('mouseleave', ()=>{
       arcTrack.style.transform = 'rotateY(0deg)';
+    });
+  }
+
+  // Isometric City Interactive Hover Tooltip
+  const isoContainer = document.getElementById('isoCity');
+  const isoTooltip = document.getElementById('isoTooltip');
+  const isoSvg = document.querySelector('.iso-svg');
+  if(isoContainer && isoTooltip){
+    const buildings = isoContainer.querySelectorAll('.iso-building');
+    buildings.forEach(b => {
+      b.addEventListener('mouseenter', (e)=>{
+        const tip = b.getAttribute('data-tip');
+        if(tip){
+          isoTooltip.textContent = tip;
+          isoTooltip.classList.add('active');
+        }
+      });
+      b.addEventListener('mousemove', (e)=>{
+        const rect = isoContainer.getBoundingClientRect();
+        isoTooltip.style.left = (e.clientX - rect.left) + 'px';
+        isoTooltip.style.top = (e.clientY - rect.top) + 'px';
+      });
+      b.addEventListener('mouseleave', ()=>{
+        isoTooltip.classList.remove('active');
+      });
+      b.addEventListener('click', ()=>{
+        window.location.href = '/';
+      });
+    });
+
+    // Subtle isometric mouse tilt parallax
+    isoContainer.addEventListener('mousemove', (e)=>{
+      const rect = isoContainer.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+      if(isoSvg) isoSvg.style.transform = `rotateX(${y * -6}deg) rotateY(${x * 6}deg)`;
+    });
+    isoContainer.addEventListener('mouseleave', ()=>{
+      if(isoSvg) isoSvg.style.transform = 'rotateX(0deg) rotateY(0deg)';
     });
   }
 
