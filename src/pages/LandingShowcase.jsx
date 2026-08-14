@@ -403,18 +403,11 @@ export default function LandingShowcase() {
           </div>
         </div>
 
-        <div
-          className="arc-stage"
-          ref={arcStageRef}
-          onMouseMove={handleArcMouseMove}
-          onMouseLeave={handleArcMouseLeave}
-        >
-          <div
-            className="arc-track"
-            style={{ transform: `rotateY(${arcRotation}deg)` }}
-          >
+        {/* 3D Rotating Carousel Ring Stage (Merry-Go-Round) */}
+        <div className="carousel-ring-stage">
+          <div className="carousel-ring-inner">
             {/* Card 1 */}
-            <div className="arc-card c-gold" onClick={() => navigate('/')}>
+            <div className="carousel-card-item c-gold" onClick={() => navigate('/')}>
               <div>
                 <div className="card-top-tag">Deep Learning & Vision</div>
                 <div className="card-sub">ResNet50 MRI Tumor Classification</div>
@@ -428,13 +421,13 @@ export default function LandingShowcase() {
             </div>
 
             {/* Card 2 */}
-            <div className="arc-card c-noir" onClick={() => navigate('/')}>
+            <div className="carousel-card-item c-noir" onClick={() => navigate('/')}>
               <div>
                 <div className="card-top-tag">Campus & Research</div>
                 <div className="card-sub">VIT University • 8.7 CGPA Honors</div>
               </div>
               <div className="card-art">
-                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#8b4dff" strokeWidth="1.8">
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="1.8">
                   <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
                   <path d="M6 12v5c0 3 6 3 6 3s6 0 6-3v-5" />
                 </svg>
@@ -442,33 +435,33 @@ export default function LandingShowcase() {
             </div>
 
             {/* Card 3 */}
-            <div className="arc-card c-olive" onClick={() => navigate('/')}>
+            <div className="carousel-card-item c-olive" onClick={() => navigate('/')}>
               <div>
                 <div className="card-top-tag">Generative AI & LLMs</div>
                 <div className="card-sub">Groq Llama 3 • ChromaDB Vector RAG</div>
               </div>
               <div className="card-art">
-                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#27500a" strokeWidth="1.8">
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#14532d" strokeWidth="1.8">
                   <path d="M12 2a8 8 0 0 0-8 8c0 3.4 2.1 6.3 5.1 7.4L9 22l4-2 4 2-.1-4.6c3-1.1 5.1-4 5.1-7.4a8 8 0 0 0-8-8z" />
                 </svg>
               </div>
             </div>
 
             {/* Card 4 */}
-            <div className="arc-card c-darkgreen" onClick={() => navigate('/')}>
+            <div className="carousel-card-item c-darkgreen" onClick={() => navigate('/')}>
               <div>
                 <div className="card-top-tag">Realtime Systems</div>
                 <div className="card-sub">P2P Broadcast & Supabase Telemetry</div>
               </div>
               <div className="card-art">
-                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#00e6a8" strokeWidth="1.8">
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#00d09c" strokeWidth="1.8">
                   <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
                 </svg>
               </div>
             </div>
 
             {/* Card 5 */}
-            <div className="arc-card c-rose" onClick={() => navigate('/')}>
+            <div className="carousel-card-item c-rose" onClick={() => navigate('/')}>
               <div>
                 <div className="card-top-tag">Reactive UI Craft</div>
                 <div className="card-sub">React 18 • TypeScript • Zero-Crash</div>
@@ -483,13 +476,13 @@ export default function LandingShowcase() {
             </div>
 
             {/* Card 6 */}
-            <div className="arc-card c-cyan" onClick={() => navigate('/')}>
+            <div className="carousel-card-item c-cyan" onClick={() => navigate('/')}>
               <div>
                 <div className="card-top-tag">Cloud & Edge</div>
                 <div className="card-sub">Docker • Redis • CI/CD Pipelines</div>
               </div>
               <div className="card-art">
-                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#155e75" strokeWidth="1.8">
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#0e7490" strokeWidth="1.8">
                   <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" />
                 </svg>
               </div>

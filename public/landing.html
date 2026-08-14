@@ -229,31 +229,41 @@
     box-shadow:0 0 10px rgba(239,68,68,0.4);
   }
 
-  .arc-stage{
-    width:100%;perspective:1600px;perspective-origin:50% 50%;position:relative;
-    padding:30px 0 50px;display:flex;justify-content:center;align-items:center;
+  /* 3D Rotating Carousel Ring Stage (Merry-go-round) */
+  .carousel-ring-stage{
+    width:100%;height:520px;perspective:1200px;perspective-origin:50% 50%;
+    position:relative;display:flex;justify-content:center;align-items:center;
+    overflow:hidden;margin:10px 0 30px;
   }
-  .arc-track{
-    display:flex;gap:22px;transform-style:preserve-3d;
-    transition:transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);padding:0 8vw;width:max-content;
+  .carousel-ring-inner{
+    position:absolute;width:280px;height:420px;transform-style:preserve-3d;
+    animation:rotateCarouselRing 30s linear infinite;transition:animation-play-state 0.3s ease;
   }
-  .arc-card{
-    width:280px;height:420px;border-radius:24px;position:relative;overflow:hidden;
+  .carousel-ring-stage:hover .carousel-ring-inner{
+    animation-play-state:paused;
+  }
+  @keyframes rotateCarouselRing{
+    from{transform:rotateY(0deg);}
+    to{transform:rotateY(-360deg);}
+  }
+  .carousel-card-item{
+    position:absolute;width:280px;height:420px;left:0;top:0;border-radius:24px;overflow:hidden;
     padding:30px 24px;display:flex;flex-direction:column;justify-content:space-between;
     text-align:left;cursor:pointer;user-select:none;
     box-shadow:0 20px 45px -10px rgba(0,0,0,0.12);
-    transition:all 0.45s cubic-bezier(0.2, 1, 0.3, 1);border:1px solid rgba(0,0,0,0.08);
+    transition:transform 0.4s cubic-bezier(0.2, 1, 0.3, 1), box-shadow 0.4s, border-color 0.4s;
+    border:1px solid rgba(0,0,0,0.08);backface-visibility:visible;
   }
-  .arc-card:hover{
-    transform:translateY(-16px) scale(1.05) rotateY(0deg) !important;
-    z-index:50 !important;box-shadow:0 30px 60px -10px rgba(0,208,156,0.3);border-color:#00d09c;
+  .carousel-card-item:hover{
+    transform:rotateY(var(--card-rot)) translateZ(510px) scale(1.04) !important;
+    box-shadow:0 30px 65px -10px rgba(0,208,156,0.4);border-color:#00d09c;z-index:100;
   }
-  .arc-card .card-top-tag{
+  .carousel-card-item .card-top-tag{
     font-family:'Space Grotesk',sans-serif;font-size:1.65rem;font-weight:800;
     line-height:1.15;letter-spacing:-0.02em;margin-bottom:12px;
   }
-  .arc-card .card-sub{font-size:.88rem;line-height:1.55;opacity:.9;}
-  .arc-card .card-art{
+  .carousel-card-item .card-sub{font-size:.88rem;line-height:1.55;opacity:.9;}
+  .carousel-card-item .card-art{
     position:relative;width:100%;height:190px;border-radius:18px;
     display:flex;align-items:center;justify-content:center;margin-top:auto;overflow:hidden;
   }
@@ -276,12 +286,12 @@
   .c-cyan{ background:linear-gradient(170deg, #cffafe, #67e8f9 95%); color:#164e63; }
   .c-cyan .card-art{ background:rgba(255,255,255,0.5); }
 
-  .arc-card:nth-child(1){ transform:rotateY(22deg) translateZ(-60px); }
-  .arc-card:nth-child(2){ transform:rotateY(11deg) translateZ(-20px); }
-  .arc-card:nth-child(3){ transform:rotateY(0deg) translateZ(30px); }
-  .arc-card:nth-child(4){ transform:rotateY(-11deg) translateZ(-20px); }
-  .arc-card:nth-child(5){ transform:rotateY(-22deg) translateZ(-60px); }
-  .arc-card:nth-child(6){ transform:rotateY(-30deg) translateZ(-110px); }
+  .carousel-card-item:nth-child(1){ --card-rot: 0deg; transform:rotateY(0deg) translateZ(480px); }
+  .carousel-card-item:nth-child(2){ --card-rot: 60deg; transform:rotateY(60deg) translateZ(480px); }
+  .carousel-card-item:nth-child(3){ --card-rot: 120deg; transform:rotateY(120deg) translateZ(480px); }
+  .carousel-card-item:nth-child(4){ --card-rot: 180deg; transform:rotateY(180deg) translateZ(480px); }
+  .carousel-card-item:nth-child(5){ --card-rot: 240deg; transform:rotateY(240deg) translateZ(480px); }
+  .carousel-card-item:nth-child(6){ --card-rot: 300deg; transform:rotateY(300deg) translateZ(480px); }
 
   /* ===== DARK LUXURY ECOSYSTEM CARDS ===== */
   .eco-section{
@@ -617,11 +627,12 @@
     </div>
   </div>
 
-  <div class="arc-stage" id="arcStage">
-    <div class="arc-track" id="arcTrack">
+  <!-- 3D Rotating Carousel Ring Stage (Merry-Go-Round) -->
+  <div class="carousel-ring-stage">
+    <div class="carousel-ring-inner">
       
       <!-- Card 1 -->
-      <div class="arc-card c-gold" onclick="window.location.href='/'">
+      <div class="carousel-card-item c-gold" onclick="window.location.href='/'">
         <div>
           <div class="card-top-tag">Deep Learning & Vision</div>
           <div class="card-sub">ResNet50 MRI Tumor Classification</div>
@@ -635,7 +646,7 @@
       </div>
 
       <!-- Card 2 -->
-      <div class="arc-card c-noir" onclick="window.location.href='/'">
+      <div class="carousel-card-item c-noir" onclick="window.location.href='/'">
         <div>
           <div class="card-top-tag">Campus & Research</div>
           <div class="card-sub">VIT University • 8.7 CGPA Honors</div>
@@ -649,7 +660,7 @@
       </div>
 
       <!-- Card 3 -->
-      <div class="arc-card c-olive" onclick="window.location.href='/'">
+      <div class="carousel-card-item c-olive" onclick="window.location.href='/'">
         <div>
           <div class="card-top-tag">Generative AI & LLMs</div>
           <div class="card-sub">Groq Llama 3 • ChromaDB Vector RAG</div>
@@ -662,7 +673,7 @@
       </div>
 
       <!-- Card 4 -->
-      <div class="arc-card c-darkgreen" onclick="window.location.href='/'">
+      <div class="carousel-card-item c-darkgreen" onclick="window.location.href='/'">
         <div>
           <div class="card-top-tag">Realtime Systems</div>
           <div class="card-sub">P2P Broadcast & Supabase Telemetry</div>
@@ -675,7 +686,7 @@
       </div>
 
       <!-- Card 5 -->
-      <div class="arc-card c-rose" onclick="window.location.href='/'">
+      <div class="carousel-card-item c-rose" onclick="window.location.href='/'">
         <div>
           <div class="card-top-tag">Reactive UI Craft</div>
           <div class="card-sub">React 18 • TypeScript • Zero-Crash</div>
@@ -690,7 +701,7 @@
       </div>
 
       <!-- Card 6 -->
-      <div class="arc-card c-cyan" onclick="window.location.href='/'">
+      <div class="carousel-card-item c-cyan" onclick="window.location.href='/'">
         <div>
           <div class="card-top-tag">Cloud & Edge</div>
           <div class="card-sub">Docker • Redis • CI/CD Pipelines</div>

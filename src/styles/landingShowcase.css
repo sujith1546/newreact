@@ -457,6 +457,7 @@
 }
 
 /* ===== 3D GROWW PERSPECTIVE CARD ARC ===== */
+/* ===== 3D GROWW-STYLE ROTATING RING CAROUSEL (MERRY-GO-ROUND) ===== */
 .curve-showcase-section {
   padding: 120px 0 100px;
   background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
@@ -515,31 +516,49 @@
   box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
 }
 
-.arc-stage {
+/* 3D Rotating Carousel Ring Stage */
+.carousel-ring-stage {
   width: 100%;
-  perspective: 1600px;
+  height: 520px;
+  perspective: 1200px;
   perspective-origin: 50% 50%;
   position: relative;
-  padding: 30px 0 50px;
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow: hidden;
+  margin: 10px 0 30px;
 }
 
-.arc-track {
-  display: flex;
-  gap: 22px;
-  transform-style: preserve-3d;
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  padding: 0 8vw;
-  width: max-content;
-}
-
-.arc-card {
+.carousel-ring-inner {
+  position: absolute;
   width: 280px;
   height: 420px;
+  transform-style: preserve-3d;
+  animation: rotateCarouselRing 30s linear infinite;
+  transition: animation-play-state 0.3s ease;
+}
+
+.carousel-ring-stage:hover .carousel-ring-inner {
+  animation-play-state: paused;
+}
+
+@keyframes rotateCarouselRing {
+  from {
+    transform: rotateY(0deg);
+  }
+  to {
+    transform: rotateY(-360deg);
+  }
+}
+
+.carousel-card-item {
+  position: absolute;
+  width: 280px;
+  height: 420px;
+  left: 0;
+  top: 0;
   border-radius: 24px;
-  position: relative;
   overflow: hidden;
   padding: 30px 24px;
   display: flex;
@@ -549,18 +568,19 @@
   cursor: pointer;
   user-select: none;
   box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.12);
-  transition: all 0.45s cubic-bezier(0.2, 1, 0.3, 1);
+  transition: transform 0.4s cubic-bezier(0.2, 1, 0.3, 1), box-shadow 0.4s, border-color 0.4s;
   border: 1px solid rgba(0, 0, 0, 0.08);
+  backface-visibility: visible;
 }
 
-.arc-card:hover {
-  transform: translateY(-16px) scale(1.05) rotateY(0deg) !important;
-  z-index: 50 !important;
-  box-shadow: 0 30px 60px -10px rgba(0, 208, 156, 0.3);
+.carousel-card-item:hover {
+  transform: rotateY(var(--card-rot)) translateZ(510px) scale(1.04) !important;
+  box-shadow: 0 30px 65px -10px rgba(0, 208, 156, 0.4);
   border-color: #00d09c;
+  z-index: 100;
 }
 
-.arc-card .card-top-tag {
+.carousel-card-item .card-top-tag {
   font-family: 'Space Grotesk', sans-serif;
   font-size: 1.65rem;
   font-weight: 800;
@@ -569,13 +589,13 @@
   margin-bottom: 12px;
 }
 
-.arc-card .card-sub {
+.carousel-card-item .card-sub {
   font-size: 0.88rem;
   line-height: 1.55;
   opacity: 0.9;
 }
 
-.arc-card .card-art {
+.carousel-card-item .card-art {
   position: relative;
   width: 100%;
   height: 190px;
@@ -605,12 +625,13 @@
 .c-cyan { background: linear-gradient(170deg, #cffafe, #67e8f9 95%); color: #164e63; }
 .c-cyan .card-art { background: rgba(255, 255, 255, 0.5); }
 
-.arc-card:nth-child(1) { transform: rotateY(22deg) translateZ(-60px); }
-.arc-card:nth-child(2) { transform: rotateY(11deg) translateZ(-20px); }
-.arc-card:nth-child(3) { transform: rotateY(0deg) translateZ(30px); }
-.arc-card:nth-child(4) { transform: rotateY(-11deg) translateZ(-20px); }
-.arc-card:nth-child(5) { transform: rotateY(-22deg) translateZ(-60px); }
-.arc-card:nth-child(6) { transform: rotateY(-30deg) translateZ(-110px); }
+/* 3D Ring 60-degree Rotational Positioning */
+.carousel-card-item:nth-child(1) { --card-rot: 0deg; transform: rotateY(0deg) translateZ(480px); }
+.carousel-card-item:nth-child(2) { --card-rot: 60deg; transform: rotateY(60deg) translateZ(480px); }
+.carousel-card-item:nth-child(3) { --card-rot: 120deg; transform: rotateY(120deg) translateZ(480px); }
+.carousel-card-item:nth-child(4) { --card-rot: 180deg; transform: rotateY(180deg) translateZ(480px); }
+.carousel-card-item:nth-child(5) { --card-rot: 240deg; transform: rotateY(240deg) translateZ(480px); }
+.carousel-card-item:nth-child(6) { --card-rot: 300deg; transform: rotateY(300deg) translateZ(480px); }
 
 /* ===== DARK LUXURY ECOSYSTEM CARDS ===== */
 .eco-section {
@@ -1019,8 +1040,15 @@
   .landing-stats-bar { grid-template-columns: repeat(2, 1fr); }
   .landing-section { padding: 90px 6vw; }
   .landing-cta-section { margin: 0 4vw; padding: 70px 6vw; }
-  .arc-track { padding: 0 20px; }
-  .arc-card { width: 240px; height: 360px; }
+  .carousel-ring-stage { height: 420px; perspective: 900px; }
+  .carousel-ring-inner { width: 220px; height: 340px; }
+  .carousel-card-item { width: 220px; height: 340px; padding: 22px 18px; }
+  .carousel-card-item:nth-child(1) { transform: rotateY(0deg) translateZ(300px); }
+  .carousel-card-item:nth-child(2) { transform: rotateY(60deg) translateZ(300px); }
+  .carousel-card-item:nth-child(3) { transform: rotateY(120deg) translateZ(300px); }
+  .carousel-card-item:nth-child(4) { transform: rotateY(180deg) translateZ(300px); }
+  .carousel-card-item:nth-child(5) { transform: rotateY(240deg) translateZ(300px); }
+  .carousel-card-item:nth-child(6) { transform: rotateY(300deg) translateZ(300px); }
   .eco-card { height: 300px; }
   .isometric-city-container { margin-top: 20px; }
 }
