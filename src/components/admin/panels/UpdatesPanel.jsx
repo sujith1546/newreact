@@ -125,6 +125,45 @@ export default function UpdatesPanel() {
 
   const closeModal = () => { setIsModalOpen(false); setEditingUpdate(null); };
 
+  const autoGenerateFromRecentActivity = async () => {
+    setLoading(true);
+    try {
+      const { data: auditLogs } = await supabase
+        .from('admin_audit_logs')
+        .select('action, entity_type, entity_id, created_at')
+        .order('created_at', { ascending: false })
+        .limit(8);
+
+      const now = new Date();
+      const versionStr = `v1.3.${updates.length + 1}`;
+
+      const items = (auditLogs && auditLogs.length > 0)
+        ? auditLogs.map(l => `[${l.action?.includes('INSERT') ? 'Feature' : 'Improvement'}] ${(l.entity_type || 'System').replace(/_/g, ' ').toUpperCase()}: ${(l.action || '').replace(/_/g, ' ')}`)
+        : [
+            '[Feature] Core modular system updates & performance optimizations.',
+            '[Sync] Database state synchronized with live portfolio tables.'
+          ];
+
+      setEditingUpdate(null);
+      setFormData({
+        version: versionStr,
+        title: `${versionStr} — Live System & Content Synchronizations`,
+        category: 'feature',
+        impact: 'Minor',
+        published: true,
+        description: 'Automated release note synthesized from recent administrative operations and database updates.',
+        date: now.toISOString().split('T')[0],
+        items,
+      });
+      setIsModalOpen(true);
+      showToast('Synthesized release notes from recent activity');
+    } catch (err) {
+      showToast('Failed to synthesize release notes', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const addItem = () => setFormData(p => ({ ...p, items: [...p.items, ''] }));
   const removeItem = (i) => setFormData(p => ({ ...p, items: p.items.filter((_, idx) => idx !== i) }));
   const updateItem = (i, val) => setFormData(p => ({ ...p, items: p.items.map((it, idx) => idx === i ? val : it) }));
@@ -245,16 +284,41 @@ export default function UpdatesPanel() {
           ))}
         </div>
 
-        {/* Search toolbar */}
-        <div style={{ padding: '12px 18px', borderBottom: '1px solid var(--pcms-line)', background: 'var(--pcms-panel-2)', display: 'flex', gap: 10, alignItems: 'center' }}>
-          <input
-            type="text"
-            style={inputStyle}
-            placeholder="Search by version, title, or change bullet..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-          />
-          <span style={{ fontSize: 11.5, color: 'var(--pcms-muted)', whiteSpace: 'nowrap' }}>{filteredUpdates.length} / {updates.length} entries</span>
+        {/* Search toolbar & Auto-Synthesize Action */}
+        <div style={{ padding: '12px 18px', borderBottom: '1px solid var(--pcms-line)', background: 'var(--pcms-panel-2)', display: 'flex', gap: 10, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center', flex: 1, minWidth: 260 }}>
+            <input
+              type="text"
+              style={inputStyle}
+              placeholder="Search by version, title, or change bullet..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+            />
+            <span style={{ fontSize: 11.5, color: 'var(--pcms-muted)', whiteSpace: 'nowrap' }}>{filteredUpdates.length} / {updates.length} entries</span>
+          </div>
+
+          <button
+            type="button"
+            onClick={autoGenerateFromRecentActivity}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '7px 14px',
+              borderRadius: 8,
+              background: 'rgba(59, 130, 246, 0.12)',
+              border: '1px solid rgba(59, 130, 246, 0.3)',
+              color: 'var(--primary-blue, #3b82f6)',
+              fontSize: 12,
+              fontWeight: 700,
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            <Zap size={13} />
+            <span>✨ Auto-Synthesize Release</span>
+          </button>
         </div>
 
         {/* Table */}

@@ -29,6 +29,13 @@ export function notifyDataMutation(table, actionType = 'UPDATE', payload = {}) {
     // 3. Log audit event
     const entityName = payload?.title || payload?.name || payload?.label || payload?.id || payload?.key || '';
     logAuditEvent(`ADMIN_${actionType}_${table.toUpperCase()}`, table, String(entityName));
+
+    // 4. Record automated changelog release entry (for non-update tables)
+    if (table !== 'updates' && typeof window !== 'undefined') {
+      import('../core/utils/autoChangelogEngine').then(({ recordAutoChangelogEntry }) => {
+        recordAutoChangelogEntry(table, actionType, payload);
+      }).catch(() => {});
+    }
   } catch (err) {
     console.warn(`[SyncDispatcher] Dispatch failed for ${table}:`, err);
   }
