@@ -563,16 +563,16 @@
 }
 .ls-skills-grid.ls-in .ls-bar-fill { width: var(--w); }
 
-/* ─── Advanced Bi-Directional Dual Marquee ─── */
+/* ─── Advanced Bi-Directional Dual Marquee (Clean & Professional) ─── */
 .ls-marquee-container {
-  margin-top: 50px;
+  margin-top: 40px;
   position: relative;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 24px 0;
-  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+  gap: 12px;
+  padding: 16px 0;
+  background: #ffffff;
   border-top: 1px solid var(--ls-line);
   border-bottom: 1px solid var(--ls-line);
 }
@@ -581,17 +581,17 @@
   content: '';
   position: absolute;
   top: 0; bottom: 0;
-  width: 180px;
+  width: 200px;
   z-index: 10;
   pointer-events: none;
 }
 .ls-marquee-container::before {
   left: 0;
-  background: linear-gradient(90deg, #f8fafc, rgba(248,250,252,0));
+  background: linear-gradient(90deg, #ffffff 0%, rgba(255,255,255,0) 100%);
 }
 .ls-marquee-container::after {
   right: 0;
-  background: linear-gradient(270deg, #f8fafc, rgba(248,250,252,0));
+  background: linear-gradient(270deg, #ffffff 0%, rgba(255,255,255,0) 100%);
 }
 
 .ls-marquee-row {
@@ -602,12 +602,12 @@
 }
 .ls-marquee-track {
   display: flex;
-  gap: 14px;
+  gap: 12px;
   width: max-content;
-  animation: lsMarqueeLeft 28s linear infinite;
+  animation: lsMarqueeLeft 38s linear infinite;
 }
 .ls-marquee-track.ls-mq-reverse {
-  animation: lsMarqueeRight 32s linear infinite;
+  animation: lsMarqueeRight 44s linear infinite;
 }
 .ls-marquee-container:hover .ls-marquee-track {
   animation-play-state: paused;
@@ -625,51 +625,48 @@
 .ls-mq-pill {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 20px;
+  gap: 9px;
+  padding: 7px 16px;
   border-radius: 100px;
-  background: #ffffff;
-  border: 1px solid rgba(226, 232, 240, 0.95);
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
-  cursor: pointer;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02);
+  cursor: default;
   white-space: nowrap;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .ls-mq-pill:hover {
-  transform: translateY(-3px) scale(1.03);
-  border-color: var(--ls-brand);
-  box-shadow: 0 10px 24px rgba(0, 208, 156, 0.2);
+  transform: translateY(-2px);
   background: #ffffff;
+  border-color: var(--ls-brand);
+  box-shadow: 0 6px 18px rgba(0, 208, 156, 0.14);
 }
-.ls-mq-icon {
-  font-size: 1.12rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.ls-mq-info {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
+.ls-mq-status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
 }
 .ls-mq-name {
   font-family: 'Space Grotesk', sans-serif;
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   font-weight: 700;
   color: #0f172a;
+  letter-spacing: -0.01em;
+}
+.ls-mq-sep {
+  color: #cbd5e1;
+  font-size: 0.75rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 400;
+  user-select: none;
 }
 .ls-mq-tag {
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.72rem;
-  font-weight: 600;
+  font-weight: 500;
   color: #64748b;
-}
-.ls-mq-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  display: inline-block;
-  margin-left: 2px;
 }
 
 /* ─── Projects ─── */
