@@ -6,3 +6,4 @@ export * from '../../hooks/useLongPress';
 export * from '../../hooks/useSmartUpdate';
 export * from '../../hooks/useSupabasePresence';
 export * from '../../hooks/useUpdates';
+export * from './useOperationsSyncCenter';

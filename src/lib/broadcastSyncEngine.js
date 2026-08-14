@@ -125,3 +125,6 @@ export function subscribeToRealtimeSync(callback) {
     window.removeEventListener('pcms_data_updated', handleCustomEvent);
   };
 }
+
+export const triggerSyncBroadcast = publishAdminMutation;
+
