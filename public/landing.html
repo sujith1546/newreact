@@ -10,17 +10,17 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#0a0912;
-    --bg-soft:#0f0e1a;
-    --card:#151328;
-    --card-hi:#1c1a33;
-    --brand:#6a1bff;
-    --brand-2:#8b4dff;
-    --accent:#00e6a8;
-    --text:#f3f1fb;
-    --text-dim:#948fb3;
-    --text-dimmer:#5f5a80;
-    --line:#26224a;
+    --bg:#ffffff;
+    --bg-soft:#f8fafc;
+    --card:#ffffff;
+    --card-hi:#f1f5f9;
+    --brand:#00d09c;
+    --brand-2:#6366f1;
+    --accent:#00d09c;
+    --text:#0f172a;
+    --text-dim:#475569;
+    --text-dimmer:#94a3b8;
+    --line:#e2e8f0;
     --radius:20px;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
@@ -41,19 +41,19 @@
   /* scrollbar */
   ::-webkit-scrollbar{width:9px;}
   ::-webkit-scrollbar-track{background:var(--bg);}
-  ::-webkit-scrollbar-thumb{background:var(--card-hi);border-radius:10px;}
+  ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:10px;}
 
   /* cursor glow */
   #glow{
     position:fixed;top:0;left:0;width:650px;height:650px;
-    background:radial-gradient(circle, rgba(106,27,255,0.18) 0%, rgba(106,27,255,0) 70%);
+    background:radial-gradient(circle, rgba(99,102,241,0.08) 0%, rgba(0,208,156,0) 70%);
     pointer-events:none;z-index:0;transform:translate(-50%,-50%);
     transition:opacity .3s;
   }
 
   /* progress bar */
   #progress{
-    position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--brand),var(--accent));
+    position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--brand),var(--brand-2));
     width:0%;z-index:1000;transition:width .08s linear;
   }
 
@@ -61,119 +61,95 @@
   nav{
     position:fixed;top:0;left:0;right:0;z-index:900;
     display:flex;align-items:center;justify-content:space-between;
-    padding:20px 6vw;
-    backdrop-filter:blur(14px);
-    background:rgba(10,9,18,0.55);
-    border-bottom:1px solid transparent;
-    transition:border-color .3s, background .3s;
+    padding:18px 6vw;
+    backdrop-filter:blur(16px);
+    background:rgba(255,255,255,0.85);
+    border-bottom:1px solid rgba(226,232,240,0.8);
+    transition:all .3s ease;
   }
-  nav.scrolled{border-bottom-color:var(--line);background:rgba(10,9,18,0.85);}
-  .logo{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.15rem;letter-spacing:-0.02em;display:flex;align-items:center;gap:8px;}
-  .logo-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 12px var(--accent);animation:pulse 2s infinite;}
+  nav.scrolled{background:rgba(255,255,255,0.95);border-bottom-color:#cbd5e1;box-shadow:0 4px 20px rgba(0,0,0,0.04);}
+  .logo{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.2rem;letter-spacing:-0.02em;display:flex;align-items:center;gap:8px;color:#0f172a;}
+  .logo-dot{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px rgba(0,208,156,0.6);animation:pulse 2s infinite;}
   @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
-  .nav-links{display:flex;gap:38px;font-size:.92rem;color:var(--text-dim);}
-  .nav-links a{position:relative;padding:4px 0;transition:color .25s;}
-  .nav-links a:hover{color:var(--text);}
-  .nav-links a::after{content:'';position:absolute;bottom:-2px;left:0;width:0;height:1px;background:var(--accent);transition:width .3s;}
+  .nav-links{display:flex;gap:36px;font-size:.94rem;font-weight:500;color:var(--text-dim);}
+  .nav-links a{position:relative;padding:4px 0;transition:color .2s;}
+  .nav-links a:hover{color:var(--accent);}
+  .nav-links a::after{content:'';position:absolute;bottom:-2px;left:0;width:0;height:2px;background:var(--accent);transition:width .3s;}
   .nav-links a:hover::after{width:100%;}
   .nav-cta{
-    padding:10px 20px;border-radius:100px;background:var(--brand);
-    font-size:.88rem;font-weight:600;border:1px solid var(--brand);
+    padding:10px 22px;border-radius:100px;background:var(--brand);color:#fff;
+    font-size:.9rem;font-weight:600;border:1px solid var(--brand);
     transition:all .3s;display:inline-flex;align-items:center;gap:6px;
+    box-shadow:0 4px 14px rgba(0,208,156,0.3);
   }
-  .nav-cta:hover{background:transparent;box-shadow:0 0 0 1px var(--brand) inset;}
+  .nav-cta:hover{background:#00b386;border-color:#00b386;transform:translateY(-1px);box-shadow:0 6px 18px rgba(0,208,156,0.4);}
 
-  section{position:relative;padding:140px 6vw;z-index:1;}
+  section{position:relative;padding:120px 6vw;z-index:1;}
   .eyebrow{
     display:inline-flex;align-items:center;gap:8px;
-    font-family:'JetBrains Mono',monospace;font-size:.78rem;
-    color:var(--accent);text-transform:uppercase;letter-spacing:.12em;
-    margin-bottom:22px;padding:6px 14px;border:1px solid rgba(0,230,168,0.25);
-    border-radius:100px;background:rgba(0,230,168,0.06);
+    font-family:'JetBrains Mono',monospace;font-size:.78rem;font-weight:600;
+    color:#059669;text-transform:uppercase;letter-spacing:.12em;
+    margin-bottom:20px;padding:6px 14px;border:1px solid rgba(0,208,156,0.3);
+    border-radius:100px;background:rgba(0,208,156,0.08);
   }
 
   /* ===== HERO WITH ISOMETRIC METROPOLIS ===== */
   .hero{
-    min-height:100vh;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    text-align:center;
-    padding-top:140px;
-    position:relative;
-    overflow:hidden;
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding-top:130px;position:relative;overflow:hidden;
+    background:radial-gradient(circle at 50% 15%, rgba(0,208,156,0.05) 0%, transparent 60%);
   }
   .hero-bg-grid{
     position:absolute;inset:0;
-    background-image:linear-gradient(rgba(106,27,255,0.06) 1px, transparent 1px),linear-gradient(90deg, rgba(106,27,255,0.06) 1px, transparent 1px);
-    background-size:56px 56px;
+    background-image:linear-gradient(rgba(15,23,42,0.03) 1px, transparent 1px),linear-gradient(90deg, rgba(15,23,42,0.03) 1px, transparent 1px);
+    background-size:48px 48px;
     mask-image:radial-gradient(ellipse 60% 50% at 50% 30%, black, transparent);
     z-index:-1;
   }
   .hero-blob{
-    position:absolute;width:900px;height:900px;border-radius:50%;
-    background:radial-gradient(circle, rgba(106,27,255,0.3) 0%, rgba(106,27,255,0) 60%);
-    top:-350px;right:-250px;z-index:-1;filter:blur(20px);
-    animation:float 12s ease-in-out infinite;
+    position:absolute;width:800px;height:800px;border-radius:50%;
+    background:radial-gradient(circle, rgba(99,102,241,0.06) 0%, rgba(99,102,241,0) 60%);
+    top:-300px;right:-200px;z-index:-1;filter:blur(40px);
   }
-  @keyframes float{0%,100%{transform:translate(0,0);}50%{transform:translate(-40px,50px);}}
-  .hero-content{max-width:920px;margin:0 auto;}
+  .hero-content{max-width:940px;margin:0 auto;}
   .hero h1{
-    font-size:clamp(2.8rem, 6.4vw, 5.4rem);
-    font-weight:700;line-height:1.04;letter-spacing:-0.03em;
-    margin-bottom:24px;
+    font-size:clamp(2.8rem, 6.2vw, 5.2rem);
+    font-weight:800;line-height:1.06;letter-spacing:-0.03em;
+    color:#0f172a;margin-bottom:22px;
   }
-  .hero h1 .line{display:block;overflow:hidden;}
-  .hero h1 .line span{display:inline-block;transform:translateY(110%);animation:riseUp .9s cubic-bezier(.19,1,.22,1) forwards;}
-  .hero h1 .line:nth-child(1) span{animation-delay:.05s;}
-  .hero h1 .line:nth-child(2) span{animation-delay:.18s;}
-  @keyframes riseUp{to{transform:translateY(0);}}
-  .grad-text{background:linear-gradient(100deg, var(--brand-2), var(--accent) 80%);-webkit-background-clip:text;background-clip:text;color:transparent;}
-  .hero p.sub{font-size:1.15rem;color:var(--text-dim);max-width:620px;margin:0 auto 36px;line-height:1.65;
-    opacity:0;animation:fadeUp .8s .5s forwards;}
-  @keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
-  .hero-ctas{display:flex;gap:16px;align-items:center;justify-content:center;opacity:0;animation:fadeUp .8s .65s forwards;flex-wrap:wrap;}
+  .hero h1 .line{display:block;}
+  .grad-text{background:linear-gradient(100deg, #00d09c, #4f46e5 85%);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .hero p.sub{font-size:1.18rem;color:var(--text-dim);max-width:640px;margin:0 auto 34px;line-height:1.65;}
+  .hero-ctas{display:flex;gap:16px;align-items:center;justify-content:center;flex-wrap:wrap;}
   .btn-primary{
-    padding:15px 32px;border-radius:100px;background:var(--brand);font-weight:600;
+    padding:15px 32px;border-radius:100px;background:var(--brand);color:#fff;font-weight:600;
     font-size:.95rem;display:inline-flex;align-items:center;gap:10px;
-    box-shadow:0 8px 30px -8px rgba(106,27,255,0.6);
-    transition:transform .3s, box-shadow .3s;
+    box-shadow:0 6px 20px rgba(0,208,156,0.35);
+    transition:all .3s;cursor:pointer;border:none;
   }
-  .btn-primary:hover{transform:translateY(-3px);box-shadow:0 14px 34px -8px rgba(106,27,255,0.75);}
+  .btn-primary:hover{background:#00b386;transform:translateY(-2px);box-shadow:0 10px 25px rgba(0,208,156,0.45);}
   .btn-secondary{
-    padding:15px 26px;border-radius:100px;border:1px solid var(--line);font-weight:600;font-size:.95rem;
-    color:var(--text-dim);transition:all .3s;display:inline-flex;align-items:center;gap:8px;
+    padding:15px 28px;border-radius:100px;border:1px solid #cbd5e1;background:#fff;font-weight:600;font-size:.95rem;
+    color:#334155;transition:all .3s;display:inline-flex;align-items:center;gap:8px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.04);
   }
-  .btn-secondary:hover{color:var(--text);border-color:var(--text-dimmer);}
+  .btn-secondary:hover{color:#0f172a;border-color:#94a3b8;background:#f8fafc;}
 
-  /* ===== ISOMETRIC AI CITY METROPOLIS CANVAS ===== */
+  /* ===== ISOMETRIC AI CITY METROPOLIS ===== */
   .isometric-city-container{
-    width:100%;
-    max-width:980px;
-    margin:50px auto 0;
-    position:relative;
-    opacity:0;
-    animation:fadeUp 1s .75s forwards;
-    cursor:crosshair;
+    width:100%;max-width:980px;margin:45px auto 0;position:relative;cursor:crosshair;
   }
   .iso-svg{
-    width:100%;
-    height:auto;
-    overflow:visible;
-    filter:drop-shadow(0 25px 50px rgba(0,0,0,0.6));
+    width:100%;height:auto;overflow:visible;
+    filter:drop-shadow(0 20px 40px rgba(0,0,0,0.08));
     transition:transform 0.4s ease-out;
   }
-  .iso-building{
-    cursor:pointer;
-    transition:all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  }
+  .iso-building{cursor:pointer;transition:all 0.3s cubic-bezier(0.16, 1, 0.3, 1);}
   .iso-building:hover{
-    filter:drop-shadow(0 0 16px rgba(0,230,168,0.7));
+    filter:drop-shadow(0 0 14px rgba(0,208,156,0.5));
     transform:translateY(-6px);
   }
   
-  /* Animated Data Cars & Pulse Beacons */
   @keyframes carDrive1{
     0%{ transform:translate(380px, 320px); opacity:0; }
     10%{ opacity:1; }
@@ -187,198 +163,119 @@
     100%{ transform:translate(440px, 250px); opacity:0; }
   }
   @keyframes towerLaser{
-    0%,100%{ opacity:0.4; transform:scaleY(0.9); }
+    0%,100%{ opacity:0.5; transform:scaleY(0.9); }
     50%{ opacity:1; transform:scaleY(1.1); }
   }
   .iso-car-1{ animation:carDrive1 6s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
   .iso-car-2{ animation:carDrive2 7s cubic-bezier(0.4, 0, 0.2, 1) 2s infinite; }
   .iso-laser{ animation:towerLaser 3s ease-in-out infinite; transform-origin:center; }
 
-  /* Floating Building Tooltip */
   .iso-tooltip{
-    position:absolute;
-    padding:8px 14px;
-    border-radius:10px;
-    background:rgba(15,14,26,0.92);
-    border:1px solid var(--accent);
-    color:#ffffff;
-    font-size:0.78rem;
-    font-family:'JetBrains Mono',monospace;
-    pointer-events:none;
-    opacity:0;
-    transform:translate(-50%, -100%) scale(0.9);
-    transition:opacity 0.2s, transform 0.2s;
-    z-index:100;
-    box-shadow:0 10px 25px rgba(0,230,168,0.3);
-    white-space:nowrap;
+    position:absolute;padding:8px 14px;border-radius:10px;background:#0f172a;
+    border:1px solid #00d09c;color:#ffffff;font-size:0.8rem;
+    font-family:'JetBrains Mono',monospace;pointer-events:none;
+    opacity:0;transform:translate(-50%, -100%) scale(0.9);
+    transition:opacity 0.2s, transform 0.2s;z-index:100;
+    box-shadow:0 10px 25px rgba(0,0,0,0.2);white-space:nowrap;
   }
-  .iso-tooltip.active{
-    opacity:1;
-    transform:translate(-50%, -120%) scale(1);
-  }
+  .iso-tooltip.active{opacity:1;transform:translate(-50%, -120%) scale(1);}
 
-  /* live terminal ticker */
+  /* Live Terminal Ticker — Sleek High Contrast */
   .live-ticker{
-    margin:40px auto 0;
-    max-width:560px;
-    background:var(--card);border:1px solid var(--line);border-radius:12px;
-    overflow:hidden;opacity:0;animation:fadeUp .8s .9s forwards;
-    box-shadow:0 20px 60px -20px rgba(0,0,0,0.6);
-    text-align:left;
+    margin:40px auto 0;max-width:580px;background:#0f172a;
+    border:1px solid #1e293b;border-radius:14px;overflow:hidden;
+    box-shadow:0 15px 40px rgba(15,23,42,0.15);text-align:left;
   }
   .ticker-head{
-    display:flex;align-items:center;gap:8px;padding:11px 16px;
-    border-bottom:1px solid var(--line);background:var(--bg-soft);
+    display:flex;align-items:center;gap:8px;padding:12px 18px;
+    border-bottom:1px solid #1e293b;background:#090e17;
   }
-  .ticker-dot{width:9px;height:9px;border-radius:50%;}
-  .ticker-head span{font-size:.75rem;color:var(--text-dimmer);margin-left:6px;font-family:'JetBrains Mono',monospace;}
-  .ticker-body{padding:16px 18px;font-family:'JetBrains Mono',monospace;font-size:.84rem;line-height:1.9;color:var(--text-dim);min-height:98px;}
-  .ticker-prompt{color:var(--accent);}
-  .ticker-cursor{display:inline-block;width:7px;height:14px;background:var(--accent);vertical-align:middle;margin-left:2px;animation:blink 1s step-end infinite;}
+  .ticker-dot{width:10px;height:10px;border-radius:50%;}
+  .ticker-head span{font-size:.75rem;color:#94a3b8;margin-left:6px;font-family:'JetBrains Mono',monospace;}
+  .ticker-body{padding:18px 20px;font-family:'JetBrains Mono',monospace;font-size:.86rem;line-height:1.9;color:#cbd5e1;min-height:100px;}
+  .ticker-prompt{color:#00d09c;font-weight:600;}
+  .ticker-cursor{display:inline-block;width:8px;height:15px;background:#00d09c;vertical-align:middle;margin-left:3px;animation:blink 1s step-end infinite;}
   @keyframes blink{50%{opacity:0;}}
 
   /* ===== STATS BAR ===== */
   .stats-bar{
-    padding:60px 6vw;border-top:1px solid var(--line);border-bottom:1px solid var(--line);
+    padding:60px 6vw;background:#f8fafc;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;
     display:grid;grid-template-columns:repeat(4,1fr);gap:20px;
   }
   .stat{text-align:left;}
-  .stat .num{font-family:'Space Grotesk',sans-serif;font-size:clamp(2rem,3.4vw,2.8rem);font-weight:700;
-    background:linear-gradient(100deg,#fff,var(--text-dim));-webkit-background-clip:text;background-clip:text;color:transparent;}
-  .stat .lbl{color:var(--text-dimmer);font-size:.85rem;margin-top:6px;}
+  .stat .num{font-family:'Space Grotesk',sans-serif;font-size:clamp(2.2rem,3.6vw,3rem);font-weight:800;color:#0f172a;}
+  .stat .lbl{color:#64748b;font-size:.88rem;margin-top:6px;font-weight:500;}
 
   /* ===== 3D GROWW-STYLE PERSPECTIVE CARD ARC ===== */
   .curve-showcase-section{
     padding:120px 0 100px;
-    background:radial-gradient(ellipse 90% 50% at 50% 50%, rgba(106,27,255,0.08), transparent 75%);
-    position:relative;
-    overflow:hidden;
-    text-align:center;
+    background:linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    position:relative;overflow:hidden;text-align:center;
   }
-  .curve-header{
-    max-width:760px;
-    margin:0 auto 30px;
-    padding:0 6vw;
-  }
+  .curve-header{max-width:760px;margin:0 auto 30px;padding:0 6vw;}
   .curve-header h2{
-    font-size:clamp(2.4rem, 5vw, 3.8rem);
-    font-weight:800;
-    letter-spacing:-0.03em;
-    line-height:1.1;
-    margin-bottom:16px;
+    font-size:clamp(2.4rem, 5vw, 3.8rem);font-weight:800;letter-spacing:-0.03em;
+    line-height:1.1;color:#0f172a;margin-bottom:16px;
   }
   .curve-pill{
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
-    padding:8px 20px;
-    border-radius:100px;
-    background:rgba(255,255,255,0.05);
-    border:1px solid var(--line);
-    font-size:0.88rem;
-    font-weight:600;
-    color:var(--text-dim);
-    margin-bottom:40px;
-    cursor:pointer;
-    transition:all 0.3s ease;
+    display:inline-flex;align-items:center;gap:8px;padding:9px 22px;border-radius:100px;
+    background:#ffffff;border:1px solid #e2e8f0;font-size:.88rem;font-weight:600;
+    color:#334155;margin-bottom:40px;cursor:pointer;transition:all 0.3s ease;
+    box-shadow:0 2px 8px rgba(0,0,0,0.04);
   }
-  .curve-pill:hover{
-    border-color:var(--accent);
-    color:var(--accent);
-    background:rgba(0,230,168,0.08);
-  }
+  .curve-pill:hover{border-color:#00d09c;color:#00d09c;box-shadow:0 4px 14px rgba(0,208,156,0.15);}
   .curve-pill-icon{
     width:16px;height:16px;border-radius:50%;background:#ef4444;display:flex;align-items:center;justify-content:center;
-    box-shadow:0 0 10px rgba(239,68,68,0.5);
+    box-shadow:0 0 10px rgba(239,68,68,0.4);
   }
 
-  /* 3D Cylindrical Arc Stage */
   .arc-stage{
-    width:100%;
-    perspective:1600px;
-    perspective-origin:50% 50%;
-    position:relative;
-    padding:30px 0 50px;
-    display:flex;
-    justify-content:center;
-    align-items:center;
+    width:100%;perspective:1600px;perspective-origin:50% 50%;position:relative;
+    padding:30px 0 50px;display:flex;justify-content:center;align-items:center;
   }
   .arc-track{
-    display:flex;
-    gap:22px;
-    transform-style:preserve-3d;
-    transition:transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-    padding:0 8vw;
-    width:max-content;
+    display:flex;gap:22px;transform-style:preserve-3d;
+    transition:transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);padding:0 8vw;width:max-content;
   }
   .arc-card{
-    width:280px;
-    height:420px;
-    border-radius:24px;
-    position:relative;
-    overflow:hidden;
-    padding:30px 24px;
-    display:flex;
-    flex-direction:column;
-    justify-content:space-between;
-    text-align:left;
-    cursor:pointer;
-    user-select:none;
-    box-shadow:0 25px 60px -15px rgba(0,0,0,0.7);
-    transition:all 0.45s cubic-bezier(0.2, 1, 0.3, 1);
-    border:1px solid rgba(255,255,255,0.12);
+    width:280px;height:420px;border-radius:24px;position:relative;overflow:hidden;
+    padding:30px 24px;display:flex;flex-direction:column;justify-content:space-between;
+    text-align:left;cursor:pointer;user-select:none;
+    box-shadow:0 20px 45px -10px rgba(0,0,0,0.12);
+    transition:all 0.45s cubic-bezier(0.2, 1, 0.3, 1);border:1px solid rgba(0,0,0,0.08);
   }
   .arc-card:hover{
     transform:translateY(-16px) scale(1.05) rotateY(0deg) !important;
-    z-index:50 !important;
-    box-shadow:0 35px 80px -10px rgba(106,27,255,0.5);
-    border-color:rgba(255,255,255,0.3);
+    z-index:50 !important;box-shadow:0 30px 60px -10px rgba(0,208,156,0.3);border-color:#00d09c;
   }
   .arc-card .card-top-tag{
-    font-family:'Space Grotesk',sans-serif;
-    font-size:1.65rem;
-    font-weight:800;
-    line-height:1.15;
-    letter-spacing:-0.02em;
-    margin-bottom:12px;
+    font-family:'Space Grotesk',sans-serif;font-size:1.65rem;font-weight:800;
+    line-height:1.15;letter-spacing:-0.02em;margin-bottom:12px;
   }
-  .arc-card .card-sub{
-    font-size:0.86rem;
-    line-height:1.55;
-    opacity:0.85;
-  }
+  .arc-card .card-sub{font-size:.88rem;line-height:1.55;opacity:.9;}
   .arc-card .card-art{
-    position:relative;
-    width:100%;
-    height:190px;
-    border-radius:18px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    margin-top:auto;
-    overflow:hidden;
+    position:relative;width:100%;height:190px;border-radius:18px;
+    display:flex;align-items:center;justify-content:center;margin-top:auto;overflow:hidden;
   }
 
-  /* Card Color Themes */
-  .c-gold{ background:linear-gradient(170deg, #fef3c7, #eab308 90%); color:#1c1917; }
-  .c-gold .card-art{ background:rgba(0,0,0,0.06); }
+  .c-gold{ background:linear-gradient(170deg, #fef3c7, #fbbf24 95%); color:#451a03; }
+  .c-gold .card-art{ background:rgba(255,255,255,0.5); }
 
-  .c-noir{ background:linear-gradient(170deg, #181726, #0d0c18); color:#f3f1fb; border-color:#38326b; }
-  .c-noir .card-art{ background:rgba(106,27,255,0.15); border:1px solid rgba(106,27,255,0.3); }
+  .c-noir{ background:linear-gradient(170deg, #1e1b4b, #0f172a); color:#f8fafc; border-color:#312e81; }
+  .c-noir .card-art{ background:rgba(99,102,241,0.18); border:1px solid rgba(99,102,241,0.3); }
 
-  .c-olive{ background:linear-gradient(170deg, #d9f99d, #65a30d 95%); color:#142900; }
-  .c-olive .card-art{ background:rgba(0,0,0,0.08); }
+  .c-olive{ background:linear-gradient(170deg, #dcfce7, #86efac 95%); color:#14532d; }
+  .c-olive .card-art{ background:rgba(255,255,255,0.5); }
 
-  .c-darkgreen{ background:linear-gradient(170deg, #092c1d, #02120b); color:#f3f1fb; border-color:#0f5132; }
-  .c-darkgreen .card-art{ background:rgba(0,230,168,0.12); border:1px solid rgba(0,230,168,0.25); }
+  .c-darkgreen{ background:linear-gradient(170deg, #064e3b, #022c22); color:#f0fdf4; border-color:#047857; }
+  .c-darkgreen .card-art{ background:rgba(0,208,156,0.15); border:1px solid rgba(0,208,156,0.3); }
 
-  .c-rose{ background:linear-gradient(170deg, #ffe4e6, #f43f5e 95%); color:#4c0519; }
-  .c-rose .card-art{ background:rgba(0,0,0,0.06); }
+  .c-rose{ background:linear-gradient(170deg, #ffe4e6, #fda4af 95%); color:#881337; }
+  .c-rose .card-art{ background:rgba(255,255,255,0.5); }
 
-  .c-cyan{ background:linear-gradient(170deg, #cffafe, #06b6d4 95%); color:#083344; }
-  .c-cyan .card-art{ background:rgba(0,0,0,0.08); }
+  .c-cyan{ background:linear-gradient(170deg, #cffafe, #67e8f9 95%); color:#164e63; }
+  .c-cyan .card-art{ background:rgba(255,255,255,0.5); }
 
-  /* 3D Arc Angles */
   .arc-card:nth-child(1){ transform:rotateY(22deg) translateZ(-60px); }
   .arc-card:nth-child(2){ transform:rotateY(11deg) translateZ(-20px); }
   .arc-card:nth-child(3){ transform:rotateY(0deg) translateZ(30px); }
@@ -388,224 +285,144 @@
 
   /* ===== DARK LUXURY ECOSYSTEM CARDS ===== */
   .eco-section{
-    padding:80px 6vw 140px;
-    text-align:center;
-    position:relative;
+    padding:90px 6vw 140px;background:#0f172a;text-align:center;position:relative;color:#ffffff;
   }
-  .eco-header{
-    margin-bottom:60px;
-  }
-  .eco-header h2{
-    font-size:clamp(2.2rem, 4.4vw, 3.2rem);
-    font-weight:700;
-    letter-spacing:-0.02em;
-    color:#ffffff;
-  }
+  .eco-header{margin-bottom:60px;}
+  .eco-header h2{font-size:clamp(2.2rem, 4.4vw, 3.2rem);font-weight:700;letter-spacing:-0.02em;color:#ffffff;}
   .eco-grid{
-    display:grid;
-    grid-template-columns:repeat(3, 1fr);
-    gap:28px;
-    max-width:1180px;
-    margin:0 auto;
+    display:grid;grid-template-columns:repeat(3, 1fr);gap:28px;max-width:1180px;margin:0 auto;
   }
   .eco-card{
-    background:#0d0c18;
-    border:1px solid #231f45;
-    border-radius:28px;
-    height:380px;
-    position:relative;
-    overflow:hidden;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    cursor:pointer;
-    transition:all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow:0 20px 50px rgba(0,0,0,0.6);
+    background:#1e293b;border:1px solid #334155;border-radius:28px;height:380px;position:relative;
+    overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    cursor:pointer;transition:all 0.4s cubic-bezier(0.16, 1, 0.3, 1);box-shadow:0 20px 50px rgba(0,0,0,0.4);
   }
   .eco-card:hover{
-    transform:translateY(-10px) scale(1.02);
-    border-color:var(--brand-2);
-    box-shadow:0 30px 70px -10px rgba(106,27,255,0.4);
+    transform:translateY(-10px) scale(1.02);border-color:#00d09c;box-shadow:0 30px 70px -10px rgba(0,208,156,0.3);
   }
 
-  .eco-card.eco-1{
-    background:radial-gradient(circle at 50% 50%, #062319 0%, #06110d 100%);
-    border-color:#134e39;
-  }
+  .eco-card.eco-1{ background:radial-gradient(circle at 50% 50%, #064e3b 0%, #022c22 100%); border-color:#047857; }
   .eco-card.eco-1 .eco-bg-pattern{
     position:absolute;inset:0;
-    background-image:linear-gradient(rgba(0,230,168,0.08) 1px, transparent 1px),linear-gradient(90deg, rgba(0,230,168,0.08) 1px, transparent 1px);
-    background-size:24px 24px;
-    mask-image:radial-gradient(circle, black 40%, transparent 80%);
+    background-image:linear-gradient(rgba(0,208,156,0.12) 1px, transparent 1px),linear-gradient(90deg, rgba(0,208,156,0.12) 1px, transparent 1px);
+    background-size:24px 24px;mask-image:radial-gradient(circle, black 40%, transparent 80%);
   }
   .eco-card.eco-1 .eco-hero-text{
-    font-family:'Space Grotesk',sans-serif;
-    font-size:4.8rem;
-    font-weight:800;
-    background:linear-gradient(135deg, #a7f3d0, #10b981);
-    -webkit-background-clip:text;background-clip:text;color:transparent;
-    letter-spacing:-0.04em;
-    z-index:2;
+    font-family:'Space Grotesk',sans-serif;font-size:4.8rem;font-weight:800;
+    background:linear-gradient(135deg, #a7f3d0, #10b981);-webkit-background-clip:text;background-clip:text;color:transparent;
+    letter-spacing:-0.04em;z-index:2;
   }
 
-  .eco-card.eco-2{
-    background:radial-gradient(circle at 50% 50%, #20180a 0%, #0e0a04 100%);
-    border-color:#54411b;
-  }
+  .eco-card.eco-2{ background:radial-gradient(circle at 50% 50%, #78350f 0%, #451a03 100%); border-color:#b45309; }
   .eco-card.eco-2 .eco-bg-pattern{
-    position:absolute;inset:0;
-    background-image:radial-gradient(circle, rgba(234,179,8,0.12) 1px, transparent 1px);
-    background-size:20px 20px;
-    mask-image:radial-gradient(circle, black 50%, transparent 85%);
+    position:absolute;inset:0;background-image:radial-gradient(circle, rgba(251,191,36,0.15) 1px, transparent 1px);
+    background-size:20px 20px;mask-image:radial-gradient(circle, black 50%, transparent 85%);
   }
   .eco-card.eco-2 .eco-hero-text{
-    font-family:'Space Grotesk',sans-serif;
-    font-size:5.4rem;
-    font-weight:800;
-    background:linear-gradient(135deg, #fef08a, #ca8a04);
-    -webkit-background-clip:text;background-clip:text;color:transparent;
-    letter-spacing:-0.04em;
-    z-index:2;
+    font-family:'Space Grotesk',sans-serif;font-size:5.4rem;font-weight:800;
+    background:linear-gradient(135deg, #fef08a, #f59e0b);-webkit-background-clip:text;background-clip:text;color:transparent;
+    letter-spacing:-0.04em;z-index:2;
   }
 
-  .eco-card.eco-3{
-    background:radial-gradient(circle at 50% 50%, #061e2b 0%, #030e16 100%);
-    border-color:#155e75;
-  }
+  .eco-card.eco-3{ background:radial-gradient(circle at 50% 50%, #164e63 0%, #083344 100%); border-color:#0e7490; }
   .eco-card.eco-3 .eco-bg-pattern{
     position:absolute;inset:0;
-    background-image:linear-gradient(rgba(6,182,212,0.08) 1px, transparent 1px),linear-gradient(90deg, rgba(6,182,212,0.08) 1px, transparent 1px);
-    background-size:28px 28px;
-    mask-image:radial-gradient(circle, black 40%, transparent 80%);
+    background-image:linear-gradient(rgba(34,211,238,0.12) 1px, transparent 1px),linear-gradient(90deg, rgba(34,211,238,0.12) 1px, transparent 1px);
+    background-size:28px 28px;mask-image:radial-gradient(circle, black 40%, transparent 80%);
   }
-  .eco-card.eco-3 .eco-hero-text{
-    display:flex;flex-direction:column;align-items:center;gap:6px;z-index:2;
-  }
+  .eco-card.eco-3 .eco-hero-text{ display:flex;flex-direction:column;align-items:center;gap:6px;z-index:2; }
   .eco-circle-emblem{
-    width:36px;height:36px;border-radius:50%;
-    border:3px solid #06b6d4;box-shadow:0 0 18px rgba(6,182,212,0.6);
-    display:flex;align-items:center;justify-content:center;
-    background:radial-gradient(circle, #22d3ee, #0891b2);
+    width:36px;height:36px;border-radius:50%;border:3px solid #22d3ee;box-shadow:0 0 18px rgba(34,211,238,0.6);
+    display:flex;align-items:center;justify-content:center;background:radial-gradient(circle, #67e8f9, #0891b2);
   }
-  .eco-card.eco-3 .eco-brand-title{
-    font-family:'Space Grotesk',sans-serif;
-    font-size:3.4rem;
-    font-weight:800;
-    color:#ffffff;
-    letter-spacing:-0.03em;
-  }
-
+  .eco-card.eco-3 .eco-brand-title{ font-family:'Space Grotesk',sans-serif;font-size:3.4rem;font-weight:800;color:#ffffff;letter-spacing:-0.03em; }
   .eco-card .eco-sub-label{
-    position:absolute;bottom:28px;
-    font-family:'JetBrains Mono',monospace;
-    font-size:0.8rem;
-    color:var(--text-dim);
-    text-transform:uppercase;
-    letter-spacing:0.1em;
-    z-index:2;
+    position:absolute;bottom:28px;font-family:'JetBrains Mono',monospace;font-size:0.82rem;
+    color:#94a3b8;text-transform:uppercase;letter-spacing:0.1em;z-index:2;
   }
 
-  /* section headers */
-  .sec-head{max-width:660px;margin-bottom:70px;}
-  .sec-head h2{font-size:clamp(2rem,4vw,3rem);font-weight:600;letter-spacing:-0.02em;line-height:1.15;}
-  .sec-head p{color:var(--text-dim);margin-top:16px;font-size:1.05rem;line-height:1.6;}
-
-  .reveal{opacity:0;transform:translateY(40px);transition:opacity .8s cubic-bezier(.19,1,.22,1), transform .8s cubic-bezier(.19,1,.22,1);}
-  .reveal.in{opacity:1;transform:translateY(0);}
-
-  /* ===== ABOUT ===== */
+  /* ===== ABOUT, SKILLS, PROJECTS & PROCESS (LIGHT THEME) ===== */
   .about-grid{display:grid;grid-template-columns:1fr 1.1fr;gap:80px;align-items:center;}
   .about-visual{
     aspect-ratio:1/1;border-radius:24px;position:relative;overflow:hidden;
-    background:linear-gradient(160deg, var(--card), var(--bg-soft));
-    border:1px solid var(--line);display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(160deg, #f8fafc, #f1f5f9);border:1px solid #e2e8f0;
+    display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(0,0,0,0.04);
   }
   .about-visual::before{
     content:'';position:absolute;width:300px;height:300px;border-radius:50%;
-    background:radial-gradient(circle,rgba(106,27,255,0.5),transparent 70%);filter:blur(30px);
-    animation:float 8s ease-in-out infinite;
+    background:radial-gradient(circle,rgba(0,208,156,0.15),transparent 70%);filter:blur(30px);
   }
-  .orbit-code{font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--accent);z-index:2;
-    background:rgba(10,9,18,0.7);padding:26px;border-radius:14px;border:1px solid var(--line);line-height:1.8;
-    backdrop-filter:blur(6px);}
-  .orbit-code .k{color:#c792ea;}.orbit-code .s{color:#89ddff;}.orbit-code .c{color:var(--text-dimmer);}
+  .orbit-code{
+    font-family:'JetBrains Mono',monospace;font-size:.82rem;color:#0f172a;z-index:2;
+    background:#ffffff;padding:26px;border-radius:14px;border:1px solid #e2e8f0;line-height:1.8;
+    box-shadow:0 10px 25px rgba(0,0,0,0.05);
+  }
+  .orbit-code .k{color:#6366f1;font-weight:600;}.orbit-code .s{color:#059669;}.orbit-code .c{color:#64748b;}
   .about-text p{color:var(--text-dim);font-size:1.05rem;line-height:1.75;margin-bottom:20px;}
   .about-text strong{color:var(--text);font-weight:600;}
   .about-tags{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px;}
-  .about-tags span{padding:8px 16px;border:1px solid var(--line);border-radius:100px;font-size:.82rem;color:var(--text-dim);font-family:'JetBrains Mono',monospace;}
+  .about-tags span{padding:8px 16px;border:1px solid #e2e8f0;background:#f8fafc;border-radius:100px;font-size:.84rem;font-weight:500;color:#334155;font-family:'JetBrains Mono',monospace;}
 
-  /* ===== SKILLS ===== */
-  .skills-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;}
-  .skill-card{
-    background:var(--bg-soft);padding:34px 26px;transition:background .35s;position:relative;cursor:default;
-  }
-  .skill-card:hover{background:var(--card-hi);}
-  .skill-card .pct{
-    font-family:'Space Grotesk',sans-serif;font-size:2.2rem;font-weight:700;color:var(--text);
-    margin-bottom:6px;
-  }
+  .skills-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#e2e8f0;border:1px solid #e2e8f0;border-radius:20px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.03);}
+  .skill-card{background:#ffffff;padding:34px 26px;transition:background .3s;position:relative;cursor:default;}
+  .skill-card:hover{background:#f8fafc;}
+  .skill-card .pct{font-family:'Space Grotesk',sans-serif;font-size:2.2rem;font-weight:800;color:#0f172a;margin-bottom:6px;}
   .skill-card .name{color:var(--text-dim);font-size:.92rem;margin-bottom:18px;}
-  .bar{height:4px;background:var(--line);border-radius:4px;overflow:hidden;}
-  .bar-fill{height:100%;width:0;background:linear-gradient(90deg,var(--brand),var(--accent));border-radius:4px;transition:width 1.4s cubic-bezier(.19,1,.22,1);}
+  .bar{height:4px;background:#e2e8f0;border-radius:4px;overflow:hidden;}
+  .bar-fill{height:100%;width:0;background:linear-gradient(90deg,#00d09c,#6366f1);border-radius:4px;transition:width 1.4s cubic-bezier(.19,1,.22,1);}
 
-  .marquee-wrap{margin-top:60px;overflow:hidden;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:26px 0;}
+  .marquee-wrap{margin-top:60px;overflow:hidden;border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;padding:24px 0;background:#f8fafc;}
   .marquee{display:flex;gap:56px;white-space:nowrap;animation:scroll 22s linear infinite;width:max-content;}
-  .marquee span{font-family:'Space Grotesk',sans-serif;font-size:1.3rem;color:var(--text-dimmer);display:flex;align-items:center;gap:56px;}
-  .marquee span b{color:var(--text);font-weight:600;}
+  .marquee span{font-family:'Space Grotesk',sans-serif;font-size:1.25rem;color:#64748b;display:flex;align-items:center;gap:56px;}
+  .marquee span b{color:#0f172a;font-weight:700;}
   @keyframes scroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
 
-  /* ===== PROJECTS ===== */
   .projects-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;}
   .proj-card{
-    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
-    padding:0;overflow:hidden;transition:transform .45s cubic-bezier(.19,1,.22,1), border-color .3s;
-    position:relative;
+    background:#ffffff;border:1px solid #e2e8f0;border-radius:20px;padding:0;overflow:hidden;
+    transition:all .35s cubic-bezier(.19,1,.22,1);position:relative;box-shadow:0 4px 20px rgba(0,0,0,0.04);
   }
-  .proj-card:hover{transform:translateY(-8px);border-color:var(--brand-2);}
+  .proj-card:hover{transform:translateY(-8px);border-color:#00d09c;box-shadow:0 16px 35px rgba(0,208,156,0.15);}
   .proj-media{
-    height:180px;position:relative;overflow:hidden;
-    background:linear-gradient(135deg,var(--bg-soft),var(--card-hi));
+    height:180px;position:relative;overflow:hidden;background:linear-gradient(135deg,#f8fafc,#f1f5f9);
     display:flex;align-items:center;justify-content:center;
   }
-  .proj-media .glyph{font-family:'Space Grotesk',sans-serif;font-size:2.8rem;font-weight:700;color:var(--line);transition:color .4s, transform .4s;}
-  .proj-card:hover .proj-media .glyph{color:var(--brand-2);transform:scale(1.08);}
+  .proj-media .glyph{font-family:'Space Grotesk',sans-serif;font-size:2.8rem;font-weight:800;color:#cbd5e1;transition:all .35s;}
+  .proj-card:hover .proj-media .glyph{color:#00d09c;transform:scale(1.08);}
   .proj-body{padding:26px;}
-  .proj-body .tag{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;}
-  .proj-body h3{font-size:1.25rem;margin:10px 0 10px;font-weight:600;}
-  .proj-body p{color:var(--text-dim);font-size:.92rem;line-height:1.6;margin-bottom:18px;}
-  .proj-link{display:inline-flex;align-items:center;gap:8px;font-size:.88rem;font-weight:600;color:var(--text);}
+  .proj-body .tag{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:#059669;text-transform:uppercase;letter-spacing:.08em;font-weight:600;}
+  .proj-body h3{font-size:1.25rem;margin:10px 0 10px;font-weight:700;color:#0f172a;}
+  .proj-body p{color:var(--text-dim);font-size:.94rem;line-height:1.6;margin-bottom:18px;}
+  .proj-link{display:inline-flex;align-items:center;gap:8px;font-size:.88rem;font-weight:600;color:#0f172a;}
   .proj-link svg{transition:transform .3s;}
   .proj-card:hover .proj-link svg{transform:translate(4px,-4px);}
 
-  /* ===== PROCESS ===== */
   .process-list{display:flex;flex-direction:column;}
   .process-item{
     display:grid;grid-template-columns:100px 1fr; gap:30px;
-    padding:36px 0;border-top:1px solid var(--line);align-items:start;
+    padding:36px 0;border-top:1px solid #e2e8f0;align-items:start;
     transition:padding-left .4s;
   }
   .process-item:hover{padding-left:14px;}
-  .process-item:last-child{border-bottom:1px solid var(--line);}
-  .process-num{font-family:'JetBrains Mono',monospace;color:var(--text-dimmer);font-size:.95rem;}
-  .process-item h3{font-size:1.3rem;font-weight:600;margin-bottom:8px;}
+  .process-item:last-child{border-bottom:1px solid #e2e8f0;}
+  .process-num{font-family:'JetBrains Mono',monospace;color:#94a3b8;font-size:.95rem;font-weight:600;}
+  .process-item h3{font-size:1.3rem;font-weight:700;color:#0f172a;margin-bottom:8px;}
   .process-item p{color:var(--text-dim);font-size:.98rem;max-width:560px;line-height:1.6;}
 
-  /* ===== CONTACT CTA ===== */
   .cta-section{
-    background:linear-gradient(160deg, var(--card), var(--bg-soft));
-    border-radius:32px;padding:100px 6vw;text-align:center;position:relative;overflow:hidden;
-    border:1px solid var(--line);margin:0 6vw;
+    background:linear-gradient(160deg, #0f172a, #1e293b);
+    border-radius:32px;padding:90px 6vw;text-align:center;position:relative;overflow:hidden;
+    color:#ffffff;margin:0 6vw;box-shadow:0 20px 50px rgba(15,23,42,0.15);
   }
-  .cta-section h2{font-size:clamp(2.2rem,5vw,3.6rem);font-weight:700;letter-spacing:-0.03em;margin-bottom:20px;}
-  .cta-section p{color:var(--text-dim);max-width:520px;margin:0 auto 40px;font-size:1.05rem;line-height:1.65;}
-  .cta-glow{position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(0,230,168,0.15),transparent 70%);top:-200px;left:50%;transform:translateX(-50%);}
+  .cta-section h2{font-size:clamp(2.2rem,5vw,3.6rem);font-weight:800;letter-spacing:-0.03em;margin-bottom:20px;color:#ffffff;}
+  .cta-section p{color:#cbd5e1;max-width:520px;margin:0 auto 40px;font-size:1.05rem;line-height:1.65;}
+  .cta-glow{position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(0,208,156,0.2),transparent 70%);top:-200px;left:50%;transform:translateX(-50%);}
 
-  footer{padding:60px 6vw 40px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);margin-top:60px;flex-wrap:wrap;gap:20px;}
+  footer{padding:60px 6vw 40px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #e2e8f0;margin-top:60px;flex-wrap:wrap;gap:20px;background:#f8fafc;}
   .footer-links{display:flex;gap:26px;}
-  .footer-links a{color:var(--text-dim);font-size:.88rem;transition:color .3s;}
-  .footer-links a:hover{color:var(--accent);}
-  footer .copy{color:var(--text-dimmer);font-size:.82rem;}
+  .footer-links a{color:#64748b;font-size:.9rem;font-weight:500;transition:color .2s;}
+  .footer-links a:hover{color:#00d09c;}
+  footer .copy{color:#94a3b8;font-size:.84rem;}
 
   @media (max-width:900px){
     .nav-links{display:none;}
@@ -618,9 +435,6 @@
     .arc-card{width:240px;height:360px;}
     .eco-card{height:300px;}
     .isometric-city-container{margin-top:20px;}
-  }
-  @media (prefers-reduced-motion: reduce){
-    *{animation-duration:.001ms !important; transition-duration:.001ms !important;}
   }
 </style>
 </head>
@@ -642,7 +456,7 @@
   <a href="/" class="nav-cta">Launch Full App →</a>
 </nav>
 
-<!-- HERO WITH ISOMETRIC AI METROPOLIS (GROWW HERO STYLE) -->
+<!-- HERO WITH ISOMETRIC AI METROPOLIS (LIGHT THEME) -->
 <section class="hero">
   <div class="hero-bg-grid"></div>
   <div class="hero-blob"></div>
@@ -665,119 +479,108 @@
       <svg class="iso-svg" viewBox="0 0 1000 640" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <linearGradient id="roadGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#1b1836"/>
-            <stop offset="100%" stop-color="#0f0e1c"/>
+            <stop offset="0%" stop-color="#ffffff"/>
+            <stop offset="100%" stop-color="#f1f5f9"/>
           </linearGradient>
           <linearGradient id="towerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#6a1bff"/>
+            <stop offset="0%" stop-color="#6366f1"/>
             <stop offset="50%" stop-color="#3b82f6"/>
-            <stop offset="100%" stop-color="#00e6a8"/>
+            <stop offset="100%" stop-color="#00d09c"/>
           </linearGradient>
           <linearGradient id="domeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#00e6a8"/>
-            <stop offset="100%" stop-color="#065f46"/>
+            <stop offset="0%" stop-color="#00d09c"/>
+            <stop offset="100%" stop-color="#059669"/>
           </linearGradient>
           <linearGradient id="vitGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#2d2955"/>
-            <stop offset="100%" stop-color="#17152e"/>
-          </linearGradient>
-          <linearGradient id="neonGlow" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stop-color="#00e6a8"/>
-            <stop offset="100%" stop-color="#6a1bff"/>
+            <stop offset="0%" stop-color="#e0e7ff"/>
+            <stop offset="100%" stop-color="#c7d2fe"/>
           </linearGradient>
         </defs>
 
         <!-- Isometric Base Grid Island -->
-        <polygon points="500,80 940,300 500,520 60,300" fill="url(#roadGrad)" stroke="#2d285a" stroke-width="2"/>
-        <polygon points="500,520 940,300 940,330 500,550" fill="#0d0c18" stroke="#221e42" stroke-width="1.5"/>
-        <polygon points="500,520 60,300 60,330 500,550" fill="#090812" stroke="#221e42" stroke-width="1.5"/>
+        <polygon points="500,80 940,300 500,520 60,300" fill="url(#roadGrad)" stroke="#cbd5e1" stroke-width="2"/>
+        <polygon points="500,520 940,300 940,330 500,550" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1.5"/>
+        <polygon points="500,520 60,300 60,330 500,550" fill="#cbd5e1" stroke="#94a3b8" stroke-width="1.5"/>
 
         <!-- Isometric Road Network -->
-        <path d="M500,120 L860,300 L500,480 L140,300 Z" fill="none" stroke="#2a2456" stroke-width="32" stroke-linejoin="round"/>
-        <path d="M500,120 L860,300 L500,480 L140,300 Z" fill="none" stroke="rgba(0,230,168,0.2)" stroke-width="2" stroke-dasharray="8 12"/>
+        <path d="M500,120 L860,300 L500,480 L140,300 Z" fill="none" stroke="#e2e8f0" stroke-width="32" stroke-linejoin="round"/>
+        <path d="M500,120 L860,300 L500,480 L140,300 Z" fill="none" stroke="rgba(0,208,156,0.6)" stroke-width="2" stroke-dasharray="8 12"/>
         
         <!-- Cross Connectors -->
-        <line x1="320" y1="210" x2="680" y2="390" stroke="#2a2456" stroke-width="24"/>
-        <line x1="320" y1="210" x2="680" y2="390" stroke="rgba(106,27,255,0.3)" stroke-width="2" stroke-dasharray="6 8"/>
+        <line x1="320" y1="210" x2="680" y2="390" stroke="#e2e8f0" stroke-width="24"/>
+        <line x1="320" y1="210" x2="680" y2="390" stroke="rgba(99,102,241,0.4)" stroke-width="2" stroke-dasharray="6 8"/>
 
         <!-- Animated Data Vehicles / Packets on Roads -->
         <g class="iso-car-1">
-          <circle cx="0" cy="0" r="5" fill="#00e6a8" filter="drop-shadow(0 0 8px #00e6a8)"/>
+          <circle cx="0" cy="0" r="5" fill="#00d09c" filter="drop-shadow(0 0 8px #00d09c)"/>
         </g>
         <g class="iso-car-2">
-          <circle cx="0" cy="0" r="5" fill="#a855f7" filter="drop-shadow(0 0 8px #a855f7)"/>
+          <circle cx="0" cy="0" r="5" fill="#6366f1" filter="drop-shadow(0 0 8px #6366f1)"/>
         </g>
 
         <!-- 1. NEURAL COMPUTE TOWER (GPU & GROQ CORE) -->
         <g class="iso-building" data-tip="⚡ Neural Compute Core • Groq Llama 3 (70B Tokens/s)">
-          <!-- Tall Cylinder Tower -->
-          <path d="M360,260 L420,230 L420,100 L360,130 Z" fill="#201b44" stroke="#483d8b" stroke-width="1.5"/>
-          <path d="M420,230 L480,260 L480,130 L420,100 Z" fill="#2f2863" stroke="#483d8b" stroke-width="1.5"/>
-          <polygon points="420,100 480,130 420,160 360,130" fill="url(#towerGrad)" stroke="#6a1bff" stroke-width="2"/>
+          <path d="M360,260 L420,230 L420,100 L360,130 Z" fill="#312e81" stroke="#4338ca" stroke-width="1.5"/>
+          <path d="M420,230 L480,260 L480,130 L420,100 Z" fill="#3730a3" stroke="#4338ca" stroke-width="1.5"/>
+          <polygon points="420,100 480,130 420,160 360,130" fill="url(#towerGrad)" stroke="#6366f1" stroke-width="2"/>
           
-          <!-- Tower Windows & Neon Strips -->
-          <line x1="375" y1="150" x2="405" y2="135" stroke="#00e6a8" stroke-width="2.5" opacity="0.85"/>
-          <line x1="375" y1="180" x2="405" y2="165" stroke="#00e6a8" stroke-width="2.5" opacity="0.85"/>
-          <line x1="375" y1="210" x2="405" y2="195" stroke="#00e6a8" stroke-width="2.5" opacity="0.85"/>
+          <line x1="375" y1="150" x2="405" y2="135" stroke="#00d09c" stroke-width="2.5" opacity="0.9"/>
+          <line x1="375" y1="180" x2="405" y2="165" stroke="#00d09c" stroke-width="2.5" opacity="0.9"/>
+          <line x1="375" y1="210" x2="405" y2="195" stroke="#00d09c" stroke-width="2.5" opacity="0.9"/>
 
-          <line x1="435" y1="165" x2="465" y2="180" stroke="#a855f7" stroke-width="2.5" opacity="0.85"/>
-          <line x1="435" y1="195" x2="465" y2="210" stroke="#a855f7" stroke-width="2.5" opacity="0.85"/>
-          <line x1="435" y1="225" x2="465" y2="240" stroke="#a855f7" stroke-width="2.5" opacity="0.85"/>
+          <line x1="435" y1="165" x2="465" y2="180" stroke="#a5b4fc" stroke-width="2.5" opacity="0.9"/>
+          <line x1="435" y1="195" x2="465" y2="210" stroke="#a5b4fc" stroke-width="2.5" opacity="0.9"/>
+          <line x1="435" y1="225" x2="465" y2="240" stroke="#a5b4fc" stroke-width="2.5" opacity="0.9"/>
 
-          <!-- Laser Antenna -->
-          <line x1="420" y1="130" x2="420" y2="60" stroke="#00e6a8" stroke-width="2" class="iso-laser"/>
-          <circle cx="420" cy="60" r="4" fill="#00e6a8" filter="drop-shadow(0 0 10px #00e6a8)"/>
+          <line x1="420" y1="130" x2="420" y2="60" stroke="#00d09c" stroke-width="2" class="iso-laser"/>
+          <circle cx="420" cy="60" r="4" fill="#00d09c" filter="drop-shadow(0 0 10px #00d09c)"/>
         </g>
 
         <!-- 2. ACADEMIC & DATA SCIENCE HUB (VIT VELLORE CAMPUS) -->
         <g class="iso-building" data-tip="🎓 Academic Center • VIT University (8.7 CGPA Honors)">
-          <!-- Classical Building Facade -->
-          <polygon points="460,330 580,270 580,350 460,410" fill="url(#vitGrad)" stroke="#3f3875" stroke-width="1.5"/>
-          <polygon points="580,270 660,310 660,390 580,350" fill="#1d1a38" stroke="#3f3875" stroke-width="1.5"/>
-          <polygon points="460,330 580,270 660,310 540,370" fill="#38326a" stroke="#524a8f" stroke-width="2"/>
+          <polygon points="460,330 580,270 580,350 460,410" fill="url(#vitGrad)" stroke="#818cf8" stroke-width="1.5"/>
+          <polygon points="580,270 660,310 660,390 580,350" fill="#c7d2fe" stroke="#818cf8" stroke-width="1.5"/>
+          <polygon points="460,330 580,270 660,310 540,370" fill="#a5b4fc" stroke="#6366f1" stroke-width="2"/>
           
-          <!-- Columns -->
-          <line x1="480" y1="345" x2="480" y2="395" stroke="#a5b4fc" stroke-width="3"/>
-          <line x1="510" y1="330" x2="510" y2="380" stroke="#a5b4fc" stroke-width="3"/>
-          <line x1="540" y1="315" x2="540" y2="365" stroke="#a5b4fc" stroke-width="3"/>
-          <line x1="570" y1="300" x2="570" y2="350" stroke="#a5b4fc" stroke-width="3"/>
+          <line x1="480" y1="345" x2="480" y2="395" stroke="#312e81" stroke-width="3"/>
+          <line x1="510" y1="330" x2="510" y2="380" stroke="#312e81" stroke-width="3"/>
+          <line x1="540" y1="315" x2="540" y2="365" stroke="#312e81" stroke-width="3"/>
+          <line x1="570" y1="300" x2="570" y2="350" stroke="#312e81" stroke-width="3"/>
 
-          <!-- Campus Cap Emblem -->
-          <polygon points="580,245 610,260 580,275 550,260" fill="#eab308" filter="drop-shadow(0 0 8px rgba(234,179,8,0.6))"/>
+          <polygon points="580,245 610,260 580,275 550,260" fill="#f59e0b" filter="drop-shadow(0 0 8px rgba(245,158,11,0.6))"/>
         </g>
 
-        <!-- 3. DEEP LEARNING VISION DOME (MRI BRAIN TUMOR RESEARCH) -->
+        <!-- 3. DEEP LEARNING VISION DOME -->
         <g class="iso-building" data-tip="🧠 Medical AI Dome • ResNet50 MRI Vision (98.2% Accuracy)">
-          <ellipse cx="680" cy="270" rx="60" ry="35" fill="url(#domeGrad)" opacity="0.85" stroke="#00e6a8" stroke-width="2"/>
-          <path d="M620,270 C620,220 740,220 740,270 Z" fill="rgba(0,230,168,0.25)" stroke="#00e6a8" stroke-width="1.5"/>
+          <ellipse cx="680" cy="270" rx="60" ry="35" fill="url(#domeGrad)" opacity="0.9" stroke="#00d09c" stroke-width="2"/>
+          <path d="M620,270 C620,220 740,220 740,270 Z" fill="rgba(0,208,156,0.3)" stroke="#00d09c" stroke-width="1.5"/>
           <ellipse cx="680" cy="245" rx="35" ry="20" fill="none" stroke="#ffffff" stroke-width="1" stroke-dasharray="4 4"/>
-          <circle cx="680" cy="235" r="5" fill="#ffffff" filter="drop-shadow(0 0 10px #00e6a8)"/>
+          <circle cx="680" cy="235" r="5" fill="#ffffff" filter="drop-shadow(0 0 10px #00d09c)"/>
         </g>
 
         <!-- 4. CLOCK TOWER & TELEMETRY MONOLITH -->
         <g class="iso-building" data-tip="⏱️ Telemetry Monolith • 🟢 24ms Live Database Heartbeat">
-          <polygon points="260,330 290,315 290,410 260,425" fill="#1b1836" stroke="#483d8b" stroke-width="1.5"/>
-          <polygon points="290,315 320,330 320,425 290,410" fill="#2a2552" stroke="#483d8b" stroke-width="1.5"/>
+          <polygon points="260,330 290,315 290,410 260,425" fill="#1e293b" stroke="#334155" stroke-width="1.5"/>
+          <polygon points="290,315 320,330 320,425 290,410" fill="#334155" stroke="#475569" stroke-width="1.5"/>
           <polygon points="260,330 290,315 320,330 290,345" fill="#3b82f6" stroke="#60a5fa" stroke-width="1.5"/>
-          <!-- Clock Face -->
-          <circle cx="275" cy="355" r="6" fill="#00e6a8" opacity="0.9"/>
-          <circle cx="305" cy="355" r="6" fill="#00e6a8" opacity="0.9"/>
+          <circle cx="275" cy="355" r="6" fill="#00d09c"/>
+          <circle cx="305" cy="355" r="6" fill="#00d09c"/>
         </g>
 
-        <!-- 5. ISOMETRIC CYBER TREES & PARK GREENERY -->
+        <!-- 5. ISOMETRIC CYBER TREES -->
         <g>
-          <polygon points="340,370 380,350 420,370 380,390" fill="#064e3b" stroke="#059669" stroke-width="1"/>
-          <circle cx="380" cy="355" r="8" fill="#10b981"/>
-          <polygon points="680,410 720,390 760,410 720,430" fill="#064e3b" stroke="#059669" stroke-width="1"/>
-          <circle cx="720" cy="395" r="8" fill="#10b981"/>
-          <circle cx="745" cy="405" r="6" fill="#34d399"/>
+          <polygon points="340,370 380,350 420,370 380,390" fill="#059669" stroke="#10b981" stroke-width="1"/>
+          <circle cx="380" cy="355" r="8" fill="#34d399"/>
+          <polygon points="680,410 720,390 760,410 720,430" fill="#059669" stroke="#10b981" stroke-width="1"/>
+          <circle cx="720" cy="395" r="8" fill="#34d399"/>
+          <circle cx="745" cy="405" r="6" fill="#6ee7b7"/>
         </g>
 
         <!-- 6. BILLBOARD SIGNPOST -->
         <g class="iso-building" data-tip="📢 Operations Center • P2P Sync & WebSocket Broadcast">
           <polygon points="760,230 820,200 820,240 760,270" fill="#059669" stroke="#10b981" stroke-width="1.5"/>
-          <line x1="770" y1="265" x2="770" y2="305" stroke="#4b5563" stroke-width="3"/>
-          <line x1="810" y1="245" x2="810" y2="285" stroke="#4b5563" stroke-width="3"/>
+          <line x1="770" y1="265" x2="770" y2="305" stroke="#94a3b8" stroke-width="3"/>
+          <line x1="810" y1="245" x2="810" y2="285" stroke="#94a3b8" stroke-width="3"/>
           <text x="770" y="240" fill="#ffffff" font-family="'Space Grotesk',sans-serif" font-size="10" font-weight="700">P2P SYNC</text>
         </g>
       </svg>
@@ -814,11 +617,10 @@
     </div>
   </div>
 
-  <!-- Cylindrical 3D Arc Deck -->
   <div class="arc-stage" id="arcStage">
     <div class="arc-track" id="arcTrack">
       
-      <!-- Card 1: Deep Learning -->
+      <!-- Card 1 -->
       <div class="arc-card c-gold" onclick="window.location.href='/'">
         <div>
           <div class="card-top-tag">Deep Learning & Vision</div>
@@ -832,47 +634,47 @@
         </div>
       </div>
 
-      <!-- Card 2: Campus & Academic Rigor -->
+      <!-- Card 2 -->
       <div class="arc-card c-noir" onclick="window.location.href='/'">
         <div>
           <div class="card-top-tag">Campus & Research</div>
           <div class="card-sub">VIT University • 8.7 CGPA Honors</div>
         </div>
         <div class="card-art">
-          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="var(--brand-2)" stroke-width="1.8">
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="1.8">
             <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
             <path d="M6 12v5c0 3 6 3 6 3s6 0 6-3v-5"/>
           </svg>
         </div>
       </div>
 
-      <!-- Card 3: Generative AI & RAG -->
+      <!-- Card 3 -->
       <div class="arc-card c-olive" onclick="window.location.href='/'">
         <div>
           <div class="card-top-tag">Generative AI & LLMs</div>
           <div class="card-sub">Groq Llama 3 • ChromaDB Vector RAG</div>
         </div>
         <div class="card-art">
-          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#27500a" stroke-width="1.8">
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#14532d" stroke-width="1.8">
             <path d="M12 2a8 8 0 0 0-8 8c0 3.4 2.1 6.3 5.1 7.4L9 22l4-2 4 2-.1-4.6c3-1.1 5.1-4 5.1-7.4a8 8 0 0 0-8-8z"/>
           </svg>
         </div>
       </div>
 
-      <!-- Card 4: Realtime Systems -->
+      <!-- Card 4 -->
       <div class="arc-card c-darkgreen" onclick="window.location.href='/'">
         <div>
           <div class="card-top-tag">Realtime Systems</div>
           <div class="card-sub">P2P Broadcast & Supabase Telemetry</div>
         </div>
         <div class="card-art">
-          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.8">
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#00d09c" stroke-width="1.8">
             <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
           </svg>
         </div>
       </div>
 
-      <!-- Card 5: Full-Stack Architecture -->
+      <!-- Card 5 -->
       <div class="arc-card c-rose" onclick="window.location.href='/'">
         <div>
           <div class="card-top-tag">Reactive UI Craft</div>
@@ -887,14 +689,14 @@
         </div>
       </div>
 
-      <!-- Card 6: Cloud & DevOps -->
+      <!-- Card 6 -->
       <div class="arc-card c-cyan" onclick="window.location.href='/'">
         <div>
           <div class="card-top-tag">Cloud & Edge</div>
           <div class="card-sub">Docker • Redis • CI/CD Pipelines</div>
         </div>
         <div class="card-art">
-          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#155e75" stroke-width="1.8">
+          <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#0e7490" stroke-width="1.8">
             <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
           </svg>
         </div>
@@ -907,26 +709,23 @@
 <!-- ===== DARK LUXURY ECOSYSTEM CARDS ===== -->
 <div class="eco-section reveal" id="ecosystem">
   <div class="eco-header">
-    <div class="eyebrow">Core Ecosystem & Labs</div>
+    <div class="eyebrow" style="background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.2);color:#34d399;">Core Ecosystem & Labs</div>
     <h2>More from the engineering family</h2>
   </div>
 
   <div class="eco-grid">
-    <!-- Eco Card 1: 98.2 (Neural Vision) -->
     <div class="eco-card eco-1" onclick="window.location.href='/'">
       <div class="eco-bg-pattern"></div>
       <div class="eco-hero-text">98.2</div>
       <div class="eco-sub-label">Neural Vision Accuracy</div>
     </div>
 
-    <!-- Eco Card 2: W / VIT (Academic Honors) -->
     <div class="eco-card eco-2" onclick="window.location.href='/'">
       <div class="eco-bg-pattern"></div>
       <div class="eco-hero-text">VIT</div>
       <div class="eco-sub-label">8.7 CGPA Data Science</div>
     </div>
 
-    <!-- Eco Card 3: Sync (Realtime Hub) -->
     <div class="eco-card eco-3" onclick="window.location.href='/'">
       <div class="eco-bg-pattern"></div>
       <div class="eco-hero-text">
@@ -954,7 +753,7 @@
     </div>
     <div class="about-text reveal">
       <div class="eyebrow">Background</div>
-      <h2 style="font-size:clamp(1.8rem,3.4vw,2.6rem);font-weight:600;letter-spacing:-0.02em;margin-bottom:22px;">Data science rigor meets full-stack craftsmanship.</h2>
+      <h2 style="font-size:clamp(1.8rem,3.4vw,2.6rem);font-weight:700;letter-spacing:-0.02em;margin-bottom:22px;color:#0f172a;">Data science rigor meets full-stack craftsmanship.</h2>
       <p>I specialize in bridging the gap between <strong>Machine Learning research</strong> and <strong>high-performance production software</strong>. Whether training deep convolutional neural networks or tuning sub-millisecond database caching layers, I build systems designed for reliability and zero latency.</p>
       <p>My work combines mathematical foundations in <strong>Linear Algebra, Statistics, and Deep Learning</strong> with modern web engineering across React 18, Node.js, and Supabase PostgreSQL.</p>
       <div class="about-tags">
@@ -965,7 +764,7 @@
 </section>
 
 <!-- SKILLS -->
-<section id="skills">
+<section id="skills" style="padding-top:0;">
   <div class="sec-head reveal">
     <div class="eyebrow">Technical Arsenal</div>
     <h2>Core competencies & depth</h2>
@@ -983,7 +782,7 @@
 </section>
 
 <!-- PROJECTS -->
-<section id="projects">
+<section id="projects" style="padding-top:0;">
   <div class="sec-head reveal">
     <div class="eyebrow">Selected Engineering Projects</div>
     <h2>Production work & machine learning architectures</h2>
@@ -1021,7 +820,7 @@
 </section>
 
 <!-- PROCESS -->
-<section id="process">
+<section id="process" style="padding-top:0;">
   <div class="sec-head reveal">
     <div class="eyebrow">Engineering Methodology</div>
     <h2>How I architect & deliver</h2>
@@ -1043,7 +842,7 @@
       <p>Interested in collaborating on Machine Learning, Data Science research, or Full-Stack software engineering? Let's connect.</p>
       <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
         <a href="mailto:sujithreddy1546@gmail.com" class="btn-primary">sujithreddy1546@gmail.com →</a>
-        <a href="/" class="btn-secondary">Open Full React App ⚡</a>
+        <a href="/" class="btn-secondary" style="background:#0f172a;color:#fff;border-color:#334155;">Open Full React App ⚡</a>
       </div>
     </div>
   </div>
@@ -1061,14 +860,12 @@
 </footer>
 
 <script>
-  // cursor glow
   const glow = document.getElementById('glow');
   window.addEventListener('mousemove', e=>{
     glow.style.left = e.clientX+'px';
     glow.style.top = e.clientY+'px';
   });
 
-  // scroll progress + nav bg
   const progress = document.getElementById('progress');
   const nav = document.getElementById('nav');
   window.addEventListener('scroll', ()=>{
@@ -1078,7 +875,6 @@
     nav.classList.toggle('scrolled', h.scrollTop > 40);
   });
 
-  // reveal on scroll
   const obs = new IntersectionObserver((entries)=>{
     entries.forEach(en=>{
       if(en.isIntersecting){
@@ -1091,7 +887,6 @@
   },{threshold:0.15});
   document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 
-  // animated counters
   function animateCounters(){
     document.querySelectorAll('[data-count]').forEach(el=>{
       const target = +el.getAttribute('data-count');
@@ -1115,13 +910,11 @@
     });
   }
 
-  // marquee content
   const techs = ['Python','PyTorch','React 18','TypeScript','LangChain','PostgreSQL','Supabase','Groq LLM','ChromaDB','Docker','FastAPI','Git'];
   const marquee = document.getElementById('marquee');
   const seq = [...techs, ...techs].map(t=>`<span><b>${t}</b> ✦</span>`).join('');
   marquee.innerHTML = seq;
 
-  // 3D Arc Mouse Tilt Interaction
   const arcStage = document.getElementById('arcStage');
   const arcTrack = document.getElementById('arcTrack');
   if(arcStage && arcTrack){
@@ -1136,7 +929,6 @@
     });
   }
 
-  // Isometric City Interactive Hover Tooltip
   const isoContainer = document.getElementById('isoCity');
   const isoTooltip = document.getElementById('isoTooltip');
   const isoSvg = document.querySelector('.iso-svg');
@@ -1163,7 +955,6 @@
       });
     });
 
-    // Subtle isometric mouse tilt parallax
     isoContainer.addEventListener('mousemove', (e)=>{
       const rect = isoContainer.getBoundingClientRect();
       const x = (e.clientX - rect.left) / rect.width - 0.5;
@@ -1175,7 +966,6 @@
     });
   }
 
-  // typing terminal ticker
   const lines = [
     { p:'$ ', t:'checking telemetry status...', delay:0 },
     { p:'> ', t:'training: Brain Tumor CNN (ResNet50)', delay:1200 },

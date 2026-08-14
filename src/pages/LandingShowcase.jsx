@@ -216,36 +216,36 @@ export default function LandingShowcase() {
             >
               <defs>
                 <linearGradient id="roadGradReact" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#1b1836" />
-                  <stop offset="100%" stopColor="#0f0e1c" />
+                  <stop offset="0%" stopColor="#ffffff" />
+                  <stop offset="100%" stopColor="#f1f5f9" />
                 </linearGradient>
                 <linearGradient id="towerGradReact" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#6a1bff" />
+                  <stop offset="0%" stopColor="#6366f1" />
                   <stop offset="50%" stopColor="#3b82f6" />
-                  <stop offset="100%" stopColor="#00e6a8" />
+                  <stop offset="100%" stopColor="#00d09c" />
                 </linearGradient>
                 <linearGradient id="domeGradReact" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#00e6a8" />
-                  <stop offset="100%" stopColor="#065f46" />
+                  <stop offset="0%" stopColor="#00d09c" />
+                  <stop offset="100%" stopColor="#059669" />
                 </linearGradient>
                 <linearGradient id="vitGradReact" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stopColor="#2d2955" />
-                  <stop offset="100%" stopColor="#17152e" />
+                  <stop offset="0%" stopColor="#e0e7ff" />
+                  <stop offset="100%" stopColor="#c7d2fe" />
                 </linearGradient>
               </defs>
 
               {/* Isometric Base Grid Island */}
-              <polygon points="500,80 940,300 500,520 60,300" fill="url(#roadGradReact)" stroke="#2d285a" strokeWidth="2" />
-              <polygon points="500,520 940,300 940,330 500,550" fill="#0d0c18" stroke="#221e42" strokeWidth="1.5" />
-              <polygon points="500,520 60,300 60,330 500,550" fill="#090812" stroke="#221e42" strokeWidth="1.5" />
+              <polygon points="500,80 940,300 500,520 60,300" fill="url(#roadGradReact)" stroke="#cbd5e1" strokeWidth="2" />
+              <polygon points="500,520 940,300 940,330 500,550" fill="#e2e8f0" stroke="#cbd5e1" strokeWidth="1.5" />
+              <polygon points="500,520 60,300 60,330 500,550" fill="#cbd5e1" stroke="#94a3b8" strokeWidth="1.5" />
 
               {/* Isometric Road Network */}
-              <path d="M500,120 L860,300 L500,480 L140,300 Z" fill="none" stroke="#2a2456" strokeWidth="32" strokeLinejoin="round" />
-              <path d="M500,120 L860,300 L500,480 L140,300 Z" fill="none" stroke="rgba(0,230,168,0.2)" strokeWidth="2" strokeDasharray="8 12" />
+              <path d="M500,120 L860,300 L500,480 L140,300 Z" fill="none" stroke="#e2e8f0" strokeWidth="32" strokeLinejoin="round" />
+              <path d="M500,120 L860,300 L500,480 L140,300 Z" fill="none" stroke="rgba(0,208,156,0.6)" strokeWidth="2" strokeDasharray="8 12" />
 
               {/* Cross Connectors */}
-              <line x1="320" y1="210" x2="680" y2="390" stroke="#2a2456" strokeWidth="24" />
-              <line x1="320" y1="210" x2="680" y2="390" stroke="rgba(106,27,255,0.3)" strokeWidth="2" strokeDasharray="6 8" />
+              <line x1="320" y1="210" x2="680" y2="390" stroke="#e2e8f0" strokeWidth="24" />
+              <line x1="320" y1="210" x2="680" y2="390" stroke="rgba(99,102,241,0.4)" strokeWidth="2" strokeDasharray="6 8" />
 
               {/* Animated Data Vehicles / Packets on Roads */}
               <g className="iso-car-1">
