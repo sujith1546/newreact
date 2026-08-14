@@ -218,7 +218,7 @@ function CarouselSection({ navigate }) {
     <div className="ls-carousel-section ls-reveal" id="showcase">
       <div className="ls-section-header">
         <div className="ls-eyebrow">Interactive 3D Pillar Showcase</div>
-        <h2>Engineering simplified,<br />across every dimension</h2>
+        <h2>Engineering simplified, across every dimension</h2>
         <p>10 domains · one revolving cylinder · hover to pause</p>
         <div className="ls-live-pill" onClick={() => navigate('/')}>
           <span className="ls-live-dot" />
@@ -377,13 +377,7 @@ export default function LandingShowcase() {
         <div className="ls-hero-aurora" />
         <div className="ls-hero-grid" />
 
-        {/* Floating chips */}
-        <div className="ls-floats" aria-hidden>
-          <div className="ls-chip ls-fc1"><span className="ls-chip-val">98.2%</span><span className="ls-chip-lbl">CNN Accuracy</span></div>
-          <div className="ls-chip ls-fc2"><span className="ls-chip-val">70B</span><span className="ls-chip-lbl">LLM Tokens/s</span></div>
-          <div className="ls-chip ls-fc3"><span className="ls-chip-val">&lt;1ms</span><span className="ls-chip-lbl">P2P Latency</span></div>
-          <div className="ls-chip ls-fc4"><span className="ls-chip-val">8.7 CGPA</span><span className="ls-chip-lbl">VIT University</span></div>
-        </div>
+
 
         <div className="ls-hero-content">
           <div className="ls-status-badge">
