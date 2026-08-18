@@ -1,21 +1,35 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { createPortal } from "react-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { Terminal, X, Wifi, Gauge, Layers, SlidersHorizontal } from "lucide-react";
-import { useTheme } from "../../context/ThemeContext";
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Terminal,
+  X,
+  Wifi,
+  Gauge,
+  Layers,
+  SlidersHorizontal,
+  Activity,
+  Cpu,
+  Zap,
+  CheckCircle2,
+  ArrowRight,
+  HardDrive,
+  Clock
+} from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 
-const BUILD_VERSION = "v1.4.2";
+const BUILD_VERSION = 'v1.4.2';
 
 const CORE_STACK = [
-  { name: "React", version: "18.2" },
-  { name: "Vite", version: "6.0" },
-  { name: "Tailwind", version: "3.4" },
-  { name: "Framer", version: "Motion" },
+  { name: 'React', version: '18.2' },
+  { name: 'Vite', version: '6.0' },
+  { name: 'Tailwind', version: '3.4' },
+  { name: 'Framer', version: 'Motion' },
 ];
 
 export default function SystemDiagnostics({ open, onClose }) {
   const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const [activeTab, setActiveTab] = useState('metrics'); // 'metrics' | 'env'
 
   const [fps, setFps] = useState(60);
   const [memory, setMemory] = useState(null);
@@ -31,18 +45,18 @@ export default function SystemDiagnostics({ open, onClose }) {
   // Keyboard shortcut: Ctrl+D or Cmd+D to toggle, Escape to close
   useEffect(() => {
     function handleKeyDown(e) {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "d") {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') {
         e.preventDefault();
         if (onClose && open) {
           onClose();
         }
       }
-      if (e.key === "Escape" && open && onClose) {
+      if (e.key === 'Escape' && open && onClose) {
         onClose();
       }
     }
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, [open, onClose]);
 
   // FPS counter
@@ -91,8 +105,8 @@ export default function SystemDiagnostics({ open, onClose }) {
     try {
       const start = performance.now();
       await fetch(`/favicon.svg?_ping=${Date.now()}`, {
-        method: "HEAD",
-        cache: "no-store",
+        method: 'HEAD',
+        cache: 'no-store',
       });
       setLatency(Math.round(performance.now() - start));
     } catch {
@@ -111,8 +125,8 @@ export default function SystemDiagnostics({ open, onClose }) {
   useEffect(() => {
     if (!open) return;
     function updateCount() {
-      if (typeof performance !== "undefined" && performance.getEntriesByType) {
-        setRequestCount(performance.getEntriesByType("resource").length);
+      if (typeof performance !== 'undefined' && performance.getEntriesByType) {
+        setRequestCount(performance.getEntriesByType('resource').length);
       }
     }
     updateCount();
@@ -120,485 +134,597 @@ export default function SystemDiagnostics({ open, onClose }) {
     return () => clearInterval(id);
   }, [open]);
 
-  if (typeof window === "undefined") return null;
+  if (!open || typeof window === 'undefined') return null;
 
-  const latencyPercent = latency == null ? 0 : Math.min(100, (latency / 300) * 100);
+  const isDarkMode =
+    theme === 'dark' ||
+    (typeof document !== 'undefined' &&
+      document.documentElement.getAttribute('data-theme') === 'dark');
+
+  const latencyPercent = latency == null ? 15 : Math.min(100, Math.max(10, (latency / 250) * 100));
 
   return createPortal(
     <AnimatePresence>
       {open && (
         <motion.div
-          className="sd-backdrop"
+          key="sd-backdrop"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: 0.15 }}
           onClick={onClose}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(0, 0, 0, 0.35)',
+            backdropFilter: 'blur(4px)',
+            WebkitBackdropFilter: 'blur(4px)',
+            padding: '20px',
+            boxSizing: 'border-box',
+          }}
         >
           <style>{`
-            .sd-backdrop {
-              position: fixed;
-              inset: 0;
-              z-index: 9999999;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              background: rgba(0, 0, 0, 0.4);
-              backdrop-filter: blur(8px);
-              -webkit-backdrop-filter: blur(8px);
-              padding: 16px;
-            }
-
             .sd-modal-card {
-              width: 100%;
-              max-width: 480px;
-              border-radius: 14px;
-              border: 1px solid #e2e2e0;
-              background: #ffffff;
-              padding: 16px;
-              font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
-              color: #1a1a19;
-              box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-              box-sizing: border-box;
+              --modal-bg: #ffffff;
+              --modal-border: #e2e8f0;
+              --modal-text: #0f172a;
+              --modal-muted: #64748b;
+              --modal-field-bg: #f8fafc;
+              --modal-field-border: #cbd5e1;
+              --modal-tab-track: #f1f5f9;
+              --modal-tab-active-bg: #0f172a;
+              --modal-tab-active-text: #ffffff;
+              --modal-btn-bg: #0f172a;
+              --modal-btn-hover: #1e293b;
+              --modal-btn-text: #ffffff;
+              --modal-shadow: 0 8px 24px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.1);
+              color-scheme: light;
             }
 
-            [data-theme="dark"] .sd-modal-card {
-              background: #171717;
-              border-color: rgba(255, 255, 255, 0.1);
-              color: #f5f5f5;
-              box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
-              border-radius: 16px;
-              padding: 24px;
+            .sd-modal-card.dark-mode {
+              --modal-bg: #18191d;
+              --modal-border: rgba(255, 255, 255, 0.12);
+              --modal-text: #ffffff;
+              --modal-muted: #94a3b8;
+              --modal-field-bg: #22242a;
+              --modal-field-border: rgba(255, 255, 255, 0.14);
+              --modal-tab-track: #141518;
+              --modal-tab-active-bg: #ffffff;
+              --modal-tab-active-text: #0f172a;
+              --modal-btn-bg: #ffffff;
+              --modal-btn-hover: #f1f5f9;
+              --modal-btn-text: #0f172a;
+              --modal-shadow: 0 12px 36px rgba(0, 0, 0, 0.45), 0 2px 10px rgba(0, 0, 0, 0.2);
+              color-scheme: dark;
             }
 
-            .sd-header {
-              display: flex;
-              align-items: center;
-              justify-content: space-between;
-              padding-bottom: 12px;
-              margin-bottom: 12px;
-              border-bottom: 1px solid #ececea;
-              background: #ffffff;
-            }
-
-            [data-theme="dark"] .sd-header {
-              border-bottom: none;
-              padding-bottom: 0;
-              margin-bottom: 20px;
-              background: transparent;
-            }
-
-            .sd-header-info {
-              display: flex;
-              align-items: center;
-              gap: 10px;
-            }
-
-            .sd-icon-box {
-              width: 28px;
-              height: 28px;
-              border-radius: 8px;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              background: #f5f5f3;
-              color: #1a1a19;
-            }
-
-            [data-theme="dark"] .sd-icon-box {
-              width: 32px;
-              height: 32px;
-              background: #262626;
-              color: #e5e5e5;
-            }
-
-            .sd-title {
-              font-size: 13px;
-              font-weight: 500;
-              margin: 0;
-              color: #1a1a19;
-            }
-
-            [data-theme="dark"] .sd-title {
-              font-size: 14px;
-              font-weight: 600;
-              color: #f5f5f5;
-            }
-
-            .sd-status-sub {
-              display: flex;
-              align-items: center;
-              gap: 6px;
-              font-size: 11px;
-              color: #8a8a86;
-              margin-top: 1px;
-            }
-
-            [data-theme="dark"] .sd-status-sub {
-              font-size: 12px;
-              color: #737373;
-            }
-
-            .sd-green-dot {
-              display: inline-block;
-              width: 6px;
-              height: 6px;
-              border-radius: 50%;
-              background: #34c759;
-            }
-
-            [data-theme="dark"] .sd-green-dot {
-              background: #10b981;
-            }
-
-            .sd-header-actions {
-              display: flex;
-              align-items: center;
-              gap: 10px;
-            }
-
-            .sd-kbd-badge {
-              border-radius: 4px;
-              border: 1px solid #e2e2e0;
-              padding: 2px 6px;
-              font-family: var(--font-mono, monospace);
-              font-size: 10px;
-              color: #9a9a96;
-            }
-
-            [data-theme="dark"] .sd-kbd-badge {
-              border-radius: 6px;
-              border-color: rgba(255, 255, 255, 0.1);
-              font-size: 11px;
-              color: #737373;
-            }
-
-            .sd-close-button {
-              background: transparent;
-              border: none;
-              color: #9a9a96;
-              cursor: pointer;
-              padding: 2px;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              transition: color 0.15s ease;
-            }
-
-            .sd-close-button:hover {
-              color: #1a1a19;
-            }
-
-            [data-theme="dark"] .sd-close-button:hover {
-              color: #f5f5f5;
-            }
-
-            .sd-tiles-grid {
-              display: grid;
-              grid-template-columns: repeat(4, 1fr);
-              gap: 8px;
-              margin-bottom: 8px;
-            }
-
-            .sd-tile {
-              border-radius: 10px;
-              background: #fafaf9;
-              border: 1px solid #ececea;
-              padding: 10px;
-              box-sizing: border-box;
-            }
-
-            [data-theme="dark"] .sd-tile {
-              border-radius: 8px;
-              background: #262626;
-              border: none;
-            }
-
-            .sd-tile-label {
-              font-size: 10px;
-              color: #9a9a96;
-              margin: 0 0 4px 0;
-            }
-
-            [data-theme="dark"] .sd-tile-label {
-              font-size: 11px;
-              color: #737373;
-            }
-
-            .sd-tile-value {
-              font-family: var(--font-mono, monospace);
-              font-size: 15px;
-              font-weight: 500;
-              margin: 0;
-              color: #1a1a19;
-            }
-
-            [data-theme="dark"] .sd-tile-value {
-              font-size: 15px;
-              font-weight: 600;
-              color: #f5f5f5;
-            }
-
-            .sd-two-col-grid {
-              display: grid;
-              grid-template-columns: repeat(2, 1fr);
-              gap: 8px;
-              margin-bottom: 8px;
-            }
-
-            .sd-pass-badge {
-              border-radius: 5px;
-              background: #e9f7ee;
-              padding: 2px 8px;
-              font-size: 10px;
-              font-weight: 600;
-              color: #1a7a3d;
-            }
-
-            [data-theme="dark"] .sd-pass-badge {
-              border-radius: 6px;
-              background: rgba(16, 185, 129, 0.15);
-              font-weight: 700;
-              color: #34d399;
-            }
-
-            .sd-section-card {
-              border-radius: 10px;
-              background: #fafaf9;
-              border: 1px solid #ececea;
-              padding: 12px;
-              margin-bottom: 8px;
-              box-sizing: border-box;
-            }
-
-            [data-theme="dark"] .sd-section-card {
-              border-radius: 8px;
-              background: #262626;
-              border: none;
-            }
-
-            .sd-section-label {
-              display: flex;
-              align-items: center;
-              gap: 6px;
-              font-size: 10px;
-              color: #9a9a96;
-              margin: 0 0 10px 0;
-            }
-
-            [data-theme="dark"] .sd-section-label {
-              font-size: 11px;
-              color: #737373;
-            }
-
-            .sd-stack-chips {
-              display: flex;
-              flex-wrap: wrap;
-              gap: 8px;
-              align-items: center;
-            }
-
-            .sd-live-chip {
-              display: flex;
-              align-items: center;
-              gap: 6px;
-              border-radius: 6px;
-              background: #ffffff;
-              border: 1px solid #dcdcda;
-              padding: 4px 10px;
-              font-size: 11px;
-              color: #1a1a19;
-              font-weight: 500;
-            }
-
-            [data-theme="dark"] .sd-live-chip {
-              background: #f5f5f5;
-              border: none;
-              color: #171717;
-              font-weight: 600;
-            }
-
-            .sd-tech-chip {
-              border-radius: 6px;
-              background: #ffffff;
-              border: 1px solid #ececea;
-              padding: 4px 10px;
-              font-size: 11px;
-              color: #1a1a19;
-            }
-
-            [data-theme="dark"] .sd-tech-chip {
-              background: transparent;
-              border-color: rgba(255, 255, 255, 0.1);
-              font-size: 12px;
-              color: #e5e5e5;
-            }
-
-            .sd-tech-ver {
-              font-family: var(--font-mono, monospace);
-              font-size: 11px;
-              color: #b0b0ac;
-            }
-
-            [data-theme="dark"] .sd-tech-ver {
-              color: #a3a3a3;
-            }
-
-            .sd-env-theme-line {
-              margin: 0 0 4px 0;
-              font-size: 13px;
-              color: #1a1a19;
-            }
-
-            [data-theme="dark"] .sd-env-theme-line {
-              font-size: 14px;
-              color: #f5f5f5;
-            }
-
-            .sd-env-theme-val {
-              color: #1a1a19;
-              font-weight: 500;
-            }
-
-            [data-theme="dark"] .sd-env-theme-val {
-              color: #38bdf8;
-              font-weight: 600;
-            }
-
-            .sd-env-meta-line {
-              margin: 0;
-              font-family: var(--font-mono, monospace);
-              font-size: 11px;
-              color: #9a9a96;
-            }
-
-            [data-theme="dark"] .sd-env-meta-line {
-              font-size: 12px;
-              color: #737373;
+            .sd-action-btn:hover {
+              opacity: 0.92;
+              transform: translateY(-1px);
             }
           `}</style>
 
           <motion.div
-            className="sd-modal-card"
-            initial={{ scale: 0.95, opacity: 0, y: 8 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.95, opacity: 0, y: 8 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
+            key="sd-modal-content"
+            className={`sd-modal-card ${isDarkMode ? 'dark-mode' : 'light-mode'}`}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="sd-modal-title"
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.96 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
             onClick={(e) => e.stopPropagation()}
+            style={{
+              position: 'relative',
+              maxWidth: '420px',
+              width: '100%',
+              background: 'var(--modal-bg)',
+              border: '0.5px solid var(--modal-border)',
+              borderRadius: '16px',
+              boxShadow: 'var(--modal-shadow)',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              color: 'var(--modal-text)',
+              fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif",
+            }}
           >
-            {/* Header */}
-            <div className="sd-header">
-              <div className="sd-header-info">
-                <div className="sd-icon-box">
-                  <Terminal size={16} />
+            {/* Identity Row: avatar + name + status | shortcut & close button */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '16px 20px 10px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div
+                  style={{
+                    width: '26px',
+                    height: '26px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
+                    color: '#ffffff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    boxShadow: '0 2px 6px rgba(16, 185, 129, 0.35)',
+                  }}
+                >
+                  <Activity size={13} color="#ffffff" />
                 </div>
                 <div>
-                  <p className="sd-title">System diagnostics</p>
-                  <p className="sd-status-sub">
-                    <span className="sd-green-dot" />
-                    All systems nominal
-                  </p>
+                  <div style={{ fontSize: '12px', fontWeight: '500', color: 'var(--modal-text)', lineHeight: 1.2 }}>
+                    Sujith Thota
+                  </div>
+                  <div style={{ fontSize: '10.5px', color: '#22c55e', fontWeight: '500', lineHeight: 1.2 }}>
+                    Diagnostics · nominal
+                  </div>
                 </div>
               </div>
-              <div className="sd-header-actions">
-                <span className="sd-kbd-badge">Ctrl+D</span>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span
+                  style={{
+                    fontSize: '10px',
+                    fontFamily: 'monospace',
+                    fontWeight: '600',
+                    padding: '2px 6px',
+                    borderRadius: '5px',
+                    background: 'var(--modal-field-bg)',
+                    border: '1px solid var(--modal-field-border)',
+                    color: 'var(--modal-muted)',
+                  }}
+                >
+                  Ctrl+D
+                </span>
                 <button
+                  type="button"
                   onClick={onClose}
-                  aria-label="Close diagnostics"
-                  className="sd-close-button"
+                  aria-label="Close"
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--modal-muted)',
+                    cursor: 'pointer',
+                    padding: 0,
+                    width: '26px',
+                    height: '26px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: '50%',
+                    transition: 'color 0.15s ease',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--modal-text)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--modal-muted)')}
                 >
                   <X size={16} />
                 </button>
               </div>
             </div>
 
-            {/* Metric tiles (4 equal-width tiles in 1 row) */}
-            <div className="sd-tiles-grid">
-              <div className="sd-tile">
-                <p className="sd-tile-label">Uptime</p>
-                <p className="sd-tile-value">{uptime}s</p>
-              </div>
-              <div className="sd-tile">
-                <p className="sd-tile-label">FPS</p>
-                <p className="sd-tile-value">{fps}</p>
-              </div>
-              <div className="sd-tile">
-                <p className="sd-tile-label">Memory</p>
-                <p className="sd-tile-value">{memory != null ? `${memory.toFixed(1)}mb` : "—"}</p>
-              </div>
-              <div className="sd-tile">
-                <p className="sd-tile-label">Requests</p>
-                <p className="sd-tile-value">{requestCount}</p>
+            {/* Heading + Subtitle, centered */}
+            <div style={{ textAlign: 'center', padding: '0 20px 14px' }}>
+              <h3
+                id="sd-modal-title"
+                style={{
+                  fontSize: '22px',
+                  fontWeight: '700',
+                  color: 'var(--modal-text)',
+                  margin: '0 0 4px',
+                  letterSpacing: '-0.02em',
+                }}
+              >
+                System diagnostics
+              </h3>
+              <p style={{ fontSize: '12px', color: 'var(--modal-muted)', margin: '0 0 14px' }}>
+                Realtime client runtime, memory &amp; telemetry
+              </p>
+
+              {/* Status pills row, centered */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    padding: '3px 9px',
+                    borderRadius: '99px',
+                    background: 'rgba(34, 197, 94, 0.15)',
+                    color: '#22c55e',
+                    border: '1px solid rgba(34, 197, 94, 0.3)',
+                  }}
+                >
+                  <Zap size={11} />
+                  <span>{fps} FPS live</span>
+                </span>
+
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    padding: '3px 9px',
+                    borderRadius: '99px',
+                    background: 'var(--modal-field-bg)',
+                    color: 'var(--modal-text)',
+                    border: '1px solid var(--modal-border)',
+                  }}
+                >
+                  <Wifi size={11} />
+                  <span>{latency != null ? `${latency}ms ping` : 'Optimal'}</span>
+                </span>
+
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    padding: '3px 9px',
+                    borderRadius: '99px',
+                    background: 'rgba(59, 130, 246, 0.15)',
+                    color: '#3b82f6',
+                    border: '1px solid rgba(59, 130, 246, 0.3)',
+                  }}
+                >
+                  <Gauge size={11} />
+                  <span>{BUILD_VERSION} pass</span>
+                </span>
               </div>
             </div>
 
-            {/* Latency + Build (Side-by-side 2-column) */}
-            <div className="sd-two-col-grid">
-              <div className="sd-tile" style={{ padding: '10px 12px' }}>
-                <p className="sd-section-label" style={{ marginBottom: '6px' }}>
-                  <Wifi size={13} /> Latency
-                </p>
-                <p className="sd-tile-value" style={{ fontSize: '15px', marginBottom: '6px' }}>
-                  {latency != null ? `${latency}ms` : "—"}
-                </p>
-                <div style={{ height: '3px', width: '100%', borderRadius: '999px', background: isDark ? 'rgba(255,255,255,0.1)' : '#ececea', overflow: 'hidden' }}>
+            {/* Pill tabs switcher */}
+            <div
+              style={{
+                display: 'flex',
+                padding: '3px',
+                background: 'var(--modal-tab-track)',
+                border: '1px solid var(--modal-border)',
+                borderRadius: '99px',
+                margin: '0 20px 14px',
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setActiveTab('metrics')}
+                style={{
+                  flex: 1,
+                  border: 'none',
+                  background: activeTab === 'metrics' ? 'var(--modal-tab-active-bg)' : 'transparent',
+                  color: activeTab === 'metrics' ? 'var(--modal-tab-active-text)' : 'var(--modal-muted)',
+                  padding: '7px 12px',
+                  borderRadius: '99px',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.18s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  boxShadow: activeTab === 'metrics' ? '0 1px 3px rgba(0,0,0,0.15)' : 'none',
+                }}
+              >
+                <Gauge size={13} />
+                <span>Live Metrics</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab('env')}
+                style={{
+                  flex: 1,
+                  border: 'none',
+                  background: activeTab === 'env' ? 'var(--modal-tab-active-bg)' : 'transparent',
+                  color: activeTab === 'env' ? 'var(--modal-tab-active-text)' : 'var(--modal-muted)',
+                  padding: '7px 12px',
+                  borderRadius: '99px',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.18s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  boxShadow: activeTab === 'env' ? '0 1px 3px rgba(0,0,0,0.15)' : 'none',
+                }}
+              >
+                <SlidersHorizontal size={13} />
+                <span>Environment</span>
+              </button>
+            </div>
+
+            {/* Main Content Area */}
+            <div style={{ padding: '0 20px 16px' }}>
+              {activeTab === 'metrics' ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {/* 4 Metric Tiles Grid */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+                    <div
+                      style={{
+                        padding: '10px 8px',
+                        background: 'var(--modal-field-bg)',
+                        border: '1px solid var(--modal-field-border)',
+                        borderRadius: '8px',
+                        textAlign: 'center',
+                      }}
+                    >
+                      <div style={{ fontSize: '10.5px', color: 'var(--modal-muted)', marginBottom: '3px' }}>
+                        Uptime
+                      </div>
+                      <div style={{ fontSize: '14px', fontWeight: '700', fontFamily: 'monospace', color: 'var(--modal-text)' }}>
+                        {uptime}s
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        padding: '10px 8px',
+                        background: 'var(--modal-field-bg)',
+                        border: '1px solid var(--modal-field-border)',
+                        borderRadius: '8px',
+                        textAlign: 'center',
+                      }}
+                    >
+                      <div style={{ fontSize: '10.5px', color: 'var(--modal-muted)', marginBottom: '3px' }}>
+                        FPS
+                      </div>
+                      <div style={{ fontSize: '14px', fontWeight: '700', fontFamily: 'monospace', color: fps >= 55 ? '#22c55e' : '#f59e0b' }}>
+                        {fps}
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        padding: '10px 8px',
+                        background: 'var(--modal-field-bg)',
+                        border: '1px solid var(--modal-field-border)',
+                        borderRadius: '8px',
+                        textAlign: 'center',
+                      }}
+                    >
+                      <div style={{ fontSize: '10.5px', color: 'var(--modal-muted)', marginBottom: '3px' }}>
+                        Memory
+                      </div>
+                      <div style={{ fontSize: '14px', fontWeight: '700', fontFamily: 'monospace', color: 'var(--modal-text)' }}>
+                        {memory != null ? `${memory.toFixed(1)}M` : '—'}
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        padding: '10px 8px',
+                        background: 'var(--modal-field-bg)',
+                        border: '1px solid var(--modal-field-border)',
+                        borderRadius: '8px',
+                        textAlign: 'center',
+                      }}
+                    >
+                      <div style={{ fontSize: '10.5px', color: 'var(--modal-muted)', marginBottom: '3px' }}>
+                        Requests
+                      </div>
+                      <div style={{ fontSize: '14px', fontWeight: '700', fontFamily: 'monospace', color: 'var(--modal-text)' }}>
+                        {requestCount}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Latency + Build 2-column card */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                    <div
+                      style={{
+                        padding: '10px 12px',
+                        background: 'var(--modal-field-bg)',
+                        border: '1px solid var(--modal-field-border)',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                        <span style={{ fontSize: '11px', color: 'var(--modal-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Wifi size={12} /> Latency
+                        </span>
+                        <span style={{ fontSize: '12px', fontWeight: '700', fontFamily: 'monospace', color: '#22c55e' }}>
+                          {latency != null ? `${latency}ms` : '—'}
+                        </span>
+                      </div>
+                      <div style={{ height: '4px', width: '100%', borderRadius: '99px', background: 'var(--modal-tab-track)', overflow: 'hidden' }}>
+                        <div
+                          style={{
+                            height: '100%',
+                            borderRadius: '99px',
+                            background: '#22c55e',
+                            width: `${latencyPercent}%`,
+                            transition: 'width 0.3s ease',
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        padding: '10px 12px',
+                        background: 'var(--modal-field-bg)',
+                        border: '1px solid var(--modal-field-border)',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <span style={{ fontSize: '11px', color: 'var(--modal-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Gauge size={12} /> Engine
+                        </span>
+                        <span
+                          style={{
+                            fontSize: '9.5px',
+                            fontWeight: '700',
+                            padding: '1px 5px',
+                            borderRadius: '4px',
+                            background: 'rgba(34, 197, 94, 0.15)',
+                            color: '#22c55e',
+                          }}
+                        >
+                          PASS
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '13px', fontWeight: '700', fontFamily: 'monospace', color: 'var(--modal-text)' }}>
+                        {BUILD_VERSION}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {/* Core Stack List */}
                   <div
                     style={{
-                      height: '100%',
-                      borderRadius: '999px',
-                      background: isDark ? '#10b981' : '#1a1a19',
-                      width: `${latencyPercent}%`,
-                      transition: 'width 0.3s ease',
+                      padding: '12px 14px',
+                      background: 'var(--modal-field-bg)',
+                      border: '1px solid var(--modal-field-border)',
+                      borderRadius: '8px',
                     }}
-                  />
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--modal-muted)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                        Core Framework Stack
+                      </span>
+                      <span
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          fontSize: '10px',
+                          fontWeight: '700',
+                          padding: '2px 7px',
+                          borderRadius: '99px',
+                          background: 'rgba(34, 197, 94, 0.15)',
+                          border: '1px solid rgba(34, 197, 94, 0.3)',
+                          color: '#22c55e',
+                        }}
+                      >
+                        <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#22c55e' }} />
+                        Live
+                      </span>
+                    </div>
+                    <div style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(4, 1fr)',
+                      gap: '6px',
+                      width: '100%',
+                    }}>
+                      {CORE_STACK.map((tech) => (
+                        <div
+                          key={tech.name}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '4px',
+                            padding: '5px 4px',
+                            borderRadius: '6px',
+                            background: 'var(--modal-bg)',
+                            border: '1px solid var(--modal-border)',
+                            fontSize: '10.5px',
+                            fontWeight: '600',
+                            color: 'var(--modal-text)',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          <span>{tech.name}</span>
+                          <span style={{ fontSize: '10px', fontFamily: 'monospace', color: 'var(--modal-muted)' }}>
+                            {tech.version}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Runtime Details */}
+                  <div
+                    style={{
+                      padding: '12px 14px',
+                      background: 'var(--modal-field-bg)',
+                      border: '1px solid var(--modal-field-border)',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                      <span style={{ color: 'var(--modal-muted)' }}>Theme Mode:</span>
+                      <span style={{ fontWeight: '600', color: 'var(--modal-text)' }}>{theme === 'dark' ? 'Dark Mode' : 'Light Mode'}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                      <span style={{ color: 'var(--modal-muted)' }}>Runtime JS Heap:</span>
+                      <span style={{ fontFamily: 'monospace', fontWeight: '600', color: 'var(--modal-text)' }}>{memory != null ? `${memory.toFixed(2)} MB` : 'Dynamic'}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span style={{ color: 'var(--modal-muted)' }}>Render Thread:</span>
+                      <span style={{ fontWeight: '600', color: '#22c55e' }}>60 FPS Hardware-Accelerated</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="sd-tile" style={{ padding: '10px 12px' }}>
-                <p className="sd-section-label" style={{ marginBottom: '6px' }}>
-                  <Gauge size={13} /> Build
-                </p>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <p className="sd-tile-value" style={{ fontSize: '15px' }}>
-                    {BUILD_VERSION}
-                  </p>
-                  <span className="sd-pass-badge">pass</span>
-                </div>
-              </div>
+              )}
             </div>
 
-            {/* Core stack */}
-            <div className="sd-section-card">
-              <p className="sd-section-label">
-                <Layers size={13} /> Core stack
-              </p>
-              <div className="sd-stack-chips">
-                <span className="sd-live-chip">
-                  <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: isDark ? '#34d399' : '#34c759', animation: 'pulse 2s infinite' }} />
-                  live
-                </span>
-                {CORE_STACK.map((tech) => (
-                  <span key={tech.name} className="sd-tech-chip">
-                    {tech.name}{" "}
-                    <span className="sd-tech-ver">{tech.version}</span>
-                  </span>
-                ))}
-              </div>
+            {/* Bottom Actions */}
+            <div style={{ padding: '0 20px 20px' }}>
+              <button
+                type="button"
+                className="sd-action-btn"
+                onClick={onClose}
+                style={{
+                  width: '100%',
+                  height: '36px',
+                  background: 'var(--modal-btn-bg)',
+                  color: 'var(--modal-btn-text)',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  transition: 'all 0.15s ease',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                }}
+              >
+                <span>Dismiss diagnostics</span>
+                <ArrowRight size={14} />
+              </button>
             </div>
 
-            {/* Environment */}
-            <div className="sd-section-card" style={{ marginBottom: '0' }}>
-              <p className="sd-section-label" style={{ marginBottom: '6px' }}>
-                <SlidersHorizontal size={13} /> Environment
-              </p>
-              <p className="sd-env-theme-line">
-                Theme:{" "}
-                <span className="sd-env-theme-val">
-                  {theme === "dark" ? "dark mode" : "light mode"}
-                </span>
-              </p>
-              <p className="sd-env-meta-line">
-                fps {fps} · {memory != null ? `${memory.toFixed(1)}mb` : "—"} heap · {uptime}s session
-              </p>
+            {/* Bottom Footer Note */}
+            <div
+              style={{
+                padding: '9px 20px',
+                background: 'var(--modal-field-bg)',
+                borderTop: '1px solid var(--modal-border)',
+                fontSize: '10.5px',
+                color: 'var(--modal-muted)',
+                textAlign: 'center',
+              }}
+            >
+              Realtime client telemetry · Active session monitor
             </div>
           </motion.div>
         </motion.div>
@@ -606,8 +732,4 @@ export default function SystemDiagnostics({ open, onClose }) {
     </AnimatePresence>,
     document.body
   );
-}
-
-function varTextColor(isDark) {
-  return isDark ? '#f5f5f5' : '#0f172a';
 }

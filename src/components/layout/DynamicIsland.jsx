@@ -80,9 +80,11 @@ const WaveformSVG = ({ isSettled = false, activeColor = null }) => {
 };
 
 export default function DynamicIsland() {
-  const [isAdminPage, setIsAdminPage] = useState(() =>
-    typeof window !== 'undefined' && window.location.pathname.startsWith('/admin')
-  );
+  const [isHiddenPage, setIsHiddenPage] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const path = window.location.pathname;
+    return path.startsWith('/admin') || path.startsWith('/landing');
+  });
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 900);
   const [istTime, setIstTime] = useState('');
 
@@ -112,7 +114,8 @@ export default function DynamicIsland() {
   useEffect(() => {
     const checkPath = () => {
       if (typeof window !== 'undefined') {
-        setIsAdminPage(window.location.pathname.startsWith('/admin'));
+        const path = window.location.pathname;
+        setIsHiddenPage(path.startsWith('/admin') || path.startsWith('/landing'));
       }
     };
     checkPath();
@@ -182,7 +185,7 @@ export default function DynamicIsland() {
     };
   }, [isHudOpen, closeHud]);
 
-  if (isAdminPage) return null;
+  if (isHiddenPage) return null;
 
   const handleOpenCommandSearch = (e) => {
     e.stopPropagation();

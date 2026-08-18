@@ -1,8 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, GitCommit, GitBranch, ExternalLink, RefreshCw, Loader2, Check, Sparkles, Clock, User } from 'lucide-react';
+import {
+  X,
+  GitCommit,
+  GitBranch,
+  ExternalLink,
+  RefreshCw,
+  Loader2,
+  Clock,
+  Activity,
+  ArrowRight,
+  ShieldCheck,
+  CheckCircle2
+} from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
+import { useTheme } from '../../context/ThemeContext';
 
 const FALLBACK_COMMITS = [
   {
@@ -43,6 +56,7 @@ const FALLBACK_COMMITS = [
 ];
 
 export default function GitHubCommitsModal({ isOpen, onClose }) {
+  const { theme } = useTheme();
   const [commits, setCommits] = useState(FALLBACK_COMMITS);
   const [loading, setLoading] = useState(false);
   const [lastRefreshed, setLastRefreshed] = useState(new Date());
@@ -50,17 +64,16 @@ export default function GitHubCommitsModal({ isOpen, onClose }) {
   const fetchGithubCommits = async () => {
     setLoading(true);
     try {
-      // Attempt to fetch live commits from GitHub API
       const res = await fetch('https://api.github.com/users/sujith1546/events/public', {
-        headers: { 'Accept': 'application/vnd.github.v3+json' }
+        headers: { Accept: 'application/vnd.github.v3+json' }
       });
       if (res.ok) {
         const events = await res.json();
-        const pushEvents = events.filter(e => e.type === 'PushEvent');
+        const pushEvents = events.filter((e) => e.type === 'PushEvent');
         const liveCommits = [];
-        pushEvents.forEach(pe => {
+        pushEvents.forEach((pe) => {
           if (pe.payload && pe.payload.commits) {
-            pe.payload.commits.forEach(c => {
+            pe.payload.commits.forEach((c) => {
               liveCommits.push({
                 sha: c.sha ? c.sha.substring(0, 7) : 'head',
                 message: c.message || 'Updated codebase',
@@ -99,6 +112,11 @@ export default function GitHubCommitsModal({ isOpen, onClose }) {
 
   if (!isOpen || typeof document === 'undefined') return null;
 
+  const isDarkMode =
+    theme === 'dark' ||
+    (typeof document !== 'undefined' &&
+      document.documentElement.getAttribute('data-theme') === 'dark');
+
   const timeAgo = (dateStr) => {
     const d = new Date(dateStr);
     const now = new Date();
@@ -115,10 +133,13 @@ export default function GitHubCommitsModal({ isOpen, onClose }) {
   return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="github-modal-title"
+        <motion.div
+          key="gh-backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+          onClick={onClose}
           style={{
             position: 'fixed',
             inset: 0,
@@ -126,80 +147,118 @@ export default function GitHubCommitsModal({ isOpen, onClose }) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '1rem',
+            background: 'rgba(0, 0, 0, 0.35)',
+            backdropFilter: 'blur(4px)',
+            WebkitBackdropFilter: 'blur(4px)',
+            padding: '20px',
+            boxSizing: 'border-box',
           }}
         >
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            style={{
-              position: 'fixed',
-              inset: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.65)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-            }}
-          />
+          <style>{`
+            .gh-modal-card {
+              --modal-bg: #ffffff;
+              --modal-border: #e2e8f0;
+              --modal-text: #0f172a;
+              --modal-muted: #64748b;
+              --modal-field-bg: #f8fafc;
+              --modal-field-border: #cbd5e1;
+              --modal-tab-track: #f1f5f9;
+              --modal-tab-active-bg: #0f172a;
+              --modal-tab-active-text: #ffffff;
+              --modal-btn-bg: #0f172a;
+              --modal-btn-hover: #1e293b;
+              --modal-btn-text: #ffffff;
+              --modal-shadow: 0 8px 24px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.1);
+              color-scheme: light;
+            }
 
-          {/* Modal Container */}
+            .gh-modal-card.dark-mode {
+              --modal-bg: #18191d;
+              --modal-border: rgba(255, 255, 255, 0.12);
+              --modal-text: #ffffff;
+              --modal-muted: #94a3b8;
+              --modal-field-bg: #22242a;
+              --modal-field-border: rgba(255, 255, 255, 0.14);
+              --modal-tab-track: #141518;
+              --modal-tab-active-bg: #ffffff;
+              --modal-tab-active-text: #0f172a;
+              --modal-btn-bg: #ffffff;
+              --modal-btn-hover: #f1f5f9;
+              --modal-btn-text: #0f172a;
+              --modal-shadow: 0 12px 36px rgba(0, 0, 0, 0.45), 0 2px 10px rgba(0, 0, 0, 0.2);
+              color-scheme: dark;
+            }
+
+            .gh-action-btn:hover {
+              opacity: 0.92;
+              transform: translateY(-1px);
+            }
+            .gh-refresh-btn:hover {
+              background: var(--modal-tab-track) !important;
+            }
+          `}</style>
+
           <motion.div
+            key="gh-modal-content"
+            className={`gh-modal-card ${isDarkMode ? 'dark-mode' : 'light-mode'}`}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="github-modal-title"
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.96 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
             onClick={(e) => e.stopPropagation()}
-            initial={{ scale: 0.88, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.9, opacity: 0, y: 15 }}
-            transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
             style={{
               position: 'relative',
+              maxWidth: '440px',
               width: '100%',
-              maxWidth: '520px',
-              backgroundColor: 'var(--bg-secondary)',
-              borderRadius: '20px',
-              border: '1px solid var(--border-color)',
-              padding: '24px',
-              boxShadow: '0 25px 60px rgba(0, 0, 0, 0.3)',
-              zIndex: 1000000,
               maxHeight: '85vh',
+              background: 'var(--modal-bg)',
+              border: '0.5px solid var(--modal-border)',
+              borderRadius: '16px',
+              boxShadow: 'var(--modal-shadow)',
+              overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column',
-              overflow: 'hidden'
+              color: 'var(--modal-text)',
+              fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif",
             }}
           >
-            {/* Ambient Top Glow */}
+            {/* Identity Row: avatar + name + status | close button */}
             <div
               style={{
-                position: 'absolute',
-                top: '-40px',
-                right: '-40px',
-                width: '160px',
-                height: '160px',
-                borderRadius: '50%',
-                background: 'radial-gradient(circle, color-mix(in srgb, var(--primary-blue) 25%, transparent) 0%, transparent 70%)',
-                filter: 'blur(25px)',
-                pointerEvents: 'none'
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '16px 20px 10px',
+                flexShrink: 0,
               }}
-            />
-
-            {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            >
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: '#0f172a', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <FaGithub size={20} />
+                <div
+                  style={{
+                    width: '26px',
+                    height: '26px',
+                    borderRadius: '50%',
+                    background: '#0f172a',
+                    color: '#ffffff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.25)',
+                  }}
+                >
+                  <FaGithub size={13} />
                 </div>
                 <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <h3 id="github-modal-title" style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text-primary)', margin: 0, letterSpacing: '-0.01em' }}>
-                      GitHub Activity & Commits
-                    </h3>
-                    <span style={{ fontSize: '10px', fontWeight: 800, color: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.25)', padding: '2px 8px', borderRadius: '999px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <span style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: '#10b981' }} /> Live
-                    </span>
+                  <div style={{ fontSize: '12px', fontWeight: '500', color: 'var(--modal-text)', lineHeight: 1.2 }}>
+                    Sujith Thota
                   </div>
-                  <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '2px 0 0' }}>
-                    repository: sujith1546 / portfolio
-                  </p>
+                  <div style={{ fontSize: '10.5px', color: '#22c55e', fontWeight: '500', lineHeight: 1.2 }}>
+                    GitHub · public activity
+                  </div>
                 </div>
               </div>
 
@@ -210,81 +269,239 @@ export default function GitHubCommitsModal({ isOpen, onClose }) {
                 style={{
                   background: 'none',
                   border: 'none',
+                  color: 'var(--modal-muted)',
                   cursor: 'pointer',
-                  color: 'var(--text-muted)',
-                  padding: '4px',
-                  borderRadius: '6px',
+                  padding: 0,
+                  width: '26px',
+                  height: '26px',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  borderRadius: '50%',
+                  transition: 'color 0.15s ease',
                 }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--modal-text)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--modal-muted)')}
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
 
-            {/* Quick Metrics Bar */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', marginBottom: '16px' }}>
-              <div style={{ padding: '8px 12px', borderRadius: '10px', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)' }}>
-                <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Branch</div>
-                <div style={{ fontSize: '12.5px', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-                  <GitBranch size={13} color="var(--primary-blue)" /> main
+            {/* Heading + Subtitle, centered */}
+            <div style={{ textAlign: 'center', padding: '0 20px 12px', flexShrink: 0 }}>
+              <h3
+                id="github-modal-title"
+                style={{
+                  fontSize: '22px',
+                  fontWeight: '700',
+                  color: 'var(--modal-text)',
+                  margin: '0 0 4px',
+                  letterSpacing: '-0.02em',
+                }}
+              >
+                GitHub activity
+              </h3>
+              <p style={{ fontSize: '12px', color: 'var(--modal-muted)', margin: '0 0 12px' }}>
+                Recent commits &amp; push events on main branch
+              </p>
+
+              {/* Status pills row, centered */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    padding: '3px 9px',
+                    borderRadius: '99px',
+                    background: 'rgba(34, 197, 94, 0.15)',
+                    color: '#22c55e',
+                    border: '1px solid rgba(34, 197, 94, 0.3)',
+                  }}
+                >
+                  <GitBranch size={11} />
+                  <span>main branch</span>
+                </span>
+
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    padding: '3px 9px',
+                    borderRadius: '99px',
+                    background: 'var(--modal-field-bg)',
+                    color: 'var(--modal-text)',
+                    border: '1px solid var(--modal-border)',
+                  }}
+                >
+                  <GitCommit size={11} />
+                  <span style={{ fontFamily: 'monospace' }}>{commits[0]?.sha || 'e36daa7'}</span>
+                </span>
+
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    padding: '3px 9px',
+                    borderRadius: '99px',
+                    background: 'rgba(59, 130, 246, 0.15)',
+                    color: '#3b82f6',
+                    border: '1px solid rgba(59, 130, 246, 0.3)',
+                  }}
+                >
+                  <Activity size={11} />
+                  <span>{commits.length}+ commits</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Quick Metrics 3-Tile Row */}
+            <div style={{ padding: '0 20px 10px', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px', flexShrink: 0 }}>
+              <div
+                style={{
+                  padding: '8px 10px',
+                  borderRadius: '8px',
+                  background: 'var(--modal-field-bg)',
+                  border: '1px solid var(--modal-field-border)',
+                  textAlign: 'center',
+                }}
+              >
+                <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--modal-muted)', textTransform: 'uppercase' }}>
+                  Branch
+                </div>
+                <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--modal-text)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '2px' }}>
+                  <GitBranch size={12} color="#3b82f6" />
+                  <span>main</span>
                 </div>
               </div>
 
-              <div style={{ padding: '8px 12px', borderRadius: '10px', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)' }}>
-                <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Latest SHA</div>
-                <div style={{ fontSize: '12.5px', fontWeight: 800, color: 'var(--text-primary)', fontFamily: 'monospace', marginTop: '2px' }}>
+              <div
+                style={{
+                  padding: '8px 10px',
+                  borderRadius: '8px',
+                  background: 'var(--modal-field-bg)',
+                  border: '1px solid var(--modal-field-border)',
+                  textAlign: 'center',
+                }}
+              >
+                <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--modal-muted)', textTransform: 'uppercase' }}>
+                  Latest SHA
+                </div>
+                <div style={{ fontSize: '12px', fontWeight: '700', color: 'var(--modal-text)', fontFamily: 'monospace', marginTop: '2px' }}>
                   {commits[0]?.sha || 'e36daa7'}
                 </div>
               </div>
 
-              <div style={{ padding: '8px 12px', borderRadius: '10px', backgroundColor: 'var(--bg-primary)', border: '1px solid var(--border-color)' }}>
-                <div style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>Commits</div>
-                <div style={{ fontSize: '12.5px', fontWeight: 800, color: 'var(--text-primary)', marginTop: '2px' }}>
-                  {commits.length}+ logged
+              <div
+                style={{
+                  padding: '8px 10px',
+                  borderRadius: '8px',
+                  background: 'var(--modal-field-bg)',
+                  border: '1px solid var(--modal-field-border)',
+                  textAlign: 'center',
+                }}
+              >
+                <div style={{ fontSize: '10px', fontWeight: '700', color: 'var(--modal-muted)', textTransform: 'uppercase' }}>
+                  Status
+                </div>
+                <div style={{ fontSize: '12px', fontWeight: '700', color: '#22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '2px' }}>
+                  <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#22c55e' }} />
+                  <span>Synced</span>
                 </div>
               </div>
             </div>
 
-            {/* Commit List Container */}
-            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '4px', marginBottom: '16px' }}>
+            {/* Commits List Scrollable Container */}
+            <div
+              style={{
+                flex: 1,
+                overflowY: 'auto',
+                padding: '0 20px 10px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+                minHeight: '130px',
+              }}
+            >
               {loading ? (
-                <div style={{ padding: '32px', textAlign: 'center', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                  <Loader2 size={22} className="spin" style={{ animation: 'spin 1s linear infinite' }} />
-                  <span style={{ fontSize: '12.5px' }}>Fetching latest commits from GitHub...</span>
+                <div
+                  style={{
+                    padding: '30px 16px',
+                    textAlign: 'center',
+                    color: 'var(--modal-muted)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}
+                >
+                  <Loader2 size={20} style={{ animation: 'spin 1s linear infinite' }} />
+                  <span style={{ fontSize: '12px' }}>Fetching latest commits from GitHub...</span>
                 </div>
               ) : (
                 commits.map((commit, idx) => (
                   <motion.div
                     key={commit.sha + idx}
-                    initial={{ opacity: 0, y: 8 }}
+                    initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.04 }}
+                    transition={{ delay: idx * 0.03 }}
                     style={{
                       padding: '10px 12px',
-                      borderRadius: '10px',
-                      backgroundColor: 'var(--bg-primary)',
-                      border: '1px solid var(--border-color)',
+                      borderRadius: '8px',
+                      background: 'var(--modal-field-bg)',
+                      border: '1px solid var(--modal-field-border)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      gap: '12px',
-                      transition: 'border-color 0.15s ease'
+                      gap: '10px',
+                      transition: 'all 0.15s ease',
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', minWidth: 0 }}>
-                      <div style={{ width: '26px', height: '26px', borderRadius: '50%', backgroundColor: 'color-mix(in srgb, var(--primary-blue) 15%, var(--bg-secondary))', color: 'var(--primary-blue)', display: 'flex', alignItems: 'center', justifySelf: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>
-                        <GitCommit size={14} />
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', minWidth: 0, flex: 1 }}>
+                      <div
+                        style={{
+                          width: '24px',
+                          height: '24px',
+                          borderRadius: '50%',
+                          background: 'rgba(59, 130, 246, 0.15)',
+                          color: '#3b82f6',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0,
+                          marginTop: '1px',
+                        }}
+                      >
+                        <GitCommit size={13} />
                       </div>
-                      <div style={{ minWidth: 0 }}>
-                        <p style={{ fontSize: '12.5px', fontWeight: 600, color: 'var(--text-primary)', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <p
+                          style={{
+                            fontSize: '12px',
+                            fontWeight: 600,
+                            color: 'var(--modal-text)',
+                            margin: 0,
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}
+                        >
                           {commit.message}
                         </p>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '3px', fontSize: '11px', color: 'var(--text-muted)' }}>
-                          <span style={{ fontWeight: 600, color: 'var(--text-secondary)' }}>{commit.author}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px', fontSize: '10.5px', color: 'var(--modal-muted)' }}>
+                          <span style={{ fontWeight: 600, color: 'var(--modal-text)' }}>{commit.author}</span>
                           <span>•</span>
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}><Clock size={10} /> {timeAgo(commit.date)}</span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                            <Clock size={10} /> {timeAgo(commit.date)}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -294,79 +511,113 @@ export default function GitHubCommitsModal({ isOpen, onClose }) {
                       target="_blank"
                       rel="noreferrer"
                       style={{
-                        padding: '4px 8px',
-                        borderRadius: '6px',
-                        backgroundColor: 'var(--bg-secondary)',
-                        border: '1px solid var(--border-color)',
-                        color: 'var(--text-secondary)',
-                        fontSize: '11px',
+                        padding: '3px 7px',
+                        borderRadius: '5px',
+                        background: 'var(--modal-bg)',
+                        border: '1px solid var(--modal-border)',
+                        color: 'var(--modal-muted)',
+                        fontSize: '10.5px',
                         fontFamily: 'monospace',
                         fontWeight: 700,
                         textDecoration: 'none',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '4px',
-                        flexShrink: 0
+                        gap: '3px',
+                        flexShrink: 0,
+                        transition: 'color 0.15s ease',
                       }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--modal-text)')}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--modal-muted)')}
                     >
-                      {commit.sha} <ExternalLink size={11} />
+                      <span>{commit.sha}</span>
+                      <ExternalLink size={10} />
                     </a>
                   </motion.div>
                 ))
               )}
             </div>
 
-            {/* Modal Footer Actions */}
-            <div style={{ display: 'flex', gap: '10px', paddingTop: '12px', borderTop: '1px solid var(--border-color)' }}>
+            {/* Bottom Actions Row */}
+            <div
+              style={{
+                padding: '10px 20px 14px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                borderTop: '1px solid var(--modal-border)',
+                flexShrink: 0,
+              }}
+            >
               <a
                 href="https://github.com/sujith1546"
                 target="_blank"
                 rel="noreferrer"
+                className="gh-action-btn"
                 style={{
                   flex: 1,
-                  height: '38px',
-                  borderRadius: '10px',
-                  backgroundColor: '#0f172a',
-                  color: '#ffffff',
+                  height: '36px',
+                  background: 'var(--modal-btn-bg)',
+                  color: 'var(--modal-btn-text)',
+                  border: 'none',
+                  borderRadius: '8px',
                   fontSize: '12.5px',
-                  fontWeight: 700,
+                  fontWeight: '600',
                   textDecoration: 'none',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '6px',
-                  boxShadow: '0 3px 10px rgba(15, 23, 42, 0.2)'
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                  transition: 'all 0.15s ease',
                 }}
               >
-                <FaGithub size={15} /> Open GitHub Profile
+                <FaGithub size={14} />
+                <span>GitHub Profile</span>
               </a>
 
               <button
                 type="button"
+                className="gh-refresh-btn"
                 onClick={fetchGithubCommits}
                 disabled={loading}
                 style={{
-                  height: '38px',
+                  height: '36px',
                   padding: '0 14px',
-                  borderRadius: '10px',
-                  backgroundColor: 'var(--bg-primary)',
-                  color: 'var(--text-primary)',
-                  fontSize: '12.5px',
-                  fontWeight: 600,
-                  border: '1px solid var(--border-color)',
+                  borderRadius: '8px',
+                  background: 'var(--modal-field-bg)',
+                  color: 'var(--modal-text)',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  border: '1px solid var(--modal-field-border)',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '6px'
+                  gap: '6px',
+                  transition: 'all 0.15s ease',
                 }}
               >
-                <RefreshCw size={13} className={loading ? 'spin' : ''} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
-                Refresh
+                <RefreshCw size={12} style={{ animation: loading ? 'spin 1s linear infinite' : 'none' }} />
+                <span>Refresh</span>
               </button>
             </div>
+
+            {/* Bottom Footer Note */}
+            <div
+              style={{
+                padding: '8px 20px',
+                background: 'var(--modal-field-bg)',
+                borderTop: '1px solid var(--modal-border)',
+                fontSize: '10.5px',
+                color: 'var(--modal-muted)',
+                textAlign: 'center',
+                flexShrink: 0,
+              }}
+            >
+              Live GitHub event stream · Public repository
+            </div>
           </motion.div>
-        </div>
+        </motion.div>
       )}
     </AnimatePresence>,
     document.body

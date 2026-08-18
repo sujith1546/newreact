@@ -179,21 +179,23 @@
 
 /* Hero H1 — word-level animation */
 .ls-hero-h1 {
-  font-size: clamp(3rem, 7vw, 6rem);
-  font-weight: 800; line-height: 1.03; letter-spacing: -.04em;
+  font-size: clamp(2.8rem, 6.5vw, 5.5rem);
+  font-weight: 800; line-height: 1.15; letter-spacing: -.03em;
   color: #0f172a; margin-bottom: 24px;
 }
 .ls-word {
-  display: inline-block; overflow: hidden; vertical-align: bottom;
+  display: inline-block; vertical-align: baseline;
   animation: lsWordUp .65s cubic-bezier(.16,1,.3,1) both;
-  transform: translateY(110%);
 }
-.ls-word:nth-child(1)  { animation-delay: .1s; }
-.ls-word:nth-child(3)  { animation-delay: .18s; }
-.ls-word:nth-child(5)  { animation-delay: .26s; }
-.ls-word:nth-child(7)  { animation-delay: .34s; }
-.ls-word:nth-child(9)  { animation-delay: .42s; }
-@keyframes lsWordUp { to { transform: translateY(0); } }
+.ls-word:nth-child(1)  { animation-delay: .08s; }
+.ls-word:nth-child(2)  { animation-delay: .16s; }
+.ls-word:nth-child(3)  { animation-delay: .24s; }
+.ls-word:nth-child(4)  { animation-delay: .32s; }
+.ls-word:nth-child(5)  { animation-delay: .40s; }
+@keyframes lsWordUp {
+  from { transform: translateY(28px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
 
 .ls-grad-text {
   background: linear-gradient(100deg, #00d09c 0%, #4f46e5 60%, #f59e0b 100%);
@@ -207,9 +209,9 @@
 }
 
 .ls-hero-sub {
-  font-size: 1.2rem; color: var(--ls-dim); max-width: 660px;
-  margin: 0 auto 38px; line-height: 1.7;
-  animation: lsFadeUp .7s cubic-bezier(.16,1,.3,1) .8s both;
+  font-size: 1.15rem; color: var(--ls-dim); max-width: 680px;
+  margin: 0 auto 38px; line-height: 1.75; position: relative; z-index: 2;
+  animation: lsFadeUp .7s cubic-bezier(.16,1,.3,1) .5s both;
 }
 @keyframes lsFadeUp {
   from { opacity: 0; transform: translateY(20px); }
@@ -355,67 +357,69 @@
   margin: 0 auto; padding-top: 8px;
 }
 
-/* 3D Carousel */
+/* 3D Carousel (Expanded & Full-Spread) */
 .ls-carousel-wrapper {
   /* --ls-r3d is set dynamically by JS via inline style */
-  --card-w: 190px; --card-h: 265px;
-  width: 100%; max-width: 1200px; height: 380px;
-  margin: 0 auto 20px; position: relative;
-  perspective: 1400px; perspective-origin: 50% 40%;
+  --card-w: 260px;
+  --card-h: 345px;
+  width: 100%;
+  max-width: 1440px;
+  height: 480px;
+  margin: 0 auto 20px;
+  position: relative;
+  perspective: 1600px;
+  perspective-origin: 50% 42%;
   overflow: hidden;
 }
 .ls-carousel-wrapper::before, .ls-carousel-wrapper::after {
-  content: ''; position: absolute; top: 0; bottom: 0; width: 160px; z-index: 10; pointer-events: none;
+  content: ''; position: absolute; top: 0; bottom: 0; width: 140px; z-index: 10; pointer-events: none;
 }
-.ls-carousel-wrapper::before { left: 0; background: linear-gradient(90deg,#f8fafc,rgba(248,250,252,0)); }
-.ls-carousel-wrapper::after  { right:0; background: linear-gradient(270deg,#f8fafc,rgba(248,250,252,0)); }
+.ls-carousel-wrapper::before { left: 0; background: linear-gradient(90deg, #ffffff, rgba(255,255,255,0)); }
+.ls-carousel-wrapper::after  { right: 0; background: linear-gradient(270deg, #ffffff, rgba(255,255,255,0)); }
 
 /*
  * CORRECT KEYFRAME:
  * The entire track is pushed BACK by -radius so the ring's centre is
  * behind the screen plane. Each card then pushes FORWARD +radius.
  * Front card lands near Z=0 → large/close; back card at Z=-2r → small/far.
- * Without the translateZ(-r) the whole ring floats in FRONT of the camera
- * and depth is inside-out.
  */
 .ls-carousel-track {
   position: absolute; top: 50%; left: 50%; width: 0; height: 0;
   transform-style: preserve-3d;
-  animation: lsSpin 26s linear infinite;
+  animation: lsSpin 28s linear infinite;
 }
 .ls-carousel-wrapper:hover .ls-carousel-track { animation-play-state: paused; }
 @keyframes lsSpin {
-  from { transform: translateZ(calc(var(--ls-r3d, 340px) * -1)) rotateY(0deg); }
-  to   { transform: translateZ(calc(var(--ls-r3d, 340px) * -1)) rotateY(-360deg); }
+  from { transform: translateZ(calc(var(--ls-r3d, 520px) * -1)) rotateY(0deg); }
+  to   { transform: translateZ(calc(var(--ls-r3d, 520px) * -1)) rotateY(-360deg); }
 }
 
 /* Each card's transform is injected as an inline style by JS:
-   rotateY(i * step) translateZ(+radius)
-   The --ca custom prop is also set inline for the hover override. */
+   rotateY(i * step) translateZ(+radius) */
 .ls-cyl-card {
   position: absolute; top: 0; left: 0;
   width: var(--card-w); height: var(--card-h);
   margin-left: calc(var(--card-w) / -2); margin-top: calc(var(--card-h) / -2);
-  border-radius: 16px; background: #fff; border: 1px solid var(--ls-line);
+  border-radius: 20px; background: #ffffff; border: 1px solid var(--ls-line);
   overflow: hidden; backface-visibility: hidden;
   display: flex; flex-direction: column; justify-content: flex-end;
-  padding: 22px 20px; box-shadow: 0 20px 40px -20px rgba(15,23,42,.18);
+  padding: 26px 22px; box-shadow: 0 24px 50px -16px rgba(15,23,42,.14);
   cursor: pointer; user-select: none; text-align: left;
   transition: box-shadow .4s, border-color .4s;
 }
-/* Hover: pop the card forward by an extra 32px.  */
+/* Hover: pop the card forward by an extra 32px. */
 .ls-cyl-card:hover {
   box-shadow: 0 32px 70px -10px rgba(0,208,156,.35);
   border-color: var(--ls-brand); z-index: 50;
 }
 .ls-cyl-card .ls-cc-glyph {
-  position: absolute; top: 16px; right: 16px; width: 10px; height: 10px;
+  position: absolute; top: 18px; right: 18px; width: 10px; height: 10px;
   border-radius: 50%; background: var(--ls-brand);
   box-shadow: 0 0 10px rgba(0,208,156,.7); animation: lsSonar 2s infinite;
 }
-.ls-cyl-card .ls-cc-tag  { font-family: 'JetBrains Mono',monospace; font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:#059669; margin-bottom:6px; }
-.ls-cyl-card .ls-cc-title{ font-family: 'Space Grotesk',sans-serif; font-size:1.18rem; font-weight:800; line-height:1.2; letter-spacing:-.02em; color:#0f172a; margin-bottom:5px; }
-.ls-cyl-card .ls-cc-desc { font-size:.78rem; line-height:1.5; color:#64748b; }
+.ls-cyl-card .ls-cc-tag  { font-family: 'JetBrains Mono',monospace; font-size:.76rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:#059669; margin-bottom:7px; }
+.ls-cyl-card .ls-cc-title{ font-family: 'Space Grotesk',sans-serif; font-size:1.32rem; font-weight:800; line-height:1.2; letter-spacing:-.02em; color:#0f172a; margin-bottom:6px; }
+.ls-cyl-card .ls-cc-desc { font-size:.82rem; line-height:1.55; color:#64748b; }
 /* tones */
 .ls-te { background:linear-gradient(160deg,#fff,#f0fdf4 92%); border-color:rgba(16,185,129,.25); }
 .ls-ti { background:linear-gradient(160deg,#fff,#eef2ff 92%); border-color:rgba(99,102,241,.25); }
@@ -423,9 +427,14 @@
 .ls-tc { background:linear-gradient(160deg,#fff,#ecfeff 92%); border-color:rgba(6,182,212,.25); }
 .ls-tr { background:linear-gradient(160deg,#fff,#fff1f2 92%); border-color:rgba(244,63,94,.25); }
 
+@media (max-width: 1024px) {
+  .ls-carousel-wrapper { --card-w: 220px; --card-h: 300px; height: 420px; }
+  .ls-cyl-card .ls-cc-title { font-size: 1.15rem; }
+}
 @media (max-width: 640px) {
-  .ls-carousel-wrapper { --card-w:140px; --card-h:200px; height:280px; }
-  .ls-cyl-card .ls-cc-title { font-size:1rem; }
+  .ls-carousel-wrapper { --card-w: 160px; --card-h: 240px; height: 340px; }
+  .ls-cyl-card .ls-cc-title { font-size: 1.02rem; }
+  .ls-cyl-card { padding: 18px 16px; border-radius: 16px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .ls-carousel-track { animation: none !important; }
@@ -752,8 +761,6 @@
   .ls-process-item { grid-template-columns: 1fr; gap: 10px; }
   .ls-section { padding: 90px 6vw; }
   .ls-cta { padding: 70px 6vw; }
-  .ls-fc1, .ls-fc2, .ls-fc3, .ls-fc4 { display: none; }
-  .ls-carousel-wrapper { --card-w: 160px; --card-h: 230px; --ls-r3d: 320px; height: 330px; }
   .ls-family-grid { gap: 16px; }
   .ls-fam-card { width: 280px; height: 240px; }
 }

@@ -1,7 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Heart, Sparkles, Cpu, Layers, ShieldCheck, Mail, Code2, Zap, Terminal, Smartphone, Calendar, Database, Activity, Gauge } from 'lucide-react';
+import {
+  X, Heart, Sparkles, Layers, ShieldCheck, Mail,
+  Code2, Zap, Terminal, Smartphone, Calendar, Database,
+  Activity, Gauge, Cpu, CheckCircle2, ArrowRight
+} from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -23,6 +27,7 @@ const MARQUEE_ROW_2 = [
 
 export default function CraftedWithLoveModal({ isOpen, onClose }) {
   const { theme } = useTheme();
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'stack'
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -34,229 +39,448 @@ export default function CraftedWithLoveModal({ isOpen, onClose }) {
 
   if (!isOpen || typeof document === 'undefined') return null;
 
+  const isDarkMode =
+    theme === 'dark' ||
+    (typeof document !== 'undefined' &&
+      document.documentElement.getAttribute('data-theme') === 'dark');
+
   return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="crafted-modal-title"
+        <motion.div
+          key="cwl-backdrop"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+          onClick={onClose}
           style={{
             position: 'fixed',
             inset: 0,
             zIndex: 999999,
+            background: 'rgba(0, 0, 0, 0.35)',
+            backdropFilter: 'blur(4px)',
+            WebkitBackdropFilter: 'blur(4px)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '1rem',
+            padding: '20px',
+            boxSizing: 'border-box',
           }}
         >
-          {/* Backdrop Blur Overlay */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            style={{
-              position: 'fixed',
-              inset: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.65)',
-              backdropFilter: 'blur(14px)',
-              WebkitBackdropFilter: 'blur(14px)',
-            }}
-          />
+          <style>{`
+            .cwl-modal-card {
+              --modal-bg: #ffffff;
+              --modal-border: #e2e8f0;
+              --modal-text: #0f172a;
+              --modal-muted: #64748b;
+              --modal-field-bg: #f8fafc;
+              --modal-field-border: #cbd5e1;
+              --modal-tab-track: #f1f5f9;
+              --modal-tab-active-bg: #0f172a;
+              --modal-tab-active-text: #ffffff;
+              --modal-btn-bg: #0f172a;
+              --modal-btn-hover: #1e293b;
+              --modal-btn-text: #ffffff;
+              --modal-shadow: 0 8px 24px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.1);
+              color-scheme: light;
+            }
 
-          {/* Modal Container */}
+            .cwl-modal-card.dark-mode {
+              --modal-bg: #18191d;
+              --modal-border: rgba(255, 255, 255, 0.12);
+              --modal-text: #ffffff;
+              --modal-muted: #94a3b8;
+              --modal-field-bg: #22242a;
+              --modal-field-border: rgba(255, 255, 255, 0.14);
+              --modal-tab-track: #141518;
+              --modal-tab-active-bg: #ffffff;
+              --modal-tab-active-text: #0f172a;
+              --modal-btn-bg: #ffffff;
+              --modal-btn-hover: #f1f5f9;
+              --modal-btn-text: #0f172a;
+              --modal-shadow: 0 12px 36px rgba(0, 0, 0, 0.45), 0 2px 10px rgba(0, 0, 0, 0.2);
+              color-scheme: dark;
+            }
+
+            .cwl-action-btn:hover {
+              opacity: 0.92;
+              transform: translateY(-1px);
+            }
+            .cwl-secondary-btn:hover {
+              background: var(--modal-tab-track) !important;
+              color: var(--modal-text) !important;
+            }
+          `}</style>
+
           <motion.div
+            key="cwl-modal-content"
+            className={`cwl-modal-card ${isDarkMode ? 'dark-mode' : 'light-mode'}`}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="crafted-modal-title"
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.96 }}
+            transition={{ duration: 0.18, ease: 'easeOut' }}
             onClick={(e) => e.stopPropagation()}
-            initial={{ scale: 0.92, opacity: 0, y: 16 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.94, opacity: 0, y: 12 }}
-            transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
             style={{
               position: 'relative',
+              maxWidth: '400px',
               width: '100%',
-              maxWidth: '540px',
-              backgroundColor: 'var(--bg-secondary)',
-              borderRadius: '20px',
-              border: '1px solid var(--border-color)',
-              padding: '24px 26px',
-              boxShadow: '0 25px 60px rgba(0, 0, 0, 0.35)',
-              color: 'var(--text-primary)',
-              fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-              zIndex: 1000000,
+              background: 'var(--modal-bg)',
+              border: '0.5px solid var(--modal-border)',
+              borderRadius: '16px',
+              boxShadow: 'var(--modal-shadow)',
               overflow: 'hidden',
-              userSelect: 'none'
+              color: 'var(--modal-text)',
+              fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif",
             }}
           >
-            {/* Ambient Background Glow */}
+            {/* Identity Row: avatar + name + status | close button */}
             <div
               style={{
-                position: 'absolute',
-                top: '-60px',
-                right: '-60px',
-                width: '220px',
-                height: '220px',
-                borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(239, 68, 68, 0.18) 0%, transparent 70%)',
-                filter: 'blur(40px)',
-                pointerEvents: 'none'
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '16px 20px 10px',
               }}
-            />
-
-            {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '12px',
-                  backgroundColor: 'rgba(239, 68, 68, 0.12)',
-                  border: '1px solid rgba(239, 68, 68, 0.2)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#ef4444'
-                }}>
-                  <Heart size={20} fill="#ef4444" />
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div
+                  style={{
+                    width: '26px',
+                    height: '26px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #ef4444 0%, #f43f5e 100%)',
+                    color: '#ffffff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    boxShadow: '0 2px 6px rgba(239, 68, 68, 0.35)'
+                  }}
+                >
+                  <Heart size={13} fill="#ffffff" color="#ffffff" />
                 </div>
                 <div>
-                  <h3 id="crafted-modal-title" style={{ fontSize: '18px', fontWeight: 800, margin: 0, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
-                    Crafted with Love
-                  </h3>
-                  <span style={{ fontSize: '12px', color: 'var(--text-muted)', fontWeight: 500 }}>
-                    Designed & Engineered by Sujith Thota
-                  </span>
+                  <div style={{ fontSize: '12px', fontWeight: '500', color: 'var(--modal-text)', lineHeight: 1.2 }}>
+                    Sujith Thota
+                  </div>
+                  <div style={{ fontSize: '10.5px', color: '#22c55e', fontWeight: '500', lineHeight: 1.2 }}>
+                    Crafted · engineered
+                  </div>
                 </div>
               </div>
 
               <button
                 type="button"
                 onClick={onClose}
-                aria-label="Close modal"
+                aria-label="Close"
                 style={{
-                  background: 'transparent',
-                  border: '1px solid var(--border-color)',
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--modal-muted)',
                   cursor: 'pointer',
-                  color: 'var(--text-muted)',
-                  width: '30px',
-                  height: '30px',
-                  borderRadius: '8px',
+                  padding: 0,
+                  width: '26px',
+                  height: '26px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  transition: 'all 0.15s ease'
+                  borderRadius: '50%',
+                  transition: 'color 0.15s ease',
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = 'var(--text-primary)';
-                  e.currentTarget.style.borderColor = 'var(--text-muted)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = 'var(--text-muted)';
-                  e.currentTarget.style.borderColor = 'var(--border-color)';
-                }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--modal-text)')}
+                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--modal-muted)')}
               >
                 <X size={16} />
               </button>
             </div>
 
-            {/* Hero Quote Card */}
-            <div style={{
-              padding: '14px 16px',
-              borderRadius: '14px',
-              backgroundColor: 'var(--bg-primary)',
-              border: '1px solid var(--border-color)',
-              marginBottom: '16px',
-              fontSize: '12.5px',
-              color: 'var(--text-secondary)',
-              lineHeight: 1.55
-            }}>
-              <p style={{ margin: '0 0 4px', fontWeight: 700, color: 'var(--text-primary)' }}>
-                ✨ "Crafted with passion, precision, and modern web engineering."
+            {/* Heading + Subtitle, centered */}
+            <div style={{ textAlign: 'center', padding: '0 20px 14px' }}>
+              <h3
+                id="crafted-modal-title"
+                style={{
+                  fontSize: '22px',
+                  fontWeight: '700',
+                  color: 'var(--modal-text)',
+                  margin: '0 0 4px',
+                  letterSpacing: '-0.02em',
+                }}
+              >
+                Crafted with love
+              </h3>
+              <p style={{ fontSize: '12px', color: 'var(--modal-muted)', margin: '0 0 14px' }}>
+                High-performance portfolio architecture & design
               </p>
-              <span>
-                Ultra-fast responsive portfolio engineered with React 18, Vite 6, dynamic glassmorphism, and seamless PWA offline performance.
-              </span>
+
+              {/* Status pills row, centered */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    padding: '3px 9px',
+                    borderRadius: '99px',
+                    background: 'rgba(34, 197, 94, 0.15)',
+                    color: '#22c55e',
+                    border: '1px solid rgba(34, 197, 94, 0.3)',
+                  }}
+                >
+                  <Zap size={11} />
+                  <span>React 18</span>
+                </span>
+
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    padding: '3px 9px',
+                    borderRadius: '99px',
+                    background: 'var(--modal-field-bg)',
+                    color: 'var(--modal-text)',
+                    border: '1px solid var(--modal-border)',
+                  }}
+                >
+                  <Gauge size={11} />
+                  <span>60 FPS</span>
+                </span>
+
+                <span
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    padding: '3px 9px',
+                    borderRadius: '99px',
+                    background: 'rgba(245, 158, 11, 0.15)',
+                    color: '#f59e0b',
+                    border: '1px solid rgba(245, 158, 11, 0.3)',
+                  }}
+                >
+                  <ShieldCheck size={11} />
+                  <span>PWA Ready</span>
+                </span>
+              </div>
             </div>
 
-            {/* Dual Infinite Scroll Marquee Stack */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '18px' }}>
-              <span style={{ fontSize: '10.5px', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-                ARCHITECTURE & FEATURES MARQUEE
-              </span>
-
-              <InfiniteMarqueeTrack items={MARQUEE_ROW_1} direction="left" duration={22} />
-              <InfiniteMarqueeTrack items={MARQUEE_ROW_2} direction="right" duration={26} />
-            </div>
-
-            {/* Technology Stack Grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '20px' }}>
-              <TechStackCard
-                icon={<Code2 size={15} color="var(--primary-blue)" />}
-                title="Frontend Core"
-                desc="React 18 · Vite 6 · Framer Motion"
-              />
-              <TechStackCard
-                icon={<Gauge size={15} color="#10b981" />}
-                title="Performance & Design"
-                desc="Glassmorphism · 60 FPS · PWA v1.3"
-              />
-            </div>
-
-            {/* Footer Action Buttons */}
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <a
-                href="https://github.com/sujith1546/newreact"
-                target="_blank"
-                rel="noopener noreferrer"
+            {/* Pill tabs */}
+            <div
+              style={{
+                display: 'flex',
+                padding: '3px',
+                background: 'var(--modal-tab-track)',
+                border: '1px solid var(--modal-border)',
+                borderRadius: '99px',
+                margin: '0 20px 14px',
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setActiveTab('overview')}
                 style={{
                   flex: 1,
-                  height: '40px',
-                  borderRadius: '10px',
-                  backgroundColor: 'var(--bg-primary)',
-                  color: 'var(--text-primary)',
-                  border: '1px solid var(--border-color)',
-                  fontSize: '13px',
-                  fontWeight: 700,
+                  border: 'none',
+                  background: activeTab === 'overview' ? 'var(--modal-tab-active-bg)' : 'transparent',
+                  color: activeTab === 'overview' ? 'var(--modal-tab-active-text)' : 'var(--modal-muted)',
+                  padding: '7px 12px',
+                  borderRadius: '99px',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.18s ease',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '8px',
-                  textDecoration: 'none',
-                  transition: 'all 0.15s ease'
+                  gap: '6px',
+                  boxShadow: activeTab === 'overview' ? '0 1px 3px rgba(0,0,0,0.15)' : 'none',
                 }}
               >
-                <FaGithub size={15} /> Star on GitHub
-              </a>
-
+                <Sparkles size={13} />
+                <span>Overview</span>
+              </button>
               <button
                 type="button"
+                onClick={() => setActiveTab('stack')}
+                style={{
+                  flex: 1,
+                  border: 'none',
+                  background: activeTab === 'stack' ? 'var(--modal-tab-active-bg)' : 'transparent',
+                  color: activeTab === 'stack' ? 'var(--modal-tab-active-text)' : 'var(--modal-muted)',
+                  padding: '7px 12px',
+                  borderRadius: '99px',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.18s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  boxShadow: activeTab === 'stack' ? '0 1px 3px rgba(0,0,0,0.15)' : 'none',
+                }}
+              >
+                <Code2 size={13} />
+                <span>Tech Stack</span>
+              </button>
+            </div>
+
+            {/* Tab Contents */}
+            <div style={{ padding: '0 20px 16px' }}>
+              {activeTab === 'overview' ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {/* Quote / Highlight Card */}
+                  <div
+                    style={{
+                      padding: '12px 14px',
+                      background: 'var(--modal-field-bg)',
+                      border: '1px solid var(--modal-field-border)',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      lineHeight: 1.5,
+                      color: 'var(--modal-text)',
+                    }}
+                  >
+                    <div style={{ fontWeight: '600', marginBottom: '3px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <span>✨</span>
+                      <span>Passion, precision, & modern web engineering</span>
+                    </div>
+                    <div style={{ color: 'var(--modal-muted)', fontSize: '11.5px' }}>
+                      Ultra-fast responsive portfolio engineered with React 18, Vite 6, dynamic glassmorphism, and seamless PWA offline performance.
+                    </div>
+                  </div>
+
+                  {/* Architecture & Features Grid */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                    <div
+                      style={{
+                        padding: '10px 12px',
+                        background: 'var(--modal-field-bg)',
+                        border: '1px solid var(--modal-field-border)',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '2px',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', fontWeight: '600', color: 'var(--modal-text)' }}>
+                        <Code2 size={13} color="#3b82f6" />
+                        <span>Frontend Core</span>
+                      </div>
+                      <span style={{ fontSize: '10.5px', color: 'var(--modal-muted)' }}>
+                        React 18 · Vite 6 · Motion
+                      </span>
+                    </div>
+
+                    <div
+                      style={{
+                        padding: '10px 12px',
+                        background: 'var(--modal-field-bg)',
+                        border: '1px solid var(--modal-field-border)',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '2px',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', fontWeight: '600', color: 'var(--modal-text)' }}>
+                        <Gauge size={13} color="#10b981" />
+                        <span>Performance</span>
+                      </div>
+                      <span style={{ fontSize: '10.5px', color: 'var(--modal-muted)' }}>
+                        Glass · 60 FPS · PWA v1.3
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ fontSize: '10.5px', fontWeight: '700', color: 'var(--modal-muted)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                    ARCHITECTURE & FEATURES MARQUEE
+                  </div>
+                  <InfiniteMarqueeTrack items={MARQUEE_ROW_1} direction="left" duration={22} />
+                  <InfiniteMarqueeTrack items={MARQUEE_ROW_2} direction="right" duration={26} />
+                </div>
+              )}
+            </div>
+
+            {/* Bottom Actions Row */}
+            <div style={{ padding: '0 20px 20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <button
+                type="button"
+                className="cwl-action-btn"
                 onClick={() => {
                   onClose();
                   window.dispatchEvent(new CustomEvent('open-email'));
                 }}
                 style={{
-                  flex: 1,
-                  height: '40px',
-                  borderRadius: '10px',
-                  backgroundColor: 'var(--primary-blue)',
-                  color: '#ffffff',
+                  width: '100%',
+                  height: '36px',
+                  background: 'var(--modal-btn-bg)',
+                  color: 'var(--modal-btn-text)',
                   border: 'none',
+                  borderRadius: '8px',
                   fontSize: '13px',
-                  fontWeight: 700,
+                  fontWeight: '600',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '8px',
-                  boxShadow: '0 4px 14px color-mix(in srgb, var(--primary-blue) 35%, transparent)'
+                  transition: 'all 0.15s ease',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
                 }}
               >
-                <Mail size={15} /> Get in Touch
+                <span>Get in touch</span>
+                <ArrowRight size={14} />
               </button>
+
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11px', color: 'var(--modal-muted)' }}>
+                <span>Handcrafted by Sujith</span>
+                <a
+                  href="https://github.com/sujith1546/newreact"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: '#3b82f6',
+                    textDecoration: 'underline',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    fontWeight: 500,
+                  }}
+                >
+                  <FaGithub size={12} />
+                  <span>GitHub Repository</span>
+                </a>
+              </div>
+            </div>
+
+            {/* Subtle bottom note matching admin console */}
+            <div
+              style={{
+                padding: '10px 20px',
+                background: 'var(--modal-field-bg)',
+                borderTop: '1px solid var(--modal-border)',
+                fontSize: '10.5px',
+                color: 'var(--modal-muted)',
+                textAlign: 'center',
+              }}
+            >
+              Open source · Optimized for all devices &amp; offline mode
             </div>
           </motion.div>
-        </div>
+        </motion.div>
       )}
     </AnimatePresence>,
     document.body
@@ -268,17 +492,19 @@ function InfiniteMarqueeTrack({ items, direction = 'left', duration = 24 }) {
   const animName = direction === 'left' ? 'marqueeScrollLeft' : 'marqueeScrollRight';
 
   return (
-    <div style={{
-      position: 'relative',
-      width: '100%',
-      height: '34px',
-      borderRadius: '10px',
-      backgroundColor: 'var(--bg-primary)',
-      border: '1px solid var(--border-color)',
-      overflow: 'hidden',
-      display: 'flex',
-      alignItems: 'center'
-    }}>
+    <div
+      style={{
+        position: 'relative',
+        width: '100%',
+        height: '32px',
+        borderRadius: '8px',
+        backgroundColor: 'var(--modal-field-bg)',
+        border: '1px solid var(--modal-field-border)',
+        overflow: 'hidden',
+        display: 'flex',
+        alignItems: 'center',
+      }}
+    >
       <style>{`
         @keyframes marqueeScrollLeft {
           0% { transform: translateX(0); }
@@ -294,26 +520,30 @@ function InfiniteMarqueeTrack({ items, direction = 'left', duration = 24 }) {
       `}</style>
 
       {/* Gradient Fade Masks */}
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        bottom: 0,
-        width: '28px',
-        background: 'linear-gradient(to right, var(--bg-primary) 20%, transparent)',
-        zIndex: 2,
-        pointerEvents: 'none'
-      }} />
-      <div style={{
-        position: 'absolute',
-        top: 0,
-        right: 0,
-        bottom: 0,
-        width: '28px',
-        background: 'linear-gradient(to left, var(--bg-primary) 20%, transparent)',
-        zIndex: 2,
-        pointerEvents: 'none'
-      }} />
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          bottom: 0,
+          width: '24px',
+          background: 'linear-gradient(to right, var(--modal-field-bg) 20%, transparent)',
+          zIndex: 2,
+          pointerEvents: 'none',
+        }}
+      />
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          bottom: 0,
+          width: '24px',
+          background: 'linear-gradient(to left, var(--modal-field-bg) 20%, transparent)',
+          zIndex: 2,
+          pointerEvents: 'none',
+        }}
+      />
 
       {/* Continuous Animated Track */}
       <div
@@ -321,9 +551,9 @@ function InfiniteMarqueeTrack({ items, direction = 'left', duration = 24 }) {
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '8px',
+          gap: '6px',
           width: 'max-content',
-          animation: `${animName} ${duration}s linear infinite`
+          animation: `${animName} ${duration}s linear infinite`,
         }}
       >
         {quadItems.map((item, idx) => (
@@ -332,27 +562,29 @@ function InfiniteMarqueeTrack({ items, direction = 'left', duration = 24 }) {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
-              padding: '3px 8px',
+              gap: '5px',
+              padding: '2px 7px',
               borderRadius: '6px',
-              backgroundColor: 'color-mix(in srgb, var(--text-primary) 5%, var(--bg-primary))',
-              border: '1px solid var(--border-color)',
+              backgroundColor: 'var(--modal-bg)',
+              border: '1px solid var(--modal-border)',
               fontSize: '11px',
-              fontWeight: 700,
-              color: 'var(--text-primary)',
-              whiteSpace: 'nowrap'
+              fontWeight: 600,
+              color: 'var(--modal-text)',
+              whiteSpace: 'nowrap',
             }}
           >
             {item.icon}
             <span>{item.name}</span>
-            <span style={{
-              fontSize: '9px',
-              fontWeight: 800,
-              padding: '1px 4px',
-              borderRadius: '4px',
-              backgroundColor: 'color-mix(in srgb, var(--primary-blue) 14%, transparent)',
-              color: 'var(--primary-blue)'
-            }}>
+            <span
+              style={{
+                fontSize: '9px',
+                fontWeight: 700,
+                padding: '1px 4px',
+                borderRadius: '4px',
+                backgroundColor: 'rgba(59, 130, 246, 0.12)',
+                color: '#3b82f6',
+              }}
+            >
               {item.tag}
             </span>
           </div>
@@ -361,24 +593,3 @@ function InfiniteMarqueeTrack({ items, direction = 'left', duration = 24 }) {
     </div>
   );
 }
-
-function TechStackCard({ icon, title, desc }) {
-  return (
-    <div style={{
-      padding: '10px 12px',
-      borderRadius: '10px',
-      backgroundColor: 'var(--bg-primary)',
-      border: '1px solid var(--border-color)',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '3px'
-    }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-        {icon}
-        <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)' }}>{title}</span>
-      </div>
-      <span style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>{desc}</span>
-    </div>
-  );
-}
-

@@ -40,21 +40,26 @@ const CAROUSEL_CARDS = [
 
 
 // ─── Carousel Radius Hook ────────────────────────────────────────────────────
-// Mirrors the reference HTML's JS: radius = (cardWidth/2) / tan(PI/n) + 40
-// Sets --ls-r3d on the wrapper and injects rotateY + translateZ per card.
+// Calculates wide cylinder radius: radius = (cardWidth / 2) / tan(PI / n) + 60
+// Updates --ls-r3d and injects rotateY + translateZ dynamically on mount and window resize.
 function useCarousel(wrapperRef, n) {
   useEffect(() => {
-    const wrapper = wrapperRef.current;
-    if (!wrapper) return;
-    const isMobile = window.innerWidth <= 640;
-    const cardW = isMobile ? 140 : 190;
-    const radius = Math.round((cardW / 2) / Math.tan(Math.PI / n)) + 40;
-    const step = 360 / n;
-    wrapper.style.setProperty('--ls-r3d', radius + 'px');
-    const cards = wrapper.querySelectorAll('.ls-cyl-card');
-    cards.forEach((card, i) => {
-      card.style.transform = `rotateY(${i * step}deg) translateZ(${radius}px)`;
-    });
+    function updateLayout() {
+      const wrapper = wrapperRef.current;
+      if (!wrapper) return;
+      const w = window.innerWidth;
+      const cardW = w <= 640 ? 160 : (w <= 1024 ? 220 : 260);
+      const radius = Math.round((cardW / 2) / Math.tan(Math.PI / n)) + 60;
+      const step = 360 / n;
+      wrapper.style.setProperty('--ls-r3d', radius + 'px');
+      const cards = wrapper.querySelectorAll('.ls-cyl-card');
+      cards.forEach((card, i) => {
+        card.style.transform = `rotateY(${i * step}deg) translateZ(${radius}px)`;
+      });
+    }
+    updateLayout();
+    window.addEventListener('resize', updateLayout);
+    return () => window.removeEventListener('resize', updateLayout);
   }, [wrapperRef, n]);
 }
 
@@ -341,7 +346,9 @@ export default function LandingShowcase() {
             <br />
             <span className="ls-word">systems</span>{' '}
             <span className="ls-word">with</span>{' '}
-            <span className="ls-word ls-grad-text">precision.</span>
+            <span className="ls-word">
+              <span className="ls-grad-text">precision.</span>
+            </span>
           </h1>
 
           <p className="ls-hero-sub">
