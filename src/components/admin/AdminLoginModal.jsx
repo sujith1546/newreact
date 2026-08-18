@@ -32,6 +32,7 @@ export default function AdminLoginModal({ isOpen, onClose }) {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isShaking, setIsShaking] = useState(false);
 
   // Lockout State
   const [attempts, setAttempts] = useState(0);
@@ -132,6 +133,8 @@ export default function AdminLoginModal({ isOpen, onClose }) {
   const handleFailedAttempt = () => {
     const newAttempts = attempts + 1;
     setAttempts(newAttempts);
+    setIsShaking(true);
+    setTimeout(() => setIsShaking(false), 500);
     try {
       localStorage.setItem("admin_login_attempts", newAttempts.toString());
       if (newAttempts >= MAX_ATTEMPTS) {
@@ -378,7 +381,11 @@ export default function AdminLoginModal({ isOpen, onClose }) {
             aria-modal="true"
             aria-labelledby="admin-modal-title"
             initial={{ opacity: 0, scale: prefersReducedMotion ? 1 : 0.88, y: prefersReducedMotion ? 0 : 28, filter: "blur(6px)" }}
-            animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
+            animate={
+              isShaking
+                ? { x: [-12, 12, -8, 8, -4, 4, 0], opacity: 1, scale: 1, y: 0, transition: { duration: 0.45 } }
+                : { opacity: 1, scale: 1, y: 0, x: 0, filter: "blur(0px)" }
+            }
             exit={{ opacity: 0, scale: prefersReducedMotion ? 1 : 0.94, y: prefersReducedMotion ? 0 : 16, filter: "blur(4px)", transition: { duration: 0.16, ease: [0.32, 0, 0.67, 0] } }}
             transition={{ type: "spring", damping: 25, stiffness: 350, mass: 0.85 }}
             onClick={(e) => e.stopPropagation()}

@@ -682,17 +682,17 @@ export default function SettingsSidebar() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.22 }}
+            transition={{ duration: 0.22, ease: 'easeOut' }}
             onClick={() => setIsOpen(false)}
             style={{
               position: 'fixed',
               inset: 0,
               zIndex: 2000000,
               backgroundColor: isDark
-                ? 'rgba(0,0,0,var(--modal-backdrop-opacity, 0.6))'
-                : 'rgba(15,23,42,var(--modal-backdrop-opacity, 0.35))',
-              backdropFilter: 'blur(var(--modal-backdrop-blur, var(--glass-blur, 12px)))',
-              WebkitBackdropFilter: 'blur(var(--modal-backdrop-blur, var(--glass-blur, 12px)))',
+                ? 'rgba(0, 0, 0, 0.55)'
+                : 'rgba(15, 23, 42, 0.4)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
             }}
           />
 
@@ -702,7 +702,7 @@ export default function SettingsSidebar() {
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+            transition={{ type: 'spring', damping: 30, stiffness: 320, mass: 0.85 }}
             style={{
               position: 'fixed',
               top: 0,
@@ -710,11 +710,11 @@ export default function SettingsSidebar() {
               bottom: 0,
               width: '100%',
               maxWidth: '390px',
-              backgroundColor: isDark ? 'rgba(11, 15, 25, 0.94)' : 'rgba(255, 255, 255, 0.96)',
-              borderLeft: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
-              boxShadow: isDark ? '-24px 0 60px rgba(0,0,0,0.8)' : '-16px 0 40px rgba(0,0,0,0.1)',
-              backdropFilter: 'blur(var(--modal-card-blur, 16px))',
-              WebkitBackdropFilter: 'blur(var(--modal-card-blur, 16px))',
+              backgroundColor: isDark ? 'rgba(14, 18, 28, 0.96)' : 'rgba(255, 255, 255, 0.98)',
+              borderLeft: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}`,
+              boxShadow: isDark ? '-24px 0 60px rgba(0,0,0,0.8)' : '-16px 0 40px rgba(0,0,0,0.15)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
               zIndex: 2000001,
               display: 'flex',
               flexDirection: 'column',
@@ -759,34 +759,29 @@ export default function SettingsSidebar() {
                 </div>
               </div>
 
-              <button
+              <motion.button
                 type="button"
                 onClick={() => setIsOpen(false)}
                 aria-label="Close preferences"
+                whileHover={{ scale: 1.15, rotate: 90 }}
+                whileTap={{ scale: 0.88 }}
+                transition={{ type: 'spring', damping: 20, stiffness: 400 }}
                 style={{
+                  background: 'none',
+                  border: 'none',
+                  color: isDark ? '#94a3b8' : '#64748b',
+                  cursor: 'pointer',
+                  padding: 0,
                   width: '32px',
                   height: '32px',
                   borderRadius: '50%',
-                  border: 'none',
-                  backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
-                  color: isDark ? '#94a3b8' : '#64748b',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)';
-                  e.currentTarget.style.color = isDark ? '#ffffff' : '#0f172a';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)';
-                  e.currentTarget.style.color = isDark ? '#94a3b8' : '#64748b';
                 }}
               >
-                <X size={16} />
-              </button>
+                <X size={18} />
+              </motion.button>
             </div>
 
             {/* Segmented Sliding Tab Bar */}
