@@ -138,7 +138,7 @@ export default function GitHubCommitsModal({ isOpen, onClose }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
+          transition={{ duration: 0.22, ease: 'easeOut' }}
           onClick={onClose}
           style={{
             position: 'fixed',
@@ -148,17 +148,17 @@ export default function GitHubCommitsModal({ isOpen, onClose }) {
             alignItems: 'center',
             justifyContent: 'center',
             background: isDarkMode
-              ? 'rgba(0, 0, 0, var(--modal-backdrop-opacity, 0.45))'
-              : 'rgba(15, 23, 42, var(--modal-backdrop-opacity, 0.35))',
-            backdropFilter: 'blur(var(--modal-backdrop-blur, var(--glass-blur, 12px)))',
-            WebkitBackdropFilter: 'blur(var(--modal-backdrop-blur, var(--glass-blur, 12px)))',
+              ? 'rgba(0, 0, 0, 0.55)'
+              : 'rgba(15, 23, 42, 0.4)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
             padding: '20px',
             boxSizing: 'border-box',
           }}
         >
           <style>{`
             .gh-modal-card {
-              --modal-bg: rgba(255, 255, 255, 0.97);
+              --modal-bg: rgba(255, 255, 255, 0.98);
               --modal-border: #e2e8f0;
               --modal-text: #0f172a;
               --modal-muted: #64748b;
@@ -170,14 +170,14 @@ export default function GitHubCommitsModal({ isOpen, onClose }) {
               --modal-btn-bg: #0f172a;
               --modal-btn-hover: #1e293b;
               --modal-btn-text: #ffffff;
-              --modal-shadow: 0 8px 24px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.1);
-              backdrop-filter: blur(var(--modal-card-blur, 16px));
-              -webkit-backdrop-filter: blur(var(--modal-card-blur, 16px));
+              --modal-shadow: 0 20px 50px -12px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05);
+              backdrop-filter: blur(20px);
+              -webkit-backdrop-filter: blur(20px);
               color-scheme: light;
             }
 
             .gh-modal-card.dark-mode {
-              --modal-bg: rgba(24, 25, 29, 0.94);
+              --modal-bg: rgba(20, 22, 28, 0.96);
               --modal-border: rgba(255, 255, 255, 0.12);
               --modal-text: #ffffff;
               --modal-muted: #94a3b8;
@@ -189,9 +189,9 @@ export default function GitHubCommitsModal({ isOpen, onClose }) {
               --modal-btn-bg: #ffffff;
               --modal-btn-hover: #f1f5f9;
               --modal-btn-text: #0f172a;
-              --modal-shadow: 0 12px 36px rgba(0, 0, 0, 0.45), 0 2px 10px rgba(0, 0, 0, 0.2);
-              backdrop-filter: blur(var(--modal-card-blur, 16px));
-              -webkit-backdrop-filter: blur(var(--modal-card-blur, 16px));
+              --modal-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.1);
+              backdrop-filter: blur(20px);
+              -webkit-backdrop-filter: blur(20px);
               color-scheme: dark;
             }
 
@@ -204,31 +204,48 @@ export default function GitHubCommitsModal({ isOpen, onClose }) {
             }
           `}</style>
 
+          {/* Ambient Glow Aura */}
+          <div
+            style={{
+              position: 'absolute',
+              width: '420px',
+              height: '420px',
+              borderRadius: '50%',
+              background: isDarkMode
+                ? 'radial-gradient(circle, rgba(168, 85, 247, 0.16) 0%, rgba(59, 130, 246, 0.08) 45%, transparent 70%)'
+                : 'radial-gradient(circle, rgba(168, 85, 247, 0.1) 0%, rgba(59, 130, 246, 0.06) 45%, transparent 70%)',
+              filter: 'blur(40px)',
+              pointerEvents: 'none',
+              zIndex: 0,
+            }}
+          />
+
           <motion.div
             key="gh-modal-content"
             className={`gh-modal-card ${isDarkMode ? 'dark-mode' : 'light-mode'}`}
             role="dialog"
             aria-modal="true"
             aria-labelledby="github-modal-title"
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.96 }}
-            transition={{ duration: 0.18, ease: 'easeOut' }}
+            initial={{ opacity: 0, scale: 0.88, y: 28, filter: 'blur(6px)' }}
+            animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, scale: 0.94, y: 16, filter: 'blur(4px)', transition: { duration: 0.16, ease: [0.32, 0, 0.67, 0] } }}
+            transition={{ type: 'spring', damping: 25, stiffness: 350, mass: 0.85 }}
             onClick={(e) => e.stopPropagation()}
             style={{
               position: 'relative',
               maxWidth: '440px',
               width: '100%',
-              maxHeight: '85vh',
               background: 'var(--modal-bg)',
               border: '0.5px solid var(--modal-border)',
-              borderRadius: '16px',
+              borderRadius: '20px',
               boxShadow: 'var(--modal-shadow)',
               overflow: 'hidden',
-              display: 'flex',
-              flexDirection: 'column',
               color: 'var(--modal-text)',
               fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif",
+              maxHeight: '88vh',
+              display: 'flex',
+              flexDirection: 'column',
+              zIndex: 1,
             }}
           >
             {/* Identity Row: avatar + name + status | close button */}
@@ -237,15 +254,15 @@ export default function GitHubCommitsModal({ isOpen, onClose }) {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                padding: '16px 20px 10px',
+                padding: '18px 20px 10px',
                 flexShrink: 0,
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <div
                   style={{
-                    width: '26px',
-                    height: '26px',
+                    width: '28px',
+                    height: '28px',
                     borderRadius: '50%',
                     background: '#0f172a',
                     color: '#ffffff',
@@ -253,44 +270,44 @@ export default function GitHubCommitsModal({ isOpen, onClose }) {
                     alignItems: 'center',
                     justifyContent: 'center',
                     flexShrink: 0,
-                    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.25)',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.35)',
                   }}
                 >
-                  <FaGithub size={13} />
+                  <FaGithub size={14} />
                 </div>
                 <div>
-                  <div style={{ fontSize: '12px', fontWeight: '500', color: 'var(--modal-text)', lineHeight: 1.2 }}>
+                  <div style={{ fontSize: '12.5px', fontWeight: '600', color: 'var(--modal-text)', lineHeight: 1.2 }}>
                     Sujith Thota
                   </div>
-                  <div style={{ fontSize: '10.5px', color: '#22c55e', fontWeight: '500', lineHeight: 1.2 }}>
+                  <div style={{ fontSize: '10.5px', color: '#22c55e', fontWeight: '600', lineHeight: 1.2 }}>
                     GitHub · public activity
                   </div>
                 </div>
               </div>
 
-              <button
+              <motion.button
                 type="button"
                 onClick={onClose}
                 aria-label="Close"
+                whileHover={{ scale: 1.15, rotate: 90 }}
+                whileTap={{ scale: 0.88 }}
+                transition={{ type: 'spring', damping: 20, stiffness: 400 }}
                 style={{
                   background: 'none',
                   border: 'none',
                   color: 'var(--modal-muted)',
                   cursor: 'pointer',
                   padding: 0,
-                  width: '26px',
-                  height: '26px',
+                  width: '28px',
+                  height: '28px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   borderRadius: '50%',
-                  transition: 'color 0.15s ease',
                 }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--modal-text)')}
-                onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--modal-muted)')}
               >
-                <X size={16} />
-              </button>
+                <X size={17} />
+              </motion.button>
             </div>
 
             {/* Heading + Subtitle, centered */}

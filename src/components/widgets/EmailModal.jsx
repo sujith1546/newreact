@@ -255,6 +255,7 @@ export default function EmailModal({ isOpen, onClose }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
+          transition={{ duration: 0.22, ease: 'easeOut' }}
           style={{
             position: 'fixed',
             inset: 0,
@@ -263,11 +264,11 @@ export default function EmailModal({ isOpen, onClose }) {
             alignItems: maximized ? 'stretch' : 'flex-end',
             justifyContent: maximized ? 'stretch' : 'flex-end',
             background: isDark
-              ? 'rgba(0, 0, 0, var(--modal-backdrop-opacity, 0.5))'
-              : 'rgba(15, 23, 42, var(--modal-backdrop-opacity, 0.35))',
-            backdropFilter: 'blur(var(--modal-backdrop-blur, var(--glass-blur, 12px)))',
-            WebkitBackdropFilter: 'blur(var(--modal-backdrop-blur, var(--glass-blur, 12px)))',
-            padding: maximized ? '0' : '0 16px 0 0',
+              ? 'rgba(0, 0, 0, 0.55)'
+              : 'rgba(15, 23, 42, 0.4)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            padding: maximized ? '0' : '0 20px 0 0',
           }}
           onClick={onClose}
         >
@@ -492,29 +493,43 @@ export default function EmailModal({ isOpen, onClose }) {
 
           <motion.div
             className="gm-card"
-            initial={{ y: 80, opacity: 0, scale: 0.96 }}
-            animate={{ y: 0, opacity: 1, scale: 1 }}
-            exit={{ y: 80, opacity: 0, scale: 0.96 }}
-            transition={{ type: 'spring', damping: 26, stiffness: 260 }}
+            initial={{ y: 70, opacity: 0, scale: 0.92, filter: 'blur(5px)' }}
+            animate={{ y: 0, opacity: 1, scale: 1, filter: 'blur(0px)' }}
+            exit={{ y: 60, opacity: 0, scale: 0.94, filter: 'blur(4px)', transition: { duration: 0.16, ease: [0.32, 0, 0.67, 0] } }}
+            transition={{ type: 'spring', damping: 26, stiffness: 340, mass: 0.85 }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Gmail Header */}
             <div className="gm-header">
               <span className="gm-title">New Message</span>
               <div className="gm-window-actions">
-                <button className="gm-icon-btn" onClick={onClose} title="Minimize">
+                <motion.button
+                  className="gm-icon-btn"
+                  onClick={onClose}
+                  title="Minimize"
+                  whileHover={{ scale: 1.15 }}
+                  whileTap={{ scale: 0.9 }}
+                >
                   <Minus size={14} />
-                </button>
-                <button
+                </motion.button>
+                <motion.button
                   className="gm-icon-btn"
                   onClick={() => setMaximized((m) => !m)}
                   title={maximized ? 'Pop in' : 'Full screen'}
+                  whileHover={{ scale: 1.15 }}
+                  whileTap={{ scale: 0.9 }}
                 >
                   <Maximize2 size={13} />
-                </button>
-                <button className="gm-icon-btn" onClick={onClose} title="Save & close">
+                </motion.button>
+                <motion.button
+                  className="gm-icon-btn"
+                  onClick={onClose}
+                  title="Save & close"
+                  whileHover={{ scale: 1.15, rotate: 90 }}
+                  whileTap={{ scale: 0.9 }}
+                >
                   <X size={15} />
-                </button>
+                </motion.button>
               </div>
             </div>
 

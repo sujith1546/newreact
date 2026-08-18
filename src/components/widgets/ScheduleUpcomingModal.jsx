@@ -172,19 +172,20 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop Blur */}
-          {!minimized && !maximized && (
+          {/* Optional backdrop when not minimized */}
+          {!minimized && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
+              transition={{ duration: 0.22, ease: 'easeOut' }}
               onClick={onClose}
               style={{
                 position: 'fixed',
                 inset: 0,
-                backgroundColor: 'rgba(0, 0, 0, var(--modal-backdrop-opacity, 0.45))',
-                backdropFilter: 'blur(var(--modal-backdrop-blur, var(--glass-blur, 12px)))',
-                WebkitBackdropFilter: 'blur(var(--modal-backdrop-blur, var(--glass-blur, 12px)))',
+                backgroundColor: 'rgba(0, 0, 0, 0.55)',
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
                 zIndex: 999998,
               }}
             />
@@ -195,10 +196,10 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
             role="dialog"
             aria-modal="true"
             aria-labelledby="scheduling-header-title"
-            initial={{ opacity: 0, y: 30, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 30, scale: 0.96 }}
-            transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            initial={{ opacity: 0, y: 40, scale: 0.90, filter: 'blur(5px)' }}
+            animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+            exit={{ opacity: 0, y: 30, scale: 0.94, filter: 'blur(4px)', transition: { duration: 0.16, ease: [0.32, 0, 0.67, 0] } }}
+            transition={{ type: 'spring', damping: 25, stiffness: 350, mass: 0.85 }}
             style={{
               position: 'fixed',
               right: maximized ? '0px' : '24px',
@@ -209,12 +210,12 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
               maxWidth: maximized ? '100vw' : 'calc(100vw - 32px)',
               height: maximized ? '100vh' : 'auto',
               zIndex: 999999,
-              backgroundColor: 'rgba(24, 25, 29, 0.95)',
-              backdropFilter: 'blur(var(--modal-card-blur, 16px))',
-              WebkitBackdropFilter: 'blur(var(--modal-card-blur, 16px))',
-              borderRadius: maximized ? '0px' : '14px',
+              backgroundColor: 'rgba(20, 22, 28, 0.96)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              borderRadius: maximized ? '0px' : '18px',
               border: '1px solid rgba(255, 255, 255, 0.12)',
-              boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05)',
+              boxShadow: '0 24px 60px -12px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.08)',
               color: '#ffffff',
               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
               overflow: 'hidden',
@@ -226,7 +227,7 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
             {/* Dark Window Header Bar */}
             <div
               style={{
-                height: '42px',
+                height: '44px',
                 backgroundColor: '#1c1d22',
                 padding: '0 16px',
                 display: 'flex',
@@ -247,16 +248,18 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
 
               {/* Window Actions (- ⤢ ✕) */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }} onClick={(e) => e.stopPropagation()}>
-                <button
+                <motion.button
                   type="button"
                   onClick={() => setMinimized(!minimized)}
                   title={minimized ? "Restore" : "Minimize"}
+                  whileHover={{ scale: 1.15 }}
+                  whileTap={{ scale: 0.9 }}
                   style={{
                     background: 'none',
                     border: 'none',
                     color: '#94a3b8',
-                    width: '26px',
-                    height: '26px',
+                    width: '28px',
+                    height: '28px',
                     borderRadius: '50%',
                     display: 'flex',
                     alignItems: 'center',
@@ -265,21 +268,23 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
                   }}
                 >
                   <Minus size={14} />
-                </button>
+                </motion.button>
 
-                <button
+                <motion.button
                   type="button"
                   onClick={() => {
                     setMaximized(!maximized);
                     setMinimized(false);
                   }}
                   title={maximized ? "Restore" : "Maximize"}
+                  whileHover={{ scale: 1.15 }}
+                  whileTap={{ scale: 0.9 }}
                   style={{
                     background: 'none',
                     border: 'none',
                     color: '#94a3b8',
-                    width: '26px',
-                    height: '26px',
+                    width: '28px',
+                    height: '28px',
                     borderRadius: '50%',
                     display: 'flex',
                     alignItems: 'center',
@@ -288,18 +293,20 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
                   }}
                 >
                   {maximized ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
-                </button>
+                </motion.button>
 
-                <button
+                <motion.button
                   type="button"
                   onClick={onClose}
                   title="Close"
+                  whileHover={{ scale: 1.15, rotate: 90 }}
+                  whileTap={{ scale: 0.9 }}
                   style={{
                     background: 'none',
                     border: 'none',
                     color: '#94a3b8',
-                    width: '26px',
-                    height: '26px',
+                    width: '28px',
+                    height: '28px',
                     borderRadius: '50%',
                     display: 'flex',
                     alignItems: 'center',
@@ -308,7 +315,7 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
                   }}
                 >
                   <X size={15} />
-                </button>
+                </motion.button>
               </div>
             </div>
 

@@ -50,10 +50,14 @@ export default function MobilePreviewModal({ isOpen, onClose }) {
   return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div
+        <motion.div
           role="dialog"
           aria-modal="true"
           aria-label="Device preview simulator"
+          initial={{ opacity: 0, scale: 0.94, filter: 'blur(6px)' }}
+          animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
+          exit={{ opacity: 0, scale: 0.96, filter: 'blur(4px)', transition: { duration: 0.18, ease: [0.32, 0, 0.67, 0] } }}
+          transition={{ type: 'spring', damping: 25, stiffness: 340, mass: 0.85 }}
           style={{
             position: "fixed",
             inset: 0,
@@ -70,7 +74,7 @@ export default function MobilePreviewModal({ isOpen, onClose }) {
           {/* Header Bar */}
           <div
             style={{
-              height: "50px",
+              height: "52px",
               padding: "0 1.5rem",
               borderBottom: "1px solid var(--border-color)",
               backgroundColor: "var(--bg-secondary)",
@@ -83,8 +87,8 @@ export default function MobilePreviewModal({ isOpen, onClose }) {
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <div
                 style={{
-                  width: "30px",
-                  height: "30px",
+                  width: "32px",
+                  height: "32px",
                   borderRadius: "8px",
                   backgroundColor: "color-mix(in srgb, var(--primary-blue) 14%, var(--bg-primary))",
                   color: "var(--primary-blue)",
@@ -106,10 +110,13 @@ export default function MobilePreviewModal({ isOpen, onClose }) {
               </div>
             </div>
 
-            <button
+            <motion.button
               type="button"
               onClick={onClose}
               aria-label="Close device preview"
+              whileHover={{ scale: 1.15, rotate: 90 }}
+              whileTap={{ scale: 0.88 }}
+              transition={{ type: 'spring', damping: 20, stiffness: 400 }}
               style={{
                 background: "none",
                 border: "none",
@@ -121,11 +128,10 @@ export default function MobilePreviewModal({ isOpen, onClose }) {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                transition: "all 0.15s ease"
               }}
             >
               <X size={18} />
-            </button>
+            </motion.button>
           </div>
 
           {/* Main Content Stage */}
@@ -181,7 +187,7 @@ export default function MobilePreviewModal({ isOpen, onClose }) {
               </DeviceFrame>
             </div>
           </div>
-        </div>
+        </motion.div>
       )}
     </AnimatePresence>,
     document.body

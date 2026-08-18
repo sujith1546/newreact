@@ -17,28 +17,36 @@ import { useState, useEffect } from "react";
 // ---- Animation variants ----
 const backdropVariants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { duration: 0.25 } },
-  exit: { opacity: 0, transition: { duration: 0.2 } },
+  visible: { opacity: 1, transition: { duration: 0.22, ease: 'easeOut' } },
+  exit: { opacity: 0, transition: { duration: 0.16 } },
 };
 
 const boxVariants = {
-  hidden: { opacity: 0, scale: 0.9 },
+  hidden: { opacity: 0, scale: 0.88, y: 28, filter: 'blur(6px)' },
   visible: {
     opacity: 1,
     scale: 1,
-    transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] },
+    y: 0,
+    filter: 'blur(0px)',
+    transition: { type: 'spring', damping: 25, stiffness: 350, mass: 0.85 },
   },
-  exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } },
+  exit: {
+    opacity: 0,
+    scale: 0.94,
+    y: 16,
+    filter: 'blur(4px)',
+    transition: { duration: 0.16, ease: [0.32, 0, 0.67, 0] },
+  },
 };
 
 const containerVariants = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
+  visible: { transition: { staggerChildren: 0.05, delayChildren: 0.08 } },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 12 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { type: 'spring', damping: 20, stiffness: 300 } },
 };
 
 export default function QRModal({
@@ -458,9 +466,16 @@ export default function QRModal({
               <div className={`qr-flip-wrap${flipped ? " flipped" : ""}`}>
               {/* ---------- FRONT FACE: QR + share ---------- */}
               <div className="qr-face qr-face-front">
-                <button className="qr-modal-close" onClick={onClose} aria-label="Close">
+                <motion.button
+                  className="qr-modal-close"
+                  onClick={onClose}
+                  aria-label="Close"
+                  whileHover={{ scale: 1.15, rotate: 90 }}
+                  whileTap={{ scale: 0.88 }}
+                  transition={{ type: 'spring', damping: 20, stiffness: 400 }}
+                >
                   <X size={18} />
-                </button>
+                </motion.button>
 
                 <motion.div
                   className="qr-modal-content"
@@ -490,8 +505,8 @@ export default function QRModal({
                       <span>WhatsApp</span>
                     </button>
                     <button className="qr-share-btn" onClick={handleCopy} aria-label="Copy link">
-                      {copied ? <Check size={20} /> : <Copy size={20} />}
-                      <span>{copied ? "Copied" : "Copy link"}</span>
+                      {copied ? <Check size={20} color="#16a34a" /> : <Copy size={20} />}
+                      <span>{copied ? "Copied!" : "Copy"}</span>
                     </button>
                   </motion.div>
 
@@ -500,17 +515,24 @@ export default function QRModal({
                     className="qr-flip-btn"
                     onClick={() => setFlipped(true)}
                   >
-                    <RotateCw size={15} />
-                    View business card
+                    <IdCard size={15} />
+                    View Business Card
                   </motion.button>
                 </motion.div>
               </div>
 
               {/* ---------- BACK FACE: digital business card ---------- */}
               <div className="qr-face qr-face-back">
-                <button className="qr-modal-close" onClick={onClose} aria-label="Close">
+                <motion.button
+                  className="qr-modal-close"
+                  onClick={onClose}
+                  aria-label="Close"
+                  whileHover={{ scale: 1.15, rotate: 90 }}
+                  whileTap={{ scale: 0.88 }}
+                  transition={{ type: 'spring', damping: 20, stiffness: 400 }}
+                >
                   <X size={18} />
-                </button>
+                </motion.button>
 
                 <div className="qr-card-header">
                   <div className="qr-card-avatar">{initials}</div>

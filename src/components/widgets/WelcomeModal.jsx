@@ -347,9 +347,9 @@ export default function WelcomeModal({ onNavClick }) {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: rgba(0, 0, 0, var(--modal-backdrop-opacity, 0.45));
-          backdrop-filter: blur(var(--modal-backdrop-blur, var(--glass-blur, 12px)));
-          -webkit-backdrop-filter: blur(var(--modal-backdrop-blur, var(--glass-blur, 12px)));
+          background: rgba(0, 0, 0, 0.55);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
           padding: 16px;
           animation: fadeIn 0.25s ease-out forwards;
         }
@@ -363,11 +363,11 @@ export default function WelcomeModal({ onNavClick }) {
           color: var(--text-primary);
           border: 1px solid rgba(128, 128, 128, 0.2);
           padding: 32px 28px;
-          box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
-          backdrop-filter: blur(var(--modal-card-blur, 16px));
-          -webkit-backdrop-filter: blur(var(--modal-card-blur, 16px));
+          box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.08);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
           outline: none;
-          animation: scaleIn 0.3s ease-out forwards;
+          animation: scaleIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         [data-theme="dark"] .welcome-card {
@@ -718,8 +718,8 @@ export default function WelcomeModal({ onNavClick }) {
         }
 
         @keyframes scaleIn {
-          from { opacity: 0; transform: scale(0.95) translateY(8px); }
-          to { opacity: 1; transform: scale(1) translateY(0); }
+          from { opacity: 0; transform: scale(0.88) translateY(24px); filter: blur(6px); }
+          to { opacity: 1; transform: scale(1) translateY(0); filter: blur(0px); }
         }
 
         @keyframes confetti {
