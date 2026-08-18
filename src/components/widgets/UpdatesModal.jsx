@@ -529,8 +529,8 @@ export default function UpdatesModal({ isOpen, onClose }) {
                     gap: '5px',
                     fontSize: '11px',
                     fontWeight: '600',
-                    padding: '3px 9px',
-                    borderRadius: '99px',
+                    padding: '3px 8px',
+                    borderRadius: '7px',
                     background: 'rgba(34, 197, 94, 0.15)',
                     color: '#22c55e',
                     border: '1px solid rgba(34, 197, 94, 0.3)',
@@ -547,8 +547,8 @@ export default function UpdatesModal({ isOpen, onClose }) {
                     gap: '5px',
                     fontSize: '11px',
                     fontWeight: '600',
-                    padding: '3px 9px',
-                    borderRadius: '99px',
+                    padding: '3px 8px',
+                    borderRadius: '7px',
                     background: 'var(--modal-field-bg)',
                     color: 'var(--modal-text)',
                     border: '1px solid var(--modal-border)',
@@ -565,8 +565,8 @@ export default function UpdatesModal({ isOpen, onClose }) {
                     gap: '5px',
                     fontSize: '11px',
                     fontWeight: '600',
-                    padding: '3px 9px',
-                    borderRadius: '99px',
+                    padding: '3px 8px',
+                    borderRadius: '7px',
                     background: 'rgba(245, 158, 11, 0.15)',
                     color: '#f59e0b',
                     border: '1px solid rgba(245, 158, 11, 0.3)',
@@ -578,14 +578,14 @@ export default function UpdatesModal({ isOpen, onClose }) {
               </div>
             </div>
 
-            {/* Filter Tabs Track */}
+            {/* Filter Tabs Track - curved rectangle */}
             <div
               style={{
                 display: 'flex',
                 padding: '3px',
                 background: 'var(--modal-tab-track)',
                 border: '1px solid var(--modal-border)',
-                borderRadius: '99px',
+                borderRadius: '10px',
                 margin: '0 20px 10px',
                 flexShrink: 0,
               }}
@@ -604,7 +604,7 @@ export default function UpdatesModal({ isOpen, onClose }) {
                       background: active ? 'var(--modal-tab-active-bg)' : 'transparent',
                       color: active ? 'var(--modal-tab-active-text)' : 'var(--modal-muted)',
                       padding: '6px 8px',
-                      borderRadius: '99px',
+                      borderRadius: '7px',
                       fontSize: '11.5px',
                       fontWeight: '600',
                       cursor: 'pointer',

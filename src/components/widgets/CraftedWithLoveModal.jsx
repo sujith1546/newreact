@@ -248,8 +248,8 @@ export default function CraftedWithLoveModal({ isOpen, onClose }) {
                     gap: '5px',
                     fontSize: '11px',
                     fontWeight: '600',
-                    padding: '3px 9px',
-                    borderRadius: '99px',
+                    padding: '3px 8px',
+                    borderRadius: '7px',
                     background: 'rgba(34, 197, 94, 0.15)',
                     color: '#22c55e',
                     border: '1px solid rgba(34, 197, 94, 0.3)',
@@ -266,8 +266,8 @@ export default function CraftedWithLoveModal({ isOpen, onClose }) {
                     gap: '5px',
                     fontSize: '11px',
                     fontWeight: '600',
-                    padding: '3px 9px',
-                    borderRadius: '99px',
+                    padding: '3px 8px',
+                    borderRadius: '7px',
                     background: 'var(--modal-field-bg)',
                     color: 'var(--modal-text)',
                     border: '1px solid var(--modal-border)',
@@ -284,8 +284,8 @@ export default function CraftedWithLoveModal({ isOpen, onClose }) {
                     gap: '5px',
                     fontSize: '11px',
                     fontWeight: '600',
-                    padding: '3px 9px',
-                    borderRadius: '99px',
+                    padding: '3px 8px',
+                    borderRadius: '7px',
                     background: 'rgba(245, 158, 11, 0.15)',
                     color: '#f59e0b',
                     border: '1px solid rgba(245, 158, 11, 0.3)',
@@ -297,14 +297,14 @@ export default function CraftedWithLoveModal({ isOpen, onClose }) {
               </div>
             </div>
 
-            {/* Pill tabs */}
+            {/* Segmented tabs - curved rectangle */}
             <div
               style={{
                 display: 'flex',
                 padding: '3px',
                 background: 'var(--modal-tab-track)',
                 border: '1px solid var(--modal-border)',
-                borderRadius: '99px',
+                borderRadius: '10px',
                 margin: '0 20px 14px',
               }}
             >
@@ -317,7 +317,7 @@ export default function CraftedWithLoveModal({ isOpen, onClose }) {
                   background: activeTab === 'overview' ? 'var(--modal-tab-active-bg)' : 'transparent',
                   color: activeTab === 'overview' ? 'var(--modal-tab-active-text)' : 'var(--modal-muted)',
                   padding: '7px 12px',
-                  borderRadius: '99px',
+                  borderRadius: '7px',
                   fontSize: '12px',
                   fontWeight: '600',
                   cursor: 'pointer',
@@ -341,7 +341,7 @@ export default function CraftedWithLoveModal({ isOpen, onClose }) {
                   background: activeTab === 'stack' ? 'var(--modal-tab-active-bg)' : 'transparent',
                   color: activeTab === 'stack' ? 'var(--modal-tab-active-text)' : 'var(--modal-muted)',
                   padding: '7px 12px',
-                  borderRadius: '99px',
+                  borderRadius: '7px',
                   fontSize: '12px',
                   fontWeight: '600',
                   cursor: 'pointer',

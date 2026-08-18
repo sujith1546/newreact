@@ -785,46 +785,49 @@ export default function SettingsSidebar() {
             </div>
 
             {/* Segmented Sliding Tab Bar */}
-            <div
-              style={{
-                display: 'flex',
-                padding: '8px 16px',
-                gap: '4px',
-                borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)'}`,
-                backgroundColor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)',
-              }}
-            >
-              {TABS.map((tab) => {
-                const active = activeTab === tab.id;
-                const TabIcon = tab.icon;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setActiveTab(tab.id)}
-                    style={{
-                      flex: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '5px',
-                      padding: '7px 4px',
-                      borderRadius: '8px',
-                      border: 'none',
-                      cursor: 'pointer',
-                      backgroundColor: active ? (isDark ? '#1e293b' : '#0f172a') : 'transparent',
-                      color: active ? '#ffffff' : (isDark ? '#94a3b8' : '#64748b'),
-                      fontWeight: active ? 600 : 500,
-                      fontSize: '12px',
-                      transition: 'all 0.15s ease',
-                      position: 'relative',
-                    }}
-                  >
-                    <TabIcon size={14} />
-                    <span>{tab.label}</span>
-                  </button>
-                );
-              })}
+            <div style={{ padding: '10px 16px 6px', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)'}` }}>
+              <div
+                style={{
+                  display: 'flex',
+                  padding: '3px',
+                  borderRadius: '10px',
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+                  border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
+                  gap: '3px',
+                }}
+              >
+                {TABS.map((tab) => {
+                  const active = activeTab === tab.id;
+                  const TabIcon = tab.icon;
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setActiveTab(tab.id)}
+                      style={{
+                        flex: 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '5px',
+                        padding: '7px 4px',
+                        borderRadius: '7px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        backgroundColor: active ? (isDark ? '#1e293b' : '#ffffff') : 'transparent',
+                        color: active ? (isDark ? '#ffffff' : '#0f172a') : (isDark ? '#94a3b8' : '#64748b'),
+                        fontWeight: active ? 700 : 500,
+                        fontSize: '12px',
+                        boxShadow: active ? '0 1px 3px rgba(0,0,0,0.12)' : 'none',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      <TabIcon size={13} />
+                      <span>{tab.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Scrollable Settings Body */}
