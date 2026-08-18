@@ -339,9 +339,11 @@ export default function UpdatesModal({ isOpen, onClose }) {
             position: 'fixed',
             inset: 0,
             zIndex: 999999,
-            background: 'rgba(0, 0, 0, 0.35)',
-            backdropFilter: 'blur(4px)',
-            WebkitBackdropFilter: 'blur(4px)',
+            background: isDarkMode
+              ? 'rgba(0, 0, 0, var(--modal-backdrop-opacity, 0.45))'
+              : 'rgba(15, 23, 42, var(--modal-backdrop-opacity, 0.35))',
+            backdropFilter: 'blur(var(--modal-backdrop-blur, var(--glass-blur, 12px)))',
+            WebkitBackdropFilter: 'blur(var(--modal-backdrop-blur, var(--glass-blur, 12px)))',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -351,7 +353,7 @@ export default function UpdatesModal({ isOpen, onClose }) {
         >
           <style>{`
             .updates-modal-card {
-              --modal-bg: #ffffff;
+              --modal-bg: rgba(255, 255, 255, 0.97);
               --modal-border: #e2e8f0;
               --modal-text: #0f172a;
               --modal-muted: #64748b;
@@ -364,11 +366,13 @@ export default function UpdatesModal({ isOpen, onClose }) {
               --modal-btn-hover: #1e293b;
               --modal-btn-text: #ffffff;
               --modal-shadow: 0 8px 24px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.1);
+              backdrop-filter: blur(var(--modal-card-blur, 16px));
+              -webkit-backdrop-filter: blur(var(--modal-card-blur, 16px));
               color-scheme: light;
             }
 
             .updates-modal-card.dark-mode {
-              --modal-bg: #18191d;
+              --modal-bg: rgba(24, 25, 29, 0.94);
               --modal-border: rgba(255, 255, 255, 0.12);
               --modal-text: #ffffff;
               --modal-muted: #94a3b8;
@@ -381,6 +385,8 @@ export default function UpdatesModal({ isOpen, onClose }) {
               --modal-btn-hover: #f1f5f9;
               --modal-btn-text: #0f172a;
               --modal-shadow: 0 12px 36px rgba(0, 0, 0, 0.45), 0 2px 10px rgba(0, 0, 0, 0.2);
+              backdrop-filter: blur(var(--modal-card-blur, 16px));
+              -webkit-backdrop-filter: blur(var(--modal-card-blur, 16px));
               color-scheme: dark;
             }
 

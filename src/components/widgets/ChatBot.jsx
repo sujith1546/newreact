@@ -773,8 +773,8 @@ export default function ChatBot() {
           width: 380px;
           max-height: 580px;
           background: var(--bg-secondary, #fff);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
+          backdrop-filter: blur(var(--modal-card-blur, 16px));
+          -webkit-backdrop-filter: blur(var(--modal-card-blur, 16px));
           border-radius: 24px;
           box-shadow: 0 20px 60px rgba(0,0,0,0.15);
           border: 1px solid rgba(128,128,128,0.2);

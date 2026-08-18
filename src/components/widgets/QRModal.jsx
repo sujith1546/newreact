@@ -216,9 +216,9 @@ export default function QRModal({
           display: flex;
           align-items: center;
           justify-content: center;
-          background: rgba(0, 0, 0, 0.7);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
+          background: rgba(0, 0, 0, var(--modal-backdrop-opacity, 0.6));
+          backdrop-filter: blur(var(--modal-backdrop-blur, var(--glass-blur, 12px)));
+          -webkit-backdrop-filter: blur(var(--modal-backdrop-blur, var(--glass-blur, 12px)));
           perspective: 1200px;
         }
         .qr-flip-wrap {

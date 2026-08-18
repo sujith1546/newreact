@@ -443,9 +443,9 @@ export default function CommandPalette() {
           position: fixed;
           inset: 0;
           z-index: 10000002;
-          background: rgba(0, 0, 0, 0.45);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
+          background: rgba(0, 0, 0, var(--modal-backdrop-opacity, 0.45));
+          backdrop-filter: blur(var(--modal-backdrop-blur, var(--glass-blur, 12px)));
+          -webkit-backdrop-filter: blur(var(--modal-backdrop-blur, var(--glass-blur, 12px)));
           display: flex;
           align-items: flex-start;
           justify-content: center;
@@ -462,6 +462,8 @@ export default function CommandPalette() {
           border: 1px solid var(--border-color, rgba(128, 128, 128, 0.2));
           border-radius: 16px;
           box-shadow: 0 30px 70px rgba(0, 0, 0, 0.2);
+          backdrop-filter: blur(var(--modal-card-blur, 16px));
+          -webkit-backdrop-filter: blur(var(--modal-card-blur, 16px));
           overflow: hidden;
           transition: max-width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }

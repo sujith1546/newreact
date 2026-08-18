@@ -688,9 +688,11 @@ export default function SettingsSidebar() {
               position: 'fixed',
               inset: 0,
               zIndex: 2000000,
-              backgroundColor: isDark ? 'rgba(0,0,0,0.7)' : 'rgba(15,23,42,0.3)',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
+              backgroundColor: isDark
+                ? 'rgba(0,0,0,var(--modal-backdrop-opacity, 0.6))'
+                : 'rgba(15,23,42,var(--modal-backdrop-opacity, 0.35))',
+              backdropFilter: 'blur(var(--modal-backdrop-blur, var(--glass-blur, 12px)))',
+              WebkitBackdropFilter: 'blur(var(--modal-backdrop-blur, var(--glass-blur, 12px)))',
             }}
           />
 
@@ -708,11 +710,11 @@ export default function SettingsSidebar() {
               bottom: 0,
               width: '100%',
               maxWidth: '390px',
-              backgroundColor: isDark ? '#0b0f19' : 'rgba(255,255,255,0.98)',
+              backgroundColor: isDark ? 'rgba(11, 15, 25, 0.94)' : 'rgba(255, 255, 255, 0.96)',
               borderLeft: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
               boxShadow: isDark ? '-24px 0 60px rgba(0,0,0,0.8)' : '-16px 0 40px rgba(0,0,0,0.1)',
-              backdropFilter: 'blur(16px)',
-              WebkitBackdropFilter: 'blur(16px)',
+              backdropFilter: 'blur(var(--modal-card-blur, 16px))',
+              WebkitBackdropFilter: 'blur(var(--modal-card-blur, 16px))',
               zIndex: 2000001,
               display: 'flex',
               flexDirection: 'column',

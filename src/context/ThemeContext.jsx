@@ -256,7 +256,15 @@ export function ThemeProvider({ children }) {
     
     // Apply CSS variables for glass intensity and contrast
     const blurMap = { light: '4px', medium: '12px', heavy: '24px' };
+    const cardBlurMap = { light: '8px', medium: '16px', heavy: '32px' };
+    const backdropOpacityMap = { light: '0.25', medium: '0.45', heavy: '0.7' };
+
     root.style.setProperty('--glass-blur', blurMap[glassIntensity] || '12px');
+    root.style.setProperty('--modal-backdrop-blur', blurMap[glassIntensity] || '12px');
+    root.style.setProperty('--modal-card-blur', cardBlurMap[glassIntensity] || '16px');
+    root.style.setProperty('--modal-backdrop-opacity', backdropOpacityMap[glassIntensity] || '0.45');
+    root.setAttribute('data-glass', glassIntensity || 'medium');
+
     if (highContrast) {
       root.classList.add('high-contrast');
     } else {

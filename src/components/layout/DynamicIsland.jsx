@@ -83,7 +83,7 @@ export default function DynamicIsland() {
   const [isHiddenPage, setIsHiddenPage] = useState(() => {
     if (typeof window === 'undefined') return false;
     const path = window.location.pathname;
-    return path.startsWith('/admin') || path.startsWith('/landing');
+    return path.startsWith('/admin');
   });
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 900);
   const [istTime, setIstTime] = useState('');
@@ -115,7 +115,7 @@ export default function DynamicIsland() {
     const checkPath = () => {
       if (typeof window !== 'undefined') {
         const path = window.location.pathname;
-        setIsHiddenPage(path.startsWith('/admin') || path.startsWith('/landing'));
+        setIsHiddenPage(path.startsWith('/admin'));
       }
     };
     checkPath();

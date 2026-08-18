@@ -182,9 +182,9 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
               style={{
                 position: 'fixed',
                 inset: 0,
-                backgroundColor: 'rgba(0, 0, 0, 0.45)',
-                backdropFilter: 'blur(6px)',
-                WebkitBackdropFilter: 'blur(6px)',
+                backgroundColor: 'rgba(0, 0, 0, var(--modal-backdrop-opacity, 0.45))',
+                backdropFilter: 'blur(var(--modal-backdrop-blur, var(--glass-blur, 12px)))',
+                WebkitBackdropFilter: 'blur(var(--modal-backdrop-blur, var(--glass-blur, 12px)))',
                 zIndex: 999998,
               }}
             />
@@ -209,7 +209,9 @@ export default function ScheduleUpcomingModal({ isOpen, onClose, availability = 
               maxWidth: maximized ? '100vw' : 'calc(100vw - 32px)',
               height: maximized ? '100vh' : 'auto',
               zIndex: 999999,
-              backgroundColor: '#18191d',
+              backgroundColor: 'rgba(24, 25, 29, 0.95)',
+              backdropFilter: 'blur(var(--modal-card-blur, 16px))',
+              WebkitBackdropFilter: 'blur(var(--modal-card-blur, 16px))',
               borderRadius: maximized ? '0px' : '14px',
               border: '1px solid rgba(255, 255, 255, 0.12)',
               boxShadow: '0 20px 50px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05)',

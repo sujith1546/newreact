@@ -715,18 +715,7 @@ export default function Sidebar({ activeSection, onNavClick }) {
       </div>
 
       <p className="sidebar-copyright">
-        &copy; {new Date().getFullYear()} All Rights Reserved{' '}
-        <Link
-          to="/landing"
-          style={{
-            color: 'inherit',
-            textDecoration: 'none',
-            cursor: 'pointer',
-          }}
-          title="Open Visual Showcase Landing Page"
-        >
-          Sujith
-        </Link>
+        &copy; {new Date().getFullYear()} All Rights Reserved Sujith Thota
       </p>
 
       <QRModal 

@@ -347,9 +347,9 @@ export default function WelcomeModal({ onNavClick }) {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: rgba(0, 0, 0, 0.45);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
+          background: rgba(0, 0, 0, var(--modal-backdrop-opacity, 0.45));
+          backdrop-filter: blur(var(--modal-backdrop-blur, var(--glass-blur, 12px)));
+          -webkit-backdrop-filter: blur(var(--modal-backdrop-blur, var(--glass-blur, 12px)));
           padding: 16px;
           animation: fadeIn 0.25s ease-out forwards;
         }
@@ -364,6 +364,8 @@ export default function WelcomeModal({ onNavClick }) {
           border: 1px solid rgba(128, 128, 128, 0.2);
           padding: 32px 28px;
           box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+          backdrop-filter: blur(var(--modal-card-blur, 16px));
+          -webkit-backdrop-filter: blur(var(--modal-card-blur, 16px));
           outline: none;
           animation: scaleIn 0.3s ease-out forwards;
         }

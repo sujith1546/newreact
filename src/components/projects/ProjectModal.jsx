@@ -337,9 +337,9 @@ function ModalStyles() {
 
       .pm-overlay {
         position: fixed; inset: 0; z-index: 10000;
-        background: rgba(15, 23, 42, 0.65);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
+        background: rgba(15, 23, 42, var(--modal-backdrop-opacity, 0.55));
+        backdrop-filter: blur(var(--modal-backdrop-blur, var(--glass-blur, 12px)));
+        -webkit-backdrop-filter: blur(var(--modal-backdrop-blur, var(--glass-blur, 12px)));
         display: flex; align-items: center; justify-content: center;
         padding: 20px;
       }
@@ -355,6 +355,8 @@ function ModalStyles() {
           var(--pm-bg-panel);
         border: 1px solid var(--pm-line);
         box-shadow: 0 24px 70px -12px rgba(0, 0, 0, 0.45);
+        backdrop-filter: blur(var(--modal-card-blur, 16px));
+        -webkit-backdrop-filter: blur(var(--modal-card-blur, 16px));
         display: flex; flex-direction: column;
         color: var(--pm-text);
         border-radius: 14px;
