@@ -5,7 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 
     <!-- ══════════════ SECURITY HEADERS ══════════════ -->
-    <!-- Content Security Policy v3: restricts script execution, data sources, and connection targets -->
+    <!--
+      NOTE: frame-ancestors, report-uri, X-Frame-Options are NOT supported
+      in <meta> CSP tags — they are enforced via HTTP headers in vercel.json.
+      This meta tag handles script/style/connect restrictions for local dev.
+    -->
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
       script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval'
@@ -27,22 +31,20 @@
         https://*.supabase.co
         wss://*.supabase.co
         https://api.groq.com
-        https://api.abuseipdb.com;
+        https://api.abuseipdb.com
+        https://api.github.com
+        https://cdn.jsdelivr.net
+        https://api.ipify.org
+        https://get.geojs.io
+        https://freeipapi.com
+        https://api.open-meteo.com;
       media-src 'self' blob:;
       object-src 'none';
       base-uri 'self';
       form-action 'self';
-      frame-ancestors 'none';
-      upgrade-insecure-requests;
-      report-uri /api/csp-report;
     " />
-    <!-- Prevent this page being embedded in iframes (clickjacking protection) -->
-    <meta http-equiv="X-Frame-Options" content="DENY" />
-    <!-- Prevent MIME sniffing attacks -->
-    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
-    <!-- Limit referrer information leakage -->
-    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
     <!-- Restrict access to sensitive browser APIs -->
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
     <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), payment=(), usb=(), bluetooth=(), geolocation=(self), accelerometer=(), gyroscope=()" />
     <!-- ══════════════════════════════════════════════ -->
     <title>Sujith Thota | Portfolio</title>
