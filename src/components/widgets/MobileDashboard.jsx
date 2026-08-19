@@ -202,48 +202,121 @@ export default function MobileDashboard({ onNavClick }) {
 
         /* ════════ PROFILE SECTION ════════ */
         .hd-profile {
-          display: flex; align-items: center; gap: 12px;
-          padding: 6px 14px 4px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+          padding: 8px 14px 6px;
+        }
+        .hd-profile-left {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          flex: 1;
+          min-width: 0;
         }
         .hd-avatar-wrap {
-          position: relative; flex-shrink: 0;
+          position: relative;
+          flex-shrink: 0;
         }
         .hd-avatar {
-          width: 48px; height: 48px; border-radius: 14px;
+          width: 66px;
+          height: 66px;
+          border-radius: 18px;
           object-fit: cover;
           border: 2px solid transparent;
           background: linear-gradient(var(--bg-primary), var(--bg-primary)) padding-box,
                       linear-gradient(135deg, #6366f1, #06b6d4, #10b981) border-box;
+          box-shadow: 0 4px 14px rgba(0,0,0,0.15);
         }
         .hd-avatar-ring {
-          position: absolute; inset: -3px; border-radius: 16px;
+          position: absolute;
+          inset: -3px;
+          border-radius: 21px;
           border: 2px solid transparent;
           background: linear-gradient(135deg, rgba(99,102,241,0.4), rgba(6,182,212,0.4)) border-box;
           pointer-events: none;
         }
-        .hd-profile-info { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+        .hd-profile-info {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          flex: 1;
+          min-width: 0;
+        }
         .hd-name {
-          font-size: 18px; font-weight: 800; color: var(--text-primary);
-          letter-spacing: -.04em; margin: 0; line-height: 1.1;
+          font-size: 19px;
+          font-weight: 800;
+          color: var(--text-primary);
+          letter-spacing: -.04em;
+          margin: 0;
+          line-height: 1.15;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
         .hd-role {
-          font-size: 10.5px; color: var(--text-secondary); margin: 0; font-weight: 500;
-          display: flex; align-items: center; gap: 5px;
+          font-size: 10.5px;
+          color: var(--text-secondary);
+          margin: 0;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
         .hd-location {
-          display: flex; align-items: center; gap: 4px;
-          font-size: 9.5px; color: var(--text-muted); margin: 0;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          font-size: 9.5px;
+          color: var(--text-muted);
+          margin: 0;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .hd-profile-right {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          gap: 5px;
+          flex-shrink: 0;
         }
         .hd-avail {
-          display: inline-flex; align-items: center; gap: 4px;
-          background: rgba(16,185,129,.12); border: 1px solid rgba(16,185,129,.3);
-          border-radius: 20px; padding: 3px 9px;
-          font-size: 9px; font-weight: 700; color: #10b981;
-          width: fit-content;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          background: rgba(16,185,129,.12);
+          border: 1px solid rgba(16,185,129,.3);
+          border-radius: 20px;
+          padding: 3px 8px;
+          font-size: 8.5px;
+          font-weight: 700;
+          color: #10b981;
+          white-space: nowrap;
         }
         .hd-avail-dot {
-          width: 5px; height: 5px; border-radius: 50%; background: #10b981;
+          width: 5px;
+          height: 5px;
+          border-radius: 50%;
+          background: #10b981;
           animation: hd-pulse 2s ease-in-out infinite;
+        }
+        .hd-time-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          font-size: 8.5px;
+          font-weight: 600;
+          color: var(--text-muted);
+          background: var(--bg-secondary);
+          border: 1px solid var(--border-color);
+          border-radius: 12px;
+          padding: 2px 7px;
+          white-space: nowrap;
         }
         @keyframes hd-pulse {
           0%,100% { opacity:1; transform:scale(1); }
@@ -509,27 +582,35 @@ export default function MobileDashboard({ onNavClick }) {
 
             {/* ── Profile ─────────────────────────────────────────────── */}
             <div className="hd-profile">
-              <div className="hd-avatar-wrap">
-                <img src="/IMG_0322.jpg" alt="Sujith Thota" className="hd-avatar" id="profile-avatar-img" />
+              <div className="hd-profile-left">
+                <div className="hd-avatar-wrap">
+                  <img src="/IMG_0322.jpg" alt="Sujith Thota" className="hd-avatar" id="profile-avatar-img" />
+                  <div className="hd-avatar-ring" />
+                </div>
+                <div className="hd-profile-info">
+                  <h1 className="hd-name">{nameText}</h1>
+                  <p className="hd-role">
+                    <Brain size={11} style={{ color: '#8b5cf6', flexShrink: 0 }} />
+                    <span>Data Science · Dev</span>
+                  </p>
+                  <p className="hd-location">
+                    <MapPin size={10} style={{ flexShrink: 0 }} />
+                    <span>VIT University, Vellore</span>
+                  </p>
+                </div>
               </div>
-              <div className="hd-profile-info">
-                <h1 className="hd-name">{nameText}</h1>
-                <p className="hd-role">
-                  <Brain size={11} style={{ color: '#8b5cf6' }} />
-                  Data Science · Full Stack Dev
-                </p>
-                <p className="hd-location"><MapPin size={10} /> VIT University, Vellore</p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginTop: 4 }}>
-                  {(settings === null || settings.is_available_for_hire) && (
-                    <div className="hd-avail">
-                      <div className="hd-avail-dot" />
-                      Open to Opportunities
-                    </div>
-                  )}
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 9, fontWeight: 600, color: 'var(--text-muted)' }}>
-                    <Clock size={9} style={{ color: 'var(--primary-blue)' }} />
-                    <span>{localTime} IST</span>
+
+              {/* Top-Right Badges: Open to Opportunities & Time */}
+              <div className="hd-profile-right">
+                {(settings === null || settings.is_available_for_hire) && (
+                  <div className="hd-avail">
+                    <div className="hd-avail-dot" />
+                    Open to Hire
                   </div>
+                )}
+                <div className="hd-time-badge">
+                  <Clock size={9} style={{ color: 'var(--primary-blue)' }} />
+                  <span>{localTime} IST</span>
                 </div>
               </div>
             </div>
