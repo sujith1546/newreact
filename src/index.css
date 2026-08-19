@@ -2289,8 +2289,10 @@ html {
     flex-direction: column;
     height: 100vh;
     height: 100dvh;
+    width: 100vw;
     overflow: hidden;
     transform: translateZ(0);
+    background: var(--bg-primary);
   }
 
   .sidebar {
@@ -2299,10 +2301,13 @@ html {
 
   .main-content {
     flex: 1;
+    width: 100%;
     height: 100vh !important;
     height: 100dvh !important;
-    padding-top: 60px !important;      /* clears the fixed header */
-    padding-bottom: max(90px, calc(70px + env(safe-area-inset-bottom, 0px))) !important;   /* clears the fixed bottom dock + safe area */
+    padding-top: calc(54px + env(safe-area-inset-top, 0px)) !important;      /* clears the fixed blurred header + safe area */
+    padding-bottom: calc(68px + env(safe-area-inset-bottom, 12px)) !important; /* clears the fixed bottom dock + safe area */
+    padding-left: 0 !important;
+    padding-right: 0 !important;
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch;
     box-sizing: border-box;
@@ -2310,12 +2315,10 @@ html {
     transform: translateZ(0);
   }
 
-  /* â”€â”€ Navigation progress bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-     Thin accent line that sweeps left-to-right below the header on every
-     page navigation. transform-origin: left so scaleX grows from left. */
+  /* ── Navigation progress bar ── */
   .nav-progress-bar {
     position: fixed;
-    top: 60px;  /* flush under the header */
+    top: calc(54px + env(safe-area-inset-top, 0px));
     left: 0;
     right: 0;
     height: 2px;
@@ -2330,35 +2333,32 @@ html {
     pointer-events: none;
   }
 
-  /* Disable ScrollReveal transitions on mobile for instant rendering */
-  /* Disable main page vertical scrolling on all mobile page containers */
+  /* Natural momentum scrolling on all mobile page containers */
   #home, #about, #skills, #projects, #blog, #education, #experience, #certifications, #contact, #updates {
-    height: calc(100dvh - 150px) !important;
-    max-height: calc(100dvh - 150px) !important;
-    overflow-y: hidden !important;
+    height: auto !important;
+    min-height: auto !important;
+    max-height: none !important;
+    overflow-y: visible !important;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
     box-sizing: border-box;
   }
 
   .mpj-list, .skills-mobile-view, .experience-mobile-list, .contact-mobile-view {
     flex: 1;
-    overflow-y: auto;
-    max-height: calc(100dvh - 210px);
+    overflow-y: visible;
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
   .mpj-list::-webkit-scrollbar, .skills-mobile-view::-webkit-scrollbar, .experience-mobile-list::-webkit-scrollbar, .contact-mobile-view::-webkit-scrollbar {
     display: none;
-  }  /* Hide utility-bar divider on mobile — sidebar is hidden, layout is vertical */
+  }
   .main-content::before {
     display: none;
   }
 
-  /* Disable vertical scrolling on the education page container on mobile */
   #education {
-    overflow-y: hidden !important;
+    overflow-y: visible !important;
   }
 
   /* Swipe hint styling used across mobile pages */
@@ -2376,7 +2376,7 @@ html {
     flex-shrink: 0;
     background: transparent;
     width: 100%;
-    margin-top: auto; /* pushes it to the bottom of flex container */
+    margin-top: auto;
   }
   .swipe-hint-icon {
     display: flex;
@@ -2385,31 +2385,33 @@ html {
   }
 
   /* ============================================
-     SMART MOBILE TOP HEADER
+     SMART MOBILE TOP HEADER (FROSTED GLASS DOCK)
      ============================================ */
 
   .mobile-top-header {
     display: flex;
     position: fixed;
     top: 0; left: 0; right: 0;
-    height: 60px;
+    height: calc(54px + env(safe-area-inset-top, 0px));
+    padding-top: env(safe-area-inset-top, 0px);
     z-index: 9999 !important;
     align-items: center;
     justify-content: space-between;
-    padding: 0 14px;
-    background: rgba(255, 255, 255, 0.88);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    padding-left: 16px;
+    padding-right: 16px;
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
     border-bottom: 1px solid var(--border-color, rgba(0,0,0,0.08));
-    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    box-shadow: 0 1px 8px rgba(0,0,0,0.03);
     box-sizing: border-box;
     transform: translateZ(0);
   }
 
   [data-theme="dark"] .mobile-top-header {
-    background: rgba(18, 18, 18, 0.88);
+    background: rgba(13, 17, 23, 0.82);
     border-bottom: 1px solid rgba(255,255,255,0.08);
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    box-shadow: 0 1px 12px rgba(0,0,0,0.3);
   }
 
   .mh-right {
@@ -2730,47 +2732,51 @@ html {
     transform: none !important;
   }
 
-  /* Page stacking context â€” clips the iOS slide-in/out transitions */
+  /* Seamless Edge-to-Edge Mobile Page Stacking Container */
   .scroll-container {
-    padding: 12px;
+    padding: 0 !important;
     position: relative;
-    height: 100%;
+    width: 100%;
+    height: auto !important;
+    min-height: 100%;
     box-sizing: border-box;
-    overflow: hidden;      /* CRITICAL: clips pages during slide transition */
-    isolation: isolate;    /* Creates a stacking context for z-index layering */
-    /* Match the card colour so the 12px gaps don't flash a different shade
-       during the synchronized push transition */
-    background: var(--bg-secondary);
-    border-radius: 24px;
+    overflow: visible !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
   }
 
-  /* Make EVERY page look like a premium box just like the home page */
+  /* Edge-to-Edge Page Content with natural flow */
   .text-content {
-    max-width: 100%;
-    height: 100%;
-    overflow-y: auto;
-    padding: 20px;
-    margin-bottom: 0;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 24px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
-    /* GPU-composited layer â€” no paint cost during transitions */
+    max-width: 100% !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 100% !important;
+    overflow: visible !important;
+    padding: 10px 14px 20px !important;
+    margin-bottom: 0 !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    box-sizing: border-box;
     transform: translateZ(0);
     -webkit-transform: translateZ(0);
   }
 
   [data-theme="dark"] .text-content {
-    background: var(--bg-secondary) !important;
-    border-color: rgba(255, 255, 255, 0.08);
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
   }
 
-  /* Home page uses same outer box as Skills/Projects â€” just remove inner padding so MobileDashboard controls spacing */
+  /* Home page seamless flow */
   .text-content.home-content {
     width: 100%;
     min-height: auto;
-    padding: 0;
-    overflow: hidden;
+    padding: 0 !important;
+    overflow: visible !important;
   }
 
   .home-image-side {
@@ -2886,34 +2892,39 @@ html {
   }
 
   /* ============================================
-     MOBILE BOTTOM DOCK AND MORE DRAWER
+     SEAMLESS INTEGRATED MOBILE BOTTOM DOCK
      ============================================ */
   .mobile-nav-capsule {
     position: fixed;
-    left: 14px;
-    right: 14px;
-    bottom: max(12px, env(safe-area-inset-bottom, 12px));
-    z-index: 9998;
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    padding: 6px 8px;
-    border: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-around !important;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 10px)) 8px !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-bottom: none !important;
+    border-top: 1px solid var(--border-color, rgba(0, 0, 0, 0.08)) !important;
+    border-radius: 20px 20px 0 0 !important;
     background: rgba(255, 255, 255, 0.88);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
-    border-radius: 32px;
+    backdrop-filter: blur(28px) saturate(180%);
+    -webkit-backdrop-filter: blur(28px) saturate(180%);
+    box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.06);
+    z-index: 9998;
     box-sizing: border-box;
-    max-width: 480px;
-    margin: 0 auto;
     transform: translateZ(0);
   }
 
   [data-theme="dark"] .mobile-nav-capsule {
-    background: rgba(24, 24, 24, 0.88);
-    border-color: rgba(255, 255, 255, 0.12);
-    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4), 0 2px 10px rgba(0, 0, 0, 0.3);
+    background: rgba(13, 17, 23, 0.88);
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.4);
   }
 
   .nav-capsule-tab {
@@ -2929,7 +2940,7 @@ html {
     cursor: pointer;
     color: var(--text-muted, #8a8a86);
     font-family: inherit;
-    padding: 7px 4px;
+    padding: 6px 4px;
     outline: none;
     transition: color 0.25s ease;
     z-index: 1;
@@ -2950,24 +2961,24 @@ html {
   }
 
   .nav-capsule-tab-active {
-    color: var(--primary-blue, #6366f1);
+    color: var(--primary-blue, #3b82f6);
   }
 
   .nav-capsule-tab-active span {
     font-weight: 700;
     opacity: 1;
-    color: var(--primary-blue, #6366f1);
+    color: var(--primary-blue, #3b82f6);
   }
 
   .nav-capsule-active-pill {
     position: absolute;
-    inset: 2px;
-    border-radius: 24px;
-    background: color-mix(in srgb, var(--primary-blue, #6366f1) 14%, transparent);
-    border: 1px solid color-mix(in srgb, var(--primary-blue, #6366f1) 28%, transparent);
+    inset: 2px 4px;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--primary-blue, #3b82f6) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--primary-blue, #3b82f6) 24%, transparent);
     z-index: 1;
     pointer-events: none;
-    box-shadow: 0 2px 12px color-mix(in srgb, var(--primary-blue, #6366f1) 20%, transparent);
+    box-shadow: 0 2px 10px color-mix(in srgb, var(--primary-blue, #3b82f6) 15%, transparent);
   }
 
   @keyframes spin {
@@ -3025,230 +3036,7 @@ html {
     transform: none !important;
   }
 
-  /* Page stacking context â€” clips the iOS slide-in/out transitions */
-  .scroll-container {
-    padding: 12px;
-    position: relative;
-    height: 100%;
-    box-sizing: border-box;
-    overflow: hidden;      /* CRITICAL: clips pages during slide transition */
-    isolation: isolate;    /* Creates a stacking context for z-index layering */
-    /* Match the card colour so the 12px gaps don't flash a different shade
-       during the synchronized push transition */
-    background: var(--bg-secondary);
-    border-radius: 24px;
-  }
 
-  /* Make EVERY page look like a premium box just like the home page */
-  .text-content {
-    max-width: 100%;
-    height: 100%;
-    overflow-y: auto;
-    padding: 20px;
-    margin-bottom: 0;
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 24px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
-    /* GPU-composited layer â€” no paint cost during transitions */
-    transform: translateZ(0);
-    -webkit-transform: translateZ(0);
-  }
-
-  [data-theme="dark"] .text-content {
-    background: var(--bg-secondary) !important;
-    border-color: rgba(255, 255, 255, 0.08);
-  }
-
-  /* Home page uses same outer box as Skills/Projects â€” just remove inner padding so MobileDashboard controls spacing */
-  .text-content.home-content {
-    width: 100%;
-    min-height: auto;
-    padding: 0;
-    overflow: hidden;
-  }
-
-  .home-image-side {
-    min-height: 180px;
-    display: flex;
-    justify-content: center;
-  }
-
-  .hero-img-new {
-    min-height: 180px;
-    max-height: 320px;
-    object-fit: cover;
-  }
-
-  /* Rare fallback for very short screens (like iPhone SE) */
-  @media (max-height: 700px) {
-    .hero-subtitle-text {
-      max-height: 80px;
-      overflow-y: auto;
-      padding-right: 4px;
-    }
-  }
-
-  .hero-img {
-    max-width: 160px;
-    margin: 0 auto;
-  }
-
-  /* Offset Chatbot FAB above the bottom nav */
-  .chatbot-fab {
-    bottom: 96px !important;
-    right: 20px !important;
-  }
-
-  /* Overrides for other sections to stack layout on small screens */
-  .info-grid, .stats-section, .skills-grid, .certifications-grid, .contact-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  .timeline::before {
-    left: 20px !important;
-  }
-
-  .timeline-item {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    padding-left: 60px !important;
-    margin-bottom: 30px !important;
-  }
-
-  .timeline-item {
-    padding-left: 50px !important;
-  }
-
-  /* =========================================
-     GLOBAL UI STANDARDIZATION (Except Education)
-     ========================================= */
-  
-  /* 1. Unified Headings */
-  .text-content:not(#education) h1 {
-    font-size: 18px !important;
-    margin-bottom: 4px !important;
-  }
-  .text-content:not(#education) [class$="-header"] p,
-  .text-content:not(#education) .about-intro {
-    font-size: 11.5px !important;
-    line-height: 1.4 !important;
-  }
-
-  /* 2. Unified Box Sizes and Styles */
-  .mobile-skill-card, 
-  .cert-card,
-  .contact-method-card {
-    background: var(--bg-primary) !important;
-    border: 1px solid var(--border-color) !important;
-    border-radius: 20px !important;
-    min-height: 180px !important; /* Uniform height constraint */
-    display: flex !important;
-    flex-direction: column !important;
-  }
-
-  [data-theme="dark"] .mobile-skill-card, 
-  [data-theme="dark"] .cert-card,
-  [data-theme="dark"] .contact-method-card {
-    background: rgba(255, 255, 255, 0.03) !important;
-    border-color: rgba(255, 255, 255, 0.08) !important;
-  }
-
-  .timeline-icon {
-    left: 20px !important;
-    width: 40px !important;
-    height: 40px !important;
-    font-size: 16px !important;
-  }
-
-  .timeline-content {
-    width: 100% !important;
-  }
-
-  /* ============================================
-     MOBILE BOTTOM DOCK AND MORE DRAWER
-     ============================================ */
-  .mobile-nav-capsule {
-    position: fixed;
-    left: 14px;
-    right: 14px;
-    bottom: max(12px, env(safe-area-inset-bottom, 12px));
-    z-index: 9998;
-    display: flex;
-    align-items: center;
-    justify-content: space-around;
-    padding: 6px 8px;
-    border: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
-    background: rgba(255, 255, 255, 0.88);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
-    border-radius: 32px;
-    box-sizing: border-box;
-    max-width: 480px;
-    margin: 0 auto;
-    transform: translateZ(0);
-  }
-
-  [data-theme="dark"] .mobile-nav-capsule {
-    background: rgba(24, 24, 24, 0.88);
-    border-color: rgba(255, 255, 255, 0.12);
-    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4), 0 2px 10px rgba(0, 0, 0, 0.3);
-  }
-
-  .nav-capsule-tab {
-    position: relative;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    color: var(--text-muted, #8a8a86);
-    font-family: inherit;
-    padding: 7px 4px;
-    outline: none;
-    transition: color 0.25s ease;
-    z-index: 1;
-  }
-
-  .nav-capsule-tab svg {
-    position: relative;
-    z-index: 2;
-  }
-
-  .nav-capsule-tab span {
-    font-size: 9.5px;
-    font-weight: 500;
-    position: relative;
-    z-index: 2;
-    opacity: 0.75;
-    transition: opacity 0.2s ease, color 0.2s ease;
-  }
-
-  .nav-capsule-tab-active {
-    color: var(--primary-blue, #007bff);
-  }
-
-  .nav-capsule-tab-active span {
-    font-weight: 700;
-    opacity: 1;
-    color: var(--primary-blue, #007bff);
-  }
-
-  .nav-capsule-active-pill {
-    position: absolute;
-    inset: 2px;
-    border-radius: 24px;
-    background: color-mix(in srgb, var(--primary-blue, #007bff) 14%, transparent);
-    border: 1px solid color-mix(in srgb, var(--primary-blue, #007bff) 28%, transparent);
-    z-index: 1;
-    pointer-events: none;
-    box-shadow: 0 2px 12px color-mix(in srgb, var(--primary-blue, #007bff) 20%, transparent);
-  }
 
   @keyframes spin {
     from { transform: rotate(0deg); }
