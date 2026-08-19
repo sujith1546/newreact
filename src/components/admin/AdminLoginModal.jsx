@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "../../lib/supabaseClient";
 import { useTheme } from "../../context/ThemeContext";
+import { logSecurityEvent, logAuditEvent } from "../../lib/auditLogger";
+import { loginLimiter } from "../../utils/rateLimiter";
 import {
   Lock,
   Mail,
@@ -16,10 +18,44 @@ import {
   AlertTriangle,
   X,
   KeyRound,
+  ShieldAlert,
 } from "lucide-react";
 
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 60000;
+
+/** Compute a risk score for the current login attempt */
+function computeLoginRiskScore(failedAttempts = 0) {
+  let score = 0;
+  const reasons = [];
+
+  // Off-hours check (10PM–6AM IST = UTC+5:30)
+  const istHour = new Date().getUTCHours() + 5 + (new Date().getUTCMinutes() >= 30 ? 0.5 : 0);
+  const istHourRounded = Math.floor(istHour % 24);
+  if (istHourRounded >= 22 || istHourRounded < 6) {
+    score += 20;
+    reasons.push(`Off-hours access (${istHourRounded}:00 IST)`);
+  }
+
+  // Previous failed attempts
+  if (failedAttempts > 0) {
+    const pts = failedAttempts * 15;
+    score += pts;
+    reasons.push(`${failedAttempts} previous failed attempt(s) (+${pts}pts)`);
+  }
+
+  // New or unusual timezone
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+    const lastTz = localStorage.getItem('_admin_tz') || '';
+    if (lastTz && lastTz !== tz) {
+      score += 30;
+      reasons.push(`Timezone changed: ${lastTz} → ${tz}`);
+    }
+  } catch {}
+
+  return { score: Math.min(100, score), reasons };
+}
 
 export default function AdminLoginModal({ isOpen, onClose }) {
   const navigate = useNavigate();
@@ -48,6 +84,11 @@ export default function AdminLoginModal({ isOpen, onClose }) {
   const [emailOtpSent, setEmailOtpSent] = useState(false);
   const [emailOtpCode, setEmailOtpCode] = useState("");
   const [otpTimer, setOtpTimer] = useState(0);
+
+  // Risk scoring
+  const [riskScore, setRiskScore] = useState(0);
+  const [riskReasons, setRiskReasons] = useState([]);
+  const [riskChallengeRequired, setRiskChallengeRequired] = useState(false);
 
   // Reduced motion preference
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -142,8 +183,15 @@ export default function AdminLoginModal({ isOpen, onClose }) {
         localStorage.setItem("admin_login_lockout", expiry.toString());
         setLockoutTimer(60);
         setError("Too many failed attempts. Locked out for 60 seconds.");
+        // Log brute force to threat events
+        logSecurityEvent('BRUTE_FORCE_DETECTED', { attempts: newAttempts }, 'critical').catch(() => {});
       }
     } catch (_) {}
+    // Recompute risk score with updated attempts
+    const { score, reasons } = computeLoginRiskScore(newAttempts);
+    setRiskScore(score);
+    setRiskReasons(reasons);
+    if (score >= 50) setRiskChallengeRequired(true);
   };
 
   // Password Submission
@@ -152,6 +200,14 @@ export default function AdminLoginModal({ isOpen, onClose }) {
     if (lockoutTimer > 0) return;
     setLoading(true);
     setError("");
+
+    // Evaluate risk score before attempting auth
+    const { score, reasons } = computeLoginRiskScore(attempts);
+    setRiskScore(score);
+    setRiskReasons(reasons);
+
+    // Log the attempt
+    logSecurityEvent('ADMIN_LOGIN_ATTEMPT', { riskScore: score, reasons }, score >= 50 ? 'high' : 'low').catch(() => {});
 
     try {
       const { data, error: authError } = await supabase.auth.signInWithPassword({
@@ -179,8 +235,11 @@ export default function AdminLoginModal({ isOpen, onClose }) {
       try {
         localStorage.removeItem("admin_login_attempts");
         localStorage.removeItem("admin_login_lockout");
+        // Store timezone fingerprint for next login comparison
+        localStorage.setItem('_admin_tz', Intl.DateTimeFormat().resolvedOptions().timeZone || '');
       } catch (_) {}
 
+      logAuditEvent('ADMIN_LOGIN_SUCCESS', 'auth', email, { riskScore: score }).catch(() => {});
       onClose();
       navigate("/admin/dashboard");
     } catch (err) {

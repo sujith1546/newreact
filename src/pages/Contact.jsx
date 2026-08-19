@@ -7,6 +7,10 @@ import { ScrollReveal } from '../components';
 import EmailDomainSuggest from '../components/ui/EmailDomainSuggest';
 import CharacterCounter from '../components/ui/CharacterCounter';
 import { computePow, generateChallenge } from '../utils/sha256pow';
+import { runBotCheck } from '../utils/botDetector';
+import { getGlobalTracker } from '../utils/behaviorTracker';
+import { contactFormLimiter } from '../utils/rateLimiter';
+import { logSecurityEvent } from '../lib/auditLogger';
 
 const DESKS = [
   {
@@ -188,15 +192,50 @@ export default function Contact() {
 
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
-    // Anti-Bot Honeypot & Timing Trap
+
+    // ── Layer 1: Client-side rate limiter ─────────────────────────
+    const rateCheck = contactFormLimiter.tryConsume();
+    if (!rateCheck.allowed) {
+      setSubmitError(`Too many submissions. Please wait ${rateCheck.retryAfter}s before trying again.`);
+      return;
+    }
+
+    // ── Layer 2: Honeypot trap ────────────────────────────────────
     if (form._catch || form.website_url_hp) {
+      // Bot filled a hidden field — silently fake success
+      logSecurityEvent('HONEYPOT_TRIGGERED', { form_id: 'contact' }, 'medium').catch(() => {});
       setTimeout(() => setStatus('sent'), 600);
       return;
     }
+
+    // ── Layer 3: Timing trap (< 1.5s = bot speed) ────────────────
     if (Date.now() - pageMountTimeRef.current < 1500) {
       setSubmitError('Verification failed: automated submission speed detected.');
+      logSecurityEvent('TIMING_TRAP_TRIGGERED', { elapsed: Date.now() - pageMountTimeRef.current }, 'medium').catch(() => {});
       return;
     }
+
+    // ── Layer 4: Behavioral anomaly check ─────────────────────────
+    const tracker = getGlobalTracker();
+    const { humanScore, isHuman, reasons: behaviorReasons } = tracker.evaluate();
+    if (!isHuman) {
+      logSecurityEvent('BEHAVIOR_ANOMALY_DETECTED', { humanScore, reasons: behaviorReasons }, 'high').catch(() => {});
+      // Silently fake success to not reveal detection
+      setTimeout(() => setStatus('sent'), 800);
+      return;
+    }
+
+    // ── Layer 5: Bot fingerprint check ────────────────────────────
+    const { isBot, score: botScore, signals } = await runBotCheck({
+      logFn: logSecurityEvent,
+    });
+    if (isBot) {
+      // Silently fake success — don't reveal detection to attacker
+      setTimeout(() => setStatus('sent'), 600);
+      return;
+    }
+
+    // ── Standard validation ───────────────────────────────────────
     const errName = validateField('name', form.name);
     const errEmail = validateField('email', form.email);
     const errMessage = validateField('message', form.message);
@@ -223,11 +262,14 @@ export default function Contact() {
           inquiry_type: activeDeskObj.title,
           company: form.company.trim(),
           pow_nonce: nonce,
-          pow_hash: hash
+          pow_hash: hash,
+          human_score: humanScore,
+          bot_score: botScore,
         })
       });
       if (!res.ok) throw new Error('Failed to deliver message. Please try again.');
       setStatus('sent');
+      tracker.reset();
     } catch (err) {
       console.error('Submission error:', err);
       setSubmitError(err.message || 'Network error occurred');

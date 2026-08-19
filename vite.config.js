@@ -1,6 +1,23 @@
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+/** Security headers injected on every dev server response */
+function securityHeadersPlugin() {
+  return {
+    name: 'security-headers',
+    configureServer(server) {
+      server.middlewares.use((_req, res, next) => {
+        res.setHeader('X-Frame-Options', 'DENY');
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+        res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+        res.setHeader('Permissions-Policy', 'camera=(), microphone=(), payment=(), usb=(), geolocation=(self)');
+        res.setHeader('X-XSS-Protection', '1; mode=block');
+        next();
+      });
+    },
+  };
+}
+
 function localApiDevPlugin() {
   return {
     name: 'local-api-dev-handler',
@@ -161,6 +178,7 @@ function localApiDevPlugin() {
 
 export default defineConfig({
   plugins: [
+    securityHeadersPlugin(),
     localApiDevPlugin(),
     VitePWA({
       registerType: 'autoUpdate',

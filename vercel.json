@@ -1,7 +1,15 @@
 {
   "functions": {
-    "api/chat.js": { "maxDuration": 30 }
+    "api/chat.js":    { "maxDuration": 30 },
+    "api/canary.js":  { "maxDuration": 10 },
+    "api/deadman.js": { "maxDuration": 10 }
   },
+  "crons": [
+    {
+      "path": "/api/deadman",
+      "schedule": "0 9 * * *"
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/:path*",
