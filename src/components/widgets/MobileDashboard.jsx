@@ -224,18 +224,10 @@ export default function MobileDashboard({ onNavClick }) {
           height: 66px;
           border-radius: 18px;
           object-fit: cover;
-          border: 2px solid transparent;
-          background: linear-gradient(var(--bg-primary), var(--bg-primary)) padding-box,
-                      linear-gradient(135deg, #6366f1, #06b6d4, #10b981) border-box;
-          box-shadow: 0 4px 14px rgba(0,0,0,0.15);
-        }
-        .hd-avatar-ring {
-          position: absolute;
-          inset: -3px;
-          border-radius: 21px;
-          border: 2px solid transparent;
-          background: linear-gradient(135deg, rgba(99,102,241,0.4), rgba(6,182,212,0.4)) border-box;
-          pointer-events: none;
+          border: 1.5px solid var(--border-color);
+          background: var(--bg-secondary);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+          display: block;
         }
         .hd-profile-info {
           display: flex;
@@ -610,7 +602,6 @@ export default function MobileDashboard({ onNavClick }) {
               <div className="hd-profile-left">
                 <div className="hd-avatar-wrap">
                   <img src="/IMG_0322.jpg" alt="Sujith Thota" className="hd-avatar" id="profile-avatar-img" />
-                  <div className="hd-avatar-ring" />
                 </div>
                 <div className="hd-profile-info">
                   <h1 className="hd-name">{nameText}</h1>
