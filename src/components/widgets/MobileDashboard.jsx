@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Loader2, ArrowDown, ChevronLeft, ChevronRight, Clock, Send, FileText, Zap, Code2, Database, Brain, Globe, ExternalLink, Star, TrendingUp, Award, Briefcase } from 'lucide-react';
+import { MapPin, Loader2, ArrowDown, ChevronLeft, ChevronRight, Clock, Send, FileText, Zap, Code2, Database, Brain, Globe, ExternalLink, Star, TrendingUp, Award, Briefcase, GraduationCap, Sparkles, ArrowUpRight } from 'lucide-react';
 import useGlitchText from '../../hooks/useGlitchText';
 import useRealtimeData from '../../hooks/useRealtimeData';
 import { useLocalTime } from '../../hooks/useLocalTime';
@@ -329,8 +329,8 @@ export default function MobileDashboard({ onNavClick }) {
           overflow-x: auto;
           scroll-snap-type: x mandatory;
           -webkit-overflow-scrolling: touch;
-          gap: 8px;
-          padding: 4px 14px 10px;
+          gap: 10px;
+          padding: 6px 14px 12px;
           -ms-overflow-style: none;
           scrollbar-width: none;
         }
@@ -338,23 +338,26 @@ export default function MobileDashboard({ onNavClick }) {
           display: none;
         }
         .hd-bento-card {
-          flex: 0 0 126px;
-          min-width: 126px;
+          flex: 0 0 138px;
+          min-width: 138px;
           scroll-snap-align: start;
           display: flex;
           flex-direction: column;
-          padding: 10px 11px;
-          border-radius: 16px;
+          padding: 12px 12px 11px;
+          border-radius: 18px;
           border: 1px solid var(--border-color);
-          background: var(--bg-secondary);
+          background: linear-gradient(145deg, color-mix(in srgb, var(--bg-secondary) 92%, transparent), var(--bg-secondary));
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
           position: relative;
           overflow: hidden;
-          gap: 2px;
+          gap: 3px;
           cursor: pointer;
           outline: none;
           text-align: left;
           font-family: inherit;
-          transition: border-color 0.15s, transform 0.15s;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+          transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.15s;
           -webkit-tap-highlight-color: transparent;
         }
         .hd-bento-card:active {
@@ -364,54 +367,76 @@ export default function MobileDashboard({ onNavClick }) {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          margin-bottom: 2px;
+          margin-bottom: 6px;
         }
-        .hd-bento-icon {
-          font-size: 13px;
+        .hd-bento-icon-wrap {
+          width: 28px;
+          height: 28px;
+          border-radius: 9px;
           display: flex;
           align-items: center;
+          justify-content: center;
+          border: 1px solid;
+          flex-shrink: 0;
         }
         .hd-bento-jump {
-          font-size: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           color: var(--text-muted);
           opacity: 0.6;
+          transition: opacity 0.15s, transform 0.15s;
+        }
+        .hd-bento-card:hover .hd-bento-jump {
+          opacity: 1;
+          transform: translate(1px, -1px);
         }
         .hd-bento-card-glow {
           position: absolute;
-          top: -12px;
-          right: -12px;
-          width: 48px;
-          height: 48px;
+          top: -16px;
+          right: -16px;
+          width: 54px;
+          height: 54px;
           border-radius: 50%;
-          opacity: 0.25;
-          filter: blur(14px);
+          opacity: 0.18;
+          filter: blur(16px);
           pointer-events: none;
         }
         .hd-bento-val {
-          font-size: 20px;
+          font-size: 22px;
           font-weight: 800;
-          letter-spacing: -.04em;
+          letter-spacing: -0.04em;
           line-height: 1;
+          font-feature-settings: "tnum";
         }
         .hd-bento-label {
-          font-size: 7.5px;
-          font-weight: 700;
-          letter-spacing: .07em;
+          font-size: 9px;
+          font-weight: 750;
+          letter-spacing: 0.06em;
           text-transform: uppercase;
           color: var(--text-muted);
           margin-top: 2px;
           white-space: nowrap;
         }
         .hd-bento-badge {
-          font-size: 7px;
-          font-weight: 800;
-          letter-spacing: 0.03em;
-          padding: 2px 6px;
-          border-radius: 6px;
-          margin-top: 4px;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          font-size: 7.5px;
+          font-weight: 700;
+          letter-spacing: 0.02em;
+          padding: 2.5px 6.5px;
+          border-radius: 8px;
+          margin-top: 5px;
           width: fit-content;
           border: 1px solid;
           white-space: nowrap;
+        }
+        .hd-bento-dot {
+          width: 4px;
+          height: 4px;
+          border-radius: 50%;
+          flex-shrink: 0;
         }
 
         /* ════════ SINGLE-LINE INFINITE TECH MARQUEE ════════ */
@@ -636,12 +661,18 @@ export default function MobileDashboard({ onNavClick }) {
               >
                 <div className="hd-bento-card-glow" style={{ background: '#3b82f6' }} />
                 <div className="hd-bento-card-header">
-                  <div className="hd-bento-icon" style={{ color: '#3b82f6' }}>🎓</div>
-                  <span className="hd-bento-jump">↗</span>
+                  <div
+                    className="hd-bento-icon-wrap"
+                    style={{ background: 'rgba(59,130,246,0.12)', borderColor: 'rgba(59,130,246,0.25)', color: '#3b82f6' }}
+                  >
+                    <GraduationCap size={15} />
+                  </div>
+                  <span className="hd-bento-jump"><ArrowUpRight size={13} /></span>
                 </div>
                 <span className="hd-bento-val" style={{ color: '#3b82f6' }}>{cgpa}</span>
                 <span className="hd-bento-label">VIT CGPA</span>
-                <span className="hd-bento-badge" style={{ color: '#3b82f6', background: 'rgba(59,130,246,0.12)', borderColor: 'rgba(59,130,246,0.25)' }}>
+                <span className="hd-bento-badge" style={{ color: '#3b82f6', background: 'rgba(59,130,246,0.08)', borderColor: 'rgba(59,130,246,0.2)' }}>
+                  <span className="hd-bento-dot" style={{ background: '#3b82f6' }} />
                   Top 5% · B.Tech
                 </span>
               </motion.button>
@@ -655,13 +686,19 @@ export default function MobileDashboard({ onNavClick }) {
               >
                 <div className="hd-bento-card-glow" style={{ background: '#8b5cf6' }} />
                 <div className="hd-bento-card-header">
-                  <div className="hd-bento-icon" style={{ color: '#8b5cf6' }}>🏆</div>
-                  <span className="hd-bento-jump">↗</span>
+                  <div
+                    className="hd-bento-icon-wrap"
+                    style={{ background: 'rgba(139,92,246,0.12)', borderColor: 'rgba(139,92,246,0.25)', color: '#8b5cf6' }}
+                  >
+                    <Award size={15} />
+                  </div>
+                  <span className="hd-bento-jump"><ArrowUpRight size={13} /></span>
                 </div>
                 <span className="hd-bento-val" style={{ color: '#8b5cf6' }}>{certs}+</span>
-                <span className="hd-bento-label">Certificates</span>
-                <span className="hd-bento-badge" style={{ color: '#8b5cf6', background: 'rgba(139,92,246,0.12)', borderColor: 'rgba(139,92,246,0.25)' }}>
-                  Verified
+                <span className="hd-bento-label">Certifications</span>
+                <span className="hd-bento-badge" style={{ color: '#8b5cf6', background: 'rgba(139,92,246,0.08)', borderColor: 'rgba(139,92,246,0.2)' }}>
+                  <span className="hd-bento-dot" style={{ background: '#8b5cf6' }} />
+                  AWS & DeepLearning
                 </span>
               </motion.button>
 
@@ -674,13 +711,19 @@ export default function MobileDashboard({ onNavClick }) {
               >
                 <div className="hd-bento-card-glow" style={{ background: '#10b981' }} />
                 <div className="hd-bento-card-header">
-                  <div className="hd-bento-icon" style={{ color: '#10b981' }}>🚀</div>
-                  <span className="hd-bento-jump">↗</span>
+                  <div
+                    className="hd-bento-icon-wrap"
+                    style={{ background: 'rgba(16,185,129,0.12)', borderColor: 'rgba(16,185,129,0.25)', color: '#10b981' }}
+                  >
+                    <Code2 size={15} />
+                  </div>
+                  <span className="hd-bento-jump"><ArrowUpRight size={13} /></span>
                 </div>
                 <span className="hd-bento-val" style={{ color: '#10b981' }}>{projs}+</span>
-                <span className="hd-bento-label">ML Projects</span>
-                <span className="hd-bento-badge" style={{ color: '#10b981', background: 'rgba(16,185,129,0.12)', borderColor: 'rgba(16,185,129,0.25)' }}>
-                  Production
+                <span className="hd-bento-label">Shipped Apps</span>
+                <span className="hd-bento-badge" style={{ color: '#10b981', background: 'rgba(16,185,129,0.08)', borderColor: 'rgba(16,185,129,0.2)' }}>
+                  <span className="hd-bento-dot" style={{ background: '#10b981' }} />
+                  Production AI
                 </span>
               </motion.button>
 
@@ -693,12 +736,18 @@ export default function MobileDashboard({ onNavClick }) {
               >
                 <div className="hd-bento-card-glow" style={{ background: '#06b6d4' }} />
                 <div className="hd-bento-card-header">
-                  <div className="hd-bento-icon" style={{ color: '#06b6d4' }}>⚡</div>
-                  <span className="hd-bento-jump">↗</span>
+                  <div
+                    className="hd-bento-icon-wrap"
+                    style={{ background: 'rgba(6,182,212,0.12)', borderColor: 'rgba(6,182,212,0.25)', color: '#06b6d4' }}
+                  >
+                    <Zap size={15} />
+                  </div>
+                  <span className="hd-bento-jump"><ArrowUpRight size={13} /></span>
                 </div>
                 <span className="hd-bento-val" style={{ color: '#06b6d4' }}>100%</span>
-                <span className="hd-bento-label">Available</span>
-                <span className="hd-bento-badge" style={{ color: '#06b6d4', background: 'rgba(6,182,212,0.12)', borderColor: 'rgba(6,182,212,0.25)' }}>
+                <span className="hd-bento-label">Availability</span>
+                <span className="hd-bento-badge" style={{ color: '#06b6d4', background: 'rgba(6,182,212,0.08)', borderColor: 'rgba(6,182,212,0.2)' }}>
+                  <span className="hd-bento-dot" style={{ background: '#06b6d4' }} />
                   Open for Roles
                 </span>
               </motion.button>
