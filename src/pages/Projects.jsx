@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollReveal } from '../components';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, ExternalLink, Zap, Brain, Code2, Database, Globe } from 'lucide-react';
 import { motion } from 'framer-motion';
 import useRealtimeData from '../hooks/useRealtimeData';
 
@@ -10,13 +10,27 @@ import ProjectCard from '../components/projects/ProjectCard';
 import ProjectModal from '../components/projects/ProjectModal';
 import { useLongPress } from '../hooks/useLongPress';
 
-const projectAccents = ['#007bff', '#8b5cf6', '#16a34a'];
+const projectAccents = [
+  { color: '#6366f1', bg: 'rgba(99,102,241,0.12)', border: 'rgba(99,102,241,0.3)', glow: '#6366f1' },
+  { color: '#8b5cf6', bg: 'rgba(139,92,246,0.12)', border: 'rgba(139,92,246,0.3)', glow: '#8b5cf6' },
+  { color: '#10b981', bg: 'rgba(16,185,129,0.12)', border: 'rgba(16,185,129,0.3)', glow: '#10b981' },
+];
 
-/* Mobile Project Row card */
+/* Mobile Project Bento Card */
 function MobileProjectRow({ project, index, onTap, onLongPress }) {
   const title = project?.title || 'Project';
   const initials = title.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
-  
+  const accentObj = projectAccents[index % projectAccents.length];
+  const accent = accentObj.color;
+
+  // Extract tech tags from tags array or tech_stack
+  const techTags = Array.isArray(project.tags) ? project.tags.slice(0, 3) :
+    typeof project.tags === 'string' ? project.tags.split(',').slice(0, 3).map(t => t.trim()) : [];
+
+  // Check for notable metric in title or description
+  const metricMatch = (project.description || '').match(/(\d+[%+k]+[^.\s]{0,15})/i);
+  const metric = metricMatch ? metricMatch[1] : null;
+
   const longPressProps = useLongPress({
     onLongPress: () => onLongPress(project),
     onClick: () => onTap(project)
@@ -24,30 +38,55 @@ function MobileProjectRow({ project, index, onTap, onLongPress }) {
 
   return (
     <motion.button
-      className="mpj-row"
+      className="mpj-bento"
       {...longPressProps}
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05, duration: 0.3 }}
-      whileTap={{ scale: 0.97 }}
+      transition={{ delay: index * 0.07, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+      whileTap={{ scale: 0.975 }}
     >
-      <div className="mpj-stripe" style={{ background: accent }} />
-      <div className="mpj-icon" style={{ background: accent + '18', color: accent, borderColor: accent + '30' }}>
-        {initials}
-      </div>
-      <div className="mpj-body">
-        <div className="mpj-title-row">
-          <h3 className="mpj-title">{project.title}</h3>
-          {project.liveUrl && (
-            <div className="live-badge">
-              <span className="live-dot"><span className="live-ping" /><span className="live-dot-core" /></span>
-              <span className="live-text">Live</span>
-            </div>
-          )}
+      {/* Top accent bar */}
+      <div className="mpj-top-bar" style={{ background: `linear-gradient(90deg, ${accent}, transparent)` }} />
+      {/* Glow blob */}
+      <div className="mpj-glow" style={{ background: `radial-gradient(circle, ${accent}22 0%, transparent 70%)` }} />
+
+      {/* Header row */}
+      <div className="mpj-bento-header">
+        <div className="mpj-bento-icon" style={{ background: accentObj.bg, color: accent, borderColor: accentObj.border }}>
+          {initials}
         </div>
-        <p className="mpj-desc">{project.description.slice(0, 88)}…</p>
+        <div className="mpj-bento-title-wrap">
+          <h3 className="mpj-bento-title">{project.title}</h3>
+          <div className="mpj-bento-badges">
+            {project.liveUrl && (
+              <div className="live-badge">
+                <span className="live-dot"><span className="live-ping" /><span className="live-dot-core" /></span>
+                <span className="live-text">Live</span>
+              </div>
+            )}
+            {metric && (
+              <span className="mpj-metric-badge" style={{ color: accent, background: accentObj.bg, borderColor: accentObj.border }}>
+                {metric}
+              </span>
+            )}
+          </div>
+        </div>
+        <ChevronRight size={14} className="mpj-chevron" />
       </div>
-      <ChevronRight size={15} className="mpj-chevron" />
+
+      {/* Description */}
+      <p className="mpj-bento-desc">{(project.description || '').slice(0, 100)}{project.description?.length > 100 ? '…' : ''}</p>
+
+      {/* Tech stack tags */}
+      {techTags.length > 0 && (
+        <div className="mpj-bento-tags">
+          {techTags.map(tag => (
+            <span key={tag} className="mpj-bento-tag" style={{ color: accent, borderColor: accentObj.border, background: accentObj.bg }}>
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
     </motion.button>
   );
 }
@@ -422,16 +461,95 @@ export default function Projects() {
         .dsheet-action-pill--primary { background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%); color: #ffffff !important; border: none; box-shadow: 0 4px 16px rgba(59,130,246,.3); }
         .dsheet-action-pill--primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59,130,246,.45); }
 
-        /* ========== MOBILE SPECIFIC LIST ========== */
+        /* ========== MOBILE SPECIFIC BENTO CARDS ========== */
         @media (max-width: 900px) {
-          .mpj-list { display: flex; flex-direction: column; gap: 8px; }
-          .mpj-row { position: relative; overflow: hidden; display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 14px; width: 100%; text-align: left; cursor: pointer; }
-          .mpj-stripe { position: absolute; left: 0; top: 0; bottom: 0; width: 3px; border-radius: 14px 0 0 14px; }
-          .mpj-icon { width: 32px; height: 32px; border-radius: 10px; border: 1px solid; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; }
-          .mpj-body { flex: 1; min-width: 0; }
-          .mpj-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin: 0; }
-          .mpj-desc { font-size: 10.5px; color: var(--text-secondary); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-          .mpj-chevron { color: var(--text-muted); flex-shrink: 0; }
+          .mpj-list { display: flex; flex-direction: column; gap: 10px; }
+
+          /* Filter chips header (mobile-only) */
+          .mpj-filter-row {
+            display: flex; gap: 7px; overflow-x: auto; padding-bottom: 2px;
+            -ms-overflow-style: none; scrollbar-width: none; margin-bottom: 4px;
+          }
+          .mpj-filter-row::-webkit-scrollbar { display: none; }
+          .mpj-filter-chip {
+            flex-shrink: 0;
+            padding: 5px 13px; border-radius: 20px;
+            font-size: 11px; font-weight: 700;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary); color: var(--text-secondary);
+            cursor: pointer; white-space: nowrap;
+            transition: all 0.15s;
+          }
+          .mpj-filter-chip--active {
+            background: var(--primary-blue); border-color: var(--primary-blue);
+            color: #fff;
+          }
+
+          /* Bento card */
+          .mpj-bento {
+            position: relative; overflow: hidden;
+            display: flex; flex-direction: column; gap: 8px;
+            padding: 14px 14px 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            width: 100%; text-align: left; cursor: pointer;
+            transition: border-color 0.2s;
+          }
+          .mpj-bento:active { border-color: rgba(99,102,241,0.4); }
+
+          /* Top gradient bar */
+          .mpj-top-bar {
+            position: absolute; top: 0; left: 0; right: 0; height: 2px;
+            border-radius: 18px 18px 0 0;
+          }
+
+          /* Glow blob */
+          .mpj-glow {
+            position: absolute; top: -20px; right: -20px;
+            width: 80px; height: 80px; border-radius: 50%;
+            pointer-events: none;
+          }
+
+          /* Header row */
+          .mpj-bento-header { display: flex; align-items: flex-start; gap: 10px; }
+          .mpj-bento-icon {
+            width: 38px; height: 38px; border-radius: 12px;
+            border: 1px solid; display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 800; flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+          }
+          .mpj-bento-title-wrap { flex: 1; min-width: 0; }
+          .mpj-bento-title {
+            font-size: 14px; font-weight: 800; color: var(--text-primary);
+            margin: 0 0 4px; letter-spacing: -0.02em; line-height: 1.2;
+          }
+          .mpj-bento-badges { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+          .mpj-metric-badge {
+            font-size: 9px; font-weight: 800; border-radius: 8px;
+            padding: 2px 7px; border: 1px solid;
+            letter-spacing: 0.02em;
+          }
+          .mpj-chevron { color: var(--text-muted); flex-shrink: 0; margin-top: 2px; }
+
+          /* Description */
+          .mpj-bento-desc {
+            font-size: 11px; color: var(--text-secondary);
+            line-height: 1.55; margin: 0;
+            display: -webkit-box; -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical; overflow: hidden;
+          }
+
+          /* Tech tags */
+          .mpj-bento-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+          .mpj-bento-tag {
+            font-size: 9.5px; font-weight: 700;
+            border-radius: 8px; padding: 2.5px 8px;
+            border: 1px solid;
+          }
+
+          /* Title row */
+          .mpj-title-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
         }
       `}</style>
 
@@ -439,17 +557,27 @@ export default function Projects() {
       {loading ? (
         <ProjectSkeleton count={6} />
       ) : isMobile ? (
-        /* Mobile List View */
-        <div className="mpj-list">
-          {(projectsData || []).map((project, i) => (
-            <MobileProjectRow
-              key={project.id || project.title}
-              project={project}
-              index={i}
-              onTap={setSelectedProject}
-              onLongPress={setContextMenuProject}
-            />
-          ))}
+        /* Mobile Bento Cards View */
+        <div>
+          {/* Filter chips — mobile only */}
+          <div className="mpj-filter-row">
+            {['All', 'AI & ML', 'Full Stack', 'Data Science'].map(cat => (
+              <span key={cat} className={`mpj-filter-chip${cat === 'All' ? ' mpj-filter-chip--active' : ''}`}>
+                {cat}
+              </span>
+            ))}
+          </div>
+          <div className="mpj-list">
+            {(projectsData || []).map((project, i) => (
+              <MobileProjectRow
+                key={project.id || project.title}
+                project={project}
+                index={i}
+                onTap={setSelectedProject}
+                onLongPress={setContextMenuProject}
+              />
+            ))}
+          </div>
         </div>
       ) : (
         /* Desktop Grid View - Upgraded Cards */

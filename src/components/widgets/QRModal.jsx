@@ -11,7 +11,8 @@ import {
   RotateCw,
   QrCode,
   Link as LinkIcon,
-} from "lucide-react"; // npm install lucide-react
+  CreditCard,
+} from "lucide-react";
 import { useState, useEffect } from "react";
 
 // ---- Animation variants ----
@@ -63,10 +64,17 @@ export default function QRModal({
   const [downloaded, setDownloaded] = useState(false);
   const [flipped, setFlipped] = useState(false);
 
-  // Always reopen on the QR (front) face
+  // Always reopen on the QR (front) face & listen for Escape key
   useEffect(() => {
     if (isOpen) setFlipped(false);
-  }, [isOpen]);
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape" && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(shareUrl);
@@ -220,7 +228,7 @@ export default function QRModal({
         .qr-modal-overlay {
           position: fixed;
           inset: 0;
-          z-index: 9999;
+          z-index: 999999;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -515,7 +523,7 @@ export default function QRModal({
                     className="qr-flip-btn"
                     onClick={() => setFlipped(true)}
                   >
-                    <IdCard size={15} />
+                    <CreditCard size={15} />
                     View Business Card
                   </motion.button>
                 </motion.div>

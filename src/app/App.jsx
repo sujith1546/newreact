@@ -15,8 +15,31 @@ import { trackPageView } from '../lib/analyticsTracker';
 import { prefetchTable } from '../hooks/useRealtimeData';
 import PWAInstallPrompt from '../components/widgets/PWAInstallPrompt';
 import SiteDisabledGate from '../components/SiteDisabledGate';
+import AdminLoginModal from '../components/admin/AdminLoginModal';
 import { useDevSecurityShield } from '../hooks/useDevSecurityShield';
 import ErrorBoundary from '../shared/feedback/ErrorBoundary';
+
+function GlobalAdminModal() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    const handleOpen = () => setIsOpen(true);
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
+        e.preventDefault();
+        setIsOpen(true);
+      }
+    };
+    window.addEventListener('open-admin-login', handleOpen);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('open-admin-login', handleOpen);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  return <AdminLoginModal isOpen={isOpen} onClose={() => setIsOpen(false)} />;
+}
 
 function SecurityToast({ message }) {
   if (!message) return null;
@@ -189,6 +212,7 @@ function AppContent() {
               <RoutedAppShell />
             </ErrorBoundary>
           </SiteDisabledGate>
+          <GlobalAdminModal />
         </BrowserRouter>
       )}
     </MotionConfig>

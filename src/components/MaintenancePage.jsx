@@ -16,6 +16,11 @@ export default function MaintenancePage({ status: propStatus }) {
 
     const handleContextMenu = (e) => e.preventDefault();
     const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent('open-admin-login'));
+        return;
+      }
       if (
         e.key === 'F12' ||
         (e.ctrlKey && e.shiftKey && ['I','i','J','j','C','c'].includes(e.key)) ||
@@ -114,10 +119,15 @@ export default function MaintenancePage({ status: propStatus }) {
         </div>
 
         <div className="maint-side-footer">
-          <div className="maint-side-btn">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
-            Deploy status
-          </div>
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent('open-admin-login'))}
+            className="maint-side-btn"
+            style={{ cursor: 'pointer', background: 'none', border: 'none', font: 'inherit', textAlign: 'left', width: '100%' }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+            Admin Sign In
+          </button>
           <div className="maint-side-note">Last checked just now<br />© 2026 All rights reserved Sujith</div>
         </div>
       </div>

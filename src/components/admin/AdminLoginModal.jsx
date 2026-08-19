@@ -298,7 +298,7 @@ export default function AdminLoginModal({ isOpen, onClose }) {
           style={{
             position: "fixed",
             inset: 0,
-            zIndex: 999999,
+            zIndex: 2147483648,
             background: isDarkMode ? "rgba(0, 0, 0, 0.55)" : "rgba(15, 23, 42, 0.4)",
             backdropFilter: "blur(16px)",
             WebkitBackdropFilter: "blur(16px)",
@@ -543,71 +543,94 @@ export default function AdminLoginModal({ isOpen, onClose }) {
             </div>
 
             {/* Password / Email OTP Segmented tabs - curved rectangle */}
-            <div
-              style={{
-                display: "flex",
-                padding: "3px",
-                background: "var(--modal-tab-track)",
-                border: "1px solid var(--modal-border)",
-                borderRadius: "10px",
-                margin: "0 20px 14px",
-              }}
-            >
-              <button
-                type="button"
-                onClick={() => {
-                  setError("");
-                  setActiveMethod("password");
-                }}
+            {!mfaRequired && (
+              <div
                 style={{
-                  flex: 1,
-                  border: "none",
-                  background: activeMethod === "password" ? "var(--modal-tab-active-bg)" : "transparent",
-                  color: activeMethod === "password" ? "var(--modal-tab-active-text)" : "var(--modal-muted)",
-                  padding: "7px 12px",
-                  borderRadius: "7px",
-                  fontSize: "12px",
-                  fontWeight: "600",
-                  cursor: "pointer",
-                  transition: "all 0.18s ease",
                   display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: "6px",
-                  boxShadow: activeMethod === "password" ? "0 1px 3px rgba(0,0,0,0.15)" : "none",
+                  padding: "3px",
+                  background: "var(--modal-tab-track)",
+                  border: "1px solid var(--modal-border)",
+                  borderRadius: "10px",
+                  margin: "0 20px 14px",
                 }}
               >
-                <KeyRound size={13} />
-                <span>Password</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setError("");
-                  setActiveMethod("otp");
-                }}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setError("");
+                    setActiveMethod("password");
+                  }}
+                  style={{
+                    flex: 1,
+                    border: "none",
+                    background: activeMethod === "password" ? "var(--modal-tab-active-bg)" : "transparent",
+                    color: activeMethod === "password" ? "var(--modal-tab-active-text)" : "var(--modal-muted)",
+                    padding: "7px 12px",
+                    borderRadius: "7px",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                    transition: "all 0.18s ease",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "6px",
+                    boxShadow: activeMethod === "password" ? "0 1px 3px rgba(0,0,0,0.15)" : "none",
+                  }}
+                >
+                  <KeyRound size={13} />
+                  <span>Password</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setError("");
+                    setActiveMethod("otp");
+                  }}
+                  style={{
+                    flex: 1,
+                    border: "none",
+                    background: activeMethod === "otp" ? "var(--modal-tab-active-bg)" : "transparent",
+                    color: activeMethod === "otp" ? "var(--modal-tab-active-text)" : "var(--modal-muted)",
+                    padding: "7px 12px",
+                    borderRadius: "7px",
+                    fontSize: "12px",
+                    fontWeight: "600",
+                    cursor: "pointer",
+                    transition: "all 0.18s ease",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "6px",
+                    boxShadow: activeMethod === "otp" ? "0 1px 3px rgba(0,0,0,0.15)" : "none",
+                  }}
+                >
+                  <Mail size={13} />
+                  <span>Email OTP</span>
+                </button>
+              </div>
+            )}
+
+            {mfaRequired && (
+              <div
                 style={{
-                  flex: 1,
-                  border: "none",
-                  background: activeMethod === "otp" ? "var(--modal-tab-active-bg)" : "transparent",
-                  color: activeMethod === "otp" ? "var(--modal-tab-active-text)" : "var(--modal-muted)",
-                  padding: "7px 12px",
-                  borderRadius: "7px",
-                  fontSize: "12px",
-                  fontWeight: "600",
-                  cursor: "pointer",
-                  transition: "all 0.18s ease",
+                  margin: "0 20px 14px",
+                  padding: "8px 12px",
+                  background: "rgba(59, 130, 246, 0.1)",
+                  border: "1px solid rgba(59, 130, 246, 0.25)",
+                  borderRadius: "10px",
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center",
-                  gap: "6px",
-                  boxShadow: activeMethod === "otp" ? "0 1px 3px rgba(0,0,0,0.15)" : "none",
+                  gap: "8px",
+                  fontSize: "12px",
+                  color: "#3b82f6",
+                  fontWeight: 600,
                 }}
               >
-                <Mail size={13} />
-                <span>Email OTP</span>
-              </button>
-            </div>
+                <Shield size={14} />
+                <span>Two-Factor Authentication (TOTP)</span>
+              </div>
+            )}
 
             {/* Error Notice */}
             {error && (
@@ -649,8 +672,137 @@ export default function AdminLoginModal({ isOpen, onClose }) {
 
             {/* Form Content */}
             <div style={{ padding: "0 20px 20px" }}>
+              {/* MFA TOTP CHALLENGE VIEW */}
+              {mfaRequired && (
+                <form onSubmit={handleTotpSubmit} noValidate>
+                  <div style={{ marginBottom: "14px", textAlign: "left" }}>
+                    <label
+                      htmlFor="modal-totpCode"
+                      style={{
+                        display: "block",
+                        fontSize: "12px",
+                        fontWeight: "500",
+                        color: "var(--modal-text)",
+                        marginBottom: "5px",
+                      }}
+                    >
+                      6-digit Authenticator Code
+                    </label>
+                    <div
+                      style={{
+                        position: "relative",
+                        display: "flex",
+                        alignItems: "center",
+                        background: "var(--modal-field-bg)",
+                        border: "1px solid var(--modal-field-border)",
+                        borderRadius: "8px",
+                        height: "36px",
+                      }}
+                    >
+                      <Shield
+                        size={15}
+                        color="var(--modal-muted)"
+                        style={{ position: "absolute", left: "11px", pointerEvents: "none" }}
+                      />
+                      <input
+                        id="modal-totpCode"
+                        type="text"
+                        maxLength={6}
+                        value={totpCode}
+                        onChange={(e) =>
+                          setTotpCode(e.target.value.replace(/\D/g, "").slice(0, 6))
+                        }
+                        placeholder="000 000"
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          background: "transparent",
+                          border: "none",
+                          outline: "none",
+                          color: "var(--modal-text)",
+                          textAlign: "center",
+                          letterSpacing: "4px",
+                          fontWeight: 700,
+                          fontSize: "14px",
+                          paddingLeft: "32px",
+                          paddingRight: "12px",
+                          boxSizing: "border-box",
+                        }}
+                        autoFocus
+                      />
+                    </div>
+                  </div>
+
+                  <p
+                    style={{
+                      fontSize: "12px",
+                      color: "var(--modal-muted)",
+                      margin: "0 0 14px",
+                      lineHeight: 1.45,
+                    }}
+                  >
+                    Open your Authenticator app (Google Authenticator, 1Password, etc.) and enter the code.
+                  </p>
+
+                  <button
+                    type="submit"
+                    disabled={loading || totpCode.length !== 6 || lockoutTimer > 0}
+                    style={{
+                      width: "100%",
+                      height: "38px",
+                      background: "var(--modal-btn-bg)",
+                      color: "var(--modal-btn-text)",
+                      fontWeight: "600",
+                      fontSize: "13px",
+                      border: "none",
+                      borderRadius: "8px",
+                      cursor:
+                        loading || totpCode.length !== 6 || lockoutTimer > 0
+                          ? "not-allowed"
+                          : "pointer",
+                      opacity:
+                        loading || totpCode.length !== 6 || lockoutTimer > 0 ? 0.6 : 1,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: "6px",
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    <span>{loading ? "Verifying..." : "Verify & Sign in"}</span>
+                    <ArrowRight size={15} />
+                  </button>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "flex-start",
+                      marginTop: "12px",
+                      fontSize: "12px",
+                    }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMfaRequired(false);
+                        setTotpCode("");
+                        setError("");
+                      }}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        color: "var(--modal-muted)",
+                        cursor: "pointer",
+                      }}
+                    >
+                      ← Back to Password
+                    </button>
+                  </div>
+                </form>
+              )}
+
               {/* PASSWORD TAB VIEW */}
-              {activeMethod === "password" && (
+              {!mfaRequired && activeMethod === "password" && (
                 <form onSubmit={handlePasswordSubmit} noValidate>
                   <div style={{ marginBottom: "14px", textAlign: "left" }}>
                     <label
@@ -882,7 +1034,7 @@ export default function AdminLoginModal({ isOpen, onClose }) {
               )}
 
               {/* EMAIL OTP TAB VIEW */}
-              {activeMethod === "otp" && (
+              {!mfaRequired && activeMethod === "otp" && (
                 <div>
                   {!emailOtpSent ? (
                     <form onSubmit={handleSendEmailOtp} noValidate>

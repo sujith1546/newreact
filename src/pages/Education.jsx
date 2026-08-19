@@ -883,12 +883,37 @@ export default function Education() {
             border: 1px solid;
           }
 
-          .medu-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
-          .medu-title-row { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; flex-wrap: wrap; }
+          .medu-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+          .medu-title-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; }
           .medu-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin: 0; line-height: 1.2; }
           .medu-inst { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; }
+          .medu-badges { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; margin-top: 3px; }
+          .medu-badge {
+            font-size: 9px; font-weight: 700;
+            padding: 2px 7px; border-radius: 6px;
+            background: var(--bg-primary); border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+          }
           
           .medu-chevron { color: var(--text-muted); flex-shrink: 0; margin-top: 2px; }
+
+          /* Mobile Academic Overview Bento */
+          .medu-overview-wrap {
+            margin-top: 10px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 12px 14px;
+            display: flex; flex-direction: column; gap: 6px;
+          }
+          .medu-overview-title {
+            font-size: 9.5px; font-weight: 800; text-transform: uppercase;
+            letter-spacing: 0.08em; color: var(--text-muted); margin: 0;
+            display: flex; align-items: center; gap: 5px;
+          }
+          .medu-overview-desc {
+            font-size: 11px; color: var(--text-secondary); line-height: 1.5; margin: 0;
+          }
 
           /* PREMIUM ANIMATED DETAIL SHEET */
           .dsheet-backdrop {
@@ -1093,11 +1118,30 @@ export default function Education() {
                       <h3 className="medu-title">{item.title}</h3>
                     </div>
                     <p className="medu-inst" style={{ color: accent }}>{item.institution}</p>
+                    <div className="medu-badges">
+                      {item.year && <span className="medu-badge">{item.year}</span>}
+                      {item.score && (
+                        <span className="medu-badge" style={{ color: accent, borderColor: accent + '35', background: accent + '12', fontWeight: 800 }}>
+                          {item.score}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <ChevronRight size={15} className="medu-chevron" />
                 </button>
               );
             })}
+
+            {/* Mobile Academic Overview Bento */}
+            <div className="medu-overview-wrap">
+              <p className="medu-overview-title">
+                <Trophy size={11} style={{ color: '#eab308' }} />
+                Academic Specialization
+              </p>
+              <p className="medu-overview-desc">
+                B.Tech in Computer Science with Specialization in Data Science from VIT University. Focus on Machine Learning, Deep Learning, Cloud Architecture, and Scalable Backend Systems.
+              </p>
+            </div>
           </div>
         )}
 

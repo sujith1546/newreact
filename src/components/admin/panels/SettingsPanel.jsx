@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../../lib/supabaseClient';
 import useRealtimeData from '../../../hooks/useRealtimeData';
 import { logAuditEvent } from '../../../lib/auditLogger';
@@ -241,6 +242,7 @@ const DEFAULT_SETTINGS = {
 };
 
 export default function SettingsPanel({ isMobileView = false }) {
+  const navigate = useNavigate();
   const { data: dbSettings, setData: setDbSettings, loading } = useRealtimeData(
     'site_settings', { single: true, filter: { column: 'id', value: 1 } }
   );
@@ -575,7 +577,7 @@ export default function SettingsPanel({ isMobileView = false }) {
       {activeTab === 'toggles' && (<>
         <Card>
           <CardHead icon={Layers} label="Portfolio Modules" sub="Toggle entire sections visible to public visitors." />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div className="pcms-toggles-2col">
             <PremiumToggle icon={Briefcase} color="#6366F1" label="Experience & Timeline" description="Career history, roles & achievements." checked={settings?.feature_experience ?? true} onChange={v => toggle('feature_experience', v)} />
             <PremiumToggle icon={Award}     color="#10B981" label="Certifications & Awards" description="Credentials, badges & recognitions." checked={settings?.feature_certifications ?? true} onChange={v => toggle('feature_certifications', v)} />
             <PremiumToggle icon={BookOpen}  color="#06B6D4" label="Blog & Articles" description="Blog listing page and individual posts." checked={settings?.feature_blog ?? true} onChange={v => toggle('feature_blog', v)} />
@@ -585,7 +587,7 @@ export default function SettingsPanel({ isMobileView = false }) {
         </Card>
         <Card>
           <CardHead icon={Bot} label="AI & Engagement" sub="Interactive and AI-powered features." color="#06B6D4" />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div className="pcms-toggles-2col">
             <PremiumToggle icon={Bot}           color="#06B6D4" label="AI Chat Assistant" description="RAG-powered portfolio chatbot widget." checked={settings?.feature_chatbot ?? true} onChange={v => toggle('feature_chatbot', v)} />
             <PremiumToggle icon={Sparkles}      color="#8B5CF6" label="Available for Hire Badge" description="'Open for Opportunities' pill in hero." checked={settings?.is_available_for_hire ?? false} onChange={v => toggle('is_available_for_hire', v)} />
             <PremiumToggle icon={MessageCircle} color="#EC4899" label="Contact Form" description="Allow visitors to send you messages." checked={settings?.feature_contact ?? true} onChange={v => toggle('feature_contact', v)} />
@@ -622,8 +624,10 @@ export default function SettingsPanel({ isMobileView = false }) {
                     <input type="date" className="pcms-search" value={settings?.availability_from || ''} onChange={e => change('availability_from', e.target.value)} onBlur={e => blur('availability_from', e.target.value)} style={{ width: '100%' }} />
                   </Field>
                 </Grid2>
-                <PremiumInput label="Preferred Role" icon={Briefcase} value={settings?.preferred_role || ''} onChange={e => change('preferred_role', e.target.value)} onBlur={e => blur('preferred_role', e.target.value)} placeholder="e.g. Full-Stack / AI Engineer" />
-                <PremiumInput label="Notice Period" icon={Clock} value={settings?.notice_period || ''} onChange={e => change('notice_period', e.target.value)} onBlur={e => blur('notice_period', e.target.value)} placeholder="e.g. Immediate / 2 weeks" />
+                <Grid2>
+                  <PremiumInput label="Preferred Role" icon={Briefcase} value={settings?.preferred_role || ''} onChange={e => change('preferred_role', e.target.value)} onBlur={e => blur('preferred_role', e.target.value)} placeholder="e.g. Full-Stack / AI Engineer" />
+                  <PremiumInput label="Notice Period" icon={Clock} value={settings?.notice_period || ''} onChange={e => change('notice_period', e.target.value)} onBlur={e => blur('notice_period', e.target.value)} placeholder="e.g. Immediate / 2 weeks" />
+                </Grid2>
               </Card>
             </>)}
 
@@ -693,15 +697,15 @@ export default function SettingsPanel({ isMobileView = false }) {
             {activeTab === 'links' && (<>
               <Card>
                 <CardHead icon={Link} label="Social & Contact Links" sub="Used in footer, hero and contact sections." />
-                <PremiumInput label="Contact Email" icon={Mail} value={settings?.contact_email || ''} onChange={e => change('contact_email', e.target.value)} onBlur={e => blur('contact_email', e.target.value)} placeholder="your@email.com" />
+                <Grid2>
+                  <PremiumInput label="Contact Email" icon={Mail} value={settings?.contact_email || ''} onChange={e => change('contact_email', e.target.value)} onBlur={e => blur('contact_email', e.target.value)} placeholder="your@email.com" />
+                  <PremiumInput label="Portfolio Site" icon={Globe} value={settings?.portfolio_url || ''} onChange={e => change('portfolio_url', e.target.value)} onBlur={e => blur('portfolio_url', e.target.value)} placeholder="https://yoursite.dev" />
+                </Grid2>
                 <Grid2>
                   <PremiumInput label="GitHub" icon={FaGithub} value={settings?.github_url || ''} onChange={e => change('github_url', e.target.value)} onBlur={e => blur('github_url', e.target.value)} placeholder="https://github.com/..." />
                   <PremiumInput label="LinkedIn" icon={FaLinkedin} value={settings?.linkedin_url || ''} onChange={e => change('linkedin_url', e.target.value)} onBlur={e => blur('linkedin_url', e.target.value)} placeholder="https://linkedin.com/in/..." />
                 </Grid2>
-                <Grid2>
-                  <PremiumInput label="Twitter / X" icon={FaTwitter} value={settings?.twitter_url || ''} onChange={e => change('twitter_url', e.target.value)} onBlur={e => blur('twitter_url', e.target.value)} placeholder="https://x.com/..." />
-                  <PremiumInput label="Portfolio Site" icon={Globe} value={settings?.portfolio_url || ''} onChange={e => change('portfolio_url', e.target.value)} onBlur={e => blur('portfolio_url', e.target.value)} placeholder="https://yoursite.dev" />
-                </Grid2>
+                <PremiumInput label="Twitter / X" icon={FaTwitter} value={settings?.twitter_url || ''} onChange={e => change('twitter_url', e.target.value)} onBlur={e => blur('twitter_url', e.target.value)} placeholder="https://x.com/..." />
               </Card>
               <Card>
                 <CardHead icon={FileText} label="PDF Resume" sub="Downloadable CV for visitors." color="#EC4899" />
@@ -775,8 +779,10 @@ export default function SettingsPanel({ isMobileView = false }) {
               </Card>
               <Card>
                 <CardHead icon={Pen} label="Identity & Branding" sub="Your portfolio's public-facing copy." color="#8B5CF6" />
-                <PremiumInput label="Your Name" icon={User} value={settings?.owner_name || ''} onChange={e => change('owner_name', e.target.value)} onBlur={e => blur('owner_name', e.target.value)} placeholder="Sujith Thota" />
-                <PremiumInput label="Hero Headline" icon={Type} value={settings?.hero_headline || ''} onChange={e => change('hero_headline', e.target.value)} onBlur={e => blur('hero_headline', e.target.value)} placeholder="Full-Stack & AI Engineer" />
+                <Grid2>
+                  <PremiumInput label="Your Name" icon={User} value={settings?.owner_name || ''} onChange={e => change('owner_name', e.target.value)} onBlur={e => blur('owner_name', e.target.value)} placeholder="Sujith Thota" />
+                  <PremiumInput label="Hero Headline" icon={Type} value={settings?.hero_headline || ''} onChange={e => change('hero_headline', e.target.value)} onBlur={e => blur('hero_headline', e.target.value)} placeholder="Full-Stack & AI Engineer" />
+                </Grid2>
                 <PremiumInput label="Hero Tagline" icon={FileText} value={settings?.hero_tagline || ''} onChange={e => change('hero_tagline', e.target.value)} onBlur={e => blur('hero_tagline', e.target.value)} placeholder="Building intelligent, high-performance software." />
               </Card>
             </>)}
@@ -785,9 +791,11 @@ export default function SettingsPanel({ isMobileView = false }) {
             {activeTab === 'performance' && (<>
               <Card>
                 <CardHead icon={TrendingUp} label="Analytics & Tracking" sub="Control visitor telemetry." />
-                <PremiumToggle icon={BarChart2}      color="#6366F1" label="Page View Tracking"  description="Record anonymous page view counts per route." checked={settings?.track_page_views ?? true}  onChange={v => toggle('track_page_views', v)} />
-                <PremiumToggle icon={Bot}            color="#10B981" label="Bot Traffic Filter"   description="Ignore crawler requests from analytics." checked={settings?.filter_bots ?? true}         onChange={v => toggle('filter_bots', v)} />
-                <PremiumToggle icon={Activity}       color="#06B6D4" label="Referrer Logging"     description="Log which sites send visitors to you." checked={settings?.log_referrers ?? false}       onChange={v => toggle('log_referrers', v)} />
+                <div className="pcms-toggles-2col">
+                  <PremiumToggle icon={BarChart2}      color="#6366F1" label="Page View Tracking"  description="Record anonymous page view counts per route." checked={settings?.track_page_views ?? true}  onChange={v => toggle('track_page_views', v)} />
+                  <PremiumToggle icon={Bot}            color="#10B981" label="Bot Traffic Filter"   description="Ignore crawler requests from analytics." checked={settings?.filter_bots ?? true}         onChange={v => toggle('filter_bots', v)} />
+                  <PremiumToggle icon={Activity}       color="#06B6D4" label="Referrer Logging"     description="Log which sites send visitors to you." checked={settings?.log_referrers ?? false}       onChange={v => toggle('log_referrers', v)} />
+                </div>
               </Card>
               <Card>
                 <CardHead icon={Server} label="Rate Limiting & AI Quotas" sub="Protect against abuse." color="#F59E0B" />
@@ -799,12 +807,14 @@ export default function SettingsPanel({ isMobileView = false }) {
               </Card>
               <Card>
                 <CardHead icon={Wifi} label="Cache & CDN" sub="Edge cache and staleness behaviour." color="#8B5CF6" />
-                <Field label="Static Asset Cache TTL">
-                  <select className="pcms-select" value={settings?.cache_ttl ?? 86400} onChange={e => { change('cache_ttl', Number(e.target.value)); updateSetting('cache_ttl', Number(e.target.value)); }} style={{ width: '100%' }}>
-                    {[[3600,'1 Hour'],[21600,'6 Hours'],[86400,'24 Hours (default)'],[604800,'7 Days']].map(([v,l]) => <option key={v} value={v}>{l}</option>)}
-                  </select>
-                </Field>
-                <PremiumToggle icon={RefreshCw} color="#06B6D4" label="Stale-While-Revalidate" description="Serve cached pages while revalidating." checked={settings?.stale_while_revalidate ?? true} onChange={v => toggle('stale_while_revalidate', v)} />
+                <div className="pcms-toggles-2col" style={{ alignItems: 'end' }}>
+                  <Field label="Static Asset Cache TTL">
+                    <select className="pcms-select" value={settings?.cache_ttl ?? 86400} onChange={e => { change('cache_ttl', Number(e.target.value)); updateSetting('cache_ttl', Number(e.target.value)); }} style={{ width: '100%' }}>
+                      {[[3600,'1 Hour'],[21600,'6 Hours'],[86400,'24 Hours (default)'],[604800,'7 Days']].map(([v,l]) => <option key={v} value={v}>{l}</option>)}
+                    </select>
+                  </Field>
+                  <PremiumToggle icon={RefreshCw} color="#06B6D4" label="Stale-While-Revalidate" description="Serve cached pages while revalidating." checked={settings?.stale_while_revalidate ?? true} onChange={v => toggle('stale_while_revalidate', v)} />
+                </div>
               </Card>
             </>)}
 
@@ -812,10 +822,12 @@ export default function SettingsPanel({ isMobileView = false }) {
             {activeTab === 'notifications' && (<>
               <Card>
                 <CardHead icon={Mail} label="Email Notifications" sub="Which admin events trigger email alerts." />
-                <PremiumToggle icon={MessageSquare} color="#6366F1" label="New Contact Message"   description="Email when someone sends you a message." checked={settings?.notify_new_message ?? true}  onChange={v => toggle('notify_new_message', v)} />
-                <PremiumToggle icon={Bot}           color="#06B6D4" label="New AI Chat Session"   description="Alert when a visitor starts AI chat." checked={settings?.notify_new_chat ?? false}    onChange={v => toggle('notify_new_chat', v)} />
-                <PremiumToggle icon={Server}        color="#10B981" label="Deploy Webhook Success" description="Email after a production deploy completes." checked={settings?.notify_deploy ?? true}     onChange={v => toggle('notify_deploy', v)} />
-                <PremiumToggle icon={Shield}        color="#EF4444" label="Security Alert"         description="Immediate alert on lockdown mode activation." checked={settings?.notify_security ?? true} onChange={v => toggle('notify_security', v)} />
+                <div className="pcms-toggles-2col">
+                  <PremiumToggle icon={MessageSquare} color="#6366F1" label="New Contact Message"   description="Email when someone sends you a message." checked={settings?.notify_new_message ?? true}  onChange={v => toggle('notify_new_message', v)} />
+                  <PremiumToggle icon={Bot}           color="#06B6D4" label="New AI Chat Session"   description="Alert when a visitor starts AI chat." checked={settings?.notify_new_chat ?? false}    onChange={v => toggle('notify_new_chat', v)} />
+                  <PremiumToggle icon={Server}        color="#10B981" label="Deploy Webhook Success" description="Email after a production deploy completes." checked={settings?.notify_deploy ?? true}     onChange={v => toggle('notify_deploy', v)} />
+                  <PremiumToggle icon={Shield}        color="#EF4444" label="Security Alert"         description="Immediate alert on lockdown mode activation." checked={settings?.notify_security ?? true} onChange={v => toggle('notify_security', v)} />
+                </div>
               </Card>
               <Card>
                 <CardHead icon={Bell} label="Routing" sub="Where alerts are delivered." color="#F59E0B" />
@@ -847,12 +859,12 @@ export default function SettingsPanel({ isMobileView = false }) {
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, marginTop: 4 }}>
+                <div className="pcms-toggles-2col" style={{ marginTop: 4 }}>
                   {securityScanResults?.checks?.map(c => (
-                    <div key={c.label} style={{ background: 'var(--pcms-panel)', border: '1px solid var(--pcms-line)', borderRadius: 8, padding: '9px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div key={c.label} style={{ background: 'var(--pcms-panel)', border: '1px solid var(--pcms-line)', borderRadius: 8, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                        <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--pcms-text)' }}>{c.label}</span>
-                        <span style={{ fontSize: 10, color: 'var(--pcms-muted-2)' }}>{c.detail}</span>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--pcms-text)' }}>{c.label}</span>
+                        <span style={{ fontSize: 10.5, color: 'var(--pcms-muted-2)' }}>{c.detail}</span>
                       </div>
                       <Pill color={c.status === 'PASS' || c.status === 'ACTIVE' ? '#10B981' : '#3B82F6'}>
                         {c.status}
@@ -865,7 +877,7 @@ export default function SettingsPanel({ isMobileView = false }) {
               {/* Developer & Source Code Protection */}
               <Card>
                 <CardHead icon={EyeOff} label="Source Code & Developer Protection" sub="Prevent inspection, scraping and unauthorized code copying." color="#3B82F6" />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div className="pcms-toggles-2col">
                   <PremiumToggle
                     icon={EyeOff}
                     color="#3B82F6"
@@ -896,7 +908,7 @@ export default function SettingsPanel({ isMobileView = false }) {
               {/* Perimeter & Anti-Phishing Defense */}
               <Card>
                 <CardHead icon={Shield} label="Perimeter & Anti-Phishing Defense" sub="Clickjacking isolation and holographic watermark." color="#F59E0B" />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div className="pcms-toggles-2col">
                   <PremiumToggle
                     icon={Server}
                     color="#10B981"
@@ -919,7 +931,7 @@ export default function SettingsPanel({ isMobileView = false }) {
               {/* Intercepted Hardware & Keystrokes Inventory */}
               <Card>
                 <CardHead icon={Terminal} label="Hardware & Keystroke Interceptions" sub="List of hardware shortcuts monitored and intercepted." color="#8B5CF6" />
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 }}>
+                <div className="pcms-toggles-2col">
                   {[
                     ['Right-Click Context Menu', settings?.disable_inspect ? 'Blocked' : 'Active'],
                     ['F12 Developer Tools', settings?.disable_inspect ? 'Blocked' : 'Active'],
@@ -941,18 +953,20 @@ export default function SettingsPanel({ isMobileView = false }) {
               {/* Session & Cryptographic Info */}
               <Card>
                 <CardHead icon={Shield} label="Session & Cryptographic TLS Info" sub="Read-only metadata about the current admin session." color="#6366F1" />
-                {[
-                  ['Session Verification', <Pill color="#10B981"><CheckCircle2 size={10} /> Authenticated</Pill>],
-                  ['Transport Layer Security', <Pill color="#10B981"><CheckCircle2 size={10} /> TLS 1.3 / HTTPS</Pill>],
-                  ['Content Security Policy', <Pill color="#6366F1">Enforced</Pill>],
-                  ['Clickjacking Defense', <Pill color="#10B981">Frame-Busting Active</Pill>],
-                  ['Last Security Handshake', new Date().toLocaleString()],
-                ].map(([k, v]) => (
-                  <div key={k} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: '1px solid var(--pcms-line-soft)' }}>
-                    <span style={{ fontSize: 12, color: 'var(--pcms-muted)' }}>{k}</span>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--pcms-text)' }}>{v}</span>
-                  </div>
-                ))}
+                <div className="pcms-toggles-2col">
+                  {[
+                    ['Session Verification', <Pill color="#10B981"><CheckCircle2 size={10} /> Authenticated</Pill>],
+                    ['Transport Layer Security', <Pill color="#10B981"><CheckCircle2 size={10} /> TLS 1.3 / HTTPS</Pill>],
+                    ['Content Security Policy', <Pill color="#6366F1">Enforced</Pill>],
+                    ['Clickjacking Defense', <Pill color="#10B981">Frame-Busting Active</Pill>],
+                    ['Last Security Handshake', <span style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--pcms-muted)' }}>{new Date().toLocaleString()}</span>],
+                  ].map(([k, v]) => (
+                    <div key={k} style={{ background: 'var(--pcms-panel)', border: '1px solid var(--pcms-line)', borderRadius: 8, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: 12, color: 'var(--pcms-muted)' }}>{k}</span>
+                      <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--pcms-text)' }}>{v}</span>
+                    </div>
+                  ))}
+                </div>
               </Card>
 
               {/* Active Sessions Manager & Remote Kill */}
@@ -1225,7 +1239,7 @@ export default function SettingsPanel({ isMobileView = false }) {
                   <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--pcms-muted-2)', paddingBottom: 2 }}>
                     Trigger Subscribed Events
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 }}>
+                  <div className="pcms-toggles-2col">
                     {[
                       { key: 'webhook_event_contact',  label: 'New Contact Message',   color: '#6366F1' },
                       { key: 'webhook_event_chat',     label: 'AI Chat Session Start', color: '#06B6D4' },
@@ -1903,24 +1917,33 @@ export default function SettingsPanel({ isMobileView = false }) {
             );
           })}
 
-          {/* Bottom health strip */}
-          <div style={{ marginTop: 'auto', paddingTop: 4 }}>
+          {/* Bottom DB & Auth health badge strip */}
+          <div style={{ marginTop: 'auto', paddingTop: 6 }}>
             <div style={{
-              padding: navExpanded ? '4px 6px' : '4px 2px',
-              borderRadius: 6, background: 'rgba(16,185,129,0.05)',
-              border: '1px solid rgba(16,185,129,0.15)',
-              display: 'flex', alignItems: 'center', justifyContent: navExpanded ? 'flex-start' : 'center',
-              gap: 6, fontSize: 9.5, color: '#10B981', fontWeight: 600,
+              padding: navExpanded ? '6px 8px' : '6px 2px',
+              borderRadius: 8, background: 'var(--pcms-panel-2)',
+              border: '1px solid var(--pcms-line)',
+              display: 'flex', alignItems: 'center', justifyContent: navExpanded ? 'space-between' : 'center',
+              gap: 6, fontSize: 10.5, fontWeight: 600,
             }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#10B981', boxShadow: '0 0 4px #10B981' }} />
-                {navExpanded && 'DB'}
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10B981', boxShadow: '0 0 6px #10B981' }} />
+                {navExpanded && <span style={{ color: 'var(--pcms-text)', fontSize: 10 }}>DB Active</span>}
+              </div>
               {navExpanded && (
-                <span style={{ display: 'flex', alignItems: 'center', gap: 3, color: '#6366F1' }}>
-                  <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#6366F1', boxShadow: '0 0 4px #6366F1' }} />
-                  Auth
-                </span>
+                <button
+                  type="button"
+                  onClick={() => navigate('/admin/dashboard/auth_security')}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 4,
+                    background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.25)',
+                    color: '#EF4444', padding: '1px 6px', borderRadius: 5, fontSize: 9.5, fontWeight: 700,
+                    cursor: 'pointer'
+                  }}
+                  title="Open Sign-In Security"
+                >
+                  <ShieldCheck size={10} /> Auth Protected
+                </button>
               )}
             </div>
           </div>

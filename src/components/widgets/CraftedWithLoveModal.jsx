@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, Heart, Sparkles, Layers, ShieldCheck, Mail,
   Code2, Zap, Terminal, Smartphone, Calendar, Database,
-  Activity, Gauge, Cpu, CheckCircle2, ArrowRight
+  Activity, Gauge, Cpu, CheckCircle2
 } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
 import { useTheme } from '../../context/ThemeContext';
@@ -439,35 +439,6 @@ export default function CraftedWithLoveModal({ isOpen, onClose }) {
 
             {/* Bottom Actions Row */}
             <div style={{ padding: '0 20px 20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <button
-                type="button"
-                className="cwl-action-btn"
-                onClick={() => {
-                  onClose();
-                  window.dispatchEvent(new CustomEvent('open-email'));
-                }}
-                style={{
-                  width: '100%',
-                  height: '36px',
-                  background: 'var(--modal-btn-bg)',
-                  color: 'var(--modal-btn-text)',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '13px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  transition: 'all 0.15s ease',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                }}
-              >
-                <span>Get in touch</span>
-                <ArrowRight size={14} />
-              </button>
-
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11px', color: 'var(--modal-muted)' }}>
                 <span>Handcrafted by Sujith</span>
                 <a

@@ -477,15 +477,15 @@ END:VCARD`;
             </div>
 
             {/* Scrollable content */}
-            <div className="drawer-scroll-area" style={{ padding: '0 14px 20px' }}>
+            <div className="drawer-scroll-area" style={{ padding: '0 14px 38px' }}>
               {/* ⚡ Live Cloud Diagnostics & Telemetry Bar */}
               <div style={{
-                margin: '8px 0 14px',
-                padding: '10px 12px',
-                borderRadius: 16,
+                margin: '8px 0 12px',
+                padding: '8px 12px',
+                borderRadius: 14,
                 background: 'var(--bg-secondary)',
                 border: '1px solid var(--border-color)',
-                boxShadow: '0 4px 14px rgba(0, 0, 0, 0.04)',
+                boxShadow: '0 2px 10px rgba(0, 0, 0, 0.03)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
@@ -502,7 +502,7 @@ END:VCARD`;
                     Live Sync
                   </span>
                   <span style={{ fontSize: 9.5, color: 'var(--text-muted)', background: 'var(--bg-primary)', padding: '1px 6px', borderRadius: 6, border: '1px solid var(--border-color)' }}>
-                    ~18ms
+                    Active
                   </span>
                 </div>
 
@@ -512,12 +512,12 @@ END:VCARD`;
                     onClick={handleSoftSync}
                     disabled={isSyncing}
                     style={{
-                      padding: '5px 9px',
+                      padding: '4px 8px',
                       borderRadius: 8,
                       background: 'rgba(99,102,241,0.12)',
                       border: '1px solid rgba(99,102,241,0.25)',
                       color: 'var(--primary-blue, #6366f1)',
-                      fontSize: 10.5,
+                      fontSize: 10,
                       fontWeight: 700,
                       cursor: 'pointer',
                       display: 'flex',
@@ -525,7 +525,7 @@ END:VCARD`;
                       gap: 4,
                     }}
                   >
-                    <RefreshCw size={11} className={isSyncing ? 'spinning' : ''} />
+                    <RefreshCw size={10} className={isSyncing ? 'spinning' : ''} />
                     <span>{isSyncing ? 'Syncing' : 'Soft Sync'}</span>
                   </motion.button>
 
@@ -534,12 +534,12 @@ END:VCARD`;
                     onClick={handleFullWebsiteRefresh}
                     disabled={isFullReloading}
                     style={{
-                      padding: '5px 9px',
+                      padding: '4px 8px',
                       borderRadius: 8,
                       background: 'rgba(16,185,129,0.12)',
                       border: '1px solid rgba(16,185,129,0.25)',
                       color: '#10b981',
-                      fontSize: 10.5,
+                      fontSize: 10,
                       fontWeight: 700,
                       cursor: 'pointer',
                       display: 'flex',
@@ -547,16 +547,16 @@ END:VCARD`;
                       gap: 4,
                     }}
                   >
-                    <RefreshCw size={11} className={isFullReloading ? 'spinning' : ''} />
+                    <RefreshCw size={10} className={isFullReloading ? 'spinning' : ''} />
                     <span>{isFullReloading ? 'Reloading' : 'Hard Reload'}</span>
                   </motion.button>
                 </div>
               </div>
 
               {/* Explore Navigation Row */}
-              <p className="drawer-sections-label" style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '12px 0 8px' }}>
+              <p className="drawer-sections-label" style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '10px 0 6px' }}>
                 <Compass size={13} style={{ color: 'var(--primary-blue)' }} />
-                <span>EXPLORE</span>
+                <span>EXPLORE SECTIONS</span>
               </p>
               <div className="drawer-explore-row">
                 <motion.button
@@ -565,7 +565,9 @@ END:VCARD`;
                   onClick={() => { haptic.light(); handleTabClick('education'); }}
                   className="drawer-explore-item"
                 >
-                  <div className="drawer-item-box"><GraduationCap size={17} /></div>
+                  <div className="drawer-item-box" style={{ color: '#6366f1', background: 'rgba(99,102,241,0.1)', borderColor: 'rgba(99,102,241,0.25)' }}>
+                    <GraduationCap size={18} />
+                  </div>
                   <span>Education</span>
                 </motion.button>
 
@@ -576,7 +578,9 @@ END:VCARD`;
                     onClick={() => { haptic.light(); handleTabClick('experience'); }}
                     className="drawer-explore-item"
                   >
-                    <div className="drawer-item-box"><Briefcase size={17} /></div>
+                    <div className="drawer-item-box" style={{ color: '#10b981', background: 'rgba(16,185,129,0.1)', borderColor: 'rgba(16,185,129,0.25)' }}>
+                      <Briefcase size={18} />
+                    </div>
                     <span>Experience</span>
                   </motion.button>
                 )}
@@ -588,7 +592,9 @@ END:VCARD`;
                     onClick={() => { haptic.light(); handleTabClick('certifications'); }}
                     className="drawer-explore-item"
                   >
-                    <div className="drawer-item-box"><Award size={17} /></div>
+                    <div className="drawer-item-box" style={{ color: '#f59e0b', background: 'rgba(245,158,11,0.1)', borderColor: 'rgba(245,158,11,0.25)' }}>
+                      <Award size={18} />
+                    </div>
                     <span>Certs</span>
                   </motion.button>
                 )}
@@ -599,7 +605,9 @@ END:VCARD`;
                   onClick={() => { haptic.light(); playSound(); setIsGithubStatsOpen(true); setIsMoreOpen(false); }}
                   className="drawer-explore-item"
                 >
-                  <div className="drawer-item-box"><FaGithub size={17} /></div>
+                  <div className="drawer-item-box" style={{ color: '#8b5cf6', background: 'rgba(139,92,246,0.1)', borderColor: 'rgba(139,92,246,0.25)' }}>
+                    <FaGithub size={18} />
+                  </div>
                   <span>GitHub</span>
                 </motion.button>
               </div>
@@ -607,9 +615,9 @@ END:VCARD`;
               <div className="drawer-divider" />
 
               {/* Feature Actions Grid */}
-              <p className="drawer-sections-label" style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '12px 0 8px' }}>
+              <p className="drawer-sections-label" style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '12px 0 6px' }}>
                 <Zap size={13} style={{ color: '#f59e0b' }} />
-                <span>QUICK ACTIONS</span>
+                <span>TOOLS & SHORTCUTS</span>
               </p>
               <div className="drawer-actions-grid">
                 <motion.button
@@ -619,7 +627,7 @@ END:VCARD`;
                   className="drawer-explore-item"
                 >
                   <div className="drawer-item-box" style={{ color: '#06b6d4', background: 'rgba(6,182,212,0.12)', borderColor: 'rgba(6,182,212,0.25)' }}>
-                    <Atom size={17} />
+                    <Atom size={18} />
                   </div>
                   <span>Atom AI</span>
                 </motion.button>
@@ -631,7 +639,7 @@ END:VCARD`;
                   className="drawer-explore-item"
                 >
                   <div className="drawer-item-box" style={{ color: '#8b5cf6', background: 'rgba(139,92,246,0.12)', borderColor: 'rgba(139,92,246,0.25)' }}>
-                    <FileText size={17} />
+                    <FileText size={18} />
                   </div>
                   <span>Resume</span>
                 </motion.button>
@@ -643,9 +651,9 @@ END:VCARD`;
                   className="drawer-explore-item"
                 >
                   <div className="drawer-item-box" style={{ color: '#10b981', background: 'rgba(16,185,129,0.12)', borderColor: 'rgba(16,185,129,0.25)' }}>
-                    <UserPlus size={17} />
+                    <UserPlus size={18} />
                   </div>
-                  <span>Contact</span>
+                  <span>vCard</span>
                 </motion.button>
 
                 <motion.button
@@ -655,7 +663,7 @@ END:VCARD`;
                   className="drawer-explore-item"
                 >
                   <div className="drawer-item-box" style={{ color: '#3b82f6', background: 'rgba(59,130,246,0.12)', borderColor: 'rgba(59,130,246,0.25)' }}>
-                    <Share size={17} />
+                    <Share size={18} />
                   </div>
                   <span>Share</span>
                 </motion.button>
@@ -667,7 +675,7 @@ END:VCARD`;
                   className="drawer-explore-item"
                 >
                   <div className="drawer-item-box" style={{ color: '#ec4899', background: 'rgba(236,72,153,0.12)', borderColor: 'rgba(236,72,153,0.25)' }}>
-                    <FileDown size={17} />
+                    <FileDown size={18} />
                   </div>
                   <span>Install App</span>
                 </motion.button>
@@ -679,7 +687,7 @@ END:VCARD`;
                   className="drawer-explore-item"
                 >
                   <div className="drawer-item-box" style={{ color: '#6366f1', background: 'rgba(99,102,241,0.12)', borderColor: 'rgba(99,102,241,0.25)' }}>
-                    <User size={17} />
+                    <User size={18} />
                   </div>
                   <span>Profile</span>
                 </motion.button>
@@ -691,7 +699,7 @@ END:VCARD`;
                   className="drawer-explore-item"
                 >
                   <div className="drawer-item-box" style={{ color: '#64748b', background: 'rgba(100,116,139,0.12)', borderColor: 'rgba(100,116,139,0.25)' }}>
-                    <Settings size={17} />
+                    <Settings size={18} />
                   </div>
                   <span>Settings</span>
                 </motion.button>
@@ -703,11 +711,11 @@ END:VCARD`;
                   className="drawer-explore-item"
                 >
                   <div className="drawer-item-box" style={{ color: '#ef4444', background: 'rgba(239,68,68,0.12)', borderColor: 'rgba(239,68,68,0.25)' }}>
-                    <Shield size={17} />
+                    <Shield size={18} />
                   </div>
                   <span>Admin</span>
                 </motion.button>
-            </div>
+              </div>
             </div>
           </motion.div>
         )}

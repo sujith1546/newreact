@@ -28,6 +28,7 @@ const TAB_TO_CATEGORY = {
   preview: 'content',
   theme: 'system',
   settings: 'system',
+  auth_security: 'system',
 };
 
 const SPEED_DIAL_ACTIONS = [

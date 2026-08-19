@@ -8,6 +8,7 @@ import MessagesAdmin, { UnreadBadge } from '../components/admin/panels/MessagesA
 import MobileShell from '../components/admin/mobile/MobileShell';
 import HomePanel from '../components/admin/panels/HomePanel';
 import SettingsPanel from '../components/admin/panels/SettingsPanel';
+import AuthSecurityPanel from '../components/admin/panels/AuthSecurityPanel';
 import EducationPanel from '../components/admin/panels/EducationPanel';
 import CertificationsPanel from '../components/admin/panels/CertificationsPanel';
 import ExperiencePanel from '../components/admin/panels/ExperiencePanel';
@@ -90,7 +91,8 @@ function AdminDashboardDesktop() {
     if (e) e.preventDefault();
     setUnlocking(true);
     setUnlockError('');
-    if (unlockPin.trim() === '1546' || unlockPin.trim() === 'sujith1546' || unlockPin.trim().length >= 6) {
+    const configuredPin = localStorage.getItem('pcms_master_pin') || '1546';
+    if (unlockPin.trim() === configuredPin || unlockPin.trim() === '1546' || unlockPin.trim() === 'sujith1546' || unlockPin.trim().length >= 6) {
       setTimeout(() => {
         setIsScreenLocked(false);
         setUnlockPin('');
@@ -418,6 +420,7 @@ function AdminDashboardDesktop() {
           {activeTab === "updates"         && <UpdatesPanel />}
           {activeTab === "chats"           && <AiChatsPanel />}
           {activeTab === "settings"        && <SettingsPanel />}
+          {activeTab === "auth_security"   && <AuthSecurityPanel />}
           {activeTab === "skills"          && <SkillsPanel />}
           {activeTab === "experience"      && <ExperiencePanel />}
           {activeTab === "certifications"  && <CertificationsPanel />}

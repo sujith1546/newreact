@@ -225,7 +225,7 @@ body {
   backdrop-filter: blur(var(--glass-blur, 12px));
   -webkit-backdrop-filter: blur(var(--glass-blur, 12px));
   border-right: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 20px 24px;
+  padding: 20px 24px 50px;
   text-align: center;
   box-shadow: 5px 0 15px rgba(0,0,0,0.05);
   overflow-y: auto;
@@ -699,6 +699,7 @@ body {
 }
 .sidebar-copyright {
   margin-top: 6px;
+  margin-bottom: 8px;
   font-size: 11px;
   color: var(--text-muted);
   letter-spacing: 0.01em;
@@ -3274,45 +3275,45 @@ html {
   /* ── Base sheet ── */
   .more-overlay-sheet {
     position: fixed;
-    bottom: max(76px, calc(68px + env(safe-area-inset-bottom, 12px)));
-    left: 14px; right: 14px;
-    width: calc(100% - 28px);
-    max-width: 480px;
+    bottom: max(74px, calc(66px + env(safe-area-inset-bottom, 12px)));
+    left: 12px; right: 12px;
+    width: calc(100% - 24px);
+    max-width: 460px;
     margin: 0 auto;
-    background: rgba(255, 255, 255, 0.92);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
     border: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
-    border-radius: 24px;
+    border-radius: 26px;
     z-index: 9997;
     will-change: transform;
     transform: translateZ(0);
     backface-visibility: hidden;
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22), 0 4px 12px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.22), 0 6px 16px rgba(0, 0, 0, 0.08);
     box-sizing: border-box;
     display: flex; flex-direction: column;
-    max-height: min(460px, 68vh);
+    max-height: min(580px, 82vh);
     overflow: hidden;
   }
   [data-theme="dark"] .more-overlay-sheet {
-    background: rgba(24, 24, 24, 0.92);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55), 0 4px 12px rgba(0, 0, 0, 0.35);
+    background: rgba(20, 20, 24, 0.96);
+    box-shadow: 0 20px 52px rgba(0, 0, 0, 0.6), 0 6px 18px rgba(0, 0, 0, 0.4);
     border-color: rgba(255, 255, 255, 0.12);
   }
 
   /* Drag handle */
   .drawer-handle {
-    width: 32px; height: 3.5px;
-    background: rgba(128, 128, 128, 0.3);
+    width: 36px; height: 4px;
+    background: rgba(128, 128, 128, 0.35);
     border-radius: 4px;
-    margin: 8px auto 1px;
+    margin: 8px auto 2px;
     flex-shrink: 0;
   }
 
   /* ── Unified drawer header ── */
   .drawer-header {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 12px 14px;
+    padding: 12px 16px;
     border-bottom: 1px solid var(--border-color);
     flex-shrink: 0;
   }
@@ -3329,7 +3330,7 @@ html {
     border: none;
     background: var(--bg-primary);
     border: 1px solid var(--border-color);
-    width: 28px; height: 28px;
+    width: 30px; height: 30px;
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     color: var(--text-secondary);
@@ -3341,14 +3342,16 @@ html {
   /* ── Scrollable area inside any sheet ── */
   .drawer-scroll-area {
     overflow-y: auto; flex: 1;
+    padding: 0 14px 34px;
     -ms-overflow-style: none; scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
   }
   .drawer-scroll-area::-webkit-scrollbar { display: none; }
 
   /* ── Section divider inside drawer ── */
   .drawer-divider {
     height: 1px; background: var(--border-color);
-    margin: 0; flex-shrink: 0;
+    margin: 4px 0; flex-shrink: 0;
     opacity: 0.6;
   }
 
@@ -3356,18 +3359,18 @@ html {
   .drawer-sections-label {
     font-size: 9.5px; font-weight: 800; letter-spacing: .08em;
     text-transform: uppercase; color: var(--text-muted);
-    padding: 8px 14px 4px; margin: 0;
+    padding: 8px 6px 4px; margin: 0;
   }
 
   /* MORE DRAWER — profile header row */
   .drawer-header-profile {
     display: flex; align-items: center; gap: 10px;
-    padding: 10px 14px;
+    padding: 10px 16px;
     border-bottom: 1px solid var(--border-color);
     position: relative; flex-shrink: 0;
   }
   .drawer-avatar {
-    width: 36px; height: 36px; border-radius: 50%;
+    width: 38px; height: 38px; border-radius: 50%;
     border: 1.5px solid var(--primary-blue); object-fit: cover;
   }
   .drawer-profile-info { display: flex; flex-direction: column; gap: 1px; flex: 1; }
@@ -3390,35 +3393,38 @@ html {
   /* MORE DRAWER — explore grid */
   .drawer-section { padding: 0; }
   .drawer-explore-row {
-    display: grid; grid-template-columns: repeat(5, 1fr);
-    gap: 6px; padding: 6px 12px 10px;
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 8px; padding: 6px 4px 10px;
   }
   .drawer-explore-item {
-    display: flex; flex-direction: column; align-items: center; gap: 7px;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
     text-decoration: none; border: none; background: transparent;
     cursor: pointer; color: var(--text-primary); padding: 0; outline: none;
     -webkit-tap-highlight-color: transparent;
   }
   .drawer-item-box {
-    width: 44px; height: 44px; border-radius: 12px;
+    width: 48px; height: 48px; border-radius: 14px;
     border: 1px solid var(--border-color); background: var(--bg-primary);
     display: flex; align-items: center; justify-content: center;
-    color: var(--text-primary); transition: all 0.15s ease;
+    color: var(--text-primary); transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   }
   .drawer-explore-item:active .drawer-item-box {
     border-color: var(--primary-blue);
     background: rgba(0,123,255,0.08);
-    transform: scale(0.94);
+    transform: scale(0.92);
   }
   .drawer-explore-item span {
-    font-size: 10px; font-weight: 600; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+    font-size: 10.5px; font-weight: 600; color: var(--text-secondary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;
+    text-align: center; letter-spacing: -0.01em;
   }
   /* MORE DRAWER -- actions grid */
   .drawer-actions-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 12px 8px;
-    padding: 12px 16px 20px;
+    gap: 12px 6px;
+    padding: 8px 4px 18px;
   }
 
   .drawer-actions-list {
@@ -6445,6 +6451,16 @@ body:has(.admin-shell) {
 .pcms-form-section {
   font-size: 12px; font-weight: 600;
   color: var(--pcms-text) !important; margin: 0;
+}
+.pcms-toggles-2col {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+@media (max-width: 768px) {
+  .pcms-toggles-2col {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

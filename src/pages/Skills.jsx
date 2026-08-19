@@ -547,12 +547,15 @@ export default function Skills() {
             color: var(--text-secondary);
           }
 
-          /* Level dots */
-          .sk-cat-dots {
-            display: flex; gap: 4px; align-items: center;
+          /* Mini skill tags preview */
+          .sk-cat-preview-tags {
+            display: flex; gap: 4px; flex-wrap: wrap; margin-top: 5px;
           }
-          .sk-cat-dot {
-            width: 6px; height: 6px; border-radius: 50%;
+          .sk-cat-preview-tag {
+            font-size: 8.5px; font-weight: 700;
+            padding: 1.5px 6px; border-radius: 6px;
+            background: var(--bg-primary); border: 1px solid var(--border-color);
+            color: var(--text-secondary); white-space: nowrap;
           }
 
           /* "Currently Exploring" spans full width */
@@ -563,7 +566,46 @@ export default function Skills() {
             gap: 14px;
           }
           .sk-cat-card--full .sk-cat-icon-box { flex-shrink: 0; }
-          .sk-cat-card--full .sk-cat-name { font-size: 14px; }
+          .sk-cat-card--full .sk-cat-name { font-size: 13px; }
+
+          /* Mobile Top Mastery Highlights */
+          .sk-mob-mastery-wrap {
+            margin-top: 14px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 14px;
+          }
+          .sk-mob-mastery-title {
+            font-size: 10px; font-weight: 800; text-transform: uppercase;
+            letter-spacing: .08em; color: var(--text-muted);
+            margin: 0 0 10px; display: flex; align-items: center; gap: 6px;
+          }
+          .sk-mob-mastery-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+          }
+          .sk-mob-mastery-item {
+            background: var(--bg-primary); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 8px 10px;
+            display: flex; flex-direction: column; gap: 4px;
+          }
+          .sk-mob-mastery-header {
+            display: flex; justify-content: space-between; align-items: center;
+          }
+          .sk-mob-mastery-name {
+            font-size: 11px; font-weight: 700; color: var(--text-primary);
+          }
+          .sk-mob-mastery-pct {
+            font-size: 10px; font-weight: 800; color: var(--primary-blue);
+          }
+          .sk-mob-mastery-bar {
+            height: 3.5px; border-radius: 2px;
+            background: var(--border-color); overflow: hidden;
+          }
+          .sk-mob-mastery-fill {
+            height: 100%; border-radius: 2px;
+            background: linear-gradient(90deg, var(--primary-blue), #10b981);
+          }
 
           /* ============ SHARED SHEET CHROME ============ */
           .sk-sheet-overlay {
@@ -961,45 +1003,104 @@ export default function Skills() {
             )}
           </AnimatePresence>
         ) : (
-          <div className="skills-mobile-grid">
-            {skillCategories.map((category, idx) => {
-              const Icon = categoryIconMap[category.id] || categoryIconMap.languages;
-              const isFull = category.id === 'exploring';
-              // pick a stripe colour per category
-              const stripes = ['#007bff','#8b5cf6','#16a34a','#f59e0b','#6366f1'];
-              const stripe = stripes[idx % stripes.length];
-              return (
+          <div>
+            {/* Mobile Skills Search Bar */}
+            <div style={{ position: 'relative', marginBottom: 12 }}>
+              <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Quick search skills (e.g. Python, SQL)..."
+                style={{
+                  width: '100%', height: 38,
+                  paddingLeft: 34, paddingRight: 30,
+                  borderRadius: 12,
+                  border: '1px solid var(--border-color)',
+                  backgroundColor: 'var(--bg-secondary)',
+                  color: 'var(--text-primary)',
+                  fontSize: 12, fontWeight: 500, outline: 'none',
+                  boxSizing: 'border-box'
+                }}
+              />
+              {searchQuery && (
                 <button
-                  key={category.id}
-                  className={`sk-cat-card${isFull ? ' sk-cat-card--full' : ''}`}
-                  style={isFull ? { gridColumn: '1 / -1' } : {}}
-                  onClick={() => setActiveCategory(category)}
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  style={{
+                    position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
+                    background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex'
+                  }}
                 >
-                  <div className="sk-cat-stripe" style={{ background: stripe }} />
-                  <div className="sk-cat-icon-box" style={{ color: stripe }}>
-                    <Icon size={18} />
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <p className="sk-cat-name">{category.title}</p>
-                    <div className="sk-cat-meta" style={{ marginTop: 6 }}>
-                      <span className="sk-cat-count">{category.skills.length} skill{category.skills.length !== 1 ? 's' : ''}</span>
-                      <div className="sk-cat-dots">
-                        {category.skills.map(sk => (
-                          <div
-                            key={sk.id}
-                            className="sk-cat-dot"
-                            style={{ background: levelDot[sk.level] || '#9ca3af' }}
-                          />
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+
+            {/* Mobile Category Grid */}
+            <div className="skills-mobile-grid">
+              {skillCategories.map((category, idx) => {
+                const Icon = categoryIconMap[category.id] || categoryIconMap.languages;
+                const isFull = category.id === 'exploring';
+                const stripes = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#6366f1'];
+                const stripe = stripes[idx % stripes.length];
+                const topSkillNames = category.skills.slice(0, 3).map(s => s.name);
+
+                return (
+                  <button
+                    key={category.id}
+                    className={`sk-cat-card${isFull ? ' sk-cat-card--full' : ''}`}
+                    style={isFull ? { gridColumn: '1 / -1' } : {}}
+                    onClick={() => setActiveCategory(category)}
+                  >
+                    <div className="sk-cat-stripe" style={{ background: stripe }} />
+                    <div className="sk-cat-icon-box" style={{ color: stripe }}>
+                      <Icon size={18} />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p className="sk-cat-name">{category.title}</p>
+                      <div className="sk-cat-preview-tags">
+                        {topSkillNames.map(name => (
+                          <span key={name} className="sk-cat-preview-tag">{name}</span>
                         ))}
+                        {category.skills.length > 3 && (
+                          <span className="sk-cat-preview-tag" style={{ color: stripe, fontWeight: 800 }}>+{category.skills.length - 3}</span>
+                        )}
                       </div>
                     </div>
+                    {!isFull && (
+                      <ChevronRight size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Mobile Top Mastery Highlights Bento */}
+            <div className="sk-mob-mastery-wrap">
+              <p className="sk-mob-mastery-title">
+                <Star size={11} style={{ color: '#f59e0b' }} />
+                Top Technical Proficiencies
+              </p>
+              <div className="sk-mob-mastery-grid">
+                {[
+                  { name: 'Python', pct: 90, col: '#3b82f6' },
+                  { name: 'React', pct: 88, col: '#06b6d4' },
+                  { name: 'PyTorch / ML', pct: 85, col: '#8b5cf6' },
+                  { name: 'PostgreSQL / SQL', pct: 82, col: '#10b981' }
+                ].map(item => (
+                  <div key={item.name} className="sk-mob-mastery-item">
+                    <div className="sk-mob-mastery-header">
+                      <span className="sk-mob-mastery-name">{item.name}</span>
+                      <span className="sk-mob-mastery-pct" style={{ color: item.col }}>{item.pct}%</span>
+                    </div>
+                    <div className="sk-mob-mastery-bar">
+                      <div className="sk-mob-mastery-fill" style={{ width: `${item.pct}%`, background: item.col }} />
+                    </div>
                   </div>
-                  {!isFull && (
-                    <ChevronRight size={14} style={{ color: 'var(--text-muted)', position: 'absolute', top: 14, right: 12 }} />
-                  )}
-                </button>
-              );
-            })}
+                ))}
+              </div>
+            </div>
           </div>
         )}
 

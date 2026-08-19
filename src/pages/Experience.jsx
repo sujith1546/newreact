@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { ScrollReveal } from '../components';
-import { Briefcase, Loader2, Calendar } from 'lucide-react';
+import { Briefcase, Loader2, Calendar, Send, FileText, Sparkles, CheckCircle2, Zap, Clock, ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 import useRealtimeData from '../hooks/useRealtimeData';
 
 export default function Experience() {
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth <= 900);
   const { data: experiences, loading } = useRealtimeData('experience', { orderColumn: 'display_order', ascending: true });
 
   useEffect(() => {
@@ -164,17 +165,103 @@ export default function Experience() {
           margin-bottom: 0;
         }
 
-        /* ========== MOBILE ULTRA-COMPACT (STRICTLY SCOPED TO MOBILE) ========== */
+        /* ========== MOBILE OPPORTUNITY & CAREER HUB ========== */
         @media (max-width: 900px) {
           .exp-page {
             height: 100%;
-            max-height: calc(100vh - 120px);
-            overflow: hidden;
+            overflow-y: auto;
             gap: 12px;
+            -ms-overflow-style: none; scrollbar-width: none;
           }
+          .exp-page::-webkit-scrollbar { display: none; }
           .exp-header h1 { font-size: 16px; margin-bottom: 2px; }
-          .exp-header p { font-size: 10px; }
-          
+          .exp-header p { font-size: 10.5px; }
+
+          .exp-mob-hub {
+            display: flex; flex-direction: column; gap: 10px;
+            width: 100%;
+          }
+
+          .exp-mob-hero-card {
+            background: linear-gradient(135deg, rgba(59,130,246,0.08), rgba(16,185,129,0.05));
+            border: 1px solid rgba(59,130,246,0.25);
+            border-radius: 18px;
+            padding: 16px;
+            position: relative; overflow: hidden;
+            display: flex; flex-direction: column; gap: 8px;
+          }
+
+          .exp-mob-avail-pill {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3);
+            border-radius: 20px; padding: 3px 10px;
+            font-size: 9.5px; font-weight: 700; color: #10b981;
+            width: fit-content;
+          }
+          .exp-mob-avail-dot {
+            width: 6px; height: 6px; border-radius: 50%; background: #10b981;
+            animation: exp-pulse 2s infinite;
+          }
+          @keyframes exp-pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.6); opacity: 0.5; }
+          }
+
+          .exp-mob-title {
+            font-size: 16px; font-weight: 800; color: var(--text-primary);
+            letter-spacing: -0.02em; margin: 0;
+          }
+          .exp-mob-desc {
+            font-size: 11.5px; color: var(--text-secondary);
+            line-height: 1.55; margin: 0;
+          }
+
+          .exp-mob-roles-wrap {
+            display: flex; flex-direction: column; gap: 6px;
+            background: var(--bg-secondary); border: 1px solid var(--border-color);
+            border-radius: 14px; padding: 12px;
+          }
+          .exp-mob-roles-label {
+            font-size: 9px; font-weight: 800; text-transform: uppercase;
+            letter-spacing: 0.08em; color: var(--text-muted); margin: 0;
+            display: flex; align-items: center; gap: 5px;
+          }
+          .exp-mob-roles-pills {
+            display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;
+          }
+          .exp-mob-role-pill {
+            font-size: 10px; font-weight: 700;
+            padding: 3px 9px; border-radius: 20px;
+            background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.25);
+            color: #6366f1;
+          }
+
+          .exp-mob-skills-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 7px;
+          }
+          .exp-mob-skill-card {
+            background: var(--bg-secondary); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 10px;
+            display: flex; align-items: center; gap: 8px;
+          }
+          .exp-mob-skill-icon {
+            color: #10b981; flex-shrink: 0;
+          }
+          .exp-mob-skill-text {
+            font-size: 10.5px; font-weight: 700; color: var(--text-primary);
+          }
+
+          .exp-mob-actions {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 2px;
+          }
+          .exp-mob-action-btn {
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            padding: 10px; border-radius: 12px; font-size: 11.5px; font-weight: 700;
+            cursor: pointer; border: 1px solid;
+            transition: transform 0.15s;
+          }
+          .exp-mob-action-btn:active { transform: scale(0.96); }
+
           .timeline {
             flex: 1;
             overflow-y: auto;
@@ -195,15 +282,6 @@ export default function Experience() {
           
           .timeline-bullets { font-size: 11px; padding-left: 14px; }
           .timeline-bullets li { margin-bottom: 4px; }
-
-          .empty-state-card {
-            padding: 28px 16px;
-            border-radius: 14px;
-            gap: 10px;
-          }
-          .empty-icon-wrap { width: 44px; height: 44px; }
-          .empty-title { font-size: 14px; }
-          .empty-desc { font-size: 11.5px; line-height: 1.5; }
         }
       `}</style>
       
@@ -211,7 +289,7 @@ export default function Experience() {
         {isMobile && (
           <div className="exp-header">
             <h1>Experience</h1>
-            <p>My professional journey so far</p>
+            <p>My professional journey & opportunity status</p>
           </div>
         )}
 
@@ -220,15 +298,91 @@ export default function Experience() {
             <Loader2 className="spin" size={32} color="var(--primary-blue)" />
           </div>
         ) : (!experiences || experiences.length === 0) ? (
-          <div className="empty-state-card">
-            <div className="empty-icon-wrap">
-              <Briefcase size={24} />
+          isMobile ? (
+            /* Mobile Opportunity & Career Hub */
+            <div className="exp-mob-hub">
+              {/* Hero Status Card */}
+              <motion.div
+                className="exp-mob-hero-card"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.35 }}
+              >
+                <div className="exp-mob-avail-pill">
+                  <span className="exp-mob-avail-dot" />
+                  Actively Seeking Opportunities
+                </div>
+                <h2 className="exp-mob-title">Ready to Deliver Impact</h2>
+                <p className="exp-mob-desc">
+                  Final year B.Tech student with strong foundation in AI/ML, Full-Stack Development, and Cloud Databases. Eager to contribute to high-impact production engineering teams.
+                </p>
+              </motion.div>
+
+              {/* Target Roles */}
+              <div className="exp-mob-roles-wrap">
+                <p className="exp-mob-roles-label">
+                  <Sparkles size={11} style={{ color: '#6366f1' }} />
+                  Target Engineering Roles
+                </p>
+                <div className="exp-mob-roles-pills">
+                  {['Full-Stack Engineer', 'AI/ML Developer', 'Python Backend Dev', 'Data Science Intern'].map(role => (
+                    <span key={role} className="exp-mob-role-pill">{role}</span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Core Strengths Grid */}
+              <div className="exp-mob-skills-grid">
+                {[
+                  'RAG & LLM Pipelines',
+                  'FastAPI & Python',
+                  'React & Modern UI',
+                  'PostgreSQL & Supabase'
+                ].map(s => (
+                  <div key={s} className="exp-mob-skill-card">
+                    <CheckCircle2 size={14} className="exp-mob-skill-icon" />
+                    <span className="exp-mob-skill-text">{s}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Response SLA */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 10, color: 'var(--text-muted)', fontWeight: 600, padding: '2px 0' }}>
+                <Clock size={11} style={{ color: '#10b981' }} />
+                <span>Quick Response SLA · Replies within 24 hours</span>
+              </div>
+
+              {/* CTAs */}
+              <div className="exp-mob-actions">
+                <button
+                  className="exp-mob-action-btn"
+                  style={{ background: 'rgba(59,130,246,0.12)', borderColor: 'rgba(59,130,246,0.3)', color: '#3b82f6' }}
+                  onClick={() => window.location.href = '/contact'}
+                >
+                  <Send size={13} />
+                  Get in Touch
+                </button>
+                <button
+                  className="exp-mob-action-btn"
+                  style={{ background: 'rgba(16,185,129,0.12)', borderColor: 'rgba(16,185,129,0.3)', color: '#10b981' }}
+                  onClick={() => window.dispatchEvent(new CustomEvent('open-resume'))}
+                >
+                  <FileText size={13} />
+                  View Resume
+                </button>
+              </div>
             </div>
-            <h2 className="empty-title">Seeking Opportunities</h2>
-            <p className="empty-desc">
-              I am currently a fresher, eagerly building my technical foundation through personal projects and continuous learning. I am actively looking for opportunities to apply my skills in a real-world environment.
-            </p>
-          </div>
+          ) : (
+            <div className="empty-state-card">
+              <div className="empty-icon-wrap">
+                <Briefcase size={24} />
+              </div>
+              <h2 className="empty-title">Seeking Opportunities</h2>
+              <p className="empty-desc">
+                I am currently a fresher, eagerly building my technical foundation through personal projects and continuous learning. I am actively looking for opportunities to apply my skills in a real-world environment.
+              </p>
+            </div>
+          )
         ) : (
           <div className="timeline">
             {experiences.map((exp) => (

@@ -12,7 +12,6 @@ import {
   Cpu,
   Zap,
   CheckCircle2,
-  ArrowRight,
   HardDrive,
   Clock
 } from 'lucide-react';
@@ -707,34 +706,7 @@ export default function SystemDiagnostics({ open, onClose }) {
               )}
             </div>
 
-            {/* Bottom Actions */}
-            <div style={{ padding: '0 20px 20px' }}>
-              <button
-                type="button"
-                className="sd-action-btn"
-                onClick={onClose}
-                style={{
-                  width: '100%',
-                  height: '36px',
-                  background: 'var(--modal-btn-bg)',
-                  color: 'var(--modal-btn-text)',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '13px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                  transition: 'all 0.15s ease',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-                }}
-              >
-                <span>Dismiss diagnostics</span>
-                <ArrowRight size={14} />
-              </button>
-            </div>
+
 
             {/* Bottom Footer Note */}
             <div

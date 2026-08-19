@@ -130,6 +130,11 @@ function SiteDisabledOverlay({ reason, disabledAt }) {
     document.body.classList.add('site-disabled-lock-active');
     const handleContextMenu = (e) => e.preventDefault();
     const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent('open-admin-login'));
+        return;
+      }
       if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','i','J','j','C','c'].includes(e.key)) || (e.ctrlKey && ['U','u','S','s'].includes(e.key))) {
         e.preventDefault(); e.stopPropagation();
       }
@@ -172,7 +177,7 @@ function SiteDisabledOverlay({ reason, disabledAt }) {
           display: flex !important; align-items: center !important; justify-content: center !important;
           padding: 24px !important; box-sizing: border-box !important; z-index: 2147483647 !important;
         }
-        body.site-disabled-lock-active > *:not(.pcms-site-disabled-overlay) { display: none !important; }
+        body.site-disabled-lock-active > *:not(.pcms-site-disabled-overlay):not(.admin-modal-backdrop) { display: none !important; }
       `}</style>
       <div style={{ maxWidth: 540, width: '100%', background: '#FFF', border: '1px solid #E7E9EE', borderRadius: 12, padding: '36px 32px', boxShadow: '0 4px 24px rgba(15,22,38,0.06)', display: 'flex', flexDirection: 'column', gap: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -196,7 +201,7 @@ function SiteDisabledOverlay({ reason, disabledAt }) {
         </div>
         <div style={{ borderTop: '1px solid #F0F1F4', paddingTop: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span style={{ fontSize: 11, color: '#AEB4BF' }}>Portfolio CMS Security System</span>
-          <button onClick={() => window.dispatchEvent(new CustomEvent('open-admin-login'))} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 500, color: '#0F1626', textDecoration: 'none', padding: '6px 12px', borderRadius: 6, background: '#F7F8FA', border: '1px solid #E7E9EE', cursor: 'pointer' }}>
+          <button type="button" onClick={() => window.dispatchEvent(new CustomEvent('open-admin-login'))} style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 12, fontWeight: 500, color: '#0F1626', textDecoration: 'none', padding: '6px 12px', borderRadius: 6, background: '#F7F8FA', border: '1px solid #E7E9EE', cursor: 'pointer' }}>
             <span>Admin Sign In</span><ArrowRight size={13} />
           </button>
         </div>
@@ -215,7 +220,16 @@ function MaintenanceOverlay({ status }) {
     document.body.classList.add('site-maint-lock-active');
     const handleContextMenu = (e) => e.preventDefault();
     const handleKeyDown = (e) => {
-      if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','i','J','j','C','c'].includes(e.key)) || (e.ctrlKey && ['U','u','S','s'].includes(e.key))) {
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
+        e.preventDefault();
+        window.dispatchEvent(new CustomEvent('open-admin-login'));
+        return;
+      }
+      if (
+        e.key === 'F12' ||
+        (e.ctrlKey && e.shiftKey && ['I','i','J','j','C','c'].includes(e.key)) ||
+        (e.ctrlKey && ['U','u','S','s'].includes(e.key))
+      ) {
         e.preventDefault(); e.stopPropagation();
       }
     };
@@ -250,7 +264,7 @@ function MaintenanceOverlay({ status }) {
           min-width: 100vw !important; min-height: 100vh !important;
           background-color: #F7F7F5 !important; z-index: 2147483647 !important; overflow-y: auto !important;
         }
-        body.site-maint-lock-active > *:not(.pcms-maint-overlay) { display: none !important; }
+        body.site-maint-lock-active > *:not(.pcms-maint-overlay):not(.admin-modal-backdrop) { display: none !important; }
       `}</style>
       <MaintenancePage status={{ enabled: status.maintenance, enabledAt: status.maintAt, etaMinutes: status.maintEta, message: status.maintMsg }} />
     </div>
