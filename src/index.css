@@ -2304,7 +2304,7 @@ html {
     width: 100%;
     height: 100vh !important;
     height: 100dvh !important;
-    padding-top: calc(54px + env(safe-area-inset-top, 0px)) !important;      /* clears the fixed blurred header + safe area */
+    padding-top: calc(48px + env(safe-area-inset-top, 0px)) !important;      /* clears the fixed blurred header + safe area */
     padding-bottom: calc(68px + env(safe-area-inset-bottom, 12px)) !important; /* clears the fixed bottom dock + safe area */
     padding-left: 0 !important;
     padding-right: 0 !important;
@@ -2318,7 +2318,7 @@ html {
   /* ── Navigation progress bar ── */
   .nav-progress-bar {
     position: fixed;
-    top: calc(54px + env(safe-area-inset-top, 0px));
+    top: calc(48px + env(safe-area-inset-top, 0px));
     left: 0;
     right: 0;
     height: 2px;
@@ -2392,7 +2392,7 @@ html {
     display: flex;
     position: fixed;
     top: 0; left: 0; right: 0;
-    height: calc(54px + env(safe-area-inset-top, 0px));
+    height: calc(48px + env(safe-area-inset-top, 0px));
     padding-top: env(safe-area-inset-top, 0px);
     z-index: 9999 !important;
     align-items: center;

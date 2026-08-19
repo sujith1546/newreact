@@ -5,26 +5,29 @@ import useGlitchText from '../../hooks/useGlitchText';
 import useRealtimeData from '../../hooks/useRealtimeData';
 import { useLocalTime } from '../../hooks/useLocalTime';
 
-/* ── Count-up hook ─────────────────────────────────────────── */
-function useCountUp(target, duration = 1100) {
+/* ── Robust Count-up hook ─────────────────────────────────── */
+function useCountUp(target, duration = 900) {
   const [val, setVal] = useState('0');
-  const done = useRef(false);
   useEffect(() => {
-    if (done.current) return;
-    done.current = true;
     const numeric = parseFloat(target);
     if (isNaN(numeric)) { setVal(target); return; }
     const hasDec = String(target).includes('.');
     let start = null;
+    let animId = null;
     const step = (ts) => {
       if (!start) start = ts;
       const p = Math.min((ts - start) / duration, 1);
       const e = 1 - Math.pow(1 - p, 3);
       setVal((numeric * e).toFixed(hasDec ? 1 : 0));
-      if (p < 1) requestAnimationFrame(step);
+      if (p < 1) {
+        animId = requestAnimationFrame(step);
+      }
     };
-    requestAnimationFrame(step);
-  }, []);
+    animId = requestAnimationFrame(step);
+    return () => {
+      if (animId) cancelAnimationFrame(animId);
+    };
+  }, [target, duration]);
   return val;
 }
 
@@ -199,21 +202,21 @@ export default function MobileDashboard({ onNavClick }) {
 
         /* ════════ PROFILE SECTION ════════ */
         .hd-profile {
-          display: flex; align-items: center; gap: 14px;
-          padding: 18px 18px 14px;
+          display: flex; align-items: center; gap: 12px;
+          padding: 6px 14px 4px;
         }
         .hd-avatar-wrap {
           position: relative; flex-shrink: 0;
         }
         .hd-avatar {
-          width: 56px; height: 56px; border-radius: 16px;
+          width: 48px; height: 48px; border-radius: 14px;
           object-fit: cover;
           border: 2px solid transparent;
           background: linear-gradient(var(--bg-primary), var(--bg-primary)) padding-box,
                       linear-gradient(135deg, #6366f1, #06b6d4, #10b981) border-box;
         }
         .hd-avatar-ring {
-          position: absolute; inset: -3px; border-radius: 18px;
+          position: absolute; inset: -3px; border-radius: 16px;
           border: 2px solid transparent;
           background: linear-gradient(135deg, rgba(99,102,241,0.4), rgba(6,182,212,0.4)) border-box;
           pointer-events: none;
@@ -247,38 +250,95 @@ export default function MobileDashboard({ onNavClick }) {
           50%      { opacity:.4; transform:scale(1.6); }
         }
 
-        /* ════════ BENTO STATS GRID ════════ */
-        .hd-bento-stats {
-          display: grid; grid-template-columns: repeat(3, 1fr);
-          gap: 8px; padding: 8px 14px 12px;
+        /* ════════ SINGLE-LINE HORIZONTAL METRICS STRIP ════════ */
+        .hd-bento-strip {
+          display: flex;
+          overflow-x: auto;
+          scroll-snap-type: x mandatory;
+          -webkit-overflow-scrolling: touch;
+          gap: 8px;
+          padding: 4px 14px 10px;
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .hd-bento-strip::-webkit-scrollbar {
+          display: none;
         }
         .hd-bento-card {
-          display: flex; flex-direction: column;
-          padding: 11px 10px;
+          flex: 0 0 126px;
+          min-width: 126px;
+          scroll-snap-align: start;
+          display: flex;
+          flex-direction: column;
+          padding: 10px 11px;
           border-radius: 16px;
           border: 1px solid var(--border-color);
           background: var(--bg-secondary);
-          position: relative; overflow: hidden;
+          position: relative;
+          overflow: hidden;
           gap: 2px;
+          cursor: pointer;
+          outline: none;
+          text-align: left;
+          font-family: inherit;
+          transition: border-color 0.15s, transform 0.15s;
+          -webkit-tap-highlight-color: transparent;
         }
-        .hd-bento-card-glow {
-          position: absolute; top: -12px; right: -12px;
-          width: 48px; height: 48px; border-radius: 50%;
-          opacity: 0.25; filter: blur(14px);
-          pointer-events: none;
+        .hd-bento-card:active {
+          transform: scale(0.96);
+        }
+        .hd-bento-card-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 2px;
         }
         .hd-bento-icon {
-          font-size: 13px; margin-bottom: 2px;
-          display: flex; align-items: center;
+          font-size: 13px;
+          display: flex;
+          align-items: center;
+        }
+        .hd-bento-jump {
+          font-size: 10px;
+          color: var(--text-muted);
+          opacity: 0.6;
+        }
+        .hd-bento-card-glow {
+          position: absolute;
+          top: -12px;
+          right: -12px;
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          opacity: 0.25;
+          filter: blur(14px);
+          pointer-events: none;
         }
         .hd-bento-val {
-          font-size: 22px; font-weight: 800;
-          letter-spacing: -.04em; line-height: 1;
+          font-size: 20px;
+          font-weight: 800;
+          letter-spacing: -.04em;
+          line-height: 1;
         }
         .hd-bento-label {
-          font-size: 7.5px; font-weight: 700; letter-spacing: .07em;
-          text-transform: uppercase; color: var(--text-muted);
+          font-size: 7.5px;
+          font-weight: 700;
+          letter-spacing: .07em;
+          text-transform: uppercase;
+          color: var(--text-muted);
           margin-top: 2px;
+          white-space: nowrap;
+        }
+        .hd-bento-badge {
+          font-size: 7px;
+          font-weight: 800;
+          letter-spacing: 0.03em;
+          padding: 2px 6px;
+          border-radius: 6px;
+          margin-top: 4px;
+          width: fit-content;
+          border: 1px solid;
+          white-space: nowrap;
         }
 
         /* ════════ SINGLE-LINE INFINITE TECH MARQUEE ════════ */
@@ -407,28 +467,9 @@ export default function MobileDashboard({ onNavClick }) {
           background: var(--border-color); border: none; padding: 0;
           cursor: pointer; transition: all 0.2s ease;
         }
-        .hd-feat-dot.active {
-          width: 18px;
-        }
-
-        /* ════════ QUICK ACTIONS BAR ════════ */
-        .hd-actions {
-          display: grid; grid-template-columns: 1fr 1fr;
-          gap: 8px; padding: 0 14px 16px;
-        }
-        .hd-action-btn {
-          display: flex; align-items: center; justify-content: center; gap: 7px;
-          border-radius: 14px; padding: 11px;
-          font-size: 12px; font-weight: 700;
-          cursor: pointer; border: 1px solid;
-          transition: transform 0.15s, box-shadow 0.15s;
-          -webkit-tap-highlight-color: transparent;
-        }
-        .hd-action-btn:active { transform: scale(0.96); }
-
         /* ── BIO ── */
         .hd-bio {
-          padding: 6px 16px 14px;
+          padding: 4px 16px 12px;
           font-size: 11.5px; color: var(--text-secondary);
           line-height: 1.6; margin: 0;
         }
@@ -495,33 +536,91 @@ export default function MobileDashboard({ onNavClick }) {
 
             <div className="hd-divider" />
 
-            {/* ── Bento Stats Grid ─────────────────────────────────────── */}
-            <p className="hd-section-label">
-              <TrendingUp size={11} style={{ color: 'var(--primary-blue)' }} />
-              At a Glance
-            </p>
-            <div className="hd-bento-stats">
-              {/* CGPA */}
-              <motion.div className="hd-bento-card" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+            {/* ── Single-Line Horizontal At a Glance Metrics Strip ─ */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 14px 2px' }}>
+              <p className="hd-section-label" style={{ padding: 0, margin: 0 }}>
+                <TrendingUp size={11} style={{ color: 'var(--primary-blue)' }} />
+                At a Glance
+              </p>
+              <span style={{ fontSize: '8.5px', color: 'var(--text-muted)', fontWeight: 600 }}>Tap to explore</span>
+            </div>
+
+            <div className="hd-bento-strip">
+              {/* 1. CGPA */}
+              <motion.button
+                className="hd-bento-card"
+                whileTap={{ scale: 0.95 }}
+                onClick={() => onNavClick && onNavClick('education')}
+                aria-label="View Education details"
+              >
                 <div className="hd-bento-card-glow" style={{ background: '#3b82f6' }} />
-                <div className="hd-bento-icon" style={{ color: '#3b82f6' }}>📈</div>
+                <div className="hd-bento-card-header">
+                  <div className="hd-bento-icon" style={{ color: '#3b82f6' }}>🎓</div>
+                  <span className="hd-bento-jump">↗</span>
+                </div>
                 <span className="hd-bento-val" style={{ color: '#3b82f6' }}>{cgpa}</span>
                 <span className="hd-bento-label">VIT CGPA</span>
-              </motion.div>
-              {/* Certs */}
-              <motion.div className="hd-bento-card" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+                <span className="hd-bento-badge" style={{ color: '#3b82f6', background: 'rgba(59,130,246,0.12)', borderColor: 'rgba(59,130,246,0.25)' }}>
+                  Top 5% · B.Tech
+                </span>
+              </motion.button>
+
+              {/* 2. Certifications */}
+              <motion.button
+                className="hd-bento-card"
+                whileTap={{ scale: 0.95 }}
+                onClick={() => onNavClick && onNavClick('certifications')}
+                aria-label="View Certifications"
+              >
                 <div className="hd-bento-card-glow" style={{ background: '#8b5cf6' }} />
-                <div className="hd-bento-icon" style={{ color: '#8b5cf6' }}>🏆</div>
+                <div className="hd-bento-card-header">
+                  <div className="hd-bento-icon" style={{ color: '#8b5cf6' }}>🏆</div>
+                  <span className="hd-bento-jump">↗</span>
+                </div>
                 <span className="hd-bento-val" style={{ color: '#8b5cf6' }}>{certs}+</span>
-                <span className="hd-bento-label">Certifications</span>
-              </motion.div>
-              {/* Projects */}
-              <motion.div className="hd-bento-card" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+                <span className="hd-bento-label">Certificates</span>
+                <span className="hd-bento-badge" style={{ color: '#8b5cf6', background: 'rgba(139,92,246,0.12)', borderColor: 'rgba(139,92,246,0.25)' }}>
+                  Verified
+                </span>
+              </motion.button>
+
+              {/* 3. Projects */}
+              <motion.button
+                className="hd-bento-card"
+                whileTap={{ scale: 0.95 }}
+                onClick={() => onNavClick && onNavClick('projects')}
+                aria-label="View ML Projects"
+              >
                 <div className="hd-bento-card-glow" style={{ background: '#10b981' }} />
-                <div className="hd-bento-icon" style={{ color: '#10b981' }}>🚀</div>
+                <div className="hd-bento-card-header">
+                  <div className="hd-bento-icon" style={{ color: '#10b981' }}>🚀</div>
+                  <span className="hd-bento-jump">↗</span>
+                </div>
                 <span className="hd-bento-val" style={{ color: '#10b981' }}>{projs}+</span>
                 <span className="hd-bento-label">ML Projects</span>
-              </motion.div>
+                <span className="hd-bento-badge" style={{ color: '#10b981', background: 'rgba(16,185,129,0.12)', borderColor: 'rgba(16,185,129,0.25)' }}>
+                  Production
+                </span>
+              </motion.button>
+
+              {/* 4. Live Availability / Status */}
+              <motion.button
+                className="hd-bento-card"
+                whileTap={{ scale: 0.95 }}
+                onClick={() => onNavClick && onNavClick('contact')}
+                aria-label="Contact / Hire"
+              >
+                <div className="hd-bento-card-glow" style={{ background: '#06b6d4' }} />
+                <div className="hd-bento-card-header">
+                  <div className="hd-bento-icon" style={{ color: '#06b6d4' }}>⚡</div>
+                  <span className="hd-bento-jump">↗</span>
+                </div>
+                <span className="hd-bento-val" style={{ color: '#06b6d4' }}>100%</span>
+                <span className="hd-bento-label">Available</span>
+                <span className="hd-bento-badge" style={{ color: '#06b6d4', background: 'rgba(6,182,212,0.12)', borderColor: 'rgba(6,182,212,0.25)' }}>
+                  Open for Roles
+                </span>
+              </motion.button>
             </div>
 
             <div className="hd-divider" />
@@ -647,34 +746,6 @@ export default function MobileDashboard({ onNavClick }) {
                   aria-label={`Go to slide ${idx + 1}`}
                 />
               ))}
-            </div>
-
-            <div className="hd-divider" />
-
-            {/* ── Quick Actions ─────────────────────────────────────── */}
-            <p className="hd-section-label">
-              <Send size={11} style={{ color: '#06b6d4' }} />
-              Quick Actions
-            </p>
-            <div className="hd-actions">
-              <motion.button
-                className="hd-action-btn"
-                style={{ background: 'rgba(6,182,212,0.1)', borderColor: 'rgba(6,182,212,0.3)', color: '#06b6d4' }}
-                whileTap={{ scale: 0.96 }}
-                onClick={() => onNavClick && onNavClick('contact')}
-              >
-                <Send size={14} />
-                Say Hello
-              </motion.button>
-              <motion.button
-                className="hd-action-btn"
-                style={{ background: 'rgba(16,185,129,0.1)', borderColor: 'rgba(16,185,129,0.3)', color: '#10b981' }}
-                whileTap={{ scale: 0.96 }}
-                onClick={() => window.dispatchEvent(new CustomEvent('open-resume'))}
-              >
-                <FileText size={14} />
-                View Resume
-              </motion.button>
             </div>
 
           </motion.div>
