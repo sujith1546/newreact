@@ -5,55 +5,32 @@ import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "../../lib/supabaseClient";
 import { useTheme } from "../../context/ThemeContext";
 import { logSecurityEvent, logAuditEvent } from "../../lib/auditLogger";
-import { loginLimiter } from "../../utils/rateLimiter";
 import {
-  Lock,
-  Mail,
-  Eye,
-  EyeOff,
-  Shield,
-  Clock,
-  Fingerprint,
-  ArrowRight,
-  AlertTriangle,
-  X,
-  KeyRound,
-  ShieldAlert,
+  Lock, Mail, Eye, EyeOff, Shield, ShieldCheck, Clock, ArrowRight,
+  AlertTriangle, X, KeyRound, Loader2, Fingerprint, CheckCircle2,
 } from "lucide-react";
 
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_DURATION_MS = 60000;
 
-/** Compute a risk score for the current login attempt */
 function computeLoginRiskScore(failedAttempts = 0) {
   let score = 0;
   const reasons = [];
-
-  // Off-hours check (10PM–6AM IST = UTC+5:30)
-  const istHour = new Date().getUTCHours() + 5 + (new Date().getUTCMinutes() >= 30 ? 0.5 : 0);
-  const istHourRounded = Math.floor(istHour % 24);
-  if (istHourRounded >= 22 || istHourRounded < 6) {
+  const istHour = Math.floor((new Date().getUTCHours() + 5.5) % 24);
+  if (istHour >= 22 || istHour < 6) {
     score += 20;
-    reasons.push(`Off-hours access (${istHourRounded}:00 IST)`);
+    reasons.push(`Off-hours access (${istHour}:00 IST)`);
   }
-
-  // Previous failed attempts
   if (failedAttempts > 0) {
     const pts = failedAttempts * 15;
     score += pts;
-    reasons.push(`${failedAttempts} previous failed attempt(s) (+${pts}pts)`);
+    reasons.push(`${failedAttempts} failed attempt(s)`);
   }
-
-  // New or unusual timezone
   try {
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
-    const lastTz = localStorage.getItem('_admin_tz') || '';
-    if (lastTz && lastTz !== tz) {
-      score += 30;
-      reasons.push(`Timezone changed: ${lastTz} → ${tz}`);
-    }
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+    const lastTz = localStorage.getItem("_admin_tz") || "";
+    if (lastTz && lastTz !== tz) { score += 30; reasons.push(`Timezone changed`); }
   } catch {}
-
   return { score: Math.min(100, score), reasons };
 }
 
@@ -61,1251 +38,547 @@ export default function AdminLoginModal({ isOpen, onClose }) {
   const navigate = useNavigate();
   const { theme } = useTheme();
   const emailInputRef = useRef(null);
+  const isDark = theme === "dark" || (typeof document !== "undefined" && document.documentElement.getAttribute("data-theme") === "dark");
 
   // Auth State
   const [email, setEmail] = useState("sujithreddy1546@gmail.com");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [isShaking, setIsShaking] = useState(false);
+  const [activeMethod, setActiveMethod] = useState("password"); // "password" | "otp"
 
-  // Lockout State
+  // Lockout
   const [attempts, setAttempts] = useState(0);
   const [lockoutTimer, setLockoutTimer] = useState(0);
 
-  // MFA State
+  // MFA TOTP
   const [mfaRequired, setMfaRequired] = useState(false);
   const [totpFactorId, setTotpFactorId] = useState("");
   const [totpCode, setTotpCode] = useState("");
 
-  // Email Security OTP State
-  const [activeMethod, setActiveMethod] = useState("password");
+  // Email OTP
   const [emailOtpSent, setEmailOtpSent] = useState(false);
   const [emailOtpCode, setEmailOtpCode] = useState("");
   const [otpTimer, setOtpTimer] = useState(0);
 
-  // Risk scoring
-  const [riskScore, setRiskScore] = useState(0);
-  const [riskReasons, setRiskReasons] = useState([]);
-  const [riskChallengeRequired, setRiskChallengeRequired] = useState(false);
-
-  // Reduced motion preference
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  // Hardware biometrics availability
+  const [biometricAvailable, setBiometricAvailable] = useState(null);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-      setPrefersReducedMotion(mediaQuery.matches);
+    if (window.PublicKeyCredential && typeof PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable === "function") {
+      PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()
+        .then(v => setBiometricAvailable(v))
+        .catch(() => setBiometricAvailable(false));
+    } else {
+      setBiometricAvailable(false);
     }
   }, []);
 
-  // Store active element, focus initial input, & lock body scroll on open
+  // Focus trap & scroll lock
   useEffect(() => {
     if (!isOpen) return;
-
-    const previousActiveElement = document.activeElement;
-    const originalOverflow = document.body.style.overflow;
+    const prev = document.activeElement;
+    const overflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-
-    // Auto-focus email field
-    setTimeout(() => {
-      if (emailInputRef.current) {
-        emailInputRef.current.focus();
-      }
-    }, 100);
-
+    setTimeout(() => emailInputRef.current?.focus(), 100);
     return () => {
-      document.body.style.overflow = originalOverflow;
-      if (previousActiveElement && typeof previousActiveElement.focus === "function") {
-        previousActiveElement.focus();
-      }
+      document.body.style.overflow = overflow;
+      prev?.focus?.();
     };
   }, [isOpen]);
 
-  // Keyboard shortcut: Escape to close
+  // Escape to close
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape" && isOpen) {
-        onClose();
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    const h = (e) => { if (e.key === "Escape" && isOpen) onClose(); };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
   }, [isOpen, onClose]);
 
-  // OTP Timer countdown
+  // OTP countdown
   useEffect(() => {
-    let interval = null;
-    if (otpTimer > 0) {
-      interval = setInterval(() => setOtpTimer((prev) => prev - 1), 1000);
-    }
-    return () => clearInterval(interval);
+    if (otpTimer <= 0) return;
+    const id = setInterval(() => setOtpTimer(t => t - 1), 1000);
+    return () => clearInterval(id);
   }, [otpTimer]);
 
   // Lockout check
-  const checkLockoutStatus = () => {
-    try {
-      const lockoutExpiry = localStorage.getItem("admin_login_lockout");
-      if (lockoutExpiry) {
-        const remainingTime = Math.ceil(
-          (parseInt(lockoutExpiry, 10) - Date.now()) / 1000
-        );
-        if (remainingTime > 0) {
-          setLockoutTimer(remainingTime);
-          setError(`Too many failed attempts. Locked out for ${remainingTime}s.`);
-        } else {
-          localStorage.removeItem("admin_login_lockout");
-          localStorage.removeItem("admin_login_attempts");
-          setLockoutTimer(0);
-          setAttempts(0);
-          setError("");
-        }
-      }
-    } catch (_) {}
-  };
-
   useEffect(() => {
-    checkLockoutStatus();
-    const interval = setInterval(checkLockoutStatus, 1000);
-    return () => clearInterval(interval);
+    const check = () => {
+      try {
+        const exp = localStorage.getItem("admin_login_lockout");
+        if (exp) {
+          const rem = Math.ceil((parseInt(exp, 10) - Date.now()) / 1000);
+          if (rem > 0) { setLockoutTimer(rem); setError(`Too many failed attempts. Locked out for ${rem}s.`); }
+          else { localStorage.removeItem("admin_login_lockout"); localStorage.removeItem("admin_login_attempts"); setLockoutTimer(0); setAttempts(0); setError(""); }
+        }
+      } catch {}
+    };
+    check();
+    const id = setInterval(check, 1000);
+    return () => clearInterval(id);
   }, []);
 
-  const handleFailedAttempt = () => {
-    const newAttempts = attempts + 1;
-    setAttempts(newAttempts);
-    setIsShaking(true);
-    setTimeout(() => setIsShaking(false), 500);
+  const shake = () => { setIsShaking(true); setTimeout(() => setIsShaking(false), 500); };
+
+  const handleFailedAttempt = useCallback((extraAttempts = 0) => {
+    const n = attempts + 1 + extraAttempts;
+    setAttempts(n);
+    shake();
     try {
-      localStorage.setItem("admin_login_attempts", newAttempts.toString());
-      if (newAttempts >= MAX_ATTEMPTS) {
-        const expiry = Date.now() + LOCKOUT_DURATION_MS;
-        localStorage.setItem("admin_login_lockout", expiry.toString());
+      localStorage.setItem("admin_login_attempts", n.toString());
+      if (n >= MAX_ATTEMPTS) {
+        const exp = Date.now() + LOCKOUT_DURATION_MS;
+        localStorage.setItem("admin_login_lockout", exp.toString());
         setLockoutTimer(60);
         setError("Too many failed attempts. Locked out for 60 seconds.");
-        // Log brute force to threat events
-        logSecurityEvent('BRUTE_FORCE_DETECTED', { attempts: newAttempts }, 'critical').catch(() => {});
+        logSecurityEvent("BRUTE_FORCE_DETECTED", { attempts: n }, "critical").catch(() => {});
       }
-    } catch (_) {}
-    // Recompute risk score with updated attempts
-    const { score, reasons } = computeLoginRiskScore(newAttempts);
-    setRiskScore(score);
-    setRiskReasons(reasons);
-    if (score >= 50) setRiskChallengeRequired(true);
-  };
+    } catch {}
+  }, [attempts]);
 
-  // Password Submission
+  // Password sign-in
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     if (lockoutTimer > 0) return;
-    setLoading(true);
-    setError("");
-
-    // Evaluate risk score before attempting auth
+    setLoading(true); setError("");
     const { score, reasons } = computeLoginRiskScore(attempts);
-    setRiskScore(score);
-    setRiskReasons(reasons);
-
-    // Log the attempt
-    logSecurityEvent('ADMIN_LOGIN_ATTEMPT', { riskScore: score, reasons }, score >= 50 ? 'high' : 'low').catch(() => {});
-
+    logSecurityEvent("ADMIN_LOGIN_ATTEMPT", { riskScore: score, reasons }, score >= 50 ? "high" : "low").catch(() => {});
     try {
-      const { data, error: authError } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password,
-      });
-
-      if (authError) {
-        handleFailedAttempt();
-        setError(authError.message || "Invalid email or password.");
-        setLoading(false);
-        return;
-      }
+      const { data, error: authError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+      if (authError) { handleFailedAttempt(); setError(authError.message || "Invalid email or password."); return; }
 
       const { data: factors } = await supabase.auth.mfa.listFactors();
-      const verifiedTotp = factors?.totp?.find((f) => f.status === "verified");
-
-      if (verifiedTotp) {
-        setTotpFactorId(verifiedTotp.id);
-        setMfaRequired(true);
-        setLoading(false);
-        return;
-      }
+      const verifiedTotp = factors?.totp?.find(f => f.status === "verified");
+      if (verifiedTotp) { setTotpFactorId(verifiedTotp.id); setMfaRequired(true); return; }
 
       try {
         localStorage.removeItem("admin_login_attempts");
         localStorage.removeItem("admin_login_lockout");
-        // Store timezone fingerprint for next login comparison
-        localStorage.setItem('_admin_tz', Intl.DateTimeFormat().resolvedOptions().timeZone || '');
-      } catch (_) {}
-
-      logAuditEvent('ADMIN_LOGIN_SUCCESS', 'auth', email, { riskScore: score }).catch(() => {});
-      onClose();
-      navigate("/admin/dashboard");
+        localStorage.setItem("_admin_tz", Intl.DateTimeFormat().resolvedOptions().timeZone || "");
+      } catch {}
+      logAuditEvent("ADMIN_LOGIN_SUCCESS", "auth", email, { riskScore: score }).catch(() => {});
+      onClose(); navigate("/admin/dashboard");
     } catch (err) {
       setError(err.message || "An unexpected error occurred.");
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
-  // Email OTP Flow
+  // Email OTP send
   const handleSendEmailOtp = async (e) => {
-    e.preventDefault();
+    e?.preventDefault();
     if (lockoutTimer > 0) return;
-    setLoading(true);
-    setError("");
-
+    setLoading(true); setError("");
     try {
-      const { error: otpError } = await supabase.auth.signInWithOtp({
-        email: email.trim(),
-        options: { shouldCreateUser: false },
-      });
-
-      if (otpError) {
-        setError(otpError.message);
-        setLoading(false);
-        return;
-      }
-
-      setEmailOtpSent(true);
-      setOtpTimer(60);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+      const { error: otpError } = await supabase.auth.signInWithOtp({ email: email.trim(), options: { shouldCreateUser: false } });
+      if (otpError) { setError(otpError.message); return; }
+      setEmailOtpSent(true); setOtpTimer(60);
+    } catch (err) { setError(err.message); } finally { setLoading(false); }
   };
 
+  // Email OTP verify
   const handleVerifyEmailOtp = async (e) => {
     e.preventDefault();
     if (lockoutTimer > 0 || emailOtpCode.length !== 6) return;
-    setLoading(true);
-    setError("");
-
+    setLoading(true); setError("");
     try {
-      const { error: verifyError } = await supabase.auth.verifyOtp({
-        email: email.trim(),
-        token: emailOtpCode.trim(),
-        type: "email",
-      });
-
-      if (verifyError) {
-        handleFailedAttempt();
-        setError(verifyError.message || "Invalid 6-digit OTP code.");
-        setLoading(false);
-        return;
-      }
-
-      onClose();
-      navigate("/admin/dashboard");
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+      const { error: verifyError } = await supabase.auth.verifyOtp({ email: email.trim(), token: emailOtpCode.trim(), type: "email" });
+      if (verifyError) { handleFailedAttempt(); setError(verifyError.message || "Invalid code."); return; }
+      onClose(); navigate("/admin/dashboard");
+    } catch (err) { setError(err.message); } finally { setLoading(false); }
   };
 
-  // MFA TOTP Submission
+  // TOTP MFA verify
   const handleTotpSubmit = async (e) => {
     e.preventDefault();
     if (lockoutTimer > 0 || totpCode.length !== 6) return;
-    setLoading(true);
-    setError("");
-
+    setLoading(true); setError("");
     try {
-      const { data: challengeData, error: challengeErr } =
-        await supabase.auth.mfa.challenge({ factorId: totpFactorId });
-      if (challengeErr) throw challengeErr;
-
-      const { error: verifyErr } = await supabase.auth.mfa.verify({
-        factorId: totpFactorId,
-        challengeId: challengeData.id,
-        code: totpCode.trim(),
-      });
-
-      if (verifyErr) {
-        handleFailedAttempt();
-        setError(verifyErr.message || "Invalid 6-digit authenticator code.");
-        setLoading(false);
-        return;
-      }
-
-      onClose();
-      navigate("/admin/dashboard");
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+      const { data: ch, error: chErr } = await supabase.auth.mfa.challenge({ factorId: totpFactorId });
+      if (chErr) throw chErr;
+      const { error: verifyErr } = await supabase.auth.mfa.verify({ factorId: totpFactorId, challengeId: ch.id, code: totpCode.trim() });
+      if (verifyErr) { handleFailedAttempt(); setError(verifyErr.message || "Invalid authenticator code."); return; }
+      onClose(); navigate("/admin/dashboard");
+    } catch (err) { setError(err.message); } finally { setLoading(false); }
   };
 
   if (typeof document === "undefined") return null;
 
-  const isDarkMode = theme === "dark" || (typeof document !== "undefined" && document.documentElement.getAttribute("data-theme") === "dark");
+  const css = `
+    .alm-card {
+      --alm-bg: rgba(255,255,255,0.98);
+      --alm-border: rgba(0,0,0,0.08);
+      --alm-text: #0f172a;
+      --alm-muted: #64748b;
+      --alm-sub: #94a3b8;
+      --alm-field-bg: #f8fafc;
+      --alm-field-border: #e2e8f0;
+      --alm-tab-track: #f1f5f9;
+      --alm-tab-active: #0f172a;
+      --alm-tab-active-text: #fff;
+      --alm-btn: #0f172a;
+      --alm-btn-text: #fff;
+      --alm-shadow: 0 24px 64px -12px rgba(15,23,42,0.22), 0 0 0 1px rgba(0,0,0,0.04);
+    }
+    .alm-card.dark {
+      --alm-bg: rgba(18,20,27,0.97);
+      --alm-border: rgba(255,255,255,0.1);
+      --alm-text: #f8fafc;
+      --alm-muted: #94a3b8;
+      --alm-sub: #64748b;
+      --alm-field-bg: rgba(255,255,255,0.05);
+      --alm-field-border: rgba(255,255,255,0.1);
+      --alm-tab-track: rgba(255,255,255,0.04);
+      --alm-tab-active: #fff;
+      --alm-tab-active-text: #0f172a;
+      --alm-btn: #fff;
+      --alm-btn-text: #0f172a;
+      --alm-shadow: 0 24px 64px -12px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.08);
+    }
+    .alm-field {
+      position: relative; display: flex; align-items: center;
+      background: var(--alm-field-bg); border: 1px solid var(--alm-field-border);
+      border-radius: 10px; height: 42px; transition: border-color 0.15s;
+    }
+    .alm-field:focus-within { border-color: #3b82f6; }
+    .alm-input {
+      width: 100%; height: 100%; background: transparent; border: none;
+      outline: none; color: var(--alm-text); font-size: 13.5px;
+      padding-left: 38px; padding-right: 12px; box-sizing: border-box;
+    }
+    .alm-input:-webkit-autofill {
+      -webkit-text-fill-color: var(--alm-text) !important;
+      -webkit-box-shadow: 0 0 0 1000px var(--alm-field-bg) inset !important;
+    }
+    .alm-btn-primary {
+      width: 100%; height: 42px; background: var(--alm-btn); color: var(--alm-btn-text);
+      font-weight: 700; font-size: 13.5px; border: none; border-radius: 10px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      gap: 7px; transition: all 0.15s; box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
+    .alm-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .alm-btn-primary:not(:disabled):hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(0,0,0,0.18); }
+    .alm-tab-btn {
+      flex: 1; border: none; background: transparent; padding: 7px 12px;
+      border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      transition: all 0.18s; color: var(--alm-muted);
+    }
+    .alm-tab-btn.active { background: var(--alm-tab-active); color: var(--alm-tab-active-text); box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
+    .alm-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 8px;
+    }
+    .alm-label {
+      display: block; font-size: 11.5px; font-weight: 600;
+      color: var(--alm-muted); margin-bottom: 6px;
+    }
+  `;
 
   return createPortal(
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          key="admin-modal-backdrop"
-          className="admin-modal-backdrop"
+          key="alm-backdrop"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: prefersReducedMotion ? 0 : 0.22, ease: 'easeOut' }}
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 2147483648,
-            background: isDarkMode ? "rgba(0, 0, 0, 0.55)" : "rgba(15, 23, 42, 0.4)",
-            backdropFilter: "blur(16px)",
-            WebkitBackdropFilter: "blur(16px)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "20px",
-            boxSizing: "border-box",
-          }}
+          transition={{ duration: 0.2 }}
           onClick={onClose}
+          style={{
+            position: "fixed", inset: 0, zIndex: 2147483648,
+            background: isDark ? "rgba(0,0,0,0.65)" : "rgba(15,23,42,0.45)",
+            backdropFilter: "blur(18px)", WebkitBackdropFilter: "blur(18px)",
+            display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
+          }}
         >
-          <style>{`
-            .admin-modal-card {
-              --modal-bg: rgba(255, 255, 255, 0.98);
-              --modal-border: #e2e8f0;
-              --modal-text: #0f172a;
-              --modal-muted: #64748b;
-              --modal-field-bg: #f8fafc;
-              --modal-field-border: #cbd5e1;
-              --modal-tab-track: #f1f5f9;
-              --modal-tab-active-bg: #0f172a;
-              --modal-tab-active-text: #ffffff;
-              --modal-btn-bg: #0f172a;
-              --modal-btn-hover: #1e293b;
-              --modal-btn-text: #ffffff;
-              --modal-shadow: 0 20px 50px -12px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05);
-              backdrop-filter: blur(20px);
-              -webkit-backdrop-filter: blur(20px);
-              color-scheme: light;
-            }
+          <style>{css}</style>
 
-            .admin-modal-card.dark-mode {
-              --modal-bg: rgba(20, 22, 28, 0.96);
-              --modal-border: rgba(255, 255, 255, 0.12);
-              --modal-text: #ffffff;
-              --modal-muted: #94a3b8;
-              --modal-field-bg: #22242a;
-              --modal-field-border: rgba(255, 255, 255, 0.14);
-              --modal-tab-track: #141518;
-              --modal-tab-active-bg: #ffffff;
-              --modal-tab-active-text: #0f172a;
-              --modal-btn-bg: #ffffff;
-              --modal-btn-hover: #f1f5f9;
-              --modal-btn-text: #0f172a;
-              --modal-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.1);
-              backdrop-filter: blur(20px);
-              -webkit-backdrop-filter: blur(20px);
-              color-scheme: dark;
-            }
-
-            .admin-modal-card input:-webkit-autofill,
-            .admin-modal-card input:-webkit-autofill:hover,
-            .admin-modal-card input:-webkit-autofill:focus {
-              -webkit-text-fill-color: var(--modal-text) !important;
-              -webkit-box-shadow: 0 0 0px 1000px var(--modal-field-bg) inset !important;
-              transition: background-color 5000s ease-in-out 0s;
-            }
-          `}</style>
-
-          {/* Ambient Glow Aura */}
-          <div
-            style={{
-              position: "absolute",
-              width: "400px",
-              height: "400px",
-              borderRadius: "50%",
-              background: isDarkMode
-                ? "radial-gradient(circle, rgba(59, 130, 246, 0.18) 0%, rgba(99, 102, 241, 0.1) 45%, transparent 70%)"
-                : "radial-gradient(circle, rgba(59, 130, 246, 0.12) 0%, rgba(99, 102, 241, 0.08) 45%, transparent 70%)",
-              filter: "blur(40px)",
-              pointerEvents: "none",
-              zIndex: 0,
-            }}
-          />
+          {/* Ambient glow */}
+          <div style={{
+            position: "absolute", width: 480, height: 480, borderRadius: "50%", pointerEvents: "none",
+            background: "radial-gradient(circle, rgba(59,130,246,0.14) 0%, rgba(99,102,241,0.07) 50%, transparent 70%)",
+            filter: "blur(50px)",
+          }} />
 
           <motion.div
-            key="admin-modal-content"
-            className={`modal admin-modal-card ${isDarkMode ? "dark-mode" : "light-mode"}`}
+            key="alm-card"
             role="dialog"
             aria-modal="true"
-            aria-labelledby="admin-modal-title"
-            initial={{ opacity: 0, scale: prefersReducedMotion ? 1 : 0.88, y: prefersReducedMotion ? 0 : 28, filter: "blur(6px)" }}
+            aria-labelledby="alm-title"
+            className={`alm-card${isDark ? " dark" : ""}`}
+            initial={{ opacity: 0, scale: 0.9, y: 24, filter: "blur(8px)" }}
             animate={
               isShaking
-                ? { x: [-12, 12, -8, 8, -4, 4, 0], opacity: 1, scale: 1, y: 0, transition: { duration: 0.45 } }
+                ? { x: [-10, 10, -7, 7, -3, 3, 0], opacity: 1, scale: 1, y: 0, transition: { duration: 0.45 } }
                 : { opacity: 1, scale: 1, y: 0, x: 0, filter: "blur(0px)" }
             }
-            exit={{ opacity: 0, scale: prefersReducedMotion ? 1 : 0.94, y: prefersReducedMotion ? 0 : 16, filter: "blur(4px)", transition: { duration: 0.16, ease: [0.32, 0, 0.67, 0] } }}
-            transition={{ type: "spring", damping: 25, stiffness: 350, mass: 0.85 }}
-            onClick={(e) => e.stopPropagation()}
+            exit={{ opacity: 0, scale: 0.95, y: 12, filter: "blur(4px)", transition: { duration: 0.15 } }}
+            transition={{ type: "spring", damping: 26, stiffness: 380, mass: 0.8 }}
+            onClick={e => e.stopPropagation()}
             style={{
-              position: "relative",
-              maxWidth: "400px",
-              width: "100%",
-              background: "var(--modal-bg)",
-              border: "0.5px solid var(--modal-border)",
-              borderRadius: "20px",
-              boxShadow: "var(--modal-shadow)",
-              overflow: "hidden",
-              color: "var(--modal-text)",
+              position: "relative", maxWidth: 400, width: "100%",
+              background: "var(--alm-bg)", border: "0.5px solid var(--alm-border)",
+              borderRadius: 22, boxShadow: "var(--alm-shadow)", overflow: "hidden",
+              color: "var(--alm-text)",
               fontFamily: "-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif",
-              zIndex: 1,
             }}
           >
-            {/* Identity Row: avatar + name + status | close button */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "18px 20px 10px",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <div
-                  style={{
-                    width: "28px",
-                    height: "28px",
-                    borderRadius: "50%",
-                    background: "#1d4ed8",
-                    color: "#ffffff",
-                    fontWeight: "700",
-                    fontSize: "11px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                    boxShadow: "0 2px 8px rgba(29, 78, 216, 0.4)",
-                  }}
-                >
-                  ST
-                </div>
+            {/* Top strip */}
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              padding: "16px 18px 10px",
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div style={{
+                  width: 30, height: 30, borderRadius: "50%",
+                  background: "linear-gradient(135deg, #1d4ed8, #4f46e5)",
+                  color: "#fff", fontWeight: 800, fontSize: 11.5,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  boxShadow: "0 2px 10px rgba(79,70,229,0.45)", flexShrink: 0,
+                }}>ST</div>
                 <div>
-                  <div style={{ fontSize: "12.5px", fontWeight: "600", color: "var(--modal-text)", lineHeight: 1.2 }}>
-                    Sujith Thota
-                  </div>
-                  <div style={{ fontSize: "10.5px", color: "#22c55e", fontWeight: "600", lineHeight: 1.2 }}>
-                    Secure · reachable
-                  </div>
+                  <div style={{ fontSize: 12.5, fontWeight: 700, color: "var(--alm-text)", lineHeight: 1.2 }}>Sujith Thota</div>
+                  <div style={{ fontSize: 10.5, color: "#22c55e", fontWeight: 600, lineHeight: 1.2 }}>Portfolio Admin</div>
                 </div>
               </div>
-
               <motion.button
-                type="button"
-                onClick={onClose}
-                aria-label="Close"
-                whileHover={{ scale: 1.15, rotate: 90 }}
-                whileTap={{ scale: 0.88 }}
-                transition={{ type: "spring", damping: 20, stiffness: 400 }}
+                type="button" onClick={onClose} aria-label="Close"
+                whileHover={{ scale: 1.12, rotate: 90 }} whileTap={{ scale: 0.88 }}
+                transition={{ type: "spring", damping: 22, stiffness: 400 }}
                 style={{
-                  background: "none",
-                  border: "none",
-                  color: "var(--modal-muted)",
-                  cursor: "pointer",
-                  padding: 0,
-                  width: "28px",
-                  height: "28px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  background: "none", border: "none", color: "var(--alm-muted)", cursor: "pointer",
+                  width: 30, height: 30, display: "flex", alignItems: "center", justifyContent: "center",
                   borderRadius: "50%",
                 }}
-              >
-                <X size={17} />
-              </motion.button>
+              ><X size={17} /></motion.button>
             </div>
 
-            {/* Admin console heading + subtitle, centered */}
-            <div style={{ textAlign: "center", padding: "0 20px 14px" }}>
-              <h3
-                id="admin-modal-title"
-                style={{
-                  fontSize: "22px",
-                  fontWeight: "700",
-                  color: "var(--modal-text)",
-                  margin: "0 0 4px",
-                  letterSpacing: "-0.02em",
-                }}
-              >
-                Admin console
-              </h3>
-              <p style={{ fontSize: "12px", color: "var(--modal-muted)", margin: "0 0 14px" }}>
-                Sign in to manage the portfolio
+            {/* Heading */}
+            <div style={{ textAlign: "center", padding: "2px 20px 16px" }}>
+              <div style={{
+                width: 44, height: 44, borderRadius: 14, margin: "0 auto 10px",
+                background: isDark ? "rgba(255,255,255,0.06)" : "rgba(15,23,42,0.05)",
+                border: "1px solid var(--alm-border)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <ShieldCheck size={22} color={isDark ? "#60a5fa" : "#1d4ed8"} />
+              </div>
+              <h3 id="alm-title" style={{
+                fontSize: 21, fontWeight: 800, color: "var(--alm-text)",
+                margin: "0 0 3px", letterSpacing: "-0.03em",
+              }}>Admin Console</h3>
+              <p style={{ fontSize: 12, color: "var(--alm-muted)", margin: "0 0 14px" }}>
+                Sign in to manage your portfolio
               </p>
 
-              {/* Status pills row, centered */}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}>
-                <span
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "5px",
-                    fontSize: "11px",
-                    fontWeight: "600",
-                    padding: "3px 8px",
-                    borderRadius: "7px",
-                    background: "rgba(34, 197, 94, 0.15)",
-                    color: "#22c55e",
-                    border: "1px solid rgba(34, 197, 94, 0.3)",
-                  }}
-                >
-                  <Lock size={11} />
-                  <span>TLS 1.3</span>
+              {/* Status pills */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 7, flexWrap: "wrap" }}>
+                <span className="alm-pill" style={{ background: "rgba(34,197,94,0.12)", color: "#16a34a", border: "1px solid rgba(34,197,94,0.25)" }}>
+                  <Lock size={10} /> TLS 1.3
                 </span>
-
-                <span
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "5px",
-                    fontSize: "11px",
-                    fontWeight: "600",
-                    padding: "3px 8px",
-                    borderRadius: "7px",
-                    background: "var(--modal-field-bg)",
-                    color: "var(--modal-text)",
-                    border: "1px solid var(--modal-border)",
-                  }}
-                >
-                  <Fingerprint size={11} />
-                  <span>Passkey ready</span>
+                {biometricAvailable === true && (
+                  <span className="alm-pill" style={{ background: "rgba(99,102,241,0.12)", color: "#6366f1", border: "1px solid rgba(99,102,241,0.25)" }}>
+                    <Fingerprint size={10} /> Biometrics
+                  </span>
+                )}
+                <span className="alm-pill" style={{ background: "rgba(245,158,11,0.12)", color: "#d97706", border: "1px solid rgba(245,158,11,0.25)" }}>
+                  <Clock size={10} /> Rate limited
                 </span>
-
-                <span
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "5px",
-                    fontSize: "11px",
-                    fontWeight: "600",
-                    padding: "3px 8px",
-                    borderRadius: "7px",
-                    background: "rgba(245, 158, 11, 0.15)",
-                    color: "#f59e0b",
-                    border: "1px solid rgba(245, 158, 11, 0.3)",
-                  }}
-                >
-                  <Clock size={11} />
-                  <span>Rate limited</span>
-                </span>
+                {attempts > 0 && (
+                  <span className="alm-pill" style={{ background: "rgba(239,68,68,0.12)", color: "#ef4444", border: "1px solid rgba(239,68,68,0.25)" }}>
+                    <AlertTriangle size={10} /> {MAX_ATTEMPTS - attempts} attempts left
+                  </span>
+                )}
               </div>
             </div>
 
-            {/* Password / Email OTP Segmented tabs - curved rectangle */}
-            {!mfaRequired && (
-              <div
-                style={{
-                  display: "flex",
-                  padding: "3px",
-                  background: "var(--modal-tab-track)",
-                  border: "1px solid var(--modal-border)",
-                  borderRadius: "10px",
-                  margin: "0 20px 14px",
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={() => {
-                    setError("");
-                    setActiveMethod("password");
-                  }}
-                  style={{
-                    flex: 1,
-                    border: "none",
-                    background: activeMethod === "password" ? "var(--modal-tab-active-bg)" : "transparent",
-                    color: activeMethod === "password" ? "var(--modal-tab-active-text)" : "var(--modal-muted)",
-                    padding: "7px 12px",
-                    borderRadius: "7px",
-                    fontSize: "12px",
-                    fontWeight: "600",
-                    cursor: "pointer",
-                    transition: "all 0.18s ease",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "6px",
-                    boxShadow: activeMethod === "password" ? "0 1px 3px rgba(0,0,0,0.15)" : "none",
-                  }}
-                >
-                  <KeyRound size={13} />
-                  <span>Password</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setError("");
-                    setActiveMethod("otp");
-                  }}
-                  style={{
-                    flex: 1,
-                    border: "none",
-                    background: activeMethod === "otp" ? "var(--modal-tab-active-bg)" : "transparent",
-                    color: activeMethod === "otp" ? "var(--modal-tab-active-text)" : "var(--modal-muted)",
-                    padding: "7px 12px",
-                    borderRadius: "7px",
-                    fontSize: "12px",
-                    fontWeight: "600",
-                    cursor: "pointer",
-                    transition: "all 0.18s ease",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: "6px",
-                    boxShadow: activeMethod === "otp" ? "0 1px 3px rgba(0,0,0,0.15)" : "none",
-                  }}
-                >
-                  <Mail size={13} />
-                  <span>Email OTP</span>
-                </button>
-              </div>
-            )}
-
+            {/* ── MFA banner ── */}
             {mfaRequired && (
-              <div
-                style={{
-                  margin: "0 20px 14px",
-                  padding: "8px 12px",
-                  background: "rgba(59, 130, 246, 0.1)",
-                  border: "1px solid rgba(59, 130, 246, 0.25)",
-                  borderRadius: "10px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  fontSize: "12px",
-                  color: "#3b82f6",
-                  fontWeight: 600,
-                }}
-              >
-                <Shield size={14} />
-                <span>Two-Factor Authentication (TOTP)</span>
+              <div style={{
+                margin: "0 18px 14px", padding: "9px 14px",
+                background: "rgba(59,130,246,0.1)", border: "1px solid rgba(59,130,246,0.25)",
+                borderRadius: 10, display: "flex", alignItems: "center", gap: 9,
+                fontSize: 12, color: "#3b82f6", fontWeight: 600,
+              }}>
+                <Shield size={14} /> Two-Factor Authentication Required
               </div>
             )}
 
-            {/* Error Notice */}
-            {error && (
-              <div
-                style={{
-                  margin: "0 20px 12px",
-                  padding: "8px 12px",
-                  background: "rgba(239,68,68,0.15)",
-                  color: "#ef4444",
-                  borderRadius: "8px",
-                  fontSize: "12px",
-                  fontWeight: 500,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                }}
-              >
-                <AlertTriangle size={13} />
-                <span>{error}</span>
+            {/* ── Method tabs (only when not in MFA mode) ── */}
+            {!mfaRequired && (
+              <div style={{
+                display: "flex", padding: "3px",
+                background: "var(--alm-tab-track)", border: "1px solid var(--alm-border)",
+                borderRadius: 10, margin: "0 18px 14px",
+              }}>
+                <button className={`alm-tab-btn${activeMethod === "password" ? " active" : ""}`} type="button"
+                  onClick={() => { setError(""); setActiveMethod("password"); }}>
+                  <KeyRound size={13} /> Password
+                </button>
+                <button className={`alm-tab-btn${activeMethod === "otp" ? " active" : ""}`} type="button"
+                  onClick={() => { setError(""); setActiveMethod("otp"); }}>
+                  <Mail size={13} /> Email OTP
+                </button>
               </div>
             )}
 
-            {/* Attempts Notice */}
-            {attempts > 0 && attempts < MAX_ATTEMPTS && (
-              <div
-                style={{
-                  margin: "0 20px 12px",
-                  padding: "6px 10px",
-                  background: "rgba(245, 158, 11, 0.15)",
-                  color: "#f59e0b",
-                  borderRadius: "8px",
-                  fontSize: "11.5px",
-                  fontWeight: 500,
-                }}
-              >
-                {MAX_ATTEMPTS - attempts} attempts remaining before lockout.
-              </div>
-            )}
+            {/* ── Error / Lockout notice ── */}
+            <AnimatePresence>
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                  style={{
+                    margin: "0 18px 12px", padding: "9px 13px",
+                    background: "rgba(239,68,68,0.12)", color: "#ef4444",
+                    borderRadius: 9, fontSize: 12, fontWeight: 500,
+                    display: "flex", alignItems: "center", gap: 7, border: "1px solid rgba(239,68,68,0.2)",
+                  }}
+                >
+                  <AlertTriangle size={13} /> <span>{error}</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-            {/* Form Content */}
-            <div style={{ padding: "0 20px 20px" }}>
-              {/* MFA TOTP CHALLENGE VIEW */}
+            {/* ── Form area ── */}
+            <div style={{ padding: "0 18px 20px" }}>
+
+              {/* MFA TOTP */}
               {mfaRequired && (
                 <form onSubmit={handleTotpSubmit} noValidate>
-                  <div style={{ marginBottom: "14px", textAlign: "left" }}>
-                    <label
-                      htmlFor="modal-totpCode"
-                      style={{
-                        display: "block",
-                        fontSize: "12px",
-                        fontWeight: "500",
-                        color: "var(--modal-text)",
-                        marginBottom: "5px",
-                      }}
-                    >
-                      6-digit Authenticator Code
-                    </label>
-                    <div
-                      style={{
-                        position: "relative",
-                        display: "flex",
-                        alignItems: "center",
-                        background: "var(--modal-field-bg)",
-                        border: "1px solid var(--modal-field-border)",
-                        borderRadius: "8px",
-                        height: "36px",
-                      }}
-                    >
-                      <Shield
-                        size={15}
-                        color="var(--modal-muted)"
-                        style={{ position: "absolute", left: "11px", pointerEvents: "none" }}
-                      />
-                      <input
-                        id="modal-totpCode"
-                        type="text"
-                        maxLength={6}
-                        value={totpCode}
-                        onChange={(e) =>
-                          setTotpCode(e.target.value.replace(/\D/g, "").slice(0, 6))
-                        }
-                        placeholder="000 000"
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          background: "transparent",
-                          border: "none",
-                          outline: "none",
-                          color: "var(--modal-text)",
-                          textAlign: "center",
-                          letterSpacing: "4px",
-                          fontWeight: 700,
-                          fontSize: "14px",
-                          paddingLeft: "32px",
-                          paddingRight: "12px",
-                          boxSizing: "border-box",
-                        }}
-                        autoFocus
-                      />
-                    </div>
+                  <label className="alm-label">6-digit Authenticator Code</label>
+                  <div className="alm-field" style={{ marginBottom: 14 }}>
+                    <Shield size={15} color="var(--alm-muted)" style={{ position: "absolute", left: 12, pointerEvents: "none" }} />
+                    <input
+                      type="text" maxLength={6} autoFocus
+                      value={totpCode}
+                      onChange={e => setTotpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                      placeholder="000 000"
+                      className="alm-input"
+                      style={{ textAlign: "center", letterSpacing: "6px", fontWeight: 800, fontSize: 16 }}
+                    />
                   </div>
-
-                  <p
-                    style={{
-                      fontSize: "12px",
-                      color: "var(--modal-muted)",
-                      margin: "0 0 14px",
-                      lineHeight: 1.45,
-                    }}
-                  >
-                    Open your Authenticator app (Google Authenticator, 1Password, etc.) and enter the code.
+                  <p style={{ fontSize: 11.5, color: "var(--alm-muted)", margin: "0 0 14px", lineHeight: 1.5 }}>
+                    Open your Authenticator app and enter the current 6-digit code.
                   </p>
-
-                  <button
-                    type="submit"
-                    disabled={loading || totpCode.length !== 6 || lockoutTimer > 0}
-                    style={{
-                      width: "100%",
-                      height: "38px",
-                      background: "var(--modal-btn-bg)",
-                      color: "var(--modal-btn-text)",
-                      fontWeight: "600",
-                      fontSize: "13px",
-                      border: "none",
-                      borderRadius: "8px",
-                      cursor:
-                        loading || totpCode.length !== 6 || lockoutTimer > 0
-                          ? "not-allowed"
-                          : "pointer",
-                      opacity:
-                        loading || totpCode.length !== 6 || lockoutTimer > 0 ? 0.6 : 1,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: "6px",
-                      transition: "all 0.15s ease",
-                    }}
-                  >
-                    <span>{loading ? "Verifying..." : "Verify & Sign in"}</span>
-                    <ArrowRight size={15} />
+                  <button type="submit" className="alm-btn-primary" disabled={loading || totpCode.length !== 6 || lockoutTimer > 0}>
+                    {loading ? <Loader2 size={15} className="spin" /> : <CheckCircle2 size={15} />}
+                    {loading ? "Verifying…" : "Verify & Sign in"}
                   </button>
-
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "flex-start",
-                      marginTop: "12px",
-                      fontSize: "12px",
-                    }}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMfaRequired(false);
-                        setTotpCode("");
-                        setError("");
-                      }}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        color: "var(--modal-muted)",
-                        cursor: "pointer",
-                      }}
-                    >
-                      ← Back to Password
-                    </button>
-                  </div>
+                  <button type="button" onClick={() => { setMfaRequired(false); setTotpCode(""); setError(""); }}
+                    style={{ background: "none", border: "none", color: "var(--alm-muted)", cursor: "pointer", fontSize: 12, marginTop: 10, padding: 0, display: "flex", alignItems: "center", gap: 4 }}>
+                    ← Back to password
+                  </button>
                 </form>
               )}
 
-              {/* PASSWORD TAB VIEW */}
+              {/* Password form */}
               {!mfaRequired && activeMethod === "password" && (
                 <form onSubmit={handlePasswordSubmit} noValidate>
-                  <div style={{ marginBottom: "14px", textAlign: "left" }}>
-                    <label
-                      htmlFor="modal-email"
-                      style={{
-                        display: "block",
-                        fontSize: "12px",
-                        fontWeight: "500",
-                        color: "var(--modal-text)",
-                        marginBottom: "5px",
-                      }}
-                    >
-                      Email address
-                    </label>
-                    <div
-                      style={{
-                        position: "relative",
-                        display: "flex",
-                        alignItems: "center",
-                        background: "var(--modal-field-bg)",
-                        border: "1px solid var(--modal-field-border)",
-                        borderRadius: "8px",
-                        height: "36px",
-                      }}
-                    >
-                      <Mail
-                        size={15}
-                        color="var(--modal-muted)"
-                        style={{
-                          position: "absolute",
-                          left: "11px",
-                          pointerEvents: "none",
-                        }}
-                      />
+                  <div style={{ marginBottom: 12 }}>
+                    <label className="alm-label">Email address</label>
+                    <div className="alm-field">
+                      <Mail size={15} color="var(--alm-muted)" style={{ position: "absolute", left: 12, pointerEvents: "none" }} />
                       <input
-                        ref={emailInputRef}
-                        id="modal-email"
-                        type="email"
-                        placeholder="sujithreddy1546@gmail.com"
-                        autoComplete="username"
-                        required
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        disabled={lockoutTimer > 0}
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          background: "transparent",
-                          border: "none",
-                          outline: "none",
-                          color: "var(--modal-text)",
-                          fontSize: "13px",
-                          fontWeight: "400",
-                          paddingLeft: "32px",
-                          paddingRight: "12px",
-                          boxSizing: "border-box",
-                        }}
+                        ref={emailInputRef} id="alm-email" type="email" required
+                        autoComplete="username" placeholder="sujithreddy1546@gmail.com"
+                        value={email} onChange={e => setEmail(e.target.value)}
+                        disabled={lockoutTimer > 0} className="alm-input"
                       />
                     </div>
                   </div>
-
-                  <div style={{ marginBottom: "14px", textAlign: "left" }}>
-                    <label
-                      htmlFor="modal-password"
-                      style={{
-                        display: "block",
-                        fontSize: "12px",
-                        fontWeight: "500",
-                        color: "var(--modal-text)",
-                        marginBottom: "5px",
-                      }}
-                    >
-                      Password
-                    </label>
-                    <div
-                      style={{
-                        position: "relative",
-                        display: "flex",
-                        alignItems: "center",
-                        background: "var(--modal-field-bg)",
-                        border: "1px solid var(--modal-field-border)",
-                        borderRadius: "8px",
-                        height: "36px",
-                      }}
-                    >
-                      <Lock
-                        size={15}
-                        color="var(--modal-muted)"
-                        style={{
-                          position: "absolute",
-                          left: "11px",
-                          pointerEvents: "none",
-                        }}
-                      />
+                  <div style={{ marginBottom: 14 }}>
+                    <label className="alm-label">Password</label>
+                    <div className="alm-field">
+                      <Lock size={15} color="var(--alm-muted)" style={{ position: "absolute", left: 12, pointerEvents: "none" }} />
                       <input
-                        id="modal-password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Enter your password"
-                        autoComplete="current-password"
-                        required
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        disabled={lockoutTimer > 0}
-                        style={{
-                          width: "100%",
-                          height: "100%",
-                          background: "transparent",
-                          border: "none",
-                          outline: "none",
-                          color: "var(--modal-text)",
-                          fontSize: "13px",
-                          fontWeight: "400",
-                          paddingLeft: "32px",
-                          paddingRight: "32px",
-                          boxSizing: "border-box",
-                        }}
+                        id="alm-password" type={showPw ? "text" : "password"} required
+                        autoComplete="current-password" placeholder="Enter your password"
+                        value={password} onChange={e => setPassword(e.target.value)}
+                        disabled={lockoutTimer > 0} className="alm-input" style={{ paddingRight: 38 }}
                       />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        aria-label={showPassword ? "Hide password" : "Show password"}
-                        style={{
-                          position: "absolute",
-                          right: "8px",
-                          background: "none",
-                          border: "none",
-                          color: "var(--modal-muted)",
-                          cursor: "pointer",
-                          padding: "2px",
-                          display: "flex",
-                        }}
-                      >
-                        {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                      <button type="button" onClick={() => setShowPw(v => !v)} aria-label="Toggle password"
+                        style={{ position: "absolute", right: 10, background: "none", border: "none", color: "var(--alm-muted)", cursor: "pointer", padding: 2, display: "flex" }}>
+                        {showPw ? <EyeOff size={15} /> : <Eye size={15} />}
                       </button>
                     </div>
                   </div>
 
-                  {/* Remember me | Forgot? row */}
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      marginBottom: "16px",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    <label
-                      htmlFor="modal-rememberMe"
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "6px",
-                        fontSize: "12px",
-                        color: "var(--modal-muted)",
-                        cursor: "pointer",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      <input
-                        id="modal-rememberMe"
-                        type="checkbox"
-                        style={{ accentColor: "var(--modal-btn-bg)" }}
-                      />
-                      <span style={{ whiteSpace: "nowrap" }}>Remember me</span>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, fontSize: 12 }}>
+                    <label style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--alm-muted)", cursor: "pointer" }}>
+                      <input type="checkbox" id="alm-remember" style={{ accentColor: "var(--alm-btn)" }} />
+                      Remember me
                     </label>
-                    <a
-                      href="#forgot"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        setActiveMethod("otp");
-                      }}
-                      style={{
-                        fontSize: "12px",
-                        color: "#3b82f6",
-                        textDecoration: "underline",
-                        fontWeight: "500",
-                      }}
-                    >
-                      Forgot?
-                    </a>
+                    <button type="button" onClick={() => { setError(""); setActiveMethod("otp"); }}
+                      style={{ background: "none", border: "none", color: "#3b82f6", cursor: "pointer", fontSize: 12, fontWeight: 600, padding: 0 }}>
+                      Forgot password?
+                    </button>
                   </div>
 
-                  {/* Sign in button */}
-                  <button
-                    type="submit"
-                    disabled={loading || lockoutTimer > 0}
-                    style={{
-                      width: "100%",
-                      height: "38px",
-                      background: "var(--modal-btn-bg)",
-                      color: "var(--modal-btn-text)",
-                      fontWeight: "600",
-                      fontSize: "13px",
-                      border: "none",
-                      borderRadius: "8px",
-                      cursor: loading || lockoutTimer > 0 ? "not-allowed" : "pointer",
-                      opacity: loading || lockoutTimer > 0 ? 0.6 : 1,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: "6px",
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
-                      transition: "all 0.15s ease",
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!loading && lockoutTimer <= 0) {
-                        e.currentTarget.style.background = "var(--modal-btn-hover)";
-                        e.currentTarget.style.transform = "translateY(-1px)";
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!loading && lockoutTimer <= 0) {
-                        e.currentTarget.style.background = "var(--modal-btn-bg)";
-                        e.currentTarget.style.transform = "translateY(0)";
-                      }
-                    }}
-                  >
-                    <span>
-                      {loading
-                        ? "Signing in..."
-                        : lockoutTimer > 0
-                        ? `Locked (${lockoutTimer}s)`
-                        : "Sign in"}
-                    </span>
-                    <ArrowRight size={15} />
+                  <button type="submit" className="alm-btn-primary" disabled={loading || lockoutTimer > 0}>
+                    {loading ? <Loader2 size={15} className="spin" /> : null}
+                    {loading ? "Signing in…" : lockoutTimer > 0 ? `Locked (${lockoutTimer}s)` : "Sign in"}
+                    {!loading && lockoutTimer <= 0 && <ArrowRight size={15} />}
                   </button>
                 </form>
               )}
 
-              {/* EMAIL OTP TAB VIEW */}
+              {/* Email OTP form */}
               {!mfaRequired && activeMethod === "otp" && (
                 <div>
                   {!emailOtpSent ? (
                     <form onSubmit={handleSendEmailOtp} noValidate>
-                      <div style={{ marginBottom: "14px", textAlign: "left" }}>
-                        <label
-                          htmlFor="modal-otpEmail"
-                          style={{
-                            display: "block",
-                            fontSize: "12px",
-                            fontWeight: "500",
-                            color: "var(--modal-text)",
-                            marginBottom: "5px",
-                          }}
-                        >
-                          Registered Admin Email
-                        </label>
-                        <div
-                          style={{
-                            position: "relative",
-                            display: "flex",
-                            alignItems: "center",
-                            background: "var(--modal-field-bg)",
-                            border: "1px solid var(--modal-field-border)",
-                            borderRadius: "8px",
-                            height: "36px",
-                          }}
-                        >
-                          <Mail
-                            size={15}
-                            color="var(--modal-muted)"
-                            style={{ position: "absolute", left: "11px", pointerEvents: "none" }}
-                          />
-                          <input
-                            id="modal-otpEmail"
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                              background: "transparent",
-                              border: "none",
-                              outline: "none",
-                              color: "var(--modal-text)",
-                              fontSize: "13px",
-                              fontWeight: "400",
-                              paddingLeft: "32px",
-                              paddingRight: "12px",
-                              boxSizing: "border-box",
-                            }}
-                          />
-                        </div>
+                      <label className="alm-label">Admin email address</label>
+                      <div className="alm-field" style={{ marginBottom: 12 }}>
+                        <Mail size={15} color="var(--alm-muted)" style={{ position: "absolute", left: 12, pointerEvents: "none" }} />
+                        <input
+                          type="email" required autoComplete="email"
+                          value={email} onChange={e => setEmail(e.target.value)}
+                          className="alm-input"
+                        />
                       </div>
-
-                      <p
-                        style={{
-                          fontSize: "12px",
-                          color: "var(--modal-muted)",
-                          margin: "0 0 14px",
-                          lineHeight: 1.45,
-                        }}
-                      >
-                        A one-time 6-digit security code will be sent directly to your inbox.
+                      <p style={{ fontSize: 12, color: "var(--alm-muted)", margin: "0 0 14px", lineHeight: 1.5 }}>
+                        A one-time 6-digit code will be sent to your inbox.
                       </p>
-
-                      <button
-                        type="submit"
-                        disabled={loading || lockoutTimer > 0}
-                        style={{
-                          width: "100%",
-                          height: "38px",
-                          background: "var(--modal-btn-bg)",
-                          color: "var(--modal-btn-text)",
-                          fontWeight: "600",
-                          fontSize: "13px",
-                          border: "none",
-                          borderRadius: "8px",
-                          cursor: loading || lockoutTimer > 0 ? "not-allowed" : "pointer",
-                          opacity: loading || lockoutTimer > 0 ? 0.6 : 1,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          gap: "6px",
-                          transition: "all 0.15s ease",
-                        }}
-                      >
-                        <span>{loading ? "Sending Code..." : "Send 6-digit OTP"}</span>
-                        <ArrowRight size={15} />
+                      <button type="submit" className="alm-btn-primary" disabled={loading || lockoutTimer > 0}>
+                        {loading ? <Loader2 size={15} className="spin" /> : <Mail size={15} />}
+                        {loading ? "Sending…" : "Send OTP Code"}
                       </button>
                     </form>
                   ) : (
                     <form onSubmit={handleVerifyEmailOtp} noValidate>
-                      <div style={{ marginBottom: "14px", textAlign: "left" }}>
-                        <label
-                          htmlFor="modal-otpCode"
-                          style={{
-                            display: "block",
-                            fontSize: "12px",
-                            fontWeight: "500",
-                            color: "var(--modal-text)",
-                            marginBottom: "5px",
-                          }}
-                        >
-                          6-digit Security PIN
-                        </label>
-                        <div
-                          style={{
-                            position: "relative",
-                            display: "flex",
-                            alignItems: "center",
-                            background: "var(--modal-field-bg)",
-                            border: "1px solid var(--modal-field-border)",
-                            borderRadius: "8px",
-                            height: "36px",
-                          }}
-                        >
-                          <Shield
-                            size={15}
-                            color="var(--modal-muted)"
-                            style={{ position: "absolute", left: "11px", pointerEvents: "none" }}
-                          />
-                          <input
-                            id="modal-otpCode"
-                            type="text"
-                            maxLength={6}
-                            value={emailOtpCode}
-                            onChange={(e) =>
-                              setEmailOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))
-                            }
-                            placeholder="000 000"
-                            style={{
-                              width: "100%",
-                              height: "100%",
-                              background: "transparent",
-                              border: "none",
-                              outline: "none",
-                              color: "var(--modal-text)",
-                              textAlign: "center",
-                              letterSpacing: "4px",
-                              fontWeight: 700,
-                              fontSize: "14px",
-                              paddingLeft: "32px",
-                              paddingRight: "12px",
-                              boxSizing: "border-box",
-                            }}
-                            autoFocus
-                          />
-                        </div>
+                      <div style={{
+                        padding: "10px 14px", borderRadius: 9, marginBottom: 14,
+                        background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.2)",
+                        fontSize: 11.5, color: "#16a34a", fontWeight: 600,
+                        display: "flex", alignItems: "center", gap: 6,
+                      }}>
+                        <CheckCircle2 size={13} /> Code sent to {email}
                       </div>
-
-                      <button
-                        type="submit"
-                        disabled={loading || emailOtpCode.length !== 6 || lockoutTimer > 0}
-                        style={{
-                          width: "100%",
-                          height: "38px",
-                          background: "var(--modal-btn-bg)",
-                          color: "var(--modal-btn-text)",
-                          fontWeight: "600",
-                          fontSize: "13px",
-                          border: "none",
-                          borderRadius: "8px",
-                          cursor:
-                            loading || emailOtpCode.length !== 6 || lockoutTimer > 0
-                              ? "not-allowed"
-                              : "pointer",
-                          opacity:
-                            loading || emailOtpCode.length !== 6 || lockoutTimer > 0 ? 0.6 : 1,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          gap: "6px",
-                          transition: "all 0.15s ease",
-                        }}
-                      >
-                        <span>{loading ? "Verifying..." : "Verify & Sign in"}</span>
-                        <ArrowRight size={15} />
+                      <label className="alm-label">6-digit security code</label>
+                      <div className="alm-field" style={{ marginBottom: 14 }}>
+                        <Shield size={15} color="var(--alm-muted)" style={{ position: "absolute", left: 12, pointerEvents: "none" }} />
+                        <input
+                          type="text" maxLength={6} autoFocus
+                          value={emailOtpCode}
+                          onChange={e => setEmailOtpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                          placeholder="000 000"
+                          className="alm-input"
+                          style={{ textAlign: "center", letterSpacing: "6px", fontWeight: 800, fontSize: 16 }}
+                        />
+                      </div>
+                      <button type="submit" className="alm-btn-primary" disabled={loading || emailOtpCode.length !== 6 || lockoutTimer > 0}>
+                        {loading ? <Loader2 size={15} className="spin" /> : <CheckCircle2 size={15} />}
+                        {loading ? "Verifying…" : "Verify & Sign in"}
                       </button>
-
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          marginTop: "12px",
-                          fontSize: "12px",
-                        }}
-                      >
-                        <button
-                          type="button"
-                          onClick={() => setEmailOtpSent(false)}
-                          style={{
-                            background: "none",
-                            border: "none",
-                            color: "var(--modal-muted)",
-                            cursor: "pointer",
-                          }}
-                        >
+                      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 12, fontSize: 12 }}>
+                        <button type="button" onClick={() => setEmailOtpSent(false)}
+                          style={{ background: "none", border: "none", color: "var(--alm-muted)", cursor: "pointer", padding: 0 }}>
                           ← Back
                         </button>
-                        <button
-                          type="button"
-                          onClick={handleSendEmailOtp}
-                          disabled={otpTimer > 0 || loading}
-                          style={{
-                            background: "none",
-                            border: "none",
-                            color: otpTimer > 0 ? "var(--modal-muted)" : "#22c55e",
-                            fontWeight: 600,
-                            cursor: otpTimer > 0 ? "not-allowed" : "pointer",
-                          }}
-                        >
+                        <button type="button" onClick={() => handleSendEmailOtp(null)} disabled={otpTimer > 0 || loading}
+                          style={{ background: "none", border: "none", color: otpTimer > 0 ? "var(--alm-muted)" : "#22c55e", fontWeight: 600, cursor: otpTimer > 0 ? "not-allowed" : "pointer", padding: 0 }}>
                           {otpTimer > 0 ? `Resend in ${otpTimer}s` : "Resend code"}
                         </button>
                       </div>
@@ -1314,16 +587,9 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                 </div>
               )}
 
-              {/* Footer Note */}
-              <p
-                style={{
-                  margin: "14px 0 0",
-                  fontSize: "11px",
-                  color: "var(--modal-muted)",
-                  textAlign: "center",
-                }}
-              >
-                Restricted access · authorized personnel only.
+              {/* Footer */}
+              <p style={{ margin: "16px 0 0", fontSize: 11, color: "var(--alm-sub)", textAlign: "center", lineHeight: 1.5 }}>
+                Restricted access · Authorized personnel only · All actions are logged
               </p>
             </div>
           </motion.div>

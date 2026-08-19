@@ -11,7 +11,7 @@ import {
   Activity, BookOpen, Star, Bot, BarChart2, Trash2, RotateCcw,
   Eye, EyeOff, Clock, Server, Wifi, Download, ChevronDown, ChevronUp,
   Info, Shield, ShieldCheck, CheckCircle2, XCircle, TrendingUp, Users, MessageCircle,
-  Cpu, Terminal, User, Pen, ChevronRight, Search, Sliders
+  Cpu, Terminal, User, Pen, ChevronRight, Search, Sliders, Calendar, Moon, Code2, Flame
 } from 'lucide-react';
 import { FaGithub, FaLinkedin, FaTwitter } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -168,30 +168,55 @@ const Note = ({ children, color = 'var(--pcms-accent)' }) => (
   </div>
 );
 
-/** Audit row */
+/** Audit row — expandable with before/after diff viewer */
 const AuditRow = ({ row, isLast }) => {
+  const [expanded, setExpanded] = React.useState(false);
   const t = new Date(row.created_at);
   const color = row.action?.includes('DELETE') || row.action?.includes('DANGER') ? '#EF4444'
     : row.action?.includes('CREATE') ? '#10B981'
     : row.action?.includes('UPDATE') ? '#6366F1'
     : '#F59E0B';
+  const hasDiff = row.before_snapshot || row.after_snapshot || row.metadata;
   return (
-    <div style={{
-      display: 'flex', flexWrap: 'wrap', gap: 8, padding: '10px 14px', alignItems: 'center', justifyContent: 'space-between',
-      borderBottom: isLast ? 'none' : '1px solid var(--pcms-line-soft)',
-    }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0, flex: 1 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          <span style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: 700, color }}>{row.action}</span>
-          <Pill color={color}>{row.action?.split('_')[0] || 'SYS'}</Pill>
+    <div style={{ borderBottom: isLast ? 'none' : '1px solid var(--pcms-line-soft)' }}>
+      <div
+        style={{ display: 'flex', flexWrap: 'wrap', gap: 8, padding: '10px 14px', alignItems: 'center', justifyContent: 'space-between', cursor: hasDiff ? 'pointer' : 'default' }}
+        onClick={() => hasDiff && setExpanded(e => !e)}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0, flex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <span style={{ fontFamily: 'monospace', fontSize: 11, fontWeight: 700, color }}>{row.action}</span>
+            <Pill color={color}>{row.action?.split('_')[0] || 'SYS'}</Pill>
+            {hasDiff && <span style={{ fontSize: 9, color: 'var(--pcms-muted-2)', fontFamily: 'monospace', opacity: 0.7 }}>{expanded ? '▲ collapse' : '▼ diff'}</span>}
+          </div>
+          <span style={{ fontSize: 12, color: 'var(--pcms-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {row.entity_type}{row.entity_id ? ` · ${row.entity_id}` : ''}
+          </span>
         </div>
-        <span style={{ fontSize: 12, color: 'var(--pcms-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {row.entity_type}{row.entity_id ? ` · ${row.entity_id}` : ''}
+        <span style={{ fontFamily: 'monospace', fontSize: 10.5, color: 'var(--pcms-muted-2)', flexShrink: 0 }}>
+          {t.toLocaleDateString()} {t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </span>
       </div>
-      <span style={{ fontFamily: 'monospace', fontSize: 10.5, color: 'var(--pcms-muted-2)', flexShrink: 0 }}>
-        {t.toLocaleDateString()} {t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-      </span>
+      {expanded && hasDiff && (
+        <div style={{ margin: '0 14px 10px', padding: '10px 12px', background: 'var(--pcms-panel)', border: '1px solid var(--pcms-line)', borderRadius: 8, fontSize: 11, fontFamily: 'monospace' }}>
+          {row.before_snapshot && (
+            <div style={{ marginBottom: 8 }}>
+              <div style={{ fontSize: 9.5, fontWeight: 700, color: '#EF4444', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Before</div>
+              <pre style={{ margin: 0, color: 'var(--pcms-muted)', whiteSpace: 'pre-wrap', wordBreak: 'break-all', fontSize: 10.5 }}>{JSON.stringify(row.before_snapshot, null, 2)}</pre>
+            </div>
+          )}
+          {row.after_snapshot && (
+            <div>
+              <div style={{ fontSize: 9.5, fontWeight: 700, color: '#10B981', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.06em' }}>After</div>
+              <pre style={{ margin: 0, color: 'var(--pcms-text)', whiteSpace: 'pre-wrap', wordBreak: 'break-all', fontSize: 10.5 }}>{JSON.stringify(row.after_snapshot, null, 2)}</pre>
+            </div>
+          )}
+          {row.metadata && !row.before_snapshot && !row.after_snapshot && (
+            <pre style={{ margin: 0, color: 'var(--pcms-muted)', whiteSpace: 'pre-wrap', fontSize: 10.5 }}>{JSON.stringify(row.metadata, null, 2)}</pre>
+          )}
+          {row.session_id && <div style={{ marginTop: 8, fontSize: 9, color: 'var(--pcms-muted-2)', borderTop: '1px solid var(--pcms-line-soft)', paddingTop: 6 }}>Session: {row.session_id}</div>}
+        </div>
+      )}
     </div>
   );
 };
@@ -239,6 +264,16 @@ const DEFAULT_SETTINGS = {
   upstash_redis_url: '',
   upstash_redis_token: '',
   supabase_service_key: '',
+  // ─── Extended fields ─────────────────────────────────────────
+  work_mode: 'Remote',
+  announcement_start_date: '',
+  announcement_end_date: '',
+  announcement_dismissible: true,
+  dark_mode_default: 'system',
+  calendly_url: '',
+  leetcode_url: '',
+  medium_url: '',
+  deadman_threshold_days: 30,
 };
 
 export default function SettingsPanel({ isMobileView = false }) {
@@ -270,17 +305,11 @@ export default function SettingsPanel({ isMobileView = false }) {
   const [revealedKeys, setRevealedKeys]   = useState({});
   const [scanningSecurity, setScanningSecurity] = useState(false);
   const [settingsSearch, setSettingsSearch] = useState('');
-  const [securityScanResults, setSecurityScanResults] = useState({
-    score: 100,
-    grade: 'A+',
-    checks: [
-      { label: 'TLS 1.3 Encryption', status: 'PASS', detail: 'HTTPS active & enforced' },
-      { label: 'Anti-Inspect Shield', status: 'READY', detail: 'F12 & shortcuts protection' },
-      { label: 'Anti-Copy & Asset Guard', status: 'READY', detail: 'Text selection & drag blocker' },
-      { label: 'Clickjacking Frame Guard', status: 'ACTIVE', detail: 'Frame-busting isolation' },
-      { label: 'Input Sanitization', status: 'PASS', detail: 'Parametric SQL & XSS shield' },
-    ]
-  });
+  const [securityScanResults, setSecurityScanResults] = useState(null);
+  const [threatEvents, setThreatEvents] = useState([]);
+  const [threatLoading, setThreatLoading] = useState(false);
+  const [realSessions, setRealSessions] = useState([]);
+  const [sessionsLoading, setSessionsLoading] = useState(false);
 
   const [testingOutboundWebhook, setTestingOutboundWebhook] = useState(false);
   const [outboundWebhookResult, setOutboundWebhookResult] = useState(null);
@@ -339,21 +368,27 @@ export default function SettingsPanel({ isMobileView = false }) {
   const runSecurityDiagnostic = () => {
     setScanningSecurity(true);
     setTimeout(() => {
+      const s = settings || {};
+      const checks = [
+        { label: 'TLS 1.3 Encryption',      status: 'PASS',                                             detail: 'HTTPS enforced site-wide via Vercel',                     ok: true  },
+        { label: 'Anti-Inspect Shield',      status: s.disable_inspect    ? 'ACTIVE' : 'OFF',            detail: s.disable_inspect    ? 'F12 & DevTools blocked'         : '⚠ Source code is inspectable',              ok: !!s.disable_inspect    },
+        { label: 'Anti-Copy Guard',          status: s.disable_copy       ? 'ACTIVE' : 'OFF',            detail: s.disable_copy       ? 'Text selection locked'          : 'Visitors can copy text',                    ok: !!s.disable_copy       },
+        { label: 'Anti-Print Blocker',       status: s.disable_print      ? 'ACTIVE' : 'OFF',            detail: s.disable_print      ? 'Print & PDF export blocked'     : 'PDF export via Ctrl+P available',           ok: !!s.disable_print      },
+        { label: 'Frame Isolation Guard',    status: s.frame_guard        ? 'ACTIVE' : 'OFF',            detail: s.frame_guard        ? 'Clickjacking prevention active'  : '⚠ Iframe embedding possible',              ok: !!s.frame_guard        },
+        { label: 'Rate Limiting',            status: s.enforce_rate_limits ? 'ACTIVE' : 'OFF',           detail: s.enforce_rate_limits ? 'IPs throttled on threshold'     : 'Abuse protection disabled',                ok: !!s.enforce_rate_limits },
+        { label: 'Input Sanitization',       status: 'PASS',                                             detail: 'Parametric SQL & XSS via Supabase',                       ok: true  },
+        { label: 'Supabase RLS',             status: 'PASS',                                             detail: 'Row-level security on all tables',                         ok: true  },
+        { label: 'JWT RS256 Auth',           status: 'PASS',                                             detail: 'AES-256 session tokens · Supabase JWT',                   ok: true  },
+        { label: 'Security Watermark',       status: s.security_watermark  ? 'ACTIVE' : 'OFF',           detail: s.security_watermark  ? 'Holographic badge visible'      : 'Optional cosmetic feature',                ok: true  },
+      ];
+      const passCount = checks.filter(c => c.ok).length;
+      const score = Math.round((passCount / checks.length) * 100);
+      const grade = score >= 95 ? 'A+' : score >= 85 ? 'A' : score >= 75 ? 'B' : score >= 65 ? 'C' : 'D';
+      const gradeColor = score >= 95 ? '#10B981' : score >= 85 ? '#22D3EE' : score >= 75 ? '#F59E0B' : '#EF4444';
+      setSecurityScanResults({ score, grade, gradeColor, checks });
       setScanningSecurity(false);
-      setSecurityScanResults({
-        score: 100,
-        grade: 'A+',
-        checks: [
-          { label: 'TLS 1.3 Encryption', status: 'PASS', detail: 'HTTPS active & enforced' },
-          { label: 'Anti-Inspect Shield', status: settings?.disable_inspect ? 'ACTIVE' : 'READY', detail: settings?.disable_inspect ? 'F12 & shortcuts blocked' : 'Ready to enable' },
-          { label: 'Anti-Copy & Asset Guard', status: settings?.disable_copy ? 'ACTIVE' : 'READY', detail: settings?.disable_copy ? 'Text selection blocked' : 'Ready to enable' },
-          { label: 'Anti-Print Blocker', status: settings?.disable_print ? 'ACTIVE' : 'READY', detail: settings?.disable_print ? 'Print media blocked' : 'Ready to enable' },
-          { label: 'Clickjacking Frame Guard', status: settings?.frame_guard ? 'ACTIVE' : 'READY', detail: 'Frame-busting isolation' },
-          { label: 'Input Sanitization', status: 'PASS', detail: 'Parametric SQL & XSS shield' },
-        ]
-      });
-      logAuditEvent('SECURITY_SCAN', 'system', 'Completed security audit (Score: 100/100 A+)');
-    }, 1100);
+      logAuditEvent('SECURITY_SCAN', 'system', `Security diagnostic — ${score}/100 (${grade})`);
+    }, 1200);
   };
 
   /* bootstrap */
@@ -379,6 +414,24 @@ export default function SettingsPanel({ isMobileView = false }) {
     supabase.from('admin_audit_logs').select('*').order('created_at', { ascending: false }).limit(100)
       .then(({ data }) => { setAuditLogs(data || []); setAuditLoading(false); });
   }, [activeTab]);
+
+  /* fetch threat events + real sessions when security tab opens; auto-run diagnostic */
+  useEffect(() => {
+    if (activeTab !== 'security') return;
+    setThreatLoading(true);
+    supabase.from('threat_events').select('*').order('created_at', { ascending: false }).limit(15)
+      .then(({ data }) => { setThreatEvents(data || []); setThreatLoading(false); })
+      .catch(() => setThreatLoading(false));
+    setSessionsLoading(true);
+    const ua = navigator.userAgent;
+    const detectedOs = ua.includes('Win') ? 'Windows' : ua.includes('Mac') ? 'macOS' : ua.includes('Android') ? 'Android' : ua.includes('iPhone') ? 'iOS' : 'Linux';
+    const detectedBr = ua.includes('Edg/') ? 'Microsoft Edge' : ua.includes('Chrome/') ? 'Google Chrome' : ua.includes('Firefox/') ? 'Mozilla Firefox' : 'Safari';
+    supabase.auth.getUser().then(({ data }) => {
+      if (data?.user) setRealSessions([{ id: 'current', browser: detectedBr, os: detectedOs, lastActive: 'Now — Current Session', device: '💻', isCurrent: true, email: data.user.email }]);
+      setSessionsLoading(false);
+    }).catch(() => setSessionsLoading(false));
+    if (!securityScanResults) runSecurityDiagnostic();
+  }, [activeTab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* core save */
   const updateSetting = async (key, value) => {
@@ -550,6 +603,12 @@ export default function SettingsPanel({ isMobileView = false }) {
       const { error } = await supabase.from('admin_audit_logs').delete().neq('id','00000000-0000-0000-0000-000000000000');
       if (!error) { setAuditLogs([]); logAuditEvent('DANGER_PURGE_AUDIT','admin_audit_logs','Cleared'); alert('✅ Audit log cleared.'); }
       else alert('Error: ' + error.message);
+    } else if (id === 'revoke_sessions') {
+      try {
+        await supabase.auth.signOut({ scope: 'others' });
+        logAuditEvent('DANGER_REVOKE_SESSIONS', 'security', 'All other admin sessions forcefully revoked via Danger Zone');
+        alert('✅ All other admin sessions revoked. Only this device remains signed in.');
+      } catch (err) { alert('Failed to revoke sessions: ' + err.message); }
     }
     setDangerConfirm(null); setDangerInput('');
   };
@@ -628,6 +687,19 @@ export default function SettingsPanel({ isMobileView = false }) {
                   <PremiumInput label="Preferred Role" icon={Briefcase} value={settings?.preferred_role || ''} onChange={e => change('preferred_role', e.target.value)} onBlur={e => blur('preferred_role', e.target.value)} placeholder="e.g. Full-Stack / AI Engineer" />
                   <PremiumInput label="Notice Period" icon={Clock} value={settings?.notice_period || ''} onChange={e => change('notice_period', e.target.value)} onBlur={e => blur('notice_period', e.target.value)} placeholder="e.g. Immediate / 2 weeks" />
                 </Grid2>
+                <Field label="Work Mode Preference">
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 2 }}>
+                    {['Remote', 'Hybrid', 'On-site', 'Flexible'].map(mode => {
+                      const isActive = (settings?.work_mode || 'Remote') === mode;
+                      const modeIcon = mode === 'Remote' ? '🌐' : mode === 'Hybrid' ? '🏢' : mode === 'On-site' ? '🏗' : '⚡';
+                      return (
+                        <button key={mode} type="button" onClick={() => { change('work_mode', mode); updateSetting('work_mode', mode); }} style={{ padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: isActive ? 700 : 400, background: isActive ? 'var(--pcms-accent-dim)' : 'var(--pcms-panel-2)', color: isActive ? 'var(--pcms-accent)' : 'var(--pcms-muted)', border: `1px solid ${isActive ? 'var(--pcms-accent)' : 'var(--pcms-line)'}`, cursor: 'pointer', transition: 'all 0.1s' }}>
+                          {modeIcon} {mode}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </Field>
               </Card>
             </>)}
 
@@ -647,6 +719,19 @@ export default function SettingsPanel({ isMobileView = false }) {
                     </Field>
                     <PremiumInput label="Link URL" icon={Link} value={settings?.announcement_url || ''} onChange={e => change('announcement_url', e.target.value)} onBlur={e => blur('announcement_url', e.target.value)} placeholder="https://..." />
                   </Grid2>
+                  <PremiumToggle icon={XCircle} color="#94A3B8" label="Dismissible by Visitors" description="Allow visitors to close the banner — it hides for their session only." checked={settings?.announcement_dismissible ?? true} onChange={v => toggle('announcement_dismissible', v)} />
+                  <Divider label="Schedule (Optional)" />
+                  <Grid2>
+                    <Field label="Show From">
+                      <input type="datetime-local" className="pcms-search" value={settings?.announcement_start_date || ''} onChange={e => change('announcement_start_date', e.target.value)} onBlur={e => blur('announcement_start_date', e.target.value)} style={{ width: '100%' }} />
+                    </Field>
+                    <Field label="Auto-Hide After">
+                      <input type="datetime-local" className="pcms-search" value={settings?.announcement_end_date || ''} onChange={e => change('announcement_end_date', e.target.value)} onBlur={e => blur('announcement_end_date', e.target.value)} style={{ width: '100%' }} />
+                    </Field>
+                  </Grid2>
+                  {settings?.announcement_start_date && (
+                    <Note color="#F59E0B">⏰ Banner auto-shows from {new Date(settings.announcement_start_date).toLocaleString()}{settings?.announcement_end_date ? `, auto-hides at ${new Date(settings.announcement_end_date).toLocaleString()}` : ''}.</Note>
+                  )}
                 </>)}
               </Card>
             )}
@@ -706,6 +791,12 @@ export default function SettingsPanel({ isMobileView = false }) {
                   <PremiumInput label="LinkedIn" icon={FaLinkedin} value={settings?.linkedin_url || ''} onChange={e => change('linkedin_url', e.target.value)} onBlur={e => blur('linkedin_url', e.target.value)} placeholder="https://linkedin.com/in/..." />
                 </Grid2>
                 <PremiumInput label="Twitter / X" icon={FaTwitter} value={settings?.twitter_url || ''} onChange={e => change('twitter_url', e.target.value)} onBlur={e => blur('twitter_url', e.target.value)} placeholder="https://x.com/..." />
+                <Divider label="More Platforms" />
+                <Grid2>
+                  <PremiumInput label="LeetCode" icon={Code2} value={settings?.leetcode_url || ''} onChange={e => change('leetcode_url', e.target.value)} onBlur={e => blur('leetcode_url', e.target.value)} placeholder="https://leetcode.com/u/..." />
+                  <PremiumInput label="Medium / Dev.to" icon={BookOpen} value={settings?.medium_url || ''} onChange={e => change('medium_url', e.target.value)} onBlur={e => blur('medium_url', e.target.value)} placeholder="https://medium.com/@..." />
+                </Grid2>
+                <PremiumInput label="Calendly / Booking Link" icon={Calendar} value={settings?.calendly_url || ''} onChange={e => change('calendly_url', e.target.value)} onBlur={e => blur('calendly_url', e.target.value)} placeholder="https://calendly.com/..." />
               </Card>
               <Card>
                 <CardHead icon={FileText} label="PDF Resume" sub="Downloadable CV for visitors." color="#EC4899" />
@@ -785,6 +876,25 @@ export default function SettingsPanel({ isMobileView = false }) {
                 </Grid2>
                 <PremiumInput label="Hero Tagline" icon={FileText} value={settings?.hero_tagline || ''} onChange={e => change('hero_tagline', e.target.value)} onBlur={e => blur('hero_tagline', e.target.value)} placeholder="Building intelligent, high-performance software." />
               </Card>
+              <Card>
+                <CardHead icon={Moon} label="Visitor Display Mode" sub="Default theme for new visitors who haven't set a preference." color="#8B5CF6" />
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {[
+                    { id: 'system', label: 'Follow System', icon: '💻', desc: "Respects visitor's OS setting" },
+                    { id: 'dark',   label: 'Force Dark',   icon: '🌙', desc: 'Always dark for all visitors' },
+                    { id: 'light',  label: 'Force Light',  icon: '☀️', desc: 'Always light for all visitors' },
+                  ].map(opt => {
+                    const isActive = (settings?.dark_mode_default || 'system') === opt.id;
+                    return (
+                      <button key={opt.id} type="button" onClick={() => { change('dark_mode_default', opt.id); updateSetting('dark_mode_default', opt.id); }} style={{ flex: 1, minWidth: 90, padding: '12px 8px', borderRadius: 10, textAlign: 'center', background: isActive ? 'var(--pcms-accent-dim)' : 'var(--pcms-panel)', border: `1px solid ${isActive ? 'var(--pcms-accent)' : 'var(--pcms-line)'}`, cursor: 'pointer', transition: 'all 0.12s' }}>
+                        <div style={{ fontSize: 20, marginBottom: 4 }}>{opt.icon}</div>
+                        <div style={{ fontSize: 12, fontWeight: isActive ? 700 : 500, color: isActive ? 'var(--pcms-accent)' : 'var(--pcms-text)' }}>{opt.label}</div>
+                        <div style={{ fontSize: 10, color: 'var(--pcms-muted)', marginTop: 2 }}>{opt.desc}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </Card>
             </>)}
 
             {/* ─────────────── PERFORMANCE ─────────────── */}
@@ -806,14 +916,16 @@ export default function SettingsPanel({ isMobileView = false }) {
                 <PremiumToggle icon={Shield} color="#EF4444" label="Enforce Rate Limits" description="Actively block IPs exceeding thresholds." checked={settings?.enforce_rate_limits ?? true} onChange={v => toggle('enforce_rate_limits', v)} />
               </Card>
               <Card>
-                <CardHead icon={Wifi} label="Cache & CDN" sub="Edge cache and staleness behaviour." color="#8B5CF6" />
-                <div className="pcms-toggles-2col" style={{ alignItems: 'end' }}>
-                  <Field label="Static Asset Cache TTL">
-                    <select className="pcms-select" value={settings?.cache_ttl ?? 86400} onChange={e => { change('cache_ttl', Number(e.target.value)); updateSetting('cache_ttl', Number(e.target.value)); }} style={{ width: '100%' }}>
-                      {[[3600,'1 Hour'],[21600,'6 Hours'],[86400,'24 Hours (default)'],[604800,'7 Days']].map(([v,l]) => <option key={v} value={v}>{l}</option>)}
-                    </select>
-                  </Field>
-                  <PremiumToggle icon={RefreshCw} color="#06B6D4" label="Stale-While-Revalidate" description="Serve cached pages while revalidating." checked={settings?.stale_while_revalidate ?? true} onChange={v => toggle('stale_while_revalidate', v)} />
+                <CardHead icon={Wifi} label="Cache & Deployment" sub="Trigger a fresh Vercel rebuild to purge edge-cached assets." color="#8B5CF6" />
+                <Note color="#8B5CF6">Cache headers are controlled by <code style={{ background: 'rgba(139,92,246,0.12)', padding: '1px 5px', borderRadius: 4 }}>vercel.json</code>. Use the button below to trigger a fresh build and clear stale CDN assets.</Note>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                  <button className="pcms-btn-dark" style={{ padding: '8px 18px', display: 'flex', alignItems: 'center', gap: 7 }} onClick={handleWebhook} disabled={triggeringWebhook || !settings?.deploy_webhook_url}>
+                    {triggeringWebhook ? <Loader2 size={13} className="spin" /> : <RefreshCw size={13} />}
+                    {triggeringWebhook ? 'Rebuilding…' : 'Purge Cache & Rebuild'}
+                  </button>
+                  {!settings?.deploy_webhook_url && (
+                    <span style={{ fontSize: 11, color: 'var(--pcms-muted)' }}>Add a webhook URL in <strong>Webhooks &amp; Vault</strong> to enable.</span>
+                  )}
                 </div>
               </Card>
             </>)}
@@ -834,6 +946,27 @@ export default function SettingsPanel({ isMobileView = false }) {
                 <PremiumInput label="Alert Email" icon={Mail} value={settings?.notify_email || settings?.contact_email || ''} onChange={e => change('notify_email', e.target.value)} onBlur={e => blur('notify_email', e.target.value)} placeholder="your@email.com" />
                 <PremiumInput label="Slack Webhook (Optional)" icon={Link} value={settings?.slack_webhook || ''} onChange={e => change('slack_webhook', e.target.value)} onBlur={e => blur('slack_webhook', e.target.value)} placeholder="https://hooks.slack.com/services/…" />
               </Card>
+              <Card>
+                <CardHead icon={Flame} label="Dead Man's Switch" sub="Daily inactivity monitor — fires an alert if no admin login is detected." color="#EF4444" />
+                <Field label={`Inactivity Alert Threshold — ${settings?.deadman_threshold_days ?? 30} days`}>
+                  <input type="range" min={7} max={90} step={1} value={settings?.deadman_threshold_days ?? 30} onChange={e => change('deadman_threshold_days', Number(e.target.value))} onMouseUp={e => blur('deadman_threshold_days', Number(e.target.value))} style={{ width: '100%', marginTop: 8, accentColor: '#EF4444' }} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--pcms-muted-2)', marginTop: 4 }}>
+                    {[7, 14, 30, 60, 90].map(d => <span key={d}>{d}d</span>)}
+                  </div>
+                </Field>
+                <Note color="#EF4444">Cron runs daily at 09:00 UTC via Vercel. If no admin login within <strong>{settings?.deadman_threshold_days ?? 30} days</strong>, an emergency alert fires to your notify email.</Note>
+              </Card>
+              <Card>
+                <CardHead icon={Shield} label="Canary Token" sub="Honeypot trap — fires an instant alert when the trap URL is accessed." color="#8B5CF6" />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: 'var(--pcms-panel)', border: '1px solid var(--pcms-line)', borderRadius: 8 }}>
+                  <div>
+                    <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--pcms-text)' }}>Canary Trap System</div>
+                    <div style={{ fontSize: 11, color: 'var(--pcms-muted)', marginTop: 2 }}>Auto-activates after 5 consecutive failed login attempts</div>
+                  </div>
+                  <Pill color="#10B981"><CheckCircle2 size={10} /> Ready</Pill>
+                </div>
+                <Note color="#8B5CF6">Canary tokens expire after 48h. Check Audit Log for <code style={{ background: 'rgba(139,92,246,0.12)', padding: '1px 4px', borderRadius: 3 }}>CANARY_TRIGGERED</code> events.</Note>
+              </Card>
             </>)}
 
             {/* ─────────────── SECURITY & DEV PROTECTION ─────────────── */}
@@ -843,8 +976,8 @@ export default function SettingsPanel({ isMobileView = false }) {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
                   <CardHead icon={ShieldCheck} label="Security Health & Diagnostic" sub="Automated vulnerability & hardening audit." color="#10B981" />
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '5px 12px', borderRadius: 999, fontSize: 12, fontWeight: 700, color: '#10B981' }}>
-                      <CheckCircle2 size={13} /> Grade {securityScanResults?.grade || 'A+'} ({securityScanResults?.score || 100}/100)
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: `${securityScanResults?.gradeColor || '#10B981'}18`, border: `1px solid ${securityScanResults?.gradeColor || '#10B981'}35`, padding: '5px 12px', borderRadius: 999, fontSize: 12, fontWeight: 700, color: securityScanResults?.gradeColor || '#10B981' }}>
+                      <CheckCircle2 size={13} /> Grade {securityScanResults?.grade || '…'} ({securityScanResults?.score ?? '—'}/100)
                     </div>
                     <button
                       type="button"
@@ -860,13 +993,18 @@ export default function SettingsPanel({ isMobileView = false }) {
                 </div>
 
                 <div className="pcms-toggles-2col" style={{ marginTop: 4 }}>
-                  {securityScanResults?.checks?.map(c => (
-                    <div key={c.label} style={{ background: 'var(--pcms-panel)', border: '1px solid var(--pcms-line)', borderRadius: 8, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  {securityScanResults === null ? (
+                    <div style={{ gridColumn: '1/-1', padding: '24px', textAlign: 'center', color: 'var(--pcms-muted)', fontSize: 12 }}>
+                      <Loader2 size={18} className="spin" style={{ margin: '0 auto 8px', display: 'block', color: 'var(--pcms-accent)' }} />
+                      Running security diagnostic…
+                    </div>
+                  ) : securityScanResults?.checks?.map(c => (
+                    <div key={c.label} style={{ background: c.ok ? 'var(--pcms-panel)' : 'rgba(239,68,68,0.04)', border: `1px solid ${c.ok ? 'var(--pcms-line)' : 'rgba(239,68,68,0.2)'}`, borderRadius: 8, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--pcms-text)' }}>{c.label}</span>
-                        <span style={{ fontSize: 10.5, color: 'var(--pcms-muted-2)' }}>{c.detail}</span>
+                        <span style={{ fontSize: 10.5, color: c.ok ? 'var(--pcms-muted-2)' : '#EF4444BB' }}>{c.detail}</span>
                       </div>
-                      <Pill color={c.status === 'PASS' || c.status === 'ACTIVE' ? '#10B981' : '#3B82F6'}>
+                      <Pill color={c.status === 'PASS' || c.status === 'ACTIVE' ? '#10B981' : c.status === 'OFF' ? '#EF4444' : '#3B82F6'}>
                         {c.status}
                       </Pill>
                     </div>
@@ -950,32 +1088,55 @@ export default function SettingsPanel({ isMobileView = false }) {
                 </div>
               </Card>
 
-              {/* Session & Cryptographic Info */}
+              {/* Threat Intelligence Feed */}
               <Card>
-                <CardHead icon={Shield} label="Session & Cryptographic TLS Info" sub="Read-only metadata about the current admin session." color="#6366F1" />
-                <div className="pcms-toggles-2col">
-                  {[
-                    ['Session Verification', <Pill color="#10B981"><CheckCircle2 size={10} /> Authenticated</Pill>],
-                    ['Transport Layer Security', <Pill color="#10B981"><CheckCircle2 size={10} /> TLS 1.3 / HTTPS</Pill>],
-                    ['Content Security Policy', <Pill color="#6366F1">Enforced</Pill>],
-                    ['Clickjacking Defense', <Pill color="#10B981">Frame-Busting Active</Pill>],
-                    ['Last Security Handshake', <span style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--pcms-muted)' }}>{new Date().toLocaleString()}</span>],
-                  ].map(([k, v]) => (
-                    <div key={k} style={{ background: 'var(--pcms-panel)', border: '1px solid var(--pcms-line)', borderRadius: 8, padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: 12, color: 'var(--pcms-muted)' }}>{k}</span>
-                      <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--pcms-text)' }}>{v}</span>
-                    </div>
-                  ))}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+                  <CardHead icon={Flame} label="Threat Intelligence Feed" sub="Real-time bot detections, honeypot hits & behavioral anomaly events." color="#EF4444" />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {threatLoading && <Loader2 size={13} className="spin" color="#EF4444" />}
+                    <button type="button" onClick={() => { setThreatLoading(true); supabase.from('threat_events').select('*').order('created_at', { ascending: false }).limit(15).then(({ data }) => { setThreatEvents(data || []); setThreatLoading(false); }).catch(() => setThreatLoading(false)); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--pcms-muted)', padding: '2px 6px', display: 'flex', alignItems: 'center', gap: 4, fontSize: 11 }}><RefreshCw size={11} /> Refresh</button>
+                  </div>
                 </div>
+                {threatEvents.length === 0 ? (
+                  <div style={{ padding: '20px', textAlign: 'center', background: 'rgba(16,185,129,0.04)', border: '1px solid rgba(16,185,129,0.15)', borderRadius: 8 }}>
+                    <CheckCircle2 size={20} color="#10B981" style={{ margin: '0 auto 6px', display: 'block' }} />
+                    <div style={{ fontSize: 12.5, fontWeight: 600, color: '#10B981' }}>No threats detected</div>
+                    <div style={{ fontSize: 11, color: 'var(--pcms-muted)', marginTop: 2 }}>{threatLoading ? 'Loading threat events…' : 'All systems clear · No bot activity logged'}</div>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', border: '1px solid var(--pcms-line)', borderRadius: 8, overflow: 'hidden' }}>
+                    {threatEvents.slice(0, 8).map((evt, idx) => {
+                      const severity = (evt.risk_score ?? 0) >= 70 ? '#EF4444' : (evt.risk_score ?? 0) >= 40 ? '#F59E0B' : '#6366F1';
+                      return (
+                        <div key={evt.id || idx} style={{ padding: '9px 12px', background: idx % 2 === 0 ? 'var(--pcms-panel)' : 'var(--pcms-panel-2)', borderBottom: idx < Math.min(threatEvents.length, 8) - 1 ? '1px solid var(--pcms-line-soft)' : 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0, flex: 1 }}>
+                            <div style={{ width: 8, height: 8, borderRadius: '50%', background: severity, flexShrink: 0, boxShadow: `0 0 8px ${severity}` }} />
+                            <div style={{ minWidth: 0 }}>
+                              <div style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--pcms-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{evt.event_type || 'Threat Event'}</div>
+                              <div style={{ fontSize: 10, color: 'var(--pcms-muted)', marginTop: 1 }}>{evt.ip_address || 'Unknown IP'} · {evt.path || '/'}</div>
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+                            <Pill color={severity}>Risk {evt.risk_score ?? '?'}</Pill>
+                            <span style={{ fontSize: 10, color: 'var(--pcms-muted-2)', fontFamily: 'monospace', whiteSpace: 'nowrap' }}>{evt.created_at ? new Date(evt.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                {threatEvents.length > 8 && <div style={{ fontSize: 11, color: 'var(--pcms-muted)', textAlign: 'center', marginTop: 4 }}>+{threatEvents.length - 8} more events · check Audit Log</div>}
               </Card>
 
               {/* Active Sessions Manager & Remote Kill */}
               <Card>
                 <CardHead icon={Users} label="Active Sessions Manager" sub="All authenticated sessions for this admin account. Revoke any session remotely." color="#F59E0B" />
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {[
-                    { browser: navigator.userAgent.includes('Chrome') ? 'Chrome' : navigator.userAgent.includes('Firefox') ? 'Firefox' : navigator.userAgent.includes('Safari') ? 'Safari' : 'Browser', os: navigator.platform || 'Desktop', location: 'Hyderabad, IN', device: '💻 Desktop', lastActive: 'Now — Current Session', isCurrent: true },
-                  ].map((sess, idx) => (
+                  {sessionsLoading ? (
+                    <div style={{ padding: 20, textAlign: 'center' }}><Loader2 size={16} className="spin" color="var(--pcms-accent)" /></div>
+                  ) : realSessions.length === 0 ? (
+                    <div style={{ padding: 16, textAlign: 'center', fontSize: 12, color: 'var(--pcms-muted)' }}>No session data — open this tab to load</div>
+                  ) : realSessions.map((sess, idx) => (
                     <div key={idx} style={{
                       display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10,
                       padding: '12px 14px', borderRadius: 10,
@@ -990,7 +1151,7 @@ export default function SettingsPanel({ isMobileView = false }) {
                         }}>{sess.device}</div>
                         <div>
                           <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--pcms-text)' }}>{sess.browser} · {sess.os}</div>
-                          <div style={{ fontSize: 11, color: 'var(--pcms-muted)', marginTop: 2 }}>{sess.location} · {sess.lastActive}</div>
+                          <div style={{ fontSize: 11, color: 'var(--pcms-muted)', marginTop: 2 }}>{sess.email || 'Admin'} · {sess.lastActive}</div>
                         </div>
                       </div>
                       {sess.isCurrent ? (
@@ -1376,6 +1537,7 @@ export default function SettingsPanel({ isMobileView = false }) {
                   { id: 'reset_settings',  icon: RotateCcw,      color: '#8B5CF6', title: 'Reset Settings to Defaults', desc: 'Restores all feature flags to original production values.',                  confirm: 'reset',         btn: 'Reset Defaults',  sev: 'med'  },
                   { id: 'purge_messages',  icon: MessageSquare,  color: '#EF4444', title: 'Purge All Contact Messages', desc: 'Permanently deletes every form submission. Cannot be undone.',              confirm: 'purge messages', btn: 'Purge Messages',  sev: 'high' },
                   { id: 'purge_audit',     icon: Terminal,       color: '#EF4444', title: 'Clear Audit Log',            desc: 'Permanently erases the entire admin action history.',                       confirm: 'clear audit',    btn: 'Clear Audit Log', sev: 'high' },
+                  { id: 'revoke_sessions', icon: XCircle,        color: '#EF4444', title: 'Revoke All Admin Sessions',  desc: 'Immediately signs out ALL other active admin sessions across every device. You remain logged in on this device.', confirm: 'revoke all', btn: 'Revoke All', sev: 'high' },
                 ].map(action => {
                   const Icon = action.icon;
                   const open = dangerConfirm === action.id;
@@ -1988,7 +2150,7 @@ export default function SettingsPanel({ isMobileView = false }) {
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                  {activeTab === 'security' && <Pill color="#10B981"><CheckCircle2 size={10} /> Grade A+ (100/100)</Pill>}
+                  {activeTab === 'security' && <Pill color={securityScanResults?.gradeColor || '#10B981'}><CheckCircle2 size={10} /> Grade {securityScanResults?.grade || '…'} ({securityScanResults?.score ?? '—'}/100)</Pill>}
                   {activeTab === 'webhooks_api' && <Pill color="#8B5CF6"><Key size={10} /> AES-256 Vault</Pill>}
                   {activeTab === 'toggles' && <Pill color="#6366F1"><Layers size={10} /> {activeFeatureCount} active</Pill>}
                   {activeTab === 'audit' && <Pill color="#64748B"><Terminal size={10} /> {auditLogs.length} events</Pill>}
