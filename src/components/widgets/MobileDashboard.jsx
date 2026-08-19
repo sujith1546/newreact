@@ -29,23 +29,66 @@ function useCountUp(target, duration = 1100) {
 }
 
 const TECH_STACK = [
-  { label: 'Python',   color: '#3b82f6', bg: 'rgba(59,130,246,0.12)',  border: 'rgba(59,130,246,0.3)' },
-  { label: 'PyTorch',  color: '#ef4444', bg: 'rgba(239,68,68,0.12)',   border: 'rgba(239,68,68,0.3)' },
-  { label: 'React',    color: '#06b6d4', bg: 'rgba(6,182,212,0.12)',   border: 'rgba(6,182,212,0.3)' },
-  { label: 'FastAPI',  color: '#10b981', bg: 'rgba(16,185,129,0.12)',  border: 'rgba(16,185,129,0.3)' },
-  { label: 'Supabase', color: '#8b5cf6', bg: 'rgba(139,92,246,0.12)',  border: 'rgba(139,92,246,0.3)' },
-  { label: 'Gemini AI',color: '#f59e0b', bg: 'rgba(245,158,11,0.12)',  border: 'rgba(245,158,11,0.3)' },
-  { label: 'ChromaDB', color: '#ec4899', bg: 'rgba(236,72,153,0.12)',  border: 'rgba(236,72,153,0.3)' },
-  { label: 'LangChain',color: '#6366f1', bg: 'rgba(99,102,241,0.12)',  border: 'rgba(99,102,241,0.3)' },
+  { label: 'Python',      color: '#3b82f6', bg: 'rgba(59,130,246,0.12)',  border: 'rgba(59,130,246,0.3)' },
+  { label: 'PyTorch',     color: '#ef4444', bg: 'rgba(239,68,68,0.12)',   border: 'rgba(239,68,68,0.3)' },
+  { label: 'React',       color: '#06b6d4', bg: 'rgba(6,182,212,0.12)',   border: 'rgba(6,182,212,0.3)' },
+  { label: 'FastAPI',     color: '#10b981', bg: 'rgba(16,185,129,0.12)',  border: 'rgba(16,185,129,0.3)' },
+  { label: 'Supabase',    color: '#8b5cf6', bg: 'rgba(139,92,246,0.12)',  border: 'rgba(139,92,246,0.3)' },
+  { label: 'Gemini AI',   color: '#f59e0b', bg: 'rgba(245,158,11,0.12)',  border: 'rgba(245,158,11,0.3)' },
+  { label: 'ChromaDB',    color: '#ec4899', bg: 'rgba(236,72,153,0.12)',  border: 'rgba(236,72,153,0.3)' },
+  { label: 'LangChain',   color: '#6366f1', bg: 'rgba(99,102,241,0.12)',  border: 'rgba(99,102,241,0.3)' },
+  { label: 'PostgreSQL',  color: '#38bdf8', bg: 'rgba(56,189,248,0.12)',  border: 'rgba(56,189,248,0.3)' },
+  { label: 'TypeScript',  color: '#3b82f6', bg: 'rgba(59,130,246,0.12)',  border: 'rgba(59,130,246,0.3)' },
+  { label: 'Docker',      color: '#0ea5e9', bg: 'rgba(14,165,233,0.12)',  border: 'rgba(14,165,233,0.3)' },
+  { label: 'TailwindCSS', color: '#14b8a6', bg: 'rgba(20,184,166,0.12)',  border: 'rgba(20,184,166,0.3)' },
 ];
 
-const FEATURED_PROJECT = {
-  title: 'SMS Finance Analyzer',
-  description: 'Privacy-first RAG pipeline using Gemini 2.5 Flash and ChromaDB to analyze financial SMS data.',
-  tags: ['RAG', 'Gemini 2.5', 'ChromaDB', 'Privacy-First'],
-  badge: 'Featured',
-  accent: '#6366f1',
-};
+const FEATURED_PROJECTS = [
+  {
+    id: 'sms-finance',
+    title: 'SMS Finance Analyzer',
+    badge: '⚡ Featured · RAG AI',
+    description: 'Privacy-first RAG pipeline using Gemini 2.5 Flash & ChromaDB to categorize financial SMS messages locally.',
+    tags: ['RAG', 'Gemini 2.5', 'ChromaDB', 'Privacy-First'],
+    accent: '#6366f1',
+    bg: 'linear-gradient(135deg, rgba(99,102,241,0.1), rgba(6,182,212,0.05))',
+    border: 'rgba(99,102,241,0.3)',
+    glow: '#6366f1'
+  },
+  {
+    id: 'portfolio-cms',
+    title: 'Intelligent Portfolio Engine',
+    badge: '🚀 Live Sync · Full Stack',
+    description: 'Real-time sync engine connecting Supabase, custom broadcast web workers, and glassmorphic admin controls.',
+    tags: ['React', 'Supabase', 'Realtime', 'WebAuthn'],
+    accent: '#10b981',
+    bg: 'linear-gradient(135deg, rgba(16,185,129,0.1), rgba(59,130,246,0.05))',
+    border: 'rgba(16,185,129,0.3)',
+    glow: '#10b981'
+  },
+  {
+    id: 'vision-ai',
+    title: 'Deep Vision Defect Detector',
+    badge: '👁️ 98.4% Acc · Vision AI',
+    description: 'High-throughput computer vision pipeline using PyTorch and ResNet to detect micro-defects in manufacturing.',
+    tags: ['PyTorch', 'Computer Vision', 'ResNet', 'FastAPI'],
+    accent: '#f59e0b',
+    bg: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(239,68,68,0.05))',
+    border: 'rgba(245,158,11,0.3)',
+    glow: '#f59e0b'
+  },
+  {
+    id: 'finance-sentiment',
+    title: 'Market Sentiment Alpha Engine',
+    badge: '📈 NLP · FinBERT',
+    description: 'Real-time financial sentiment analysis pipeline evaluating earnings call transcripts & market feeds.',
+    tags: ['FinBERT', 'NLP', 'Transformers', 'Python'],
+    accent: '#06b6d4',
+    bg: 'linear-gradient(135deg, rgba(6,182,212,0.1), rgba(139,92,246,0.05))',
+    border: 'rgba(6,182,212,0.3)',
+    glow: '#06b6d4'
+  }
+];
 
 export default function MobileDashboard({ onNavClick }) {
   const getGreeting = () => {
@@ -67,6 +110,26 @@ export default function MobileDashboard({ onNavClick }) {
   const projs = useCountUp('5');
   
   const nameText = useGlitchText('Sujith Thota', 100);
+
+  // Featured Project Carousel State
+  const [activeProjIdx, setActiveProjIdx] = useState(0);
+  const carouselRef = useRef(null);
+
+  const handleCarouselScroll = () => {
+    if (!carouselRef.current) return;
+    const { scrollLeft, offsetWidth } = carouselRef.current;
+    const idx = Math.round(scrollLeft / (offsetWidth * 0.86));
+    setActiveProjIdx(Math.min(Math.max(0, idx), FEATURED_PROJECTS.length - 1));
+  };
+
+  const scrollToCard = (idx) => {
+    if (!carouselRef.current) return;
+    const cards = carouselRef.current.children;
+    if (cards[idx]) {
+      cards[idx].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+      setActiveProjIdx(idx);
+    }
+  };
 
   // Pull to refresh logic
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -218,42 +281,98 @@ export default function MobileDashboard({ onNavClick }) {
           margin-top: 2px;
         }
 
-        /* ════════ TECH STACK CLOUD ════════ */
-        .hd-tech-wrap {
-          display: flex; flex-wrap: wrap; gap: 6px;
-          padding: 4px 14px 14px;
+        /* ════════ SINGLE-LINE INFINITE TECH MARQUEE ════════ */
+        .hd-marquee-container {
+          position: relative;
+          width: 100%;
+          overflow: hidden;
+          padding: 4px 0 10px;
+          mask-image: linear-gradient(90deg, transparent 0%, black 8%, black 92%, transparent 100%);
+          -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 8%, black 92%, transparent 100%);
+        }
+        .hd-marquee-track {
+          display: flex;
+          width: max-content;
+          gap: 8px;
+          animation: marqueeLoop 24s linear infinite;
+        }
+        .hd-marquee-container:hover .hd-marquee-track,
+        .hd-marquee-container:active .hd-marquee-track {
+          animation-play-state: paused;
+        }
+        @keyframes marqueeLoop {
+          0% {
+            transform: translate3d(0, 0, 0);
+          }
+          100% {
+            transform: translate3d(-50%, 0, 0);
+          }
         }
         .hd-tech-chip {
-          display: inline-flex; align-items: center; gap: 4px;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
           border-radius: 20px;
-          padding: 4px 10px;
-          font-size: 10px; font-weight: 700;
-          white-space: nowrap; border: 1px solid;
+          padding: 5px 12px;
+          font-size: 10.5px;
+          font-weight: 700;
+          white-space: nowrap;
+          border: 1px solid;
+          flex-shrink: 0;
           transition: transform 0.15s, box-shadow 0.15s;
         }
         .hd-tech-chip:active { transform: scale(0.95); }
 
-        /* ════════ FEATURED PROJECT CARD ════════ */
-        .hd-feat-card {
-          margin: 0 14px 12px;
-          border-radius: 18px;
-          border: 1px solid rgba(99,102,241,0.3);
-          background: linear-gradient(135deg, rgba(99,102,241,0.07), rgba(6,182,212,0.05));
-          padding: 14px;
-          position: relative; overflow: hidden;
+        /* ════════ HORIZONTAL FEATURED PROJECTS CAROUSEL ════════ */
+        .hd-feat-header {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 0 14px 4px;
+        }
+        .hd-feat-controls {
+          display: flex; align-items: center; gap: 5px;
+        }
+        .hd-feat-counter {
+          font-size: 9.5px; font-weight: 700; color: var(--text-muted);
+          padding: 2px 7px; border-radius: 6px; background: var(--bg-secondary);
+          border: 1px solid var(--border-color);
+        }
+        .hd-feat-arrow {
+          width: 24px; height: 24px; border-radius: 50%;
+          display: flex; align-items: center; justify-content: center;
+          background: var(--bg-secondary); border: 1px solid var(--border-color);
+          color: var(--text-secondary); cursor: pointer; padding: 0;
+          transition: background 0.15s, opacity 0.15s;
+        }
+        .hd-feat-arrow:active { background: var(--bg-primary); }
+        .hd-feat-arrow:disabled { opacity: 0.3; cursor: default; }
+
+        .hd-feat-track {
+          display: flex; overflow-x: auto;
+          scroll-snap-type: x mandatory;
+          -webkit-overflow-scrolling: touch;
+          gap: 10px; padding: 4px 14px 6px;
+          -ms-overflow-style: none; scrollbar-width: none;
+        }
+        .hd-feat-track::-webkit-scrollbar { display: none; }
+
+        .hd-feat-slide {
+          min-width: 86%; max-width: 86%;
+          scroll-snap-align: start;
+          border-radius: 18px; border: 1px solid;
+          padding: 14px; position: relative; overflow: hidden;
+          flex-shrink: 0; box-sizing: border-box;
+          display: flex; flex-direction: column;
         }
         .hd-feat-card-bg {
           position: absolute; bottom: -20px; right: -20px;
-          width: 90px; height: 90px; border-radius: 50%;
-          background: radial-gradient(circle, rgba(99,102,241,0.15), transparent 70%);
+          width: 100px; height: 100px; border-radius: 50%;
           pointer-events: none;
         }
         .hd-feat-badge {
           display: inline-flex; align-items: center; gap: 4px;
-          background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.35);
-          border-radius: 20px; padding: 2px 8px;
-          font-size: 8.5px; font-weight: 800; color: #6366f1;
-          letter-spacing: 0.04em; margin-bottom: 8px;
+          border-radius: 20px; padding: 2px 8px; border: 1px solid;
+          font-size: 8.5px; font-weight: 800;
+          letter-spacing: 0.04em; margin-bottom: 8px; width: fit-content;
         }
         .hd-feat-title {
           font-size: 14px; font-weight: 800; color: var(--text-primary);
@@ -261,25 +380,36 @@ export default function MobileDashboard({ onNavClick }) {
         }
         .hd-feat-desc {
           font-size: 10.5px; color: var(--text-secondary);
-          line-height: 1.5; margin: 0 0 10px;
+          line-height: 1.5; margin: 0 0 10px; flex: 1;
         }
         .hd-feat-tags {
           display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px;
         }
         .hd-feat-tag {
-          font-size: 9px; font-weight: 700; color: #6366f1;
-          background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.25);
-          border-radius: 8px; padding: 2px 7px;
+          font-size: 9px; font-weight: 700;
+          border-radius: 8px; padding: 2px 7px; border: 1px solid;
         }
         .hd-feat-action {
           display: flex; align-items: center; gap: 5px;
-          font-size: 11px; font-weight: 700; color: #6366f1;
-          background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.25);
-          border-radius: 10px; padding: 6px 12px;
-          width: fit-content; cursor: pointer; border: none;
+          font-size: 11px; font-weight: 700;
+          border-radius: 10px; padding: 6px 12px; border: 1px solid;
+          width: fit-content; cursor: pointer;
           transition: transform 0.15s;
         }
         .hd-feat-action:active { transform: scale(0.96); }
+
+        .hd-feat-dots {
+          display: flex; align-items: center; justify-content: center;
+          gap: 5px; margin-top: 4px; margin-bottom: 4px;
+        }
+        .hd-feat-dot {
+          width: 6px; height: 6px; border-radius: 3px;
+          background: var(--border-color); border: none; padding: 0;
+          cursor: pointer; transition: all 0.2s ease;
+        }
+        .hd-feat-dot.active {
+          width: 18px;
+        }
 
         /* ════════ QUICK ACTIONS BAR ════════ */
         .hd-actions {
@@ -405,57 +535,119 @@ export default function MobileDashboard({ onNavClick }) {
 
             <div className="hd-divider" />
 
-            {/* ── Tech Stack Cloud ─────────────────────────────────────── */}
+            {/* ── Core Tech Stack Single-Line Infinite Marquee ───── */}
             <p className="hd-section-label">
               <Zap size={11} style={{ color: '#f59e0b' }} />
               Core Tech Stack
             </p>
-            <div className="hd-tech-wrap">
-              {TECH_STACK.map((tech, i) => (
-                <motion.span
-                  key={tech.label}
-                  className="hd-tech-chip"
-                  style={{ color: tech.color, background: tech.bg, borderColor: tech.border }}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: i * 0.04 + 0.1 }}
-                >
-                  {tech.label}
-                </motion.span>
-              ))}
+            <div className="hd-marquee-container">
+              <div className="hd-marquee-track">
+                {/* 1st copy */}
+                {TECH_STACK.map((tech, i) => (
+                  <span
+                    key={`tech-1-${i}`}
+                    className="hd-tech-chip"
+                    style={{ color: tech.color, background: tech.bg, borderColor: tech.border }}
+                  >
+                    {tech.label}
+                  </span>
+                ))}
+                {/* 2nd copy for seamless infinite loop */}
+                {TECH_STACK.map((tech, i) => (
+                  <span
+                    key={`tech-2-${i}`}
+                    className="hd-tech-chip"
+                    style={{ color: tech.color, background: tech.bg, borderColor: tech.border }}
+                  >
+                    {tech.label}
+                  </span>
+                ))}
+              </div>
             </div>
 
             <div className="hd-divider" />
 
-            {/* ── Featured Project Card ──────────────────────────────── */}
-            <p className="hd-section-label">
-              <Star size={11} style={{ color: '#f59e0b' }} />
-              Featured Project
-            </p>
-            <motion.div
-              className="hd-feat-card"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <div className="hd-feat-card-bg" />
-              <div className="hd-feat-badge">⚡ {FEATURED_PROJECT.badge}</div>
-              <h3 className="hd-feat-title">{FEATURED_PROJECT.title}</h3>
-              <p className="hd-feat-desc">{FEATURED_PROJECT.description}</p>
-              <div className="hd-feat-tags">
-                {FEATURED_PROJECT.tags.map(t => (
-                  <span key={t} className="hd-feat-tag">{t}</span>
-                ))}
+            {/* ── Featured Projects Horizontal Swipe Carousel ──────── */}
+            <div className="hd-feat-header">
+              <p className="hd-section-label" style={{ margin: 0 }}>
+                <Star size={11} style={{ color: '#f59e0b' }} />
+                Featured Projects
+              </p>
+              <div className="hd-feat-controls">
+                <span className="hd-feat-counter">{activeProjIdx + 1} / {FEATURED_PROJECTS.length}</span>
+                <button
+                  className="hd-feat-arrow"
+                  onClick={() => scrollToCard(Math.max(0, activeProjIdx - 1))}
+                  disabled={activeProjIdx === 0}
+                  aria-label="Previous project"
+                >
+                  <ChevronLeft size={13} />
+                </button>
+                <button
+                  className="hd-feat-arrow"
+                  onClick={() => scrollToCard(Math.min(FEATURED_PROJECTS.length - 1, activeProjIdx + 1))}
+                  disabled={activeProjIdx === FEATURED_PROJECTS.length - 1}
+                  aria-label="Next project"
+                >
+                  <ChevronRight size={13} />
+                </button>
               </div>
-              <button
-                className="hd-feat-action"
-                style={{ background: 'rgba(99,102,241,0.12)', borderColor: 'rgba(99,102,241,0.3)', color: '#6366f1' }}
-                onClick={() => onNavClick && onNavClick('projects')}
-              >
-                <ExternalLink size={12} />
-                View Case Study
-              </button>
-            </motion.div>
+            </div>
+
+            <div className="hd-feat-track" ref={carouselRef} onScroll={handleCarouselScroll}>
+              {FEATURED_PROJECTS.map((proj) => (
+                <div
+                  key={proj.id}
+                  className="hd-feat-slide"
+                  style={{ background: proj.bg, borderColor: proj.border }}
+                >
+                  <div
+                    className="hd-feat-card-bg"
+                    style={{ background: `radial-gradient(circle, ${proj.glow}25, transparent 70%)` }}
+                  />
+                  <div
+                    className="hd-feat-badge"
+                    style={{ color: proj.accent, background: `${proj.accent}18`, borderColor: `${proj.accent}35` }}
+                  >
+                    {proj.badge}
+                  </div>
+                  <h3 className="hd-feat-title">{proj.title}</h3>
+                  <p className="hd-feat-desc">{proj.description}</p>
+                  <div className="hd-feat-tags">
+                    {proj.tags.map(t => (
+                      <span
+                        key={t}
+                        className="hd-feat-tag"
+                        style={{ color: proj.accent, background: `${proj.accent}12`, borderColor: `${proj.accent}25` }}
+                      >
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                  <button
+                    className="hd-feat-action"
+                    style={{ background: `${proj.accent}14`, borderColor: `${proj.accent}30`, color: proj.accent }}
+                    onClick={() => onNavClick && onNavClick('projects')}
+                  >
+                    <ExternalLink size={12} />
+                    View Case Study
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {/* Pagination Dots */}
+            <div className="hd-feat-dots">
+              {FEATURED_PROJECTS.map((p, idx) => (
+                <button
+                  key={p.id}
+                  className={`hd-feat-dot ${idx === activeProjIdx ? 'active' : ''}`}
+                  style={{ background: idx === activeProjIdx ? p.accent : undefined }}
+                  onClick={() => scrollToCard(idx)}
+                  aria-label={`Go to slide ${idx + 1}`}
+                />
+              ))}
+            </div>
 
             <div className="hd-divider" />
 
