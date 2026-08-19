@@ -293,7 +293,11 @@ export default function useRealtimeData(table, options = {}) {
             return nextData;
           });
         })
-        .subscribe();
+        .subscribe((status) => {
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+            // Silently fallback to cached/REST data
+          }
+        });
     }, 50);
 
     const handleForceRefresh = () => {

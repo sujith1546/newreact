@@ -3,7 +3,18 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  realtime: {
+    params: {
+      eventsPerSecond: 10,
+    },
+    timeout: 30000,
+  },
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+  },
+});
 
 /**
  * Safely removes a Supabase realtime channel without throwing
@@ -13,13 +24,18 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export const safeRemoveChannel = (channel) => {
   if (!channel) return;
   try {
-    if (channel.state === 'joining' || channel.state === 'closed' || channel.state === 'leaving') {
+    const state = channel.state;
+    if (state === 'joining' || state === 'leaving' || state === 'closed') {
       setTimeout(() => {
         try {
-          if (channel) supabase.removeChannel(channel);
+          if (channel) {
+            channel.unsubscribe();
+            supabase.removeChannel(channel);
+          }
         } catch (e) {}
-      }, 500);
+      }, 400);
     } else {
+      channel.unsubscribe();
       supabase.removeChannel(channel);
     }
   } catch (err) {}
