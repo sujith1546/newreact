@@ -13,6 +13,8 @@ import ContentView from './views/ContentView';
 import SystemView from './views/SystemView';
 import haptic from '../../../lib/haptics';
 import { globalDataCache, fetchPromises } from '../../../hooks/useRealtimeData';
+import useSessionLifecycle from '../../../hooks/useSessionLifecycle';
+import AdminLockScreen from '../shared/AdminLockScreen';
 
 const TAB_TO_CATEGORY = {
   home: 'home',
@@ -73,6 +75,18 @@ export default function MobileShell() {
   const { user, logout } = useAuth();
   const { theme, toggleTheme, playSound } = useTheme();
   const stats = useDashboardStats();
+
+  const {
+    isLocked: isSessionScreenLocked,
+    unlocking,
+    unlockError,
+    lockoutTimer,
+    biometricSupported,
+    lockSession,
+    unlockWithPin,
+    unlockWithBiometrics,
+    handleEmergencySignOut,
+  } = useSessionLifecycle();
 
   const currentTab = tab || 'home';
   const activeCategory = TAB_TO_CATEGORY[currentTab] || 'home';
@@ -380,6 +394,11 @@ export default function MobileShell() {
                     style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', background: 'transparent', border: 'none', color: 'var(--pcms-text)', fontSize: 13, fontWeight: 500, cursor: 'pointer', textAlign: 'left' }}>
                     {theme === 'dark' ? <Sun size={16} color="#f59e0b" /> : <Moon size={16} color="#6366f1" />}
                     {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+                  </button>
+                  <button onClick={() => { setIsAvatarMenuOpen(false); lockSession('manual'); }}
+                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', background: 'transparent', border: 'none', color: '#818cf8', fontSize: 13, fontWeight: 500, cursor: 'pointer', textAlign: 'left' }}>
+                    <ShieldCheck size={16} color="#818cf8" />
+                    Lock Screen
                   </button>
                   <button onClick={() => { setIsAvatarMenuOpen(false); window.dispatchEvent(new CustomEvent('open-admin-login')); }}
                     style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', background: 'transparent', border: 'none', color: 'var(--pcms-text)', fontSize: 13, fontWeight: 500, cursor: 'pointer', textAlign: 'left' }}>
@@ -992,6 +1011,20 @@ export default function MobileShell() {
         onToggleSpeedDial={() => setIsSpeedDialOpen((v) => !v)}
         hasPendingUpdate={hasPendingUpdate}
       />
+
+      {/* Enterprise Session Lock Screen Overlay */}
+      {isSessionScreenLocked && (
+        <AdminLockScreen
+          userEmail={user?.email}
+          unlocking={unlocking}
+          unlockError={unlockError}
+          lockoutTimer={lockoutTimer}
+          biometricSupported={biometricSupported}
+          onUnlockPin={unlockWithPin}
+          onUnlockBiometrics={unlockWithBiometrics}
+          onSignOut={handleEmergencySignOut}
+        />
+      )}
     </div>
   );
 }

@@ -1,5 +1,13 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import {
+  setRememberSessionPreference,
+  generateSessionNonce,
+  touchLastActive,
+  clearSessionNonce,
+  setSessionLocked,
+  broadcastSecurityEvent,
+} from '../lib/sessionSecurity';
 
 const AuthContext = createContext();
 
@@ -26,11 +34,21 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const login = async (email, password) => {
-    return supabase.auth.signInWithPassword({ email, password });
+  const login = async (email, password, remember = false) => {
+    setRememberSessionPreference(remember);
+    const res = await supabase.auth.signInWithPassword({ email, password });
+    if (res.data?.session) {
+      generateSessionNonce();
+      touchLastActive();
+      setSessionLocked(false);
+    }
+    return res;
   };
 
   const logout = async () => {
+    clearSessionNonce();
+    setSessionLocked(false);
+    broadcastSecurityEvent('LOGOUT_SESSION');
     return supabase.auth.signOut();
   };
 

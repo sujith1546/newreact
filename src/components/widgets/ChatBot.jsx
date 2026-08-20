@@ -2,7 +2,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../../lib/supabaseClient';
-import { X, Send, Loader2, Bot, User, Atom, RotateCcw, Trash2, Copy, Check, ChevronDown, ChevronUp, Info, Mic, Cpu, Layers, Code, Zap, Paperclip, Volume2, VolumeX, AlertCircle, Sparkles } from 'lucide-react';
+import {
+  X, Send, Loader2, Bot, User, Atom, RotateCcw, Trash2, Copy, Check,
+  ChevronDown, ChevronUp, Info, Mic, Cpu, Layers, Code, Zap, Paperclip,
+  Volume2, VolumeX, AlertCircle, Sparkles, Briefcase, Code2, Rocket
+} from 'lucide-react';
 import { useIsland } from '../../context/IslandContext';
 import { useTheme } from '../../context/ThemeContext';
 import ThoughtTrace from './ThoughtTrace';
@@ -24,65 +28,139 @@ function generateUUID() {
   }
 }
 
+const ROLES = [
+  {
+    id: "recruiter",
+    label: "Recruiter",
+    sub: "Hiring manager",
+    desc: "Experience, certifications, resume metrics, and availability.",
+    icon: Briefcase,
+    accent: "blue"
+  },
+  {
+    id: "developer",
+    label: "Developer",
+    sub: "Tech lead",
+    desc: "Stack, ML architecture, React components, and GitHub repos.",
+    icon: Code2,
+    accent: "emerald"
+  },
+  {
+    id: "founder",
+    label: "Founder",
+    sub: "Client",
+    desc: "Full-stack delivery, freelance work, and desk routing.",
+    icon: Rocket,
+    accent: "orange"
+  },
+  {
+    id: "visitor",
+    label: "Visitor",
+    sub: "General",
+    desc: "Overview of background, education at VIT, and hobbies.",
+    icon: User,
+    accent: "violet"
+  },
+];
+
+const ACCENTS = {
+  blue: {
+    chipBg: "rgba(59, 130, 246, 0.12)",
+    chipText: "#2563eb",
+    ringColor: "rgba(59, 130, 246, 0.45)",
+    borderColor: "#3b82f6",
+    activeBg: "rgba(59, 130, 246, 0.06)",
+  },
+  emerald: {
+    chipBg: "rgba(16, 185, 129, 0.12)",
+    chipText: "#059669",
+    ringColor: "rgba(16, 185, 129, 0.45)",
+    borderColor: "#10b981",
+    activeBg: "rgba(16, 185, 129, 0.06)",
+  },
+  orange: {
+    chipBg: "rgba(249, 115, 22, 0.12)",
+    chipText: "#ea580c",
+    ringColor: "rgba(249, 115, 22, 0.45)",
+    borderColor: "#f97316",
+    activeBg: "rgba(249, 115, 22, 0.06)",
+  },
+  violet: {
+    chipBg: "rgba(139, 92, 246, 0.12)",
+    chipText: "#7c3aed",
+    ringColor: "rgba(139, 92, 246, 0.45)",
+    borderColor: "#8b5cf6",
+    activeBg: "rgba(139, 92, 246, 0.06)",
+  },
+};
+
 const PERSONA_OPTIONS = [
   {
     id: 'recruiter',
     title: 'Recruiter / Hiring Manager',
     badge: '👔 Recruiter',
+    suggestionsLabel: 'Recruiter Quick Actions',
     desc: 'Work experience, certifications, resume metrics, & availability',
     color: '#3b82f6',
-    bgColor: 'rgba(59, 130, 246, 0.1)',
+    bgColor: 'rgba(59, 130, 246, 0.12)',
     greeting: "Hi there! 👔 I've set your mode to **Recruiter / Hiring Manager**. Ask me anything about Sujith's work history, certifications, resume metrics, or hiring availability!",
     questions: [
-      "Are you available for full-time roles?",
-      "Show me Sujith's work experience",
-      "What certifications do you hold?",
-      "Can I download your resume?"
+      "Download Sujith's Official Resume (PDF)",
+      "Show Work Experience & STAR Metrics",
+      "What is Sujith's CGPA & Academics at VIT?",
+      "What certifications does Sujith hold?",
+      "Is Sujith available for full-time hiring?"
     ]
   },
   {
     id: 'developer',
     title: 'Developer / Tech Lead',
     badge: '💻 Developer',
+    suggestionsLabel: 'Developer Deep-Dives',
     desc: 'Tech stack, ML architecture, React components, & GitHub repos',
     color: '#10b981',
-    bgColor: 'rgba(16, 185, 129, 0.1)',
+    bgColor: 'rgba(16, 185, 129, 0.12)',
     greeting: "Hey! 💻 I've configured your mode for a **Developer / Tech Lead**. Ask me about Sujith's tech stack, ML pipeline architectures, React components, or GitHub repos!",
     questions: [
-      "What projects have you built?",
-      "Tell me about your ML experience",
-      "What's your core tech stack?",
-      "Show me your Financial Sentiment project"
+      "What's your core tech stack & architecture?",
+      "How was the FinBERT ML model trained?",
+      "How does this Voyage AI RAG pipeline work?",
+      "Show me your GitHub open-source repos",
+      "Explain your WebCrypto & Session Security"
     ]
   },
   {
     id: 'founder',
     title: 'Founder / Client',
     badge: '🚀 Founder',
+    suggestionsLabel: 'Founder & Client Inquiries',
     desc: 'Full-stack application delivery, freelance work, & desk routing',
     color: '#f59e0b',
-    bgColor: 'rgba(245, 158, 11, 0.1)',
+    bgColor: 'rgba(245, 158, 11, 0.12)',
     greeting: "Welcome! 🚀 Mode set for **Founder / Client**. Ask me how Sujith builds full-stack applications, handles freelance projects, or how to route a project to his desk!",
     questions: [
-      "Can you build a web app for me?",
-      "How can I route a project to your desk?",
-      "What's your project turnaround time?",
-      "Show me your portfolio projects"
+      "Can you build a full-stack MVP for my startup?",
+      "What is your typical project turnaround time?",
+      "Route a project inquiry directly to your desk",
+      "What end-to-end applications have you shipped?",
+      "How can I book a 15-minute scoping call?"
     ]
   },
   {
     id: 'general',
     title: 'Peer / General Visitor',
     badge: '🎓 Visitor',
+    suggestionsLabel: 'Explorer & Discovery Prompts',
     desc: 'General overview of background, education at VIT, & hobbies',
     color: '#8b5cf6',
-    bgColor: 'rgba(139, 92, 246, 0.1)',
+    bgColor: 'rgba(139, 92, 246, 0.12)',
     greeting: "Hi! 👋 Welcome to Sujith's portfolio. I can answer anything about background, education at VIT Vellore, projects, skills, or hobbies!",
     questions: [
-      "Tell me about your background",
-      "Where did you study?",
-      "What are your key skills?",
-      "How can I contact you?"
+      "Tell me your story & journey into Data Science",
+      "What is your experience studying at VIT Vellore?",
+      "What are your career goals & CAT 2026 plans?",
+      "What are your hobbies and favorite tech?",
+      "How can I connect with Sujith?"
     ]
   }
 ];
@@ -130,13 +208,14 @@ export default function ChatBot() {
     };
   }, []);
 
-  const activePersonaObj = PERSONA_OPTIONS.find(p => p.id === persona) || PERSONA_OPTIONS[3];
+  const activePersonaObj = PERSONA_OPTIONS.find(p => p.id === persona || (p.id === 'general' && persona === 'visitor')) || PERSONA_OPTIONS[3];
 
   const handleSelectPersona = (selectedId) => {
-    setPersona(selectedId);
+    const canonicalId = (selectedId === 'visitor') ? 'general' : selectedId;
+    setPersona(canonicalId);
     setShowPersonaMenu(false);
     
-    const matchedOpt = PERSONA_OPTIONS.find(p => p.id === selectedId);
+    const matchedOpt = PERSONA_OPTIONS.find(p => p.id === canonicalId || p.id === selectedId || (p.id === 'general' && selectedId === 'visitor'));
     if (matchedOpt) {
       setMessages([
         {
@@ -446,7 +525,7 @@ export default function ChatBot() {
             showThoughts: aiShowThoughts,
             contextRange: aiContextRange,
             reasoningDepth: aiReasoningDepth,
-            persona: aiPersona
+            persona: persona || aiPersona || 'general'
           })
         });
       } catch (netErr) {
@@ -1548,72 +1627,127 @@ export default function ChatBot() {
               )}
             </AnimatePresence>
 
-            {/* 🎯 Interactive Persona Selector Card / Switcher Menu 🎯 */}
+            {/* 🎯 Redesigned Interactive Perspective / Role Bottom Sheet 🎯 */}
             <AnimatePresence>
               {(!hasChosenPersona || showPersonaMenu) && (
                 <motion.div
-                  initial={{ opacity: 0, y: -6, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -6, scale: 0.98 }}
-                  transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
                   style={{
-                    margin: '10px 14px 4px',
-                    padding: '12px 14px',
-                    borderRadius: '14px',
-                    backgroundColor: 'var(--bg-secondary)',
-                    border: '1px solid var(--border-color)',
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.06)'
+                    position: 'absolute',
+                    inset: 0,
+                    backgroundColor: 'rgba(15, 23, 42, 0.45)',
+                    backdropFilter: 'blur(4px)',
+                    WebkitBackdropFilter: 'blur(4px)',
+                    display: 'flex',
+                    alignItems: 'flex-end',
+                    zIndex: 50,
+                  }}
+                  onClick={() => {
+                    if (hasChosenPersona) setShowPersonaMenu(false);
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Sparkles size={13} color="#3b82f6" />
-                      <span style={{ fontSize: '11.5px', fontWeight: 800, color: 'var(--text-primary)' }}>
-                        Select your role / perspective:
-                      </span>
-                    </div>
-                    {hasChosenPersona && (
+                  <motion.div
+                    initial={{ y: '100%', opacity: 0.6 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: '100%', opacity: 0 }}
+                    transition={{ type: 'spring', damping: 28, stiffness: 340 }}
+                    style={{
+                      width: '100%',
+                      backgroundColor: 'var(--bg-primary, #ffffff)',
+                      borderTopLeftRadius: '24px',
+                      borderTopRightRadius: '24px',
+                      borderTop: '1px solid var(--border-color, #e2e8f0)',
+                      padding: '16px 16px 20px',
+                      boxShadow: '0 -10px 30px rgba(0, 0, 0, 0.12)',
+                      boxSizing: 'border-box',
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {/* Header Row */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                      <p style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: 'var(--text-primary, #0f172a)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Zap size={14} color="#8b5cf6" />
+                        <span>Select your perspective</span>
+                      </p>
                       <button
                         type="button"
-                        onClick={() => setShowPersonaMenu(false)}
-                        style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 0 }}
-                      >
-                        <X size={13} />
-                      </button>
-                    )}
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px' }}>
-                    {PERSONA_OPTIONS.map((opt) => (
-                      <button
-                        key={opt.id}
-                        type="button"
-                        onClick={() => handleSelectPersona(opt.id)}
-                        style={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'flex-start',
-                          padding: '8px 10px',
-                          borderRadius: '10px',
-                          border: persona === opt.id ? `1.5px solid ${opt.color}` : '1px solid var(--border-color)',
-                          backgroundColor: persona === opt.id ? opt.bgColor : 'var(--bg-primary)',
-                          cursor: 'pointer',
-                          textAlign: 'left',
-                          transition: 'all 0.15s ease'
+                        onClick={() => {
+                          if (hasChosenPersona) setShowPersonaMenu(false);
+                          else handleSelectPersona(persona || 'general');
                         }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: 'var(--text-secondary, #94a3b8)',
+                          cursor: 'pointer',
+                          padding: '4px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          borderRadius: '6px',
+                        }}
+                        aria-label="Close"
                       >
-                        <span style={{ fontSize: '11px', fontWeight: 800, color: opt.color, marginBottom: '1px' }}>
-                          {opt.badge}
-                        </span>
-                        <span style={{ fontSize: '10.5px', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.2 }}>
-                          {opt.title}
-                        </span>
-                        <span style={{ fontSize: '9px', color: 'var(--text-secondary)', marginTop: '2px', lineHeight: 1.25 }}>
-                          {opt.desc}
-                        </span>
+                        <X size={16} />
                       </button>
-                    ))}
-                  </div>
+                    </div>
+
+                    {/* 2x2 Grid of Cards */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                      {ROLES.map((r) => {
+                        const isSelected = (persona === r.id) || (persona === 'general' && r.id === 'visitor') || (persona === 'visitor' && r.id === 'general');
+                        const a = ACCENTS[r.accent];
+                        return (
+                          <button
+                            key={r.id}
+                            type="button"
+                            onClick={() => handleSelectPersona(r.id)}
+                            style={{
+                              textAlign: 'left',
+                              borderRadius: '16px',
+                              border: isSelected ? `2px solid ${a.borderColor}` : '1px solid var(--border-color, #e2e8f0)',
+                              backgroundColor: isSelected ? a.activeBg : 'var(--bg-secondary, #ffffff)',
+                              padding: '12px',
+                              cursor: 'pointer',
+                              boxShadow: isSelected ? `0 0 0 2px ${a.ringColor}` : 'none',
+                              transition: 'all 0.18s ease',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'flex-start',
+                            }}
+                          >
+                            <div
+                              style={{
+                                width: '28px',
+                                height: '28px',
+                                borderRadius: '8px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                marginBottom: '8px',
+                                backgroundColor: a.chipBg,
+                                color: a.chipText,
+                              }}
+                            >
+                              <r.icon size={14} />
+                            </div>
+                            <p style={{ margin: 0, fontSize: '13px', fontWeight: 600, color: 'var(--text-primary, #0f172a)', lineHeight: 1.2 }}>
+                              {r.label}
+                            </p>
+                            <p style={{ margin: '2px 0 4px', fontSize: '10.5px', color: 'var(--text-secondary, #94a3b8)', fontWeight: 500 }}>
+                              {r.sub}
+                            </p>
+                            <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-muted, #64748b)', lineHeight: 1.35 }}>
+                              {r.desc}
+                            </p>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -1762,22 +1896,72 @@ export default function ChatBot() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Suggestions — always visible for quick access */}
+            {/* Suggestions — dynamically tailored to active perspective */}
             <div className="chatbot-suggestions-section">
-              <p className="chatbot-suggestions-label">⚡ Quick questions</p>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px', padding: '0 2px' }}>
+                <p className="chatbot-suggestions-label" style={{ display: 'flex', alignItems: 'center', gap: '6px', margin: 0, fontSize: '11px', fontWeight: 700 }}>
+                  <span style={{ color: activePersonaObj.color, display: 'inline-flex', alignItems: 'center' }}>
+                    {activePersonaObj.id === 'recruiter' ? <Briefcase size={12} /> :
+                     activePersonaObj.id === 'developer' ? <Code2 size={12} /> :
+                     activePersonaObj.id === 'founder' ? <Rocket size={12} /> :
+                     <Sparkles size={12} />}
+                  </span>
+                  <span>{activePersonaObj.suggestionsLabel || 'Quick questions'}</span>
+                </p>
+                <span
+                  style={{
+                    fontSize: '9.5px',
+                    fontWeight: 700,
+                    padding: '2px 7px',
+                    borderRadius: '100px',
+                    backgroundColor: activePersonaObj.bgColor,
+                    color: activePersonaObj.color,
+                    border: `1px solid ${activePersonaObj.color}35`,
+                    letterSpacing: '0.02em',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '3px'
+                  }}
+                >
+                  {activePersonaObj.badge}
+                </span>
+              </div>
               <div className="chatbot-suggestions-scroll-wrap">
                 <div className="chatbot-suggestions">
-                  {(activePersonaObj.questions || SUGGESTED_QUESTIONS).map(q => (
-                    <button
-                      key={q}
-                      className="suggestion-chip"
-                      onClick={() => sendMessage(q)}
-                      disabled={isLoading}
-                      title={q}
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={activePersonaObj.id}
+                      initial={{ opacity: 0, x: 6 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -6 }}
+                      transition={{ duration: 0.2 }}
+                      style={{ display: 'flex', gap: '6px' }}
                     >
-                      {q}
-                    </button>
-                  ))}
+                      {(activePersonaObj.questions || SUGGESTED_QUESTIONS).map(q => (
+                        <button
+                          key={q}
+                          className="suggestion-chip"
+                          onClick={() => sendMessage(q)}
+                          disabled={isLoading}
+                          title={q}
+                          style={{
+                            borderColor: `${activePersonaObj.color}35`,
+                            transition: 'all 0.18s ease',
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.borderColor = activePersonaObj.color;
+                            e.currentTarget.style.boxShadow = `0 2px 10px ${activePersonaObj.color}25`;
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.borderColor = `${activePersonaObj.color}35`;
+                            e.currentTarget.style.boxShadow = 'none';
+                          }}
+                        >
+                          {q}
+                        </button>
+                      ))}
+                    </motion.div>
+                  </AnimatePresence>
                 </div>
               </div>
             </div>

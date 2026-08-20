@@ -334,12 +334,27 @@ function detectPersona(text) {
   return 'general';
 }
 
-async function retrieve(queryEmbedding, queryText, topN = 5) {
+async function retrieve(queryEmbedding, queryText, topN = 5, persona = 'general') {
   const chunks = await loadChunks();
+
+  const personaSectionMap = {
+    recruiter: ['experience', 'education', 'certifications', 'about', 'skills'],
+    developer: ['code', 'projects', 'skills'],
+    founder: ['projects', 'about', 'skills', 'contact'],
+    general: ['about', 'bio', 'education', 'hobbies', 'stats_hobbies'],
+    visitor: ['about', 'bio', 'education', 'hobbies', 'stats_hobbies']
+  };
+  const preferredSections = personaSectionMap[persona] || personaSectionMap.general;
 
   if (!queryEmbedding) {
     const keywordRanked = chunks
-      .map((c) => ({ chunk: c, score: keywordScore(queryText, c.content) }))
+      .map((c) => {
+        let score = keywordScore(queryText, c.content);
+        if (preferredSections.includes(c.section)) {
+          score += 2;
+        }
+        return { chunk: c, score };
+      })
       .filter((c) => c.score > 0)
       .sort((a, b) => b.score - a.score);
 
@@ -362,6 +377,14 @@ async function retrieve(queryEmbedding, queryText, topN = 5) {
     .slice(0, 20);
 
   const fusedScores = rrfMerge(topVectorRanked, keywordRanked);
+
+  // Apply targeted persona section boost to fused ranks
+  chunks.forEach(c => {
+    if (preferredSections.includes(c.section) && fusedScores.has(c.id)) {
+      fusedScores.set(c.id, fusedScores.get(c.id) * 1.3);
+    }
+  });
+
   const byId = new Map(chunks.map((c) => [c.id, c]));
 
   const retrievedChunks = [...fusedScores.entries()]
@@ -371,6 +394,77 @@ async function retrieve(queryEmbedding, queryText, topN = 5) {
 
   return { chunks: retrievedChunks, topScore };
 }
+
+// =============================================================================
+// ADAPTIVE PERSPECTIVE DIRECTIVES (Ground truth facts & persona rules)
+// =============================================================================
+const PERSONA_DIRECTIVES = {
+  recruiter: `
+*** ACTIVE PERSPECTIVE: RECRUITER / HIRING MANAGER ***
+You are speaking directly to a Recruiter, Hiring Manager, or Talent Scout evaluating Sujith.
+1. TONE & STRUCTURE: Highly professional, concise, impact-dense, scannable bionic bullets.
+2. STAR METHODOLOGY: Structure project and work experience answers using STAR (Situation, Task, Action, Result).
+3. HARD-CODED GROUND TRUTH FACTS & CANONICAL METRICS (Always cite precisely):
+   - **Academic Credentials:** Final-year B.Tech Computer Science and Engineering (Data Science) from Vellore Institute of Technology (VIT Vellore), 8.7 CGPA, Batch of 2026.
+   - **Financial Sentiment Analysis (FinBERT):** Custom fine-tuned pre-trained FinBERT on 26,961 Indian financial news headlines with 87.52% test accuracy on an NVIDIA Tesla T4 GPU (75+ page VIT academic research report).
+   - **SMS Finance Analyzer:** Flagship privacy-first RAG pipeline using Gemini 2.5 Flash + ChromaDB vector database, sub-2s latency, processing 600+ requests/hour with 200+ financial taxonomy terms and automated regex-based PII masking.
+   - **Retail Spend Prediction:** End-to-end ML pipeline on 397k+ UCI transactions with R² = 0.883 using RFM temporal feature engineering benchmarked on XGBoost & LightGBM.
+   - **Core Certifications:** AWS Certified Cloud Practitioner, Google Data Analytics Professional, Python for Data Science.
+4. AVAILABILITY & WORK AUTHORIZATION:
+   - Status: Actively exploring Full-time Software Engineering / Data Science / ML roles & internships (Graduating 2026).
+   - Work Flexibility: Open to On-site, Hybrid, and Remote roles across India (Bangalore, Hyderabad, Pune, Chennai, Gurgaon) and global remote.
+5. OFF-MATRIX / SENSITIVE QUESTIONS PROTOCOL:
+   - For specific compensation/salary negotiations, custom legal visa/green card inquiries, or formal interview scheduling:
+     Politely bridge: "For specific compensation expectations, visa details, or interview scheduling, please connect directly with Sujith via [NAVIGATE:contact:email] or [NAVIGATE:contact:form]."
+6. RESUME TRIGGER:
+   - When the recruiter asks about Sujith's resume, CV, summary, or credentials, ALWAYS include the token [NAVIGATE:resume:download] so the viewer immediately displays the verified PDF resume.`,
+
+  developer: `
+*** ACTIVE PERSPECTIVE: DEVELOPER / TECH LEAD ***
+You are speaking directly to a Software Engineer, Tech Lead, or Engineering Architect.
+1. TONE & DEPTH: Highly technical, precise, architectural, enthusiast engineer-to-engineer tone. Discuss trade-offs, design patterns, and engineering decisions.
+2. CORE TECH STACK & SPECS:
+   - **Frontend:** React 18, Vite 8 (Rolldown/OXC pipeline), Framer Motion, Vanilla CSS design tokens with Glassmorphism, PWA offline caching via Workbox.
+   - **Backend & AI Architecture:** Hybrid Voyage AI (Voyage-3-Lite 512d embeddings) + Groq Llama 3.3 (70B Versatile) with Server-Sent Events (SSE) streaming, sub-250ms TTFB.
+   - **Machine Learning Pipelines:** PyTorch, Hugging Face Transformers (FinBERT sequence classification), Scikit-Learn, XGBoost, LightGBM, Pandas (95%), NumPy.
+   - **Database & Security:** Supabase PostgreSQL with Row Level Security (RLS), ChromaDB vector store, Native WebCrypto SHA-256 client session auth with BroadcastChannel cross-tab synchronization.
+3. ENGINEERING HIGHLIGHTS:
+   - Explain algorithmic decisions (e.g. why Reciprocal Rank Fusion combines Cosine Similarity with BM25 keyword matching).
+   - Provide clean, commented code snippets when discussing implementations.
+   - Trigger [RENDER_SKILLS] when asked about tech stack and [RENDER_PROJECTS] when discussing code repositories.
+4. GITHUB & CODE DEEP DIVES:
+   - Point to Sujith's active GitHub: github.com/sujith-thota with 10+ open-source repositories and 200+ solved DSA challenges.`,
+
+  founder: `
+*** ACTIVE PERSPECTIVE: FOUNDER / CLIENT ***
+You are speaking directly to a Startup Founder, Business Owner, or Freelance Client looking to build or ship a product.
+1. TONE & VALUE PROPOSITION: Consultative, ROI-driven, product delivery-oriented, reliable, and execution-focused.
+2. END-TO-END PRODUCT DELIVERY CAPABILITIES:
+   - **Full-Cycle Ownership:** Handles everything from UI/UX design -> Frontend Development -> REST API backend -> Database architecture -> AI & RAG integrations -> Cloud Deployment on Vercel/Supabase.
+   - **Rapid MVP Turnaround:** Standard MVP turnaround time is 1 to 3 weeks for prototype-to-production deployment.
+   - **Production Reliability:** Builds scalable, responsive web applications with sub-second page loads, mobile responsiveness, and zero-trust authentication.
+3. CONSULTATIVE PROJECT SCOPING:
+   - If the founder asks "Can you build an app for me?" or "How do we work together?":
+     Outline a clear 3-step delivery process: (1) Discovery & Scope Alignment, (2) Sprint Prototyping & AI Integration, (3) Production Launch & Handover.
+4. DESK ROUTING & LEAD CAPTURE:
+   - ALWAYS guide the founder to submit project inquiries directly to Sujith's desk using [NAVIGATE:contact:form] or emailing directly at sujithreddy1546@gmail.com.
+   - Output [RENDER_PROJECTS] so they can inspect past client and production-grade deliverables.`,
+
+  general: `
+*** ACTIVE PERSPECTIVE: GENERAL VISITOR / STUDENT ***
+You are speaking to a student, peer, educator, or curious portfolio visitor.
+1. TONE & STORYTELLING: Warm, conversational, inspiring, approachable, and engaging.
+2. NARRATIVE & JOURNEY:
+   - **Who is Sujith?** Final-year B.Tech CSE (Data Science) student at VIT University (Vellore Institute of Technology), Vellore with an 8.7 CGPA, originally from Andhra Pradesh, India.
+   - **His Passion:** Bridging the gap between intelligent backend machine learning models and fluid, intuitive user interfaces.
+   - **Future Vision:** Preparing for CAT 2026, aiming for an MBA to blend deep technical engineering with business leadership and strategic product management.
+   - **Hobbies & Interests:** Tech blogging, hackathons, UI design tinkering, traveling, and solving algorithmic puzzles (200+ DSA problems).
+3. ENGAGEMENT & DISCOVERY:
+   - Explain machine learning and data concepts in accessible, plain-English analogies.
+   - Guide the visitor to explore different parts of the site using navigation tags like [NAVIGATE:about:about], [NAVIGATE:skills:skills], or [NAVIGATE:projects:projects].`
+};
+
+PERSONA_DIRECTIVES.visitor = PERSONA_DIRECTIVES.general;
 
 // =============================================================================
 // QUERY REWRITING — turns follow-ups ("what about his GPA?") into
@@ -494,6 +588,7 @@ export default async function handler(req, res) {
 
     try {
     const { message, image, history = [], contextPath = 'homepage', overridePersona } = req.body;
+    const clientPersona = req.body?.persona || 'general';
     if (!message && !image) {
       return res.status(400).json({ error: "Missing 'message' or 'image' in request body" });
     }
@@ -599,7 +694,7 @@ Analyze the tone and style of the user's message before responding:
       t0 = Date.now();
       sendStep('rag', 'active', "Querying Voyage AI Vector Database...");
       const queryEmbedding = await embedQuery(standaloneQuestion);
-      const retrievalResult = await retrieve(queryEmbedding, standaloneQuestion, 5);
+      const retrievalResult = await retrieve(queryEmbedding, standaloneQuestion, 5, clientPersona);
       chunks = retrievalResult.chunks;
       const topScore = retrievalResult.topScore;
       const detectedPersona = detectPersona(message);
@@ -625,22 +720,14 @@ Analyze the tone and style of the user's message before responding:
       }
 
       const userPrompt = buildUserPrompt(chunks, standaloneQuestion);
-      const clientPersona = req.body?.persona || 'general';
-      let personaGuidance = "";
-      if (clientPersona === 'recruiter') {
-        personaGuidance = "\n\nVISITOR MODE: RECRUITER / HIRING MANAGER. Tailor your tone for a recruiter. Emphasize achievements, impact metrics, VIT Vellore degree, certifications, and availability for full-time or contract roles.";
-      } else if (clientPersona === 'developer') {
-        personaGuidance = "\n\nVISITOR MODE: DEVELOPER / TECH LEAD. Tailor your tone for an engineer. Emphasize React, Node.js, Python, ML pipelines, API design, code quality, and GitHub repos.";
-      } else if (clientPersona === 'founder') {
-        personaGuidance = "\n\nVISITOR MODE: FOUNDER / CLIENT. Tailor your tone for a client/founder. Emphasize end-to-end fullstack delivery, problem solving, reliability, and contact desk routing.";
-      }
+      const personaGuidance = PERSONA_DIRECTIVES[clientPersona] || PERSONA_DIRECTIVES.general;
 
       groqPayload = {
         model: GROQ_MODEL,
         temperature: 0.4,
         stream: true,
         messages: [
-          { role: "system", content: DYNAMIC_SYSTEM_PROMPT + personaGuidance },
+          { role: "system", content: DYNAMIC_SYSTEM_PROMPT + "\n\n" + personaGuidance },
           { role: "user", content: userPrompt },
         ],
       };
@@ -681,12 +768,46 @@ Analyze the tone and style of the user's message before responding:
       // Local Grounded RAG Fallback Stream Generator
       sendStep('gen', 'done', "Local Knowledge RAG Engine Active", Date.now() - genT0);
       let fallbackText = "";
-      if (chunks.length > 0) {
-        fallbackText = `Here is what I found from my knowledge base:\n\n` +
-          chunks.map((c) => `• **${c.source.toUpperCase()}**: ${c.content}`).join("\n\n") +
-          `\n\n[RENDER_PROJECTS]\n\n*Feel free to reach out to me directly at **sujithreddy1546@gmail.com** for more details!*`;
+      const lowerQuery = message.toLowerCase();
+      const isResumeQuery = lowerQuery.includes('resume') || lowerQuery.includes('cv') || lowerQuery.includes('download');
+      const isOffMatrixQuery = lowerQuery.includes('salary') || lowerQuery.includes('compensation') || lowerQuery.includes('h1b') || lowerQuery.includes('visa') || lowerQuery.includes('green card');
+
+      if (clientPersona === 'recruiter') {
+        if (isResumeQuery) {
+          fallbackText = `Here is Sujith's official resume and credentials:\n\n• **B.Tech Degree**: CSE (Data Science) from VIT Vellore with an **8.7 CGPA** (Batch of 2026).\n• **Core Projects**: FinBERT (87.52% accuracy), SMS Finance Analyzer (600+ req/hr), and Retail Spend Prediction (R² = 0.883).\n• **Availability**: Actively exploring Full-time Software Engineering / Data Science / ML roles & internships.\n\n[NAVIGATE:resume:download]\n\n*Click above to view or download the verified PDF resume directly!*`;
+        } else if (isOffMatrixQuery) {
+          fallbackText = `For specific compensation expectations, work authorization details, or interview scheduling, please connect directly with Sujith:\n\n• **Email**: sujithreddy1546@gmail.com\n• **Location**: Open to On-site (Bangalore, Hyderabad, Pune, etc.), Hybrid, and Remote opportunities.\n\n[NAVIGATE:contact:form]\n\n*Feel free to leave a direct message via the contact form!*`;
+        } else if (chunks.length > 0) {
+          fallbackText = `Here is Sujith's recruiter summary from the verified knowledge base:\n\n` +
+            chunks.map((c) => `• **${c.section.toUpperCase()}**: ${c.content}`).join("\n\n") +
+            `\n\n*Sujith is open to full-time and internship opportunities. Reach out directly at **sujithreddy1546@gmail.com**.*`;
+        } else {
+          fallbackText = `Sujith is a final-year B.Tech CSE (Data Science) student at VIT Vellore (8.7 CGPA) seeking Software Engineering and Applied ML roles. Reach out at **sujithreddy1546@gmail.com**.`;
+        }
+      } else if (clientPersona === 'developer') {
+        if (chunks.length > 0) {
+          fallbackText = `Here is the architectural overview and technical stack:\n\n` +
+            chunks.map((c) => `• **${c.section.toUpperCase()}**: ${c.content}`).join("\n\n") +
+            `\n\n[RENDER_SKILLS]\n[RENDER_PROJECTS]\n\n*Check out Sujith's GitHub for active repos and commits: **github.com/sujith-thota***`;
+        } else {
+          fallbackText = `Sujith builds applications using React, Python, PyTorch, Hugging Face, FastAPI, and Supabase. Inspect his code and architecture at **github.com/sujith-thota**.\n\n[RENDER_SKILLS]`;
+        }
+      } else if (clientPersona === 'founder') {
+        if (chunks.length > 0) {
+          fallbackText = `Here is how Sujith delivers full-stack product value:\n\n` +
+            chunks.map((c) => `• **${c.section.toUpperCase()}**: ${c.content}`).join("\n\n") +
+            `\n\n• **MVP Delivery**: Turnaround time is typically 1 to 3 weeks for prototype-to-production launch.\n• **Project Routing**: Route your project directly to Sujith's desk.\n\n[NAVIGATE:contact:form]\n[RENDER_PROJECTS]`;
+        } else {
+          fallbackText = `Sujith handles end-to-end full-stack development, AI integrations, and rapid MVP delivery. Route your project directly to his desk:\n\n[NAVIGATE:contact:form]`;
+        }
       } else {
-        fallbackText = `I don't have that specific detail in my knowledge base, but I'd love to chat! Feel free to reach out to me directly at **sujithreddy1546@gmail.com**.`;
+        if (chunks.length > 0) {
+          fallbackText = `Here is what I found from Sujith's story & background:\n\n` +
+            chunks.map((c) => `• **${c.source.toUpperCase()}**: ${c.content}`).join("\n\n") +
+            `\n\n*Feel free to explore the portfolio or connect with Sujith directly at **sujithreddy1546@gmail.com**!*`;
+        } else {
+          fallbackText = `Hi! 👋 I'm Sujith's AI assistant. Sujith is a final-year B.Tech CSE (Data Science) student at VIT Vellore. Feel free to ask about his background, projects, education, or hobbies!`;
+        }
       }
 
       for (const word of fallbackText.split(" ")) {

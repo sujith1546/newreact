@@ -12,6 +12,12 @@ import {
 import { supabase } from '../../../lib/supabaseClient';
 import { useAuth } from '../../../context/AuthContext';
 import { logAuditEvent } from '../../../lib/auditLogger';
+import {
+  setMasterPin,
+  verifyPin,
+  setRememberSessionPreference,
+  getRememberSessionPreference,
+} from '../../../lib/sessionSecurity';
 
 /* ─── Shared micro-component: Section card ──────────────────────── */
 const SCard = ({ children, style = {} }) => (
@@ -71,6 +77,56 @@ export default function AuthSecurityPanel() {
   const [activeTab, setActiveTab] = useState('credentials');
   const [saved, setSaved] = useState(false);
   const flash = () => { setSaved(true); setTimeout(() => setSaved(false), 2000); };
+
+  /* Session & Timeout Preferences */
+  const [autoLockMin, setAutoLockMin] = useState(() => parseInt(localStorage.getItem('pcms_auto_lock_min') || '15', 10));
+  const [singleSession, setSingleSession] = useState(() => localStorage.getItem('pcms_single_session') === 'true');
+  const [rememberSessionPref, setRememberSessionPref] = useState(() => getRememberSessionPreference());
+
+  /* Master PIN State */
+  const [currPin, setCurrPin] = useState('');
+  const [newPin, setNewPin] = useState('');
+  const [confPin, setConfPin] = useState('');
+  const [pinSaving, setPinSaving] = useState(false);
+  const [pinMsg, setPinMsg] = useState('');
+  const [pinError, setPinError] = useState('');
+
+  const handleUpdateMasterPin = async (e) => {
+    e.preventDefault();
+    setPinError('');
+    setPinMsg('');
+
+    if (!newPin || newPin.length < 4) {
+      setPinError('New Master PIN must be at least 4 digits/characters.');
+      return;
+    }
+    if (newPin !== confPin) {
+      setPinError('New PIN and confirmation do not match.');
+      return;
+    }
+
+    setPinSaving(true);
+    try {
+      const isOldValid = await verifyPin(currPin);
+      if (!isOldValid) {
+        setPinError('Current Master PIN is incorrect.');
+        setPinSaving(false);
+        return;
+      }
+
+      await setMasterPin(newPin);
+      await logAuditEvent('MASTER_PIN_ROTATED', 'security', adminEmail);
+      setPinMsg('Master PIN successfully updated.');
+      setCurrPin('');
+      setNewPin('');
+      setConfPin('');
+      flash();
+    } catch (err) {
+      setPinError(err.message || 'Failed to update Master PIN.');
+    } finally {
+      setPinSaving(false);
+    }
+  };
 
   /* ── 1. Live network & device telemetry ── */
   const [tele, setTele] = useState({ ip: 'Resolving…', city: '', country: '', os: '', browser: '', pingMs: null, loading: true });
@@ -292,10 +348,6 @@ export default function AuthSecurityPanel() {
     logAuditEvent('FIREWALL_BLOCK_IP', 'security', item.ip, { reason: item.reason });
     setNewIp(''); setNewIpNote('');
   };
-
-  /* ── 7. Sessions ── */
-  const [autoLockMin, setAutoLockMin] = useState(() => Number(localStorage.getItem('pcms_auto_lock_min')) || 15);
-  const [singleSession, setSingleSession] = useState(() => localStorage.getItem('pcms_single_session') === 'true');
 
   /* ── Filtered audit ── */
   const filteredAudit = auditLogs.filter(l => {
@@ -821,12 +873,13 @@ export default function AuthSecurityPanel() {
           )}
 
           {/* ══════════════════════════════════════════════════════
-               TAB 6 — Sessions
+               TAB 6 — Sessions & Master PIN
           ══════════════════════════════════════════════════════ */}
           {activeTab === 'sessions' && (
-            <div className="pcms-toggles-2col" style={{ display: 'grid', gap: 12 }}>
+            <div className="pcms-toggles-2col" style={{ display: 'grid', gap: 14 }}>
+              {/* Timeout Policy Card */}
               <SCard>
-                <SCardHead icon={Lock} color="#F59E0B" label="Session Timeout Policy" sub="Auto-lock admin console after inactivity." />
+                <SCardHead icon={Lock} color="#F59E0B" label="Session Timeout & Inactivity Policy" sub="Enterprise automatic screen-locking and cross-tab coordinator." />
                 <div>
                   <label className="pcms-form-label">Auto-lock after inactivity — {autoLockMin} minutes</label>
                   <input type="range" min={5} max={60} step={5} value={autoLockMin}
@@ -837,35 +890,120 @@ export default function AuthSecurityPanel() {
                     {[5, 15, 30, 45, 60].map(v => <span key={v}>{v}m</span>)}
                   </div>
                 </div>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 12, color: 'var(--pcms-text)' }}>
-                  <input type="checkbox" checked={singleSession} onChange={e => { setSingleSession(e.target.checked); localStorage.setItem('pcms_single_session', String(e.target.checked)); logAuditEvent('UPDATE_SESSION_POLICY', 'security', `Single session: ${e.target.checked}`); flash(); }} style={{ accentColor: '#F59E0B' }} />
-                  <span><strong>Single-session mode:</strong> Sign out all other devices when a new session starts.</span>
-                </label>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 4 }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 12, color: 'var(--pcms-text)' }}>
+                    <input
+                      type="checkbox"
+                      checked={rememberSessionPref}
+                      onChange={e => {
+                        setRememberSessionPref(e.target.checked);
+                        setRememberSessionPreference(e.target.checked);
+                        logAuditEvent('UPDATE_SESSION_POLICY', 'security', `Remember Workstation: ${e.target.checked}`);
+                        flash();
+                      }}
+                      style={{ accentColor: '#F59E0B' }}
+                    />
+                    <span><strong>Remember Workstation:</strong> Persist tokens on disk; always force Master PIN / Biometrics on browser restart.</span>
+                  </label>
+
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 12, color: 'var(--pcms-text)' }}>
+                    <input type="checkbox" checked={singleSession} onChange={e => { setSingleSession(e.target.checked); localStorage.setItem('pcms_single_session', String(e.target.checked)); logAuditEvent('UPDATE_SESSION_POLICY', 'security', `Single session: ${e.target.checked}`); flash(); }} style={{ accentColor: '#F59E0B' }} />
+                    <span><strong>Single-session mode:</strong> Sign out all other devices when a new session starts.</span>
+                  </label>
+                </div>
               </SCard>
 
+              {/* Master PIN Configuration Card */}
               <SCard>
-                <SCardHead icon={Users} color="#6366F1" label="Current Admin Session" sub="Live JWT session data from Supabase Auth." />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                  <InfoRow label="Email" value={adminEmail} />
-                  <InfoRow label="Browser" value={tele.browser || 'Detecting…'} />
-                  <InfoRow label="OS" value={tele.os || 'Detecting…'} />
-                  <InfoRow label="IP Address" value={tele.ip} mono />
-                  <InfoRow label="Location" value={tele.city ? `${tele.city}, ${tele.country}` : 'Detecting…'} />
-                  <InfoRow label="DB Latency" value={tele.pingMs !== null ? `${tele.pingMs}ms` : '…'} />
-                  <InfoRow label="Token Expiry" value={session?.expires_at ? `${Math.max(0, Math.round((session.expires_at * 1000 - Date.now()) / 60000))} min remaining` : 'Active'} />
+                <SCardHead icon={Key} color="#6366F1" label="Master Console PIN" sub="Cryptographic SHA-256 PIN for instant lock-screen authentication." />
+                <form onSubmit={handleUpdateMasterPin} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <div>
+                    <label style={{ fontSize: 11, color: 'var(--pcms-muted)', display: 'block', marginBottom: 4 }}>Current PIN (Default is 1546)</label>
+                    <input
+                      type="password"
+                      value={currPin}
+                      onChange={e => setCurrPin(e.target.value)}
+                      placeholder="Enter current PIN"
+                      className="pcms-search"
+                      style={{ width: '100%', height: 38, fontSize: 13 }}
+                      required
+                    />
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                    <div>
+                      <label style={{ fontSize: 11, color: 'var(--pcms-muted)', display: 'block', marginBottom: 4 }}>New PIN (min 4 chars)</label>
+                      <input
+                        type="password"
+                        value={newPin}
+                        onChange={e => setNewPin(e.target.value)}
+                        placeholder="New PIN"
+                        className="pcms-search"
+                        style={{ width: '100%', height: 38, fontSize: 13 }}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 11, color: 'var(--pcms-muted)', display: 'block', marginBottom: 4 }}>Confirm New PIN</label>
+                      <input
+                        type="password"
+                        value={confPin}
+                        onChange={e => setConfPin(e.target.value)}
+                        placeholder="Confirm PIN"
+                        className="pcms-search"
+                        style={{ width: '100%', height: 38, fontSize: 13 }}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {pinError && <div style={{ fontSize: 11.5, color: '#EF4444', fontWeight: 600 }}>{pinError}</div>}
+                  {pinMsg && <div style={{ fontSize: 11.5, color: '#10B981', fontWeight: 600 }}>{pinMsg}</div>}
+
+                  <button
+                    type="submit"
+                    disabled={pinSaving || !currPin || !newPin || !confPin}
+                    className="pcms-btn-primary"
+                    style={{ width: 'fit-content', height: 36, fontSize: 12, padding: '0 16px', marginTop: 4 }}
+                  >
+                    {pinSaving ? <Loader2 size={13} className="spin" /> : <Save size={13} />}
+                    <span>Update Master PIN</span>
+                  </button>
+                </form>
+              </SCard>
+
+              {/* Active Session Telemetry Card */}
+              <SCard style={{ gridColumn: 'span 2' }}>
+                <SCardHead icon={Users} color="#10B981" label="Active Admin Session Telemetry" sub="Live JWT session data & revocation controls." />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 24px' }}>
+                  <div>
+                    <InfoRow label="Email" value={adminEmail} />
+                    <InfoRow label="Browser" value={tele.browser || 'Detecting…'} />
+                    <InfoRow label="OS" value={tele.os || 'Detecting…'} />
+                    <InfoRow label="IP Address" value={tele.ip} mono />
+                  </div>
+                  <div>
+                    <InfoRow label="Location" value={tele.city ? `${tele.city}, ${tele.country}` : 'Detecting…'} />
+                    <InfoRow label="DB Latency" value={tele.pingMs !== null ? `${tele.pingMs}ms` : '…'} />
+                    <InfoRow label="Storage Engine" value={rememberSessionPref ? 'Persistent + Cold Boot Gate' : 'Strict Session-Only (Ephemeral)'} />
+                    <InfoRow label="Token Expiry" value={session?.expires_at ? `${Math.max(0, Math.round((session.expires_at * 1000 - Date.now()) / 60000))} min remaining` : 'Active'} />
+                  </div>
                 </div>
-                <button type="button" className="pcms-btn-dark"
-                  onClick={async () => {
-                    if (!window.confirm('Sign out all other admin sessions? You will remain logged in on this device.')) return;
-                    try {
-                      await supabase.auth.signOut({ scope: 'others' });
-                      logAuditEvent('REVOKE_ALL_SESSIONS', 'security', adminEmail);
-                      alert('✅ All other sessions revoked.');
-                    } catch (err) { alert('Failed: ' + err.message); }
-                  }}
-                  style={{ padding: '8px 16px', fontSize: 12, width: 'fit-content', display: 'flex', alignItems: 'center', gap: 6, background: '#EF4444', color: '#fff', border: 'none' }}>
-                  <XCircle size={13} /> Revoke Other Sessions
-                </button>
+                <div style={{ marginTop: 10, display: 'flex', gap: 10 }}>
+                  <button type="button" className="pcms-btn-dark"
+                    onClick={async () => {
+                      if (!window.confirm('Sign out all other admin sessions? You will remain logged in on this device.')) return;
+                      try {
+                        await supabase.auth.signOut({ scope: 'others' });
+                        logAuditEvent('REVOKE_ALL_SESSIONS', 'security', adminEmail);
+                        alert('✅ All other sessions revoked.');
+                      } catch (err) { alert('Failed: ' + err.message); }
+                    }}
+                    style={{ padding: '8px 16px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, background: '#EF4444', color: '#fff', border: 'none', borderRadius: 8 }}>
+                    <XCircle size={13} /> Revoke Other Sessions
+                  </button>
+                </div>
               </SCard>
             </div>
           )}

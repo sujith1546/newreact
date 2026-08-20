@@ -6,6 +6,13 @@ import { supabase } from "../../lib/supabaseClient";
 import { useTheme } from "../../context/ThemeContext";
 import { logSecurityEvent, logAuditEvent } from "../../lib/auditLogger";
 import {
+  generateSessionNonce,
+  touchLastActive,
+  setSessionLocked,
+  setRememberSessionPreference,
+  getRememberSessionPreference,
+} from "../../lib/sessionSecurity";
+import {
   Lock, Mail, Eye, EyeOff, Shield, ShieldCheck, Clock, ArrowRight,
   AlertTriangle, X, KeyRound, Loader2, Fingerprint, CheckCircle2,
 } from "lucide-react";
@@ -48,6 +55,7 @@ export default function AdminLoginModal({ isOpen, onClose }) {
   const [error, setError] = useState("");
   const [isShaking, setIsShaking] = useState(false);
   const [activeMethod, setActiveMethod] = useState("password"); // "password" | "otp"
+  const [rememberDevice, setRememberDevice] = useState(() => getRememberSessionPreference());
 
   // Lockout
   const [attempts, setAttempts] = useState(0);
@@ -146,6 +154,7 @@ export default function AdminLoginModal({ isOpen, onClose }) {
     const { score, reasons } = computeLoginRiskScore(attempts);
     logSecurityEvent("ADMIN_LOGIN_ATTEMPT", { riskScore: score, reasons }, score >= 50 ? "high" : "low").catch(() => {});
     try {
+      setRememberSessionPreference(rememberDevice);
       const { data, error: authError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
       if (authError) { handleFailedAttempt(); setError(authError.message || "Invalid email or password."); return; }
 
@@ -157,6 +166,9 @@ export default function AdminLoginModal({ isOpen, onClose }) {
         localStorage.removeItem("admin_login_attempts");
         localStorage.removeItem("admin_login_lockout");
         localStorage.setItem("_admin_tz", Intl.DateTimeFormat().resolvedOptions().timeZone || "");
+        generateSessionNonce();
+        touchLastActive();
+        setSessionLocked(false);
       } catch {}
       logAuditEvent("ADMIN_LOGIN_SUCCESS", "auth", email, { riskScore: score }).catch(() => {});
       onClose(); navigate("/admin/dashboard");
@@ -183,8 +195,12 @@ export default function AdminLoginModal({ isOpen, onClose }) {
     if (lockoutTimer > 0 || emailOtpCode.length !== 6) return;
     setLoading(true); setError("");
     try {
+      setRememberSessionPreference(rememberDevice);
       const { error: verifyError } = await supabase.auth.verifyOtp({ email: email.trim(), token: emailOtpCode.trim(), type: "email" });
       if (verifyError) { handleFailedAttempt(); setError(verifyError.message || "Invalid code."); return; }
+      generateSessionNonce();
+      touchLastActive();
+      setSessionLocked(false);
       onClose(); navigate("/admin/dashboard");
     } catch (err) { setError(err.message); } finally { setLoading(false); }
   };
@@ -199,6 +215,9 @@ export default function AdminLoginModal({ isOpen, onClose }) {
       if (chErr) throw chErr;
       const { error: verifyErr } = await supabase.auth.mfa.verify({ factorId: totpFactorId, challengeId: ch.id, code: totpCode.trim() });
       if (verifyErr) { handleFailedAttempt(); setError(verifyErr.message || "Invalid authenticator code."); return; }
+      generateSessionNonce();
+      touchLastActive();
+      setSessionLocked(false);
       onClose(); navigate("/admin/dashboard");
     } catch (err) { setError(err.message); } finally { setLoading(false); }
   };
@@ -507,8 +526,14 @@ export default function AdminLoginModal({ isOpen, onClose }) {
 
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, fontSize: 12 }}>
                     <label style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--alm-muted)", cursor: "pointer" }}>
-                      <input type="checkbox" id="alm-remember" style={{ accentColor: "var(--alm-btn)" }} />
-                      Remember me
+                      <input
+                        type="checkbox"
+                        id="alm-remember"
+                        checked={rememberDevice}
+                        onChange={e => setRememberDevice(e.target.checked)}
+                        style={{ accentColor: "var(--alm-btn)" }}
+                      />
+                      Remember workstation
                     </label>
                     <button type="button" onClick={() => { setError(""); setActiveMethod("otp"); }}
                       style={{ background: "none", border: "none", color: "#3b82f6", cursor: "pointer", fontSize: 12, fontWeight: 600, padding: 0 }}>

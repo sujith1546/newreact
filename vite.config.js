@@ -7,7 +7,8 @@ function securityHeadersPlugin() {
     name: 'security-headers',
     configureServer(server) {
       server.middlewares.use((_req, res, next) => {
-        res.setHeader('X-Frame-Options', 'DENY');
+        // Explicitly remove X-Frame-Options in dev mode to allow iframe/IDE previews
+        res.removeHeader('X-Frame-Options');
         res.setHeader('X-Content-Type-Options', 'nosniff');
         res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
         res.setHeader('Permissions-Policy', 'camera=(), microphone=(), payment=(), usb=(), geolocation=(self)');
