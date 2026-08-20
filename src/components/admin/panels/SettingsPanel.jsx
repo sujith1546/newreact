@@ -886,6 +886,9 @@ export default function SettingsPanel({ isMobileView = false }) {
   };
 
   const [isMobileSheetOpen, setIsMobileSheetOpen] = useState(false);
+  const handleCloseMobileSheet = useCallback(() => {
+    setIsMobileSheetOpen(false);
+  }, []);
 
   if (!settings) return (
     <div style={{ padding: 60, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -2548,7 +2551,7 @@ export default function SettingsPanel({ isMobileView = false }) {
         {/* Slide-Up Bottom Sheet Modal for active setting */}
         <BottomSheet
           isOpen={isMobileSheetOpen}
-          onClose={() => setIsMobileSheetOpen(false)}
+          onClose={handleCloseMobileSheet}
           title={tabMeta?.label}
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14, paddingBottom: 24 }}>

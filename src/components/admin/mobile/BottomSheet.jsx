@@ -6,16 +6,22 @@ export default function BottomSheet({ isOpen, onClose, title, children }) {
   const sheetRef = useRef(null);
   const previousFocusRef = useRef(null);
   const dragControls = useDragControls();
+  const onCloseRef = useRef(onClose);
 
-  // Focus management & Browser Back button interception
+  // Keep onClose callback ref fresh without triggering re-effects
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  // Focus management & Escape key handling
   useEffect(() => {
     if (!isOpen) return;
 
     // 1. Capture previous focus
     previousFocusRef.current = document.activeElement;
 
-    // 2. Move focus into bottom sheet
-    setTimeout(() => {
+    // 2. Focus first interactive element or sheet container
+    const focusTimer = setTimeout(() => {
       if (sheetRef.current) {
         const focusable = sheetRef.current.querySelectorAll(
           'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
@@ -28,17 +34,10 @@ export default function BottomSheet({ isOpen, onClose, title, children }) {
       }
     }, 50);
 
-    // 3. Browser back button interception
-    const handlePopState = () => {
-      onClose();
-    };
-    window.history.pushState({ sheetOpen: true }, '');
-    window.addEventListener('popstate', handlePopState);
-
-    // 4. Trap focus & handle Escape key
+    // 3. Trap focus & handle Escape key
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
-        onClose();
+        onCloseRef.current?.();
         return;
       }
       if (e.key === 'Tab' && sheetRef.current) {
@@ -62,23 +61,19 @@ export default function BottomSheet({ isOpen, onClose, title, children }) {
         }
       }
     };
+
     window.addEventListener('keydown', handleKeyDown);
 
     return () => {
-      window.removeEventListener('popstate', handlePopState);
+      clearTimeout(focusTimer);
       window.removeEventListener('keydown', handleKeyDown);
-      
-      // Clean up history if closed programmatically
-      if (window.history.state && window.history.state.sheetOpen) {
-        window.history.back();
-      }
 
       // Restore focus
       if (previousFocusRef.current && typeof previousFocusRef.current.focus === 'function') {
         previousFocusRef.current.focus();
       }
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   return (
     <AnimatePresence>
