@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTheme } from "../../context/ThemeContext";
 import { useIsland } from "../../context/IslandContext";
+import useModuleStatus from "../../hooks/useModuleStatus";
 
 const GITHUB_USERNAME = "sujith1546";
 
@@ -155,6 +156,7 @@ function useDebouncedGithubRepos(term, active) {
 export default function CommandPalette() {
   const { toggleTheme } = useTheme();
   const { triggerIsland, triggerStepProgress } = useIsland();
+  const { isModuleEnabled, notifyModuleDisabled } = useModuleStatus();
   const navigate = useNavigate();
   const location = useLocation();
   const isMainPage = location.pathname === '/';
@@ -289,6 +291,11 @@ export default function CommandPalette() {
     addRecent(item.id);
     logAnalytics("run", item.label);
     if (item.section) {
+      if (!isModuleEnabled(item.section)) {
+        notifyModuleDisabled(item.section);
+        setIsOpen(false);
+        return;
+      }
       if (isMainPage) {
         window.dispatchEvent(new CustomEvent("navigate-section", { detail: { section: item.section } }));
       } else {

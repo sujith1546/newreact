@@ -325,6 +325,16 @@ body {
   text-decoration: underline;
 }
 
+.sidebar ul li a.module-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.sidebar ul li a.module-disabled:hover {
+  text-decoration: none;
+  color: var(--text-secondary);
+}
+
 /* ============================================
    MAIN CONTENT
    ============================================ */
@@ -2272,7 +2282,7 @@ html {
   --mobile-nav-bg-dark: rgba(28, 28, 26, 0.7);
 }
 
-#home, #about, #skills, #projects, #blog, #education, #experience, #certifications, #contact, #updates {
+#home, #about, #skills, #projects, #education, #experience, #certifications, #contact, #updates {
   scroll-margin-top: 68px;
 }
 
@@ -2334,7 +2344,7 @@ html {
   }
 
   /* Natural momentum scrolling on all mobile page containers */
-  #home, #about, #skills, #projects, #blog, #education, #experience, #certifications, #contact, #updates {
+  #home, #about, #skills, #projects, #education, #experience, #certifications, #contact, #updates {
     height: auto !important;
     min-height: auto !important;
     max-height: none !important;
@@ -5515,14 +5525,6 @@ body:has(.admin-shell) {
   z-index: 99999;
 }
 
-/* ============================================
-   BLOG SECTION STYLES
-   ============================================ */
-.blog-tag-active {
-  background: var(--primary-blue) !important;
-  color: #fff !important;
-  border-color: var(--primary-blue) !important;
-}
 
 /* ============================================
    SCROLL PROGRESS BAR

@@ -572,7 +572,7 @@ export default function HomePanel({ isMobile = false }) {
               { label: 'Realtime', val: 'Active', color: '#10B981' },
               { label: 'Site Status', val: siteSettings?.site_disabled ? 'Locked 🔒' : 'Live ✓', color: siteSettings?.site_disabled ? '#EF4444' : '#10B981' },
               { label: 'Maintenance', val: siteSettings?.maintenance_enabled ? 'On' : 'Off', color: siteSettings?.maintenance_enabled ? '#F59E0B' : '#8896B3' },
-              { label: 'Projects Visible', val: siteSettings?.feature_experience !== false ? 'Yes' : 'No', color: siteSettings?.feature_experience !== false ? '#10B981' : '#EF4444' },
+              { label: 'Experience Module', val: siteSettings?.feature_experience !== false ? 'Active' : 'Disabled 🔒', color: siteSettings?.feature_experience !== false ? '#10B981' : '#EF4444' },
             ].map((row) => (
               <div key={row.label} className="pcms-status-row">
                 <span className="pcms-status-label">{row.label}</span>

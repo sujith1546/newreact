@@ -9,7 +9,8 @@ import {
   Sparkles,
   ArrowRight,
   X,
-  ExternalLink
+  ExternalLink,
+  Clock
 } from 'lucide-react';
 import useRealtimeData from '../../hooks/useRealtimeData';
 
@@ -71,15 +72,54 @@ export default function AnnouncementBanner() {
   const announcementType = (dbSettings?.announcement_type || 'info').toLowerCase();
   const announcementUrl = dbSettings?.announcement_url?.trim() || '';
 
-  // Generate storage key based on current announcement content
-  const storageKey = `announcement_dismissed_${announcementText}`;
+  const countdownEnabled = Boolean(dbSettings?.countdown_enabled ?? (typeof window !== 'undefined' && localStorage.getItem('pcms_countdown_enabled') === 'true'));
+  const countdownTarget = dbSettings?.countdown_target_time || (typeof window !== 'undefined' ? localStorage.getItem('pcms_countdown_target_time') : '') || '';
+  const countdownTitle = dbSettings?.countdown_title || (typeof window !== 'undefined' ? localStorage.getItem('pcms_countdown_title') : '') || 'Event';
+  const countdownMode = dbSettings?.countdown_mode || (typeof window !== 'undefined' ? localStorage.getItem('pcms_countdown_mode') : '') || 'both';
+  const showBannerCountdown = Boolean(countdownEnabled && countdownTarget && (countdownMode === 'banner' || countdownMode === 'both'));
+
+  const [bannerCountdown, setBannerCountdown] = useState('');
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && announcementText) {
+    if (!showBannerCountdown || !countdownTarget) {
+      setBannerCountdown('');
+      return;
+    }
+    const update = () => {
+      const target = new Date(countdownTarget).getTime();
+      if (isNaN(target)) {
+        setBannerCountdown('');
+        return;
+      }
+      const diff = target - Date.now();
+      if (diff <= 0) {
+        setBannerCountdown('LIVE NOW');
+        return;
+      }
+      const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const m = Math.floor((diff / (1000 * 60)) % 60);
+      const s = Math.floor((diff / 1000) % 60);
+      if (d > 0) {
+        setBannerCountdown(`${d}d ${h}h ${m}m ${s}s`);
+      } else {
+        setBannerCountdown(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
+      }
+    };
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [showBannerCountdown, countdownTarget]);
+
+  // Generate storage key based on current announcement content
+  const storageKey = `announcement_dismissed_${announcementText}_${countdownTarget || ''}`;
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && (announcementText || showBannerCountdown)) {
       const dismissed = sessionStorage.getItem(storageKey) === 'true';
       setIsDismissed(dismissed);
     }
-  }, [storageKey, announcementText]);
+  }, [storageKey, announcementText, showBannerCountdown]);
 
   const handleDismiss = (e) => {
     e.stopPropagation();
@@ -89,13 +129,16 @@ export default function AnnouncementBanner() {
     } catch (_) {}
   };
 
-  // Hide in Admin Dashboard or if not enabled / no text / dismissed
+  // Hide in Admin Dashboard or if not enabled / no text & no countdown / dismissed
   const isAdminRoute = location.pathname.startsWith('/admin');
-  if (isAdminRoute || !announcementEnabled || !announcementText || isDismissed) {
+  const hasContent = (announcementEnabled && Boolean(announcementText)) || showBannerCountdown;
+  if (isAdminRoute || !hasContent || isDismissed) {
     return null;
   }
 
-  const config = TYPE_CONFIG[announcementType] || TYPE_CONFIG.info;
+  const config = (!announcementEnabled && showBannerCountdown)
+    ? (TYPE_CONFIG.countdown || TYPE_CONFIG.info)
+    : (TYPE_CONFIG[announcementType] || TYPE_CONFIG.info);
   const { Icon } = config;
 
   return (
@@ -256,8 +299,30 @@ export default function AnnouncementBanner() {
             <Icon size={15} style={{ flexShrink: 0, opacity: 0.95 }} />
 
             <span className="site-announcement-text">
-              {announcementText}
+              {announcementText || (showBannerCountdown ? `${countdownTitle} Countdown` : '')}
             </span>
+
+            {showBannerCountdown && bannerCountdown && (
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  background: 'rgba(0,0,0,0.3)',
+                  padding: '2px 8px',
+                  borderRadius: '999px',
+                  fontFamily: 'monospace',
+                  fontWeight: 800,
+                  fontSize: '11.5px',
+                  letterSpacing: '0.05em',
+                  color: '#fbbf24',
+                  border: '1px solid rgba(251, 191, 36, 0.4)'
+                }}
+              >
+                <Clock size={11} />
+                <span>{bannerCountdown}</span>
+              </span>
+            )}
 
             {announcementUrl && (
               <a

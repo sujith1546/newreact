@@ -107,6 +107,21 @@ export function IslandProvider({ children }) {
     }
   }, [processNextInQueue]);
 
+  // Global Event Listener for Dynamic Island triggers across the entire application
+  useEffect(() => {
+    const handleTriggerIsland = (e) => {
+      if (e?.detail) {
+        triggerIsland(e.detail);
+      }
+    };
+    window.addEventListener('trigger_island', handleTriggerIsland);
+    window.addEventListener('pcms_island_notify', handleTriggerIsland);
+    return () => {
+      window.removeEventListener('trigger_island', handleTriggerIsland);
+      window.removeEventListener('pcms_island_notify', handleTriggerIsland);
+    };
+  }, [triggerIsland]);
+
   // Multi-step progress sequences (e.g. Submitting -> Encrypting -> Sent)
   const triggerStepProgress = useCallback((steps) => {
     if (!steps || steps.length === 0) return;

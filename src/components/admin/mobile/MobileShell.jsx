@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { useTheme } from '../../../context/ThemeContext';
 import { useDashboardStats } from '../shared/useDashboardStats';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { LogOut, Plus, ShieldCheck, Briefcase, Eye, MessageSquare, Zap, Star, Sun, Moon, RefreshCw, CheckCircle2, Sparkles, Activity, Settings, X, ExternalLink, Bell } from 'lucide-react';
 import SwipeableTabs from './SwipeableTabs';
 import MobileNav from './MobileNav';
@@ -21,7 +21,6 @@ const TAB_TO_CATEGORY = {
   messages: 'inbox',
   chats: 'inbox',
   projects: 'content',
-  testimonials: 'content',
   updates: 'content',
   skills: 'content',
   experience: 'content',
@@ -99,6 +98,7 @@ export default function MobileShell() {
   });
 
   const [isSpeedDialOpen, setIsSpeedDialOpen] = useState(false);
+  const speedDialDragControls = useDragControls();
   const [isAvatarMenuOpen, setIsAvatarMenuOpen] = useState(false);
   const avatarMenuRef = useRef(null);
 
@@ -120,20 +120,22 @@ export default function MobileShell() {
   // 1. Listen for realtime database changes, build notification log & tab visibility re-focus
   useEffect(() => {
     const handleDataUpdate = (e) => {
-      setHasPendingUpdate(true);
-      setPendingUpdatesCount((prev) => prev + 1);
-      const rawTable = e?.detail?.table || 'site_content';
-      const label = rawTable.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-      setPendingChangesList((prev) => Array.from(new Set([...prev, label])));
-      // Push to notification log
-      setNotifications((prev) => [{
-        id: Date.now(),
-        icon: '🔄',
-        label: `${label} was updated`,
-        time: Date.now(),
-        route: null,
-      }, ...prev.slice(0, 19)]);
-      setNotifRead(false);
+      setTimeout(() => {
+        setHasPendingUpdate(true);
+        setPendingUpdatesCount((prev) => prev + 1);
+        const rawTable = e?.detail?.table || 'site_content';
+        const label = rawTable.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        setPendingChangesList((prev) => Array.from(new Set([...prev, label])));
+        // Push to notification log
+        setNotifications((prev) => [{
+          id: Date.now(),
+          icon: '🔄',
+          label: `${label} was updated`,
+          time: Date.now(),
+          route: null,
+        }, ...prev.slice(0, 19)]);
+        setNotifRead(false);
+      }, 0);
     };
 
     const handleVisibilityChange = () => {
@@ -563,10 +565,12 @@ export default function MobileShell() {
             {/* Gesture-Enabled Bottom Sheet */}
             <motion.div
               drag="y"
+              dragListener={false}
+              dragControls={speedDialDragControls}
               dragConstraints={{ top: 0 }}
-              dragElastic={{ top: 0.05, bottom: 0.45 }}
+              dragElastic={{ top: 0, bottom: 0.35 }}
               onDragEnd={(e, { offset, velocity }) => {
-                if (offset.y > 90 || velocity.y > 400) {
+                if (offset.y > 150 || (velocity.y > 500 && offset.y > 35)) {
                   haptic.medium();
                   setIsSpeedDialOpen(false);
                 }
@@ -596,14 +600,15 @@ export default function MobileShell() {
             >
               {/* Drag Handle Bar */}
               <div
+                onPointerDown={(e) => speedDialDragControls.start(e)}
                 style={{
                   padding: '12px 0 6px',
                   display: 'flex',
                   justifyContent: 'center',
-                  cursor: 'pointer',
+                  cursor: 'grab',
+                  touchAction: 'none',
                   flexShrink: 0,
                 }}
-                onClick={() => setIsSpeedDialOpen(false)}
               >
                 <div
                   style={{

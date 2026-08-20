@@ -9,6 +9,7 @@ import {
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { ScrollReveal } from '../components';
 import { useLocalTime } from '../hooks/useLocalTime';
+import { useIsland } from '../context/IslandContext';
 /* ─── Count-up hook using rAF ─── */
 function useCountUp(target, duration = 1000, decimals = 0, trigger = true) {
   const [val, setVal] = useState(0);
@@ -385,7 +386,7 @@ export default function About({ onNavClick }) {
   const inView = useInView(pageRef, { once: true, amount: 0.1 });
   const daysCoding = useDaysCoding('2021-06-01');
   const localTime = useLocalTime();
-  const [toast, setToast] = useState(null);
+  const { triggerIsland } = useIsland() || {};
   const [copiedEmail, setCopiedEmail] = useState(false);
 
   const handleCopyEmail = () => {
@@ -394,20 +395,28 @@ export default function About({ onNavClick }) {
         navigator.clipboard.writeText('sujithreddy1546@gmail.com').catch(() => {});
       }
       setCopiedEmail(true);
+      triggerIsland?.({
+        title: 'Email Copied!',
+        subtitle: 'sujithreddy1546@gmail.com',
+        icon: <Mail size={15} />,
+        color: '#8b5cf6',
+        duration: 2500
+      });
       setTimeout(() => setCopiedEmail(false), 2200);
     } catch { /* fallback */ }
   };
 
   const handleDownload = (e) => {
     e.preventDefault();
-    if (toast) return;
-    setToast('packaging');
-    setTimeout(() => {
-      setToast('done');
-      const a = Object.assign(document.createElement('a'), { href: '/resume.pdf', download: 'Sujith_Resume.pdf' });
-      document.body.appendChild(a); a.click(); if (a.parentNode) a.parentNode.removeChild(a);
-      setTimeout(() => setToast(null), 3000);
-    }, 1600);
+    triggerIsland?.({
+      title: 'Downloading Resume...',
+      subtitle: 'Sujith_Resume.pdf',
+      icon: <FileText size={15} />,
+      color: '#10b981',
+      duration: 3000
+    });
+    const a = Object.assign(document.createElement('a'), { href: '/resume.pdf', download: 'Sujith_Resume.pdf' });
+    document.body.appendChild(a); a.click(); if (a.parentNode) a.parentNode.removeChild(a);
   };
 
   return (
@@ -1114,36 +1123,6 @@ export default function About({ onNavClick }) {
 
 
       </div>
-
-      {/* Toast */}
-      {createPortal(
-        <AnimatePresence>
-          {toast && (
-            <motion.div
-              initial={{ opacity: 0, x: 20, scale: 0.95 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: 20, scale: 0.95 }}
-              transition={{ type: 'spring', stiffness: 240, damping: 22 }}
-              style={{
-                position: 'fixed', top: 80, right: 32, zIndex: 99999,
-                display: 'flex', alignItems: 'center', gap: 10,
-                background: toast === 'packaging' ? 'rgba(17,24,39,.95)' : 'rgba(16,185,129,.95)',
-                backdropFilter: 'blur(12px)', color: '#fff',
-                padding: '11px 18px', borderRadius: 12,
-                boxShadow: '0 8px 32px rgba(0,0,0,.2)',
-              }}
-            >
-              {toast === 'packaging'
-                ? <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}><Loader2 size={16} /></motion.div>
-                : <CheckCircle size={16} />}
-              <span style={{ fontSize: 13, fontWeight: 600 }}>
-                {toast === 'packaging' ? 'Preparing resume...' : 'Downloaded!'}
-              </span>
-            </motion.div>
-          )}
-        </AnimatePresence>,
-        document.body
-      )}
     </ScrollReveal>
   );
 }

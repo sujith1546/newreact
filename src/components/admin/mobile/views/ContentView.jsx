@@ -7,13 +7,11 @@ import SkillsPanel from '../../panels/SkillsPanel';
 import ExperiencePanel from '../../panels/ExperiencePanel';
 import EducationPanel from '../../panels/EducationPanel';
 import CertificationsPanel from '../../panels/CertificationsPanel';
-import TestimonialsPanel from '../../panels/TestimonialsPanel';
 import PortfolioPreviewPanel from '../../panels/PortfolioPreviewPanel';
 import haptic from '../../../../lib/haptics';
 
 const CONTENT_TABS = [
   { key: 'projects', label: 'Projects', icon: 'ti-briefcase' },
-  { key: 'testimonials', label: 'Testimonials', icon: 'ti-quote' },
   { key: 'updates', label: 'Updates', icon: 'ti-bolt' },
   { key: 'skills', label: 'Skills', icon: 'ti-star' },
   { key: 'experience', label: 'Experience', icon: 'ti-id-badge' },
@@ -153,7 +151,6 @@ export default function ContentView({ activeSubTab = 'projects', onSelectSubTab 
             style={{ width: '100%' }}
           >
             {activeSubTab === 'projects' && <ProjectsPanel />}
-            {activeSubTab === 'testimonials' && <TestimonialsPanel />}
             {activeSubTab === 'updates' && <UpdatesPanel />}
             {activeSubTab === 'skills' && <SkillsPanel />}
             {activeSubTab === 'experience' && <ExperiencePanel />}

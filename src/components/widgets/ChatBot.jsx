@@ -17,6 +17,32 @@ import BentoBox from './GenerativeUI/BentoBox';
 import ReactMarkdown from 'react-markdown';
 
 import { usePersona } from '../../context/PersonaContext';
+import useRealtimeData from '../../hooks/useRealtimeData';
+
+const RATE_LIMIT_STORAGE_KEY = 'pcms_chatbot_queries_v1';
+
+function getRecentQueries() {
+  try {
+    const raw = localStorage.getItem(RATE_LIMIT_STORAGE_KEY);
+    if (!raw) return [];
+    const timestamps = JSON.parse(raw);
+    const oneHourAgo = Date.now() - 60 * 60 * 1000;
+    return timestamps.filter((t) => t > oneHourAgo);
+  } catch {
+    return [];
+  }
+}
+
+function recordNewQuery() {
+  try {
+    const recent = getRecentQueries();
+    recent.push(Date.now());
+    localStorage.setItem(RATE_LIMIT_STORAGE_KEY, JSON.stringify(recent));
+    return recent;
+  } catch {
+    return [];
+  }
+}
 
 function generateUUID() {
   try { return crypto.randomUUID(); } 
@@ -199,6 +225,21 @@ export default function ChatBot() {
   const abortControllerRef = useRef(null);
   const { persona, setPersona, hasChosenPersona, resetPersonaChoice } = usePersona();
   const [showPersonaMenu, setShowPersonaMenu] = useState(false);
+
+  const { data: dbSettings } = useRealtimeData('site_settings', {
+    single: true,
+    filter: { column: 'id', value: 1 },
+  });
+
+  const maxQueriesPerHour = dbSettings?.chatbot_max_questions_per_hour ?? 20;
+  const isRateLimitEnabled = dbSettings?.chatbot_rate_limit_enabled !== false;
+  const [queryHistory, setQueryHistory] = useState(getRecentQueries);
+
+  const usedQueries = queryHistory.length;
+  const remainingQueries = Math.max(0, maxQueriesPerHour - usedQueries);
+  const isRateLimited = isRateLimitEnabled && remainingQueries <= 0;
+  const oldestQuery = queryHistory[0] || Date.now();
+  const refillMinutes = Math.max(1, Math.ceil((oldestQuery + 60 * 60 * 1000 - Date.now()) / (60 * 1000)));
 
   useEffect(() => {
     return () => {
@@ -455,6 +496,29 @@ export default function ChatBot() {
     const userText = (text || input).trim();
     if ((!userText && !attachment) || isLoading) return;
 
+    if (isRateLimited) {
+      setInput('');
+      setMessages(prev => [
+        ...prev,
+        { role: 'user', content: userText },
+        {
+          role: 'assistant',
+          isError: true,
+          content: `⚠️ **Hourly Query Quota Reached (${maxQueriesPerHour}/${maxQueriesPerHour})**\n\nTo preserve API quotas, query limits reset every hour. Your limit will refresh in approx **${refillMinutes} minutes**.\n\nIn the meantime, explore the **Projects** section or connect directly via the **Contact** page!`
+        }
+      ]);
+      triggerIsland({
+        title: 'Query Limit Reached',
+        subtitle: `Refreshes in ~${refillMinutes} mins`,
+        color: '#f59e0b',
+        duration: 3500
+      });
+      return;
+    }
+
+    const updatedHistory = recordNewQuery();
+    setQueryHistory(updatedHistory);
+
     setInput('');
     const currentAttachment = attachment;
     setAttachment(null);
@@ -525,7 +589,8 @@ export default function ChatBot() {
             showThoughts: aiShowThoughts,
             contextRange: aiContextRange,
             reasoningDepth: aiReasoningDepth,
-            persona: persona || aiPersona || 'general'
+            persona: persona || aiPersona || 'general',
+            customSystemPrompt: dbSettings?.chatbot_system_prompt || null
           })
         });
       } catch (netErr) {
@@ -699,7 +764,7 @@ export default function ChatBot() {
       if (navMatch && aiAutoNav) {
         const targetSection = navMatch[1].toLowerCase().trim();
         const keyword = navMatch[2] ? navMatch[2].trim() : targetSection;
-        const validSections = ['home','about','skills','projects','blog','education','experience','certifications','contact','resume'];
+        const validSections = ['home','about','skills','projects','education','experience','certifications','contact','resume'];
 
         if (targetSection === 'resume') {
           setTimeout(() => {
@@ -1559,6 +1624,27 @@ export default function ChatBot() {
                 </div>
               </div>
               <div className="chatbot-header-actions">
+                {isRateLimitEnabled && (
+                  <div
+                    style={{
+                      fontSize: '9.5px',
+                      fontWeight: 700,
+                      padding: '3px 8px',
+                      borderRadius: '999px',
+                      background: isRateLimited ? 'rgba(239, 68, 68, 0.25)' : remainingQueries <= 3 ? 'rgba(245, 158, 11, 0.25)' : 'rgba(255, 255, 255, 0.15)',
+                      color: isRateLimited ? '#fca5a5' : remainingQueries <= 3 ? '#fde047' : 'var(--bg-primary)',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      marginRight: '4px',
+                      border: `1px solid ${isRateLimited ? 'rgba(239,68,68,0.45)' : 'rgba(255,255,255,0.15)'}`
+                    }}
+                    title={`${usedQueries}/${maxQueriesPerHour} questions used this hour`}
+                  >
+                    <Zap size={10} />
+                    <span>{remainingQueries}/{maxQueriesPerHour}</span>
+                  </div>
+                )}
                 <button
                   onClick={() => setShowPersonaMenu(prev => !prev)}
                   style={{

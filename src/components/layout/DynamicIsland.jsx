@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useIsland } from '../../context/IslandContext';
 import { useTheme } from '../../context/ThemeContext';
+import useRealtimeData from '../../hooks/useRealtimeData';
 import { Sparkles, Command, FileText, Sun, Moon, ShieldCheck, Zap, X, Users, Volume2, Search, Mail, Clock, Check, ExternalLink } from 'lucide-react';
 
 const SPRING_TRANSITION = {
@@ -139,6 +140,56 @@ export default function DynamicIsland() {
 
   const { toggleTheme } = useTheme();
 
+  const { data: dbSettings } = useRealtimeData('site_settings', {
+    single: true,
+    filter: { column: 'id', value: 1 },
+  });
+
+  const countdownEnabled = Boolean(dbSettings?.countdown_enabled ?? (typeof window !== 'undefined' && localStorage.getItem('pcms_countdown_enabled') === 'true'));
+  const countdownTarget = dbSettings?.countdown_target_time || (typeof window !== 'undefined' ? localStorage.getItem('pcms_countdown_target_time') : '') || '';
+  const countdownTitle = dbSettings?.countdown_title || (typeof window !== 'undefined' ? localStorage.getItem('pcms_countdown_title') : '') || 'Event';
+  const countdownMode = dbSettings?.countdown_mode || (typeof window !== 'undefined' ? localStorage.getItem('pcms_countdown_mode') : '') || 'both';
+  const isCountdownActive = Boolean(countdownEnabled && countdownTarget && (countdownMode === 'island' || countdownMode === 'both'));
+
+  const [timeLeft, setTimeLeft] = useState(null);
+
+  useEffect(() => {
+    if (!isCountdownActive || !countdownTarget) {
+      setTimeLeft(null);
+      return;
+    }
+
+    const calcTime = () => {
+      const target = new Date(countdownTarget).getTime();
+      if (isNaN(target)) {
+        setTimeLeft(null);
+        return;
+      }
+      const now = Date.now();
+      const diff = target - now;
+
+      if (diff <= 0) {
+        setTimeLeft('LIVE NOW');
+        return;
+      }
+
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((diff / (1000 * 60)) % 60);
+      const seconds = Math.floor((diff / 1000) % 60);
+
+      if (days > 0) {
+        setTimeLeft(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+      } else {
+        setTimeLeft(`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+      }
+    };
+
+    calcTime();
+    const timer = setInterval(calcTime, 1000);
+    return () => clearInterval(timer);
+  }, [isCountdownActive, countdownTarget]);
+
   const [isHovered, setIsHovered] = useState(false);
   const [isDark, setIsDark] = useState(false);
   const hudRef = useRef(null);
@@ -268,6 +319,8 @@ export default function DynamicIsland() {
           borderRadius: isHudOpen ? '20px' : '999px',
           border: isHudOpen
             ? '1px solid #3b82f6'
+            : isNotificationActive
+            ? (islandState?.color === '#EF4444' ? '1px solid rgba(239, 68, 68, 0.7)' : '1px solid rgba(16, 185, 129, 0.4)')
             : isAiActive
             ? '1px solid rgba(6, 182, 212, 0.6)'
             : '1px solid #2a2c33',
@@ -276,7 +329,7 @@ export default function DynamicIsland() {
             : isAiActive
             ? '0 12px 35px rgba(6, 182, 212, 0.4), 0 0 25px rgba(139, 92, 246, 0.5)'
             : isNotificationActive
-            ? '0 20px 50px rgba(0,0,0,0.65), 0 0 20px rgba(16,185,129,0.2)'
+            ? (islandState?.color === '#EF4444' ? '0 20px 50px rgba(0,0,0,0.75), 0 0 25px rgba(239,68,68,0.35)' : '0 20px 50px rgba(0,0,0,0.65), 0 0 20px rgba(16,185,129,0.2)')
             : '0 6px 22px rgba(0,0,0,0.4)',
           display: 'flex',
           flexDirection: 'column',
@@ -288,8 +341,8 @@ export default function DynamicIsland() {
           padding: isHudOpen ? '14px 16px' : isNotificationActive ? '10px 16px' : isAiActive ? '8px 16px' : effectiveHover ? '8px 16px' : '0 10px',
           height: isHudOpen ? 'auto' : isNotificationActive ? '44px' : '32px',
           width: isHudOpen ? (isMobile ? 'calc(94vw)' : '340px') : 'auto',
-          maxWidth: isHudOpen ? '360px' : isNotificationActive ? '290px' : isAiActive ? '220px' : effectiveHover ? '190px' : '36px',
-          minWidth: isHudOpen ? (isMobile ? '280px' : '340px') : isNotificationActive ? '250px' : isAiActive ? '200px' : effectiveHover ? '180px' : '32px',
+          maxWidth: isHudOpen ? '360px' : isNotificationActive ? (isMobile ? 'calc(92vw)' : '340px') : isAiActive ? '220px' : (isCountdownActive && timeLeft) ? '280px' : effectiveHover ? '190px' : '36px',
+          minWidth: isHudOpen ? (isMobile ? '280px' : '340px') : isNotificationActive ? '260px' : isAiActive ? '200px' : (isCountdownActive && timeLeft) ? '220px' : effectiveHover ? '180px' : '32px',
           boxSizing: 'border-box',
           position: 'relative',
           willChange: 'width, height, border-radius'
@@ -533,6 +586,26 @@ export default function DynamicIsland() {
                 Atom AI Thinking...
               </span>
               <WaveformSVG isSettled={false} activeColor="#06b6d4" />
+            </motion.div>
+          ) : (isCountdownActive && timeLeft) ? (
+            /* Live Scheduled Countdown Mode */
+            <motion.div
+              key="countdown-mode"
+              layout
+              variants={FADE_BLUR_VARIANTS}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              transition={SPRING_TRANSITION}
+              style={{ display: 'flex', alignItems: 'center', gap: '7px', padding: '0 6px' }}
+            >
+              <Clock size={12} style={{ color: '#f59e0b', flexShrink: 0 }} />
+              <span style={{ color: 'rgba(255,255,255,0.85)', fontSize: '11px', fontWeight: 600, maxWidth: '110px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {countdownTitle}:
+              </span>
+              <span style={{ color: '#fbbf24', fontSize: '11px', fontWeight: 800, fontFamily: 'monospace', flexShrink: 0 }}>
+                {timeLeft}
+              </span>
             </motion.div>
           ) : effectiveHover ? (
             /* Hovered Idle State (Desktop only) */

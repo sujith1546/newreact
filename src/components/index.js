@@ -50,3 +50,4 @@ export { default as CopyButton } from './ui/CopyButton';
 
 // 5. Guards & Security
 export * from './MaintenanceGate';
+export { default as DisabledModuleGate } from './common/DisabledModuleGate';

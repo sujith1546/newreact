@@ -92,7 +92,11 @@ export async function prefetchTable(table, options = {}) {
       fetchPromises[cacheKey] = query.then(({ data, error }) => {
         const pingMs = Math.round(performance.now() - t0);
         if (typeof window !== 'undefined') {
-          window.dispatchEvent(new CustomEvent('db-telemetry', { detail: { pingMs, table } }));
+          setTimeout(() => {
+            try {
+              window.dispatchEvent(new CustomEvent('db-telemetry', { detail: { pingMs, table } }));
+            } catch (_) {}
+          }, 0);
         }
         if (!error && data) {
           globalDataCache[cacheKey] = data;
@@ -120,7 +124,11 @@ export async function prefetchTable(table, options = {}) {
   fetchPromises[cacheKey] = query.then(({ data, error }) => {
     const pingMs = Math.round(performance.now() - t0);
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('db-telemetry', { detail: { pingMs, table } }));
+      setTimeout(() => {
+        try {
+          window.dispatchEvent(new CustomEvent('db-telemetry', { detail: { pingMs, table } }));
+        } catch (_) {}
+      }, 0);
     }
     if (!error && data) {
       globalDataCache[cacheKey] = data;
@@ -285,13 +293,18 @@ export default function useRealtimeData(table, options = {}) {
             globalDataCache[cacheKey] = nextData;
             // Also update the localStorage SWR cache so page refreshes are fast.
             setStorageCache(cacheKey, nextData);
-            // Broadcast a custom event so any other listeners can react immediately.
-            try {
-              window.dispatchEvent(new CustomEvent('pcms_data_updated', { detail: { table, eventType } }));
-            } catch (_) {}
 
             return nextData;
           });
+
+          // Defer event dispatch outside React render cycle
+          setTimeout(() => {
+            if (typeof window !== 'undefined') {
+              try {
+                window.dispatchEvent(new CustomEvent('pcms_data_updated', { detail: { table, eventType } }));
+              } catch (_) {}
+            }
+          }, 0);
         })
         .subscribe((status) => {
           if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {

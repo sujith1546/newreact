@@ -1,10 +1,11 @@
 import React, { useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { X } from 'lucide-react';
 
 export default function BottomSheet({ isOpen, onClose, title, children }) {
   const sheetRef = useRef(null);
   const previousFocusRef = useRef(null);
+  const dragControls = useDragControls();
 
   // Focus management & Browser Back button interception
   useEffect(() => {
@@ -105,6 +106,16 @@ export default function BottomSheet({ isOpen, onClose, title, children }) {
           <motion.div
             ref={sheetRef}
             className="admin-bottom-sheet"
+            drag="y"
+            dragListener={false}
+            dragControls={dragControls}
+            dragConstraints={{ top: 0 }}
+            dragElastic={{ top: 0, bottom: 0.35 }}
+            onDragEnd={(e, { offset, velocity }) => {
+              if (offset.y > 160 || (velocity.y > 500 && offset.y > 40)) {
+                onClose();
+              }
+            }}
             style={{
               position: 'fixed',
               bottom: 0,
@@ -131,7 +142,18 @@ export default function BottomSheet({ isOpen, onClose, title, children }) {
             transition={{ type: "spring", damping: 26, stiffness: 320 }}
           >
             {/* Handle Bar */}
-            <div className="admin-sheet-handle-bar" onClick={onClose} style={{ padding: '12px 0 6px', display: 'flex', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+            <div
+              className="admin-sheet-handle-bar"
+              onPointerDown={(e) => dragControls.start(e)}
+              style={{
+                padding: '12px 0 6px',
+                display: 'flex',
+                justifyContent: 'center',
+                cursor: 'grab',
+                touchAction: 'none',
+                flexShrink: 0
+              }}
+            >
               <div className="admin-sheet-handle" style={{ width: 38, height: 5, borderRadius: 3, background: 'rgba(255, 255, 255, 0.25)' }} />
             </div>
 

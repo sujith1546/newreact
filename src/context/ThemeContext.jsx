@@ -31,8 +31,27 @@ const safeStorage = {
   }
 };
 
+function resolveInitialTheme() {
+  const isUserSet = safeStorage.getItem('theme_user_set') === 'true';
+  const savedTheme = safeStorage.getItem('theme');
+  if (isUserSet && (savedTheme === 'dark' || savedTheme === 'light')) {
+    return savedTheme;
+  }
+
+  const defaultMode = safeStorage.getItem('pcms_dark_mode_default') || 'system';
+  if (defaultMode === 'dark') return 'dark';
+  if (defaultMode === 'light') return 'light';
+  
+  if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    return 'dark';
+  }
+  return 'light';
+}
+
 export function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState(() => safeStorage.getItem('theme') || 'light');
+  const [theme, setTheme] = useState(resolveInitialTheme);
+  const [hasUserOverride, setHasUserOverride] = useState(() => safeStorage.getItem('theme_user_set') === 'true');
+  const [siteDefaultTheme, setSiteDefaultTheme] = useState(() => safeStorage.getItem('pcms_dark_mode_default') || 'system');
   const [accentColor, setAccentColor] = useState(() => safeStorage.getItem('accentColor') || 'blue');
   const [fontFamily, setFontFamily] = useState(() => safeStorage.getItem('fontFamily') || 'modern');
   const [layoutDensity, setLayoutDensity] = useState(() => safeStorage.getItem('layoutDensity') || 'comfortable');
@@ -143,20 +162,66 @@ export function ThemeProvider({ children }) {
     } catch(e) {}
   };
 
-  // Real-time synchronization for site branding and accent colors
+  const applyDefaultMode = (mode, forceImmediate = false) => {
+    if (!mode) return;
+    setSiteDefaultTheme(mode);
+    safeStorage.setItem('pcms_dark_mode_default', mode);
+    
+    let resolved = 'light';
+    if (mode === 'dark') resolved = 'dark';
+    else if (mode === 'light') resolved = 'light';
+    else if (mode === 'system') {
+      resolved = (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+    }
+
+    if (forceImmediate) {
+      setTheme(resolved);
+      document.documentElement.setAttribute('data-theme', resolved);
+      safeStorage.setItem('theme', resolved);
+    } else {
+      const isUserSet = safeStorage.getItem('theme_user_set') === 'true';
+      if (!isUserSet) {
+        setTheme(resolved);
+        document.documentElement.setAttribute('data-theme', resolved);
+        safeStorage.setItem('theme', resolved);
+      }
+    }
+  };
+
+  // Follow OS system preference in 'system' mode when visitor has not manually toggled
+  useEffect(() => {
+    if (hasUserOverride || siteDefaultTheme !== 'system') return;
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleOsChange = (e) => {
+      const isUserSet = safeStorage.getItem('theme_user_set') === 'true';
+      if (!isUserSet) {
+        const newTheme = e.matches ? 'dark' : 'light';
+        setTheme(newTheme);
+        document.documentElement.setAttribute('data-theme', newTheme);
+      }
+    };
+    mediaQuery.addEventListener('change', handleOsChange);
+    return () => mediaQuery.removeEventListener('change', handleOsChange);
+  }, [hasUserOverride, siteDefaultTheme]);
+
+  // Real-time synchronization for site branding, accent colors, and default visitor theme
   useEffect(() => {
     let isMounted = true;
 
-    // 1. Initial DB fetch to sync active branding
+    // 1. Initial DB fetch to sync active branding & default visitor theme
     async function syncInitialBranding() {
       try {
-        const { data } = await supabase
+        const { data, error } = await supabase
           .from('site_settings')
-          .select('accent_color, custom_accent_hex')
+          .select('*')
           .eq('id', 1)
           .maybeSingle();
 
-        if (isMounted && data) {
+        if (isMounted && data && !error) {
+          if (data.dark_mode_default) {
+            applyDefaultMode(data.dark_mode_default);
+          }
           const activeColor = data.custom_accent_hex || data.accent_color;
           if (activeColor) {
             setAccentColor(activeColor);
@@ -170,6 +235,9 @@ export function ThemeProvider({ children }) {
     // 2. Cross-tab BroadcastChannel real-time sync (sub-millisecond instant update)
     const unsubscribeBroadcast = subscribeToRealtimeSync((syncMsg) => {
       if (syncMsg?.table === 'site_settings' && syncMsg.payload) {
+        if (syncMsg.payload.dark_mode_default) {
+          applyDefaultMode(syncMsg.payload.dark_mode_default);
+        }
         const newColor = syncMsg.payload.custom_accent_hex || syncMsg.payload.accent_color;
         if (newColor) {
           setAccentColor(newColor);
@@ -186,6 +254,9 @@ export function ThemeProvider({ children }) {
       .channel('public_theme_branding_sync')
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'site_settings' }, (payload) => {
         if (payload.new) {
+          if (payload.new.dark_mode_default) {
+            applyDefaultMode(payload.new.dark_mode_default);
+          }
           const newColor = payload.new.custom_accent_hex || payload.new.accent_color;
           if (newColor) {
             setAccentColor(newColor);
@@ -203,7 +274,9 @@ export function ThemeProvider({ children }) {
       const detail = e?.detail;
       if (!detail) return;
       if (detail.table === 'site_settings') {
-        if (detail.key === 'accent_color' || detail.key === 'custom_accent_hex') {
+        if (detail.key === 'dark_mode_default') {
+          applyDefaultMode(detail.value);
+        } else if (detail.key === 'accent_color' || detail.key === 'custom_accent_hex') {
           const val = detail.value;
           if (val) {
             setAccentColor(val);
@@ -213,6 +286,9 @@ export function ThemeProvider({ children }) {
             document.documentElement.style.setProperty('--pcms-accent', hex);
           }
         } else if (detail.payload) {
+          if (detail.payload.dark_mode_default) {
+            applyDefaultMode(detail.payload.dark_mode_default);
+          }
           const newColor = detail.payload.custom_accent_hex || detail.payload.accent_color;
           if (newColor) {
             setAccentColor(newColor);
@@ -238,6 +314,9 @@ export function ThemeProvider({ children }) {
 
     // 5. Cross-tab localStorage native event listener
     const handleStorageChange = (e) => {
+      if (e.key === 'pcms_dark_mode_default') {
+        if (e.newValue) applyDefaultMode(e.newValue);
+      }
       if (e.key === 'accentColor' || e.key === 'accent_color') {
         if (e.newValue) {
           setAccentColor(e.newValue);
@@ -332,6 +411,8 @@ export function ThemeProvider({ children }) {
   }, [theme, accentColor, fontFamily, layoutDensity, uiAudio, glassIntensity, reduceMotion, highContrast, aiVoice, aiAutoNav, aiResponseStyle, aiShowThoughts, aiContextRange, aiReasoningDepth, aiPersona, aiTerminalMode, keyboardHud, notifyOnContact, photoAccent, activePreset, devMode, flags]);
 
   const toggleTheme = (e) => {
+    setHasUserOverride(true);
+    safeStorage.setItem('theme_user_set', 'true');
     const isDark = theme === 'dark';
     const nextTheme = isDark ? 'light' : 'dark';
 
@@ -437,7 +518,8 @@ export function ThemeProvider({ children }) {
 
   return (
     <ThemeContext.Provider value={{ 
-      theme, toggleTheme, 
+      theme, setTheme, toggleTheme,
+      siteDefaultTheme, applyDefaultMode,
       accentColor, setAccentColor,
       fontFamily, setFontFamily,
       layoutDensity, setLayoutDensity,

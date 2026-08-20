@@ -30,6 +30,8 @@ const Education = lazy(() => import('./Education'));
 const Experience = lazy(() => import('./Experience'));
 const Certifications = lazy(() => import('./Certifications'));
 const Contact = lazy(() => import('./Contact'));
+import DisabledModuleGate from '../components/common/DisabledModuleGate';
+import useModuleStatus from '../hooks/useModuleStatus';
 import { useTheme } from '../context/ThemeContext';
 import { usePersona } from '../context/PersonaContext';
 import useRealtimeData from '../hooks/useRealtimeData';
@@ -42,8 +44,8 @@ const SECTIONS_DEF = [
   { id: 'skills', Component: Skills },
   { id: 'projects', Component: Projects },
   { id: 'education', Component: Education },
-  { id: 'experience', Component: Experience },
-  { id: 'certifications', Component: Certifications },
+  { id: 'experience', Component: Experience, moduleKey: 'experience', moduleTitle: 'Experience & Timeline' },
+  { id: 'certifications', Component: Certifications, moduleKey: 'certifications', moduleTitle: 'Certifications & Awards' },
   { id: 'contact', Component: Contact },
 ];
 
@@ -105,15 +107,13 @@ const mobilePageVariants = {
 
 export default function PortfolioLayout() {
   const { data: dbSettings } = useRealtimeData('site_settings', { single: true, filter: { column: 'id', value: 1 } });
+  const { isModuleEnabled } = useModuleStatus();
   const { getSectionOrder } = usePersona();
   const location = useLocation();
   const navigate = useNavigate();
 
-  const baseSections = SECTIONS_DEF.filter(sec => {
-    if (sec.id === 'experience' && dbSettings?.feature_experience === false) return false;
-    if (sec.id === 'certifications' && dbSettings?.feature_certifications === false) return false;
-    return true;
-  });
+  // All sections remain visible; disabled sections show the DisabledModuleGate
+  const baseSections = SECTIONS_DEF;
 
   const SECTIONS = getSectionOrder(baseSections);
   const ALL_PAGES = SECTIONS.map(s => s.id);
@@ -369,7 +369,9 @@ export default function PortfolioLayout() {
   };
   const cta = ctaMap[activeSection] || ctaMap.home;
 
-  const ActiveComponent = SECTIONS.find(s => s.id === activeSection)?.Component ?? Home;
+  const currentSectionDef = SECTIONS.find(s => s.id === activeSection) || SECTIONS[0];
+  const isCurrentModuleEnabled = !currentSectionDef?.moduleKey || isModuleEnabled(currentSectionDef.moduleKey);
+  const ActiveComponent = currentSectionDef?.Component ?? Home;
 
   const mobileTransition = {
     type: 'tween',
@@ -543,7 +545,15 @@ export default function PortfolioLayout() {
                     <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>Loading...</span>
                   </div>
                 }>
-                  <ActiveComponent onNavClick={handleNavClick} />
+                  {isCurrentModuleEnabled ? (
+                    <ActiveComponent onNavClick={handleNavClick} />
+                  ) : (
+                    <DisabledModuleGate
+                      moduleId={currentSectionDef?.moduleKey}
+                      moduleTitle={currentSectionDef?.moduleTitle}
+                      onNavClick={handleNavClick}
+                    />
+                  )}
                 </Suspense>
               </ErrorBoundary>
             </motion.div>

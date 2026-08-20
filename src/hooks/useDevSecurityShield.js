@@ -1,5 +1,7 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { Shield, Lock, FileText, EyeOff, Terminal, Code2 } from 'lucide-react';
+import haptic from '../lib/haptics';
 
 /**
  * useDevSecurityShield
@@ -29,8 +31,6 @@ export function useDevSecurityShield() {
       securityWatermark: localStorage.getItem('pcms_security_watermark') === 'true',
     };
   });
-
-  const [toastMessage, setToastMessage] = useState(null);
 
   useEffect(() => {
     // 1. Sync all security settings from Supabase site_settings
@@ -138,11 +138,26 @@ export function useDevSecurityShield() {
     };
     const devToolsInterval = setInterval(detectDevTools, 1000);
 
-    let timeoutId = null;
-    const showToast = (msg) => {
-      if (timeoutId) clearTimeout(timeoutId);
-      setToastMessage(msg || "🛡️ Protected by Admin Security.");
-      timeoutId = setTimeout(() => setToastMessage(null), 2500);
+    const showSecurityIsland = (title, subtitle, icon) => {
+      try {
+        haptic?.warning?.();
+      } catch (_) {}
+
+      try {
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('trigger_island', {
+              detail: {
+                title,
+                subtitle,
+                icon,
+                color: '#EF4444',
+                duration: 3200,
+              },
+            })
+          );
+        }
+      } catch (_) {}
     };
 
     // ─── 1. Anti-Clickjacking Frame Guard ───
@@ -194,7 +209,7 @@ export function useDevSecurityShield() {
     const handleCopy = (e) => {
       if (securityState.disableCopy) {
         e.preventDefault();
-        showToast("🛡️ Text copying is protected by Admin Security.");
+        showSecurityIsland('Content Protected', 'Text copying is disabled by Admin Security', React.createElement(Lock, { size: 15, color: '#EF4444' }));
         return false;
       }
     };
@@ -223,7 +238,7 @@ export function useDevSecurityShield() {
     const handleContextMenu = (e) => {
       if (securityState.disableInspect) {
         e.preventDefault();
-        showToast("🛡️ Right-click is protected by Admin Security.");
+        showSecurityIsland('Admin Security Active', 'Right-click is protected by administrator', React.createElement(Shield, { size: 15, color: '#EF4444' }));
         return false;
       }
     };
@@ -236,7 +251,7 @@ export function useDevSecurityShield() {
       if (securityState.disablePrint && ctrlKey && (e.key === 'P' || e.key === 'p' || e.keyCode === 80)) {
         e.preventDefault();
         e.stopPropagation();
-        showToast("🛡️ Page printing is protected by Admin Security.");
+        showSecurityIsland('Print Protected', 'Page printing is disabled by Admin Security', React.createElement(FileText, { size: 15, color: '#EF4444' }));
         return false;
       }
 
@@ -246,7 +261,7 @@ export function useDevSecurityShield() {
       if (e.key === 'F12' || e.keyCode === 123) {
         e.preventDefault();
         e.stopPropagation();
-        showToast("🛡️ DevTools (F12) is protected by Admin Security.");
+        showSecurityIsland('DevTools Protected', 'Developer tools (F12) blocked by Admin Security', React.createElement(EyeOff, { size: 15, color: '#EF4444' }));
         return false;
       }
 
@@ -254,7 +269,7 @@ export function useDevSecurityShield() {
       if (ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.keyCode === 73)) {
         e.preventDefault();
         e.stopPropagation();
-        showToast("🛡️ Inspect Element is protected by Admin Security.");
+        showSecurityIsland('Inspect Protected', 'Element inspection blocked by Admin Security', React.createElement(Shield, { size: 15, color: '#EF4444' }));
         return false;
       }
 
@@ -262,7 +277,7 @@ export function useDevSecurityShield() {
       if (ctrlKey && e.shiftKey && (e.key === 'J' || e.key === 'j' || e.keyCode === 74)) {
         e.preventDefault();
         e.stopPropagation();
-        showToast("🛡️ Console access is protected by Admin Security.");
+        showSecurityIsland('Console Protected', 'Console access blocked by Admin Security', React.createElement(Terminal, { size: 15, color: '#EF4444' }));
         return false;
       }
 
@@ -270,7 +285,7 @@ export function useDevSecurityShield() {
       if (ctrlKey && e.shiftKey && (e.key === 'C' || e.key === 'c' || e.keyCode === 67)) {
         e.preventDefault();
         e.stopPropagation();
-        showToast("🛡️ Element Inspector is protected by Admin Security.");
+        showSecurityIsland('Selector Protected', 'Element selector blocked by Admin Security', React.createElement(EyeOff, { size: 15, color: '#EF4444' }));
         return false;
       }
 
@@ -278,7 +293,7 @@ export function useDevSecurityShield() {
       if (ctrlKey && (e.key === 'U' || e.key === 'u' || e.keyCode === 85)) {
         e.preventDefault();
         e.stopPropagation();
-        showToast("🛡️ Source Code inspection is protected by Admin Security.");
+        showSecurityIsland('Source Protected', 'Page source viewing blocked by Admin Security', React.createElement(Code2, { size: 15, color: '#EF4444' }));
         return false;
       }
 
@@ -296,7 +311,6 @@ export function useDevSecurityShield() {
     document.addEventListener('dragstart', handleDragStart);
 
     return () => {
-      if (timeoutId) clearTimeout(timeoutId);
       clearInterval(devToolsInterval);
       document.removeEventListener('contextmenu', handleContextMenu);
       document.removeEventListener('keydown', handleKeyDown);
@@ -310,6 +324,5 @@ export function useDevSecurityShield() {
   return {
     ...securityState,
     protectedActive: securityState.disableInspect,
-    toastMessage
   };
 }

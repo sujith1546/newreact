@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { QrCode, Download, MapPin, Loader2, CheckCircle, FileText, Eye, X, Cpu, Layers, Wifi, RefreshCw, ExternalLink, ShieldCheck, FileDown, Check, Sparkles, Clock, Bot, Zap, PlusCircle, Terminal, Gauge, Info, Calendar, Smartphone, Sun, Moon } from 'lucide-react';
+import { QrCode, Download, MapPin, Loader2, CheckCircle, FileText, Eye, X, Cpu, Layers, Wifi, RefreshCw, ExternalLink, ShieldCheck, FileDown, Check, Sparkles, Clock, Bot, Zap, PlusCircle, Terminal, Gauge, Info, Calendar, Smartphone, Sun, Moon, Lock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 const ResumeQuickLook = lazy(() => import('../widgets/ResumeQuickLook'));
 import { useLocalTime } from '../../hooks/useLocalTime';
@@ -9,6 +9,7 @@ import QRModal from '../widgets/QRModal';
 import { useTheme } from '../../context/ThemeContext';
 import { usePersona } from '../../context/PersonaContext';
 import useRealtimeData from '../../hooks/useRealtimeData';
+import useModuleStatus from '../../hooks/useModuleStatus';
 import { useIsland } from '../../context/IslandContext';
 import { FaGithub } from 'react-icons/fa';
 import SystemDiagnostics from '../dev/SystemDiagnostics';
@@ -72,8 +73,8 @@ const NAV_ITEMS_DEF = [
   { label: 'SKILLS', id: 'skills' },
   { label: 'PROJECTS', id: 'projects' },
   { label: 'EDUCATION', id: 'education' },
-  { label: 'EXPERIENCE', id: 'experience' },
-  { label: 'CERTIFICATIONS', id: 'certifications' },
+  { label: 'EXPERIENCE', id: 'experience', moduleKey: 'experience', moduleLabel: 'Experience & Timeline' },
+  { label: 'CERTIFICATIONS', id: 'certifications', moduleKey: 'certifications', moduleLabel: 'Certifications & Awards' },
   { label: 'CONTACT', id: 'contact' },
 ];
 
@@ -81,16 +82,12 @@ export default function Sidebar({ activeSection, onNavClick }) {
   const auth = useAuth();
   const isAdminActive = Boolean(auth?.session || auth?.user);
   const { data: dbSettings } = useRealtimeData('site_settings', { single: true, filter: { column: 'id', value: 1 } });
+  const { isModuleEnabled, notifyModuleDisabled } = useModuleStatus();
   const { visitorCount, isConnected } = useSupabasePresence();
   const { getSectionOrder } = usePersona();
   
-  const baseItems = NAV_ITEMS_DEF.filter(item => {
-    if (item.id === 'experience' && dbSettings?.feature_experience === false) return false;
-    if (item.id === 'certifications' && dbSettings?.feature_certifications === false) return false;
-    return true;
-  });
-  
-  
+  // Keep all navigation items visible; disabled items are styled as locked and trigger notice
+  const baseItems = NAV_ITEMS_DEF;
   const NAV_ITEMS = getSectionOrder(baseItems);
 
   const localTime = useLocalTime();
@@ -245,20 +242,45 @@ export default function Sidebar({ activeSection, onNavClick }) {
       </p>
 
       <ul>
-        {NAV_ITEMS.map(({ label, id }) => (
-          <li key={id}>
-            <a
-              href={`/${id}`}
-              className={activeSection === id ? 'active' : ''}
-              onClick={(e) => {
-                e.preventDefault();
-                onNavClick?.(id);
-              }}
-            >
-              {label}
-            </a>
-          </li>
-        ))}
+        {NAV_ITEMS.map(({ label, id, moduleKey, moduleLabel }) => {
+          const isEnabled = !moduleKey || isModuleEnabled(moduleKey);
+          return (
+            <li key={id}>
+              <a
+                href={`/${id}`}
+                className={`${activeSection === id ? 'active' : ''} ${!isEnabled ? 'module-disabled' : ''}`}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  cursor: !isEnabled ? 'not-allowed' : 'pointer',
+                }}
+                title={!isEnabled ? `${moduleLabel || label} (Disabled by Admin)` : label}
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (!isEnabled) {
+                    notifyModuleDisabled(moduleKey);
+                    return;
+                  }
+                  onNavClick?.(id);
+                }}
+              >
+                <span>{label}</span>
+                {!isEnabled && (
+                  <Lock
+                    size={12}
+                    style={{
+                      color: '#EF4444',
+                      opacity: 0.9,
+                      flexShrink: 0,
+                    }}
+                  />
+                )}
+              </a>
+            </li>
+          );
+        })}
       </ul>
 
       {/* --- divider between nav and actions --- */}
@@ -585,24 +607,45 @@ export default function Sidebar({ activeSection, onNavClick }) {
         style={{ marginTop: '10px' }}
       >
         {/* 1. System Updates Icon */}
-        <button
-          type="button"
-          className={`social-icon-box ${isUpdatesModalOpen ? 'active' : ''}`}
-          onClick={() => setIsUpdatesModalOpen(true)}
-          title="System Updates & Changelog"
-          aria-label="System Updates"
-          style={{
-            cursor: 'pointer',
-            position: 'relative',
-            padding: 0,
-            outline: 'none',
-            borderColor: isUpdatesModalOpen ? 'var(--primary-blue)' : 'var(--border-color)',
-            backgroundColor: isUpdatesModalOpen ? 'color-mix(in srgb, var(--primary-blue) 14%, transparent)' : 'transparent',
-          }}
-        >
-          <Sparkles size={16} color={isUpdatesModalOpen ? 'var(--primary-blue)' : 'var(--text-primary)'} />
-          <span className="sidebar-diag-dot" style={{ backgroundColor: 'var(--primary-blue)', boxShadow: '0 0 6px var(--primary-blue)' }} />
-        </button>
+        {(() => {
+          const isUpdatesEnabled = isModuleEnabled('updates');
+          return (
+            <button
+              type="button"
+              className={`social-icon-box ${isUpdatesModalOpen ? 'active' : ''}`}
+              onClick={() => {
+                if (!isUpdatesEnabled) {
+                  notifyModuleDisabled('updates');
+                  return;
+                }
+                setIsUpdatesModalOpen(true);
+              }}
+              title={isUpdatesEnabled ? "System Updates & Changelog" : "System Updates (Disabled by Admin)"}
+              aria-label="System Updates"
+              style={{
+                cursor: isUpdatesEnabled ? 'pointer' : 'not-allowed',
+                position: 'relative',
+                padding: 0,
+                outline: 'none',
+                opacity: isUpdatesEnabled ? 1 : 0.6,
+                borderColor: isUpdatesModalOpen ? 'var(--primary-blue)' : (!isUpdatesEnabled ? 'rgba(239, 68, 68, 0.4)' : 'var(--border-color)'),
+                backgroundColor: isUpdatesModalOpen ? 'color-mix(in srgb, var(--primary-blue) 14%, transparent)' : 'transparent',
+              }}
+            >
+              {isUpdatesEnabled ? (
+                <>
+                  <Sparkles size={16} color={isUpdatesModalOpen ? 'var(--primary-blue)' : 'var(--text-primary)'} />
+                  <span className="sidebar-diag-dot" style={{ backgroundColor: 'var(--primary-blue)', boxShadow: '0 0 6px var(--primary-blue)' }} />
+                </>
+              ) : (
+                <>
+                  <Lock size={15} color="#EF4444" />
+                  <span className="sidebar-diag-dot" style={{ backgroundColor: '#EF4444', boxShadow: '0 0 6px #EF4444' }} />
+                </>
+              )}
+            </button>
+          );
+        })()}
 
         {/* 2. Schedule a 1:1 Meeting (Calendar) */}
         <button

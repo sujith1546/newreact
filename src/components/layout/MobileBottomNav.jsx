@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from 'react';
-import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Award, FileText, Share, X, Moon, Sun, FileDown, Settings, ChevronLeft, ChevronDown, ChevronRight, Monitor, Bell, Wand2, Globe, Trash2, User, UserPlus, Copy, Check, MapPin, School, Sparkles, Atom, HelpCircle, Zap, BookOpen, Code2, ExternalLink, Star, Info, Navigation, Layers, Shield, Clock, Compass, RefreshCw } from 'lucide-react';
+import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Award, FileText, Share, X, Moon, Sun, FileDown, Settings, ChevronLeft, ChevronDown, ChevronRight, Monitor, Bell, Wand2, Globe, Trash2, User, UserPlus, Copy, Check, MapPin, School, Sparkles, Atom, HelpCircle, Zap, BookOpen, Code2, ExternalLink, Star, Info, Navigation, Layers, Shield, Clock, Compass, RefreshCw, Lock } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
 import { IconBolt, IconLayoutGrid } from '@tabler/icons-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useLocalTime } from '../../hooks/useLocalTime';
 import { useTheme } from '../../context/ThemeContext';
 import { usePersona } from '../../context/PersonaContext';
 import useRealtimeData, { globalDataCache, fetchPromises } from '../../hooks/useRealtimeData';
+import useModuleStatus from '../../hooks/useModuleStatus';
 import WhatsNewPanel from '../widgets/WhatsNewPanel';
 import AdvancedProfile from '../widgets/AdvancedProfile';
 import haptic from '../../lib/haptics';
@@ -17,7 +18,9 @@ const moonPath = "M 12 3 C 16.97 3 21 7.03 21 12 C 21 16.97 16.97 21 12 21 C 14.
 
 export default function MobileBottomNav({ activeSection, onNavClick }) {
   const { data: dbSettings } = useRealtimeData('site_settings', { single: true, filter: { column: 'id', value: 1 } });
+  const { isModuleEnabled, notifyModuleDisabled } = useModuleStatus();
   const navigate = useNavigate();
+  const dragControls = useDragControls();
 
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -437,10 +440,12 @@ END:VCARD`;
             aria-modal="true"
             aria-label="More options navigation"
             drag="y"
+            dragListener={false}
+            dragControls={dragControls}
             dragConstraints={{ top: 0 }}
-            dragElastic={{ top: 0.05, bottom: 0.5 }}
+            dragElastic={{ top: 0, bottom: 0.35 }}
             onDragEnd={(e, { offset, velocity }) => {
-              if (offset.y > 100 || velocity.y > 400) {
+              if (offset.y > 160 || (velocity.y > 500 && offset.y > 40)) {
                 haptic.medium();
                 setIsMoreOpen(false);
               }
@@ -450,7 +455,22 @@ END:VCARD`;
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 32, stiffness: 380, mass: 0.8 }}
           >
-            <div className="drawer-handle" />
+            <div
+              className="drawer-handle-touch-target"
+              onPointerDown={(e) => dragControls.start(e)}
+              style={{
+                width: '100%',
+                padding: '12px 0 6px',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                cursor: 'grab',
+                touchAction: 'none',
+                flexShrink: 0
+              }}
+            >
+              <div className="drawer-handle" style={{ margin: 0 }} />
+            </div>
 
             {/* Header: avatar + name + close */}
             <div className="drawer-header-profile">
@@ -571,33 +591,65 @@ END:VCARD`;
                   <span>Education</span>
                 </motion.button>
 
-                {dbSettings?.feature_experience !== false && (
-                  <motion.button
-                    whileHover={{ scale: 1.04 }}
-                    whileTap={{ scale: 0.93 }}
-                    onClick={() => { haptic.light(); handleTabClick('experience'); }}
-                    className="drawer-explore-item"
-                  >
-                    <div className="drawer-item-box" style={{ color: '#10b981', background: 'rgba(16,185,129,0.1)', borderColor: 'rgba(16,185,129,0.25)' }}>
-                      <Briefcase size={18} />
-                    </div>
-                    <span>Experience</span>
-                  </motion.button>
-                )}
+                {(() => {
+                  const isExpEnabled = isModuleEnabled('experience');
+                  return (
+                    <motion.button
+                      whileHover={{ scale: isExpEnabled ? 1.04 : 1 }}
+                      whileTap={{ scale: isExpEnabled ? 0.93 : 1 }}
+                      onClick={() => {
+                        if (!isExpEnabled) {
+                          notifyModuleDisabled('experience');
+                          return;
+                        }
+                        haptic.light();
+                        handleTabClick('experience');
+                      }}
+                      className={`drawer-explore-item ${!isExpEnabled ? 'item-disabled' : ''}`}
+                      style={!isExpEnabled ? { opacity: 0.65 } : {}}
+                    >
+                      <div className="drawer-item-box" style={{ color: isExpEnabled ? '#10b981' : '#EF4444', background: isExpEnabled ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', borderColor: isExpEnabled ? 'rgba(16,185,129,0.25)' : 'rgba(239,68,68,0.25)', position: 'relative' }}>
+                        <Briefcase size={18} />
+                        {!isExpEnabled && (
+                          <span style={{ position: 'absolute', top: -4, right: -4, width: 13, height: 13, borderRadius: '50%', background: '#EF4444', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+                            <Lock size={8} />
+                          </span>
+                        )}
+                      </div>
+                      <span>Experience</span>
+                    </motion.button>
+                  );
+                })()}
 
-                {dbSettings?.feature_certifications !== false && (
-                  <motion.button
-                    whileHover={{ scale: 1.04 }}
-                    whileTap={{ scale: 0.93 }}
-                    onClick={() => { haptic.light(); handleTabClick('certifications'); }}
-                    className="drawer-explore-item"
-                  >
-                    <div className="drawer-item-box" style={{ color: '#f59e0b', background: 'rgba(245,158,11,0.1)', borderColor: 'rgba(245,158,11,0.25)' }}>
-                      <Award size={18} />
-                    </div>
-                    <span>Certs</span>
-                  </motion.button>
-                )}
+                {(() => {
+                  const isCertsEnabled = isModuleEnabled('certifications');
+                  return (
+                    <motion.button
+                      whileHover={{ scale: isCertsEnabled ? 1.04 : 1 }}
+                      whileTap={{ scale: isCertsEnabled ? 0.93 : 1 }}
+                      onClick={() => {
+                        if (!isCertsEnabled) {
+                          notifyModuleDisabled('certifications');
+                          return;
+                        }
+                        haptic.light();
+                        handleTabClick('certifications');
+                      }}
+                      className={`drawer-explore-item ${!isCertsEnabled ? 'item-disabled' : ''}`}
+                      style={!isCertsEnabled ? { opacity: 0.65 } : {}}
+                    >
+                      <div className="drawer-item-box" style={{ color: isCertsEnabled ? '#f59e0b' : '#EF4444', background: isCertsEnabled ? 'rgba(245,158,11,0.1)' : 'rgba(239,68,68,0.1)', borderColor: isCertsEnabled ? 'rgba(245,158,11,0.25)' : 'rgba(239,68,68,0.25)', position: 'relative' }}>
+                        <Award size={18} />
+                        {!isCertsEnabled && (
+                          <span style={{ position: 'absolute', top: -4, right: -4, width: 13, height: 13, borderRadius: '50%', background: '#EF4444', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
+                            <Lock size={8} />
+                          </span>
+                        )}
+                      </div>
+                      <span>Certs</span>
+                    </motion.button>
+                  );
+                })()}
 
                 <motion.button
                   whileHover={{ scale: 1.04 }}

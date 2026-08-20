@@ -3,10 +3,11 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X, MapPin, Mail, School, Check, Copy, FileText,
-  Briefcase, Award, Brain, Code2, Star, Zap, ChevronRight, ChevronDown
+  Briefcase, Award, Brain, Code2, Star, Zap, ChevronRight, ChevronDown, Lock
 } from 'lucide-react';
 import { FaGithub, FaLinkedin } from 'react-icons/fa';
 import { useTheme } from '../../context/ThemeContext';
+import useModuleStatus from '../../hooks/useModuleStatus';
 
 /* ── Animated skill bar ──────────────────────────────────────────────────── */
 function SkillBar({ label, pct, color, active, delay = 0 }) {
@@ -59,6 +60,7 @@ export default function AdvancedProfile({ isOpen, onClose, playSound, triggerEve
   const [isScrollable, setIsScrollable] = useState(false);
   const scrollAreaRef = React.useRef(null);
   const { theme } = useTheme();
+  const { isModuleEnabled, notifyModuleDisabled } = useModuleStatus();
 
   useEffect(() => {
     if (isOpen) {
@@ -101,10 +103,32 @@ export default function AdvancedProfile({ isOpen, onClose, playSound, triggerEve
   ];
 
   const explores = [
-    { label: 'Experience',    Icon: Briefcase, action: () => handleExploreClick('experience')      },
-    { label: 'Certs',         Icon: Award,     action: () => handleExploreClick('certifications')  },
-    { label: 'GitHub',        Icon: FaGithub,  action: () => handleExploreClick('github')          },
-    { label: 'Resume',        Icon: FileText,  action: () => { if (playSound) playSound(); onClose(); triggerEvent('open-resume'); } },
+    {
+      label: 'Experience',
+      moduleKey: 'experience',
+      Icon: Briefcase,
+      action: () => {
+        if (!isModuleEnabled('experience')) {
+          notifyModuleDisabled('experience');
+          return;
+        }
+        handleExploreClick('experience');
+      },
+    },
+    {
+      label: 'Certs',
+      moduleKey: 'certifications',
+      Icon: Award,
+      action: () => {
+        if (!isModuleEnabled('certifications')) {
+          notifyModuleDisabled('certifications');
+          return;
+        }
+        handleExploreClick('certifications');
+      },
+    },
+    { label: 'GitHub', Icon: FaGithub, action: () => handleExploreClick('github') },
+    { label: 'Resume', Icon: FileText, action: () => { if (playSound) playSound(); onClose(); triggerEvent('open-resume'); } },
   ];
 
   const content = (
@@ -356,7 +380,8 @@ export default function AdvancedProfile({ isOpen, onClose, playSound, triggerEve
                     .explore-carousel::-webkit-scrollbar { display: none; }
                   `}</style>
                   <div className="explore-carousel" style={{ display: 'flex', gap: 12, paddingRight: 20 }}>
-                    {explores.map(({ label, Icon, action }, index) => {
+                    {explores.map(({ label, Icon, action, moduleKey }, index) => {
+                      const isEnabled = !moduleKey || isModuleEnabled(moduleKey);
                       const gradients = [
                         'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
                         'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
@@ -367,9 +392,10 @@ export default function AdvancedProfile({ isOpen, onClose, playSound, triggerEve
                         <button key={label} onClick={action} style={{
                           display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
                           width: 105, height: 115, padding: 14, flexShrink: 0, scrollSnapAlign: 'start',
-                          background: gradients[index % gradients.length],
-                          borderRadius: 20, cursor: 'pointer', outline: 'none', textAlign: 'left',
-                          border: '1px solid rgba(255,255,255,0.1)',
+                          background: isEnabled ? gradients[index % gradients.length] : 'linear-gradient(135deg, #475569 0%, #334155 100%)',
+                          borderRadius: 20, cursor: isEnabled ? 'pointer' : 'not-allowed', outline: 'none', textAlign: 'left',
+                          border: isEnabled ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(239,68,68,0.3)',
+                          opacity: isEnabled ? 1 : 0.7,
                           boxShadow: '0 4px 12px rgba(0,0,0,0.1)', position: 'relative', overflow: 'hidden'
                         }}>
                           <div style={{ position: 'absolute', top: -10, right: -10, opacity: 0.1 }}>
@@ -377,12 +403,15 @@ export default function AdvancedProfile({ isOpen, onClose, playSound, triggerEve
                           </div>
                           <div style={{
                             width: 32, height: 32, borderRadius: 10,
-                            background: 'rgba(255,255,255,0.2)', backdropFilter: 'blur(var(--glass-blur, 12px))',
+                            background: isEnabled ? 'rgba(255,255,255,0.2)' : 'rgba(239,68,68,0.25)', backdropFilter: 'blur(var(--glass-blur, 12px))',
                             display: 'flex', alignItems: 'center', justifyContent: 'center'
                           }}>
-                            <Icon size={16} color="#fff" />
+                            {isEnabled ? <Icon size={16} color="#fff" /> : <Lock size={15} color="#EF4444" />}
                           </div>
-                          <span style={{ fontSize: 13, fontWeight: 800, color: '#fff', letterSpacing: '-0.01em', zIndex: 1 }}>{label}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', zIndex: 1 }}>
+                            <span style={{ fontSize: 13, fontWeight: 800, color: '#fff', letterSpacing: '-0.01em' }}>{label}</span>
+                            {!isEnabled && <Lock size={11} color="#F87171" />}
+                          </div>
                         </button>
                       );
                     })}

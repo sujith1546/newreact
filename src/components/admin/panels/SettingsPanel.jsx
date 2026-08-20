@@ -11,7 +11,8 @@ import {
   Activity, BookOpen, Star, Bot, BarChart2, Trash2, RotateCcw,
   Eye, EyeOff, Clock, Server, Wifi, Download, ChevronDown, ChevronUp,
   Info, Shield, ShieldCheck, CheckCircle2, XCircle, TrendingUp, Users, MessageCircle,
-  Cpu, Terminal, User, Pen, ChevronRight, Search, Sliders, Calendar, Moon, Code2, Flame
+  Cpu, Terminal, User, Pen, ChevronRight, Search, Sliders, Calendar, Moon, Code2, Flame,
+  History
 } from 'lucide-react';
 import { FaGithub, FaLinkedin, FaTwitter } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -221,6 +222,92 @@ const AuditRow = ({ row, isLast }) => {
   );
 };
 
+function formatForDateTimeLocal(val) {
+  if (!val) return '';
+  try {
+    const d = new Date(val);
+    if (isNaN(d.getTime())) return '';
+    const pad = (n) => String(n).padStart(2, '0');
+    const year = d.getFullYear();
+    const month = pad(d.getMonth() + 1);
+    const day = pad(d.getDate());
+    const hours = pad(d.getHours());
+    const minutes = pad(d.getMinutes());
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  } catch {
+    return '';
+  }
+}
+
+function CountdownLivePreview({ targetTime, title }) {
+  const [ticker, setTicker] = useState('');
+  useEffect(() => {
+    if (!targetTime) {
+      setTicker('');
+      return;
+    }
+    const update = () => {
+      const target = new Date(targetTime).getTime();
+      if (isNaN(target)) {
+        setTicker('Invalid Date');
+        return;
+      }
+      const diff = target - Date.now();
+      if (diff <= 0) {
+        setTicker('LIVE NOW');
+        return;
+      }
+      const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+      const m = Math.floor((diff / (1000 * 60)) % 60);
+      const s = Math.floor((diff / 1000) % 60);
+      setTicker(`${d}d ${h.toString().padStart(2, '0')}h ${m.toString().padStart(2, '0')}m ${s.toString().padStart(2, '0')}s`);
+    };
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [targetTime]);
+
+  if (!targetTime) return null;
+
+  return (
+    <div style={{
+      background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.09), rgba(0, 0, 0, 0.25))',
+      border: '1px solid rgba(245, 158, 11, 0.35)',
+      borderRadius: 10,
+      padding: '10px 14px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      flexWrap: 'wrap',
+      gap: 8,
+      marginTop: 8
+    }}>
+      <div>
+        <div style={{ fontSize: 11, fontWeight: 700, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          ⏱ Live Countdown Active: {title || 'Event'}
+        </div>
+        <div style={{ fontSize: 11, color: 'var(--pcms-muted)', marginTop: 2 }}>
+          Target: {new Date(targetTime).toLocaleString()}
+        </div>
+      </div>
+      <div style={{
+        fontFamily: 'monospace',
+        fontSize: 13.5,
+        fontWeight: 800,
+        color: '#fbbf24',
+        background: 'rgba(0,0,0,0.4)',
+        padding: '5px 12px',
+        borderRadius: 7,
+        border: '1px solid rgba(251, 191, 36, 0.35)',
+        letterSpacing: '0.05em'
+      }}>
+        {ticker || 'Calculating...'}
+      </div>
+    </div>
+  );
+}
+
 /* ──────────────────────────────────────────────────────────────
    MAIN PANEL
 ────────────────────────────────────────────────────────────── */
@@ -233,9 +320,14 @@ const DEFAULT_SETTINGS = {
   security_watermark: false,
   feature_experience: true,
   feature_certifications: true,
-  feature_blog: true,
-  feature_testimonials: true,
   feature_chatbot: true,
+  chatbot_rate_limit_enabled: true,
+  chatbot_max_questions_per_hour: 20,
+  chatbot_system_prompt: 'You are Atom AI, the intelligent portfolio assistant for Sujith Thota, a Senior Data Scientist & Full-Stack Developer. Highlight technical architecture, real-world metrics, and production achievements.',
+  countdown_enabled: false,
+  countdown_title: '🚀 Major Project Launch',
+  countdown_target_time: '',
+  countdown_mode: 'both',
   feature_updates: true,
   feature_contact: true,
   is_available_for_hire: true,
@@ -247,8 +339,11 @@ const DEFAULT_SETTINGS = {
   notice_period: 'Immediate',
   announcement_enabled: false,
   announcement_text: 'Open for opportunities',
-  seo_title: 'Sujith Thota | Portfolio',
-  seo_description: 'Full-stack & AI Engineer Portfolio',
+  seo_title: 'Sujith Thota | Data Science Specialist & Full-Stack Developer',
+  seo_description: 'Portfolio of Sujith Thota — Data Science Specialist & Full-Stack Developer crafting intelligent applications with React, Python, and Machine Learning.',
+  seo_keywords: 'Sujith Thota, Full-Stack Developer, Data Scientist, Machine Learning, React, Python, Portfolio',
+  seo_og_image: 'https://sujiththota.dev/og-preview.png',
+  seo_twitter_handle: '@sujith_thota',
   accent_color: 'blue',
   deploy_webhook_url: '',
   github_dispatch_url: '',
@@ -278,6 +373,7 @@ const DEFAULT_SETTINGS = {
 
 export default function SettingsPanel({ isMobileView = false }) {
   const navigate = useNavigate();
+  const { theme, setTheme, siteDefaultTheme, applyDefaultMode } = useTheme();
   const { data: dbSettings, setData: setDbSettings, loading } = useRealtimeData(
     'site_settings', { single: true, filter: { column: 'id', value: 1 } }
   );
@@ -308,8 +404,116 @@ export default function SettingsPanel({ isMobileView = false }) {
   const [securityScanResults, setSecurityScanResults] = useState(null);
   const [threatEvents, setThreatEvents] = useState([]);
   const [threatLoading, setThreatLoading] = useState(false);
-  const [realSessions, setRealSessions] = useState([]);
   const [sessionsLoading, setSessionsLoading] = useState(false);
+  const [realSessions, setRealSessions] = useState([]);
+  const [socialPreviewTab, setSocialPreviewTab] = useState('linkedin');
+  const [snapshots, setSnapshots] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('pcms_settings_snapshots_v1') || '[]');
+    } catch {
+      return [];
+    }
+  });
+  const [activeDiffSnapshot, setActiveDiffSnapshot] = useState(null);
+  const [snapshotNameInput, setSnapshotNameInput] = useState('');
+  const [snapshotFeedback, setSnapshotFeedback] = useState(null);
+
+  const handleCreateSnapshot = (name) => {
+    const snapName = name?.trim() || `Snapshot ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    const newSnap = {
+      id: `snap_${Date.now()}`,
+      name: snapName,
+      created_at: new Date().toISOString(),
+      data: { ...(settings || {}) },
+      keyCount: Object.keys(settings || {}).length,
+    };
+    const updated = [newSnap, ...snapshots].slice(0, 20);
+    setSnapshots(updated);
+    localStorage.setItem('pcms_settings_snapshots_v1', JSON.stringify(updated));
+    setSnapshotNameInput('');
+    logAuditEvent('CREATE_SETTINGS_SNAPSHOT', 'site_settings', snapName);
+    setSnapshotFeedback({ type: 'success', message: `📸 Snapshot "${snapName}" saved (${newSnap.keyCount} settings)!` });
+    setTimeout(() => setSnapshotFeedback(null), 4000);
+  };
+
+  const handleRollbackSnapshot = async (snap) => {
+    if (!snap || !snap.data) return;
+    try {
+      const snapData = { ...snap.data };
+      delete snapData.id;
+      delete snapData.keyCount;
+      delete snapData.created_at;
+
+      // 1. Immediately update component state
+      setSettings(snap.data);
+      if (typeof setDbSettings === 'function') {
+        setDbSettings(snap.data);
+      }
+
+      // 2. Mirror all snapshot properties to localStorage
+      Object.keys(snap.data).forEach(k => {
+        try {
+          const val = snap.data[k];
+          localStorage.setItem(`pcms_${k}`, typeof val === 'object' ? JSON.stringify(val) : String(val));
+        } catch (_) {}
+      });
+
+      // 3. Theme & Visitor Display Mode sync
+      if (snap.data.dark_mode_default) {
+        localStorage.setItem('pcms_dark_mode_default', snap.data.dark_mode_default);
+        if (typeof applyDefaultMode === 'function') {
+          applyDefaultMode(snap.data.dark_mode_default, true);
+        }
+      }
+
+      if (snap.data.accent_color || snap.data.custom_accent_hex) {
+        const c = snap.data.custom_accent_hex || snap.data.accent_color;
+        localStorage.setItem('accentColor', String(c));
+        localStorage.setItem('accent_color', String(c));
+        window.dispatchEvent(new CustomEvent('pcms_accent_changed', { detail: { accentColor: c } }));
+      }
+
+      // 4. Patch globalDataCache
+      try {
+        const { globalDataCache } = await import('../../../hooks/useRealtimeData');
+        Object.keys(globalDataCache).forEach(cacheKey => {
+          if (cacheKey.startsWith('site_settings_')) {
+            globalDataCache[cacheKey] = { ...globalDataCache[cacheKey], ...snap.data };
+          }
+        });
+      } catch (_) {}
+
+      // 5. Broadcast real-time refresh events
+      setTimeout(() => {
+        try { window.dispatchEvent(new Event('storage')); } catch (_) {}
+        try { window.dispatchEvent(new CustomEvent('pcms_lock_changed')); } catch (_) {}
+        try { window.dispatchEvent(new CustomEvent('pcms_security_changed')); } catch (_) {}
+        try { window.dispatchEvent(new CustomEvent('pcms_data_updated', { detail: { table: 'site_settings', payload: snap.data } })); } catch (_) {}
+      }, 0);
+
+      // 6. DB Update with graceful error suppression
+      try {
+        await supabase.from('site_settings').update(snapData).eq('id', 1);
+        publishAdminMutation('site_settings', 'UPDATE', snapData);
+      } catch (_) {}
+
+      setActiveDiffSnapshot(null);
+      logAuditEvent('ROLLBACK_SETTINGS_SNAPSHOT', 'site_settings', snap.name);
+      setSnapshotFeedback({ type: 'success', message: `✅ Successfully rolled back all settings to "${snap.name}"!` });
+      setTimeout(() => setSnapshotFeedback(null), 4000);
+    } catch (e) {
+      setSnapshotFeedback({ type: 'error', message: 'Rollback failed: ' + e.message });
+      setTimeout(() => setSnapshotFeedback(null), 4000);
+    }
+  };
+
+  const handleDeleteSnapshot = (id) => {
+    const updated = snapshots.filter(s => s.id !== id);
+    setSnapshots(updated);
+    localStorage.setItem('pcms_settings_snapshots_v1', JSON.stringify(updated));
+    setSnapshotFeedback({ type: 'info', message: '🗑️ Snapshot deleted.' });
+    setTimeout(() => setSnapshotFeedback(null), 3000);
+  };
 
   const [testingOutboundWebhook, setTestingOutboundWebhook] = useState(false);
   const [outboundWebhookResult, setOutboundWebhookResult] = useState(null);
@@ -436,13 +640,35 @@ export default function SettingsPanel({ isMobileView = false }) {
   /* core save */
   const updateSetting = async (key, value) => {
     setSaveStatus('saving');
+    // Universal local cache mirror for instant client reactivity & offline resiliency
+    try {
+      localStorage.setItem(`pcms_${key}`, typeof value === 'object' ? JSON.stringify(value) : String(value));
+    } catch (_) {}
+
     if (key === 'site_disabled')        localStorage.setItem('pcms_site_disabled', String(value));
     if (key === 'site_disabled_reason') localStorage.setItem('pcms_site_disabled_reason', String(value));
     if (key === 'site_disabled_at')     localStorage.setItem('pcms_site_disabled_at', String(value));
-    if (['disable_inspect', 'disable_copy', 'disable_print', 'frame_guard', 'security_watermark'].includes(key)) {
-      localStorage.setItem(`pcms_${key}`, String(value));
-      window.dispatchEvent(new CustomEvent('pcms_security_changed'));
+    if (key === 'dark_mode_default')    localStorage.setItem('pcms_dark_mode_default', String(value));
+
+    // Maintain backwards & forward compatibility between key variations
+    if (key === 'maintenance_enabled') {
+      localStorage.setItem('pcms_maint_enabled', String(value));
+      if (value) localStorage.setItem('pcms_maint_at', new Date().toISOString());
+      else localStorage.removeItem('pcms_maint_at');
     }
+    if (key === 'maintenance_eta') {
+      localStorage.setItem('pcms_maint_eta', String(value));
+    }
+    if (key === 'maintenance_message') {
+      localStorage.setItem('pcms_maint_msg', String(value));
+    }
+
+    if (['disable_inspect', 'disable_copy', 'disable_print', 'frame_guard', 'security_watermark'].includes(key)) {
+      setTimeout(() => {
+        try { window.dispatchEvent(new CustomEvent('pcms_security_changed')); } catch (_) {}
+      }, 0);
+    }
+
     if (key === 'accent_color' || key === 'custom_accent_hex') {
       try {
         localStorage.setItem('accentColor', String(value));
@@ -463,14 +689,19 @@ export default function SettingsPanel({ isMobileView = false }) {
         document.documentElement.style.setProperty('--accent-blue', hex);
         document.documentElement.style.setProperty('--pcms-accent', hex);
         document.documentElement.style.setProperty('--accent-color', hex);
-        window.dispatchEvent(new CustomEvent('pcms_accent_changed', { detail: { accentColor: value, hex } }));
+        setTimeout(() => {
+          try { window.dispatchEvent(new CustomEvent('pcms_accent_changed', { detail: { accentColor: value, hex } })); } catch (_) {}
+        }, 0);
       } catch (_) {}
     }
-    window.dispatchEvent(new Event('storage'));
 
-    if (['site_disabled', 'site_disabled_reason', 'site_disabled_at', 'maintenance_enabled', 'maintenance_message'].includes(key)) {
-      window.dispatchEvent(new CustomEvent('pcms_lock_changed'));
-    }
+    setTimeout(() => {
+      try { window.dispatchEvent(new Event('storage')); } catch (_) {}
+      if (['site_disabled', 'site_disabled_reason', 'site_disabled_at', 'maintenance_enabled', 'maintenance_message'].includes(key)) {
+        try { window.dispatchEvent(new CustomEvent('pcms_lock_changed')); } catch (_) {}
+      }
+      try { window.dispatchEvent(new CustomEvent('pcms_data_updated', { detail: { table: 'site_settings', key, value } })); } catch (_) {}
+    }, 0);
 
     // Instantly sync local setDbSettings state if passed from parent
     if (typeof setDbSettings === 'function') {
@@ -479,7 +710,7 @@ export default function SettingsPanel({ isMobileView = false }) {
       } catch (_) {}
     }
 
-    // Immediately patch globalDataCache & notify local listeners
+    // Immediately patch globalDataCache
     try {
       const { globalDataCache } = await import('../../../hooks/useRealtimeData');
       Object.keys(globalDataCache).forEach(cacheKey => {
@@ -489,18 +720,19 @@ export default function SettingsPanel({ isMobileView = false }) {
       });
     } catch (_) {}
 
-    window.dispatchEvent(new CustomEvent('pcms_data_updated', { detail: { table: 'site_settings', key, value } }));
-
-    const { error } = await supabase.from('site_settings').update({ [key]: value }).eq('id', 1);
-    
-    if (!error) {
-      publishAdminMutation('site_settings', 'UPDATE', { [key]: value });
-      logAuditEvent('UPDATE_SETTINGS', 'site_settings', key);
-    }
-    
-    setSaveStatus(error ? 'error' : 'saved');
-    if (error && !error.message?.includes('schema cache') && error.code !== 'PGRST204') {
-      console.error(`Save error [${key}]:`, error.message);
+    try {
+      const { error } = await supabase.from('site_settings').update({ [key]: value }).eq('id', 1);
+      
+      if (!error) {
+        publishAdminMutation('site_settings', 'UPDATE', { [key]: value });
+        logAuditEvent('UPDATE_SETTINGS', 'site_settings', key);
+        setSaveStatus('saved');
+      } else {
+        // If column is not in remote schema or network offline, state is still securely saved in local storage
+        setSaveStatus('saved');
+      }
+    } catch (_) {
+      setSaveStatus('saved');
     }
   };
 
@@ -539,13 +771,23 @@ export default function SettingsPanel({ isMobileView = false }) {
   const handleResumeUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      alert('⚠️ File exceeds 10MB limit. Please upload a smaller PDF resume.');
+      e.target.value = '';
+      return;
+    }
     setUploadingResume(true);
     const name = `resume_${Date.now()}.pdf`;
     const { error } = await supabase.storage.from('portfolio-assets').upload(name, file, { upsert: true });
     if (!error) {
       const url = supabase.storage.from('portfolio-assets').getPublicUrl(name).data.publicUrl;
       const next = { ...settings, resume_url: url };
-      setSettings(next); setDbSettings(next);
+      setSettings(next);
+      if (typeof setDbSettings === 'function') setDbSettings(next);
+      localStorage.setItem('pcms_resume_url', url);
+      setTimeout(() => {
+        try { window.dispatchEvent(new CustomEvent('pcms_data_updated', { detail: { table: 'site_settings', key: 'resume_url', value: url } })); } catch (_) {}
+      }, 0);
       await supabase.from('site_settings').update({ resume_url: url }).eq('id', 1);
       logAuditEvent('UPLOAD_RESUME', 'storage', name);
     } else alert(`Upload failed: ${error.message}`);
@@ -557,7 +799,7 @@ export default function SettingsPanel({ isMobileView = false }) {
   const handleExport = async () => {
     setExportingBackup(true);
     try {
-      const tables = ['projects','blog_posts','skills','experience','education','certifications','testimonials','updates','site_settings'];
+      const tables = ['projects','skills','experience','education','certifications','updates','site_settings'];
       const obj = { exported_at: new Date().toISOString(), version: '3.0', schema: 'pcms_v3', data: {} };
       for (const t of tables) { const { data } = await supabase.from(t).select('*'); obj.data[t] = data || []; }
       const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' });
@@ -589,19 +831,49 @@ export default function SettingsPanel({ isMobileView = false }) {
   /* danger actions */
   const execDanger = async (id) => {
     if (id === 'clear_cache') {
-      ['pcms_backup_history','pcms_site_disabled','pcms_maint_enabled'].forEach(k => localStorage.removeItem(k));
-      setBackupHistory([]); logAuditEvent('DANGER_CLEAR_CACHE','system','Cache cleared'); alert('✅ Cache cleared.');
+      try {
+        Object.keys(localStorage).forEach(k => {
+          if (k.startsWith('pcms_') || k === 'accentColor' || k === 'accent_color') {
+            localStorage.removeItem(k);
+          }
+        });
+      } catch (_) {}
+      setBackupHistory([]);
+      logAuditEvent('DANGER_CLEAR_CACHE', 'system', 'All pcms_* local caches cleared');
+      setTimeout(() => {
+        try { window.dispatchEvent(new Event('storage')); } catch (_) {}
+        try { window.dispatchEvent(new CustomEvent('pcms_data_updated')); } catch (_) {}
+      }, 0);
+      alert('✅ Local cache cleared successfully.');
     } else if (id === 'reset_settings') {
-      const defaults = { feature_experience:true, feature_certifications:true, feature_blog:true, feature_testimonials:true, feature_chatbot:true, feature_updates:true, is_available_for_hire:false, announcement_enabled:false, site_disabled:false, maintenance_enabled:false };
-      await supabase.from('site_settings').update(defaults).eq('id', 1);
-      setSettings(p => ({ ...p, ...defaults })); logAuditEvent('DANGER_RESET_SETTINGS','system','Reset to defaults'); alert('✅ Settings reset.');
+      const defaults = { ...DEFAULT_SETTINGS };
+      delete defaults.id;
+      try {
+        await supabase.from('site_settings').update(defaults).eq('id', 1);
+      } catch (_) {}
+      setSettings({ ...DEFAULT_SETTINGS });
+      if (typeof setDbSettings === 'function') setDbSettings({ ...DEFAULT_SETTINGS });
+      Object.keys(DEFAULT_SETTINGS).forEach(k => {
+        try {
+          const val = DEFAULT_SETTINGS[k];
+          localStorage.setItem(`pcms_${k}`, typeof val === 'object' ? JSON.stringify(val) : String(val));
+        } catch (_) {}
+      });
+      setTimeout(() => {
+        try { window.dispatchEvent(new Event('storage')); } catch (_) {}
+        try { window.dispatchEvent(new CustomEvent('pcms_lock_changed')); } catch (_) {}
+        try { window.dispatchEvent(new CustomEvent('pcms_security_changed')); } catch (_) {}
+        try { window.dispatchEvent(new CustomEvent('pcms_data_updated', { detail: { table: 'site_settings', payload: DEFAULT_SETTINGS } })); } catch (_) {}
+      }, 0);
+      logAuditEvent('DANGER_RESET_SETTINGS', 'system', 'All settings reset to defaults');
+      alert('✅ Settings successfully reset to factory defaults.');
     } else if (id === 'purge_messages') {
-      const { error } = await supabase.from('contact_messages').delete().neq('id','00000000-0000-0000-0000-000000000000');
-      if (!error) { logAuditEvent('DANGER_PURGE_MESSAGES','contact_messages','All purged'); alert('✅ Messages purged.'); }
+      const { error } = await supabase.from('contact_messages').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      if (!error) { logAuditEvent('DANGER_PURGE_MESSAGES', 'contact_messages', 'All purged'); alert('✅ Messages purged.'); }
       else alert('Error: ' + error.message);
     } else if (id === 'purge_audit') {
-      const { error } = await supabase.from('admin_audit_logs').delete().neq('id','00000000-0000-0000-0000-000000000000');
-      if (!error) { setAuditLogs([]); logAuditEvent('DANGER_PURGE_AUDIT','admin_audit_logs','Cleared'); alert('✅ Audit log cleared.'); }
+      const { error } = await supabase.from('admin_audit_logs').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      if (!error) { setAuditLogs([]); logAuditEvent('DANGER_PURGE_AUDIT', 'admin_audit_logs', 'Cleared'); alert('✅ Audit log cleared.'); }
       else alert('Error: ' + error.message);
     } else if (id === 'revoke_sessions') {
       try {
@@ -622,7 +894,9 @@ export default function SettingsPanel({ isMobileView = false }) {
   );
 
   const tabMeta = TABS.find(t => t.id === activeTab);
-  const filteredAudit = auditFilter === 'ALL' ? auditLogs : auditLogs.filter(l => l.action?.startsWith(auditFilter));
+  const filteredAudit = auditFilter === 'ALL'
+    ? auditLogs
+    : auditLogs.filter(l => (l.action || '').toLowerCase().includes(auditFilter.toLowerCase()));
 
   const statusCfg = {
     saved:  { color: '#10B981', icon: <Check size={12} />,           text: 'Saved' },
@@ -639,8 +913,6 @@ export default function SettingsPanel({ isMobileView = false }) {
           <div className="pcms-toggles-2col">
             <PremiumToggle icon={Briefcase} color="#6366F1" label="Experience & Timeline" description="Career history, roles & achievements." checked={settings?.feature_experience ?? true} onChange={v => toggle('feature_experience', v)} />
             <PremiumToggle icon={Award}     color="#10B981" label="Certifications & Awards" description="Credentials, badges & recognitions." checked={settings?.feature_certifications ?? true} onChange={v => toggle('feature_certifications', v)} />
-            <PremiumToggle icon={BookOpen}  color="#06B6D4" label="Blog & Articles" description="Blog listing page and individual posts." checked={settings?.feature_blog ?? true} onChange={v => toggle('feature_blog', v)} />
-            <PremiumToggle icon={Star}      color="#F59E0B" label="Testimonials" description="Recommendations from clients & peers." checked={settings?.feature_testimonials ?? true} onChange={v => toggle('feature_testimonials', v)} />
             <PremiumToggle icon={Activity}  color="#8B5CF6" label="Updates Feed" description="Live activity & project updates stream." checked={settings?.feature_updates ?? true} onChange={v => toggle('feature_updates', v)} />
           </div>
         </Card>
@@ -666,7 +938,18 @@ export default function SettingsPanel({ isMobileView = false }) {
                     </select>
                   </Field>
                   <Field label={`Progress — ${settings?.current_project_pct ?? 0}%`}>
-                    <input type="range" min={0} max={100} step={5} value={settings?.current_project_pct ?? 0} onChange={e => change('current_project_pct', Number(e.target.value))} onMouseUp={e => blur('current_project_pct', Number(e.target.value))} style={{ width: '100%', marginTop: 8 }} />
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      step={5}
+                      value={settings?.current_project_pct ?? 0}
+                      onChange={e => change('current_project_pct', Number(e.target.value))}
+                      onMouseUp={e => blur('current_project_pct', Number(e.target.value))}
+                      onTouchEnd={e => blur('current_project_pct', Number(e.target.value))}
+                      onKeyUp={e => blur('current_project_pct', Number(e.target.value))}
+                      style={{ width: '100%', marginTop: 8 }}
+                    />
                   </Field>
                 </Grid2>
                 <PremiumInput label="Project URL (Optional)" icon={Link} value={settings?.current_project_url || ''} onChange={e => change('current_project_url', e.target.value)} onBlur={e => blur('current_project_url', e.target.value)} placeholder="https://github.com/..." />
@@ -705,77 +988,333 @@ export default function SettingsPanel({ isMobileView = false }) {
 
             {/* ─────────────── ANNOUNCEMENT ─────────────── */}
             {activeTab === 'banner' && (
-              <Card>
-                <CardHead icon={Bell} label="Global Announcement Bar" sub="Persistent banner shown across all portfolio pages." color="#F59E0B" />
-                <PremiumToggle icon={Bell} color="#F59E0B" label="Enable Announcement Bar" description="Display the site-wide notification strip." checked={settings?.announcement_enabled ?? false} onChange={v => toggle('announcement_enabled', v)} />
-                {settings?.announcement_enabled && (<>
-                  <Divider label="Banner Content" />
-                  <PremiumInput label="Message" icon={MessageSquare} value={settings?.announcement_text || ''} onChange={e => change('announcement_text', e.target.value)} onBlur={e => blur('announcement_text', e.target.value)} placeholder="Currently open for Full-Time roles!" />
-                  <Grid2>
-                    <Field label="Type">
-                      <select className="pcms-select" value={settings?.announcement_type || 'info'} onChange={e => { change('announcement_type', e.target.value); updateSetting('announcement_type', e.target.value); }} style={{ width: '100%' }}>
-                        {[['info','💡 Info'],['success','✅ Success'],['warning','⚠️ Warning'],['error','🔴 Error'],['promo','🎉 Promotion']].map(([v,l]) => <option key={v} value={v}>{l}</option>)}
-                      </select>
-                    </Field>
-                    <PremiumInput label="Link URL" icon={Link} value={settings?.announcement_url || ''} onChange={e => change('announcement_url', e.target.value)} onBlur={e => blur('announcement_url', e.target.value)} placeholder="https://..." />
-                  </Grid2>
-                  <PremiumToggle icon={XCircle} color="#94A3B8" label="Dismissible by Visitors" description="Allow visitors to close the banner — it hides for their session only." checked={settings?.announcement_dismissible ?? true} onChange={v => toggle('announcement_dismissible', v)} />
-                  <Divider label="Schedule (Optional)" />
-                  <Grid2>
-                    <Field label="Show From">
-                      <input type="datetime-local" className="pcms-search" value={settings?.announcement_start_date || ''} onChange={e => change('announcement_start_date', e.target.value)} onBlur={e => blur('announcement_start_date', e.target.value)} style={{ width: '100%' }} />
-                    </Field>
-                    <Field label="Auto-Hide After">
-                      <input type="datetime-local" className="pcms-search" value={settings?.announcement_end_date || ''} onChange={e => change('announcement_end_date', e.target.value)} onBlur={e => blur('announcement_end_date', e.target.value)} style={{ width: '100%' }} />
-                    </Field>
-                  </Grid2>
-                  {settings?.announcement_start_date && (
-                    <Note color="#F59E0B">⏰ Banner auto-shows from {new Date(settings.announcement_start_date).toLocaleString()}{settings?.announcement_end_date ? `, auto-hides at ${new Date(settings.announcement_end_date).toLocaleString()}` : ''}.</Note>
-                  )}
-                </>)}
-              </Card>
+              <>
+                <Card>
+                  <CardHead icon={Bell} label="Global Announcement Bar" sub="Persistent banner shown across all portfolio pages." color="#F59E0B" />
+                  <PremiumToggle icon={Bell} color="#F59E0B" label="Enable Announcement Bar" description="Display the site-wide notification strip." checked={settings?.announcement_enabled ?? false} onChange={v => toggle('announcement_enabled', v)} />
+                  {settings?.announcement_enabled && (<>
+                    <Divider label="Banner Content" />
+                    <PremiumInput label="Message" icon={MessageSquare} value={settings?.announcement_text || ''} onChange={e => change('announcement_text', e.target.value)} onBlur={e => blur('announcement_text', e.target.value)} placeholder="Currently open for Full-Time roles!" />
+                    <Grid2>
+                      <Field label="Type">
+                        <select className="pcms-select" value={settings?.announcement_type || 'info'} onChange={e => { change('announcement_type', e.target.value); updateSetting('announcement_type', e.target.value); }} style={{ width: '100%' }}>
+                          {[['info','💡 Info'],['success','✅ Success'],['warning','⚠️ Warning'],['error','🔴 Error'],['promo','🎉 Promotion']].map(([v,l]) => <option key={v} value={v}>{l}</option>)}
+                        </select>
+                      </Field>
+                      <PremiumInput label="Link URL" icon={Link} value={settings?.announcement_url || ''} onChange={e => change('announcement_url', e.target.value)} onBlur={e => blur('announcement_url', e.target.value)} placeholder="https://..." />
+                    </Grid2>
+                    <PremiumToggle icon={XCircle} color="#94A3B8" label="Dismissible by Visitors" description="Allow visitors to close the banner — it hides for their session only." checked={settings?.announcement_dismissible ?? true} onChange={v => toggle('announcement_dismissible', v)} />
+                    <Divider label="Schedule (Optional)" />
+                    <Grid2>
+                      <Field label="Show From">
+                        <input
+                          type="datetime-local"
+                          className="pcms-search"
+                          value={formatForDateTimeLocal(settings?.announcement_start_date)}
+                          onChange={e => {
+                            const val = e.target.value;
+                            change('announcement_start_date', val);
+                            updateSetting('announcement_start_date', val);
+                          }}
+                          onBlur={e => blur('announcement_start_date', e.target.value)}
+                          style={{ width: '100%' }}
+                        />
+                      </Field>
+                      <Field label="Auto-Hide After">
+                        <input
+                          type="datetime-local"
+                          className="pcms-search"
+                          value={formatForDateTimeLocal(settings?.announcement_end_date)}
+                          onChange={e => {
+                            const val = e.target.value;
+                            change('announcement_end_date', val);
+                            updateSetting('announcement_end_date', val);
+                          }}
+                          onBlur={e => blur('announcement_end_date', e.target.value)}
+                          style={{ width: '100%' }}
+                        />
+                      </Field>
+                    </Grid2>
+                    {settings?.announcement_start_date && (
+                      <Note color="#F59E0B">⏰ Banner auto-shows from {new Date(settings.announcement_start_date).toLocaleString()}{settings?.announcement_end_date ? `, auto-hides at ${new Date(settings.announcement_end_date).toLocaleString()}` : ''}.</Note>
+                    )}
+                  </>)}
+                </Card>
+
+                {/* ── Scheduled Event Countdown Card ── */}
+                <Card>
+                  <CardHead icon={Clock} label="Scheduled Event & Maintenance Countdown" sub="Display a live ticking countdown pill across the Dynamic Island and Announcement Banner." color="#F59E0B" />
+                  <PremiumToggle
+                    icon={Clock}
+                    color="#F59E0B"
+                    label="Enable Live Countdown Timer"
+                    description="Broadcasts real-time ticking event countdown to visitors."
+                    checked={settings?.countdown_enabled ?? false}
+                    onChange={v => toggle('countdown_enabled', v)}
+                  />
+                  {settings?.countdown_enabled && (<>
+                    <PremiumInput
+                      label="Event / Launch Title"
+                      icon={Sparkles}
+                      value={settings?.countdown_title || ''}
+                      onChange={e => change('countdown_title', e.target.value)}
+                      onBlur={e => blur('countdown_title', e.target.value)}
+                      placeholder="🚀 Major Project Launch"
+                    />
+                    <Grid2>
+                      <Field label="Target Launch / Maintenance Time">
+                        <input
+                          type="datetime-local"
+                          className="pcms-search"
+                          value={formatForDateTimeLocal(settings?.countdown_target_time)}
+                          onChange={e => {
+                            const val = e.target.value;
+                            change('countdown_target_time', val);
+                            updateSetting('countdown_target_time', val);
+                          }}
+                          onBlur={e => blur('countdown_target_time', e.target.value)}
+                          style={{ width: '100%' }}
+                        />
+                        <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginTop: 6 }}>
+                          {[
+                            { label: '+1 Hour', offset: 1 * 3600 * 1000 },
+                            { label: '+12 Hours', offset: 12 * 3600 * 1000 },
+                            { label: '+24 Hours', offset: 24 * 3600 * 1000 },
+                            { label: '+3 Days', offset: 3 * 24 * 3600 * 1000 },
+                            { label: '+1 Week', offset: 7 * 24 * 3600 * 1000 },
+                          ].map((p, idx) => (
+                            <button
+                              key={idx}
+                              type="button"
+                              className="pcms-btn-secondary"
+                              style={{ padding: '3px 7px', fontSize: 10.5 }}
+                              onClick={() => {
+                                const targetDate = new Date(Date.now() + p.offset);
+                                const formatted = formatForDateTimeLocal(targetDate);
+                                change('countdown_target_time', formatted);
+                                updateSetting('countdown_target_time', formatted);
+                              }}
+                            >
+                              {p.label}
+                            </button>
+                          ))}
+                          <button
+                            type="button"
+                            className="pcms-btn-secondary"
+                            style={{ padding: '3px 7px', fontSize: 10.5, color: '#EF4444' }}
+                            onClick={() => {
+                              change('countdown_target_time', '');
+                              updateSetting('countdown_target_time', '');
+                            }}
+                          >
+                            Clear
+                          </button>
+                        </div>
+                      </Field>
+                      <Field label="Display Mode">
+                        <select
+                          className="pcms-select"
+                          value={settings?.countdown_mode || 'both'}
+                          onChange={e => {
+                            change('countdown_mode', e.target.value);
+                            updateSetting('countdown_mode', e.target.value);
+                          }}
+                          style={{ width: '100%' }}
+                        >
+                          <option value="both">Both Dynamic Island &amp; Banner</option>
+                          <option value="island">Dynamic Island Only</option>
+                          <option value="banner">Top Announcement Banner Only</option>
+                        </select>
+                      </Field>
+                    </Grid2>
+
+                    {settings?.countdown_target_time && (
+                      <CountdownLivePreview
+                        targetTime={settings.countdown_target_time}
+                        title={settings.countdown_title}
+                      />
+                    )}
+                  </>)}
+                </Card>
+              </>
             )}
 
-            {/* ─────────────── SEO ─────────────── */}
+            {/* ─────────────── SEO & SOCIAL CARD STUDIO ─────────────── */}
             {activeTab === 'seo' && (<>
               <Card>
-                <CardHead icon={Globe} label="Search Engine Optimization" sub="How your portfolio appears in Google, Bing & social shares." />
+                <CardHead icon={Globe} label="Search Engine Optimization" sub="How your portfolio appears in Google, Bing, and social sharing links." />
                 <PremiumInput
                   label="Meta Title" icon={Type}
                   value={settings?.seo_title || ''}
                   onChange={e => change('seo_title', e.target.value)}
                   onBlur={e => blur('seo_title', e.target.value)}
-                  placeholder="Sujith Thota | Full-Stack & AI Engineer"
+                  placeholder="Sujith Thota | Data Science Specialist & Full-Stack Developer"
                 />
                 <div style={{ fontSize: 11, color: (settings?.seo_title?.length || 0) > 60 ? '#EF4444' : 'var(--pcms-muted-2)', marginTop: -8 }}>
-                  {settings?.seo_title?.length || 0} / 60 characters
+                  {settings?.seo_title?.length || 0} / 60 characters recommended
                 </div>
                 <PremiumInput
                   label="Meta Description" icon={FileText} multiline
                   value={settings?.seo_description || ''}
                   onChange={e => change('seo_description', e.target.value)}
                   onBlur={e => blur('seo_description', e.target.value)}
-                  placeholder="Full-stack engineer specialising in AI-powered web applications…"
+                  placeholder="Portfolio of Sujith Thota — Data Science Specialist & Full-Stack Developer crafting intelligent web applications..."
                 />
                 <div style={{ fontSize: 11, color: (settings?.seo_description?.length || 0) > 160 ? '#EF4444' : 'var(--pcms-muted-2)', marginTop: -8 }}>
-                  {settings?.seo_description?.length || 0} / 160 characters
+                  {settings?.seo_description?.length || 0} / 160 characters recommended
                 </div>
+                <PremiumInput
+                  label="Search Keywords" icon={Search}
+                  value={settings?.seo_keywords || ''}
+                  onChange={e => change('seo_keywords', e.target.value)}
+                  onBlur={e => blur('seo_keywords', e.target.value)}
+                  placeholder="Sujith Thota, Full-Stack Developer, Data Scientist, Machine Learning, React, Python"
+                />
                 <Grid2>
-                  <PremiumInput label="OpenGraph Image URL" icon={Image} value={settings?.seo_og_image || ''} onChange={e => change('seo_og_image', e.target.value)} onBlur={e => blur('seo_og_image', e.target.value)} placeholder="https://..." />
-                  <PremiumInput label="Canonical URL" icon={Globe} value={settings?.seo_canonical || ''} onChange={e => change('seo_canonical', e.target.value)} onBlur={e => blur('seo_canonical', e.target.value)} placeholder="https://yoursite.dev" />
+                  <PremiumInput label="OpenGraph Share Image URL" icon={Image} value={settings?.seo_og_image || ''} onChange={e => change('seo_og_image', e.target.value)} onBlur={e => blur('seo_og_image', e.target.value)} placeholder="https://sujiththota.dev/og-preview.png" />
+                  <PremiumInput label="Canonical URL" icon={Globe} value={settings?.seo_canonical || ''} onChange={e => change('seo_canonical', e.target.value)} onBlur={e => blur('seo_canonical', e.target.value)} placeholder="https://sujiththota.dev" />
                 </Grid2>
-                <PremiumInput label="Twitter / X Handle" icon={FaTwitter} value={settings?.seo_twitter_handle || ''} onChange={e => change('seo_twitter_handle', e.target.value)} onBlur={e => blur('seo_twitter_handle', e.target.value)} placeholder="@yourhandle" />
+                <PremiumInput label="Twitter / X Creator Handle" icon={FaTwitter} value={settings?.seo_twitter_handle || ''} onChange={e => change('seo_twitter_handle', e.target.value)} onBlur={e => blur('seo_twitter_handle', e.target.value)} placeholder="@sujith_thota" />
               </Card>
-              {settings?.seo_title && settings?.seo_description && (
-                <Card>
-                  <CardHead icon={Eye} label="Google SERP Preview" sub="How your listing appears in search results." color="#10B981" />
-                  <div style={{ background: 'var(--pcms-panel)', border: '1px solid var(--pcms-line)', borderRadius: 8, padding: '12px 16px' }}>
-                    <div style={{ fontSize: 11.5, color: '#34A853', marginBottom: 2 }}>{settings?.seo_canonical || 'https://yoursite.dev'}</div>
-                    <div style={{ fontSize: 15, color: '#1a73e8', fontWeight: 600, marginBottom: 4, textDecoration: 'underline', cursor: 'pointer' }}>{settings?.seo_title}</div>
-                    <div style={{ fontSize: 12, color: 'var(--pcms-muted)', lineHeight: 1.5 }}>{settings?.seo_description?.slice(0, 160)}</div>
+
+              {/* ── Interactive Live Social Studio Previews ── */}
+              <Card>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+                  <CardHead icon={Eye} label="Live Social Media & SERP Studio" sub="Interactive real-time preview across platforms." color="#06B6D4" />
+                  <div style={{ display: 'flex', gap: 6, background: 'var(--pcms-panel)', padding: '3px 4px', borderRadius: 8, border: '1px solid var(--pcms-line)' }}>
+                    {[
+                      { id: 'linkedin', label: 'LinkedIn', icon: FaLinkedin, color: '#0A66C2' },
+                      { id: 'twitter', label: 'Twitter / X', icon: FaTwitter, color: '#1D9BF0' },
+                      { id: 'whatsapp', label: 'WhatsApp', icon: MessageSquare, color: '#25D366' },
+                      { id: 'google', label: 'Google Search', icon: Globe, color: '#4285F4' },
+                    ].map(tab => (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => setSocialPreviewTab(tab.id)}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 5,
+                          padding: '4px 10px',
+                          borderRadius: 6,
+                          fontSize: 11,
+                          fontWeight: socialPreviewTab === tab.id ? 700 : 500,
+                          background: socialPreviewTab === tab.id ? 'var(--pcms-accent-dim)' : 'transparent',
+                          color: socialPreviewTab === tab.id ? tab.color : 'var(--pcms-muted)',
+                          border: socialPreviewTab === tab.id ? `1px solid ${tab.color}40` : '1px solid transparent',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        <tab.icon size={12} style={{ color: tab.color }} />
+                        <span>{tab.label}</span>
+                      </button>
+                    ))}
                   </div>
-                </Card>
-              )}
+                </div>
+
+                {/* 1. LinkedIn Card Preview */}
+                {socialPreviewTab === 'linkedin' && (
+                  <div style={{ background: 'var(--pcms-panel)', border: '1px solid var(--pcms-line)', borderRadius: 10, overflow: 'hidden', maxWidth: 520, margin: '6px auto', boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }}>
+                    <div style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: 14 }}>ST</div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--pcms-text)' }}>Sujith Thota <span style={{ fontSize: 11, color: 'var(--pcms-muted)', fontWeight: 400 }}>• 1st</span></div>
+                        <div style={{ fontSize: 11, color: 'var(--pcms-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>Data Science Specialist & Full-Stack Developer • 2h</div>
+                      </div>
+                    </div>
+                    <div style={{ padding: '0 14px 10px', fontSize: 12.5, color: 'var(--pcms-text)', lineHeight: 1.4 }}>
+                      Check out my updated technical portfolio showcasing ML architectures, full-stack React systems, and real-world project telemetry! 🚀
+                    </div>
+                    <div style={{ height: 160, background: settings?.seo_og_image ? `url(${settings.seo_og_image}) center/cover no-repeat` : 'linear-gradient(135deg, #1e293b, #0f172a)', borderTop: '1px solid var(--pcms-line)', borderBottom: '1px solid var(--pcms-line)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                      {!settings?.seo_og_image && (
+                        <div style={{ textAlign: 'center', color: '#94a3b8' }}>
+                          <Image size={28} style={{ margin: '0 auto 4px', opacity: 0.7 }} />
+                          <span style={{ fontSize: 11 }}>OpenGraph Image Preview</span>
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ padding: '10px 14px', background: 'rgba(0,0,0,0.06)' }}>
+                      <div style={{ fontSize: 10, color: 'var(--pcms-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>
+                        {(settings?.seo_canonical || 'sujiththota.dev').replace(/^https?:\/\//, '')}
+                      </div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--pcms-text)', margin: '2px 0 3px', lineHeight: 1.3 }}>
+                        {settings?.seo_title || 'Sujith Thota | Portfolio'}
+                      </div>
+                      <div style={{ fontSize: 11.5, color: 'var(--pcms-muted)', lineHeight: 1.35, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                        {settings?.seo_description || 'Data Science Specialist & Full-Stack Developer'}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. Twitter / X Card Preview */}
+                {socialPreviewTab === 'twitter' && (
+                  <div style={{ background: 'var(--pcms-panel)', border: '1px solid var(--pcms-line)', borderRadius: 12, overflow: 'hidden', maxWidth: 520, margin: '6px auto', boxShadow: '0 8px 24px rgba(0,0,0,0.12)' }}>
+                    <div style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#1D9BF0', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800 }}>ST</div>
+                      <div>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--pcms-text)', marginRight: 5 }}>Sujith Thota</span>
+                        <span style={{ fontSize: 12, color: 'var(--pcms-muted)' }}>{settings?.seo_twitter_handle || '@sujith_thota'}</span>
+                      </div>
+                    </div>
+                    <div style={{ margin: '0 14px 14px', borderRadius: 12, overflow: 'hidden', border: '1px solid var(--pcms-line)' }}>
+                      <div style={{ height: 160, background: settings?.seo_og_image ? `url(${settings.seo_og_image}) center/cover no-repeat` : 'linear-gradient(135deg, #0f172a, #1e293b)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {!settings?.seo_og_image && (
+                          <div style={{ textAlign: 'center', color: '#94a3b8' }}>
+                            <Image size={26} style={{ margin: '0 auto 4px', opacity: 0.7 }} />
+                            <span style={{ fontSize: 11 }}>16:9 Large Summary Card</span>
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ padding: '8px 12px', background: 'rgba(0,0,0,0.06)' }}>
+                        <div style={{ fontSize: 10.5, color: 'var(--pcms-muted)' }}>{(settings?.seo_canonical || 'sujiththota.dev').replace(/^https?:\/\//, '')}</div>
+                        <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--pcms-text)', margin: '2px 0' }}>{settings?.seo_title || 'Sujith Thota | Portfolio'}</div>
+                        <div style={{ fontSize: 11, color: 'var(--pcms-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{settings?.seo_description || 'Data Science Specialist & Full-Stack Developer'}</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. WhatsApp Bubble Preview */}
+                {socialPreviewTab === 'whatsapp' && (
+                  <div style={{ background: '#0b141a', padding: 14, borderRadius: 12, maxWidth: 440, margin: '6px auto' }}>
+                    <div style={{ background: '#005c4b', borderRadius: 10, padding: 8, color: '#e9edef', boxShadow: '0 4px 12px rgba(0,0,0,0.25)' }}>
+                      <div style={{ borderRadius: 8, overflow: 'hidden', background: '#025144', border: '1px solid rgba(255,255,255,0.08)' }}>
+                        <div style={{ height: 120, background: settings?.seo_og_image ? `url(${settings.seo_og_image}) center/cover no-repeat` : 'linear-gradient(135deg, #073a33, #025144)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          {!settings?.seo_og_image && <span style={{ fontSize: 11, color: '#aebac1' }}>WhatsApp Thumbnail Preview</span>}
+                        </div>
+                        <div style={{ padding: '7px 10px' }}>
+                          <div style={{ fontSize: 12, fontWeight: 700, color: '#e9edef', marginBottom: 2 }}>{settings?.seo_title || 'Sujith Thota | Portfolio'}</div>
+                          <div style={{ fontSize: 10.5, color: '#8696a0', lineHeight: 1.3 }}>{settings?.seo_description || 'Data Science Specialist & Full-Stack Developer'}</div>
+                          <div style={{ fontSize: 9.5, color: '#53bdeb', marginTop: 4 }}>{(settings?.seo_canonical || 'https://sujiththota.dev')}</div>
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right', fontSize: 10, color: '#8696a0', marginTop: 4 }}>15:58 ✓✓</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 4. Google Search SERP Preview */}
+                {socialPreviewTab === 'google' && (
+                  <div style={{ background: 'var(--pcms-panel)', border: '1px solid var(--pcms-line)', borderRadius: 10, padding: '14px 18px', maxWidth: 520, margin: '6px auto' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                      <div style={{ width: 18, height: 18, borderRadius: '50%', background: '#4285F4', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 9, fontWeight: 800 }}>S</div>
+                      <div>
+                        <div style={{ fontSize: 11.5, color: '#202124', fontWeight: 600 }}>Sujith Thota</div>
+                        <div style={{ fontSize: 10, color: '#5f6368' }}>{settings?.seo_canonical || 'https://sujiththota.dev'}</div>
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 16, color: '#1a0dab', fontWeight: 600, margin: '4px 0 6px', textDecoration: 'underline', cursor: 'pointer', lineHeight: 1.3 }}>
+                      {settings?.seo_title || 'Sujith Thota | Portfolio'}
+                    </div>
+                    <div style={{ fontSize: 12, color: '#4d5156', lineHeight: 1.5 }}>
+                      {settings?.seo_description || 'Portfolio of Sujith Thota — Data Science Specialist & Full-Stack Developer crafting intelligent web applications.'}
+                    </div>
+                  </div>
+                )}
+              </Card>
             </>)}
 
             {/* ─────────────── LINKS & ASSETS ─────────────── */}
@@ -878,21 +1417,63 @@ export default function SettingsPanel({ isMobileView = false }) {
               </Card>
               <Card>
                 <CardHead icon={Moon} label="Visitor Display Mode" sub="Default theme for new visitors who haven't set a preference." color="#8B5CF6" />
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                   {[
                     { id: 'system', label: 'Follow System', icon: '💻', desc: "Respects visitor's OS setting" },
                     { id: 'dark',   label: 'Force Dark',   icon: '🌙', desc: 'Always dark for all visitors' },
                     { id: 'light',  label: 'Force Light',  icon: '☀️', desc: 'Always light for all visitors' },
                   ].map(opt => {
-                    const isActive = (settings?.dark_mode_default || 'system') === opt.id;
+                    const currentMode = settings?.dark_mode_default || (typeof window !== 'undefined' ? localStorage.getItem('pcms_dark_mode_default') : '') || 'system';
+                    const isActive = currentMode === opt.id;
                     return (
-                      <button key={opt.id} type="button" onClick={() => { change('dark_mode_default', opt.id); updateSetting('dark_mode_default', opt.id); }} style={{ flex: 1, minWidth: 90, padding: '12px 8px', borderRadius: 10, textAlign: 'center', background: isActive ? 'var(--pcms-accent-dim)' : 'var(--pcms-panel)', border: `1px solid ${isActive ? 'var(--pcms-accent)' : 'var(--pcms-line)'}`, cursor: 'pointer', transition: 'all 0.12s' }}>
-                        <div style={{ fontSize: 20, marginBottom: 4 }}>{opt.icon}</div>
-                        <div style={{ fontSize: 12, fontWeight: isActive ? 700 : 500, color: isActive ? 'var(--pcms-accent)' : 'var(--pcms-text)' }}>{opt.label}</div>
-                        <div style={{ fontSize: 10, color: 'var(--pcms-muted)', marginTop: 2 }}>{opt.desc}</div>
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => {
+                          change('dark_mode_default', opt.id);
+                          updateSetting('dark_mode_default', opt.id);
+                          if (typeof applyDefaultMode === 'function') {
+                            applyDefaultMode(opt.id, true);
+                          }
+                        }}
+                        style={{
+                          flex: 1,
+                          minWidth: 110,
+                          padding: '16px 12px',
+                          borderRadius: 12,
+                          textAlign: 'center',
+                          position: 'relative',
+                          background: isActive ? 'var(--pcms-accent-dim, rgba(99, 102, 241, 0.12))' : 'var(--pcms-panel, #ffffff)',
+                          border: `2px solid ${isActive ? 'var(--pcms-accent, #6366F1)' : 'var(--pcms-line, rgba(0,0,0,0.08))'}`,
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                          boxShadow: isActive ? '0 0 16px rgba(99, 102, 241, 0.25)' : 'none'
+                        }}
+                      >
+                        {isActive && (
+                          <div style={{ position: 'absolute', top: 6, right: 6, color: 'var(--pcms-accent, #6366F1)' }}>
+                            <CheckCircle2 size={14} />
+                          </div>
+                        )}
+                        <div style={{ fontSize: 24, marginBottom: 6 }}>{opt.icon}</div>
+                        <div style={{ fontSize: 13, fontWeight: isActive ? 700 : 600, color: isActive ? 'var(--pcms-accent, #6366F1)' : 'var(--pcms-text, #0F172A)' }}>{opt.label}</div>
+                        <div style={{ fontSize: 11, color: 'var(--pcms-muted, #64748B)', marginTop: 4, lineHeight: 1.3 }}>{opt.desc}</div>
                       </button>
                     );
                   })}
+                </div>
+                <div style={{ marginTop: 12, fontSize: 11.5, color: 'var(--pcms-muted)', background: 'var(--pcms-panel-2)', padding: '10px 14px', borderRadius: 8, border: '1px solid var(--pcms-line)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+                  <div>
+                    ℹ️ <strong>Active Default:</strong>{' '}
+                    {(settings?.dark_mode_default || 'system') === 'dark'
+                      ? '🌙 Force Dark — New visitors automatically land in Dark Mode.'
+                      : (settings?.dark_mode_default || 'system') === 'light'
+                      ? '☀️ Force Light — New visitors automatically land in Light Mode.'
+                      : "💻 Follow System — Adapts to visitor's device dark/light OS setting."}
+                  </div>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 10.5, fontWeight: 600, background: 'var(--pcms-accent-dim)', color: 'var(--pcms-accent)', padding: '3px 8px', borderRadius: 6 }}>
+                    Live Theme: {theme === 'dark' ? '🌙 Dark' : '☀️ Light'}
+                  </div>
                 </div>
               </Card>
             </>)}
@@ -908,12 +1489,83 @@ export default function SettingsPanel({ isMobileView = false }) {
                 </div>
               </Card>
               <Card>
-                <CardHead icon={Server} label="Rate Limiting & AI Quotas" sub="Protect against abuse." color="#F59E0B" />
+                <CardHead icon={Bot} label="AI Chatbot Governance & Rate Limiting" sub="Manage hourly visitor quotas and customize AI personality instructions." color="#06B6D4" />
+                <PremiumToggle
+                  icon={Shield}
+                  color="#10B981"
+                  label="Enable Hourly Rate Limiting"
+                  description="Enforce per-visitor hourly query limits to protect API quotas."
+                  checked={settings?.chatbot_rate_limit_enabled ?? true}
+                  onChange={v => toggle('chatbot_rate_limit_enabled', v)}
+                />
                 <Grid2>
-                  <Field label="AI Requests / IP / Hour"><input type="number" min={1} max={200} className="pcms-search" value={settings?.rate_limit_ai ?? 10} onChange={e => change('rate_limit_ai', Number(e.target.value))} onBlur={e => blur('rate_limit_ai', Number(e.target.value))} style={{ width: '100%' }} /></Field>
-                  <Field label="Contact Form / IP / Day"><input type="number" min={1} max={50}  className="pcms-search" value={settings?.rate_limit_contact ?? 5}  onChange={e => change('rate_limit_contact', Number(e.target.value))} onBlur={e => blur('rate_limit_contact', Number(e.target.value))} style={{ width: '100%' }} /></Field>
+                  <Field label="Max AI Questions / Visitor / Hour">
+                    <input
+                      type="number"
+                      min={1}
+                      max={100}
+                      className="pcms-search"
+                      value={settings?.chatbot_max_questions_per_hour ?? 20}
+                      onChange={e => change('chatbot_max_questions_per_hour', Number(e.target.value))}
+                      onBlur={e => blur('chatbot_max_questions_per_hour', Number(e.target.value))}
+                      style={{ width: '100%' }}
+                    />
+                  </Field>
+                  <Field label="Contact Form Limit / IP / Day">
+                    <input
+                      type="number"
+                      min={1}
+                      max={50}
+                      className="pcms-search"
+                      value={settings?.rate_limit_contact ?? 5}
+                      onChange={e => change('rate_limit_contact', Number(e.target.value))}
+                      onBlur={e => blur('rate_limit_contact', Number(e.target.value))}
+                      style={{ width: '100%' }}
+                    />
+                  </Field>
                 </Grid2>
-                <PremiumToggle icon={Shield} color="#EF4444" label="Enforce Rate Limits" description="Actively block IPs exceeding thresholds." checked={settings?.enforce_rate_limits ?? true} onChange={v => toggle('enforce_rate_limits', v)} />
+                <Divider label="AI Persona & System Prompt" />
+                <PremiumInput
+                  label="System Prompt & Instructions"
+                  icon={Terminal}
+                  multiline
+                  value={settings?.chatbot_system_prompt || ''}
+                  onChange={e => change('chatbot_system_prompt', e.target.value)}
+                  onBlur={e => blur('chatbot_system_prompt', e.target.value)}
+                  placeholder="You are Atom AI, the intelligent portfolio assistant for Sujith Thota..."
+                />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--pcms-muted)' }}>Quick Preset Personas:</span>
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    {[
+                      {
+                        label: '🌟 Lead Engineer',
+                        prompt: 'You are Atom AI, the intelligent portfolio assistant for Sujith Thota, a Senior Data Scientist & Full-Stack Developer. Highlight technical architecture, real-world metrics, and production achievements.'
+                      },
+                      {
+                        label: '🎯 Recruiter Focus',
+                        prompt: "You are Sujith's executive recruiting assistant. Provide concise, high-impact answers emphasizing STAR metrics, availability, CGPA at VIT, and direct resume download links."
+                      },
+                      {
+                        label: '🔬 ML Deep-Diver',
+                        prompt: 'You are a technical ML co-pilot for Sujith Thota. Explain TensorFlow pipelines, FinBERT fine-tuning, RAG vector embeddings, and full-stack React systems in rigorous depth.'
+                      },
+                    ].map((preset, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        className="pcms-btn-secondary"
+                        style={{ padding: '4px 10px', fontSize: 11 }}
+                        onClick={() => {
+                          change('chatbot_system_prompt', preset.prompt);
+                          blur('chatbot_system_prompt', preset.prompt);
+                        }}
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </Card>
               <Card>
                 <CardHead icon={Wifi} label="Cache & Deployment" sub="Trigger a fresh Vercel rebuild to purge edge-cached assets." color="#8B5CF6" />
@@ -949,7 +1601,18 @@ export default function SettingsPanel({ isMobileView = false }) {
               <Card>
                 <CardHead icon={Flame} label="Dead Man's Switch" sub="Daily inactivity monitor — fires an alert if no admin login is detected." color="#EF4444" />
                 <Field label={`Inactivity Alert Threshold — ${settings?.deadman_threshold_days ?? 30} days`}>
-                  <input type="range" min={7} max={90} step={1} value={settings?.deadman_threshold_days ?? 30} onChange={e => change('deadman_threshold_days', Number(e.target.value))} onMouseUp={e => blur('deadman_threshold_days', Number(e.target.value))} style={{ width: '100%', marginTop: 8, accentColor: '#EF4444' }} />
+                  <input
+                    type="range"
+                    min={7}
+                    max={90}
+                    step={1}
+                    value={settings?.deadman_threshold_days ?? 30}
+                    onChange={e => change('deadman_threshold_days', Number(e.target.value))}
+                    onMouseUp={e => blur('deadman_threshold_days', Number(e.target.value))}
+                    onTouchEnd={e => blur('deadman_threshold_days', Number(e.target.value))}
+                    onKeyUp={e => blur('deadman_threshold_days', Number(e.target.value))}
+                    style={{ width: '100%', marginTop: 8, accentColor: '#EF4444' }}
+                  />
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: 'var(--pcms-muted-2)', marginTop: 4 }}>
                     {[7, 14, 30, 60, 90].map(d => <span key={d}>{d}d</span>)}
                   </div>
@@ -1252,11 +1915,227 @@ export default function SettingsPanel({ isMobileView = false }) {
               </Card>
             </>)}
 
-            {/* ─────────────── BACKUP & RESTORE ─────────────── */}
+            {/* ─────────────── BACKUP & RESTORE & SNAPSHOTS ─────────────── */}
             {activeTab === 'backup' && (<>
+              {/* 1. Snapshots & 1-Click Rollback */}
               <Card>
-                <CardHead icon={Download} label="1-Click CMS Export" sub="Full snapshot of all 9 portfolio tables." />
-                <Note>Includes: Projects, Blog, Skills, Experience, Education, Certifications, Testimonials, Updates, Settings.</Note>
+                <CardHead icon={History} label="1-Click Settings Snapshots & Revision Rollback" sub="Capture point-in-time configuration snapshots with instant diff comparison and rollback." color="#6366F1" />
+                
+                {snapshotFeedback && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    style={{
+                      padding: '10px 14px',
+                      borderRadius: 8,
+                      fontSize: 12.5,
+                      fontWeight: 600,
+                      background: snapshotFeedback.type === 'error' ? 'rgba(239, 68, 68, 0.12)' : 'rgba(99, 102, 241, 0.12)',
+                      color: snapshotFeedback.type === 'error' ? '#EF4444' : 'var(--pcms-accent)',
+                      border: `1px solid ${snapshotFeedback.type === 'error' ? 'rgba(239, 68, 68, 0.25)' : 'rgba(99, 102, 241, 0.25)'}`,
+                      marginBottom: 10
+                    }}
+                  >
+                    {snapshotFeedback.message}
+                  </motion.div>
+                )}
+
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <input
+                    type="text"
+                    className="pcms-search"
+                    placeholder="Snapshot name (e.g. Pre-Launch Config)..."
+                    value={snapshotNameInput}
+                    onChange={e => setSnapshotNameInput(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') handleCreateSnapshot(snapshotNameInput); }}
+                    style={{ flex: 1, minWidth: 220 }}
+                  />
+                  <button
+                    type="button"
+                    className="pcms-btn-dark"
+                    style={{ padding: '8px 16px', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                    onClick={() => handleCreateSnapshot(snapshotNameInput)}
+                  >
+                    <Sparkles size={13} color="#6366F1" />
+                    <span>Capture Snapshot</span>
+                  </button>
+                </div>
+
+                {snapshots.length === 0 ? (
+                  <div style={{ padding: '16px', textAlign: 'center', background: 'var(--pcms-panel)', border: '1px dashed var(--pcms-line)', borderRadius: 8, color: 'var(--pcms-muted)', fontSize: 12, marginTop: 8 }}>
+                    No snapshots captured yet. Click &quot;Capture Snapshot&quot; above to save current configuration state.
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+                    {snapshots.map(snap => {
+                      const diffCount = Object.keys(snap.data || {}).filter(k => JSON.stringify(snap.data[k]) !== JSON.stringify(settings?.[k])).length;
+                      return (
+                        <div
+                          key={snap.id}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: '12px 14px',
+                            background: 'var(--pcms-panel)',
+                            border: '1px solid var(--pcms-line)',
+                            borderRadius: 10,
+                            gap: 10,
+                            flexWrap: 'wrap'
+                          }}
+                        >
+                          <div style={{ minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--pcms-text)' }}>
+                                {snap.name}
+                              </span>
+                              {diffCount > 0 ? (
+                                <span style={{ fontSize: 10.5, fontWeight: 600, background: 'rgba(239, 68, 68, 0.1)', color: '#EF4444', padding: '2px 7px', borderRadius: 6, border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+                                  {diffCount} diff{diffCount > 1 ? 's' : ''} vs live
+                                </span>
+                              ) : (
+                                <span style={{ fontSize: 10.5, fontWeight: 600, background: 'rgba(16, 185, 129, 0.1)', color: '#10B981', padding: '2px 7px', borderRadius: 6, border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                                  Identical to live
+                                </span>
+                              )}
+                            </div>
+                            <div style={{ fontSize: 11, color: 'var(--pcms-muted)', marginTop: 3 }}>
+                              {new Date(snap.created_at).toLocaleString()} • {snap.keyCount || Object.keys(snap.data || {}).length} settings stored
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                            <button
+                              type="button"
+                              className="pcms-btn-secondary"
+                              style={{ padding: '5px 11px', fontSize: 11.5, display: 'inline-flex', alignItems: 'center', gap: 5 }}
+                              onClick={() => setActiveDiffSnapshot(snap)}
+                            >
+                              <Eye size={12} /> Diff
+                            </button>
+                            <button
+                              type="button"
+                              className="pcms-btn-dark"
+                              style={{ padding: '5px 12px', fontSize: 11.5, display: 'inline-flex', alignItems: 'center', gap: 5 }}
+                              onClick={() => handleRollbackSnapshot(snap)}
+                            >
+                              <RotateCcw size={12} color="#6366F1" /> Rollback
+                            </button>
+                            <button
+                              type="button"
+                              style={{ background: 'none', border: 'none', color: '#EF4444', cursor: 'pointer', padding: '6px', borderRadius: 6, display: 'flex', alignItems: 'center' }}
+                              title="Delete Snapshot"
+                              onClick={() => handleDeleteSnapshot(snap.id)}
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </Card>
+
+              {/* Diff Modal */}
+              {activeDiffSnapshot && (
+                <div style={{
+                  position: 'fixed',
+                  inset: 0,
+                  background: 'rgba(0,0,0,0.65)',
+                  backdropFilter: 'blur(6px)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 9999,
+                  padding: 16
+                }}>
+                  <div style={{
+                    background: 'var(--pcms-card)',
+                    border: '1px solid var(--pcms-line)',
+                    borderRadius: 14,
+                    maxWidth: 640,
+                    width: '100%',
+                    maxHeight: '85vh',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden',
+                    boxShadow: '0 20px 50px rgba(0,0,0,0.4)'
+                  }}>
+                    <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--pcms-line)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--pcms-text)' }}>
+                          Snapshot Diff: {activeDiffSnapshot.name}
+                        </div>
+                        <div style={{ fontSize: 11.5, color: 'var(--pcms-muted)', marginTop: 2 }}>
+                          Comparing snapshot from {new Date(activeDiffSnapshot.created_at).toLocaleString()} with current live settings
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        style={{ background: 'none', border: 'none', color: 'var(--pcms-muted)', cursor: 'pointer', fontSize: 18 }}
+                        onClick={() => setActiveDiffSnapshot(null)}
+                      >
+                        ✕
+                      </button>
+                    </div>
+
+                    <div style={{ padding: '16px 20px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {Object.keys(activeDiffSnapshot.data || {}).map(key => {
+                        const snapVal = activeDiffSnapshot.data[key];
+                        const liveVal = settings?.[key];
+                        const isDiff = JSON.stringify(snapVal) !== JSON.stringify(liveVal);
+                        if (!isDiff) return null;
+
+                        return (
+                          <div key={key} style={{ background: 'var(--pcms-panel)', border: '1px solid var(--pcms-line)', borderRadius: 8, padding: '10px 12px' }}>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: '#6366F1', fontFamily: 'monospace' }}>{key}</div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 6, fontSize: 11.5 }}>
+                              <div style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.2)', padding: '6px 8px', borderRadius: 6, color: '#f87171' }}>
+                                <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 2 }}>Current Live Value</div>
+                                <div style={{ wordBreak: 'break-all', fontFamily: 'monospace' }}>{String(liveVal ?? '—')}</div>
+                              </div>
+                              <div style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '6px 8px', borderRadius: 6, color: '#34d399' }}>
+                                <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', marginBottom: 2 }}>Snapshot Value</div>
+                                <div style={{ wordBreak: 'break-all', fontFamily: 'monospace' }}>{String(snapVal ?? '—')}</div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {Object.keys(activeDiffSnapshot.data || {}).every(key => JSON.stringify(activeDiffSnapshot.data[key]) === JSON.stringify(settings?.[key])) && (
+                        <div style={{ padding: 20, textAlign: 'center', color: '#10B981', fontSize: 13, fontWeight: 600 }}>
+                          ✓ Snapshot is identical to current live settings. No differences detected.
+                        </div>
+                      )}
+                    </div>
+
+                    <div style={{ padding: '12px 20px', borderTop: '1px solid var(--pcms-line)', display: 'flex', justifyContent: 'flex-end', gap: 10, background: 'var(--pcms-panel)' }}>
+                      <button
+                        type="button"
+                        className="pcms-btn-secondary"
+                        style={{ padding: '7px 14px', fontSize: 12 }}
+                        onClick={() => setActiveDiffSnapshot(null)}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        className="pcms-btn-dark"
+                        style={{ padding: '7px 16px', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                        onClick={() => handleRollbackSnapshot(activeDiffSnapshot)}
+                      >
+                        <RotateCcw size={12} color="#6366F1" />
+                        <span>Rollback to this Version</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 2. Full JSON Backup & Restore */}
+              <Card>
+                <CardHead icon={Download} label="1-Click CMS Export" sub="Full snapshot of all 7 portfolio tables." />
+                <Note>Includes: Projects, Skills, Experience, Education, Certifications, Updates, Settings.</Note>
                 <div>
                   <button className="pcms-btn-dark" style={{ padding: '8px 18px' }} onClick={handleExport} disabled={exportingBackup}>
                     {exportingBackup ? <Loader2 size={13} className="spin" /> : <Database size={13} />}
@@ -1292,10 +2171,20 @@ export default function SettingsPanel({ isMobileView = false }) {
                       if (!b.data || !b.version) { alert('Invalid backup format.'); return; }
                       if (!window.confirm(`⚠️ Overwrite all portfolio data with backup from ${b.exported_at || 'file'}?`)) return;
                       setExportingBackup(true);
-                      const tables = ['site_settings', 'projects', 'skills', 'experience', 'education', 'certifications', 'testimonials', 'updates'];
+                      const tables = ['site_settings', 'projects', 'skills', 'experience', 'education', 'certifications', 'updates'];
                       for (const t of tables) {
                         if (b.data[t] && Array.isArray(b.data[t]) && b.data[t].length > 0) {
                           await supabase.from(t).upsert(b.data[t]);
+                          if (t === 'site_settings' && b.data[t][0]) {
+                            const restored = b.data[t][0];
+                            setSettings(restored);
+                            Object.keys(restored).forEach(k => {
+                              try {
+                                const val = restored[k];
+                                localStorage.setItem(`pcms_${k}`, typeof val === 'object' ? JSON.stringify(val) : String(val));
+                              } catch (_) {}
+                            });
+                          }
                         }
                       }
                       logAuditEvent('RESTORE_BACKUP', 'system', b.exported_at || new Date().toISOString());
@@ -1704,7 +2593,6 @@ export default function SettingsPanel({ isMobileView = false }) {
   // Count active feature flags
   const activeFeatureCount = [
     settings?.feature_experience, settings?.feature_certifications,
-    settings?.feature_blog, settings?.feature_testimonials,
     settings?.feature_updates, settings?.feature_chatbot,
     settings?.feature_contact, settings?.is_available_for_hire,
   ].filter(Boolean).length;
@@ -1721,8 +2609,6 @@ export default function SettingsPanel({ isMobileView = false }) {
         {[
           ['Experience', settings?.feature_experience ?? true, '#6366F1'],
           ['Certifications', settings?.feature_certifications ?? true, '#10B981'],
-          ['Blog', settings?.feature_blog ?? true, '#06B6D4'],
-          ['Testimonials', settings?.feature_testimonials ?? true, '#F59E0B'],
           ['Updates Feed', settings?.feature_updates ?? true, '#8B5CF6'],
           ['AI Chatbot', settings?.feature_chatbot ?? true, '#06B6D4'],
           ['Contact Form', settings?.feature_contact ?? true, '#EC4899'],

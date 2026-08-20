@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter, useLocation } from 'react-router-dom';
-import { MotionConfig } from 'framer-motion';
+import { MotionConfig, motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 import AppProviders from './AppProviders';
 import AppRoutes from './routes';
@@ -17,6 +17,7 @@ import PWAInstallPrompt from '../components/widgets/PWAInstallPrompt';
 import SiteDisabledGate from '../components/SiteDisabledGate';
 import AdminLoginModal from '../components/admin/AdminLoginModal';
 import { useDevSecurityShield } from '../hooks/useDevSecurityShield';
+import useSeoMeta from '../hooks/useSeoMeta';
 import ErrorBoundary from '../shared/feedback/ErrorBoundary';
 
 function GlobalAdminModal() {
@@ -39,36 +40,6 @@ function GlobalAdminModal() {
   }, []);
 
   return <AdminLoginModal isOpen={isOpen} onClose={() => setIsOpen(false)} />;
-}
-
-function SecurityToast({ message }) {
-  if (!message) return null;
-  return (
-    <div style={{
-      position: 'fixed',
-      bottom: 24,
-      left: '50%',
-      transform: 'translateX(-50%)',
-      zIndex: 99999999,
-      background: 'rgba(15, 23, 42, 0.95)',
-      backdropFilter: 'blur(12px)',
-      WebkitBackdropFilter: 'blur(12px)',
-      border: '1px solid rgba(59, 130, 246, 0.35)',
-      color: '#f8fafc',
-      padding: '10px 20px',
-      borderRadius: 999,
-      fontSize: 13,
-      fontWeight: 600,
-      display: 'flex',
-      alignItems: 'center',
-      gap: 8,
-      boxShadow: '0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(59, 130, 246, 0.25)',
-      pointerEvents: 'none',
-      letterSpacing: '0.01em'
-    }}>
-      <span>{message}</span>
-    </div>
-  );
 }
 
 function RoutedAppShell() {
@@ -108,7 +79,8 @@ function AppContent() {
   );
   const [appReady, setAppReady] = useState(isSim);
   const [showContent, setShowContent] = useState(isSim);
-  const { toastMessage } = useDevSecurityShield();
+  useDevSecurityShield();
+  useSeoMeta();
 
   useEffect(() => {
     let mounted = true;
@@ -207,7 +179,6 @@ function AppContent() {
             <DynamicIsland />
             <DevToolsDetector />
             <PWAInstallPrompt />
-            <SecurityToast message={toastMessage} />
             <ErrorBoundary>
               <RoutedAppShell />
             </ErrorBoundary>
