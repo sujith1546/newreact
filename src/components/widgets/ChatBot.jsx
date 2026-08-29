@@ -123,11 +123,13 @@ const ACCENTS = {
 const PERSONA_OPTIONS = [
   {
     id: 'recruiter',
+    label: 'Recruiter',
+    icon: Briefcase,
     title: 'Recruiter / Hiring Manager',
-    badge: '👔 Recruiter',
+    badge: 'Recruiter',
     suggestionsLabel: 'Recruiter Quick Actions',
     desc: 'Work experience, certifications, resume metrics, & availability',
-    color: '#3b82f6',
+    color: '#2563eb',
     bgColor: 'rgba(59, 130, 246, 0.12)',
     greeting: "Hi there! 👔 I've set your mode to **Recruiter / Hiring Manager**. Ask me anything about Sujith's work history, certifications, resume metrics, or hiring availability!",
     questions: [
@@ -140,11 +142,13 @@ const PERSONA_OPTIONS = [
   },
   {
     id: 'developer',
+    label: 'Developer',
+    icon: Code2,
     title: 'Developer / Tech Lead',
-    badge: '💻 Developer',
+    badge: 'Developer',
     suggestionsLabel: 'Developer Deep-Dives',
     desc: 'Tech stack, ML architecture, React components, & GitHub repos',
-    color: '#10b981',
+    color: '#059669',
     bgColor: 'rgba(16, 185, 129, 0.12)',
     greeting: "Hey! 💻 I've configured your mode for a **Developer / Tech Lead**. Ask me about Sujith's tech stack, ML pipeline architectures, React components, or GitHub repos!",
     questions: [
@@ -157,12 +161,14 @@ const PERSONA_OPTIONS = [
   },
   {
     id: 'founder',
+    label: 'Founder',
+    icon: Rocket,
     title: 'Founder / Client',
-    badge: '🚀 Founder',
+    badge: 'Founder',
     suggestionsLabel: 'Founder & Client Inquiries',
     desc: 'Full-stack application delivery, freelance work, & desk routing',
-    color: '#f59e0b',
-    bgColor: 'rgba(245, 158, 11, 0.12)',
+    color: '#ea580c',
+    bgColor: 'rgba(249, 115, 22, 0.12)',
     greeting: "Welcome! 🚀 Mode set for **Founder / Client**. Ask me how Sujith builds full-stack applications, handles freelance projects, or how to route a project to his desk!",
     questions: [
       "Can you build a full-stack MVP for my startup?",
@@ -174,11 +180,13 @@ const PERSONA_OPTIONS = [
   },
   {
     id: 'general',
+    label: 'Visitor',
+    icon: User,
     title: 'Peer / General Visitor',
-    badge: '🎓 Visitor',
+    badge: 'Visitor',
     suggestionsLabel: 'Explorer & Discovery Prompts',
     desc: 'General overview of background, education at VIT, & hobbies',
-    color: '#8b5cf6',
+    color: '#7c3aed',
     bgColor: 'rgba(139, 92, 246, 0.12)',
     greeting: "Hi! 👋 Welcome to Sujith's portfolio. I can answer anything about background, education at VIT Vellore, projects, skills, or hobbies!",
     questions: [
@@ -933,42 +941,62 @@ export default function ChatBot() {
 
         /* Header */
         .chatbot-header {
-          padding: 16px 18px;
+          padding: 14px 16px 12px;
           background: var(--text-primary);
           display: flex;
-          align-items: center;
-          gap: 12px;
+          flex-direction: column;
+          gap: 10px;
           flex-shrink: 0;
         }
+        .chatbot-header-top {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+          min-width: 0;
+        }
+        .chatbot-header-identity {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          min-width: 0;
+          flex: 1;
+        }
         .chatbot-header-avatar {
-          width: 38px;
-          height: 38px;
+          width: 34px;
+          height: 34px;
           border-radius: 50%;
-          background: var(--bg-primary);
+          background: rgba(255, 255, 255, 0.12);
           display: flex;
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
-          color: var(--text-primary);
+          color: var(--bg-primary);
+          border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .chatbot-header-info { flex: 1; min-width: 0; }
+        .chatbot-header-text {
+          min-width: 0;
+          flex: 1;
+        }
         .chatbot-header-name {
-          font-size: 14px;
+          font-size: 15px;
           font-weight: 700;
           color: var(--bg-primary);
           margin: 0;
+          line-height: 1.25;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
         .chatbot-header-status {
-          font-size: 11px;
+          font-size: 11.5px;
           color: var(--bg-primary);
-          opacity: 0.7;
+          opacity: 0.75;
           display: flex;
           align-items: center;
-          gap: 6px;
-          margin-top: 3px;
-          line-height: 1;
-        }
-        .chatbot-header-status span {
+          gap: 5px;
+          margin-top: 2px;
+          line-height: 1.2;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -983,24 +1011,79 @@ export default function ChatBot() {
         }
         .chatbot-header-actions {
           display: flex;
-          gap: 6px;
+          align-items: center;
+          gap: 4px;
+          flex-shrink: 0;
         }
         .chatbot-header-btn {
           width: 30px;
           height: 30px;
-          border-radius: 50%;
+          border-radius: 8px;
           background: transparent;
           border: none;
           color: var(--bg-primary);
+          opacity: 0.85;
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
-          transition: background 0.2s;
-          font-size: 11px;
-          font-weight: 600;
+          transition: all 0.15s ease;
+          padding: 0;
         }
-        .chatbot-header-btn:hover { background: rgba(128,128,128,0.25); }
+        .chatbot-header-btn:hover {
+          background: rgba(255, 255, 255, 0.15);
+          opacity: 1;
+        }
+        .chatbot-header-btn.active {
+          background: rgba(16, 185, 129, 0.2);
+          opacity: 1;
+        }
+
+        .chatbot-header-meta {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 8px;
+          padding-top: 2px;
+        }
+        .chatbot-meta-badge {
+          font-size: 11.5px;
+          font-weight: 600;
+          padding: 4px 10px;
+          border-radius: 12px;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          border: none;
+          line-height: 1.3;
+          transition: all 0.15s ease;
+        }
+        .chatbot-meta-credits {
+          background: rgba(255, 255, 255, 0.1);
+          color: var(--bg-primary);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        .chatbot-meta-credits.warning {
+          background: rgba(245, 158, 11, 0.2);
+          color: #fbbf24;
+          border-color: rgba(245, 158, 11, 0.35);
+        }
+        .chatbot-meta-credits.danger {
+          background: rgba(239, 68, 68, 0.2);
+          color: #fca5a5;
+          border-color: rgba(239, 68, 68, 0.35);
+        }
+        .chatbot-meta-mode-btn {
+          background: #ffffff;
+          color: #0f172a;
+          cursor: pointer;
+          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .chatbot-meta-mode-btn:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 3px 8px rgba(0, 0, 0, 0.22);
+        }
 
         .chatbot-clear-btn {
           padding: 5px 10px;
@@ -1615,74 +1698,79 @@ export default function ChatBot() {
                 </div>
               )}
               {/* Header */}
-            <div className="chatbot-header">
-              <div className="chatbot-header-info">
-                <p className="chatbot-header-name">Ask Sujith AI</p>
-                <div className="chatbot-header-status">
-                  <div className="chatbot-online-dot" />
-                  <span>{isLoading ? 'Retrieving Voyage AI & Reasoning...' : 'Voyage AI RAG • Groq Llama 3.3'}</span>
+              <div className="chatbot-header">
+                {/* Row 1: Identity & Action Buttons */}
+                <div className="chatbot-header-top">
+                  <div className="chatbot-header-identity">
+                    <div className="chatbot-header-avatar">
+                      <Bot size={18} />
+                    </div>
+                    <div className="chatbot-header-text">
+                      <p className="chatbot-header-name">Ask Sujith AI</p>
+                      <div className="chatbot-header-status">
+                        <div className="chatbot-online-dot" />
+                        <span>{isLoading ? 'Retrieving Voyage AI & Reasoning...' : 'Voyage AI RAG • Groq Llama 3.3'}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="chatbot-header-actions">
+                    <button 
+                      onClick={() => setAiVoice(!aiVoice)} 
+                      className={`chatbot-header-btn ${aiVoice ? 'active' : ''}`} 
+                      title={aiVoice ? "Mute Voice" : "Enable Voice"}
+                      type="button"
+                    >
+                      {aiVoice ? <Volume2 size={16} color="#10b981" /> : <VolumeX size={16} />}
+                    </button>
+                    <button 
+                      onClick={handleClearChat} 
+                      className="chatbot-header-btn" 
+                      title="Clear Chat"
+                      type="button"
+                    >
+                      <RotateCcw size={16} />
+                    </button>
+                    <button 
+                      onClick={() => setIsOpen(false)} 
+                      className="chatbot-header-btn" 
+                      aria-label="Close Chat"
+                      type="button"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Row 2: Credit Badge & Persona Selector */}
+                <div className="chatbot-header-meta">
+                  {isRateLimitEnabled ? (
+                    <span
+                      className={`chatbot-meta-badge chatbot-meta-credits ${isRateLimited ? 'danger' : remainingQueries <= 3 ? 'warning' : ''}`}
+                      title={`${usedQueries}/${maxQueriesPerHour} questions used this hour`}
+                    >
+                      <Zap size={11} />
+                      <span>{remainingQueries}/{maxQueriesPerHour}</span>
+                    </span>
+                  ) : (
+                    <span className="chatbot-meta-badge chatbot-meta-credits">
+                      <Zap size={11} />
+                      <span>20/20</span>
+                    </span>
+                  )}
+
+                  <button
+                    onClick={() => setShowPersonaMenu(prev => !prev)}
+                    className="chatbot-meta-badge chatbot-meta-mode-btn"
+                    style={{ color: activePersonaObj.color || '#059669' }}
+                    title="Click to switch persona perspective (Recruiter / Developer / Founder / Visitor)"
+                    type="button"
+                  >
+                    {activePersonaObj.icon && <activePersonaObj.icon size={13} strokeWidth={2.2} />}
+                    <span>{activePersonaObj.label || activePersonaObj.badge || 'Developer'}</span>
+                    <ChevronDown size={12} strokeWidth={2.2} />
+                  </button>
                 </div>
               </div>
-              <div className="chatbot-header-actions">
-                {isRateLimitEnabled && (
-                  <div
-                    style={{
-                      fontSize: '9.5px',
-                      fontWeight: 700,
-                      padding: '3px 8px',
-                      borderRadius: '999px',
-                      background: isRateLimited ? 'rgba(239, 68, 68, 0.25)' : remainingQueries <= 3 ? 'rgba(245, 158, 11, 0.25)' : 'rgba(255, 255, 255, 0.15)',
-                      color: isRateLimited ? '#fca5a5' : remainingQueries <= 3 ? '#fde047' : 'var(--bg-primary)',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      marginRight: '4px',
-                      border: `1px solid ${isRateLimited ? 'rgba(239,68,68,0.45)' : 'rgba(255,255,255,0.15)'}`
-                    }}
-                    title={`${usedQueries}/${maxQueriesPerHour} questions used this hour`}
-                  >
-                    <Zap size={10} />
-                    <span>{remainingQueries}/{maxQueriesPerHour}</span>
-                  </div>
-                )}
-                <button
-                  onClick={() => setShowPersonaMenu(prev => !prev)}
-                  style={{
-                    fontSize: '10px',
-                    fontWeight: 700,
-                    padding: '3px 8px',
-                    borderRadius: '100px',
-                    border: '1px solid var(--border-color)',
-                    background: 'var(--bg-secondary)',
-                    color: activePersonaObj.color,
-                    cursor: 'pointer',
-                    marginRight: '6px',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px'
-                  }}
-                  title="Click to switch persona perspective (Recruiter / Developer / Founder / Visitor)"
-                  type="button"
-                >
-                  <span>{activePersonaObj.badge}</span>
-                  <ChevronDown size={11} />
-                </button>
-
-                <button 
-                  onClick={() => setAiVoice(!aiVoice)} 
-                  className={`chatbot-header-btn ${aiVoice ? 'active' : ''}`} 
-                  title={aiVoice ? "Mute Voice" : "Enable Voice"}
-                >
-                  {aiVoice ? <Volume2 size={16} color="#10b981" /> : <VolumeX size={16} />}
-                </button>
-                <button onClick={handleClearChat} className="chatbot-header-btn" title="Clear Chat">
-                  <RotateCcw size={16} />
-                </button>
-                <button onClick={() => setIsOpen(false)} className="chatbot-header-btn" aria-label="Close Chat">
-                  <X size={16} />
-                </button>
-              </div>
-            </div>
 
             {/* AI Disclaimer Banner */}
             <AnimatePresence>
@@ -1998,7 +2086,7 @@ export default function ChatBot() {
                   style={{
                     fontSize: '9.5px',
                     fontWeight: 700,
-                    padding: '2px 7px',
+                    padding: '2px 8px',
                     borderRadius: '100px',
                     backgroundColor: activePersonaObj.bgColor,
                     color: activePersonaObj.color,
@@ -2006,10 +2094,11 @@ export default function ChatBot() {
                     letterSpacing: '0.02em',
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '3px'
+                    gap: '4px'
                   }}
                 >
-                  {activePersonaObj.badge}
+                  {activePersonaObj.icon && <activePersonaObj.icon size={10} strokeWidth={2.2} />}
+                  <span>{activePersonaObj.label || activePersonaObj.badge || 'Developer'}</span>
                 </span>
               </div>
               <div className="chatbot-suggestions-scroll-wrap">
