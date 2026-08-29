@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { ScrollReveal } from '../components';
-import { ChevronRight, ExternalLink, Zap, Brain, Code2, Database, Globe } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ExternalLink, Zap, Brain, Code2, Database, Sparkles, Search, X, Star } from 'lucide-react';
+import { FaGithub } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import useRealtimeData from '../hooks/useRealtimeData';
 
@@ -8,86 +9,187 @@ import useRealtimeData from '../hooks/useRealtimeData';
 import ProjectSkeleton from '../components/projects/ProjectSkeleton';
 import ProjectCard from '../components/projects/ProjectCard';
 import ProjectModal from '../components/projects/ProjectModal';
-import { useLongPress } from '../hooks/useLongPress';
 
 const projectAccents = [
   { color: '#6366f1', bg: 'rgba(99,102,241,0.12)', border: 'rgba(99,102,241,0.3)', glow: '#6366f1' },
   { color: '#8b5cf6', bg: 'rgba(139,92,246,0.12)', border: 'rgba(139,92,246,0.3)', glow: '#8b5cf6' },
   { color: '#10b981', bg: 'rgba(16,185,129,0.12)', border: 'rgba(16,185,129,0.3)', glow: '#10b981' },
+  { color: '#06b6d4', bg: 'rgba(6,182,212,0.12)', border: 'rgba(6,182,212,0.3)', glow: '#06b6d4' },
+  { color: '#f59e0b', bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.3)', glow: '#f59e0b' },
 ];
 
-/* Mobile Project Bento Card */
-function MobileProjectRow({ project, index, onTap, onLongPress }) {
-  const title = project?.title || 'Project';
-  const initials = title.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
-  const accentObj = projectAccents[index % projectAccents.length];
-  const accent = accentObj.color;
+function getProjectCategory(project) {
+  if (project?.category) return project.category;
+  const tagsStr = (project?.tags || []).join(" ").toLowerCase();
+  const titleStr = (project?.title || "").toLowerCase();
+  if (tagsStr.includes("rag") || tagsStr.includes("gemini") || tagsStr.includes("llm") || titleStr.includes("rag") || titleStr.includes("sms")) return "AI & ML";
+  if (tagsStr.includes("nlp") || tagsStr.includes("finbert") || tagsStr.includes("sentiment") || titleStr.includes("sentiment")) return "AI & ML";
+  if (tagsStr.includes("xgboost") || tagsStr.includes("lightgbm") || tagsStr.includes("scikit") || tagsStr.includes("machine learning") || titleStr.includes("defect") || titleStr.includes("vision")) return "AI & ML";
+  if (tagsStr.includes("react") || tagsStr.includes("fastapi") || tagsStr.includes("supabase") || tagsStr.includes("portfolio")) return "Full Stack";
+  return "Data Science";
+}
 
-  // Extract tech tags from tags array or tech_stack
-  const techTags = Array.isArray(project.tags) ? project.tags.slice(0, 3) :
-    typeof project.tags === 'string' ? project.tags.split(',').slice(0, 3).map(t => t.trim()) : [];
+/* ─── Mobile Featured-Projects Carousel (mirrors Home's hd-feat-* design) ─── */
+function MobileCarousel({ projects, onOpen }) {
+  const [activeIdx, setActiveIdx] = useState(0);
+  const trackRef = useRef(null);
 
-  // Check for notable metric in title or description
-  const metricMatch = (project.description || '').match(/(\d+[%+k]+[^.\s]{0,15})/i);
-  const metric = metricMatch ? metricMatch[1] : null;
+  const handleScroll = () => {
+    if (!trackRef.current) return;
+    const { scrollLeft, offsetWidth } = trackRef.current;
+    const idx = Math.round(scrollLeft / (offsetWidth * 0.86));
+    setActiveIdx(Math.min(Math.max(0, idx), projects.length - 1));
+  };
 
-  const longPressProps = useLongPress({
-    onLongPress: () => onLongPress(project),
-    onClick: () => onTap(project)
-  });
+  const scrollTo = (idx) => {
+    if (!trackRef.current) return;
+    const cards = trackRef.current.children;
+    if (cards[idx]) {
+      cards[idx].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+      setActiveIdx(idx);
+    }
+  };
+
+  if (projects.length === 0) return null;
 
   return (
-    <motion.button
-      className="mpj-bento"
-      {...longPressProps}
-      initial={{ opacity: 0, y: 18 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.07, duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-      whileTap={{ scale: 0.975 }}
-    >
-      {/* Top accent bar */}
-      <div className="mpj-top-bar" style={{ background: `linear-gradient(90deg, ${accent}, transparent)` }} />
-      {/* Glow blob */}
-      <div className="mpj-glow" style={{ background: `radial-gradient(circle, ${accent}22 0%, transparent 70%)` }} />
-
-      {/* Header row */}
-      <div className="mpj-bento-header">
-        <div className="mpj-bento-icon" style={{ background: accentObj.bg, color: accent, borderColor: accentObj.border }}>
-          {initials}
+    <div>
+      {/* Section header with counter + arrows */}
+      <div className="mpj-feat-header">
+        <p className="mpj-section-label" style={{ margin: 0 }}>
+          <Star size={11} style={{ color: '#f59e0b' }} />
+          All Projects
+        </p>
+        <div className="mpj-feat-controls">
+          <span className="mpj-feat-counter">{activeIdx + 1} / {projects.length}</span>
+          <button
+            className="mpj-feat-arrow"
+            onClick={() => scrollTo(Math.max(0, activeIdx - 1))}
+            disabled={activeIdx === 0}
+            aria-label="Previous project"
+          >
+            <ChevronLeft size={13} />
+          </button>
+          <button
+            className="mpj-feat-arrow"
+            onClick={() => scrollTo(Math.min(projects.length - 1, activeIdx + 1))}
+            disabled={activeIdx === projects.length - 1}
+            aria-label="Next project"
+          >
+            <ChevronRight size={13} />
+          </button>
         </div>
-        <div className="mpj-bento-title-wrap">
-          <h3 className="mpj-bento-title">{project.title}</h3>
-          <div className="mpj-bento-badges">
-            {project.liveUrl && (
-              <div className="live-badge">
-                <span className="live-dot"><span className="live-ping" /><span className="live-dot-core" /></span>
-                <span className="live-text">Live</span>
-              </div>
-            )}
-            {metric && (
-              <span className="mpj-metric-badge" style={{ color: accent, background: accentObj.bg, borderColor: accentObj.border }}>
-                {metric}
-              </span>
-            )}
-          </div>
-        </div>
-        <ChevronRight size={14} className="mpj-chevron" />
       </div>
 
-      {/* Description */}
-      <p className="mpj-bento-desc">{(project.description || '').slice(0, 100)}{project.description?.length > 100 ? '…' : ''}</p>
+      {/* Horizontal snap-scroll track */}
+      <div className="mpj-feat-track" ref={trackRef} onScroll={handleScroll}>
+        {projects.map((project, i) => {
+          const accentObj = projectAccents[i % projectAccents.length];
+          const accent = accentObj.color;
+          const category = getProjectCategory(project);
 
-      {/* Tech stack tags */}
-      {techTags.length > 0 && (
-        <div className="mpj-bento-tags">
-          {techTags.map(tag => (
-            <span key={tag} className="mpj-bento-tag" style={{ color: accent, borderColor: accentObj.border, background: accentObj.bg }}>
-              {tag}
-            </span>
-          ))}
-        </div>
-      )}
-    </motion.button>
+          const techTags = Array.isArray(project.tags)
+            ? project.tags.slice(0, 4)
+            : typeof project.tags === 'string'
+            ? project.tags.split(',').slice(0, 4).map(t => t.trim())
+            : [];
+
+          // Build badge text
+          const metricMatch = (project.description || '').match(/(\d+[%.+k]+)/i);
+          const metric = project.stats?.[0]?.value || (metricMatch ? metricMatch[1] : null);
+          const liveLabel = project.liveUrl ? '🚀 Live' : '⚡ Featured';
+          const badge = metric ? `${liveLabel} · ${metric}` : `${liveLabel} · ${category}`;
+
+          const cardBg = `linear-gradient(135deg, ${accent}18, ${accentObj.glow}08)`;
+
+          return (
+            <div
+              key={project.id || project.title}
+              className="mpj-feat-slide"
+              style={{ background: cardBg, borderColor: accentObj.border }}
+            >
+              {/* Glow blob bottom-right */}
+              <div
+                className="mpj-feat-card-bg"
+                style={{ background: `radial-gradient(circle, ${accentObj.glow}25, transparent 70%)` }}
+              />
+
+              {/* Badge pill */}
+              <div
+                className="mpj-feat-badge"
+                style={{ color: accent, background: `${accent}18`, borderColor: `${accent}35` }}
+              >
+                {badge}
+              </div>
+
+              {/* Title */}
+              <h3 className="mpj-feat-title">{project.title}</h3>
+
+              {/* Description */}
+              <p className="mpj-feat-desc">{project.description || ''}</p>
+
+              {/* Tech tags */}
+              <div className="mpj-feat-tags">
+                {techTags.map(t => (
+                  <span
+                    key={t}
+                    className="mpj-feat-tag"
+                    style={{ color: accent, background: `${accent}12`, borderColor: `${accent}25` }}
+                  >
+                    {t}
+                  </span>
+                ))}
+              </div>
+
+              {/* Actions row */}
+              <div className="mpj-feat-actions">
+                <button
+                  className="mpj-feat-action-primary"
+                  style={{ background: `${accent}18`, borderColor: `${accent}35`, color: accent }}
+                  onClick={() => onOpen(project)}
+                >
+                  <ExternalLink size={12} />
+                  View Case Study
+                </button>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  {project.githubUrl && (
+                    <button
+                      className="mpj-feat-icon-btn"
+                      onClick={(e) => { e.stopPropagation(); window.open(project.githubUrl, '_blank', 'noopener,noreferrer'); }}
+                      aria-label="GitHub"
+                    >
+                      <FaGithub size={13} />
+                    </button>
+                  )}
+                  {project.liveUrl && (
+                    <button
+                      className="mpj-feat-icon-btn"
+                      onClick={(e) => { e.stopPropagation(); window.open(project.liveUrl, '_blank', 'noopener,noreferrer'); }}
+                      aria-label="Live Demo"
+                    >
+                      <ExternalLink size={13} />
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Pagination dots */}
+      <div className="mpj-feat-dots">
+        {projects.map((p, idx) => (
+          <button
+            key={p.id || p.title}
+            className="mpj-feat-dot"
+            style={{ background: idx === activeIdx ? projectAccents[idx % projectAccents.length].color : undefined, width: idx === activeIdx ? '16px' : '6px' }}
+            onClick={() => scrollTo(idx)}
+            aria-label={`Go to slide ${idx + 1}`}
+          />
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -96,13 +198,37 @@ export default function Projects() {
   const { data: projectsData, loading } = useRealtimeData('projects', { orderColumn: 'created_at', ascending: true, disableRealtime: true });
   
   const [selectedProject, setSelectedProject] = useState(null);
-  const [contextMenuProject, setContextMenuProject] = useState(null);
+  const [activeCategory, setActiveCategory] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 900);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  const categories = ['All', 'AI & ML', 'Full Stack', 'Data Science'];
+
+  const filteredProjects = useMemo(() => {
+    return (projectsData || []).filter(project => {
+      const cat = getProjectCategory(project);
+      const matchesCategory =
+        activeCategory === 'All' ||
+        cat.toLowerCase() === activeCategory.toLowerCase() ||
+        (project.tags && project.tags.some(t => t.toLowerCase().includes(activeCategory.toLowerCase())));
+
+      if (!searchQuery.trim()) return matchesCategory;
+
+      const q = searchQuery.toLowerCase();
+      const matchesQuery =
+        (project.title && project.title.toLowerCase().includes(q)) ||
+        (project.description && project.description.toLowerCase().includes(q)) ||
+        (project.tags && project.tags.some(t => t.toLowerCase().includes(q))) ||
+        cat.toLowerCase().includes(q);
+
+      return matchesCategory && matchesQuery;
+    });
+  }, [projectsData, activeCategory, searchQuery]);
 
 
 
@@ -461,95 +587,142 @@ export default function Projects() {
         .dsheet-action-pill--primary { background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%); color: #ffffff !important; border: none; box-shadow: 0 4px 16px rgba(59,130,246,.3); }
         .dsheet-action-pill--primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59,130,246,.45); }
 
-        /* ========== MOBILE SPECIFIC BENTO CARDS ========== */
+        /* ========== MOBILE CAROUSEL (mirrors Home hd-feat-* styles) ========== */
         @media (max-width: 900px) {
-          .mpj-list { display: flex; flex-direction: column; gap: 10px; }
 
-          /* Filter chips header (mobile-only) */
+          /* Section label */
+          .mpj-section-label {
+            font-size: 9px; font-weight: 800; letter-spacing: .09em;
+            text-transform: uppercase; color: var(--text-muted);
+            margin: 0; display: flex; align-items: center; gap: 6px;
+          }
+
+          /* Filter chips row */
           .mpj-filter-row {
-            display: flex; gap: 7px; overflow-x: auto; padding-bottom: 2px;
-            -ms-overflow-style: none; scrollbar-width: none; margin-bottom: 4px;
+            display: flex; gap: 6px; overflow-x: auto; padding: 2px 2px 8px;
+            -ms-overflow-style: none; scrollbar-width: none; margin-bottom: 8px;
           }
           .mpj-filter-row::-webkit-scrollbar { display: none; }
           .mpj-filter-chip {
             flex-shrink: 0;
-            padding: 5px 13px; border-radius: 20px;
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 12px; border-radius: 20px;
             font-size: 11px; font-weight: 700;
             border: 1px solid var(--border-color);
             background: var(--bg-secondary); color: var(--text-secondary);
             cursor: pointer; white-space: nowrap;
-            transition: all 0.15s;
+            transition: all 0.15s ease;
+            -webkit-tap-highlight-color: transparent;
           }
+          .mpj-filter-chip:active { transform: scale(0.96); }
           .mpj-filter-chip--active {
             background: var(--primary-blue); border-color: var(--primary-blue);
-            color: #fff;
+            color: #ffffff !important; box-shadow: 0 2px 8px rgba(59,130,246,0.25);
           }
+          .mpj-filter-count {
+            font-size: 9.5px; opacity: 0.85; padding: 1px 5px; border-radius: 8px;
+            background: rgba(0,0,0,0.08);
+          }
+          [data-theme="dark"] .mpj-filter-count { background: rgba(255,255,255,0.12); }
+          .mpj-filter-chip--active .mpj-filter-count { background: rgba(255,255,255,0.25); color: #fff; }
 
-          /* Bento card */
-          .mpj-bento {
-            position: relative; overflow: hidden;
-            display: flex; flex-direction: column; gap: 8px;
-            padding: 14px 14px 12px;
-            background: var(--bg-secondary);
+          /* ── Carousel header row ── */
+          .mpj-feat-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 0 4px;
+          }
+          .mpj-feat-controls { display: flex; align-items: center; gap: 5px; }
+          .mpj-feat-counter {
+            font-size: 9.5px; font-weight: 700; color: var(--text-muted);
+            padding: 2px 7px; border-radius: 6px; background: var(--bg-secondary);
             border: 1px solid var(--border-color);
-            border-radius: 18px;
-            width: 100%; text-align: left; cursor: pointer;
-            transition: border-color 0.2s;
           }
-          .mpj-bento:active { border-color: rgba(99,102,241,0.4); }
-
-          /* Top gradient bar */
-          .mpj-top-bar {
-            position: absolute; top: 0; left: 0; right: 0; height: 2px;
-            border-radius: 18px 18px 0 0;
+          .mpj-feat-arrow {
+            width: 24px; height: 24px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--bg-secondary); border: 1px solid var(--border-color);
+            color: var(--text-secondary); cursor: pointer; padding: 0;
+            transition: background 0.15s, opacity 0.15s;
           }
+          .mpj-feat-arrow:active { background: var(--bg-primary); }
+          .mpj-feat-arrow:disabled { opacity: 0.3; cursor: default; }
 
-          /* Glow blob */
-          .mpj-glow {
-            position: absolute; top: -20px; right: -20px;
-            width: 80px; height: 80px; border-radius: 50%;
+          /* ── Horizontal snap track ── */
+          .mpj-feat-track {
+            display: flex; overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            gap: 10px; padding: 4px 0 6px;
+            -ms-overflow-style: none; scrollbar-width: none;
+          }
+          .mpj-feat-track::-webkit-scrollbar { display: none; }
+
+          /* ── Individual slide card ── */
+          .mpj-feat-slide {
+            min-width: 86%; max-width: 86%;
+            scroll-snap-align: start;
+            border-radius: 18px; border: 1px solid;
+            padding: 14px; position: relative; overflow: hidden;
+            flex-shrink: 0; box-sizing: border-box;
+            display: flex; flex-direction: column;
+          }
+          .mpj-feat-card-bg {
+            position: absolute; bottom: -20px; right: -20px;
+            width: 100px; height: 100px; border-radius: 50%;
             pointer-events: none;
           }
-
-          /* Header row */
-          .mpj-bento-header { display: flex; align-items: flex-start; gap: 10px; }
-          .mpj-bento-icon {
-            width: 38px; height: 38px; border-radius: 12px;
-            border: 1px solid; display: flex; align-items: center; justify-content: center;
-            font-size: 11px; font-weight: 800; flex-shrink: 0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+          .mpj-feat-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            border-radius: 20px; padding: 2px 8px; border: 1px solid;
+            font-size: 8.5px; font-weight: 800;
+            letter-spacing: 0.04em; margin-bottom: 8px; width: fit-content;
           }
-          .mpj-bento-title-wrap { flex: 1; min-width: 0; }
-          .mpj-bento-title {
+          .mpj-feat-title {
             font-size: 14px; font-weight: 800; color: var(--text-primary);
-            margin: 0 0 4px; letter-spacing: -0.02em; line-height: 1.2;
+            margin: 0 0 5px; letter-spacing: -0.02em;
           }
-          .mpj-bento-badges { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
-          .mpj-metric-badge {
-            font-size: 9px; font-weight: 800; border-radius: 8px;
-            padding: 2px 7px; border: 1px solid;
-            letter-spacing: 0.02em;
-          }
-          .mpj-chevron { color: var(--text-muted); flex-shrink: 0; margin-top: 2px; }
-
-          /* Description */
-          .mpj-bento-desc {
-            font-size: 11px; color: var(--text-secondary);
-            line-height: 1.55; margin: 0;
-            display: -webkit-box; -webkit-line-clamp: 2;
+          .mpj-feat-desc {
+            font-size: 10.5px; color: var(--text-secondary);
+            line-height: 1.5; margin: 0 0 10px; flex: 1;
+            display: -webkit-box; -webkit-line-clamp: 3;
             -webkit-box-orient: vertical; overflow: hidden;
           }
-
-          /* Tech tags */
-          .mpj-bento-tags { display: flex; flex-wrap: wrap; gap: 5px; }
-          .mpj-bento-tag {
-            font-size: 9.5px; font-weight: 700;
-            border-radius: 8px; padding: 2.5px 8px;
-            border: 1px solid;
+          .mpj-feat-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
+          .mpj-feat-tag {
+            font-size: 9px; font-weight: 700;
+            border-radius: 8px; padding: 2px 7px; border: 1px solid;
           }
+          .mpj-feat-actions {
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 6px; margin-top: auto;
+          }
+          .mpj-feat-action-primary {
+            display: flex; align-items: center; gap: 5px;
+            font-size: 11px; font-weight: 700;
+            border-radius: 10px; padding: 6px 12px; border: 1px solid;
+            cursor: pointer; transition: transform 0.15s;
+            -webkit-tap-highlight-color: transparent;
+          }
+          .mpj-feat-action-primary:active { transform: scale(0.96); }
+          .mpj-feat-icon-btn {
+            width: 28px; height: 28px; border-radius: 8px;
+            border: 1px solid var(--border-color); background: var(--bg-primary);
+            color: var(--text-secondary);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.15s ease;
+          }
+          .mpj-feat-icon-btn:active { color: var(--primary-blue); border-color: var(--primary-blue); }
 
-          /* Title row */
-          .mpj-title-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+          /* ── Dots pagination ── */
+          .mpj-feat-dots {
+            display: flex; align-items: center; justify-content: center;
+            gap: 5px; margin-top: 6px; margin-bottom: 4px;
+          }
+          .mpj-feat-dot {
+            height: 6px; border-radius: 3px;
+            background: var(--border-color); border: none; padding: 0;
+            cursor: pointer; transition: all 0.2s ease;
+          }
         }
       `}</style>
 
@@ -557,27 +730,104 @@ export default function Projects() {
       {loading ? (
         <ProjectSkeleton count={6} />
       ) : isMobile ? (
-        /* Mobile Bento Cards View */
-        <div>
-          {/* Filter chips — mobile only */}
+        /* ── Mobile Carousel View ─────────────────────────────────────────────── */
+        <div style={{ width: '100%', padding: '4px 0 60px' }}>
+          {/* Header */}
+          <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+            <p style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: '0.22em', textTransform: 'uppercase', margin: '0 0 6px' }}>
+              ENGINEERED SYSTEMS
+            </p>
+            <h1 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 8px', letterSpacing: '-0.025em', lineHeight: 1.2 }}>
+              Production Apps &amp; ML Models
+            </h1>
+            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '0 auto', lineHeight: 1.55 }}>
+              Swipe to explore all intelligent applications, ML pipelines, and full-stack solutions.
+            </p>
+          </div>
+
+          {/* Search bar */}
+          <div style={{ position: 'relative', width: '100%', marginBottom: '10px' }}>
+            <Search size={14} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search projects, technologies..."
+              style={{
+                width: '100%', height: '38px',
+                padding: '0 32px 0 34px',
+                borderRadius: '12px',
+                background: 'var(--bg-secondary)',
+                border: '1px solid var(--border-color)',
+                color: 'var(--text-primary)',
+                fontSize: '12px', fontWeight: 500,
+                outline: 'none', boxSizing: 'border-box',
+              }}
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                aria-label="Clear search"
+                style={{
+                  position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)',
+                  background: 'none', border: 'none', padding: 0,
+                  color: 'var(--text-muted)', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
+
+          {/* Category filter chips */}
           <div className="mpj-filter-row">
-            {['All', 'AI & ML', 'Full Stack', 'Data Science'].map(cat => (
-              <span key={cat} className={`mpj-filter-chip${cat === 'All' ? ' mpj-filter-chip--active' : ''}`}>
-                {cat}
-              </span>
-            ))}
+            {categories.map(cat => {
+              const count = cat === 'All'
+                ? (projectsData || []).length
+                : (projectsData || []).filter(p =>
+                    getProjectCategory(p).toLowerCase() === cat.toLowerCase() ||
+                    (p.tags && p.tags.some(t => t.toLowerCase().includes(cat.toLowerCase())))
+                  ).length;
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setActiveCategory(cat)}
+                  className={`mpj-filter-chip${activeCategory === cat ? ' mpj-filter-chip--active' : ''}`}
+                >
+                  <span>{cat}</span>
+                  <span className="mpj-filter-count">{count}</span>
+                </button>
+              );
+            })}
           </div>
-          <div className="mpj-list">
-            {(projectsData || []).map((project, i) => (
-              <MobileProjectRow
-                key={project.id || project.title}
-                project={project}
-                index={i}
-                onTap={setSelectedProject}
-                onLongPress={setContextMenuProject}
-              />
-            ))}
-          </div>
+
+          {/* Carousel or Empty State */}
+          {filteredProjects.length > 0 ? (
+            <MobileCarousel projects={filteredProjects} onOpen={setSelectedProject} />
+          ) : (
+            <div style={{
+              textAlign: 'center', padding: '36px 16px',
+              background: 'var(--bg-secondary)', border: '1px solid var(--border-color)',
+              borderRadius: '16px', display: 'flex', flexDirection: 'column',
+              alignItems: 'center', gap: '8px', marginTop: '8px'
+            }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'rgba(239,68,68,0.1)', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '4px' }}>
+                <Search size={18} />
+              </div>
+              <h3 style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>No projects found</h3>
+              <p style={{ fontSize: '11.5px', color: 'var(--text-secondary)', margin: 0 }}>Try a different keyword or reset filters.</p>
+              <button
+                type="button"
+                onClick={() => { setSearchQuery(''); setActiveCategory('All'); }}
+                style={{ marginTop: '8px', padding: '6px 16px', borderRadius: '20px', border: 'none', background: 'var(--primary-blue)', color: '#fff', fontSize: '11.5px', fontWeight: 700, cursor: 'pointer' }}
+              >
+                Reset Filters
+              </button>
+            </div>
+          )}
         </div>
       ) : (
         /* Desktop Grid View - Upgraded Cards */

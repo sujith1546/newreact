@@ -1,7 +1,26 @@
 import { useState, useEffect, useRef } from 'react';
 import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Award, FileText, Share, X, Moon, Sun, FileDown, Settings, ChevronLeft, ChevronDown, ChevronRight, Monitor, Bell, Wand2, Globe, Trash2, User, UserPlus, Copy, Check, MapPin, School, Sparkles, Atom, HelpCircle, Zap, BookOpen, Code2, ExternalLink, Star, Info, Navigation, Layers, Shield, Clock, Compass, RefreshCw, Lock } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
-import { IconBolt, IconLayoutGrid } from '@tabler/icons-react';
+import { 
+  IconHome, 
+  IconBulb, 
+  IconBriefcase, 
+  IconMail, 
+  IconDots, 
+  IconX,
+  IconSchool,
+  IconAward,
+  IconSparkles,
+  IconBrandGithub,
+  IconAtom,
+  IconFileText,
+  IconAddressBook,
+  IconShare,
+  IconDownload,
+  IconUser,
+  IconSettings,
+  IconShieldLock
+} from '@tabler/icons-react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useLocalTime } from '../../hooks/useLocalTime';
@@ -406,382 +425,208 @@ END:VCARD`;
   const { getSectionOrder } = usePersona();
 
   const baseNavItems = [
-    { id: 'home', label: 'Home', Icon: Home },
-    { id: 'skills', label: 'Skills', Icon: IconBolt },
-    { id: 'projects', label: 'Projects', Icon: IconLayoutGrid },
-    { id: 'contact', label: 'Contact', Icon: Mail },
+    { id: 'home', label: 'Home', Icon: IconHome },
+    { id: 'skills', label: 'Skills', Icon: IconBulb },
+    { id: 'projects', label: 'Work', Icon: IconBriefcase },
+    { id: 'contact', label: 'Contact', Icon: IconMail },
   ];
   const navItems = getSectionOrder(baseNavItems);
 
   return (
     <>
-      {/* Translucent overlay backdrop */}
+      {/* More Bottom Sheet — Flat Advanced Version (All buttons, No scroll) */}
       <AnimatePresence>
         {isMoreOpen && (
-          <motion.div
-            className="more-overlay-backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => {
-              setIsMoreOpen(false);
-              moreBtnRef.current?.focus();
-            }}
-          />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {isMoreOpen && (
-          <motion.div
-            ref={drawerRef}
-            className="more-overlay-sheet"
-            role="dialog"
-            aria-modal="true"
-            aria-label="More options navigation"
-            drag="y"
-            dragListener={false}
-            dragControls={dragControls}
-            dragConstraints={{ top: 0 }}
-            dragElastic={{ top: 0, bottom: 0.35 }}
-            onDragEnd={(e, { offset, velocity }) => {
-              if (offset.y > 160 || (velocity.y > 500 && offset.y > 40)) {
-                haptic.medium();
-                setIsMoreOpen(false);
-              }
-            }}
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={{ type: 'spring', damping: 32, stiffness: 380, mass: 0.8 }}
-          >
-            <div
-              className="drawer-handle-touch-target"
-              onPointerDown={(e) => dragControls.start(e)}
-              style={{
-                width: '100%',
-                padding: '12px 0 6px',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                cursor: 'grab',
-                touchAction: 'none',
-                flexShrink: 0
-              }}
+          <div className="more-sheet-backdrop" onClick={() => setIsMoreOpen(false)}>
+            <motion.div
+              ref={drawerRef}
+              className="more-sheet"
+              role="dialog"
+              aria-modal="true"
+              aria-label="More options menu"
+              onClick={(e) => e.stopPropagation()}
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 32, stiffness: 380, mass: 0.8 }}
             >
-              <div className="drawer-handle" style={{ margin: 0 }} />
-            </div>
+              <div className="sheet-handle" />
 
-            {/* Header: avatar + name + close */}
-            <div className="drawer-header-profile">
-              <img
-                src="/profile_photo.png"
-                alt="Sujith Thota"
-                className="drawer-avatar"
-              />
-              <div className="drawer-profile-info">
-                <h4>Sujith Thota</h4>
-                <div className="drawer-status-badge">
-                  <span className="drawer-status-dot" />
-                  <span>Available for opportunities</span>
+              <div className="sheet-header">
+                <div className="sheet-identity">
+                  <img
+                    src="/profile_photo.png"
+                    alt="Sujith Thota"
+                    className="sheet-avatar"
+                  />
+                  <div>
+                    <p className="sheet-name">Sujith Thota</p>
+                    <p className="sheet-status">
+                      <span className="status-dot" />Available for opportunities
+                    </p>
+                  </div>
                 </div>
+                <button
+                  className="sheet-close"
+                  aria-label="Close"
+                  onClick={() => setIsMoreOpen(false)}
+                >
+                  ✕
+                </button>
               </div>
-              <button
-                className="drawer-close-btn"
-                style={{ position: 'static', transform: 'none', marginLeft: 'auto' }}
-                onClick={() => { setIsMoreOpen(false); moreBtnRef.current?.focus(); }}
-                aria-label="Close menu"
-              >
-                <X size={16} />
-              </button>
-            </div>
 
-            {/* Scrollable content */}
-            <div className="drawer-scroll-area" style={{ padding: '0 14px 38px' }}>
-              {/* ⚡ Live Cloud Diagnostics & Telemetry Bar */}
-              <div style={{
-                margin: '8px 0 12px',
-                padding: '8px 12px',
-                borderRadius: 14,
-                background: 'var(--bg-secondary)',
-                border: '1px solid var(--border-color)',
-                boxShadow: '0 2px 10px rgba(0, 0, 0, 0.03)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 8,
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
-                  <span style={{
-                    width: 7, height: 7, borderRadius: '50%',
-                    background: '#10b981',
-                    boxShadow: '0 0 8px #10b981',
-                    flexShrink: 0,
-                  }} />
-                  <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
-                    Live Sync
-                  </span>
-                  <span style={{ fontSize: 9.5, color: 'var(--text-muted)', background: 'var(--bg-primary)', padding: '1px 6px', borderRadius: 6, border: '1px solid var(--border-color)' }}>
-                    Active
-                  </span>
+              <div className="sync-banner">
+                <div className="sync-live">
+                  <span className="pill-dot" />Live sync active
                 </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                  <motion.button
-                    whileTap={{ scale: 0.92 }}
-                    onClick={handleSoftSync}
-                    disabled={isSyncing}
-                    style={{
-                      padding: '4px 8px',
-                      borderRadius: 8,
-                      background: 'rgba(99,102,241,0.12)',
-                      border: '1px solid rgba(99,102,241,0.25)',
-                      color: 'var(--primary-blue, #6366f1)',
-                      fontSize: 10,
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 4,
-                    }}
-                  >
-                    <RefreshCw size={10} className={isSyncing ? 'spinning' : ''} />
-                    <span>{isSyncing ? 'Syncing' : 'Soft Sync'}</span>
-                  </motion.button>
-
-                  <motion.button
-                    whileTap={{ scale: 0.92 }}
-                    onClick={handleFullWebsiteRefresh}
-                    disabled={isFullReloading}
-                    style={{
-                      padding: '4px 8px',
-                      borderRadius: 8,
-                      background: 'rgba(16,185,129,0.12)',
-                      border: '1px solid rgba(16,185,129,0.25)',
-                      color: '#10b981',
-                      fontSize: 10,
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 4,
-                    }}
-                  >
-                    <RefreshCw size={10} className={isFullReloading ? 'spinning' : ''} />
-                    <span>{isFullReloading ? 'Reloading' : 'Hard Reload'}</span>
-                  </motion.button>
+                <div className="sync-actions">
+                  <button className="sync-btn" onClick={handleSoftSync} disabled={isSyncing}>
+                    {isSyncing ? 'Syncing...' : 'Soft sync'}
+                  </button>
+                  <button className="sync-btn" onClick={handleFullWebsiteRefresh} disabled={isFullReloading}>
+                    {isFullReloading ? 'Reloading...' : 'Hard reload'}
+                  </button>
                 </div>
               </div>
 
-              {/* Explore Navigation Row */}
-              <p className="drawer-sections-label" style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '10px 0 6px' }}>
-                <Compass size={13} style={{ color: 'var(--primary-blue)' }} />
-                <span>EXPLORE SECTIONS</span>
-              </p>
-              <div className="drawer-explore-row">
-                <motion.button
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.93 }}
+              <p className="section-label">Explore sections</p>
+              <div className="tile-grid">
+                <button
+                  className="tile"
                   onClick={() => { haptic.light(); handleTabClick('education'); }}
-                  className="drawer-explore-item"
+                  aria-label="Education"
                 >
-                  <div className="drawer-item-box" style={{ color: '#6366f1', background: 'rgba(99,102,241,0.1)', borderColor: 'rgba(99,102,241,0.25)' }}>
-                    <GraduationCap size={18} />
-                  </div>
+                  <IconSchool size={17} stroke={1.75} />
                   <span>Education</span>
-                </motion.button>
+                </button>
 
-                {(() => {
-                  const isExpEnabled = isModuleEnabled('experience');
-                  return (
-                    <motion.button
-                      whileHover={{ scale: isExpEnabled ? 1.04 : 1 }}
-                      whileTap={{ scale: isExpEnabled ? 0.93 : 1 }}
-                      onClick={() => {
-                        if (!isExpEnabled) {
-                          notifyModuleDisabled('experience');
-                          return;
-                        }
-                        haptic.light();
-                        handleTabClick('experience');
-                      }}
-                      className={`drawer-explore-item ${!isExpEnabled ? 'item-disabled' : ''}`}
-                      style={!isExpEnabled ? { opacity: 0.65 } : {}}
-                    >
-                      <div className="drawer-item-box" style={{ color: isExpEnabled ? '#10b981' : '#EF4444', background: isExpEnabled ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', borderColor: isExpEnabled ? 'rgba(16,185,129,0.25)' : 'rgba(239,68,68,0.25)', position: 'relative' }}>
-                        <Briefcase size={18} />
-                        {!isExpEnabled && (
-                          <span style={{ position: 'absolute', top: -4, right: -4, width: 13, height: 13, borderRadius: '50%', background: '#EF4444', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-                            <Lock size={8} />
-                          </span>
-                        )}
-                      </div>
-                      <span>Experience</span>
-                    </motion.button>
-                  );
-                })()}
+                <button
+                  className="tile"
+                  onClick={() => {
+                    if (!isModuleEnabled('experience')) {
+                      notifyModuleDisabled('experience');
+                      return;
+                    }
+                    haptic.light();
+                    handleTabClick('experience');
+                  }}
+                  aria-label="Experience"
+                >
+                  <IconBriefcase size={17} stroke={1.75} />
+                  <span>Experience</span>
+                </button>
 
-                {(() => {
-                  const isCertsEnabled = isModuleEnabled('certifications');
-                  return (
-                    <motion.button
-                      whileHover={{ scale: isCertsEnabled ? 1.04 : 1 }}
-                      whileTap={{ scale: isCertsEnabled ? 0.93 : 1 }}
-                      onClick={() => {
-                        if (!isCertsEnabled) {
-                          notifyModuleDisabled('certifications');
-                          return;
-                        }
-                        haptic.light();
-                        handleTabClick('certifications');
-                      }}
-                      className={`drawer-explore-item ${!isCertsEnabled ? 'item-disabled' : ''}`}
-                      style={!isCertsEnabled ? { opacity: 0.65 } : {}}
-                    >
-                      <div className="drawer-item-box" style={{ color: isCertsEnabled ? '#f59e0b' : '#EF4444', background: isCertsEnabled ? 'rgba(245,158,11,0.1)' : 'rgba(239,68,68,0.1)', borderColor: isCertsEnabled ? 'rgba(245,158,11,0.25)' : 'rgba(239,68,68,0.25)', position: 'relative' }}>
-                        <Award size={18} />
-                        {!isCertsEnabled && (
-                          <span style={{ position: 'absolute', top: -4, right: -4, width: 13, height: 13, borderRadius: '50%', background: '#EF4444', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-                            <Lock size={8} />
-                          </span>
-                        )}
-                      </div>
-                      <span>Certs</span>
-                    </motion.button>
-                  );
-                })()}
+                <button
+                  className="tile"
+                  onClick={() => {
+                    if (!isModuleEnabled('certifications')) {
+                      notifyModuleDisabled('certifications');
+                      return;
+                    }
+                    haptic.light();
+                    handleTabClick('certifications');
+                  }}
+                  aria-label="Certs"
+                >
+                  <IconAward size={17} stroke={1.75} />
+                  <span>Certs</span>
+                </button>
 
-                <motion.button
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.93 }}
+                <button
+                  className="tile"
                   onClick={() => { haptic.light(); handleTabClick('moments'); }}
-                  className="drawer-explore-item"
+                  aria-label="Moments"
                 >
-                  <div className="drawer-item-box" style={{ color: '#8b5cf6', background: 'rgba(139,92,246,0.1)', borderColor: 'rgba(139,92,246,0.25)' }}>
-                    <Sparkles size={18} />
-                  </div>
+                  <IconSparkles size={17} stroke={1.75} />
                   <span>Moments</span>
-                </motion.button>
+                </button>
 
-                <motion.button
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.93 }}
+                <button
+                  className="tile"
                   onClick={() => { haptic.light(); playSound(); setIsGithubStatsOpen(true); setIsMoreOpen(false); }}
-                  className="drawer-explore-item"
+                  aria-label="GitHub"
                 >
-                  <div className="drawer-item-box" style={{ color: '#8b5cf6', background: 'rgba(139,92,246,0.1)', borderColor: 'rgba(139,92,246,0.25)' }}>
-                    <FaGithub size={18} />
-                  </div>
+                  <IconBrandGithub size={17} stroke={1.75} />
                   <span>GitHub</span>
-                </motion.button>
+                </button>
               </div>
 
-              <div className="drawer-divider" />
-
-              {/* Feature Actions Grid */}
-              <p className="drawer-sections-label" style={{ display: 'flex', alignItems: 'center', gap: 6, margin: '12px 0 6px' }}>
-                <Zap size={13} style={{ color: '#f59e0b' }} />
-                <span>TOOLS & SHORTCUTS</span>
-              </p>
-              <div className="drawer-actions-grid">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.92 }}
+              <p className="section-label">Tools &amp; shortcuts</p>
+              <div className="tile-grid">
+                <button
+                  className="tile"
                   onClick={() => { haptic.light(); playSound(); setIsMoreOpen(false); window.dispatchEvent(new CustomEvent('open-chatbot')); }}
-                  className="drawer-explore-item"
+                  aria-label="Atom AI"
                 >
-                  <div className="drawer-item-box" style={{ color: '#06b6d4', background: 'rgba(6,182,212,0.12)', borderColor: 'rgba(6,182,212,0.25)' }}>
-                    <Atom size={18} />
-                  </div>
+                  <IconAtom size={17} stroke={1.75} />
                   <span>Atom AI</span>
-                </motion.button>
+                </button>
 
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.92 }}
-                  onClick={() => { haptic.light(); triggerEvent('open-resume'); }}
-                  className="drawer-explore-item"
+                <button
+                  className="tile"
+                  onClick={() => { haptic.light(); triggerEvent('open-resume'); setIsMoreOpen(false); }}
+                  aria-label="Resume"
                 >
-                  <div className="drawer-item-box" style={{ color: '#8b5cf6', background: 'rgba(139,92,246,0.12)', borderColor: 'rgba(139,92,246,0.25)' }}>
-                    <FileText size={18} />
-                  </div>
+                  <IconFileText size={17} stroke={1.75} />
                   <span>Resume</span>
-                </motion.button>
+                </button>
 
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.92 }}
+                <button
+                  className="tile"
                   onClick={() => { haptic.light(); handleDownloadVCard(); }}
-                  className="drawer-explore-item"
+                  aria-label="vCard"
                 >
-                  <div className="drawer-item-box" style={{ color: '#10b981', background: 'rgba(16,185,129,0.12)', borderColor: 'rgba(16,185,129,0.25)' }}>
-                    <UserPlus size={18} />
-                  </div>
+                  <IconAddressBook size={17} stroke={1.75} />
                   <span>vCard</span>
-                </motion.button>
+                </button>
 
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.92 }}
+                <button
+                  className="tile"
                   onClick={() => { haptic.light(); handleShare(); }}
-                  className="drawer-explore-item"
+                  aria-label="Share"
                 >
-                  <div className="drawer-item-box" style={{ color: '#3b82f6', background: 'rgba(59,130,246,0.12)', borderColor: 'rgba(59,130,246,0.25)' }}>
-                    <Share size={18} />
-                  </div>
+                  <IconShare size={17} stroke={1.75} />
                   <span>Share</span>
-                </motion.button>
+                </button>
 
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.92 }}
+                <button
+                  className="tile"
                   onClick={() => { haptic.light(); playSound(); handleInstallClick(); setIsMoreOpen(false); }}
-                  className="drawer-explore-item"
+                  aria-label="Install App"
                 >
-                  <div className="drawer-item-box" style={{ color: '#ec4899', background: 'rgba(236,72,153,0.12)', borderColor: 'rgba(236,72,153,0.25)' }}>
-                    <FileDown size={18} />
-                  </div>
-                  <span>Install App</span>
-                </motion.button>
+                  <IconDownload size={17} stroke={1.75} />
+                  <span>Install app</span>
+                </button>
 
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.92 }}
+                <button
+                  className="tile"
                   onClick={() => { haptic.light(); playSound(); setIsProfileOpen(true); setIsMoreOpen(false); }}
-                  className="drawer-explore-item"
+                  aria-label="Profile"
                 >
-                  <div className="drawer-item-box" style={{ color: '#6366f1', background: 'rgba(99,102,241,0.12)', borderColor: 'rgba(99,102,241,0.25)' }}>
-                    <User size={18} />
-                  </div>
+                  <IconUser size={17} stroke={1.75} />
                   <span>Profile</span>
-                </motion.button>
+                </button>
 
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.92 }}
+                <button
+                  className="tile"
                   onClick={() => { haptic.light(); playSound(); window.dispatchEvent(new CustomEvent('open-all-settings')); setIsMoreOpen(false); }}
-                  className="drawer-explore-item"
+                  aria-label="Settings"
                 >
-                  <div className="drawer-item-box" style={{ color: '#64748b', background: 'rgba(100,116,139,0.12)', borderColor: 'rgba(100,116,139,0.25)' }}>
-                    <Settings size={18} />
-                  </div>
+                  <IconSettings size={17} stroke={1.75} />
                   <span>Settings</span>
-                </motion.button>
+                </button>
 
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.92 }}
+                <button
+                  className="tile"
                   onClick={() => { haptic.light(); playSound(); setIsMoreOpen(false); window.dispatchEvent(new CustomEvent('open-admin-login')); }}
-                  className="drawer-explore-item"
+                  aria-label="Admin"
                 >
-                  <div className="drawer-item-box" style={{ color: '#ef4444', background: 'rgba(239,68,68,0.12)', borderColor: 'rgba(239,68,68,0.25)' }}>
-                    <Shield size={18} />
-                  </div>
+                  <IconShieldLock size={17} stroke={1.75} />
                   <span>Admin</span>
-                </motion.button>
+                </button>
               </div>
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
@@ -1072,74 +917,42 @@ END:VCARD`;
         )}
       </AnimatePresence>
 
-      {/* Bottom Nav Capsule */}
-      <nav className="mobile-nav-capsule" role="navigation" aria-label="Mobile navigation">
+      {/* Bottom Nav — Option 3: minimal underline tabs */}
+      <nav className="bottom-nav mobile-nav-capsule" role="navigation" aria-label="Mobile navigation">
         {navItems.map(({ id, label, Icon }) => {
           // Highlight based on the currently active section prop
-          const isActive = activeSection === id && !isMoreOpen;
+          const isActive = (activeSection === id || (id === 'projects' && activeSection === 'projects')) && !isMoreOpen;
           return (
-            <motion.button
+            <button
               key={id}
               onClick={() => handleTabClick(id)}
-              className={`nav-capsule-tab${isActive ? ' nav-capsule-tab-active' : ''}`}
+              className={`nav-item nav-capsule-tab${isActive ? ' active nav-capsule-tab-active' : ''}`}
               aria-current={isActive ? "page" : undefined}
               aria-label={label}
-              whileTap={{ scale: 0.85 }}
-              transition={{ type: "spring", stiffness: 400, damping: 32 }}
             >
-              {isActive && (
-                <motion.div
-                  layoutId="mobileActiveTabPill"
-                  className="nav-capsule-active-pill"
-                  transition={{ type: "spring", stiffness: 450, damping: 32 }}
-                />
-              )}
-              <motion.div
-                animate={{ scale: isActive ? 1.16 : 1, y: isActive ? -1 : 0 }}
-                transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-              >
-                <Icon size={18} aria-hidden="true" />
-              </motion.div>
+              {isActive && <div className="nav-item-indicator" />}
+              <Icon size={19} stroke={1.75} aria-hidden="true" />
               <span>{label}</span>
-            </motion.button>
+            </button>
           );
         })}
 
         {/* More Tab Trigger */}
-        <motion.button
+        <button
           ref={moreBtnRef}
           onClick={() => {
             haptic.medium();
             setIsMoreOpen(!isMoreOpen);
           }}
-          className={`nav-capsule-tab${isMoreOpen ? ' nav-capsule-tab-active' : ''}`}
+          className={`nav-item nav-capsule-tab${isMoreOpen ? ' active nav-capsule-tab-active' : ''}`}
           aria-expanded={isMoreOpen}
           aria-haspopup="dialog"
           aria-label="More options menu"
-          whileTap={{ scale: 0.85 }}
-          transition={{ type: "spring", stiffness: 400, damping: 32 }}
         >
-          {isMoreOpen && (
-            <motion.div
-              layoutId="mobileActiveTabPill"
-              className="nav-capsule-active-pill"
-              transition={{ type: "spring", stiffness: 450, damping: 32 }}
-            />
-          )}
-          <motion.div
-            animate={{
-              scale: isMoreOpen ? 1.16 : 1,
-              y: isMoreOpen ? -1 : 0,
-              rotate: isMoreOpen ? 90 : 0,
-            }}
-            transition={{ type: "spring", stiffness: 400, damping: 25 }}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          >
-            {isMoreOpen ? <X size={18} aria-hidden="true" /> : <MoreHorizontal size={18} aria-hidden="true" />}
-          </motion.div>
+          {isMoreOpen && <div className="nav-item-indicator" />}
+          {isMoreOpen ? <IconX size={19} stroke={1.75} aria-hidden="true" /> : <IconDots size={19} stroke={1.75} aria-hidden="true" />}
           <span>{isMoreOpen ? 'Close' : 'More'}</span>
-        </motion.button>
+        </button>
       </nav>
 
       {/* Dynamic Island Notifications */}
@@ -1175,7 +988,328 @@ END:VCARD`;
       </div>
 
       <style>{`
-        /* Style configurations are declared globally in index.css as requested */
+        .bottom-nav {
+          position: fixed !important;
+          left: 0 !important;
+          right: 0 !important;
+          bottom: 0 !important;
+          z-index: 9998 !important;
+          height: 64px !important;
+          background: #FFFFFF !important;
+          border-top: 1px solid #E5E7EB !important;
+          border-left: none !important;
+          border-right: none !important;
+          border-bottom: none !important;
+          border-radius: 0 !important;
+          display: flex !important;
+          align-items: stretch !important;
+          justify-content: space-around !important;
+          padding: 0 4px !important;
+          padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+          backdrop-filter: none !important;
+          -webkit-backdrop-filter: none !important;
+          box-shadow: none !important;
+          box-sizing: border-box !important;
+        }
+
+        [data-theme="dark"] .bottom-nav {
+          background: #0d1117 !important;
+          border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+
+        .nav-item {
+          flex: 1 !important;
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: center !important;
+          justify-content: center !important;
+          gap: 3px !important;
+          position: relative !important;
+          text-decoration: none !important;
+          color: #9CA3AF !important;
+          background: transparent !important;
+          border: none !important;
+          cursor: pointer !important;
+          font-family: inherit !important;
+          padding: 0 !important;
+          outline: none !important;
+          transition: color 0.15s ease !important;
+          -webkit-tap-highlight-color: transparent !important;
+        }
+
+        [data-theme="dark"] .nav-item {
+          color: #6B7280 !important;
+        }
+
+        .nav-item svg {
+          font-size: 19px !important;
+          width: 20px !important;
+          height: 20px !important;
+          stroke-width: 1.75 !important;
+        }
+
+        .nav-item span {
+          font-size: 10px !important;
+          line-height: 1 !important;
+          font-weight: 400 !important;
+          transition: color 0.15s ease, font-weight 0.15s ease !important;
+        }
+
+        .nav-item.active {
+          color: #3B82F6 !important;
+        }
+
+        .nav-item.active span {
+          font-weight: 500 !important;
+          color: #3B82F6 !important;
+        }
+
+        .nav-item.active::before,
+        .nav-item-indicator {
+          content: "" !important;
+          position: absolute !important;
+          top: 0 !important;
+          left: 20% !important;
+          right: 20% !important;
+          height: 2px !important;
+          background: #3B82F6 !important;
+          border-radius: 2px !important;
+        }
+
+        /* More Bottom Sheet — Flat Advanced Styles */
+        .more-sheet-backdrop {
+          position: fixed !important;
+          inset: 0 !important;
+          background: rgba(0, 0, 0, 0.45) !important;
+          display: flex !important;
+          align-items: flex-end !important;
+          z-index: 10000 !important;
+        }
+
+        .more-sheet {
+          width: 100% !important;
+          background: #FFFFFF !important;
+          border-top-left-radius: 24px !important;
+          border-top-right-radius: 24px !important;
+          box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06) !important;
+          padding: 10px 16px calc(14px + env(safe-area-inset-bottom, 8px)) !important;
+          box-sizing: border-box !important;
+          overflow: hidden !important;
+        }
+
+        [data-theme="dark"] .more-sheet {
+          background: #0D1117 !important;
+          border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+          box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.5) !important;
+        }
+
+        .sheet-handle {
+          width: 36px !important;
+          height: 4px !important;
+          border-radius: 4px !important;
+          background: #E5E7EB !important;
+          margin: 0 auto 10px !important;
+        }
+
+        [data-theme="dark"] .sheet-handle {
+          background: rgba(255, 255, 255, 0.15) !important;
+        }
+
+        .sheet-header {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: space-between !important;
+          margin-bottom: 10px !important;
+        }
+
+        .sheet-identity {
+          display: flex !important;
+          align-items: center !important;
+          gap: 10px !important;
+        }
+
+        .sheet-avatar {
+          width: 38px !important;
+          height: 38px !important;
+          border-radius: 50% !important;
+          border: 1px solid #E5E7EB !important;
+          object-fit: cover !important;
+        }
+
+        [data-theme="dark"] .sheet-avatar {
+          border-color: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .sheet-name {
+          font-weight: 600 !important;
+          font-size: 14px !important;
+          margin: 0 !important;
+          color: #111827 !important;
+          line-height: 1.2 !important;
+        }
+
+        [data-theme="dark"] .sheet-name {
+          color: #F9FAFB !important;
+        }
+
+        .sheet-status {
+          font-size: 11px !important;
+          color: #6B7280 !important;
+          margin: 0 !important;
+          display: flex !important;
+          align-items: center !important;
+          gap: 4px !important;
+          line-height: 1.2 !important;
+        }
+
+        [data-theme="dark"] .sheet-status {
+          color: #9CA3AF !important;
+        }
+
+        .status-dot {
+          width: 6px !important;
+          height: 6px !important;
+          border-radius: 50% !important;
+          background: #22C55E !important;
+          display: inline-block !important;
+        }
+
+        .sheet-close {
+          width: 28px !important;
+          height: 28px !important;
+          border-radius: 50% !important;
+          background: #F3F4F6 !important;
+          border: none !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          color: #6B7280 !important;
+          font-size: 13px !important;
+          cursor: pointer !important;
+        }
+
+        [data-theme="dark"] .sheet-close {
+          background: rgba(255, 255, 255, 0.08) !important;
+          color: #D1D5DB !important;
+        }
+
+        .sync-banner {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: space-between !important;
+          background: #EFF6FF !important;
+          border-radius: 12px !important;
+          padding: 7px 12px !important;
+          margin-bottom: 10px !important;
+        }
+
+        [data-theme="dark"] .sync-banner {
+          background: rgba(59, 130, 246, 0.1) !important;
+          border: 1px solid rgba(59, 130, 246, 0.2) !important;
+        }
+
+        .sync-live {
+          display: flex !important;
+          align-items: center !important;
+          gap: 8px !important;
+          font-size: 12px !important;
+          font-weight: 500 !important;
+          color: #1D4ED8 !important;
+        }
+
+        [data-theme="dark"] .sync-live {
+          color: #60A5FA !important;
+        }
+
+        .pill-dot {
+          width: 8px !important;
+          height: 8px !important;
+          border-radius: 50% !important;
+          background: #22C55E !important;
+          display: inline-block !important;
+        }
+
+        .sync-actions {
+          display: flex !important;
+          gap: 6px !important;
+        }
+
+        .sync-btn {
+          background: #FFFFFF !important;
+          border: 1px solid #DBEAFE !important;
+          color: #1D4ED8 !important;
+          font-size: 10px !important;
+          font-weight: 500 !important;
+          padding: 3px 9px !important;
+          border-radius: 16px !important;
+          cursor: pointer !important;
+        }
+
+        [data-theme="dark"] .sync-btn {
+          background: rgba(255, 255, 255, 0.08) !important;
+          border-color: rgba(255, 255, 255, 0.15) !important;
+          color: #93C5FD !important;
+        }
+
+        .section-label {
+          font-size: 11px !important;
+          font-weight: 600 !important;
+          letter-spacing: 0.04em !important;
+          color: #9CA3AF !important;
+          text-transform: uppercase !important;
+          margin: 0 0 6px !important;
+          display: block !important;
+        }
+
+        .tile-grid {
+          display: grid !important;
+          grid-template-columns: repeat(4, 1fr) !important;
+          gap: 6px !important;
+          margin-bottom: 8px !important;
+        }
+
+        .tile {
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: center !important;
+          justify-content: center !important;
+          gap: 4px !important;
+          background: #F9FAFB !important;
+          border: 1px solid #F3F4F6 !important;
+          border-radius: 12px !important;
+          padding: 7px 4px !important;
+          text-decoration: none !important;
+          cursor: pointer !important;
+          font-family: inherit !important;
+          outline: none !important;
+          -webkit-tap-highlight-color: transparent !important;
+        }
+
+        [data-theme="dark"] .tile {
+          background: rgba(255, 255, 255, 0.04) !important;
+          border-color: rgba(255, 255, 255, 0.08) !important;
+        }
+
+        .tile svg,
+        .tile i {
+          font-size: 17px !important;
+          width: 18px !important;
+          height: 18px !important;
+          color: #3B82F6 !important;
+          stroke-width: 1.75 !important;
+        }
+
+        .tile span {
+          font-size: 10px !important;
+          color: #4B5563 !important;
+          text-align: center !important;
+          line-height: 1.1 !important;
+          font-weight: 400 !important;
+        }
+
+        [data-theme="dark"] .tile span {
+          color: #9CA3AF !important;
+        }
       `}</style>
     </>
   );

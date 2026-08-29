@@ -323,6 +323,199 @@ function SkillsRadarChart({ categories }) {
   );
 }
 
+const profAccents = [
+  { color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.25)', border: 'rgba(59, 130, 246, 0.35)' },
+  { color: '#10b981', glow: 'rgba(16, 185, 129, 0.25)', border: 'rgba(16, 185, 129, 0.35)' },
+  { color: '#8b5cf6', glow: 'rgba(139, 92, 246, 0.25)', border: 'rgba(139, 92, 246, 0.35)' },
+  { color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.25)', border: 'rgba(245, 158, 11, 0.35)' },
+  { color: '#06b6d4', glow: 'rgba(6, 182, 212, 0.25)', border: 'rgba(6, 182, 212, 0.35)' },
+  { color: '#ec4899', glow: 'rgba(236, 72, 153, 0.25)', border: 'rgba(236, 72, 153, 0.35)' },
+];
+
+function MobileProficiencyCarousel({ topSkills, onOpenSkill }) {
+  const trackRef = useRef(null);
+  const [activeIdx, setActiveIdx] = useState(0);
+
+  if (!topSkills || topSkills.length === 0) return null;
+
+  const handleScroll = () => {
+    if (!trackRef.current) return;
+    const el = trackRef.current;
+    const slide = el.querySelector('.sk-prof-feat-slide');
+    if (!slide) return;
+    const cardWidth = slide.offsetWidth + 10;
+    const idx = Math.round(el.scrollLeft / cardWidth);
+    setActiveIdx(Math.max(0, Math.min(idx, topSkills.length - 1)));
+  };
+
+  const scrollTo = (idx) => {
+    if (!trackRef.current) return;
+    const el = trackRef.current;
+    const slide = el.querySelector('.sk-prof-feat-slide');
+    if (!slide) return;
+    const cardWidth = slide.offsetWidth + 10;
+    el.scrollTo({ left: idx * cardWidth, behavior: 'smooth' });
+    setActiveIdx(idx);
+  };
+
+  return (
+    <div className="sk-prof-feat-wrapper">
+      {/* Header with counter and arrow controls */}
+      <div className="sk-prof-feat-header">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <Star size={13} style={{ color: '#f59e0b', fill: '#f59e0b' }} />
+          <span className="sk-prof-feat-title-text">Top Technical Proficiencies</span>
+        </div>
+        <div className="sk-prof-feat-controls">
+          <span className="sk-prof-feat-counter">
+            {activeIdx + 1} / {topSkills.length}
+          </span>
+          <button
+            className="sk-prof-feat-arrow"
+            onClick={() => scrollTo(Math.max(0, activeIdx - 1))}
+            disabled={activeIdx === 0}
+            aria-label="Previous skill"
+          >
+            <ChevronLeft size={13} />
+          </button>
+          <button
+            className="sk-prof-feat-arrow"
+            onClick={() => scrollTo(Math.min(topSkills.length - 1, activeIdx + 1))}
+            disabled={activeIdx === topSkills.length - 1}
+            aria-label="Next skill"
+          >
+            <ChevronRight size={13} />
+          </button>
+        </div>
+      </div>
+
+      {/* Snap-scroll horizontal track */}
+      <div className="sk-prof-feat-track" ref={trackRef} onScroll={handleScroll}>
+        {topSkills.map((skill, i) => {
+          const accentObj = profAccents[i % profAccents.length];
+          const accent = accentObj.color;
+          const lc = levelColor[skill.level] || levelColor.Intermediate;
+          const tools = Array.isArray(skill.relatedTools) ? skill.relatedTools.slice(0, 3) : [];
+
+          return (
+            <div
+              key={skill.id || skill.name}
+              className="sk-prof-feat-slide"
+              style={{
+                background: `linear-gradient(135deg, ${accent}14, ${accentObj.glow}08), var(--bg-secondary)`,
+                borderColor: accentObj.border,
+              }}
+            >
+              {/* Glow blob bottom-right */}
+              <div
+                className="sk-prof-feat-bg"
+                style={{ background: `radial-gradient(circle, ${accentObj.glow}35, transparent 70%)` }}
+              />
+
+              {/* Top metadata pill row */}
+              <div className="sk-prof-feat-top-row">
+                <span
+                  className="sk-prof-feat-badge"
+                  style={{ color: lc.text, background: lc.bg, borderColor: `${lc.ring}45` }}
+                >
+                  ⚡ {skill.level}
+                </span>
+                <span
+                  className="sk-prof-feat-pct"
+                  style={{ color: accent, background: `${accent}18`, borderColor: `${accent}35` }}
+                >
+                  {skill.percent}% Mastery
+                </span>
+              </div>
+
+              {/* Skill identity header */}
+              <div className="sk-prof-feat-identity">
+                <div
+                  className="sk-prof-feat-icon"
+                  style={{ background: `${accent}18`, color: accent, borderColor: `${accent}35` }}
+                >
+                  {skill.name.slice(0, 2).toUpperCase()}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <h3 className="sk-prof-feat-name">{skill.name}</h3>
+                  <div className="sk-prof-feat-meta">
+                    <span>
+                      <Clock size={11} style={{ display: 'inline', marginRight: 3, verticalAlign: '-1px' }} />
+                      {String(skill.years || '1').replace(/(\s*yrs?)+$/i, '')} yrs exp
+                    </span>
+                    <span>•</span>
+                    <span>
+                      <Briefcase size={11} style={{ display: 'inline', marginRight: 3, verticalAlign: '-1px' }} />
+                      {skill.projectCount || 1}+ projects
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Animated Progress Bar */}
+              <div className="sk-prof-feat-bar-wrap">
+                <div className="sk-prof-feat-bar">
+                  <motion.div
+                    className="sk-prof-feat-fill"
+                    style={{ background: `linear-gradient(90deg, ${accent}, #10b981)` }}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${skill.percent}%` }}
+                    transition={{ duration: 0.8, delay: 0.1 + i * 0.05, ease: [0.16, 1, 0.3, 1] }}
+                  />
+                </div>
+              </div>
+
+              {/* Description summary */}
+              <p className="sk-prof-feat-desc">
+                {skill.description || `Core competency and specialized implementation in real-world production systems.`}
+              </p>
+
+              {/* Ecosystem Tags + Action CTA */}
+              <div className="sk-prof-feat-bottom">
+                <div className="sk-prof-feat-tags">
+                  {tools.map((t, tidx) => (
+                    <span
+                      key={`${t}-${tidx}`}
+                      className="sk-prof-feat-tag"
+                      style={{ color: accent, background: `${accent}12`, borderColor: `${accent}25` }}
+                    >
+                      {t}
+                    </span>
+                  ))}
+                </div>
+                <button
+                  className="sk-prof-feat-action"
+                  style={{ background: `${accent}18`, borderColor: `${accent}35`, color: accent }}
+                  onClick={() => onOpenSkill(skill)}
+                >
+                  Inspect
+                  <ChevronRight size={12} />
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Dots pagination */}
+      <div className="sk-prof-feat-dots">
+        {topSkills.map((p, idx) => (
+          <button
+            key={p.id || p.name}
+            className="sk-prof-feat-dot"
+            style={{
+              background: idx === activeIdx ? profAccents[idx % profAccents.length].color : undefined,
+              width: idx === activeIdx ? '18px' : '6px',
+            }}
+            onClick={() => scrollTo(idx)}
+            aria-label={`Go to skill ${idx + 1}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Skills() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
   const [activeCategory, setActiveCategory] = useState(null);  // category object
@@ -485,143 +678,389 @@ export default function Skills() {
         [data-theme="dark"] .skill-pill { background: var(--bg-primary); color: var(--text-secondary); border-color: var(--border-color); }
         [data-theme="dark"] .skill-pill:hover { background: var(--text-primary); color: var(--bg-primary); border-color: var(--text-primary); }
 
-        /* ============ MOBILE — category card grid ============ */
+        /* ============ MOBILE — redesigned ============ */
         @media (max-width: 900px) {
 
-          /* No-scroll host — fills the box the .text-content gives us */
-          .skills-mobile-grid {
+          /* Hero header */
+          .sk-mob-header {
+            text-align: center;
+            margin-bottom: 14px;
+          }
+          .sk-mob-eyebrow {
+            font-size: 10px; font-weight: 800; letter-spacing: .22em;
+            text-transform: uppercase; color: var(--text-muted);
+            margin: 0 0 6px;
+          }
+          .sk-mob-title {
+            font-size: 22px; font-weight: 800; color: var(--text-primary);
+            margin: 0 0 8px; letter-spacing: -0.025em; line-height: 1.2;
+          }
+          .sk-mob-subtitle {
+            font-size: 12px; color: var(--text-secondary);
+            margin: 0; line-height: 1.55;
+          }
+
+          /* Quick stats pill row */
+          .sk-stats-bar {
+            display: flex; gap: 6px; margin-bottom: 14px;
+          }
+          .sk-stat-pill {
+            flex: 1; display: flex; flex-direction: column; align-items: center;
+            justify-content: center; gap: 1px;
+            padding: 8px 4px; border-radius: 12px;
+            background: var(--bg-secondary); border: 1px solid var(--border-color);
+          }
+          .sk-stat-val {
+            font-size: 17px; font-weight: 800; line-height: 1;
+          }
+          .sk-stat-lbl {
+            font-size: 9px; font-weight: 700; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: .06em;
+          }
+
+          /* Category cards 2-col bento grid */
+          .skills-mobile-list {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 8px;
-            width: 100%;
+            margin-bottom: 14px;
           }
 
-          /* Each category card */
+          /* Base category card */
           .sk-cat-card {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 10px 8px 8px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
+            border-radius: 14px;
+            padding: 12px 10px 10px;
+            display: flex; flex-direction: column;
+            gap: 8px;
             cursor: pointer;
             text-align: left;
             outline: none;
-            transition: background .15s;
             position: relative;
             overflow: hidden;
+            min-height: 148px;
+            -webkit-tap-highlight-color: transparent;
+            transition: border-color 0.2s;
           }
-          .sk-cat-card:active { background: var(--bg-primary); transform: scale(0.97); }
+          .sk-cat-card:active { transform: scale(0.972); }
 
-          /* accent stripe at top */
+          /* Full-width card (Exploring) */
+          .sk-cat-card--full {
+            grid-column: 1 / -1;
+            flex-direction: row;
+            align-items: flex-start;
+            min-height: auto;
+            padding: 12px;
+            gap: 12px;
+          }
+          .sk-cat-card--full .sk-cat-icon-box { flex-shrink: 0; }
+          .sk-cat-card--full .sk-cat-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 7px; }
+
+
           .sk-cat-stripe {
-            position: absolute;
-            top: 0; left: 0; right: 0;
-            height: 3px;
-            border-radius: 18px 18px 0 0;
+            position: absolute; top: 0; left: 0; right: 0;
+            height: 2.5px; border-radius: 16px 16px 0 0;
+          }
+          .sk-cat-glow {
+            position: absolute; bottom: -20px; right: -20px;
+            width: 80px; height: 80px; border-radius: 50%;
+            pointer-events: none;
           }
 
+          .sk-cat-header-row {
+            display: flex; align-items: center; gap: 8px;
+          }
           .sk-cat-icon-box {
-            width: 24px; height: 24px; border-radius: 6px;
+            width: 30px; height: 30px; border-radius: 8px;
             display: flex; align-items: center; justify-content: center;
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            color: var(--primary-blue);
-            flex-shrink: 0;
+            border: 1px solid; flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
           }
-
+          .sk-cat-title-group { flex: 1; min-width: 0; }
+          .sk-cat-main { display: flex; flex-direction: column; gap: 8px; }
           .sk-cat-name {
-            font-size: 10px; font-weight: 700;
+            font-size: 12px; font-weight: 800;
             color: var(--text-primary);
-            margin: 0; line-height: 1.25;
+            margin: 0; line-height: 1.2; letter-spacing: -0.01em;
+          }
+          .sk-cat-count-badge {
+            font-size: 8.5px; font-weight: 700;
+            padding: 1px 6px; border-radius: 20px;
+            border: 1px solid; margin-top: 3px;
+            width: fit-content; display: inline-block;
+          }
+          .sk-cat-chevron {
+            color: var(--text-muted); flex-shrink: 0; margin-left: auto;
           }
 
-          .sk-cat-meta {
-            display: flex; align-items: center;
-            justify-content: space-between;
+          /* Level distribution bar */
+          .sk-cat-level-row {
+            display: flex; align-items: center; gap: 6px;
           }
-
-          .sk-cat-count {
-            font-size: 11px; font-weight: 600;
-            color: var(--text-secondary);
+          .sk-cat-level-bar {
+            flex: 1; height: 4px; border-radius: 2px;
+            background: var(--border-color); overflow: hidden;
+            display: flex;
+          }
+          .sk-cat-level-seg { height: 100%; }
+          .sk-cat-level-legend {
+            display: flex; gap: 8px;
+          }
+          .sk-cat-legend-item {
+            display: flex; align-items: center; gap: 3px;
+            font-size: 8.5px; font-weight: 600; color: var(--text-muted);
+          }
+          .sk-cat-legend-dot {
+            width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
           }
 
           /* Mini skill tags preview */
           .sk-cat-preview-tags {
-            display: flex; gap: 4px; flex-wrap: wrap; margin-top: 5px;
+            display: flex; gap: 4px; flex-wrap: wrap;
           }
           .sk-cat-preview-tag {
             font-size: 8.5px; font-weight: 700;
-            padding: 1.5px 6px; border-radius: 6px;
+            padding: 2px 6px; border-radius: 5px;
             background: var(--bg-primary); border: 1px solid var(--border-color);
             color: var(--text-secondary); white-space: nowrap;
           }
 
-          /* "Currently Exploring" spans full width */
-          .sk-cat-card--full {
-            grid-column: 1 / -1;
-            flex-direction: row;
-            align-items: center;
-            gap: 14px;
+          /* ============ TOP TECHNICAL PROFICIENCIES CAROUSEL ============ */
+          .sk-prof-feat-wrapper {
+            margin-top: 4px;
+            margin-bottom: 14px;
           }
-          .sk-cat-card--full .sk-cat-icon-box { flex-shrink: 0; }
-          .sk-cat-card--full .sk-cat-name { font-size: 13px; }
-
-          /* Mobile Top Mastery Highlights */
-          .sk-mob-mastery-wrap {
-            margin-top: 14px;
+          .sk-prof-feat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2px 8px;
+          }
+          .sk-prof-feat-title-text {
+            font-size: 10.5px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: var(--text-primary);
+          }
+          .sk-prof-feat-controls {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+          }
+          .sk-prof-feat-counter {
+            font-size: 9.5px;
+            font-weight: 700;
+            color: var(--text-muted);
+            padding: 2px 7px;
+            border-radius: 6px;
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
+          }
+          .sk-prof-feat-arrow {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0;
+            transition: background 0.15s, opacity 0.15s;
+          }
+          .sk-prof-feat-arrow:active { background: var(--bg-primary); }
+          .sk-prof-feat-arrow:disabled { opacity: 0.3; cursor: default; }
+
+          /* Horizontal snap track */
+          .sk-prof-feat-track {
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+            gap: 10px;
+            padding: 4px 0 6px;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
+          .sk-prof-feat-track::-webkit-scrollbar { display: none; }
+
+          /* Individual skill card slide */
+          .sk-prof-feat-slide {
+            min-width: 86%;
+            max-width: 86%;
+            scroll-snap-align: start;
             border-radius: 18px;
+            border: 1px solid;
             padding: 14px;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
           }
-          .sk-mob-mastery-title {
-            font-size: 10px; font-weight: 800; text-transform: uppercase;
-            letter-spacing: .08em; color: var(--text-muted);
-            margin: 0 0 10px; display: flex; align-items: center; gap: 6px;
+          .sk-prof-feat-bg {
+            position: absolute;
+            bottom: -24px;
+            right: -24px;
+            width: 110px;
+            height: 110px;
+            border-radius: 50%;
+            pointer-events: none;
           }
-          .sk-mob-mastery-grid {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+          .sk-prof-feat-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
           }
-          .sk-mob-mastery-item {
-            background: var(--bg-primary); border: 1px solid var(--border-color);
-            border-radius: 12px; padding: 8px 10px;
-            display: flex; flex-direction: column; gap: 4px;
+          .sk-prof-feat-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            border-radius: 20px;
+            padding: 2px 8px;
+            border: 1px solid;
+            font-size: 8.5px;
+            font-weight: 800;
+            letter-spacing: 0.04em;
           }
-          .sk-mob-mastery-header {
-            display: flex; justify-content: space-between; align-items: center;
+          .sk-prof-feat-pct {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 20px;
+            padding: 2px 8px;
+            border: 1px solid;
+            font-size: 9.5px;
+            font-weight: 800;
+            letter-spacing: 0.02em;
           }
-          .sk-mob-mastery-name {
-            font-size: 11px; font-weight: 700; color: var(--text-primary);
+          .sk-prof-feat-identity {
+            display: flex;
+            align-items: center;
+            gap: 10px;
           }
-          .sk-mob-mastery-pct {
-            font-size: 10px; font-weight: 800; color: var(--primary-blue);
+          .sk-prof-feat-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 800;
+            border: 1px solid;
+            flex-shrink: 0;
           }
-          .sk-mob-mastery-bar {
-            height: 3.5px; border-radius: 2px;
-            background: var(--border-color); overflow: hidden;
+          .sk-prof-feat-name {
+            font-size: 15px;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin: 0 0 2px;
+            letter-spacing: -0.015em;
           }
-          .sk-mob-mastery-fill {
-            height: 100%; border-radius: 2px;
-            background: linear-gradient(90deg, var(--primary-blue), #10b981);
+          .sk-prof-feat-meta {
+            font-size: 10px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+          }
+          .sk-prof-feat-bar-wrap {
+            margin: 2px 0;
+          }
+          .sk-prof-feat-bar {
+            height: 5px;
+            border-radius: 3px;
+            background: var(--border-color);
+            overflow: hidden;
+          }
+          .sk-prof-feat-fill {
+            height: 100%;
+            border-radius: 3px;
+          }
+          .sk-prof-feat-desc {
+            font-size: 11px;
+            color: var(--text-secondary);
+            line-height: 1.45;
+            margin: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+          }
+          .sk-prof-feat-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-top: 2px;
+          }
+          .sk-prof-feat-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            flex: 1;
+            min-width: 0;
+          }
+          .sk-prof-feat-tag {
+            font-size: 8.5px;
+            font-weight: 700;
+            border-radius: 6px;
+            padding: 2px 6px;
+            border: 1px solid;
+            white-space: nowrap;
+          }
+          .sk-prof-feat-action {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 10.5px;
+            font-weight: 700;
+            border-radius: 8px;
+            padding: 5px 10px;
+            border: 1px solid;
+            cursor: pointer;
+            transition: transform 0.15s;
+            -webkit-tap-highlight-color: transparent;
+            flex-shrink: 0;
+          }
+          .sk-prof-feat-action:active { transform: scale(0.95); }
+
+          /* Dots pagination */
+          .sk-prof-feat-dots {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 6px;
+            margin-bottom: 2px;
+          }
+          .sk-prof-feat-dot {
+            height: 6px;
+            border-radius: 3px;
+            background: var(--border-color);
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
           }
 
           /* ============ SHARED SHEET CHROME ============ */
           .sk-sheet-overlay {
             position: fixed; inset: 0;
-            background: rgba(0,0,0,.55);
+            background: rgba(0,0,0,.65);
             backdrop-filter: blur(4px);
             -webkit-backdrop-filter: blur(4px);
-            will-change: opacity, backdrop-filter; transform: translateZ(0);
+            will-change: opacity; transform: translateZ(0);
             z-index: 1000;
-          }
-          @media (max-width: 900px) {
-            .sk-sheet-overlay {
-              backdrop-filter: none !important;
-              -webkit-backdrop-filter: none !important;
-              background: rgba(0,0,0,.7) !important;
-            }
           }
           .sk-sheet {
             position: fixed; bottom: 0; left: 0; right: 0;
@@ -630,33 +1069,39 @@ export default function Skills() {
             border-top-right-radius: 28px;
             z-index: 1001;
             display: flex; flex-direction: column;
-            will-change: transform; transform: translateZ(0); backface-visibility: hidden;
-            box-shadow: 0 -10px 50px rgba(0,0,0,.15);
+            will-change: transform; transform: translateZ(0);
+            box-shadow: 0 -16px 60px rgba(0,0,0,.18);
+            overflow: hidden;
           }
-          .sk-sheet--cat   { height: 72vh; height: 72dvh; }
-          .sk-sheet--skill { height: 80vh; height: 80dvh; }
+          .sk-sheet--cat   { height: 75vh; height: 75dvh; }
+          .sk-sheet--skill { height: 82vh; height: 82dvh; }
+
+          /* Sheet top accent bar */
+          .sk-sheet-accent { height: 3px; width: 100%; flex-shrink: 0; }
 
           .sk-sheet-handle {
             width: 36px; height: 4px;
             background: var(--border-color);
             border-radius: 2px;
-            margin: 12px auto 0 auto; flex-shrink: 0;
+            margin: 10px auto 0; flex-shrink: 0;
           }
           .sk-sheet-header {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 10px 12px 8px;
+            padding: 12px 14px 10px;
             border-bottom: 1px solid var(--border-color);
             flex-shrink: 0;
           }
-          .sk-sheet-header-left {
-            display: flex; align-items: center; gap: 8px;
-          }
+          .sk-sheet-header-left { display: flex; align-items: center; gap: 10px; }
           .sk-sheet-header-left h2 {
-            font-size: 14px; font-weight: 700;
-            color: var(--text-primary); margin: 0;
+            font-size: 15px; font-weight: 800;
+            color: var(--text-primary); margin: 0; letter-spacing: -0.01em;
+          }
+          .sk-sheet-subtitle {
+            font-size: 10px; color: var(--text-muted); font-weight: 600;
+            margin-top: 1px;
           }
           .sk-sheet-close {
-            width: 22px; height: 22px; border-radius: 11px;
+            width: 26px; height: 26px; border-radius: 13px;
             background: var(--bg-primary); border: 1px solid var(--border-color);
             display: flex; align-items: center; justify-content: center;
             color: var(--text-secondary); cursor: pointer; flex-shrink: 0;
@@ -667,15 +1112,14 @@ export default function Skills() {
           }
           .sk-sheet-body::-webkit-scrollbar { display: none; }
 
-          /* ============ CATEGORY SHEET — skill rows ============ */
+          /* ============ CATEGORY SHEET — upgraded skill rows ============ */
           .sk-skill-group-label {
-            font-size: 11px; font-weight: 700;
-            color: var(--text-secondary);
-            text-transform: uppercase; letter-spacing: .06em;
-            padding: 12px 14px 6px; flex-shrink: 0;
+            font-size: 10px; font-weight: 800;
+            color: var(--text-muted); text-transform: uppercase; letter-spacing: .08em;
+            padding: 14px 14px 6px; flex-shrink: 0;
           }
           .sk-skills-card {
-            margin: 0 14px 14px;
+            margin: 0 12px 14px;
             background: var(--bg-primary);
             border: 1px solid var(--border-color);
             border-radius: 14px; overflow: hidden;
@@ -683,42 +1127,42 @@ export default function Skills() {
           .sk-skill-row {
             display: flex; align-items: center;
             justify-content: space-between;
-            padding: 6px 8px;
+            padding: 10px 12px;
             border-bottom: 1px solid var(--border-color);
             background: transparent;
             border-left: none; border-right: none; border-top: none;
             width: 100%; text-align: left; cursor: pointer;
-            gap: 6px; transition: background .15s;
+            gap: 8px; transition: background .12s;
+            -webkit-tap-highlight-color: transparent;
           }
           .sk-skill-row:last-child { border-bottom: none; }
           .sk-skill-row:active { background: var(--bg-secondary); }
           .sk-skill-row-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
           .sk-skill-row-icon {
-            width: 24px; height: 24px; border-radius: 6px;
+            width: 32px; height: 32px; border-radius: 8px;
             display: flex; align-items: center; justify-content: center;
             flex-shrink: 0;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            font-size: 8px; font-weight: 800; letter-spacing: -.5px;
-            color: var(--text-secondary); font-family: inherit;
+            font-size: 10px; font-weight: 800; letter-spacing: -.5px;
+            font-family: inherit; border: 1px solid;
           }
           .sk-skill-row-text { flex: 1; min-width: 0; }
           .sk-skill-row-text h4 {
-            font-size: 11px; font-weight: 600;
+            font-size: 12.5px; font-weight: 700;
             color: var(--text-primary); margin: 0 0 2px;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
           }
           .sk-skill-row-text p {
-            font-size: 9px; color: var(--text-secondary); margin: 0;
+            font-size: 10px; color: var(--text-secondary); margin: 0;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
           }
           .sk-skill-row-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
           .sk-level-badge {
-            font-size: 9px; font-weight: 700;
-            padding: 2px 6px; border-radius: 20px; white-space: nowrap;
+            font-size: 8.5px; font-weight: 800;
+            padding: 2.5px 7px; border-radius: 20px; white-space: nowrap;
+            border: 1px solid;
           }
           .sk-bar-mini {
-            width: 44px; height: 4px;
+            width: 46px; height: 4px;
             background: var(--border-color); border-radius: 2px; overflow: hidden;
           }
           .sk-bar-mini-fill { height: 100%; border-radius: 2px; }
@@ -726,16 +1170,16 @@ export default function Skills() {
           /* ============ SKILL DETAIL SHEET ============ */
           .sk-detail-body {
             flex: 1; overflow-y: auto;
-            padding: 10px; display: flex; flex-direction: column; gap: 10px;
+            padding: 12px; display: flex; flex-direction: column; gap: 10px;
           }
           .sk-detail-body::-webkit-scrollbar { display: none; }
 
           .sk-detail-hero {
-            display: flex; align-items: center; gap: 10px;
-            padding: 10px;
+            display: flex; align-items: center; gap: 12px;
+            padding: 14px;
             background: var(--bg-primary);
             border: 1px solid var(--border-color);
-            border-radius: 12px;
+            border-radius: 14px;
           }
           .sk-ring-wrap { position: relative; flex-shrink: 0; }
           .sk-ring-label {
@@ -743,35 +1187,34 @@ export default function Skills() {
             display: flex; flex-direction: column;
             align-items: center; justify-content: center; pointer-events: none;
           }
-          .sk-ring-pct  { font-size: 14px; font-weight: 800; color: var(--text-primary); line-height: 1; }
-          .sk-ring-sub  { font-size: 8px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .04em; }
-          .sk-meta-list { flex: 1; display: flex; flex-direction: column; gap: 9px; }
-          .sk-meta-row  { display: flex; align-items: center; gap: 7px; font-size: 11px; color: var(--text-secondary); }
+          .sk-ring-pct  { font-size: 16px; font-weight: 800; color: var(--text-primary); line-height: 1; }
+          .sk-ring-sub  { font-size: 8px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; }
+          .sk-meta-list { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+          .sk-meta-row  { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary); }
           .sk-meta-row svg  { color: var(--text-muted); flex-shrink: 0; }
           .sk-meta-row strong { color: var(--text-primary); font-weight: 700; }
 
           .sk-section-label {
-            font-size: 11px; font-weight: 700;
-            color: var(--text-secondary); text-transform: uppercase;
-            letter-spacing: .06em; margin: 0 0 8px;
+            font-size: 10px; font-weight: 800;
+            color: var(--text-muted); text-transform: uppercase;
+            letter-spacing: .08em; margin: 0 0 8px;
           }
           .sk-desc-card {
-            font-size: 11.5px; line-height: 1.6;
+            font-size: 12px; line-height: 1.65;
             color: var(--text-secondary);
             background: var(--bg-primary);
             border: 1px solid var(--border-color);
-            border-radius: 12px; padding: 10px 12px; margin: 0;
+            border-radius: 12px; padding: 12px 14px; margin: 0;
           }
-          .sk-tags { display: flex; flex-wrap: wrap; gap: 7px; }
+          /* Ecosystem chips — colored */
+          .sk-tags { display: flex; flex-wrap: wrap; gap: 6px; }
           .sk-tag {
-            font-size: 9px; font-weight: 600;
-            padding: 4px 8px; border-radius: 20px;
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            color: var(--text-secondary);
+            font-size: 9.5px; font-weight: 700;
+            padding: 3.5px 9px; border-radius: 20px;
+            border: 1px solid;
           }
           .sk-project-row {
-            display: flex; align-items: center; gap: 8px;
+            display: flex; align-items: center; gap: 10px;
             padding: 11px 14px;
             background: var(--bg-primary);
             border: 1px solid var(--border-color);
@@ -1003,15 +1446,47 @@ export default function Skills() {
             )}
           </AnimatePresence>
         ) : (
-          <div>
-            {/* Mobile Skills Search Bar */}
+          <div style={{ padding: '4px 0 60px' }}>
+
+            {/* ── Hero Header ── */}
+            <div className="sk-mob-header">
+              <p className="sk-mob-eyebrow">Skills &amp; Expertise</p>
+              <h1 className="sk-mob-title">Tech Stack &amp; Proficiencies</h1>
+              <p className="sk-mob-subtitle">
+                {skillCategories.reduce((a, c) => a + (c.skills?.length || 0), 0)} skills across {skillCategories.length} categories — from ML to full-stack.
+              </p>
+            </div>
+
+            {/* ── Quick Stats Pills ── */}
+            {(() => {
+              const total = skillCategories.reduce((a, c) => a + (c.skills?.length || 0), 0);
+              const advanced = skillCategories.flatMap(c => c.skills).filter(s => s.level === 'Advanced').length;
+              return (
+                <div className="sk-stats-bar">
+                  <div className="sk-stat-pill">
+                    <span className="sk-stat-val" style={{ color: '#3b82f6' }}>{total}</span>
+                    <span className="sk-stat-lbl">Skills</span>
+                  </div>
+                  <div className="sk-stat-pill">
+                    <span className="sk-stat-val" style={{ color: '#10b981' }}>{advanced}</span>
+                    <span className="sk-stat-lbl">Advanced</span>
+                  </div>
+                  <div className="sk-stat-pill">
+                    <span className="sk-stat-val" style={{ color: '#8b5cf6' }}>{skillCategories.length}</span>
+                    <span className="sk-stat-lbl">Categories</span>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* ── Mobile Search Bar ── */}
             <div style={{ position: 'relative', marginBottom: 12 }}>
-              <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Quick search skills (e.g. Python, SQL)..."
+                placeholder="Search skills (e.g. Python, SQL, React)..."
                 style={{
                   width: '100%', height: 38,
                   paddingLeft: 34, paddingRight: 30,
@@ -1037,70 +1512,109 @@ export default function Skills() {
               )}
             </div>
 
-            {/* Mobile Category Grid */}
-            <div className="skills-mobile-grid">
+            {/* ── 2-column Category Card Grid ── */}
+            <div className="skills-mobile-list">
               {skillCategories.map((category, idx) => {
                 const Icon = categoryIconMap[category.id] || categoryIconMap.languages;
+                const accentColors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#6366f1'];
+                const accent = accentColors[idx % accentColors.length];
                 const isFull = category.id === 'exploring';
-                const stripes = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#6366f1'];
-                const stripe = stripes[idx % stripes.length];
-                const topSkillNames = category.skills.slice(0, 3).map(s => s.name);
+                // Regular cards show 2 chips; full-width shows 3
+                const topSkills = category.skills.slice(0, isFull ? 3 : 2);
+                const advCount = category.skills.filter(s => s.level === 'Advanced').length;
+                const intCount = category.skills.filter(s => s.level === 'Intermediate').length;
+                const lrnCount = category.skills.filter(s => s.level === 'Learning').length;
+                const total = category.skills.length || 1;
 
                 return (
-                  <button
+                  <motion.button
                     key={category.id}
                     className={`sk-cat-card${isFull ? ' sk-cat-card--full' : ''}`}
-                    style={isFull ? { gridColumn: '1 / -1' } : {}}
                     onClick={() => setActiveCategory(category)}
+                    whileTap={{ scale: 0.972 }}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.05, type: 'spring', stiffness: 400, damping: 28 }}
                   >
-                    <div className="sk-cat-stripe" style={{ background: stripe }} />
-                    <div className="sk-cat-icon-box" style={{ color: stripe }}>
-                      <Icon size={18} />
+                    <div className="sk-cat-stripe" style={{ background: accent }} />
+                    <div className="sk-cat-glow" style={{ background: `radial-gradient(circle, ${accent}20, transparent 70%)` }} />
+
+                    {/* Icon box — always visible */}
+                    <div className="sk-cat-icon-box" style={{ background: `${accent}15`, borderColor: `${accent}30`, color: accent }}>
+                      <Icon size={16} />
                     </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p className="sk-cat-name">{category.title}</p>
+
+                    {/* Main content area (flex column for normal, flex child for full-width) */}
+                    <div className="sk-cat-main">
+                      {/* Title + count badge */}
+                      <div>
+                        <p className="sk-cat-name">{category.title}</p>
+                        <span
+                          className="sk-cat-count-badge"
+                          style={{ color: accent, background: `${accent}12`, borderColor: `${accent}25` }}
+                        >
+                          {category.skills.length} skills
+                        </span>
+                      </div>
+
+                      {/* Level distribution bar */}
+                      <div className="sk-cat-level-row">
+                        <div className="sk-cat-level-bar">
+                          <div className="sk-cat-level-seg" style={{ width: `${(advCount / total) * 100}%`, background: '#16a34a' }} />
+                          <div className="sk-cat-level-seg" style={{ width: `${(intCount / total) * 100}%`, background: '#eab308' }} />
+                          <div className="sk-cat-level-seg" style={{ width: `${(lrnCount / total) * 100}%`, background: '#6366f1' }} />
+                        </div>
+                        <div className="sk-cat-level-legend">
+                          {advCount > 0 && <span className="sk-cat-legend-item"><span className="sk-cat-legend-dot" style={{ background: '#16a34a' }} />{advCount}</span>}
+                          {intCount > 0 && <span className="sk-cat-legend-item"><span className="sk-cat-legend-dot" style={{ background: '#eab308' }} />{intCount}</span>}
+                        </div>
+                      </div>
+
+                      {/* Preview chips */}
                       <div className="sk-cat-preview-tags">
-                        {topSkillNames.map(name => (
-                          <span key={name} className="sk-cat-preview-tag">{name}</span>
+                        {topSkills.map(s => (
+                          <span
+                            key={s.id || s.name}
+                            className="sk-cat-preview-tag"
+                            style={
+                              searchQuery && s.name.toLowerCase().includes(searchQuery.toLowerCase())
+                                ? { background: accent, color: '#fff', borderColor: accent }
+                                : {}
+                            }
+                          >
+                            {s.name}
+                          </span>
                         ))}
-                        {category.skills.length > 3 && (
-                          <span className="sk-cat-preview-tag" style={{ color: stripe, fontWeight: 800 }}>+{category.skills.length - 3}</span>
+                        {category.skills.length > (isFull ? 3 : 2) && (
+                          <span className="sk-cat-preview-tag" style={{ color: accent, fontWeight: 800 }}>+{category.skills.length - (isFull ? 3 : 2)}</span>
                         )}
                       </div>
                     </div>
+
+                    {/* Chevron — only on non-full cards, bottom-right aligned */}
                     {!isFull && (
-                      <ChevronRight size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+                      <ChevronRight size={13} className="sk-cat-chevron" style={{ position: 'absolute', bottom: 10, right: 10 }} />
                     )}
-                  </button>
+                  </motion.button>
                 );
               })}
             </div>
 
-            {/* Mobile Top Mastery Highlights Bento */}
-            <div className="sk-mob-mastery-wrap">
-              <p className="sk-mob-mastery-title">
-                <Star size={11} style={{ color: '#f59e0b' }} />
-                Top Technical Proficiencies
-              </p>
-              <div className="sk-mob-mastery-grid">
-                {[
-                  { name: 'Python', pct: 90, col: '#3b82f6' },
-                  { name: 'React', pct: 88, col: '#06b6d4' },
-                  { name: 'PyTorch / ML', pct: 85, col: '#8b5cf6' },
-                  { name: 'PostgreSQL / SQL', pct: 82, col: '#10b981' }
-                ].map(item => (
-                  <div key={item.name} className="sk-mob-mastery-item">
-                    <div className="sk-mob-mastery-header">
-                      <span className="sk-mob-mastery-name">{item.name}</span>
-                      <span className="sk-mob-mastery-pct" style={{ color: item.col }}>{item.pct}%</span>
-                    </div>
-                    <div className="sk-mob-mastery-bar">
-                      <div className="sk-mob-mastery-fill" style={{ width: `${item.pct}%`, background: item.col }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            {/* ── Live Top Proficiencies Snap-Scroll Carousel ── */}
+            {(() => {
+              const allSkills = skillCategories.flatMap(c => c.skills);
+              const topSkills = [...allSkills]
+                .filter(s => s.percent > 0)
+                .sort((a, b) => (b.percent || 0) - (a.percent || 0))
+                .slice(0, 6);
+              if (topSkills.length === 0) return null;
+              return (
+                <MobileProficiencyCarousel
+                  topSkills={topSkills}
+                  onOpenSkill={setActiveSkill}
+                />
+              );
+            })()}
           </div>
         )}
 
@@ -1140,36 +1654,54 @@ export default function Skills() {
                 <motion.div
                   className="sk-sheet sk-sheet--cat"
                   initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-                  transition={isMobile ? { type: 'tween', ease: [0.16, 1, 0.3, 1], duration: 0.38 } : { type: 'spring', damping: 32, stiffness: 350, mass: 0.9 }}
+                  transition={{ type: 'tween', ease: [0.16, 1, 0.3, 1], duration: 0.38 }}
                 >
+                  {/* Colored accent top bar */}
+                  {(() => {
+                    const catAccents = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#6366f1'];
+                    const catIdx = skillCategories.findIndex(c => c.id === activeCategory.id);
+                    const accent = catAccents[catIdx % catAccents.length];
+                    return <div className="sk-sheet-accent" style={{ background: `linear-gradient(90deg, ${accent}, ${accent}60)` }} />;
+                  })()}
                   <div className="sk-sheet-handle" />
                   <div className="sk-sheet-header">
                     <div className="sk-sheet-header-left">
-                      <h2>{activeCategory.title}</h2>
+                      <div>
+                        <h2>{activeCategory.title}</h2>
+                        <div className="sk-sheet-subtitle">{activeCategory.skills.length} skills in this category</div>
+                      </div>
                     </div>
                     <button className="sk-sheet-close" onClick={() => setActiveCategory(null)}>
-                      <X size={16} />
+                      <X size={15} />
                     </button>
                   </div>
 
                   <div className="sk-sheet-body" ref={catSheetRef} onScroll={e => { if(e.target.scrollTop > 10 && !hasCatScrolled) setHasCatScrolled(true); }}>
-                    <div className="sk-skill-group-label">{activeCategory.skills.length} skills in this category</div>
+                    <div className="sk-skill-group-label">All {activeCategory.skills.length} skills</div>
                     <div className="sk-skills-card">
-                      {activeCategory.skills.map(skill => {
+                      {activeCategory.skills.map((skill, si) => {
                         const lc = levelColor[skill.level] || levelColor.Intermediate;
                         return (
                           <button key={skill.id} className="sk-skill-row" onClick={() => setActiveSkill(skill)}>
                             <div className="sk-skill-row-left">
-                              <div className="sk-skill-row-icon">{skill.name.slice(0,2).toUpperCase()}</div>
+                              <div className="sk-skill-row-icon" style={{ background: lc.bg, color: lc.text, borderColor: lc.ring + '40' }}>
+                                {skill.name.slice(0, 2).toUpperCase()}
+                              </div>
                               <div className="sk-skill-row-text">
                                 <h4>{skill.name}</h4>
-                                <p>{skill.description ? (skill.description.length > 48 ? skill.description.slice(0, 48) + '...' : skill.description) : ''}</p>
+                                <p>{skill.description ? skill.description.slice(0, 52) + (skill.description.length > 52 ? '…' : '') : `${skill.years || '—'} • ${skill.projectCount || 0}+ projects`}</p>
                               </div>
                             </div>
                             <div className="sk-skill-row-right">
-                              <span className="sk-level-badge" style={{ background: lc.bg, color: lc.text }}>{skill.level}</span>
+                              <span className="sk-level-badge" style={{ background: lc.bg, color: lc.text, borderColor: lc.ring + '50' }}>{skill.level}</span>
                               <div className="sk-bar-mini">
-                                <div className="sk-bar-mini-fill" style={{ width: skill.percent + '%', background: lc.ring }} />
+                                <motion.div
+                                  className="sk-bar-mini-fill"
+                                  style={{ background: lc.ring }}
+                                  initial={{ width: 0 }}
+                                  animate={{ width: skill.percent + '%' }}
+                                  transition={{ duration: 0.7, delay: si * 0.04, ease: [0.16, 1, 0.3, 1] }}
+                                />
                               </div>
                               <ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />
                             </div>
@@ -1206,22 +1738,29 @@ export default function Skills() {
                 <motion.div
                   className="sk-sheet sk-sheet--skill"
                   initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-                  transition={isMobile ? { type: 'tween', ease: [0.16, 1, 0.3, 1], duration: 0.38 } : { type: 'spring', damping: 32, stiffness: 350, mass: 0.9 }}
+                  transition={{ type: 'tween', ease: [0.16, 1, 0.3, 1], duration: 0.38 }}
                 >
+                  {/* Level-colored accent top bar */}
+                  <div
+                    className="sk-sheet-accent"
+                    style={{ background: `linear-gradient(90deg, ${(levelColor[activeSkill.level] || levelColor.Intermediate).ring}, ${(levelColor[activeSkill.level] || levelColor.Intermediate).ring}60)` }}
+                  />
                   <div className="sk-sheet-handle" />
                   <div className="sk-sheet-header">
                     <div className="sk-sheet-header-left">
                       <button
                         onClick={() => setActiveSkill(null)}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary-blue)', display: 'flex', alignItems: 'center', gap: 3, fontWeight: 600, fontSize: 13, padding: 0 }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary-blue)', display: 'flex', alignItems: 'center', gap: 3, fontWeight: 700, fontSize: 13, padding: 0 }}
                       >
                         <ChevronLeft size={16} />
                         Back
                       </button>
-                      <h2 style={{ marginLeft: 4 }}>{activeSkill.name}</h2>
+                      <div>
+                        <h2 style={{ marginLeft: 4 }}>{activeSkill.name}</h2>
+                      </div>
                     </div>
                     <button className="sk-sheet-close" onClick={() => { setActiveSkill(null); }}>
-                      <X size={16} />
+                      <X size={15} />
                     </button>
                   </div>
 
@@ -1232,7 +1771,7 @@ export default function Skills() {
                         <ProgressRing
                           percent={activeSkill.percent}
                           color={(levelColor[activeSkill.level] || levelColor.Intermediate).ring}
-                          size={82}
+                          size={90}
                         />
                         <div className="sk-ring-label">
                           <span className="sk-ring-pct">{activeSkill.percent}%</span>
@@ -1241,19 +1780,25 @@ export default function Skills() {
                       </div>
                       <div className="sk-meta-list">
                         <div className="sk-meta-row">
-                          <Clock size={13} />
+                          <Clock size={14} />
                           <span><strong>{String(activeSkill.years || '0').replace(/(\s*yrs?)+$/i, '')} yrs</strong> experience</span>
                         </div>
                         <div className="sk-meta-row">
-                          <Briefcase size={13} />
+                          <Briefcase size={14} />
                           <span><strong>{activeSkill.projectCount}+</strong> projects</span>
                         </div>
                         <div className="sk-meta-row">
-                          <Star size={13} />
-                          <span>
-                            <strong style={{ color: (levelColor[activeSkill.level] || levelColor.Intermediate).text }}>
-                              {activeSkill.level}
-                            </strong>
+                          <Star size={14} />
+                          <span
+                            style={{
+                              fontWeight: 800, fontSize: 12,
+                              color: (levelColor[activeSkill.level] || levelColor.Intermediate).text,
+                              background: (levelColor[activeSkill.level] || levelColor.Intermediate).bg,
+                              padding: '2px 8px', borderRadius: 20,
+                              border: `1px solid ${(levelColor[activeSkill.level] || levelColor.Intermediate).ring}40`
+                            }}
+                          >
+                            {activeSkill.level}
                           </span>
                         </div>
                       </div>
@@ -1270,7 +1815,19 @@ export default function Skills() {
                       <div>
                         <p className="sk-section-label">Ecosystem</p>
                         <div className="sk-tags">
-                          {activeSkill.relatedTools.map((t, idx) => <span key={`${t}-${idx}`} className="sk-tag">{t}</span>)}
+                          {activeSkill.relatedTools.map((t, idx) => {
+                            const toolColors = ['#3b82f6','#10b981','#8b5cf6','#f59e0b','#06b6d4','#ef4444','#ec4899'];
+                            const col = toolColors[idx % toolColors.length];
+                            return (
+                              <span
+                                key={`${t}-${idx}`}
+                                className="sk-tag"
+                                style={{ color: col, background: `${col}12`, borderColor: `${col}30` }}
+                              >
+                                {t}
+                              </span>
+                            );
+                          })}
                         </div>
                       </div>
                     )}
