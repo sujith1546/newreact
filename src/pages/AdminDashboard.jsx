@@ -15,6 +15,7 @@ import ExperiencePanel from '../components/admin/panels/ExperiencePanel';
 import SkillsPanel from '../components/admin/panels/SkillsPanel';
 import ProjectsPanel from '../components/admin/panels/ProjectsPanel';
 import UpdatesPanel from '../components/admin/panels/UpdatesPanel';
+import MomentsPanel from '../components/admin/panels/MomentsPanel';
 import AiChatsPanel from '../components/admin/panels/AiChatsPanel';
 import PortfolioPreviewPanel from '../components/admin/panels/PortfolioPreviewPanel';
 import { NAV_GROUPS, ALL_NAV_ITEMS } from '../components/admin/shared/constants';
@@ -393,6 +394,7 @@ function AdminDashboardDesktop() {
           {activeTab === "experience"      && <ExperiencePanel />}
           {activeTab === "certifications"  && <CertificationsPanel />}
           {activeTab === "education"       && <EducationPanel />}
+          {activeTab === "moments"         && <MomentsPanel />}
         </div>
       </main>
 

@@ -63,6 +63,28 @@ export function isPinConfigured() {
 /* ── 2. Dynamic Supabase Auth Storage Adapter ───────────────────────── */
 
 /**
+ * Helper to discover all Supabase authentication storage keys across both storages.
+ */
+function getAuthStorageKeys() {
+  const keys = new Set();
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && (k.startsWith('sb-') || k.includes('auth-token') || k.startsWith('supabase.'))) {
+        keys.add(k);
+      }
+    }
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const k = sessionStorage.key(i);
+      if (k && (k.startsWith('sb-') || k.includes('auth-token') || k.startsWith('supabase.'))) {
+        keys.add(k);
+      }
+    }
+  } catch {}
+  return Array.from(keys);
+}
+
+/**
  * Storage adapter that routes auth tokens to sessionStorage (Strict Ephemeral Mode)
  * or localStorage (Remember Workstation Mode) based on user preference.
  */
@@ -83,9 +105,10 @@ export const sessionAuthStorage = {
       const isRemember = localStorage.getItem(REMEMBER_SESSION_KEY) === 'true';
       if (isRemember) {
         localStorage.setItem(key, value);
+        sessionStorage.setItem(key, value);
       } else {
         sessionStorage.setItem(key, value);
-        // Ensure stale tokens are purged from localStorage
+        // Ensure stale tokens are purged from localStorage in ephemeral mode
         localStorage.removeItem(key);
       }
     } catch {}
@@ -101,7 +124,31 @@ export const sessionAuthStorage = {
 export function setRememberSessionPreference(remember) {
   try {
     localStorage.setItem(REMEMBER_SESSION_KEY, remember ? 'true' : 'false');
-  } catch {}
+
+    // Live migration of tokens across storage layers
+    const authKeys = getAuthStorageKeys();
+    if (remember) {
+      // Workstation remembered: Copy all active tokens to localStorage
+      authKeys.forEach((k) => {
+        const val = sessionStorage.getItem(k) || localStorage.getItem(k);
+        if (val) {
+          localStorage.setItem(k, val);
+          sessionStorage.setItem(k, val);
+        }
+      });
+    } else {
+      // Ephemeral mode: Ensure tokens are preserved in sessionStorage and wiped from localStorage
+      authKeys.forEach((k) => {
+        const val = localStorage.getItem(k) || sessionStorage.getItem(k);
+        if (val) {
+          sessionStorage.setItem(k, val);
+        }
+        localStorage.removeItem(k);
+      });
+    }
+  } catch (err) {
+    console.error('[SessionSecurity] Failed to sync remember session preference:', err);
+  }
 }
 
 export function getRememberSessionPreference() {

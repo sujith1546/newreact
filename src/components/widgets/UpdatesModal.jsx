@@ -52,13 +52,13 @@ function formatDate(d) {
 }
 
 function ModalEntryCard({ entry, index, onReaction }) {
-  const [open, setOpen] = useState(index < 2);
+  const [open, setOpen] = useState(false);
   const ts = typeStyles[entry.category] || typeStyles.improvement;
   const rxCounts = entry.reactions || { rocket: 0, party: 0, heart: 0, thumbs: 0 };
 
   return (
     <motion.div
-      style={{ position: 'relative', marginBottom: index < 2 ? 10 : 6, width: '100%' }}
+      style={{ position: 'relative', marginBottom: open ? 10 : 6, width: '100%' }}
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 6 }}
@@ -70,7 +70,7 @@ function ModalEntryCard({ entry, index, onReaction }) {
           background: 'var(--modal-field-bg)',
           border: '1px solid var(--modal-field-border)',
           borderRadius: '10px',
-          padding: open && index < 2 ? '12px 14px' : '10px 12px',
+          padding: open ? '12px 14px' : '10px 12px',
           cursor: 'pointer',
           userSelect: 'none',
           width: '100%',

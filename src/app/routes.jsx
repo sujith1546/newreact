@@ -54,6 +54,7 @@ export default function AppRoutes({ location }) {
               <Route path="education" element={null} />
               <Route path="experience" element={null} />
               <Route path="certifications" element={null} />
+              <Route path="moments" element={null} />
               <Route path="contact" element={null} />
             </Route>
 

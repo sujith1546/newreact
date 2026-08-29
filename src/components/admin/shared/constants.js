@@ -27,6 +27,7 @@ export const NAV_GROUPS = [
       { key: "experience", label: "Experience", icon: "ti-id-badge", color: "#6366F1" },
       { key: "education", label: "Education", icon: "ti-book", color: "#EC4899" },
       { key: "certifications", label: "Certifications", icon: "ti-certificate", color: "#F97316" },
+      { key: "moments", label: "Moments", icon: "ti-sparkles", color: "#8B5CF6" },
     ]
   },
   {

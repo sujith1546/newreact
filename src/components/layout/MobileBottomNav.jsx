@@ -654,6 +654,18 @@ END:VCARD`;
                 <motion.button
                   whileHover={{ scale: 1.04 }}
                   whileTap={{ scale: 0.93 }}
+                  onClick={() => { haptic.light(); handleTabClick('moments'); }}
+                  className="drawer-explore-item"
+                >
+                  <div className="drawer-item-box" style={{ color: '#8b5cf6', background: 'rgba(139,92,246,0.1)', borderColor: 'rgba(139,92,246,0.25)' }}>
+                    <Sparkles size={18} />
+                  </div>
+                  <span>Moments</span>
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.93 }}
                   onClick={() => { haptic.light(); playSound(); setIsGithubStatsOpen(true); setIsMoreOpen(false); }}
                   className="drawer-explore-item"
                 >

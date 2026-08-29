@@ -120,7 +120,7 @@ export default function MobileHomeShell() {
       const [msgs, projs] = await Promise.all([
         supabase
           .from('contact_messages')
-          .select('id, name, subject, created_at')
+          .select('id, name, email, message, created_at')
           .order('created_at', { ascending: false })
           .limit(3),
         supabase
@@ -150,7 +150,7 @@ export default function MobileHomeShell() {
     ...recentMessages.map((m) => ({
       key: `msg-${m.id}`,
       icon: <MessageSquare size={13} />,
-      label: `Message from ${m.name || 'Visitor'}`,
+      label: `Message from ${m.name || m.email || 'Visitor'}`,
       time: formatRelativeTime(m.created_at),
       color: '#6366f1',
     })),

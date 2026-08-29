@@ -29,6 +29,7 @@ const Projects = lazy(() => import('./Projects'));
 const Education = lazy(() => import('./Education'));
 const Experience = lazy(() => import('./Experience'));
 const Certifications = lazy(() => import('./Certifications'));
+const Moments = lazy(() => import('./Moments'));
 const Contact = lazy(() => import('./Contact'));
 import DisabledModuleGate from '../components/common/DisabledModuleGate';
 import useModuleStatus from '../hooks/useModuleStatus';
@@ -46,6 +47,7 @@ const SECTIONS_DEF = [
   { id: 'education', Component: Education },
   { id: 'experience', Component: Experience, moduleKey: 'experience', moduleTitle: 'Experience & Timeline' },
   { id: 'certifications', Component: Certifications, moduleKey: 'certifications', moduleTitle: 'Certifications & Awards' },
+  { id: 'moments', Component: Moments },
   { id: 'contact', Component: Contact },
 ];
 
@@ -57,6 +59,7 @@ const SECTION_LABELS = {
   education: 'Education',
   experience: 'Experience',
   certifications: 'Certifications',
+  moments: 'Moments',
   contact: 'Contact',
 };
 
@@ -88,6 +91,10 @@ const SECTION_HEADERS = {
   certifications: {
     title: 'Certifications',
     subtitle: 'Verified technical achievements and credentials',
+  },
+  moments: {
+    title: 'Moments',
+    subtitle: 'My life in snapshots — milestones, travel & memories',
   },
   contact: {
     title: 'Contact',
@@ -365,6 +372,7 @@ export default function PortfolioLayout() {
     education: { label: 'Resume', icon: FileText, action: () => window.dispatchEvent(new CustomEvent('open-resume')), style: 'ghost' },
     experience: { label: 'Resume', icon: FileText, action: () => window.dispatchEvent(new CustomEvent('open-resume')), style: 'ghost' },
     certifications: { label: 'Resume', icon: FileText, action: () => window.dispatchEvent(new CustomEvent('open-resume')), style: 'ghost' },
+    moments: { label: 'Contact Me', icon: Mail, action: () => handleNavClick('contact'), style: 'ghost' },
     contact: { label: emailCopied ? 'Copied!' : 'Copy Email', icon: emailCopied ? Check : Mail, action: handleCopyEmail, style: emailCopied ? 'success' : 'ghost' },
   };
   const cta = ctaMap[activeSection] || ctaMap.home;
@@ -535,7 +543,7 @@ export default function PortfolioLayout() {
               }}
               className={`text-content
                 ${activeSection === 'home' ? ' home-content' : ''}
-                ${['contact', 'education', 'about', 'skills', 'experience', 'projects', 'certifications'].includes(activeSection) ? ' wide-content' : ''}
+                ${['contact', 'education', 'about', 'skills', 'experience', 'projects', 'certifications', 'moments'].includes(activeSection) ? ' wide-content' : ''}
               `}
             >
               <ErrorBoundary>

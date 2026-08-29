@@ -75,6 +75,7 @@ const NAV_ITEMS_DEF = [
   { label: 'EDUCATION', id: 'education' },
   { label: 'EXPERIENCE', id: 'experience', moduleKey: 'experience', moduleLabel: 'Experience & Timeline' },
   { label: 'CERTIFICATIONS', id: 'certifications', moduleKey: 'certifications', moduleLabel: 'Certifications & Awards' },
+  { label: 'MOMENTS', id: 'moments' },
   { label: 'CONTACT', id: 'contact' },
 ];
 

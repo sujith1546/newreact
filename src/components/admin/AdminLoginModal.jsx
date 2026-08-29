@@ -14,7 +14,7 @@ import {
 } from "../../lib/sessionSecurity";
 import {
   Lock, Mail, Eye, EyeOff, Shield, ShieldCheck, Clock, ArrowRight,
-  AlertTriangle, X, KeyRound, Loader2, Fingerprint, CheckCircle2,
+  AlertTriangle, X, KeyRound, Loader2, Fingerprint, CheckCircle2, Check,
 } from "lucide-react";
 
 const MAX_ATTEMPTS = 5;
@@ -211,6 +211,7 @@ export default function AdminLoginModal({ isOpen, onClose }) {
     if (lockoutTimer > 0 || totpCode.length !== 6) return;
     setLoading(true); setError("");
     try {
+      setRememberSessionPreference(rememberDevice);
       const { data: ch, error: chErr } = await supabase.auth.mfa.challenge({ factorId: totpFactorId });
       if (chErr) throw chErr;
       const { error: verifyErr } = await supabase.auth.mfa.verify({ factorId: totpFactorId, challengeId: ch.id, code: totpCode.trim() });
@@ -292,6 +293,80 @@ export default function AdminLoginModal({ isOpen, onClose }) {
     .alm-label {
       display: block; font-size: 11.5px; font-weight: 600;
       color: var(--alm-muted); margin-bottom: 6px;
+    }
+    .alm-remember-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 12px 0 16px;
+      font-size: 12px;
+    }
+    .alm-checkbox-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--alm-muted);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 500;
+      user-select: none;
+      white-space: nowrap;
+      transition: color 0.15s ease;
+    }
+    .alm-checkbox-label:hover {
+      color: var(--alm-text);
+    }
+    .alm-custom-checkbox {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 17px;
+      min-width: 17px;
+      height: 17px;
+      min-height: 17px;
+      border-radius: 5px;
+      border: 1.5px solid var(--alm-border);
+      background: var(--alm-field-bg);
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+    .alm-checkbox-label:hover .alm-custom-checkbox {
+      border-color: #3b82f6;
+    }
+    .alm-custom-checkbox.checked {
+      background: #3b82f6;
+      border-color: #3b82f6;
+      box-shadow: 0 2px 6px rgba(59,130,246,0.35);
+    }
+    .alm-custom-checkbox input[type="checkbox"] {
+      position: absolute;
+      opacity: 0;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      cursor: pointer;
+      z-index: 1;
+    }
+    .alm-custom-checkbox:focus-within {
+      box-shadow: 0 0 0 2px rgba(59,130,246,0.35);
+      border-color: #3b82f6;
+    }
+    .alm-forgot-btn {
+      background: none;
+      border: none;
+      color: #3b82f6;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 0;
+      white-space: nowrap;
+      transition: opacity 0.15s;
+    }
+    .alm-forgot-btn:hover {
+      text-decoration: underline;
+      opacity: 0.9;
     }
   `;
 
@@ -524,19 +599,27 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                     </div>
                   </div>
 
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, fontSize: 12 }}>
-                    <label style={{ display: "flex", alignItems: "center", gap: 6, color: "var(--alm-muted)", cursor: "pointer" }}>
-                      <input
-                        type="checkbox"
-                        id="alm-remember"
-                        checked={rememberDevice}
-                        onChange={e => setRememberDevice(e.target.checked)}
-                        style={{ accentColor: "var(--alm-btn)" }}
-                      />
-                      Remember workstation
+                  <div className="alm-remember-row">
+                    <label className="alm-checkbox-label" htmlFor="alm-remember">
+                      <div className={`alm-custom-checkbox${rememberDevice ? " checked" : ""}`}>
+                        <input
+                          type="checkbox"
+                          id="alm-remember"
+                          checked={rememberDevice}
+                          onChange={e => {
+                            setRememberDevice(e.target.checked);
+                            setRememberSessionPreference(e.target.checked);
+                          }}
+                        />
+                        {rememberDevice && <Check size={11} color="#ffffff" strokeWidth={3.5} />}
+                      </div>
+                      <span>Remember workstation</span>
                     </label>
-                    <button type="button" onClick={() => { setError(""); setActiveMethod("otp"); }}
-                      style={{ background: "none", border: "none", color: "#3b82f6", cursor: "pointer", fontSize: 12, fontWeight: 600, padding: 0 }}>
+                    <button
+                      type="button"
+                      className="alm-forgot-btn"
+                      onClick={() => { setError(""); setActiveMethod("otp"); }}
+                    >
                       Forgot password?
                     </button>
                   </div>
@@ -593,6 +676,25 @@ export default function AdminLoginModal({ isOpen, onClose }) {
                           style={{ textAlign: "center", letterSpacing: "6px", fontWeight: 800, fontSize: 16 }}
                         />
                       </div>
+
+                      <div className="alm-remember-row">
+                        <label className="alm-checkbox-label" htmlFor="alm-remember-otp">
+                          <div className={`alm-custom-checkbox${rememberDevice ? " checked" : ""}`}>
+                            <input
+                              type="checkbox"
+                              id="alm-remember-otp"
+                              checked={rememberDevice}
+                              onChange={e => {
+                                setRememberDevice(e.target.checked);
+                                setRememberSessionPreference(e.target.checked);
+                              }}
+                            />
+                            {rememberDevice && <Check size={11} color="#ffffff" strokeWidth={3.5} />}
+                          </div>
+                          <span>Remember workstation</span>
+                        </label>
+                      </div>
+
                       <button type="submit" className="alm-btn-primary" disabled={loading || emailOtpCode.length !== 6 || lockoutTimer > 0}>
                         {loading ? <Loader2 size={15} className="spin" /> : <CheckCircle2 size={15} />}
                         {loading ? "Verifying…" : "Verify & Sign in"}
