@@ -69,7 +69,7 @@ export default function Home({ onNavClick }) {
 
   if (isMobile) {
     return (
-      <div className="home-content home-pane" style={{ height: '100%', width: '100%' }}>
+      <div className="home-mobile-wrapper" style={{ width: '100%', display: 'flex', flexDirection: 'column' }}>
         <MobileDashboard onNavClick={onNavClick} />
       </div>
     );

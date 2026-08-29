@@ -178,10 +178,9 @@ export default function MobileDashboard({ onNavClick }) {
         /* ── root scrollable container ── */
         .hd-root {
           display: flex; flex-direction: column;
-          width: 100%; height: 100%;
-          overflow-y: auto; overflow-x: hidden;
-          -ms-overflow-style: none; scrollbar-width: none;
-          -webkit-overflow-scrolling: touch;
+          width: 100%; height: auto;
+          overflow: visible;
+          box-sizing: border-box;
         }
         .hd-root::-webkit-scrollbar { display: none; }
 
@@ -206,7 +205,7 @@ export default function MobileDashboard({ onNavClick }) {
           align-items: center;
           justify-content: space-between;
           gap: 10px;
-          padding: 8px 14px 6px;
+          padding: 6px 14px 6px;
         }
         .hd-profile-left {
           display: flex;
@@ -574,10 +573,9 @@ export default function MobileDashboard({ onNavClick }) {
         .swipe-hint-icon { display: flex; align-items: center; color: var(--text-secondary); }
       `}</style>
 
-      <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
         <div
           className="hd-root"
-          style={{ flex: 1, minHeight: 0 }}
           ref={rootRef}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
