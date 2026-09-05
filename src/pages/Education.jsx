@@ -15,11 +15,11 @@ const iconMap = {
 const RING_RADIUS = 27;
 const RING_CIRC = 2 * Math.PI * RING_RADIUS;
 
-function ScoreRing({ percent, color }) {
+function ScoreRing({ percent, color, size = 46 }) {
   const offset = RING_CIRC - (percent / 100) * RING_CIRC;
   return (
-    <div style={{ position: "relative", width: 64, height: 64, flexShrink: 0 }}>
-      <svg width="64" height="64" viewBox="0 0 64 64">
+    <div style={{ position: "relative", width: size, height: size, flexShrink: 0 }}>
+      <svg width={size} height={size} viewBox="0 0 64 64">
         <circle
           cx="32" cy="32" r={RING_RADIUS}
           fill="none" stroke="var(--border-color, #e5e5e5)" strokeWidth="6"
@@ -38,8 +38,8 @@ function ScoreRing({ percent, color }) {
         position: "absolute", inset: 0, display: "flex",
         flexDirection: "column", alignItems: "center", justifyContent: "center"
       }}>
-        <span style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)" }}>{percent}%</span>
-        <span style={{ fontSize: 9, color: "var(--text-muted)", fontWeight: 600 }}>score</span>
+        <span style={{ fontSize: size <= 50 ? 11.5 : 14, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1 }}>{percent}%</span>
+        <span style={{ fontSize: size <= 50 ? 7.5 : 9, color: "var(--text-muted)", fontWeight: 600 }}>score</span>
       </div>
     </div>
   );
@@ -47,27 +47,27 @@ function ScoreRing({ percent, color }) {
 
 function TimelineStrip({ stages, activeId }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", marginTop: 10 }}>
+    <div style={{ display: "flex", alignItems: "center", marginTop: 5 }}>
       {stages.map((s, i) => (
         <div key={s.id} style={{ display: "flex", alignItems: "center", flex: i === stages.length - 1 ? "none" : 1 }}>
           <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center" }}>
             <div style={{
-              width: s.id === activeId ? 10 : 8,
-              height: s.id === activeId ? 10 : 8,
+              width: s.id === activeId ? 8 : 6,
+              height: s.id === activeId ? 8 : 6,
               borderRadius: "50%",
               background: s.id === activeId ? s.color : "var(--border-color)",
-              marginBottom: 6,
+              marginBottom: 3,
               transition: "all 0.3s ease"
             }} />
             <div style={{
-              fontSize: 10,
+              fontSize: 8.5,
               fontWeight: s.id === activeId ? 700 : 500,
               color: s.id === activeId ? "var(--text-primary)" : "var(--text-muted)",
               letterSpacing: "-0.01em"
             }}>{s.shortLabel}</div>
           </div>
           {i < stages.length - 1 && (
-            <div style={{ flex: 1, height: 2, background: "var(--border-color)", margin: "0 8px", alignSelf: "flex-start", marginTop: 4 }} />
+            <div style={{ flex: 1, height: 1.5, background: "var(--border-color)", margin: "0 6px", alignSelf: "flex-start", marginTop: 3 }} />
           )}
         </div>
       ))}
@@ -76,7 +76,7 @@ function TimelineStrip({ stages, activeId }) {
 }
 
 function SectionLabel({ children }) {
-  return <div className="dsheet-section-label" style={{ marginBottom: 8, marginTop: 12 }}>{children}</div>;
+  return <div className="dsheet-section-label" style={{ marginBottom: 3, marginTop: 7 }}>{children}</div>;
 }
 
 const containerVariants = {
@@ -1295,91 +1295,92 @@ export default function Education() {
           }
           .dsheet {
             position: fixed; bottom: 0; left: 0; right: 0; z-index: 10001;
-            background: var(--bg-secondary); border-top-left-radius: 28px; border-top-right-radius: 28px;
+            background: var(--bg-secondary); border-top-left-radius: 22px; border-top-right-radius: 22px;
             will-change: transform; transform: translateZ(0); backface-visibility: hidden;
-            box-shadow: 0 -20px 60px rgba(0,0,0,.25), 0 -1px 0 rgba(255,255,255,.06);
+            box-shadow: 0 -16px 48px rgba(0,0,0,.25), 0 -1px 0 rgba(255,255,255,.06);
             display: flex; flex-direction: column;
-            height: 86vh; height: 86dvh;
+            max-height: 66vh; max-height: 66dvh;
+            height: auto;
           }
           .dsheet-handle {
-            width: 36px; height: 4px; border-radius: 2px; background: var(--border-color);
-            margin: 12px auto 0; flex-shrink: 0;
+            width: 32px; height: 3.5px; border-radius: 2px; background: var(--border-color);
+            margin: 8px auto 2px; flex-shrink: 0;
           }
           .dsheet-header {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 12px 14px 10px; border-bottom: 1px solid var(--border-color); flex-shrink: 0;
+            padding: 8px 14px 8px; border-bottom: 1px solid var(--border-color); flex-shrink: 0;
           }
-          .dsheet-header-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+          .dsheet-header-left { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
           .dsheet-header-icon {
-            width: 32px; height: 32px; border-radius: 10px; flex-shrink: 0;
+            width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0;
             display: flex; align-items: center; justify-content: center;
           }
-          .dsheet-title h3 { font-size: 14px; font-weight: 800; color: var(--text-primary); margin: 0 0 2px; letter-spacing: -.02em; line-height: 1.25; }
-          .dsheet-title p { font-size: 9px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; letter-spacing: .06em; margin: 0; }
+          .dsheet-title h3 { font-size: 13px; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: -.015em; line-height: 1.2; }
+          .dsheet-title p { font-size: 8.5px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; letter-spacing: .05em; margin: 0; }
           .dsheet-close {
-            width: 24px; height: 24px; border-radius: 12px; background: var(--bg-primary);
+            width: 22px; height: 22px; border-radius: 11px; background: var(--bg-primary);
             border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center;
-            color: var(--text-secondary); cursor: pointer; flex-shrink: 0; margin-left: 8px;
+            color: var(--text-secondary); cursor: pointer; flex-shrink: 0; margin-left: 6px;
           }
           .dsheet-body {
             flex: 1; overflow-y: auto; padding: 0; display: flex; flex-direction: column; position: relative;
           }
           .dsheet-body::-webkit-scrollbar { display: none; }
-          .dsheet-content { padding: 12px; display: flex; flex-direction: column; gap: 12px; padding-bottom: 24px; }
+          .dsheet-content { padding: 8px 12px 18px; display: flex; flex-direction: column; gap: 8px; }
           
           .dsheet-section-label {
-            font-size: 10px; font-weight: 800; color: var(--text-muted);
-            text-transform: uppercase; letter-spacing: .1em; margin: 0 0 8px;
+            font-size: 8.5px; font-weight: 800; color: var(--text-muted);
+            text-transform: uppercase; letter-spacing: .08em; margin: 0 0 4px;
           }
 
           /* Hero stat card */
           .edu-hero-card {
-            display: flex; align-items: center; gap: 12px; padding: 12px;
+            display: flex; align-items: center; gap: 10px; padding: 10px;
             background: var(--bg-primary); border: 1px solid var(--border-color);
-            border-radius: 14px;
+            border-radius: 12px;
           }
           .edu-hero-icon-wrap {
-            width: 48px; height: 48px; border-radius: 12px; flex-shrink: 0;
+            width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
             display: flex; align-items: center; justify-content: center;
             position: relative; overflow: hidden;
           }
           .edu-hero-icon-bg { position: absolute; inset: 0; }
           .edu-hero-icon-wrap svg { position: relative; z-index: 1; }
-          .edu-hero-meta { flex: 1; display: flex; flex-direction: column; gap: 9px; }
-          .edu-hero-meta-row { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text-secondary); }
+          .edu-hero-meta { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+          .edu-hero-meta-row { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-secondary); }
           .edu-hero-meta-row svg { color: var(--text-muted); flex-shrink: 0; }
           .edu-hero-meta-row strong { color: var(--text-primary); font-weight: 700; }
 
           /* Progress bar in sheet */
-          .edu-sheet-prog-wrap { display: flex; flex-direction: column; gap: 6px; }
+          .edu-sheet-prog-wrap { display: flex; flex-direction: column; gap: 4px; }
           .edu-sheet-prog-label {
             display: flex; justify-content: space-between;
-            font-size: 11px; font-weight: 700; color: var(--text-secondary);
+            font-size: 10px; font-weight: 700; color: var(--text-secondary);
           }
           .edu-sheet-prog-track {
-            height: 6px; background: var(--border-color); border-radius: 3px; overflow: hidden;
+            height: 5px; background: var(--border-color); border-radius: 3px; overflow: hidden;
           }
           .edu-sheet-prog-fill {
             height: 100%; border-radius: 3px;
           }
 
-          .dsheet-desc { font-size: 13.5px; line-height: 1.65; color: var(--text-secondary); margin: 0; }
+          .dsheet-desc { font-size: 11px; line-height: 1.5; color: var(--text-secondary); margin: 0; }
 
-          .edu-detail-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+          .edu-detail-tags { display: flex; flex-wrap: wrap; gap: 5px; }
           .edu-detail-tag {
-            font-size: 11px; font-weight: 700; padding: 5px 11px; border-radius: 20px;
+            font-size: 9.5px; font-weight: 600; padding: 3px 9px; border-radius: 14px;
             background: var(--bg-primary); border: 1px solid var(--border-color);
             color: var(--text-secondary);
           }
 
-          .ps-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+          .ps-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
           .ps-stat {
             background: var(--bg-primary); border: 1px solid var(--border-color);
-            border-radius: 12px; padding: 11px 10px;
-            display: flex; flex-direction: column; align-items: center; gap: 2px;
+            border-radius: 10px; padding: 7px 6px;
+            display: flex; flex-direction: column; align-items: center; gap: 1px;
           }
-          .ps-stat-label { font-size: 9.5px; color: var(--text-muted); margin: 0; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
-          .ps-stat-value { font-size: 18px; font-weight: 900; color: var(--text-primary); margin: 0; line-height: 1.1; }
+          .ps-stat-label { font-size: 8px; color: var(--text-muted); margin: 0; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+          .ps-stat-value { font-size: 13.5px; font-weight: 900; color: var(--text-primary); margin: 0; line-height: 1.1; }
 
           .mesh-gradient {
             position: absolute; width: 200%; height: 200%;
@@ -1644,7 +1645,7 @@ export default function Education() {
                 <div className="dsheet-header">
                   <div className="dsheet-header-left">
                     <div className="dsheet-header-icon" style={{ background: accent + '18', color: accent, border: `1px solid ${accent}30` }}>
-                      <Icon size={22} />
+                      <Icon size={15} />
                     </div>
                     <div className="dsheet-title">
                       <h3>{selectedItem.title}</h3>
@@ -1652,7 +1653,7 @@ export default function Education() {
                     </div>
                   </div>
                   <button className="dsheet-close" onClick={() => setSelectedItem(null)}>
-                    <X size={16} />
+                    <X size={14} />
                   </button>
                 </div>
 
@@ -1664,20 +1665,20 @@ export default function Education() {
                   <div className="dsheet-content">
 
                     {/* Ring + Meta Box */}
-                    <div style={{ background: "var(--bg-primary)", border: "1px solid var(--border-color)", borderRadius: 16, padding: 16, display: "flex", gap: 16, alignItems: "center", marginBottom: 6 }}>
+                    <div style={{ background: "var(--bg-primary)", border: "1px solid var(--border-color)", borderRadius: 14, padding: "10px 12px", display: "flex", gap: 12, alignItems: "center", marginBottom: 2 }}>
                       {selectedItem.progress != null ? (
-                        <ScoreRing percent={selectedItem.progress} color={selectedItem.color} />
+                        <ScoreRing percent={selectedItem.progress} color={selectedItem.color} size={46} />
                       ) : (
-                        <div style={{ width: 64, height: 64, borderRadius: 16, background: selectedItem.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: `1px solid ${selectedItem.color}30` }}>
-                          <Icon size={28} style={{ color: selectedItem.color }} />
+                        <div style={{ width: 46, height: 46, borderRadius: 12, background: selectedItem.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: `1px solid ${selectedItem.color}30` }}>
+                          <Icon size={22} style={{ color: selectedItem.color }} />
                         </div>
                       )}
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.3 }}>{selectedItem.institution}</div>
-                        <div style={{ fontSize: 11, color: "var(--text-secondary)", marginTop: 5, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.25 }}>{selectedItem.institution}</div>
+                        <div style={{ fontSize: 10, color: "var(--text-secondary)", marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
                           <MapPin size={10} /> {selectedItem.location}
                         </div>
-                        <div style={{ fontSize: 11, color: "var(--text-secondary)", marginTop: 3, display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <div style={{ fontSize: 10, color: "var(--text-secondary)", marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
                           <School size={10} /> {selectedItem.year}
                         </div>
                       </div>
@@ -1686,11 +1687,11 @@ export default function Education() {
                     {/* Stats grid */}
                     <div>
                       <SectionLabel>at a glance</SectionLabel>
-                      <div className="ps-stats" style={{ gridTemplateColumns: `repeat(${selectedItem.backStats.length}, 1fr)`, gap: 8 }}>
+                      <div className="ps-stats" style={{ gridTemplateColumns: `repeat(${selectedItem.backStats.length}, 1fr)`, gap: 6 }}>
                         {selectedItem.backStats.map(stat => (
-                          <div key={stat.label} className="ps-stat" style={{ padding: '10px 8px', alignItems: 'center' }}>
-                            <p className="ps-stat-label" style={{ fontSize: 9, textTransform: 'lowercase' }}>{stat.label}</p>
-                            <p className="ps-stat-value" style={{ color: selectedItem.color, fontSize: 16, marginTop: 2 }}>{stat.value}</p>
+                          <div key={stat.label} className="ps-stat" style={{ padding: '7px 6px', alignItems: 'center' }}>
+                            <p className="ps-stat-label" style={{ fontSize: 8, textTransform: 'lowercase' }}>{stat.label}</p>
+                            <p className="ps-stat-value" style={{ color: selectedItem.color, fontSize: 13.5, marginTop: 1 }}>{stat.value}</p>
                           </div>
                         ))}
                       </div>
@@ -1699,7 +1700,7 @@ export default function Education() {
                     {/* Description */}
                     <div>
                       <SectionLabel>about</SectionLabel>
-                      <p className="dsheet-desc" style={{ fontSize: 12.5 }}>{selectedItem.description}</p>
+                      <p className="dsheet-desc" style={{ fontSize: 11 }}>{selectedItem.description}</p>
                     </div>
 
                     {/* Highlights */}
