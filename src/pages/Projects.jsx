@@ -10,14 +10,6 @@ import ProjectSkeleton from '../components/projects/ProjectSkeleton';
 import ProjectCard from '../components/projects/ProjectCard';
 import ProjectModal from '../components/projects/ProjectModal';
 
-const projectAccents = [
-  { color: '#6366f1', bg: 'rgba(99,102,241,0.12)', border: 'rgba(99,102,241,0.3)', glow: '#6366f1' },
-  { color: '#8b5cf6', bg: 'rgba(139,92,246,0.12)', border: 'rgba(139,92,246,0.3)', glow: '#8b5cf6' },
-  { color: '#10b981', bg: 'rgba(16,185,129,0.12)', border: 'rgba(16,185,129,0.3)', glow: '#10b981' },
-  { color: '#06b6d4', bg: 'rgba(6,182,212,0.12)', border: 'rgba(6,182,212,0.3)', glow: '#06b6d4' },
-  { color: '#f59e0b', bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.3)', glow: '#f59e0b' },
-];
-
 function getProjectCategory(project) {
   if (project?.category) return project.category;
   const tagsStr = (project?.tags || []).join(" ").toLowerCase();
@@ -29,7 +21,14 @@ function getProjectCategory(project) {
   return "Data Science";
 }
 
-/* ─── Mobile Featured-Projects Carousel (mirrors Home's hd-feat-* design) ─── */
+function getBadgeTheme(category = '') {
+  const c = category.toLowerCase();
+  if (c.includes('ai') || c.includes('ml') || c.includes('nlp')) return 'purple';
+  if (c.includes('full') || c.includes('stack') || c.includes('web')) return 'blue';
+  return 'green';
+}
+
+/* ─── Mobile Featured-Projects Carousel (clean, executive card design) ─── */
 function MobileCarousel({ projects, onOpen }) {
   const [activeIdx, setActiveIdx] = useState(0);
   const trackRef = useRef(null);
@@ -37,13 +36,15 @@ function MobileCarousel({ projects, onOpen }) {
   const handleScroll = () => {
     if (!trackRef.current) return;
     const { scrollLeft, offsetWidth } = trackRef.current;
-    const idx = Math.round(scrollLeft / (offsetWidth * 0.86));
+    const card = trackRef.current.querySelector('.mpj-feat-slide');
+    const cardWidth = card ? card.offsetWidth + 10 : offsetWidth * 0.84;
+    const idx = Math.round(scrollLeft / cardWidth);
     setActiveIdx(Math.min(Math.max(0, idx), projects.length - 1));
   };
 
   const scrollTo = (idx) => {
     if (!trackRef.current) return;
-    const cards = trackRef.current.children;
+    const cards = trackRef.current.querySelectorAll('.mpj-feat-slide');
     if (cards[idx]) {
       cards[idx].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
       setActiveIdx(idx);
@@ -84,9 +85,8 @@ function MobileCarousel({ projects, onOpen }) {
       {/* Horizontal snap-scroll track */}
       <div className="mpj-feat-track" ref={trackRef} onScroll={handleScroll}>
         {projects.map((project, i) => {
-          const accentObj = projectAccents[i % projectAccents.length];
-          const accent = accentObj.color;
           const category = getProjectCategory(project);
+          const badgeTheme = getBadgeTheme(category);
 
           const techTags = Array.isArray(project.tags)
             ? project.tags.slice(0, 4)
@@ -100,26 +100,18 @@ function MobileCarousel({ projects, onOpen }) {
           const liveLabel = project.liveUrl ? '🚀 Live' : '⚡ Featured';
           const badge = metric ? `${liveLabel} · ${metric}` : `${liveLabel} · ${category}`;
 
-          const cardBg = `linear-gradient(135deg, ${accent}18, ${accentObj.glow}08)`;
-
           return (
             <div
-              key={project.id || project.title}
+              key={project.id || project.title || i}
               className="mpj-feat-slide"
-              style={{ background: cardBg, borderColor: accentObj.border }}
+              onClick={() => onOpen(project)}
             >
-              {/* Glow blob bottom-right */}
-              <div
-                className="mpj-feat-card-bg"
-                style={{ background: `radial-gradient(circle, ${accentObj.glow}25, transparent 70%)` }}
-              />
-
-              {/* Badge pill */}
-              <div
-                className="mpj-feat-badge"
-                style={{ color: accent, background: `${accent}18`, borderColor: `${accent}35` }}
-              >
-                {badge}
+              {/* Badge top row */}
+              <div className="mpj-feat-top-row">
+                <div className={`mpj-feat-badge mpj-feat-badge--${badgeTheme}`}>
+                  <span className="mpj-badge-dot" />
+                  {badge}
+                </div>
               </div>
 
               {/* Title */}
@@ -131,21 +123,16 @@ function MobileCarousel({ projects, onOpen }) {
               {/* Tech tags */}
               <div className="mpj-feat-tags">
                 {techTags.map(t => (
-                  <span
-                    key={t}
-                    className="mpj-feat-tag"
-                    style={{ color: accent, background: `${accent}12`, borderColor: `${accent}25` }}
-                  >
+                  <span key={t} className="mpj-feat-tag">
                     {t}
                   </span>
                 ))}
               </div>
 
               {/* Actions row */}
-              <div className="mpj-feat-actions">
+              <div className="mpj-feat-actions" onClick={(e) => e.stopPropagation()}>
                 <button
                   className="mpj-feat-action-primary"
-                  style={{ background: `${accent}18`, borderColor: `${accent}35`, color: accent }}
                   onClick={() => onOpen(project)}
                 >
                   <ExternalLink size={12} />
@@ -181,9 +168,8 @@ function MobileCarousel({ projects, onOpen }) {
       <div className="mpj-feat-dots">
         {projects.map((p, idx) => (
           <button
-            key={p.id || p.title}
-            className="mpj-feat-dot"
-            style={{ background: idx === activeIdx ? projectAccents[idx % projectAccents.length].color : undefined, width: idx === activeIdx ? '16px' : '6px' }}
+            key={p.id || p.title || idx}
+            className={`mpj-feat-dot ${idx === activeIdx ? 'active' : ''}`}
             onClick={() => scrollTo(idx)}
             aria-label={`Go to slide ${idx + 1}`}
           />
@@ -600,9 +586,11 @@ export default function Projects() {
           /* Filter chips row */
           .mpj-filter-row {
             display: flex; gap: 6px; overflow-x: auto; padding: 2px 2px 8px;
+            scroll-padding-left: 2px;
             -ms-overflow-style: none; scrollbar-width: none; margin-bottom: 8px;
           }
           .mpj-filter-row::-webkit-scrollbar { display: none; }
+          .mpj-filter-row::after { content: ''; flex: 0 0 4px; }
           .mpj-filter-chip {
             flex-shrink: 0;
             display: inline-flex; align-items: center; gap: 6px;
@@ -651,77 +639,212 @@ export default function Projects() {
           .mpj-feat-track {
             display: flex; overflow-x: auto;
             scroll-snap-type: x mandatory;
+            scroll-padding-left: 2px;
             -webkit-overflow-scrolling: touch;
-            gap: 10px; padding: 4px 0 6px;
+            gap: 10px; padding: 4px 2px 6px;
             -ms-overflow-style: none; scrollbar-width: none;
           }
           .mpj-feat-track::-webkit-scrollbar { display: none; }
+          .mpj-feat-track::after { content: ''; flex: 0 0 4px; }
 
           /* ── Individual slide card ── */
           .mpj-feat-slide {
-            min-width: 86%; max-width: 86%;
+            min-width: 85%; max-width: 85%;
             scroll-snap-align: start;
-            border-radius: 18px; border: 1px solid;
-            padding: 14px; position: relative; overflow: hidden;
-            flex-shrink: 0; box-sizing: border-box;
-            display: flex; flex-direction: column;
-          }
-          .mpj-feat-card-bg {
-            position: absolute; bottom: -20px; right: -20px;
-            width: 100px; height: 100px; border-radius: 50%;
-            pointer-events: none;
-          }
-          .mpj-feat-badge {
-            display: inline-flex; align-items: center; gap: 4px;
-            border-radius: 20px; padding: 2px 8px; border: 1px solid;
-            font-size: 8.5px; font-weight: 800;
-            letter-spacing: 0.04em; margin-bottom: 8px; width: fit-content;
-          }
-          .mpj-feat-title {
-            font-size: 14px; font-weight: 800; color: var(--text-primary);
-            margin: 0 0 5px; letter-spacing: -0.02em;
-          }
-          .mpj-feat-desc {
-            font-size: 10.5px; color: var(--text-secondary);
-            line-height: 1.5; margin: 0 0 10px; flex: 1;
-            display: -webkit-box; -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical; overflow: hidden;
-          }
-          .mpj-feat-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
-          .mpj-feat-tag {
-            font-size: 9px; font-weight: 700;
-            border-radius: 8px; padding: 2px 7px; border: 1px solid;
-          }
-          .mpj-feat-actions {
-            display: flex; align-items: center; justify-content: space-between;
-            gap: 6px; margin-top: auto;
-          }
-          .mpj-feat-action-primary {
-            display: flex; align-items: center; gap: 5px;
-            font-size: 11px; font-weight: 700;
-            border-radius: 10px; padding: 6px 12px; border: 1px solid;
-            cursor: pointer; transition: transform 0.15s;
+            border-radius: 16px;
+            border: 1.5px solid var(--border-color, #CBD5E1);
+            background: var(--bg-secondary, #FFFFFF);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+            padding: 14px 15px;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            transition: transform 0.15s ease, border-color 0.15s ease;
             -webkit-tap-highlight-color: transparent;
           }
-          .mpj-feat-action-primary:active { transform: scale(0.96); }
-          .mpj-feat-icon-btn {
-            width: 28px; height: 28px; border-radius: 8px;
-            border: 1px solid var(--border-color); background: var(--bg-primary);
-            color: var(--text-secondary);
-            display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: all 0.15s ease;
+          .mpj-feat-slide:active {
+            transform: scale(0.985);
           }
-          .mpj-feat-icon-btn:active { color: var(--primary-blue); border-color: var(--primary-blue); }
+          [data-theme="dark"] .mpj-feat-slide {
+            background: var(--bg-secondary, #161B22);
+            border-color: rgba(255, 255, 255, 0.14);
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.28);
+          }
+
+          .mpj-feat-top-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+          }
+
+          .mpj-feat-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            border-radius: 12px;
+            padding: 2.5px 8px;
+            border: 1.2px solid;
+            font-size: 9.5px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            width: fit-content;
+          }
+          .mpj-badge-dot {
+            width: 4.5px;
+            height: 4.5px;
+            border-radius: 50%;
+            background: currentColor;
+          }
+
+          .mpj-feat-badge--blue {
+            background: rgba(59, 130, 246, 0.08);
+            border-color: rgba(59, 130, 246, 0.25);
+            color: #2563EB;
+          }
+          [data-theme="dark"] .mpj-feat-badge--blue {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.32);
+            color: #60A5FA;
+          }
+
+          .mpj-feat-badge--purple {
+            background: rgba(99, 102, 241, 0.08);
+            border-color: rgba(99, 102, 241, 0.25);
+            color: #6366F1;
+          }
+          [data-theme="dark"] .mpj-feat-badge--purple {
+            background: rgba(99, 102, 241, 0.15);
+            border-color: rgba(99, 102, 241, 0.32);
+            color: #818CF8;
+          }
+
+          .mpj-feat-badge--green {
+            background: rgba(16, 185, 129, 0.08);
+            border-color: rgba(16, 185, 129, 0.25);
+            color: #059669;
+          }
+          [data-theme="dark"] .mpj-feat-badge--green {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.32);
+            color: #34D399;
+          }
+
+          .mpj-feat-title {
+            font-size: 14.5px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0 0 5px;
+            letter-spacing: -0.015em;
+            line-height: 1.3;
+          }
+          .mpj-feat-desc {
+            font-size: 11px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin: 0 0 10px;
+            flex: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+          }
+          .mpj-feat-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 12px;
+          }
+          .mpj-feat-tag {
+            font-size: 9px;
+            font-weight: 500;
+            border-radius: 5px;
+            padding: 2px 7px;
+            border: 1px solid var(--border-color, #CBD5E1);
+            background: var(--bg-primary, #F9FAFB);
+            color: var(--text-muted, #6B7280);
+            line-height: 1.25;
+          }
+          [data-theme="dark"] .mpj-feat-tag {
+            background: var(--bg-primary, #0D1117);
+            border-color: rgba(255, 255, 255, 0.12);
+            color: var(--text-muted, #9CA3AF);
+          }
+          .mpj-feat-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            margin-top: auto;
+            padding-top: 4px;
+          }
+          .mpj-feat-action-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            font-weight: 600;
+            border-radius: 8px;
+            padding: 6px 12px;
+            background: var(--primary-blue, #3B82F6);
+            color: #ffffff;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(59, 130, 246, 0.25);
+            transition: transform 0.15s ease, opacity 0.15s ease;
+            -webkit-tap-highlight-color: transparent;
+          }
+          .mpj-feat-action-primary:active {
+            transform: scale(0.96);
+            opacity: 0.9;
+          }
+          .mpj-feat-icon-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            -webkit-tap-highlight-color: transparent;
+          }
+          .mpj-feat-icon-btn:active {
+            color: var(--primary-blue);
+            border-color: var(--primary-blue);
+            transform: scale(0.94);
+          }
 
           /* ── Dots pagination ── */
           .mpj-feat-dots {
-            display: flex; align-items: center; justify-content: center;
-            gap: 5px; margin-top: 6px; margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 8px;
+            margin-bottom: 4px;
           }
           .mpj-feat-dot {
-            height: 6px; border-radius: 3px;
-            background: var(--border-color); border: none; padding: 0;
-            cursor: pointer; transition: all 0.2s ease;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--border-color, #E5E7EB);
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+          }
+          .mpj-feat-dot.active {
+            background: var(--primary-blue, #3B82F6);
+            width: 14px;
+            border-radius: 3px;
           }
         }
       `}</style>

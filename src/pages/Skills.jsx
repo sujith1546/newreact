@@ -880,18 +880,20 @@ export default function Skills() {
             display: flex;
             overflow-x: auto;
             scroll-snap-type: x mandatory;
+            scroll-padding-left: 2px;
             -webkit-overflow-scrolling: touch;
             gap: 10px;
-            padding: 4px 0 6px;
+            padding: 4px 2px 6px;
             -ms-overflow-style: none;
             scrollbar-width: none;
           }
           .sk-prof-feat-track::-webkit-scrollbar { display: none; }
+          .sk-prof-feat-track::after { content: ''; flex: 0 0 4px; }
 
           /* Individual skill card slide */
           .sk-prof-feat-slide {
-            min-width: 86%;
-            max-width: 86%;
+            min-width: 85%;
+            max-width: 85%;
             scroll-snap-align: start;
             border-radius: 18px;
             border: 1px solid;

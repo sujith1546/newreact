@@ -1,5 +1,6 @@
+import React, { useState, useEffect, useRef } from 'react';
 import { ScrollReveal } from '../components';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Award, ChevronLeft, ChevronRight } from 'lucide-react';
 import useRealtimeData from '../hooks/useRealtimeData';
 
 const DEFAULT_CERTIFICATIONS = [
@@ -92,70 +93,64 @@ const COLORS = {
   },
 };
 
-function CertCard({ cert }) {
+function CertCard({ cert, isMobile = false }) {
   const { id, issuer, title, description, skills, issuedDate, credentialId, verifyUrl, icon, color } = cert;
   const c = COLORS[color] || COLORS.accent;
 
   return (
     <div
-      style={{
-        background: 'var(--bg-secondary)',
-        border: '1px solid var(--border-color)',
-        borderRadius: '16px',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        transition: 'transform 0.22s ease, box-shadow 0.22s ease',
-      }}
+      className="cert-card-container"
       onMouseEnter={e => {
-        e.currentTarget.style.transform = 'translateY(-4px)';
-        e.currentTarget.style.boxShadow = '0 14px 32px rgba(0,0,0,0.09)';
+        if (!isMobile) {
+          e.currentTarget.style.transform = 'translateY(-4px)';
+          e.currentTarget.style.boxShadow = '0 14px 32px rgba(0,0,0,0.09)';
+        }
       }}
       onMouseLeave={e => {
-        e.currentTarget.style.transform = 'translateY(0)';
-        e.currentTarget.style.boxShadow = 'none';
+        if (!isMobile) {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = 'none';
+        }
       }}
     >
-      <div style={{ background: c.headerBg, padding: '20px 22px', position: 'relative' }}>
-        <span style={{
-          position: 'absolute',
-          top: '16px',
-          right: '16px',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '5px',
-          background: '#ffffff',
-          border: `1px solid ${c.pillBorder}`,
-          borderRadius: '999px',
-          padding: '4px 11px',
-          fontSize: '11px',
-          fontWeight: '600',
-          color: c.pillColor,
-          boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-          lineHeight: '1',
-        }}>
-          <i className="ti ti-shield-check" style={{ fontSize: '13px' }} aria-hidden="true" />
+      <div
+        className={`cert-card-header cert-card-header--${color || 'accent'}`}
+        style={{
+          padding: isMobile ? '16px 18px 14px' : '20px 22px',
+          position: 'relative',
+        }}
+      >
+        <span
+          className="cert-verified-badge"
+          style={{
+            position: 'absolute',
+            top: isMobile ? '14px' : '16px',
+            right: isMobile ? '14px' : '16px',
+            border: `1px solid ${c.pillBorder}`,
+            padding: isMobile ? '3px 9px' : '4px 11px',
+            fontSize: isMobile ? '10px' : '11px',
+            color: c.pillColor,
+          }}
+        >
+          <i className="ti ti-shield-check" style={{ fontSize: isMobile ? '12px' : '13px' }} aria-hidden="true" />
           Verified
         </span>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <div style={{
-            width: '56px',
-            height: '56px',
-            borderRadius: '50%',
-            background: '#ffffff',
-            boxShadow: `0 0 0 2px ${c.badgeBorder}`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: '0',
-          }}>
-            <i className={`ti ${icon}`} style={{ fontSize: '26px', color: c.badgeIcon }} aria-hidden="true" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '12px' : '16px' }}>
+          <div
+            className="cert-badge-circle"
+            style={{
+              width: isMobile ? '46px' : '56px',
+              height: isMobile ? '46px' : '56px',
+              boxShadow: `0 0 0 2px ${c.badgeBorder}`,
+            }}
+          >
+            <i className={`ti ${icon}`} style={{ fontSize: isMobile ? '22px' : '26px', color: c.badgeIcon }} aria-hidden="true" />
           </div>
-          <div>
+          <div style={{ minWidth: 0, flex: 1, paddingRight: isMobile ? '68px' : '0' }}>
             <p style={{
               margin: '0 0 3px',
-              fontSize: '10.5px',
+              fontSize: isMobile ? '9.5px' : '10.5px',
               fontWeight: '700',
               letterSpacing: '0.07em',
               textTransform: 'uppercase',
@@ -164,7 +159,7 @@ function CertCard({ cert }) {
             }}>{issuer}</p>
             <p style={{
               margin: '0',
-              fontSize: '17px',
+              fontSize: isMobile ? '14.5px' : '17px',
               fontWeight: '700',
               color: 'var(--text-primary)',
               lineHeight: '1.3',
@@ -173,27 +168,32 @@ function CertCard({ cert }) {
         </div>
       </div>
 
-      <div style={{ padding: '20px 22px 18px', display: 'flex', flexDirection: 'column', flexGrow: '1' }}>
+      <div style={{
+        padding: isMobile ? '14px 16px 14px' : '20px 22px 18px',
+        display: 'flex',
+        flexDirection: 'column',
+        flexGrow: 1
+      }}>
         <p style={{
-          margin: '0 0 14px',
-          fontSize: '13.5px',
+          margin: '0 0 12px',
+          fontSize: isMobile ? '12px' : '13.5px',
           color: 'var(--text-secondary)',
-          lineHeight: '1.6',
-          flexGrow: '1',
+          lineHeight: '1.55',
+          flexGrow: 1,
         }}>{description}</p>
 
         {skills && skills.length > 0 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '7px', marginBottom: '18px' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: isMobile ? '14px' : '18px' }}>
             {skills.map(skill => (
               <span key={skill} style={{
-                fontSize: '11.5px',
+                fontSize: isMobile ? '10px' : '11.5px',
                 fontWeight: '500',
                 color: 'var(--text-secondary)',
                 background: 'var(--bg-primary)',
                 border: '1px solid var(--border-color)',
                 borderRadius: '999px',
-                padding: '4px 13px',
-                lineHeight: '1.4',
+                padding: isMobile ? '3px 10px' : '4px 13px',
+                lineHeight: '1.3',
               }}>{skill}</span>
             ))}
           </div>
@@ -204,14 +204,14 @@ function CertCard({ cert }) {
           alignItems: 'center',
           justifyContent: 'space-between',
           borderTop: '1px solid var(--border-color)',
-          paddingTop: '13px',
+          paddingTop: isMobile ? '10px' : '13px',
           marginTop: 'auto',
         }}>
           <div>
             {issuedDate && (
               <p style={{
                 margin: '0',
-                fontSize: '11px',
+                fontSize: isMobile ? '10px' : '11px',
                 color: 'var(--text-muted)',
                 fontWeight: '500',
                 lineHeight: '1.4',
@@ -220,7 +220,7 @@ function CertCard({ cert }) {
             {credentialId && (
               <p style={{
                 margin: '2px 0 0',
-                fontSize: '10.5px',
+                fontSize: isMobile ? '9.5px' : '10.5px',
                 color: 'var(--text-muted)',
                 fontWeight: '600',
                 fontFamily: '"JetBrains Mono", "SF Mono", monospace',
@@ -238,7 +238,7 @@ function CertCard({ cert }) {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '5px',
-                fontSize: '13.5px',
+                fontSize: isMobile ? '12px' : '13.5px',
                 fontWeight: '600',
                 color: c.verifyColor,
                 textDecoration: 'none',
@@ -250,7 +250,7 @@ function CertCard({ cert }) {
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
               Verify
-              <i className="ti ti-external-link" style={{ fontSize: '14px' }} aria-hidden="true" />
+              <i className="ti ti-external-link" style={{ fontSize: isMobile ? '12px' : '14px' }} aria-hidden="true" />
             </a>
           )}
         </div>
@@ -261,6 +261,35 @@ function CertCard({ cert }) {
 
 export default function Certifications() {
   const { data: dbData, loading } = useRealtimeData('certifications', { orderColumn: 'display_order', ascending: true });
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth <= 900);
+  const [activeIdx, setActiveIdx] = useState(0);
+  const trackRef = useRef(null);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 900);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const handleScroll = () => {
+    const track = trackRef.current;
+    if (!track) return;
+    const { scrollLeft, offsetWidth } = track;
+    const card = track.querySelector('.cert-mobile-card-slot');
+    const step = card ? card.offsetWidth + 12 : offsetWidth * 0.85;
+    const idx = Math.round(scrollLeft / step);
+    setActiveIdx(Math.min(Math.max(0, idx), certifications.length - 1));
+  };
+
+  const scrollTo = (idx) => {
+    const track = trackRef.current;
+    if (!track) return;
+    const cards = track.querySelectorAll('.cert-mobile-card-slot');
+    if (cards[idx]) {
+      cards[idx].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+      setActiveIdx(idx);
+    }
+  };
 
   const certifications = (dbData && dbData.length > 0)
     ? dbData.map((item, idx) => {
@@ -294,17 +323,296 @@ export default function Certifications() {
 
   return (
     <ScrollReveal className="wide-content">
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(2, 1fr)',
-        gap: '20px',
-        maxWidth: '920px',
-        margin: '0',
-      }}>
-        {certifications.map(cert => (
-          <CertCard key={cert.id || cert.credentialId} cert={cert} />
-        ))}
-      </div>
+      <style>{`
+        /* Scoped styles for Certifications */
+        .cert-desktop-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 20px;
+          max-width: 920px;
+          margin: 0;
+        }
+
+        .cert-card-container {
+          background: var(--bg-secondary, #ffffff);
+          border: 1.5px solid var(--border-color, #CBD5E1);
+          border-radius: 16px;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+          width: 100%;
+          box-sizing: border-box;
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+          transition: transform 0.22s ease, box-shadow 0.22s ease;
+        }
+
+        [data-theme="dark"] .cert-card-container {
+          background: var(--bg-secondary, #161B22);
+          border-color: rgba(255, 255, 255, 0.14);
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
+        }
+
+        .cert-card-header {
+          position: relative;
+          transition: background 0.2s ease;
+        }
+
+        .cert-card-header--accent { background: #dbeafe; }
+        .cert-card-header--danger { background: #fee2e2; }
+        .cert-card-header--success { background: #dcfce7; }
+        .cert-card-header--warning { background: #fef9c3; }
+
+        [data-theme="dark"] .cert-card-header--accent { background: rgba(59, 130, 246, 0.16) !important; }
+        [data-theme="dark"] .cert-card-header--danger { background: rgba(239, 68, 68, 0.16) !important; }
+        [data-theme="dark"] .cert-card-header--success { background: rgba(16, 185, 129, 0.16) !important; }
+        [data-theme="dark"] .cert-card-header--warning { background: rgba(245, 158, 11, 0.16) !important; }
+
+        .cert-badge-circle {
+          border-radius: 50%;
+          background: #ffffff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          transition: background 0.2s ease;
+        }
+
+        [data-theme="dark"] .cert-badge-circle {
+          background: #161B22 !important;
+        }
+
+        .cert-verified-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          background: #ffffff;
+          border-radius: 999px;
+          font-weight: 600;
+          box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+          line-height: 1;
+        }
+
+        [data-theme="dark"] .cert-verified-badge {
+          background: #161B22 !important;
+          box-shadow: 0 1px 6px rgba(0,0,0,0.3) !important;
+        }
+
+        /* ── Mobile Carousel Styles ── */
+        .cert-mobile-wrap {
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          box-sizing: border-box;
+          padding: 4px 0 20px;
+        }
+
+        .cert-mobile-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 2px 2px 14px;
+          gap: 8px;
+        }
+
+        .cert-mobile-title-wrap {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .cert-mobile-icon-box {
+          width: 28px;
+          height: 28px;
+          border-radius: 8px;
+          background: rgba(59, 130, 246, 0.12);
+          border: 1.2px solid rgba(59, 130, 246, 0.25);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          color: var(--primary-blue, #3B82F6);
+        }
+
+        .cert-mobile-heading {
+          font-size: 14px;
+          font-weight: 700;
+          color: var(--text-primary);
+          margin: 0;
+          line-height: 1.2;
+          letter-spacing: -0.01em;
+        }
+
+        .cert-mobile-sub {
+          font-size: 10px;
+          color: var(--text-muted);
+          margin: 1px 0 0;
+          line-height: 1.2;
+        }
+
+        .cert-mobile-controls {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+
+        .cert-mobile-counter {
+          font-size: 10px;
+          font-weight: 700;
+          color: var(--text-muted);
+          background: var(--bg-secondary);
+          border: 1px solid var(--border-color);
+          padding: 2px 8px;
+          border-radius: 20px;
+          letter-spacing: 0.03em;
+        }
+
+        .cert-nav-btn {
+          width: 28px;
+          height: 28px;
+          border-radius: 8px;
+          border: 1px solid var(--border-color);
+          background: var(--bg-secondary);
+          color: var(--text-primary);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: transform 0.15s ease, background 0.15s ease;
+          padding: 0;
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        .cert-nav-btn:active:not(:disabled) {
+          transform: scale(0.92);
+        }
+
+        .cert-nav-btn:disabled {
+          opacity: 0.35;
+          cursor: not-allowed;
+        }
+
+        .cert-mobile-track {
+          display: flex;
+          gap: 12px;
+          overflow-x: auto;
+          scroll-snap-type: x mandatory;
+          scroll-padding-left: 2px;
+          margin: 0;
+          padding: 4px 2px 14px;
+          -webkit-overflow-scrolling: touch;
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+
+        .cert-mobile-track::-webkit-scrollbar {
+          display: none;
+        }
+
+        .cert-mobile-track::after {
+          content: '';
+          flex: 0 0 4px;
+        }
+
+        .cert-mobile-card-slot {
+          flex: 0 0 85%;
+          min-width: 85%;
+          max-width: 85%;
+          scroll-snap-align: start;
+          box-sizing: border-box;
+          display: flex;
+        }
+
+        .cert-mobile-dots {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+          margin-top: 4px;
+        }
+
+        .cert-dot {
+          width: 5px;
+          height: 5px;
+          border-radius: 50%;
+          background: var(--border-color, #CBD5E1);
+          border: none;
+          padding: 0;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .cert-dot.active {
+          background: var(--primary-blue, #3B82F6);
+          width: 14px;
+          border-radius: 3px;
+        }
+      `}</style>
+
+      {isMobile ? (
+        <div className="cert-mobile-wrap">
+          {/* Header with Title & Controls */}
+          <div className="cert-mobile-header">
+            <div className="cert-mobile-title-wrap">
+              <div className="cert-mobile-icon-box">
+                <Award size={15} />
+              </div>
+              <div>
+                <h2 className="cert-mobile-heading">Certifications</h2>
+                <p className="cert-mobile-sub">Verified credentials &amp; honors</p>
+              </div>
+            </div>
+            <div className="cert-mobile-controls">
+              <span className="cert-mobile-counter">
+                {activeIdx + 1} / {certifications.length}
+              </span>
+              <button
+                className="cert-nav-btn"
+                onClick={() => scrollTo(Math.max(0, activeIdx - 1))}
+                disabled={activeIdx === 0}
+                aria-label="Previous certification"
+              >
+                <ChevronLeft size={14} />
+              </button>
+              <button
+                className="cert-nav-btn"
+                onClick={() => scrollTo(Math.min(certifications.length - 1, activeIdx + 1))}
+                disabled={activeIdx === certifications.length - 1}
+                aria-label="Next certification"
+              >
+                <ChevronRight size={14} />
+              </button>
+            </div>
+          </div>
+
+          {/* Swipeable Snap Track */}
+          <div className="cert-mobile-track" ref={trackRef} onScroll={handleScroll}>
+            {certifications.map((cert, idx) => (
+              <div key={cert.id || cert.credentialId || idx} className="cert-mobile-card-slot">
+                <CertCard cert={cert} isMobile={true} />
+              </div>
+            ))}
+          </div>
+
+          {/* Pagination Dots */}
+          <div className="cert-mobile-dots">
+            {certifications.map((_, i) => (
+              <button
+                key={i}
+                className={`cert-dot ${i === activeIdx ? 'active' : ''}`}
+                onClick={() => scrollTo(i)}
+                aria-label={`Go to certification ${i + 1}`}
+              />
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="cert-desktop-grid">
+          {certifications.map(cert => (
+            <CertCard key={cert.id || cert.credentialId} cert={cert} isMobile={false} />
+          ))}
+        </div>
+      )}
     </ScrollReveal>
   );
 }

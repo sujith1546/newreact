@@ -370,6 +370,7 @@ export default function MobileDashboard({ onNavClick }) {
           display: flex;
           overflow-x: auto;
           scroll-snap-type: x mandatory;
+          scroll-padding-left: 14px;
           -webkit-overflow-scrolling: touch;
           gap: 10px;
           padding: 2px 14px 8px;
@@ -380,23 +381,27 @@ export default function MobileDashboard({ onNavClick }) {
         .hd-bento-strip::-webkit-scrollbar {
           display: none;
         }
+        .hd-bento-strip::after {
+          content: '';
+          flex: 0 0 4px;
+        }
         .hd-bento-card {
-          flex: 0 0 132px;
+          flex: 0 0 144px;
           scroll-snap-align: start;
           display: flex;
           flex-direction: column;
-          padding: 8px 10px;
-          border-radius: 12px;
+          padding: 12px 13px;
+          border-radius: 14px;
           border: 1.5px solid var(--border-color, #CBD5E1);
           background: var(--bg-secondary, #FFFFFF);
           position: relative;
           overflow: hidden;
-          gap: 1px;
+          gap: 2px;
           cursor: pointer;
           outline: none;
           text-align: left;
           font-family: inherit;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
           transition: transform 0.15s ease, border-color 0.15s ease;
           -webkit-tap-highlight-color: transparent;
         }
@@ -406,18 +411,18 @@ export default function MobileDashboard({ onNavClick }) {
         [data-theme="dark"] .hd-bento-card {
           background: var(--bg-secondary, #161B22);
           border: 1.5px solid rgba(255, 255, 255, 0.15);
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
         }
         .hd-bento-card-header {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          margin-bottom: 3px;
+          margin-bottom: 5px;
         }
         .hd-bento-icon-wrap {
-          width: 22px;
-          height: 22px;
-          border-radius: 6px;
+          width: 26px;
+          height: 26px;
+          border-radius: 7px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -495,10 +500,10 @@ export default function MobileDashboard({ onNavClick }) {
         .hd-bento-card--green .hd-bento-dot { background: #10B981; }
 
         .hd-bento-val {
-          font-size: 17px;
+          font-size: 21px;
           font-weight: 800;
           letter-spacing: -0.03em;
-          line-height: 1.15;
+          line-height: 1.1;
           color: var(--text-primary, #111827);
           font-feature-settings: "tnum";
         }
@@ -506,11 +511,11 @@ export default function MobileDashboard({ onNavClick }) {
           color: #F9FAFB;
         }
         .hd-bento-label {
-          font-size: 9.5px;
+          font-size: 10px;
           font-weight: 600;
           letter-spacing: 0.02em;
           color: var(--text-muted, #6B7280);
-          margin-top: 0;
+          margin-top: 1px;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -521,13 +526,13 @@ export default function MobileDashboard({ onNavClick }) {
         .hd-bento-badge {
           display: inline-flex;
           align-items: center;
-          gap: 3.5px;
-          font-size: 8px;
+          gap: 4px;
+          font-size: 8.5px;
           font-weight: 500;
           letter-spacing: 0.01em;
-          padding: 1.5px 5px;
-          border-radius: 5px;
-          margin-top: 3px;
+          padding: 2px 7px;
+          border-radius: 6px;
+          margin-top: 5px;
           width: fit-content;
           background: var(--bg-primary, #F9FAFB);
           border: 1px solid var(--border-color, #CBD5E1);
@@ -540,8 +545,8 @@ export default function MobileDashboard({ onNavClick }) {
           color: #9CA3AF;
         }
         .hd-bento-dot {
-          width: 3.5px;
-          height: 3.5px;
+          width: 4px;
+          height: 4px;
           border-radius: 50%;
           flex-shrink: 0;
         }
@@ -619,14 +624,19 @@ export default function MobileDashboard({ onNavClick }) {
         .hd-feat-track {
           display: flex; overflow-x: auto;
           scroll-snap-type: x mandatory;
+          scroll-padding-left: 14px;
           -webkit-overflow-scrolling: touch;
           gap: 10px; padding: 4px 14px 6px;
           -ms-overflow-style: none; scrollbar-width: none;
         }
         .hd-feat-track::-webkit-scrollbar { display: none; }
+        .hd-feat-track::after {
+          content: '';
+          flex: 0 0 4px;
+        }
 
         .hd-feat-slide {
-          min-width: 86%; max-width: 86%;
+          min-width: 85%; max-width: 85%;
           scroll-snap-align: start;
           border-radius: 18px; border: 1px solid;
           padding: 14px; position: relative; overflow: hidden;
@@ -771,9 +781,9 @@ export default function MobileDashboard({ onNavClick }) {
               >
                 <div className="hd-bento-card-header">
                   <div className="hd-bento-icon-wrap">
-                    <GraduationCap size={12} />
+                    <GraduationCap size={14} />
                   </div>
-                  <span className="hd-bento-jump"><ArrowUpRight size={11} /></span>
+                  <span className="hd-bento-jump"><ArrowUpRight size={12} /></span>
                 </div>
                 <span className="hd-bento-val">{cgpa}</span>
                 <span className="hd-bento-label">VIT CGPA</span>
@@ -792,9 +802,9 @@ export default function MobileDashboard({ onNavClick }) {
               >
                 <div className="hd-bento-card-header">
                   <div className="hd-bento-icon-wrap">
-                    <Award size={12} />
+                    <Award size={14} />
                   </div>
-                  <span className="hd-bento-jump"><ArrowUpRight size={11} /></span>
+                  <span className="hd-bento-jump"><ArrowUpRight size={12} /></span>
                 </div>
                 <span className="hd-bento-val">{certs}+</span>
                 <span className="hd-bento-label">Certifications</span>
@@ -813,9 +823,9 @@ export default function MobileDashboard({ onNavClick }) {
               >
                 <div className="hd-bento-card-header">
                   <div className="hd-bento-icon-wrap">
-                    <Code2 size={12} />
+                    <Code2 size={14} />
                   </div>
-                  <span className="hd-bento-jump"><ArrowUpRight size={11} /></span>
+                  <span className="hd-bento-jump"><ArrowUpRight size={12} /></span>
                 </div>
                 <span className="hd-bento-val">{projs}+</span>
                 <span className="hd-bento-label">Shipped Apps</span>
@@ -834,9 +844,9 @@ export default function MobileDashboard({ onNavClick }) {
               >
                 <div className="hd-bento-card-header">
                   <div className="hd-bento-icon-wrap">
-                    <Zap size={12} />
+                    <Zap size={14} />
                   </div>
-                  <span className="hd-bento-jump"><ArrowUpRight size={11} /></span>
+                  <span className="hd-bento-jump"><ArrowUpRight size={12} /></span>
                 </div>
                 <span className="hd-bento-val">100%</span>
                 <span className="hd-bento-label">Availability</span>
@@ -977,7 +987,8 @@ export default function MobileDashboard({ onNavClick }) {
             gap: 10px;
             overflow-x: auto;
             scroll-snap-type: x mandatory;
-            padding-bottom: 4px;
+            scroll-padding-left: 14px;
+            padding: 4px 14px 6px;
             -webkit-overflow-scrolling: touch;
             -ms-overflow-style: none;
             scrollbar-width: none;
@@ -987,8 +998,15 @@ export default function MobileDashboard({ onNavClick }) {
             display: none;
           }
 
+          .milestones-track::after {
+            content: '';
+            flex: 0 0 4px;
+          }
+
           .milestone-card {
-            flex: 0 0 84%;
+            flex: 0 0 85%;
+            min-width: 85%;
+            max-width: 85%;
             scroll-snap-align: start;
             background: var(--bg-secondary, #FFFFFF);
             border: 1.5px solid var(--border-color, #CBD5E1);

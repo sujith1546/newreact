@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Trophy, Laptop, BookOpen, School, X, Hand, ChevronRight, ChevronDown, Loader2 } from 'lucide-react';
+import { MapPin, Trophy, Laptop, BookOpen, School, X, Hand, ChevronRight, ChevronLeft, ChevronDown, Loader2, GraduationCap, Award } from 'lucide-react';
 import { ScrollReveal, EducationArrowFlow } from '../components';
 import useRealtimeData from '../hooks/useRealtimeData';
 
@@ -217,6 +217,28 @@ export default function Education() {
   const [sheetScrolled, setSheetScrolled] = useState(false);
   const [sheetScrollable, setSheetScrollable] = useState(false);
   const sheetContentRef = useRef(null);
+  const [mobileActiveIdx, setMobileActiveIdx] = useState(0);
+  const mobileTrackRef = useRef(null);
+
+  const handleMobileScroll = () => {
+    const track = mobileTrackRef.current;
+    if (!track) return;
+    const { scrollLeft, offsetWidth } = track;
+    const card = track.querySelector('.medu-snap-card');
+    const cardWidth = card ? card.offsetWidth + 12 : offsetWidth * 0.85;
+    const idx = Math.round(scrollLeft / cardWidth);
+    setMobileActiveIdx(Math.min(Math.max(0, idx), timelineData.length - 1));
+  };
+
+  const scrollToMobileStage = (idx) => {
+    const track = mobileTrackRef.current;
+    if (!track) return;
+    const cards = track.querySelectorAll('.medu-snap-card');
+    if (cards[idx]) {
+      cards[idx].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+      setMobileActiveIdx(idx);
+    }
+  };
 
   useEffect(() => {
     if (rawEducation && rawEducation.length > 0) {
@@ -845,66 +867,414 @@ export default function Education() {
           border-color: rgba(255,255,255,0.08); 
         }
         /* ============ MOBILE LAYOUT ============ */
-        .mobile-edu-feed { display: none; }
+        .edu-mobile-wrap { display: none; }
         @media (max-width: 900px) {
           .edu-page {
             min-height: auto !important;
-            height: 100% !important;
-            overflow: hidden !important;
+            height: auto !important;
+            overflow: visible !important;
           }
           .edu-header h1 { font-size: 16px; margin-bottom: 4px; }
           .edu-header p { font-size: 10px; line-height: 1.4; }
-          .edu-rail, .edu-grid, .education-arrow-flow, .section-subtitle, .edu-closing-summary { display: none !important; }
-          .mobile-edu-feed {
-            display: flex; flex-direction: column; gap: 8px; width: 100%;
+          .edu-rail, .edu-grid, .education-arrow-flow, .section-subtitle, .edu-closing-summary, .mobile-edu-feed { display: none !important; }
+
+          .edu-mobile-wrap {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 4px 0 20px;
           }
 
-          .medu-card {
-            position: relative; overflow: hidden;
-            display: flex; align-items: flex-start; gap: 10px;
-            padding: 10px 12px 10px 14px;
+          .edu-mobile-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 2px 2px 14px;
+            gap: 8px;
+          }
+
+          .edu-mobile-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+          }
+
+          .edu-mobile-icon-box {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: rgba(59, 130, 246, 0.12);
+            border: 1.2px solid rgba(59, 130, 246, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            color: var(--primary-blue, #3B82F6);
+          }
+
+          .edu-mobile-heading {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+            line-height: 1.2;
+            letter-spacing: -0.01em;
+          }
+
+          .edu-mobile-sub {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin: 1px 0 0;
+            line-height: 1.2;
+          }
+
+          .edu-mobile-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+          }
+
+          .edu-mobile-counter {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
-            border-radius: 14px;
-            width: 100%; text-align: left; cursor: pointer;
-            transition: background 0.15s; outline: none;
-          }
-          .medu-card:active { background: var(--bg-primary); }
-          
-          .medu-stripe {
-            position: absolute; left: 0; top: 0; bottom: 0;
-            width: 3px; border-radius: 14px 0 0 14px;
+            padding: 2px 8px;
+            border-radius: 20px;
+            letter-spacing: 0.03em;
           }
 
-          .medu-icon-wrap {
-            width: 32px; height: 32px; border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0; position: relative; overflow: hidden;
-            border: 1px solid;
+          .edu-nav-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.15s ease, background 0.15s ease;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
           }
 
-          .medu-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
-          .medu-title-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; }
-          .medu-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin: 0; line-height: 1.2; }
-          .medu-inst { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; }
-          .medu-badges { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; margin-top: 3px; }
-          .medu-badge {
-            font-size: 9px; font-weight: 700;
-            padding: 2px 7px; border-radius: 6px;
-            background: var(--bg-primary); border: 1px solid var(--border-color);
+          .edu-nav-btn:active:not(:disabled) {
+            transform: scale(0.92);
+          }
+
+          .edu-nav-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+          }
+
+          /* ── Snap Track ── */
+          .edu-mobile-track {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scroll-padding-left: 2px;
+            margin: 0;
+            padding: 4px 2px 14px;
+            -webkit-overflow-scrolling: touch;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
+
+          .edu-mobile-track::-webkit-scrollbar {
+            display: none;
+          }
+
+          .edu-mobile-track::after {
+            content: '';
+            flex: 0 0 4px;
+          }
+
+          /* ── Snap Card ── */
+          .medu-snap-card {
+            flex: 0 0 85%;
+            min-width: 85%;
+            max-width: 85%;
+            scroll-snap-align: start;
+            box-sizing: border-box;
+            background: var(--bg-secondary, #FFFFFF);
+            border: 1.5px solid var(--border-color, #CBD5E1);
+            border-radius: 16px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+            padding: 14px 15px;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            transition: transform 0.15s ease, border-color 0.15s ease;
+            -webkit-tap-highlight-color: transparent;
+          }
+
+          .medu-snap-card:active {
+            transform: scale(0.985);
+          }
+
+          [data-theme="dark"] .medu-snap-card {
+            background: var(--bg-secondary, #161B22);
+            border-color: rgba(255, 255, 255, 0.14);
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.28);
+          }
+
+          .medu-snap-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            gap: 6px;
+          }
+
+          .medu-snap-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            border-radius: 12px;
+            padding: 2.5px 8px;
+            border: 1.2px solid;
+            font-size: 9.5px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+          }
+
+          .medu-badge-dot {
+            width: 4.5px;
+            height: 4.5px;
+            border-radius: 50%;
+            background: currentColor;
+          }
+
+          .medu-snap-badge--blue {
+            background: rgba(59, 130, 246, 0.08);
+            border-color: rgba(59, 130, 246, 0.25);
+            color: #2563EB;
+          }
+          [data-theme="dark"] .medu-snap-badge--blue {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.32);
+            color: #60A5FA;
+          }
+
+          .medu-snap-badge--purple {
+            background: rgba(99, 102, 241, 0.08);
+            border-color: rgba(99, 102, 241, 0.25);
+            color: #6366F1;
+          }
+          [data-theme="dark"] .medu-snap-badge--purple {
+            background: rgba(99, 102, 241, 0.15);
+            border-color: rgba(99, 102, 241, 0.32);
+            color: #818CF8;
+          }
+
+          .medu-snap-badge--green {
+            background: rgba(16, 185, 129, 0.08);
+            border-color: rgba(16, 185, 129, 0.25);
+            color: #059669;
+          }
+          [data-theme="dark"] .medu-snap-badge--green {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.32);
+            color: #34D399;
+          }
+
+          .medu-snap-score {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1.2px solid rgba(245, 158, 11, 0.3);
+            color: #D97706;
+            font-size: 9.5px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 12px;
+            white-space: nowrap;
+          }
+
+          [data-theme="dark"] .medu-snap-score {
+            background: rgba(245, 158, 11, 0.16);
+            border-color: rgba(245, 158, 11, 0.35);
+            color: #FBBF24;
+          }
+
+          .medu-snap-title {
+            font-size: 14.5px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0 0 4px;
+            letter-spacing: -0.015em;
+            line-height: 1.25;
+          }
+
+          .medu-snap-inst {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 10.5px;
+            font-weight: 600;
+            color: var(--primary-blue, #3B82F6);
+            margin: 0 0 8px;
+            line-height: 1.3;
+          }
+
+          .medu-snap-desc {
+            font-size: 11px;
             color: var(--text-secondary);
+            line-height: 1.5;
+            margin: 0 0 10px;
+            flex: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
           }
-          
-          .medu-chevron { color: var(--text-muted); flex-shrink: 0; margin-top: 2px; }
 
-          /* Mobile Academic Overview Bento */
-          .medu-overview-wrap {
-            margin-top: 10px;
+          .medu-snap-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 12px;
+          }
+
+          .medu-snap-tag {
+            font-size: 9px;
+            font-weight: 500;
+            border-radius: 5px;
+            padding: 2px 7px;
+            border: 1px solid var(--border-color, #CBD5E1);
+            background: var(--bg-primary, #F9FAFB);
+            color: var(--text-muted, #6B7280);
+            line-height: 1.25;
+          }
+
+          [data-theme="dark"] .medu-snap-tag {
+            background: var(--bg-primary, #0D1117);
+            border-color: rgba(255, 255, 255, 0.12);
+            color: var(--text-muted, #9CA3AF);
+          }
+
+          .medu-snap-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            margin-top: auto;
+            padding-top: 4px;
+          }
+
+          .medu-snap-action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 10.5px;
+            font-weight: 600;
+            color: var(--primary-blue, #3B82F6);
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            transition: opacity 0.15s;
+          }
+          .medu-snap-action-btn:active {
+            opacity: 0.7;
+          }
+
+          /* ── Dots pagination ── */
+          .edu-mobile-dots {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 6px;
+            margin-bottom: 14px;
+          }
+
+          .edu-mobile-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--border-color, #E5E7EB);
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+          }
+
+          .edu-mobile-dot.active {
+            background: var(--primary-blue, #3B82F6);
+            width: 14px;
+            border-radius: 3px;
+          }
+
+          /* ── Academic Specialization Bento Hub ── */
+          .edu-bento-hub {
             background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
+            border: 1.5px solid var(--border-color);
             border-radius: 16px;
             padding: 12px 14px;
-            display: flex; flex-direction: column; gap: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+          }
+
+          [data-theme="dark"] .edu-bento-hub {
+            background: var(--bg-secondary, #161B22);
+            border-color: rgba(255, 255, 255, 0.14);
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+          }
+
+          .edu-bento-hub-header {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+          }
+
+          .edu-bento-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+          }
+
+          .edu-bento-item {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 8px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+          }
+
+          [data-theme="dark"] .edu-bento-item {
+            background: #0D1117;
+            border-color: rgba(255, 255, 255, 0.12);
+          }
+
+          .edu-bento-val {
+            font-size: 12.5px;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
+          }
+
+          .edu-bento-label {
+            font-size: 9px;
+            color: var(--text-muted);
+            font-weight: 500;
+            line-height: 1.3;
           }
           .medu-overview-title {
             font-size: 9.5px; font-weight: 800; text-transform: uppercase;
@@ -1096,51 +1466,141 @@ export default function Education() {
           ))}
         </motion.div>
 
-        {/* ── MOBILE VERTICAL FEED ── */}
+        {/* ── MOBILE SNAP CAROUSEL VIEW ── */}
         {isMobile && (
-          <div className="mobile-edu-feed">
-            {timelineData.map((item, index) => {
-              const accents = ['#3b82f6', '#eab308', '#10b981', '#8b5cf6'];
-              const accent = accents[index % accents.length];
-              const Icon = iconMap[item.icon_class] || School;
-              return (
-                <button 
-                  key={item.id} 
-                  className="medu-card"
-                  onClick={() => setSelectedItem(item)}
+          <div className="edu-mobile-wrap">
+            {/* Header with Title & Controls */}
+            <div className="edu-mobile-header">
+              <div className="edu-mobile-title-wrap">
+                <div className="edu-mobile-icon-box">
+                  <GraduationCap size={15} />
+                </div>
+                <div>
+                  <h2 className="edu-mobile-heading">Academic Journey</h2>
+                  <p className="edu-mobile-sub">Degrees, milestones &amp; academic honors</p>
+                </div>
+              </div>
+              <div className="edu-mobile-controls">
+                <span className="edu-mobile-counter">
+                  {mobileActiveIdx + 1} / {timelineData.length}
+                </span>
+                <button
+                  className="edu-nav-btn"
+                  onClick={() => scrollToMobileStage(Math.max(0, mobileActiveIdx - 1))}
+                  disabled={mobileActiveIdx === 0}
+                  aria-label="Previous education milestone"
                 >
-                  <div className="medu-stripe" style={{ background: accent }} />
-                  <div className="medu-icon-wrap" style={{ background: accent + '18', color: accent, borderColor: accent + '30' }}>
-                    <Icon size={20} style={{ color: accent }} />
-                  </div>
-                  <div className="medu-info">
-                    <div className="medu-title-row">
-                      <h3 className="medu-title">{item.title}</h3>
-                    </div>
-                    <p className="medu-inst" style={{ color: accent }}>{item.institution}</p>
-                    <div className="medu-badges">
-                      {item.year && <span className="medu-badge">{item.year}</span>}
+                  <ChevronLeft size={14} />
+                </button>
+                <button
+                  className="edu-nav-btn"
+                  onClick={() => scrollToMobileStage(Math.min(timelineData.length - 1, mobileActiveIdx + 1))}
+                  disabled={mobileActiveIdx === timelineData.length - 1}
+                  aria-label="Next education milestone"
+                >
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
+
+            {/* Horizontal Snap Track */}
+            <div className="edu-mobile-track" ref={mobileTrackRef} onScroll={handleMobileScroll}>
+              {timelineData.map((item, index) => {
+                const Icon = iconMap[item.icon_class] || School;
+                const isBTech = (item.title || '').toLowerCase().includes('b.tech') || (item.title || '').toLowerCase().includes('computer');
+                const badgeTheme = isBTech ? 'blue' : index === 1 ? 'purple' : 'green';
+                const highlights = Array.isArray(item.highlights)
+                  ? item.highlights.slice(0, 4)
+                  : typeof item.highlights === 'string'
+                  ? item.highlights.split(',').slice(0, 4).map(h => h.trim())
+                  : [];
+
+                return (
+                  <div
+                    key={item.id || index}
+                    className="medu-snap-card"
+                    onClick={() => setSelectedItem(item)}
+                  >
+                    {/* Top Row: Year/Stage Badge + Score Badge */}
+                    <div className="medu-snap-top">
+                      <div className={`medu-snap-badge medu-snap-badge--${badgeTheme}`}>
+                        <span className="medu-badge-dot" />
+                        {item.year || item.shortLabel || 'Milestone'}
+                      </div>
                       {item.score && (
-                        <span className="medu-badge" style={{ color: accent, borderColor: accent + '35', background: accent + '12', fontWeight: 800 }}>
-                          {item.score}
-                        </span>
+                        <div className="medu-snap-score">
+                          <Trophy size={10} style={{ color: '#F59E0B' }} />
+                          <span>{item.score}</span>
+                        </div>
                       )}
                     </div>
-                  </div>
-                  <ChevronRight size={15} className="medu-chevron" />
-                </button>
-              );
-            })}
 
-            {/* Mobile Academic Overview Bento */}
-            <div className="medu-overview-wrap">
-              <p className="medu-overview-title">
-                <Trophy size={11} style={{ color: '#eab308' }} />
-                Academic Specialization
-              </p>
-              <p className="medu-overview-desc">
-                B.Tech in Computer Science with Specialization in Data Science from VIT University. Focus on Machine Learning, Deep Learning, Cloud Architecture, and Scalable Backend Systems.
-              </p>
+                    {/* Title */}
+                    <h3 className="medu-snap-title">{item.title}</h3>
+
+                    {/* Institution & Location */}
+                    <p className="medu-snap-inst">
+                      <MapPin size={10} style={{ flexShrink: 0 }} />
+                      <span>{item.institution}{item.location ? ` · ${item.location}` : ''}</span>
+                    </p>
+
+                    {/* Description */}
+                    <p className="medu-snap-desc">{item.description}</p>
+
+                    {/* Highlights / Coursework Tags */}
+                    {highlights.length > 0 && (
+                      <div className="medu-snap-tags">
+                        {highlights.map(h => (
+                          <span key={h} className="medu-snap-tag">
+                            {h}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Action Row */}
+                    <div className="medu-snap-actions" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        className="medu-snap-action-btn"
+                        onClick={() => setSelectedItem(item)}
+                      >
+                        <span>View Breakdown</span>
+                        <ChevronRight size={12} />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Pagination Dots */}
+            <div className="edu-mobile-dots">
+              {timelineData.map((_, i) => (
+                <button
+                  key={i}
+                  className={`edu-mobile-dot ${i === mobileActiveIdx ? 'active' : ''}`}
+                  onClick={() => scrollToMobileStage(i)}
+                  aria-label={`Go to stage ${i + 1}`}
+                />
+              ))}
+            </div>
+
+            {/* Academic Specialization Bento Hub */}
+            <div className="edu-bento-hub">
+              <div className="edu-bento-hub-header">
+                <Trophy size={12} style={{ color: '#F59E0B' }} />
+                <span>Academic Honors &amp; Specialization</span>
+              </div>
+              <div className="edu-bento-grid">
+                <div className="edu-bento-item">
+                  <span className="edu-bento-val">8.7 CGPA</span>
+                  <span className="edu-bento-label">Top 5% · Convocation Honors</span>
+                </div>
+                <div className="edu-bento-item">
+                  <span className="edu-bento-val">Data Science</span>
+                  <span className="edu-bento-label">AI, ML &amp; Deep Learning Focus</span>
+                </div>
+              </div>
             </div>
           </div>
         )}
