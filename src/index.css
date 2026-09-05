@@ -350,7 +350,8 @@ body {
 /* Disable vertical scrollbar on .main-content when viewing About or Updates page on desktop */
 @media (min-width: 901px) {
   .main-content:has(#about),
-  .main-content:has(#updates) {
+  .main-content:has(#updates),
+  .main-content:has(#moments) {
     overflow-y: hidden !important;
   }
 }

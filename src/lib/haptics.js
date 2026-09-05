@@ -37,6 +37,13 @@ export const haptic = {
     if (typeof navigator !== 'undefined' && navigator.vibrate) {
       try { navigator.vibrate([20, 40, 20]); } catch (e) {}
     }
+  },
+
+  // Rapid pulse for errors or failed auth
+  error: () => {
+    if (typeof navigator !== 'undefined' && navigator.vibrate) {
+      try { navigator.vibrate([40, 60, 40, 60, 50]); } catch (e) {}
+    }
   }
 };
 

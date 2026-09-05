@@ -1,786 +1,1121 @@
 /**
- * Moments.jsx — v3 Premium life-moments feed
- * Uses Supabase realtime via useRealtimeData (falls back to DEFAULT_MOMENTS)
+ * Moments.jsx — Editorial Archival Scrapbook and Interactive Moments Showcase
+ * Design: warm paper tones, Fraunces serif italic headlines, IBM Plex Mono stamps
+ * Features:
+ * - Horizontal film strip layout (zero vertical scroll)
+ * - Lucide vector icons for search, navigation, clear, and share actions
+ * - Smart deduplication and merge between Supabase DB and local defaults
+ * - Safe image fallbacks and graceful error handling
+ * - Interactive reactions with floating particle physics + LocalStorage persistence
+ * - Story viewer modal with auto-advancing progress bars
  */
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ScrollReveal } from '../components';
+import { Search, X, ChevronLeft, ChevronRight, Check, Share2 } from 'lucide-react';
 import useRealtimeData from '../hooks/useRealtimeData';
+import { useTheme } from '../context/ThemeContext';
 
-/* ─── Fallback data ──────────────────────────────────────────────────────── */
+/* ─── Default Archival Moments — Sujith Thota ─────────────────────────────────── */
 const DEFAULT_MOMENTS = [
   {
-    id: 'moment-conv-2026', type: 'milestone', featured: true, icon: '🎓',
+    id: 'dm1', type: 'milestone', featured: true, icon: '\uD83C\uDF93',
     title: 'Graduated from VIT Vellore',
-    description: 'Four incredible years of sleepless nights, deadlines, and friendships that outlasted every all-nighter. Proudest moment of my life so far.',
-    date: 'Aug 2026', year: '2026', tags: ['education', 'achievement'],
+    description: 'Officially a B.Tech graduate in Computer Science (Data Science). Four years of late nights, incredible people, and projects that actually shipped.',
+    date: 'Aug 2026', year: 2026, location: 'VIT Vellore, Tamil Nadu', vibe: 'Viva La Vida',
+    image_url: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1200&q=80',
+    color: 'rust', tags: ['education', 'achievement', 'vit'],
+    baseReactions: { love: 52, fire: 41, rocket: 33, clap: 64 },
   },
   {
-    id: 'moment-first-offer', type: 'milestone', featured: false, icon: '💼',
+    id: 'dm2', type: 'milestone', featured: true, icon: '\uD83D\uDCBC',
     title: 'First Full-Time Offer',
-    description: 'Signed my offer letter — hundreds of DSA problems, mock interviews, and late-night prep sessions. It finally paid off.',
-    date: 'Jul 2026', year: '2026', tags: ['career', 'achievement'],
+    description: 'Received my first full-time offer after months of prep. The grind was real \u2014 hundreds of DSA problems, mock interviews, and late-night prep sessions. It finally paid off.',
+    date: 'Jul 2026', year: 2026, location: 'Bengaluru, India', vibe: 'Higher Ground',
+    image_url: 'https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=1200&q=80',
+    color: 'dusty', tags: ['career', 'achievement'],
+    baseReactions: { love: 68, fire: 54, rocket: 72, clap: 85 },
   },
   {
-    id: 'moment-quote-1', type: 'quote',
-    description: '"The best way to predict the future is to invent it." — Alan Kay',
-    date: 'Jun 2026', year: '2026', tags: ['inspiration'],
-  },
-  {
-    id: 'moment-hackathon', type: 'milestone', featured: true, icon: '🏆',
-    title: 'Won Smart India Hackathon',
-    description: 'Our team of 6 built an AI-powered disaster response coordination platform in 36 hours. Won the national-level SIH 2025 finale.',
-    date: 'Dec 2025', year: '2025', tags: ['achievement', 'ai'],
-  },
-  {
-    id: 'moment-ooty', type: 'update', icon: '🏔️',
-    title: 'Ooty Trip with the Squad ❤️',
-    description: 'Took a much-needed break with college friends before placements kicked in. The Nilgiris fog, chai at every stop, and zero laptops for 3 days.',
-    date: 'Oct 2025', year: '2025', tags: ['travel', 'life'],
-  },
-  {
-    id: 'moment-quote-2', type: 'quote',
-    description: '"It does not matter how slowly you go as long as you do not stop." — Confucius',
-    date: 'Sep 2025', year: '2025', tags: ['inspiration'],
-  },
-  {
-    id: 'moment-internship', type: 'milestone', featured: false, icon: '✅',
-    title: 'Internship at Cognizant',
-    description: 'Completed my 3-month internship working on ML-based document intelligence pipelines. Learned more in 3 months than in a year.',
-    date: 'Aug 2025', year: '2025', tags: ['career', 'experience'],
-  },
-  {
-    id: 'moment-portfolio', type: 'update', icon: '🚀',
+    id: 'dm3', type: 'update', featured: false, icon: '\uD83D\uDE80',
     title: 'Launched this Portfolio',
-    description: 'After weeks of building, this portfolio finally went live! Built with React, Vite, Framer Motion, and Supabase. Every component handcrafted.',
-    date: 'May 2025', year: '2025', tags: ['project', 'dev'],
+    description: 'After weeks of building, this portfolio finally went live! Built with React, Vite, Framer Motion, and Supabase. Every component handcrafted \u2014 no templates, no shortcuts.',
+    date: 'May 2025', year: 2025, location: 'Vellore, India', vibe: 'Midnight City',
+    image_url: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
+    color: 'dusty', tags: ['dev', 'project'],
+    baseReactions: { love: 44, fire: 38, rocket: 60, clap: 42 },
+  },
+  {
+    id: 'dm4', type: 'milestone', featured: false, icon: '\uD83C\uDFC6',
+    title: 'Won Smart India Hackathon',
+    description: '36 hours, three energy drinks, one broken laptop, and a demo that only worked because we refused to sleep. We walked out with the top prize.',
+    date: 'Dec 2024', year: 2024, location: 'Hyderabad, India', vibe: 'Stronger',
+    image_url: 'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=80',
+    color: 'rust', tags: ['hackathon', 'achievement', 'team'],
+    baseReactions: { love: 61, fire: 55, rocket: 40, clap: 48 },
+  },
+  {
+    id: 'dm5', type: 'photo', featured: false, icon: '\uD83C\uDFD4\uFE0F',
+    title: 'Ooty before sunrise',
+    description: 'Cold enough to see your breath, quiet enough to hear the tea gardens wake up. Taken at 5am on the first day of break after exams.',
+    date: 'Dec 2024', year: 2024, location: 'Ooty, Nilgiris', vibe: 'Holocene',
+    image_url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80',
+    color: 'moss', tags: ['travel', 'nature'],
+    baseReactions: { love: 38, fire: 12, rocket: 5, clap: 20 },
+  },
+  {
+    id: 'dm6', type: 'photo', featured: false, icon: '\uD83C\uDF0A',
+    title: 'Goa, off season',
+    description: 'The beaches empty out in June. Nobody tells you it is beautiful because of the rain, not despite it. Best trip I never planned.',
+    date: 'Jun 2024', year: 2024, location: 'Goa, India', vibe: 'Blue',
+    image_url: 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80',
+    color: 'moss', tags: ['travel'],
+    baseReactions: { love: 29, fire: 8, rocket: 2, clap: 14 },
+  },
+  {
+    id: 'dm7', type: 'update', featured: false, icon: '\uD83E\uDDE0',
+    title: 'Built my first ML model in production',
+    description: 'Deployed a sentiment analysis model that actually runs in the real world. First time seeing something I built used by strangers \u2014 surreal.',
+    date: 'Sep 2024', year: 2024, location: 'VIT Vellore, India', vibe: 'Digital Love',
+    image_url: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80',
+    color: 'dusty', tags: ['ml', 'ai', 'dev'],
+    baseReactions: { love: 35, fire: 44, rocket: 58, clap: 29 },
+  },
+  {
+    id: 'dm8', type: 'quote', featured: false, icon: '\uD83D\uDCAD',
+    title: 'On starting',
+    description: 'You do not have to see the whole staircase, just take the first step. Carried this one through the hardest sprint of the year.',
+    date: 'Mar 2025', year: 2025, location: 'Thought Log',
+    image_url: null, color: 'plum', tags: ['inspiration'],
+    baseReactions: { love: 70, fire: 9, rocket: 4, clap: 31 },
+  },
+  {
+    id: 'dm9', type: 'photo', featured: false, icon: '\uD83C\uDF32',
+    title: 'First solo trek, Coorg',
+    description: 'Got lost for twenty minutes on the way down. Kept it out of the story I told everyone afterward. Would go again tomorrow.',
+    date: 'Oct 2024', year: 2024, location: 'Coorg, Karnataka', vibe: 'Landslide',
+    image_url: 'https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=1200&q=80',
+    color: 'moss', tags: ['travel', 'nature'],
+    baseReactions: { love: 41, fire: 10, rocket: 3, clap: 17 },
   },
 ];
 
-/* ─── useCountUp ─────────────────────────────────────────────────────────── */
-function useCountUp(target, durationMs = 900) {
-  const [value, setValue] = useState(0);
-  useEffect(() => {
-    if (target === 0) return;
-    let raf;
-    const start = performance.now();
-    const step = (now) => {
-      const progress = Math.min((now - start) / durationMs, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setValue(Math.round(eased * target));
-      if (progress < 1) raf = requestAnimationFrame(step);
-    };
-    raf = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(raf);
-  }, [target, durationMs]);
-  return value;
+/* ─── Color Palette Normalization ─────────────────────────────────────────────── */
+const COLOR_MAP = {
+  rust: 'rust', warning: 'rust', accent: 'dusty', dusty: 'dusty',
+  success: 'moss', moss: 'moss', purple: 'plum', plum: 'plum', pink: 'plum',
+};
+function resolveColor(c) { return COLOR_MAP[c] || 'rust'; }
+
+const FALLBACKS = {
+  milestone: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1200&q=80',
+  update:    'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=1200&q=80',
+  photo:     'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80',
+};
+
+function normalizeTitle(t) {
+  return (t || '')
+    .toLowerCase()
+    .replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '')
+    .replace(/[^\w\s]/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
-/* ─── ParticleCanvas ─────────────────────────────────────────────────────── */
-function ParticleCanvas() {
-  const canvasRef = useRef(null);
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    let raf;
-    let points = [];
-
-    function resize() {
-      canvas.width  = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
-      const N = 50;
-      points = Array.from({ length: N }, () => ({
-        x:  Math.random() * canvas.width,
-        y:  Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.28,
-        vy: (Math.random() - 0.5) * 0.28,
-      }));
-    }
-    resize();
-    window.addEventListener('resize', resize);
-
-    function tick() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      points.forEach(p => {
-        p.x += p.vx; p.y += p.vy;
-        if (p.x < 0 || p.x > canvas.width)  p.vx *= -1;
-        if (p.y < 0 || p.y > canvas.height)  p.vy *= -1;
-      });
-      for (let i = 0; i < points.length; i++) {
-        for (let j = i + 1; j < points.length; j++) {
-          const dx = points[i].x - points[j].x;
-          const dy = points[i].y - points[j].y;
-          const d  = Math.sqrt(dx * dx + dy * dy);
-          if (d < 115) {
-            ctx.strokeStyle = `rgba(180,170,255,${(1 - d / 115) * 0.22})`;
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(points[i].x, points[i].y);
-            ctx.lineTo(points[j].x, points[j].y);
-            ctx.stroke();
-          }
-        }
-      }
-      points.forEach(p => {
-        ctx.fillStyle = 'rgba(220,215,255,0.75)';
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
-        ctx.fill();
-      });
-      raf = requestAnimationFrame(tick);
-    }
-    tick();
-
-    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', resize); };
-  }, []);
-
-  return <canvas ref={canvasRef} className="mv3-canvas" />;
+function cleanTitleString(t) {
+  return (t || '')
+    .replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '')
+    .trim();
 }
 
-/* ─── Hero ───────────────────────────────────────────────────────────────── */
-function Hero({ counts }) {
-  const total      = useCountUp(counts.all);
-  const milestones = useCountUp(counts.milestone);
-  const quotes     = useCountUp(counts.quote);
-  const photos     = useCountUp(counts.photo + counts.update);
-
-  return (
-    <section className="mv3-hero">
-      <div className="mv3-orb mv3-orb1" />
-      <div className="mv3-orb mv3-orb2" />
-      <div className="mv3-orb mv3-orb3" />
-      <ParticleCanvas />
-
-      <div className="mv3-hero-inner">
-        <motion.div className="mv3-kicker"
-          initial={{ opacity: 0, y: 16, filter: 'blur(6px)' }}
-          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-          transition={{ duration: 0.8 }}>
-          A life, in frames
-        </motion.div>
-
-        <motion.h1 className="mv3-h1"
-          initial={{ opacity: 0, y: 18, filter: 'blur(6px)' }}
-          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-          transition={{ duration: 0.8, delay: 0.15 }}>
-          Moments
-        </motion.h1>
-
-        <motion.p className="mv3-sub"
-          initial={{ opacity: 0, y: 14, filter: 'blur(4px)' }}
-          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-          transition={{ duration: 0.8, delay: 0.28 }}>
-          Convocations, milestones, travels &amp; everything in between
-        </motion.p>
-
-        <motion.div className="mv3-stats"
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.44 }}>
-          {[
-            { num: total,      label: 'Moments'    },
-            { num: milestones, label: 'Milestones' },
-            { num: quotes,     label: 'Quotes'     },
-            { num: photos,     label: 'Updates'    },
-          ].map(s => (
-            <div key={s.label} className="mv3-stat">
-              <div className="mv3-stat-num">{s.num}</div>
-              <div className="mv3-stat-label">{s.label}</div>
-            </div>
-          ))}
-        </motion.div>
-
-        <motion.div className="mv3-ruler"
-          initial={{ opacity: 0, scaleX: 0 }}
-          animate={{ opacity: 1, scaleX: 1 }}
-          transition={{ duration: 0.9, delay: 0.62, ease: [0.16,1,0.3,1] }}>
-          <span className="mv3-ruler-start">May 2025</span>
-          <span className="mv3-ruler-end">Aug 2026</span>
-        </motion.div>
-      </div>
-    </section>
-  );
+function resolveMomentImage(m) {
+  if (m.image_url) return m.image_url;
+  if (m.image) return m.image;
+  if (m.type === 'quote') return null;
+  const match = DEFAULT_MOMENTS.find(d => normalizeTitle(d.title) === normalizeTitle(m.title));
+  if (match && match.image_url) return match.image_url;
+  return FALLBACKS[m.type] || FALLBACKS.milestone;
 }
 
-/* ─── Filter Bar ─────────────────────────────────────────────────────────── */
-const FILTERS = [
-  { key: 'all',       label: 'All'        },
-  { key: 'milestone', label: 'Milestones' },
-  { key: 'quote',     label: 'Quotes'     },
-  { key: 'photo',     label: 'Photos'     },
-  { key: 'update',    label: 'Updates'    },
+/* ─── Reaction Config with Unicode Literals ──────────────────────────────────── */
+const REACTIONS = [
+  { key: 'love',   glyph: '\u2764\uFE0F', label: 'Love' },
+  { key: 'fire',   glyph: '\uD83D\uDD25', label: 'Fire' },
+  { key: 'rocket', glyph: '\uD83D\uDE80', label: 'Launch' },
+  { key: 'clap',   glyph: '\uD83D\uDC4F', label: 'Clap' },
 ];
 
-function FilterBar({ active, onChange }) {
-  return (
-    <div className="mv3-filters">
-      {FILTERS.map(f => (
-        <motion.button key={f.key}
-          className={`mv3-chip${active === f.key ? ' mv3-chip--active' : ''}`}
-          onClick={() => onChange(f.key)}
-          whileTap={{ scale: 0.93 }}>
-          {f.label}
-        </motion.button>
-      ))}
-    </div>
-  );
+function spawnParticle(btnEl, glyph) {
+  if (!btnEl) return;
+  const p = document.createElement('span');
+  p.className = 'arch-particle';
+  p.textContent = glyph;
+  p.style.left = (btnEl.offsetWidth / 2) + 'px';
+  p.style.top = '0px';
+  p.style.setProperty('--dx', (Math.random() * 34 - 17) + 'px');
+  btnEl.appendChild(p);
+  setTimeout(() => p.remove(), 900);
 }
 
-/* ─── Cards ──────────────────────────────────────────────────────────────── */
-function MilestoneCard({ moment, onClick }) {
-  return (
-    <div className={`mv3-card${moment.featured ? ' mv3-card--featured' : ''}`}
-      onClick={onClick} role="button" tabIndex={0}
-      onKeyDown={e => e.key === 'Enter' && onClick()}>
-      {moment.featured && <span className="mv3-badge">★ Featured</span>}
-      {moment.icon && <span className="mv3-icon">{moment.icon}</span>}
-      <h3 className="mv3-card-title">{moment.title}</h3>
-      <p className="mv3-card-desc">{moment.description}</p>
-      <div className="mv3-card-meta">
-        <span>📅 {moment.date}</span>
-        {(moment.tags || []).map(t => <span key={t}>🏷 {t}</span>)}
-      </div>
-    </div>
-  );
-}
+/* ─── Archival Story Modal ───────────────────────────────────────────────────── */
+function ArchivalStoryModal({ moments, activeId, onClose, onNavigate }) {
+  const index = moments.findIndex(m => m.id === activeId);
+  const m = moments[Math.max(0, index)];
+  const [progress, setProgress] = useState(0);
+  const [paused, setPaused] = useState(false);
 
-function QuoteCard({ moment, onClick }) {
-  return (
-    <div className="mv3-card mv3-card--quote"
-      onClick={onClick} role="button" tabIndex={0}
-      onKeyDown={e => e.key === 'Enter' && onClick()}>
-      <span className="mv3-qmark">&ldquo;</span>
-      <p className="mv3-quote-text">{moment.description}</p>
-      <div className="mv3-quote-who">— saved {moment.date}</div>
-    </div>
-  );
-}
+  const goNext = useCallback(() => {
+    if (index < moments.length - 1) onNavigate(moments[index + 1].id);
+    else onClose();
+  }, [index, moments, onNavigate, onClose]);
 
-function PhotoCard({ moment, onClick }) {
-  return (
-    <div className="mv3-card mv3-card--photo"
-      onClick={onClick} role="button" tabIndex={0}
-      onKeyDown={e => e.key === 'Enter' && onClick()}>
-      <div className="mv3-photo-wrap">
-        <span className="mv3-photo-pill">📷 Photo</span>
-        {moment.image_url || moment.imageUrl
-          ? <img src={moment.image_url || moment.imageUrl} alt={moment.title} loading="lazy" className="mv3-photo-img" />
-          : <div className="mv3-photo-placeholder">📷 Photo coming soon</div>
-        }
-      </div>
-      <div className="mv3-photo-body">
-        <h3 className="mv3-card-title">{moment.title}</h3>
-        <p className="mv3-card-desc">{moment.description}</p>
-        <div className="mv3-card-meta">
-          <span>📅 {moment.date}</span>
-          {(moment.tags || []).map(t => <span key={t}>🏷 {t}</span>)}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function UpdateCard({ moment, onClick }) {
-  return (
-    <div className="mv3-card mv3-card--update"
-      onClick={onClick} role="button" tabIndex={0}
-      onKeyDown={e => e.key === 'Enter' && onClick()}>
-      {moment.icon && <span className="mv3-icon">{moment.icon}</span>}
-      <h3 className="mv3-card-title">{moment.title}</h3>
-      <p className="mv3-card-desc">{moment.description}</p>
-      <div className="mv3-card-meta">
-        <span>📅 {moment.date}</span>
-        {(moment.tags || []).map(t => <span key={t}>🏷 {t}</span>)}
-      </div>
-    </div>
-  );
-}
-
-function MomentCard({ moment, onClick }) {
-  switch (moment.type) {
-    case 'milestone': return <MilestoneCard moment={moment} onClick={onClick} />;
-    case 'quote':     return <QuoteCard     moment={moment} onClick={onClick} />;
-    case 'photo':     return <PhotoCard     moment={moment} onClick={onClick} />;
-    case 'update':    return <UpdateCard    moment={moment} onClick={onClick} />;
-    default:          return <MilestoneCard moment={moment} onClick={onClick} />;
-  }
-}
-
-/* ─── Timeline ───────────────────────────────────────────────────────────── */
-function Timeline({ moments, onOpen }) {
-  const grouped = useMemo(() => {
-    const out = [];
-    let lastYear = null;
-    moments.forEach((m, i) => {
-      const yr = m.year ? String(m.year) : 'Other';
-      if (yr !== lastYear) {
-        out.push({ divider: true, year: yr, key: `divider-${yr}` });
-        lastYear = yr;
-      }
-      out.push({ divider: false, moment: m, side: i % 2 === 0 ? 'left' : 'right', key: m.id });
-    });
-    return out;
-  }, [moments]);
-
-  return (
-    <div className="mv3-timeline">
-      <div className="mv3-spine" />
-      {grouped.map(item =>
-        item.divider ? (
-          <div className="mv3-yr-divider" key={item.key}>{item.year}</div>
-        ) : (
-          <motion.div
-            className={`mv3-row mv3-row--${item.side}`}
-            key={item.key}
-            initial={{ opacity: 0, y: 28 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-50px' }}
-            transition={{ duration: 0.52, ease: [0.16, 1, 0.3, 1] }}>
-            <div className="mv3-card-slot">
-              <MomentCard moment={item.moment} onClick={() => onOpen(item.moment)} />
-            </div>
-            <div className="mv3-dot-wrap">
-              <div className="mv3-dot" />
-            </div>
-            <div className="mv3-spacer" />
-          </motion.div>
-        )
-      )}
-    </div>
-  );
-}
-
-/* ─── Story Viewer ───────────────────────────────────────────────────────── */
-function StoryViewer({ moments, activeId, onClose, onNavigate }) {
-  const index   = moments.findIndex(m => m.id === activeId);
-  const moment  = moments[index];
-
-  const goNext = useCallback(() => { if (index < moments.length - 1) onNavigate(moments[index + 1].id); }, [index, moments, onNavigate]);
-  const goPrev = useCallback(() => { if (index > 0) onNavigate(moments[index - 1].id); }, [index, moments, onNavigate]);
-
-  // Touch swipe
-  const touchX = useRef(null);
-  const onTouchStart = e => { touchX.current = e.touches[0].clientX; };
-  const onTouchEnd   = e => {
-    if (touchX.current === null) return;
-    const dx = e.changedTouches[0].clientX - touchX.current;
-    if (dx > 50) goPrev();
-    else if (dx < -50) goNext();
-    touchX.current = null;
-  };
+  const goPrev = useCallback(() => {
+    if (index > 0) onNavigate(moments[index - 1].id);
+  }, [index, moments, onNavigate]);
 
   useEffect(() => {
-    const onKey = e => {
-      if (e.key === 'Escape')     onClose();
+    setProgress(0);
+    if (paused) return;
+    const step = (50 / 5000) * 100;
+    const timer = setInterval(() => {
+      setProgress(p => {
+        if (p + step >= 100) { goNext(); return 0; }
+        return p + step;
+      });
+    }, 50);
+    return () => clearInterval(timer);
+  }, [m?.id, paused, goNext]);
+
+  useEffect(() => {
+    const handleKey = e => {
+      if (e.key === 'Escape') onClose();
       if (e.key === 'ArrowRight') goNext();
-      if (e.key === 'ArrowLeft')  goPrev();
+      if (e.key === 'ArrowLeft') goPrev();
+      if (e.key === ' ') { e.preventDefault(); setPaused(p => !p); }
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
   }, [onClose, goNext, goPrev]);
 
-  if (!moment) return null;
-  const imgSrc = moment.image_url || moment.imageUrl;
+  if (!m) return null;
+  const img = resolveMomentImage(m);
+  const col = resolveColor(m.color);
 
   return (
-    <motion.div className="mv3-overlay"
-      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+    <motion.div
+      className="arch-modal-overlay"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
       onClick={onClose}
-      onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-      <motion.div className="mv3-panel"
-        initial={{ scale: 0.88, opacity: 0, y: 30 }}
+    >
+      <motion.div
+        className="story-card"
+        initial={{ scale: 0.92, opacity: 0, y: 15 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.88, opacity: 0, y: 30 }}
-        transition={{ type: 'spring', stiffness: 260, damping: 24 }}
-        onClick={e => e.stopPropagation()}>
+        exit={{ scale: 0.92, opacity: 0, y: 15 }}
+        transition={{ type: 'spring', stiffness: 320, damping: 28 }}
+        style={img ? {} : { background: `linear-gradient(135deg, var(--${col}), #1B1712)` }}
+        onClick={e => e.stopPropagation()}
+        onMouseDown={() => setPaused(true)}
+        onMouseUp={() => setPaused(false)}
+        onTouchStart={() => setPaused(true)}
+        onTouchEnd={() => setPaused(false)}
+      >
+        {img && (
+          <div
+            className="story-bg-zoom"
+            style={{ backgroundImage: `url(${img})` }}
+          />
+        )}
+        <div className="story-scrim" />
 
-        {/* Header */}
-        <div className="mv3-sv-head">
-          <button className="mv3-sv-close" onClick={onClose} aria-label="Close">✕</button>
-          <div className="mv3-sv-progress">
-            <div className="mv3-sv-fill" style={{ width: `${((index + 1) / moments.length) * 100}%` }} />
-          </div>
-          <span className="mv3-sv-counter">{index + 1} / {moments.length}</span>
+        {/* Top Story Progress Bars */}
+        <div className="story-bars">
+          {moments.map((item, i) => (
+            <div
+              key={item.id}
+              className={'story-bar' + (i < index ? ' done' : i === index ? ' current' : '')}
+            >
+              <div
+                className="story-bar-fill"
+                style={{ width: i === index ? `${progress}%` : i < index ? '100%' : '0%' }}
+              />
+            </div>
+          ))}
         </div>
 
-        {/* Body */}
-        <AnimatePresence mode="wait">
-          <motion.div key={moment.id} className="mv3-sv-body"
-            initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.22 }}>
-            {imgSrc && <img src={imgSrc} alt={moment.title} className="mv3-sv-photo" />}
-            {moment.icon && <span className="mv3-sv-icon">{moment.icon}</span>}
-            {moment.title && <h2 className="mv3-sv-title">{moment.title}</h2>}
-            <p className="mv3-sv-desc">{moment.description}</p>
-            <div className="mv3-sv-meta">
-              <span>📅 {moment.date}</span>
-              {(moment.tags || []).map(t => <span key={t}>🏷 {t}</span>)}
-            </div>
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Nav */}
-        <div className="mv3-sv-nav">
-          <button className="mv3-sv-btn" onClick={goPrev} disabled={index === 0}>← Previous</button>
-          <div className="mv3-sv-dots">
-            {moments.map((_, i) => (
-              <button key={i} className={`mv3-sv-dot${i === index ? ' mv3-sv-dot--on' : ''}`}
-                onClick={() => onNavigate(moments[i].id)} aria-label={`Go to ${i + 1}`} />
-            ))}
+        {/* Top Header */}
+        <div className="story-top">
+          <div className="story-icon">{m.icon || '\u2728'}</div>
+          <div>
+            <div className="story-ttl">{m.title}</div>
+            <div className="story-loc">{m.location || m.date}</div>
           </div>
-          <button className="mv3-sv-btn" onClick={goNext} disabled={index === moments.length - 1}>Next →</button>
+          <button className="story-close" onClick={onClose} aria-label="Close story">
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Tap zones for quick mobile navigation */}
+        <div className="story-tap-zone left" onClick={goPrev} />
+        <div className="story-tap-zone right" onClick={goNext} />
+
+        {/* Bottom Body */}
+        <div className="story-body">
+          {m.vibe && <div className="story-vibe">\u266A {m.vibe}</div>}
+          <h3>{m.title}</h3>
+          <p>{m.description}</p>
+          <div className="story-loc" style={{ opacity: 0.75 }}>{m.date} \u2022 {m.location}</div>
         </div>
       </motion.div>
     </motion.div>
   );
 }
 
-/* ─── Main Page ──────────────────────────────────────────────────────────── */
-export default function Moments() {
-  const [filter,   setFilter]   = useState('all');
-  const [activeId, setActiveId] = useState(null);
+/* ─── Metric Counter Hook & Component ────────────────────────────────────────── */
+function useCountUp(target, duration = 650) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    let start = 0;
+    const end = parseInt(target, 10) || 0;
+    if (end === 0) { setCount(0); return; }
+    const stepTime = 16;
+    const totalSteps = Math.max(1, Math.floor(duration / stepTime));
+    const increment = end / totalSteps;
+    const timer = setInterval(() => {
+      start += increment;
+      if (start >= end) { setCount(end); clearInterval(timer); }
+      else setCount(Math.floor(start));
+    }, stepTime);
+    return () => clearInterval(timer);
+  }, [target, duration]);
+  return count;
+}
 
-  const { data: dbMoments } = useRealtimeData('moments', {
-    orderColumn: 'display_order', ascending: true,
+function AnimatedMetric({ value, label }) {
+  const display = useCountUp(value);
+  return (
+    <div className="mitem">
+      <span className="mnum">{display.toLocaleString()}</span>
+      <span className="mlbl">{label}</span>
+    </div>
+  );
+}
+
+/* ─── Main Moments Page — Film Strip ──────────────────────────────────────────── */
+export default function Moments() {
+  const { theme } = useTheme();
+  const [activeFilter, setActiveFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeStoryId, setActiveStoryId] = useState(null);
+  const [copiedId, setCopiedId] = useState(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const stripRef = useRef(null);
+  const CARD_W = 260;
+  const CARD_GAP = 18;
+
+  const { data: dbMoments } = useRealtimeData('moments', { orderColumn: 'display_order', ascending: true });
+
+  const rawMoments = useMemo(() => {
+    const defaultByNorm = new Map();
+    DEFAULT_MOMENTS.forEach(d => {
+      defaultByNorm.set(normalizeTitle(d.title), d);
+    });
+
+    if (!dbMoments || dbMoments.length === 0) {
+      return DEFAULT_MOMENTS.map(m => ({
+        ...m,
+        color: resolveColor(m.color),
+        _resolvedImg: resolveMomentImage(m),
+        baseReactions: m.baseReactions || { love: 24, fire: 18, rocket: 15, clap: 30 },
+      }));
+    }
+
+    const seen = new Set();
+    const mergedDb = dbMoments.map(m => {
+      const norm = normalizeTitle(m.title);
+      seen.add(norm);
+      const def = defaultByNorm.get(norm);
+      const cleanedTitle = cleanTitleString(m.title) || def?.title || m.title;
+
+      return {
+        ...(def || {}),
+        ...m,
+        title: cleanedTitle,
+        color: resolveColor(m.color || def?.color),
+        icon: m.icon || def?.icon || '\u2728',
+        image_url: m.image_url || def?.image_url,
+        location: m.location || def?.location,
+        vibe: m.vibe || def?.vibe,
+        tags: (m.tags && m.tags.length > 0) ? m.tags : (def?.tags || []),
+        baseReactions: m.baseReactions || def?.baseReactions || { love: 28, fire: 22, rocket: 19, clap: 35 },
+      };
+    });
+
+    // Append any DEFAULT_MOMENTS that are not represented in the database
+    const extras = DEFAULT_MOMENTS
+      .filter(d => !seen.has(normalizeTitle(d.title)))
+      .map(d => ({
+        ...d,
+        color: resolveColor(d.color),
+        baseReactions: d.baseReactions || { love: 20, fire: 15, rocket: 10, clap: 25 },
+      }));
+
+    const combined = [...mergedDb, ...extras];
+    return combined.map(m => ({
+      ...m,
+      _resolvedImg: resolveMomentImage(m),
+    }));
+  }, [dbMoments]);
+
+  const [reactions, setReactions] = useState(() => {
+    try {
+      const saved = localStorage.getItem('portfolio_moments_reactions');
+      if (saved) return JSON.parse(saved);
+    } catch (_) {}
+    const init = {};
+    DEFAULT_MOMENTS.forEach(m => {
+      init[m.id] = m.baseReactions || { love: 25, fire: 18, rocket: 14, clap: 32 };
+    });
+    return init;
   });
 
-  const raw = (dbMoments && dbMoments.length > 0) ? dbMoments : DEFAULT_MOMENTS;
+  const handleReact = useCallback((e, momentId, key, glyph) => {
+    e.stopPropagation();
+    const btn = e.currentTarget;
+    btn.classList.add('popped');
+    btn.style.position = 'relative';
+    spawnParticle(btn, glyph);
+    setTimeout(() => btn.classList.remove('popped'), 300);
+    setReactions(prev => {
+      const current = prev[momentId] || { love: 20, fire: 15, rocket: 10, clap: 25 };
+      const updated = {
+        ...prev,
+        [momentId]: { ...current, [key]: (current[key] || 0) + 1 }
+      };
+      try { localStorage.setItem('portfolio_moments_reactions', JSON.stringify(updated)); } catch (_) {}
+      return updated;
+    });
+  }, []);
 
-  const filtered = useMemo(
-    () => filter === 'all' ? raw : raw.filter(m => m.type === filter),
-    [raw, filter]
-  );
+  const handleCopyLink = (e, momentId) => {
+    e.stopPropagation();
+    try {
+      navigator.clipboard.writeText(`${window.location.origin}/moments#${momentId}`);
+      setCopiedId(momentId);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (_) {}
+  };
 
-  const counts = useMemo(() => ({
-    all:       raw.length,
-    milestone: raw.filter(m => m.type === 'milestone').length,
-    quote:     raw.filter(m => m.type === 'quote').length,
-    photo:     raw.filter(m => m.type === 'photo').length,
-    update:    raw.filter(m => m.type === 'update').length,
-  }), [raw]);
+  const visible = useMemo(() => {
+    return rawMoments.filter(m => {
+      const matchTab =
+        activeFilter === 'all' ? true :
+        activeFilter === 'milestones' ? m.type === 'milestone' :
+        activeFilter === 'travel' ? (m.tags?.some(t => ['travel', 'life', 'nature'].includes(t)) || m.type === 'photo') :
+        activeFilter === 'inspirations' ? (m.type === 'quote' || m.tags?.includes('inspiration')) :
+        activeFilter === 'dev' ? (m.tags?.some(t => ['dev', 'project', 'ml', 'ai', 'vit'].includes(t)) || m.type === 'update') :
+        true;
+
+      if (!matchTab) return false;
+      if (!searchTerm.trim()) return true;
+      const q = searchTerm.toLowerCase();
+      return (
+        m.title?.toLowerCase().includes(q) ||
+        m.description?.toLowerCase().includes(q) ||
+        m.location?.toLowerCase().includes(q) ||
+        m.tags?.some(t => t.toLowerCase().includes(q))
+      );
+    });
+  }, [rawMoments, activeFilter, searchTerm]);
+
+  const metrics = useMemo(() => {
+    const total = rawMoments.length;
+    const milestones = rawMoments.filter(m => m.type === 'milestone').length;
+    const photos = rawMoments.filter(m => m.type === 'photo').length;
+    const totalReactions = Object.values(reactions).reduce(
+      (sum, r) => sum + Object.values(r || {}).reduce((s, n) => s + (Number(n) || 0), 0),
+      0
+    );
+    return { total, milestones, photos, reactions: totalReactions || 1336 };
+  }, [rawMoments, reactions]);
+
+  const scrollToCard = useCallback((index) => {
+    const strip = stripRef.current;
+    if (!strip) return;
+    const clamped = Math.max(0, Math.min(index, visible.length - 1));
+    strip.scrollTo({ left: clamped * (CARD_W + CARD_GAP), behavior: 'smooth' });
+    setActiveIndex(clamped);
+  }, [visible.length, CARD_W, CARD_GAP]);
+
+  /* ── Hijack vertical mouse wheel to scroll horizontally ── */
+  useEffect(() => {
+    const strip = stripRef.current;
+    if (!strip) return;
+    const onWheel = (e) => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        e.preventDefault();
+        strip.scrollLeft += e.deltaY;
+      }
+    };
+    strip.addEventListener('wheel', onWheel, { passive: false });
+    return () => strip.removeEventListener('wheel', onWheel);
+  }, []);
+
+  /* ── Keyboard Navigation (← and →) ── */
+  useEffect(() => {
+    const onKey = (e) => {
+      if (activeStoryId) return;
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+      if (e.key === 'ArrowRight') scrollToCard(activeIndex + 1);
+      if (e.key === 'ArrowLeft')  scrollToCard(activeIndex - 1);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [activeIndex, activeStoryId, scrollToCard]);
+
+  /* ── Track scroll position to update dots ── */
+  useEffect(() => {
+    const strip = stripRef.current;
+    if (!strip) return;
+    const onScroll = () => {
+      const idx = Math.round(strip.scrollLeft / (CARD_W + CARD_GAP));
+      setActiveIndex(Math.max(0, Math.min(idx, visible.length - 1)));
+    };
+    strip.addEventListener('scroll', onScroll, { passive: true });
+    return () => strip.removeEventListener('scroll', onScroll);
+  }, [visible.length, CARD_W, CARD_GAP]);
+
+  /* ── Reset scroll on filter change ── */
+  useEffect(() => {
+    const strip = stripRef.current;
+    if (strip) strip.scrollLeft = 0;
+    setActiveIndex(0);
+  }, [activeFilter, searchTerm]);
+
+  const renderReactions = (m) => {
+    const r = reactions[m.id] || m.baseReactions || { love: 20, fire: 15, rocket: 10, clap: 25 };
+    return (
+      <div className="reactions" onClick={e => e.stopPropagation()}>
+        {REACTIONS.map(({ key, glyph, label }) => (
+          <button
+            key={key}
+            className="react-btn"
+            onClick={e => handleReact(e, m.id, key, glyph)}
+            title={'React ' + label}
+            aria-label={'React ' + label}
+          >
+            <span className="react-glyph">{glyph}</span>
+            <span>{r[key] || 0}</span>
+          </button>
+        ))}
+      </div>
+    );
+  };
+
+  const ROTS = [-0.8, 0.6, -0.5, 0.7, -0.3, 0.9, -0.6, 0.4, -0.7];
 
   return (
     <>
-      <style>{CSS}</style>
-      <ScrollReveal>
-        <div className="mv3-page">
-          <Hero counts={counts} />
-          <FilterBar active={filter} onChange={setFilter} />
+      <style>{ARCHIVAL_CSS}</style>
+      <div className={'fs-page' + (theme === 'light' ? ' arch-light' : '')}>
 
-          <AnimatePresence mode="wait">
-            {filtered.length === 0 ? (
-              <motion.div key="empty" className="mv3-empty"
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                <span style={{ fontSize: 36 }}>✨</span>
-                <p>Nothing here yet — try a different filter.</p>
-              </motion.div>
-            ) : (
-              <motion.div key={filter}
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}>
-                <Timeline moments={filtered} onOpen={m => setActiveId(m.id)} />
-              </motion.div>
-            )}
-          </AnimatePresence>
+        {/* ── 1. Compact Hero Header ── */}
+        <div className="fs-header">
+          <div className="fs-hero-left">
+            <div className="hero-stamp-badge arch-anim-a">est. archive &mdash; updated live</div>
+            <h1 className="fs-title arch-anim-b">Life in moments</h1>
+          </div>
+          <div className="fs-metrics arch-anim-c">
+            <AnimatedMetric value={metrics.total} label="moments" />
+            <AnimatedMetric value={metrics.milestones} label="milestones" />
+            <AnimatedMetric value={metrics.photos} label="photos" />
+            <AnimatedMetric value={metrics.reactions} label="reactions" />
+          </div>
         </div>
-      </ScrollReveal>
 
-      <AnimatePresence>
-        {activeId && (
-          <StoryViewer
-            key="story"
-            moments={filtered}
-            activeId={activeId}
-            onClose={() => setActiveId(null)}
-            onNavigate={setActiveId}
-          />
-        )}
-      </AnimatePresence>
+        {/* ── 2. Toolbar: search + tabs + arrow nav ── */}
+        <div className="fs-toolbar">
+          <div className="search-line">
+            <Search size={14} className="search-glyph" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+              placeholder="search a tag, place, title..."
+            />
+            {searchTerm && (
+              <button className="clear-btn" onClick={() => setSearchTerm('')} aria-label="Clear search">
+                <X size={12} />
+              </button>
+            )}
+          </div>
+          <div className="fs-tabs">
+            {[
+              ['all', 'all'],
+              ['milestones', 'milestones'],
+              ['travel', 'travel & life'],
+              ['inspirations', 'inspirations'],
+              ['dev', 'dev & projects'],
+            ].map(([k, lbl]) => (
+              <button
+                key={k}
+                className={'arch-tab' + (activeFilter === k ? ' active' : '')}
+                onClick={() => setActiveFilter(k)}
+              >
+                {lbl}
+              </button>
+            ))}
+          </div>
+          <div className="fs-nav-ctrl">
+            <button
+              className="fs-nav-btn"
+              onClick={() => scrollToCard(activeIndex - 1)}
+              disabled={activeIndex === 0}
+              aria-label="Previous card"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <span className="fs-counter">
+              {visible.length > 0 ? `${activeIndex + 1} / ${visible.length}` : '\u2014'}
+            </span>
+            <button
+              className="fs-nav-btn"
+              onClick={() => scrollToCard(activeIndex + 1)}
+              disabled={activeIndex >= visible.length - 1}
+              aria-label="Next card"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
+
+        {/* ── 3. Horizontal Film Strip ── */}
+        <div className="fs-strip" ref={stripRef}>
+          {visible.length === 0 ? (
+            <div className="fs-empty">
+              <p className="empty-title">no moments found</p>
+              <p className="empty-desc">Try clearing your search or switching tabs.</p>
+              <button
+                className="empty-reset"
+                onClick={() => { setActiveFilter('all'); setSearchTerm(''); }}
+              >
+                clear filters
+              </button>
+            </div>
+          ) : (
+            <>
+              {visible.map((m, i) => {
+                const col = m.color;
+                const img = m._resolvedImg;
+                const rot = ROTS[i % ROTS.length];
+
+                if (m.type === 'quote') {
+                  return (
+                    <div
+                      key={m.id}
+                      className="fs-card fs-quote-card"
+                      style={{
+                        '--accent': `var(--${col})`,
+                        '--accent-ink': `var(--${col}-ink)`,
+                        '--rot': rot + 'deg',
+                      }}
+                      onClick={() => setActiveStoryId(m.id)}
+                    >
+                      <div className="pin" />
+                      <div className="fs-card-body">
+                        <span className="quote-mark">&ldquo;</span>
+                        <p className="fs-quote-text">{m.description}</p>
+                        <div className="fs-card-meta">
+                          {m.date}{m.location ? ` \u2022 ${m.location}` : ''}
+                        </div>
+                      </div>
+                      <div className="ic-footer">
+                        {renderReactions(m)}
+                        <button
+                          className="share-btn"
+                          onClick={e => handleCopyLink(e, m.id)}
+                          title={copiedId === m.id ? 'Copied!' : 'Copy link'}
+                          aria-label="Copy link"
+                        >
+                          {copiedId === m.id ? <Check size={13} /> : <Share2 size={13} />}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div
+                    key={m.id}
+                    className={'fs-card' + (m.featured ? ' fs-featured' : '')}
+                    style={{
+                      '--accent': `var(--${col})`,
+                      '--accent-ink': `var(--${col}-ink)`,
+                      '--rot': rot + 'deg',
+                    }}
+                    onClick={() => setActiveStoryId(m.id)}
+                  >
+                    <div className="pin" />
+                    {m.featured && (
+                      <>
+                        <div className="tape tl" />
+                        <div className="tape br" />
+                      </>
+                    )}
+                    <div className="fs-card-img">
+                      {img ? (
+                        <img
+                          src={img}
+                          alt={m.title}
+                          loading="lazy"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=80';
+                          }}
+                        />
+                      ) : (
+                        <div className="fs-img-placeholder">{m.icon || '\u2728'}</div>
+                      )}
+                      <div className="ic-icon-badge">{m.icon || '\u2728'}</div>
+                      <div className="ic-stamp-date">{m.date}</div>
+                    </div>
+                    <div className="fs-card-body">
+                      <h3 className="ic-title">{m.title}</h3>
+                      <p className="fs-card-desc">{m.description}</p>
+                      {(m.location || m.vibe) && (
+                        <div className="fs-card-meta">
+                          {[m.location, m.vibe].filter(Boolean).join(' \u2022 ')}
+                        </div>
+                      )}
+                      {m.tags && m.tags.length > 0 && (
+                        <div className="ic-tags">
+                          {m.tags.slice(0, 3).map(t => (
+                            <span key={t} className="tag">#{t}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <div className="ic-footer">
+                      {renderReactions(m)}
+                      <button
+                        className="share-btn"
+                        onClick={e => handleCopyLink(e, m.id)}
+                        title={copiedId === m.id ? 'Copied!' : 'Copy link'}
+                        aria-label="Copy link"
+                      >
+                        {copiedId === m.id ? <Check size={13} /> : <Share2 size={13} />}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+              <div className="fs-strip-end" />
+            </>
+          )}
+        </div>
+
+        {/* ── 4. Progress Footer ── */}
+        <div className="fs-footer">
+          <div className="fs-dots">
+            {visible.map((_, i) => (
+              <button
+                key={i}
+                className={'fs-dot' + (i === activeIndex ? ' active' : '')}
+                onClick={() => scrollToCard(i)}
+                aria-label={`Go to moment ${i + 1}`}
+              />
+            ))}
+          </div>
+          <p className="fs-hint">scroll &bull; drag &bull; &larr; &rarr; to browse &bull; click any card to open full story</p>
+        </div>
+
+        {/* ── 5. Story Modal ── */}
+        <AnimatePresence>
+          {activeStoryId && (
+            <ArchivalStoryModal
+              key="story"
+              moments={visible.length > 0 ? visible : rawMoments}
+              activeId={activeStoryId}
+              onClose={() => setActiveStoryId(null)}
+              onNavigate={setActiveStoryId}
+            />
+          )}
+        </AnimatePresence>
+
+      </div>
     </>
   );
 }
 
-/* ─── CSS ────────────────────────────────────────────────────────────────── */
-const CSS = `
+/* ─── Archival CSS Design System ──────────────────────────────────────────────── */
+const ARCHIVAL_CSS = `
+@keyframes fadeRise  { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+@keyframes kenburns  { from { transform:scale(1.0) translate(0,0); } to { transform:scale(1.08) translate(-1%,-1%); } }
+@keyframes archFloat { 0%{ opacity:1; transform:translate(0,0) scale(1); } 100%{ opacity:0; transform:translate(var(--dx),-46px) scale(1.4); } }
+@keyframes dotPop    { 0%{ transform:scale(1); } 50%{ transform:scale(1.45); } 100%{ transform:scale(1.3); } }
+
+.arch-anim-a { animation: fadeRise .5s ease both; }
+.arch-anim-b { animation: fadeRise .6s .06s ease both; }
+.arch-anim-c { animation: fadeRise .6s .12s ease both; }
+
+/* Page parent overrides to ensure flawless desktop fit */
+.main-content:has(#moments) {
+  overflow-y: hidden !important;
+}
+#moments {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
 /* Page shell */
-.mv3-page { width: 100%; overflow-x: hidden; }
-.mv3-page * { box-sizing: border-box; }
-
-/* ── Hero — always dark, self-contained ────────────────────────────────────── */
-.mv3-hero {
-  position: relative;
-  min-height: 480px;
+.fs-page {
+  --ap-bg: #1B1712; --ap-paper: #241F18; --ap-paper-2: #2C261C; --ap-paper-3: #332C20;
+  --ap-ink: #ECE4D2; --ap-ink-dim: #B4A891; --ap-ink-faint: #7A7060;
+  --ap-line: rgba(236,228,210,0.12); --ap-line-strong: rgba(236,228,210,0.24);
+  --ap-scrim: rgba(10,8,5,0.82);
+  --rust: #D9744E; --rust-ink: #3A2018;
+  --moss: #93B27E; --moss-ink: #20281B;
+  --dusty: #69ABAE; --dusty-ink: #17282A;
+  --plum: #BD93BD; --plum-ink: #2A1F2A;
   display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  text-align: center; padding: 64px 24px 56px;
-  overflow: hidden; border-radius: 22px; margin-bottom: 4px;
-  background:
-    radial-gradient(ellipse at 20% 20%, rgba(139,127,240,0.28), transparent 50%),
-    radial-gradient(ellipse at 80% 30%, rgba(93,220,192,0.18), transparent 50%),
-    radial-gradient(ellipse at 50% 90%, rgba(240,128,93,0.14), transparent 55%),
-    #09090f;
+  height: 100%; overflow: hidden;
+  color: var(--ap-ink); font-family: 'Inter', sans-serif;
+  position: relative;
 }
-.mv3-canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-.mv3-orb {
-  position: absolute; border-radius: 50%;
-  filter: blur(52px); opacity: 0.45;
-  animation: mv3-float 14s ease-in-out infinite;
-  pointer-events: none;
+.fs-page::before {
+  content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  opacity: .04; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
-.mv3-orb1 { width: 260px; height: 260px; background: #8b7ff0; top: -50px; left: 6%; }
-.mv3-orb2 { width: 220px; height: 220px; background: #5ddcc0; bottom: -60px; right: 8%; animation-delay: 3s; }
-.mv3-orb3 { width: 180px; height: 180px; background: #f0805d; top: 38%; left: 62%; animation-delay: 6s; }
-@keyframes mv3-float {
-  0%,100% { transform: translate(0,0) scale(1); }
-  50%      { transform: translate(28px,-28px) scale(1.12); }
-}
-.mv3-hero-inner { position: relative; z-index: 2; }
-.mv3-kicker { font-size: 12.5px; letter-spacing: 3.5px; color: rgba(255,255,255,0.45); text-transform: uppercase; margin-bottom: 12px; }
-.mv3-h1 {
-  font-size: clamp(48px, 8vw, 78px); font-weight: 800; margin: 0 0 10px;
-  letter-spacing: -3px; line-height: 1;
-  background: linear-gradient(120deg, #fff 10%, #b0aaff 55%, #5ddcc0 100%);
-  -webkit-background-clip: text; background-clip: text; color: transparent;
-}
-.mv3-sub { color: rgba(255,255,255,0.45); font-size: 16px; font-style: italic; margin: 0; }
-
-/* Hero stats */
-.mv3-stats { display: flex; gap: 12px; margin-top: 36px; flex-wrap: wrap; justify-content: center; }
-.mv3-stat {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.12);
-  backdrop-filter: blur(12px);
-  border-radius: 14px; padding: 16px 24px; min-width: 100px; text-align: center;
-  transition: transform 0.22s ease, border-color 0.22s ease;
-}
-.mv3-stat:hover { transform: translateY(-4px); border-color: rgba(139,127,240,0.6); }
-.mv3-stat-num   { font-size: 28px; font-weight: 800; color: #fff; line-height: 1; }
-.mv3-stat-label { font-size: 11.5px; color: rgba(255,255,255,0.4); margin-top: 3px; letter-spacing: 0.3px; }
-
-/* Hero ruler */
-.mv3-ruler {
-  margin: 36px auto 0; width: min(520px, 80%); height: 2px;
-  background: linear-gradient(90deg, #8b7ff0, #5ddcc0);
-  border-radius: 2px; position: relative; transform-origin: left center;
-}
-.mv3-ruler::before, .mv3-ruler::after {
-  content: ''; position: absolute; width: 10px; height: 10px;
-  border-radius: 50%; top: 50%; transform: translateY(-50%);
-}
-.mv3-ruler::before { left: -5px; background: #8b7ff0; box-shadow: 0 0 14px 3px rgba(139,127,240,0.7); }
-.mv3-ruler::after  { right: -5px; background: #5ddcc0; box-shadow: 0 0 14px 3px rgba(93,220,192,0.7); }
-.mv3-ruler-start, .mv3-ruler-end { position: absolute; top: 12px; font-size: 11px; color: rgba(255,255,255,0.35); white-space: nowrap; }
-.mv3-ruler-start { left: 0; }
-.mv3-ruler-end   { right: 0; }
-
-/* ── Filters — theme-aware ─────────────────────────────────────────────────── */
-.mv3-filters { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin: 32px 0 0; padding: 0 16px; }
-.mv3-chip {
-  border: 1px solid var(--border-color);
-  background: var(--card-bg);
-  color: var(--text-secondary);
-  padding: 8px 18px; border-radius: 20px;
-  font-size: 13px; font-weight: 600; cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  transition: all 0.18s ease;
-}
-.mv3-chip:hover { color: #8b7ff0; border-color: rgba(139,127,240,0.5); }
-.mv3-chip--active {
-  color: #ffffff !important;
-  border-color: transparent !important;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
-  box-shadow: 0 4px 14px rgba(99,102,241,0.35);
+.fs-page > * { position: relative; z-index: 1; }
+.fs-page.arch-light {
+  --ap-bg: #EFE9DA; --ap-paper: #FBF8F0; --ap-paper-2: #F4EEE0; --ap-paper-3: #ECE4D0;
+  --ap-ink: #241E14; --ap-ink-dim: #5E5745; --ap-ink-faint: #918970;
+  --ap-line: rgba(36,30,20,0.14); --ap-line-strong: rgba(36,30,20,0.30);
+  --ap-scrim: rgba(20,15,8,0.70);
+  --rust: #AD4E2C; --rust-ink: #FBEDE6;
+  --moss: #526F42; --moss-ink: #EBF1E4;
+  --dusty: #3D7A7D; --dusty-ink: #E5F2F2;
+  --plum: #7A537A; --plum-ink: #F7EDF7;
 }
 
-/* ── Timeline ──────────────────────────────────────────────────────────────── */
-.mv3-timeline { max-width: 900px; margin: 48px auto 60px; padding: 0 20px; position: relative; }
-.mv3-spine {
-  position: absolute; left: 50%; top: 0; bottom: 0; width: 2px;
-  transform: translateX(-50%);
-  background: linear-gradient(180deg, #8b7ff0, #5ddcc0, #f0805d);
-  box-shadow: 0 0 12px 2px rgba(139,127,240,0.22);
-  pointer-events: none;
+/* Header */
+.fs-header {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  padding: 18px 28px 12px;
+  border-bottom: 1px solid var(--ap-line);
+  flex-shrink: 0; background: var(--ap-bg);
+}
+.fs-hero-left { display: flex; flex-direction: column; gap: 4px; }
+.hero-stamp-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+  letter-spacing: .08em; text-transform: uppercase;
+  color: var(--rust); background: var(--ap-paper-2);
+  border: 1px dashed var(--rust); border-radius: 3px;
+  padding: 2px 8px; width: fit-content;
+}
+.fs-title {
+  font-family: 'Fraunces', serif; font-style: italic; font-size: 26px;
+  font-weight: 500; margin: 0; color: var(--ap-ink); line-height: 1.15;
+}
+.fs-metrics { display: flex; gap: 24px; align-items: center; }
+.mitem { text-align: right; }
+.mnum {
+  font-family: 'Fraunces', serif; font-size: 20px; font-weight: 500;
+  display: block; color: var(--ap-ink); line-height: 1.1;
+}
+.mlbl {
+  font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--ap-ink-faint);
+  margin-top: 3px; letter-spacing: .04em; white-space: nowrap;
 }
 
-/* Year chapter dividers */
-.mv3-yr-divider {
-  text-align: center;
-  font-size: clamp(52px, 9vw, 82px);
-  font-weight: 900;
-  letter-spacing: 6px; margin: 36px 0 6px;
-  position: relative; z-index: 1;
-  user-select: none;
-  color: var(--text-muted);
-  opacity: 0.18;
+/* Toolbar */
+.fs-toolbar {
+  display: flex; align-items: center; gap: 14px;
+  padding: 9px 28px;
+  border-bottom: 1px solid var(--ap-line);
+  flex-shrink: 0; background: var(--ap-bg);
 }
-
-/* Timeline rows */
-.mv3-row { display: grid; grid-template-columns: 1fr 40px 1fr; align-items: start; margin: 32px 0; position: relative; z-index: 1; }
-.mv3-row--left  .mv3-card-slot { grid-column: 1; padding-right: 20px; }
-.mv3-row--left  .mv3-dot-wrap  { grid-column: 2; }
-.mv3-row--left  .mv3-spacer    { grid-column: 3; }
-.mv3-row--right .mv3-card-slot { grid-column: 3; padding-left: 20px; }
-.mv3-row--right .mv3-dot-wrap  { grid-column: 2; }
-.mv3-row--right .mv3-spacer    { grid-column: 1; }
-.mv3-dot-wrap { display: flex; align-items: flex-start; justify-content: center; padding-top: 22px; }
-.mv3-dot {
-  width: 14px; height: 14px; border-radius: 50%;
-  background: #8b7ff0;
-  border: 3px solid var(--bg-primary);
-  box-shadow: 0 0 0 2px #8b7ff0, 0 0 16px 4px rgba(139,127,240,0.5);
-  flex-shrink: 0;
-  animation: mv3-dot-pulse 2.5s ease-in-out infinite;
+.search-line {
+  display: flex; align-items: center; gap: 7px;
+  padding: 6px 10px; border: 1px solid var(--ap-line); border-radius: 5px;
+  width: 200px; flex-shrink: 0; transition: border-color .15s ease;
+  background: var(--ap-paper);
 }
-@keyframes mv3-dot-pulse {
-  0%,100% { box-shadow: 0 0 0 2px #8b7ff0, 0 0 10px 3px rgba(139,127,240,0.35); }
-  50%     { box-shadow: 0 0 0 3px #8b7ff0, 0 0 22px 6px rgba(139,127,240,0.65); }
+.search-line:focus-within { border-color: var(--rust); }
+.search-glyph { color: var(--ap-ink-faint); flex-shrink: 0; display: flex; align-items: center; }
+.search-line input {
+  border: none; background: none; outline: none;
+  color: var(--ap-ink); font-size: 12.5px; width: 100%; font-family: 'Inter', sans-serif;
 }
-
-/* ── Cards — theme-aware ───────────────────────────────────────────────────── */
-.mv3-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 16px; padding: 20px 22px;
-  cursor: pointer; position: relative; overflow: hidden;
-  box-shadow: var(--shadow-sm);
-  transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
+.search-line input::placeholder { color: var(--ap-ink-faint); }
+.clear-btn {
+  background: none; border: none; color: var(--ap-ink-faint); cursor: pointer;
+  padding: 0; display: flex; align-items: center; justify-content: center;
 }
-.mv3-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(139,127,240,0.5);
-  box-shadow: 0 14px 36px -10px rgba(139,127,240,0.25), var(--shadow-md);
+.clear-btn:hover { color: var(--ap-ink); }
+.fs-tabs {
+  display: flex; align-items: center; gap: 18px; flex: 1;
+  overflow-x: auto; scrollbar-width: none;
 }
-
-/* Featured shimmer border */
-.mv3-card--featured {
-  border: 2px solid transparent !important;
-  background-origin: border-box !important;
-  background-clip: padding-box, border-box !important;
-  background-image:
-    linear-gradient(var(--card-bg), var(--card-bg)),
-    linear-gradient(var(--mv3-angle, 0deg), #8b7ff0, #f0c674, #5ddcc0, #f0805d, #8b7ff0) !important;
-  animation: mv3-shimmer-rotate 5s linear infinite;
+.fs-tabs::-webkit-scrollbar { display: none; }
+.arch-tab {
+  font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; letter-spacing: .02em;
+  border: none; background: none; color: var(--ap-ink-faint); cursor: pointer;
+  white-space: nowrap; padding: 2px 0 7px; position: relative;
+  transition: color .15s ease;
 }
-@property --mv3-angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
-@keyframes mv3-shimmer-rotate { to { --mv3-angle: 360deg; } }
-
-.mv3-badge { display: inline-block; font-size: 11px; padding: 3px 10px; border-radius: 20px; background: rgba(245,158,11,0.15); color: #d97706; margin-bottom: 8px; letter-spacing: 0.4px; font-weight: 700; }
-.mv3-icon       { font-size: 24px; margin-bottom: 6px; display: block; }
-.mv3-card-title { margin: 4px 0 6px; font-size: 17px; font-weight: 700; color: var(--text-primary); line-height: 1.3; }
-.mv3-card-desc  { margin: 0; color: var(--text-secondary); font-size: 13.5px; line-height: 1.6; }
-.mv3-card-meta  { margin-top: 12px; font-size: 11.5px; color: var(--text-muted); display: flex; gap: 10px; flex-wrap: wrap; }
-
-/* Quote */
-.mv3-card--quote { text-align: center; background: var(--card-bg) !important; }
-.mv3-qmark      { font-size: 48px; line-height: 0.8; color: #8b7ff0; opacity: 0.7; display: block; margin-bottom: 10px; }
-.mv3-quote-text { font-style: italic; font-size: 16px; color: var(--text-primary); line-height: 1.65; margin: 0; font-weight: 500; }
-.mv3-quote-who  { margin-top: 12px; font-size: 12px; color: var(--text-muted); }
-
-/* Photo */
-.mv3-card--photo { padding: 0; }
-.mv3-photo-wrap { position: relative; width: 100%; height: 190px; overflow: hidden; border-radius: 16px 16px 0 0; background: var(--bg-primary); }
-.mv3-photo-img  { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 5s ease; }
-.mv3-card--photo:hover .mv3-photo-img { transform: scale(1.12); }
-.mv3-photo-wrap::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 45%, rgba(0,0,0,0.45) 100%); }
-.mv3-photo-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 14px; gap: 8px; }
-.mv3-photo-pill { position: absolute; top: 10px; left: 10px; z-index: 2; background: rgba(0,0,0,0.55); backdrop-filter: blur(6px); padding: 4px 10px; border-radius: 20px; font-size: 11px; color: #ffffff; font-weight: 600; }
-.mv3-photo-body { padding: 14px 18px 18px; }
-
-/* Update */
-.mv3-card--update {
-  border-left: 4px solid #10b981 !important;
-  border-radius: 4px 16px 16px 4px !important;
+.arch-tab::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
+  background: var(--rust); transform: scaleX(0); transform-origin: left;
+  transition: transform .18s ease;
 }
-
-/* ── Story Viewer — theme-aware ────────────────────────────────────────────── */
-.mv3-overlay {
-  position: fixed; inset: 0; z-index: 9999;
-  background: rgba(0,0,0,0.65); backdrop-filter: blur(8px);
-  display: flex; align-items: center; justify-content: center; padding: 20px;
+.arch-tab:hover { color: var(--ap-ink-dim); }
+.arch-tab.active { color: var(--ap-ink); }
+.arch-tab.active::after { transform: scaleX(1); }
+.fs-nav-ctrl {
+  display: flex; align-items: center; gap: 6px; flex-shrink: 0;
 }
-.mv3-panel {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: 22px; width: min(560px, 100%);
-  max-height: 90vh; overflow-y: auto;
-  padding: 0; display: flex; flex-direction: column;
-  box-shadow: 0 32px 80px rgba(0,0,0,0.35), 0 0 40px rgba(139,127,240,0.15);
-}
-.mv3-sv-head {
-  display: flex; align-items: center; gap: 12px;
-  padding: 16px 20px 10px; flex-shrink: 0;
-}
-.mv3-sv-close {
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  color: var(--text-secondary); font-size: 15px;
-  width: 32px; height: 32px; border-radius: 50%;
-  cursor: pointer; flex-shrink: 0;
+.fs-nav-btn {
+  width: 30px; height: 30px; border-radius: 5px;
+  border: 1px solid var(--ap-line); background: var(--ap-paper-2);
+  color: var(--ap-ink); cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  transition: all 0.15s;
+  transition: all .15s ease;
 }
-.mv3-sv-close:hover { background: rgba(239,68,68,0.1); color: #ef4444; border-color: rgba(239,68,68,0.35); }
-.mv3-sv-progress {
-  flex: 1; height: 4px; background: var(--border-color);
-  border-radius: 3px; overflow: hidden;
+.fs-nav-btn:hover:not(:disabled) { border-color: var(--rust); color: var(--rust); background: var(--ap-paper-3); }
+.fs-nav-btn:disabled { opacity: .28; cursor: not-allowed; }
+.fs-counter {
+  font-family: 'IBM Plex Mono', monospace; font-size: 10.5px;
+  color: var(--ap-ink-faint); min-width: 42px; text-align: center;
 }
-.mv3-sv-fill {
-  height: 100%; background: linear-gradient(90deg, #8b7ff0, #5ddcc0);
-  border-radius: 3px; transition: width 0.3s ease;
+
+/* Film Strip Container */
+.fs-strip {
+  display: flex; gap: 18px;
+  overflow-x: auto; overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  padding: 20px 28px;
+  flex: 1; align-items: stretch;
+  -webkit-overflow-scrolling: touch;
 }
-.mv3-sv-counter { font-size: 12px; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
-.mv3-sv-body {
-  padding: 8px 28px 20px; text-align: center; flex: 1;
+.fs-strip::-webkit-scrollbar { display: none; }
+.fs-strip-end { flex: 0 0 12px; }
+
+/* Film Card */
+.fs-card {
+  flex: 0 0 260px;
+  scroll-snap-align: start;
+  background: var(--ap-paper);
+  border: 1px solid var(--ap-line);
+  border-radius: 6px; overflow: hidden;
+  cursor: pointer; position: relative;
+  display: flex; flex-direction: column;
+  transform: rotate(var(--rot, 0deg));
+  transition: border-color .18s ease, box-shadow .28s ease, transform .28s ease;
+  will-change: transform;
 }
-.mv3-sv-photo  { width: 100%; border-radius: 12px; margin-bottom: 16px; max-height: 260px; object-fit: cover; }
-.mv3-sv-icon   { font-size: 42px; display: block; margin-bottom: 12px; }
-.mv3-sv-title  { font-size: 22px; font-weight: 800; color: var(--text-primary); margin: 0 0 10px; line-height: 1.25; }
-.mv3-sv-desc   { color: var(--text-secondary); line-height: 1.7; font-size: 14px; margin: 0; }
-.mv3-sv-meta   { margin-top: 16px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; font-size: 12px; color: var(--text-muted); }
-.mv3-sv-nav {
+.fs-card:hover {
+  transform: translateY(-6px) rotate(0deg) !important;
+  border-color: var(--ap-line-strong);
+  box-shadow: 0 18px 40px rgba(0,0,0,.38);
+  z-index: 4;
+}
+.fs-featured {
+  box-shadow: 0 0 0 1.5px var(--accent, var(--rust)), 0 8px 24px rgba(0,0,0,.25);
+}
+
+/* Card image */
+.fs-card-img {
+  height: 142px; flex-shrink: 0;
+  position: relative; overflow: hidden;
+  background: var(--ap-paper-2);
+}
+.fs-card-img img {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform .5s ease;
+}
+.fs-card:hover .fs-card-img img { transform: scale(1.06); }
+.fs-img-placeholder {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; height: 100%; font-size: 32px;
+}
+
+/* Card body */
+.fs-card-body {
+  padding: 13px 15px 8px; flex: 1; overflow: hidden;
+  display: flex; flex-direction: column;
+}
+.ic-title {
+  font-family: 'Fraunces', serif; font-size: 15.5px; font-weight: 500;
+  margin: 0 0 6px; line-height: 1.25; color: var(--ap-ink);
+}
+.fs-card-desc {
+  font-size: 12px; color: var(--ap-ink-dim); line-height: 1.55;
+  margin: 0 0 7px;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+.fs-card-meta {
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+  color: var(--ap-ink-faint); margin-bottom: 7px; letter-spacing: .01em;
+}
+.ic-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-top: auto; padding-top: 4px; }
+.tag {
+  font-family: 'IBM Plex Mono', monospace; font-size: 9.5px;
+  padding: 2px 7px; border-radius: 3px;
+  background: var(--ap-paper-2); color: var(--ap-ink-faint);
+  border: 1px solid var(--ap-line);
+}
+
+/* Quote card variant */
+.fs-quote-card { background: var(--ap-paper-2); }
+.quote-mark {
+  font-family: 'Fraunces', serif; font-size: 38px;
+  color: var(--accent, var(--rust)); line-height: .75;
+  display: block; margin-bottom: 8px; opacity: .8;
+}
+.fs-quote-text {
+  font-family: 'Fraunces', serif; font-style: italic;
+  font-size: 14.5px; line-height: 1.55; color: var(--ap-ink);
+  margin: 0 0 10px; flex: 1;
+}
+
+/* Push pins & Washi tape */
+.pin {
+  position: absolute; top: 7px; left: 50%; transform: translateX(-50%);
+  width: 9px; height: 9px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff, var(--rust) 60%, #4a1505 100%);
+  box-shadow: 0 1px 3px rgba(0,0,0,.5); z-index: 3; pointer-events: none;
+}
+.tape {
+  position: absolute; width: 60px; height: 20px; opacity: .55; z-index: 2;
+  background: repeating-linear-gradient(45deg, var(--accent, var(--rust)), var(--accent, var(--rust)) 5px, transparent 5px, transparent 10px);
+}
+.tape.tl { top: -8px; left: -14px; transform: rotate(-40deg); }
+.tape.br { bottom: -8px; right: -14px; transform: rotate(-40deg); }
+
+/* Icon badge + stamp date */
+.ic-icon-badge {
+  position: absolute; top: 9px; left: 9px;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--ap-scrim);
+  display: flex; align-items: center; justify-content: center; font-size: 13px;
+}
+.ic-stamp-date {
+  position: absolute; top: 9px; right: 9px;
+  font-family: 'IBM Plex Mono', monospace; font-size: 10px;
+  padding: 3px 8px; border-radius: 3px;
+  background: var(--ap-scrim); color: #fff; letter-spacing: .02em;
+}
+
+/* Footer reactions row */
+.ic-footer {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 20px 18px;
-  border-top: 1px solid var(--border-color); flex-shrink: 0;
+  padding: 0 14px 12px; flex-shrink: 0;
 }
-.mv3-sv-btn {
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  color: var(--text-primary);
-  padding: 8px 18px; border-radius: 10px;
-  cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.16s;
+.reactions { display: flex; gap: 3px; }
+.react-btn {
+  border: 1px solid var(--ap-line); background: var(--ap-paper-2);
+  border-radius: 5px; padding: 4px 7px; font-size: 11px;
+  color: var(--ap-ink-dim); cursor: pointer;
+  display: flex; align-items: center; gap: 4px;
+  font-family: 'IBM Plex Mono', monospace;
+  transition: all .15s ease; position: relative;
 }
-.mv3-sv-btn:hover:not(:disabled) { border-color: rgba(139,127,240,0.6); color: #8b7ff0; }
-.mv3-sv-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-.mv3-sv-dots { display: flex; gap: 5px; align-items: center; }
-.mv3-sv-dot {
-  width: 7px; height: 7px; border-radius: 50%;
-  background: var(--border-color); border: none; padding: 0;
-  cursor: pointer; transition: all 0.15s;
+.react-glyph { font-size: 11.5px; }
+.react-btn:hover { border-color: var(--ap-line-strong); color: var(--ap-ink); }
+.react-btn.popped { border-color: var(--accent, var(--rust)); color: var(--accent, var(--rust)); transform: scale(1.12); }
+.share-btn {
+  border: none; background: none; color: var(--ap-ink-faint); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  padding: 5px; border-radius: 4px; transition: color .15s ease, background .15s ease;
 }
-.mv3-sv-dot--on { width: 20px; border-radius: 4px; background: #8b7ff0; }
+.share-btn:hover { color: var(--ap-ink); background: var(--ap-paper-2); }
+.arch-particle { position: absolute; pointer-events: none; font-size: 14px; animation: archFloat .9s ease-out forwards; }
 
-/* ── Empty ───────────────────────────────────────────────────────────────── */
-.mv3-empty {
+/* Empty state */
+.fs-empty {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 12px; padding: 80px 20px; text-align: center;
-  color: var(--text-muted); font-size: 14px;
-  border: 1px dashed var(--border-color); border-radius: 18px;
-  background: var(--card-bg);
+  flex: 1; gap: 10px; text-align: center; min-width: 300px;
+}
+.empty-title {
+  font-family: 'Fraunces', serif; font-style: italic; font-size: 20px; color: var(--ap-ink); margin: 0;
+}
+.empty-desc { font-size: 13px; color: var(--ap-ink-dim); margin: 0; }
+.empty-reset {
+  font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+  padding: 7px 16px; background: var(--rust); color: #fff;
+  border: none; border-radius: 4px; cursor: pointer;
 }
 
-/* ── Responsive ──────────────────────────────────────────────────────────── */
-@media (max-width: 700px) {
-  .mv3-spine { left: 20px; }
-  .mv3-timeline { padding: 0 12px; }
-  .mv3-row {
-    grid-template-columns: 36px 1fr !important;
-  }
-  .mv3-row--left  .mv3-card-slot,
-  .mv3-row--right .mv3-card-slot { grid-column: 2; padding: 0 0 0 12px; }
-  .mv3-row--left  .mv3-dot-wrap,
-  .mv3-row--right .mv3-dot-wrap  { grid-column: 1; }
-  .mv3-row--left  .mv3-spacer,
-  .mv3-row--right .mv3-spacer    { display: none; }
+/* Progress Footer */
+.fs-footer {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  padding: 7px 0 10px; flex-shrink: 0;
+  border-top: 1px solid var(--ap-line);
 }
+.fs-dots { display: flex; gap: 5px; align-items: center; }
+.fs-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--ap-line-strong); border: none; cursor: pointer;
+  padding: 0; transition: all .22s ease;
+}
+.fs-dot.active {
+  background: var(--rust); transform: scale(1.35);
+  animation: dotPop .22s ease;
+}
+.fs-hint {
+  font-family: 'IBM Plex Mono', monospace; font-size: 9.5px;
+  color: var(--ap-ink-faint); margin: 0; letter-spacing: .025em;
+}
+
+/* Story Modal */
+.arch-modal-overlay {
+  position: fixed; inset: 0; background: rgba(6,4,2,0.92);
+  z-index: 10000; display: flex; align-items: center; justify-content: center;
+  padding: 16px; backdrop-filter: blur(8px);
+}
+.story-card {
+  width: 380px; max-width: 92vw; height: 640px; max-height: 88vh;
+  border-radius: 6px; overflow: hidden; position: relative;
+  display: flex; flex-direction: column;
+  box-shadow: 0 24px 64px rgba(0,0,0,.85);
+}
+.story-bg-zoom {
+  position: absolute; inset: -4%;
+  background-size: cover; background-position: center;
+  animation: kenburns 6s ease-out forwards;
+}
+.story-scrim {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,.65) 0%, transparent 32%, transparent 56%, rgba(0,0,0,.85) 100%);
+}
+.story-bars { display: flex; gap: 5px; padding: 14px 14px 0; position: relative; z-index: 2; }
+.story-bar { flex: 1; height: 2px; background: rgba(255,255,255,.28); overflow: hidden; border-radius: 2px; }
+.story-bar-fill { height: 100%; width: 0%; background: #fff; transition: width .05s linear; }
+.story-bar.done .story-bar-fill { width: 100% !important; }
+.story-top { display: flex; align-items: center; gap: 10px; padding: 12px 16px; position: relative; z-index: 2; }
+.story-icon { width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,.18); display: flex; align-items: center; justify-content: center; font-size: 14px; }
+.story-ttl { font-size: 13px; font-weight: 500; color: #fff; font-family: 'IBM Plex Mono', monospace; }
+.story-loc { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: rgba(255,255,255,.6); }
+.story-close {
+  margin-left: auto; background: none; border: none; color: #fff;
+  cursor: pointer; opacity: .85; display: flex; align-items: center; justify-content: center;
+}
+.story-close:hover { opacity: 1; }
+.story-body { flex: 1; position: relative; z-index: 2; display: flex; flex-direction: column; justify-content: flex-end; padding: 22px; }
+.story-body h3 { font-family: 'Fraunces', serif; font-style: italic; font-size: 24px; color: #fff; margin: 0 0 8px; line-height: 1.2; }
+.story-body p { font-size: 13.5px; color: rgba(255,255,255,.85); line-height: 1.55; margin: 0 0 10px; }
+.story-vibe { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: rgba(255,255,255,.7); margin-bottom: 6px; }
+.story-tap-zone { position: absolute; top: 56px; bottom: 0; width: 35%; z-index: 3; cursor: pointer; }
+.story-tap-zone.left { left: 0; }
+.story-tap-zone.right { right: 0; }
 `;

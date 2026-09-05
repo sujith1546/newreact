@@ -4,7 +4,7 @@ import { notifyDataMutation } from '../../../lib/syncDispatcher';
 import {
   Loader2, Sparkles, Trophy, Quote, FileText, Camera, Play,
   Plus, Edit3, Trash2, X, Star, Check, ChevronUp, ChevronDown,
-  Eye, EyeOff, Tag, Calendar, Image
+  Eye, EyeOff, Tag, Calendar, Image, Upload
 } from 'lucide-react';
 import { styles, MODAL_STYLES } from '../shared/constants';
 import { PanelCard, EmptyState, StatCard } from '../shared/components';
@@ -79,6 +79,7 @@ export default function MomentsPanel() {
   const [filterType, setFilterType] = useState('all');
   const [search, setSearch]         = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null); // { id, title }
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   /* ── Toast ────────────────────────────────────────────────────────────── */
   const showToast = useCallback((msg, type = 'success') => {
@@ -119,6 +120,74 @@ export default function MomentsPanel() {
   const closeModal = () => { setIsModal(false); setEditingId(null); setFormData(EMPTY_FORM); };
 
   const setField = (key, val) => setFormData(prev => ({ ...prev, [key]: val }));
+
+  /* ── Photo Upload ──────────────────────────────────────────────────────── */
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      showToast('Image exceeds 10MB limit. Please choose a smaller photo.', 'error');
+      e.target.value = '';
+      return;
+    }
+
+    setUploadingImage(true);
+    const ext = file.name.split('.').pop() || 'jpg';
+    const fileName = `moments/moment_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${ext}`;
+
+    try {
+      // 1. Attempt direct client upload
+      const { error } = await supabase.storage
+        .from('portfolio-assets')
+        .upload(fileName, file, { upsert: true });
+
+      if (!error) {
+        const { data } = supabase.storage
+          .from('portfolio-assets')
+          .getPublicUrl(fileName);
+
+        setField('image_url', data.publicUrl);
+        showToast('Photo uploaded successfully!', 'success');
+        setUploadingImage(false);
+        e.target.value = '';
+        return;
+      }
+
+      // 2. If client upload fails (e.g. RLS policy), fallback to backend API with service role
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const res = await fetch('/api/upload-photo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              base64: reader.result,
+              fileName,
+              contentType: file.type,
+            }),
+          });
+          const result = await res.json();
+          if (res.ok && result.publicUrl) {
+            setField('image_url', result.publicUrl);
+            showToast('Photo uploaded successfully!', 'success');
+          } else {
+            showToast(`Upload failed: ${result.error || 'Server error'}`, 'error');
+          }
+        } catch (apiErr) {
+          showToast(`Upload error: ${apiErr.message}`, 'error');
+        } finally {
+          setUploadingImage(false);
+          e.target.value = '';
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      showToast(`Upload error: ${err.message}`, 'error');
+      setUploadingImage(false);
+      e.target.value = '';
+    }
+  };
 
   /* ── Save ─────────────────────────────────────────────────────────────── */
   const handleSubmit = async () => {
@@ -515,16 +584,76 @@ export default function MomentsPanel() {
                 </div>
               </div>
 
-              {/* Image URL (for photo type) */}
-              {(formData.type === 'photo' || formData.type === 'video') && (
+              {/* Photo Upload & Image URL */}
+              {formData.type !== 'quote' && (
                 <div style={groupStyle}>
-                  <label style={labelStyle}>Image URL</label>
-                  <input style={inputStyle} placeholder="https://… or /public/moments/…"
+                  <label style={labelStyle}>Moment Photo / Cover Image</label>
+
+                  {formData.image_url ? (
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      padding: 10, borderRadius: 8, border: '1px solid var(--pcms-line)',
+                      background: 'var(--pcms-panel-2)', marginBottom: 8
+                    }}>
+                      <img
+                        src={formData.image_url}
+                        alt="Moment preview"
+                        style={{ width: 52, height: 52, borderRadius: 6, objectFit: 'cover', border: '1px solid var(--pcms-line)', flexShrink: 0 }}
+                      />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--pcms-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {formData.image_url.split('/').pop()}
+                        </div>
+                        <div style={{ fontSize: 10, color: '#10b981', marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <Check size={11} /> Photo ready
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setField('image_url', '')}
+                        style={{
+                          background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.25)',
+                          color: '#ef4444', borderRadius: 6, padding: '5px 9px', fontSize: 11,
+                          cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0
+                        }}
+                      >
+                        <Trash2 size={12} /> Remove
+                      </button>
+                    </div>
+                  ) : null}
+
+                  <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <input
+                      type="file"
+                      id="moment-photo-file-upload"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={handleImageUpload}
+                    />
+                    <label
+                      htmlFor="moment-photo-file-upload"
+                      style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 6,
+                        padding: '7px 14px', borderRadius: 6,
+                        background: 'var(--pcms-panel-2)', border: '1px solid var(--pcms-line)',
+                        color: 'var(--pcms-text)', fontSize: 12, fontWeight: 500,
+                        cursor: uploadingImage ? 'not-allowed' : 'pointer',
+                        opacity: uploadingImage ? 0.7 : 1, transition: 'all 0.15s'
+                      }}
+                    >
+                      {uploadingImage ? <Loader2 size={13} className="spin" /> : <Upload size={13} />}
+                      {uploadingImage ? 'Uploading photo…' : 'Upload Photo'}
+                    </label>
+
+                    <span style={{ fontSize: 11, color: 'var(--pcms-muted)' }}>or paste an image URL:</span>
+                  </div>
+
+                  <input
+                    style={{ ...inputStyle, marginTop: 8 }}
+                    placeholder="https://images.unsplash.com/… or Supabase URL"
                     value={formData.image_url || ''}
-                    onChange={e => setField('image_url', e.target.value)} />
-                  <span style={{ fontSize: 10, color: 'var(--pcms-muted)', marginTop: 2 }}>
-                    Paste a Supabase Storage URL or any public image URL
-                  </span>
+                    onChange={e => setField('image_url', e.target.value)}
+                  />
                 </div>
               )}
 

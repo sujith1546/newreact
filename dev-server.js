@@ -6,11 +6,12 @@ import geoHandler from './api/geo.js';
 import sendOtpHandler from './api/send-otp.js';
 import verifyOtpHandler from './api/verify-otp.js';
 import loginAlertHandler from './api/login-alert.js';
+import uploadPhotoHandler from './api/upload-photo.js';
 
 const app = express();
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '15mb' }));
 
 // Forward requests directly to the Vercel handlers
 app.post('/api/chat', handler);
@@ -20,6 +21,7 @@ app.post('/api/geo', geoHandler);
 app.post('/api/send-otp', sendOtpHandler);
 app.post('/api/verify-otp', verifyOtpHandler);
 app.post('/api/login-alert', loginAlertHandler);
+app.post('/api/upload-photo', uploadPhotoHandler);
 
 const PORT = 3001;
 app.listen(PORT, () => {
