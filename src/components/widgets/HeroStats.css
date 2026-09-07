@@ -162,125 +162,93 @@
   box-sizing: border-box;
 }
 
-.hero-stats-section-label {
+.glance-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 6px;
-  padding: 0 1px;
+  margin-bottom: 12px;
 }
 
-.hero-stats-label {
-  font-size: 9.5px;
-  font-weight: 700;
-  color: var(--text-secondary, #475569);
-  margin: 0;
-  letter-spacing: 0.05em;
+.glance-title {
   display: flex;
   align-items: center;
-  gap: 5px;
-  text-transform: uppercase;
-}
-
-.hero-stats-label i {
-  color: var(--text-accent, var(--primary-blue, #3b82f6));
-  font-size: 11px;
-}
-
-.hero-stats-label-muted {
-  font-size: 9.5px;
-  color: var(--text-muted, #64748b);
-  margin: 0;
-}
-
-/* ── 4-Column Glance Dock ── */
-.hero-glance-dock {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 6px;
-  width: 100%;
-  box-sizing: border-box;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary, #475569);
 }
 
-.hero-glance-tile {
-  background: var(--surface-1, var(--bg-primary, #f8fafc));
-  border: 0.5px solid var(--border, var(--border-color, #e2e8f0));
-  border-radius: 12px;
-  padding: 7px 4px 6px;
+.glance-title i {
+  color: var(--text-accent, var(--primary-blue, #3b82f6));
+  font-size: 13px;
+}
+
+.glance-count {
+  font-size: 11px;
+  color: var(--text-muted, #64748b);
+}
+
+.glance-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  width: 100%;
+}
+
+.glance-item {
+  text-align: center;
+  padding: 0 4px;
+  border-right: 0.5px solid var(--border, var(--border-color, #e0e0e0));
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  text-align: center;
-  min-width: 0;
-  box-sizing: border-box;
-  transition: transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
 }
 
-[data-theme="dark"] .hero-glance-tile {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.09);
+[data-theme="dark"] .glance-item {
+  border-right-color: var(--border, rgba(255, 255, 255, 0.12));
 }
 
-.hero-glance-val-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  min-width: 0;
-  max-width: 100%;
+.glance-item--last {
+  border-right: none;
 }
 
-.hero-glance-val-row i {
-  font-size: 13px;
-  flex-shrink: 0;
-}
-
-.hero-icon-cgpa {
-  color: #3b82f6;
-}
-
-.hero-icon-certs {
-  color: #f59e0b;
-}
-
-.hero-icon-apps {
-  color: #10b981;
-}
-
-.hero-glance-status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #10b981;
-  flex-shrink: 0;
-  animation: hero-live-pulse 2s ease-in-out infinite;
-}
-
-.hero-glance-val {
-  font-size: 13.5px;
-  font-weight: 700;
+.glance-value {
+  font-size: 16px;
+  font-weight: 500;
   color: var(--text-primary, #0f172a);
-  line-height: 1.1;
-  white-space: nowrap;
-  letter-spacing: -0.02em;
+  margin: 0 0 2px;
+  line-height: 1.2;
 }
 
-[data-theme="dark"] .hero-glance-val {
+[data-theme="dark"] .glance-value {
   color: #f8fafc;
 }
 
-.hero-glance-label {
-  font-size: 9px;
-  font-weight: 600;
-  color: var(--text-muted, #64748b);
-  line-height: 1.1;
-  white-space: nowrap;
-  letter-spacing: 0.02em;
+.glance-value--status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 13px;
+  color: var(--text-success, #10b981);
 }
 
-[data-theme="dark"] .hero-glance-label {
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--fill-success, #10b981);
+  display: inline-block;
+  animation: hero-live-pulse 2s ease-in-out infinite;
+}
+
+.glance-label {
+  font-size: 10px;
+  color: var(--text-muted, #64748b);
+  margin: 0;
+}
+
+[data-theme="dark"] .glance-label {
   color: #94a3b8;
 }
 
@@ -289,13 +257,11 @@
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
 .hero-stats-clickable:active {
-  transform: scale(0.95);
-  background: var(--border, var(--border-color, #e2e8f0));
+  transform: scale(0.96);
+  opacity: 0.75;
 }
 
-[data-theme="dark"] .hero-stats-clickable:active {
-  background: rgba(255, 255, 255, 0.08);
-}

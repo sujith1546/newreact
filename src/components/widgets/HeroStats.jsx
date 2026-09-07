@@ -62,74 +62,58 @@ export default function HeroStats({
 
       {/* ── Bottom Section: At a Glance ── */}
       <div className="hero-stats-bottom">
-        <div className="hero-stats-section-label">
-          <p className="hero-stats-label">
-            <i className="ti ti-chart-bar" aria-hidden="true" />
-            At a glance
-          </p>
-          <p className="hero-stats-label-muted">4 metrics</p>
+        <div className="glance-header">
+          <span className="glance-title">
+            <i className="ti ti-chart-bar" aria-hidden="true" /> At a glance
+          </span>
+          <span className="glance-count">4 metrics</span>
         </div>
 
-        {/* ── Single-Row 4-Column Glance Dock ── */}
-        <div className="hero-glance-dock">
-          {/* 1. CGPA */}
+        <div className="glance-row">
           <div
-            className={`hero-glance-tile ${onNavClick ? 'hero-stats-clickable' : ''}`}
+            className={`glance-item ${onNavClick ? 'hero-stats-clickable' : ''}`}
             onClick={() => onNavClick && onNavClick('education')}
             role={onNavClick ? 'button' : undefined}
             tabIndex={onNavClick ? 0 : undefined}
             aria-label="View Education details"
           >
-            <div className="hero-glance-val-row">
-              <i className="ti ti-school hero-icon-cgpa" aria-hidden="true" />
-              <span className="hero-glance-val">{cgpa}</span>
-            </div>
-            <span className="hero-glance-label">CGPA</span>
+            <p className="glance-value">{cgpa}</p>
+            <p className="glance-label">CGPA</p>
           </div>
 
-          {/* 2. Certifications */}
           <div
-            className={`hero-glance-tile ${onNavClick ? 'hero-stats-clickable' : ''}`}
+            className={`glance-item ${onNavClick ? 'hero-stats-clickable' : ''}`}
             onClick={() => onNavClick && onNavClick('certifications')}
             role={onNavClick ? 'button' : undefined}
             tabIndex={onNavClick ? 0 : undefined}
             aria-label="View Certifications"
           >
-            <div className="hero-glance-val-row">
-              <i className="ti ti-medal hero-icon-certs" aria-hidden="true" />
-              <span className="hero-glance-val">{certifications}</span>
-            </div>
-            <span className="hero-glance-label">Certs</span>
+            <p className="glance-value">{certifications}</p>
+            <p className="glance-label">Certs</p>
           </div>
 
-          {/* 3. Apps */}
           <div
-            className={`hero-glance-tile ${onNavClick ? 'hero-stats-clickable' : ''}`}
+            className={`glance-item ${onNavClick ? 'hero-stats-clickable' : ''}`}
             onClick={() => onNavClick && onNavClick('projects')}
             role={onNavClick ? 'button' : undefined}
             tabIndex={onNavClick ? 0 : undefined}
             aria-label="View Projects"
           >
-            <div className="hero-glance-val-row">
-              <i className="ti ti-rocket hero-icon-apps" aria-hidden="true" />
-              <span className="hero-glance-val">{apps}</span>
-            </div>
-            <span className="hero-glance-label">Apps</span>
+            <p className="glance-value">{apps}</p>
+            <p className="glance-label">Apps</p>
           </div>
 
-          {/* 4. Status */}
           <div
-            className={`hero-glance-tile ${onNavClick ? 'hero-stats-clickable' : ''}`}
+            className={`glance-item glance-item--last ${onNavClick ? 'hero-stats-clickable' : ''}`}
             onClick={() => onNavClick && onNavClick('contact')}
             role={onNavClick ? 'button' : undefined}
             tabIndex={onNavClick ? 0 : undefined}
             aria-label="Contact / Status"
           >
-            <div className="hero-glance-val-row">
-              <span className="hero-glance-status-dot" />
-              <span className="hero-glance-val">{status}</span>
-            </div>
-            <span className="hero-glance-label">Status</span>
+            <p className="glance-value glance-value--status">
+              <span className="status-dot" /> {status}
+            </p>
+            <p className="glance-label">Status</p>
           </div>
         </div>
       </div>
