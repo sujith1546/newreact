@@ -680,6 +680,21 @@ export default function Experience() {
           </div>
         )}
 
+        {/* Mobile Hero Header */}
+        {isMobile && (
+          <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+            <p style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: '0.22em', textTransform: 'uppercase', margin: '0 0 6px' }}>
+              CAREER TRAJECTORY
+            </p>
+            <h1 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 8px', letterSpacing: '-0.025em', lineHeight: 1.2 }}>
+              Professional Journey &amp; Roles
+            </h1>
+            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '0 auto', lineHeight: 1.55 }}>
+              Explore career milestones, engineering impact, and current availability status.
+            </p>
+          </div>
+        )}
+
         {/* Mobile Modern Section Header */}
         {isMobile && (
           <div className="exp-mobile-header">

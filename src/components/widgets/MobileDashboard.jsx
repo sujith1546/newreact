@@ -33,18 +33,18 @@ function useCountUp(target, duration = 900) {
 }
 
 const TECH_STACK = [
-  { label: 'Python' },
-  { label: 'PyTorch' },
-  { label: 'React 19' },
-  { label: 'FastAPI' },
-  { label: 'Supabase' },
-  { label: 'Gemini AI' },
-  { label: 'ChromaDB' },
-  { label: 'LangChain' },
-  { label: 'PostgreSQL' },
-  { label: 'TypeScript' },
-  { label: 'Docker' },
-  { label: 'TailwindCSS' },
+  { icon: 'ti-brand-react', name: 'React 19' },
+  { icon: 'ti-brand-python', name: 'Python' },
+  { icon: 'ti-brain', name: 'PyTorch' },
+  { icon: 'ti-server-2', name: 'FastAPI' },
+  { icon: 'ti-database', name: 'Supabase' },
+  { icon: 'ti-sparkles', name: 'Gemini AI' },
+  { icon: 'ti-layers-intersect', name: 'ChromaDB' },
+  { icon: 'ti-link', name: 'LangChain' },
+  { icon: 'ti-database', name: 'PostgreSQL' },
+  { icon: 'ti-brand-typescript', name: 'TypeScript' },
+  { icon: 'ti-brand-docker', name: 'Docker' },
+  { icon: 'ti-brand-tailwind', name: 'Tailwind CSS' },
 ];
 
 const milestones = [
@@ -365,49 +365,92 @@ export default function MobileDashboard({ onNavClick }) {
 
 
 
-        /* ════════ SINGLE-LINE INFINITE TECH MARQUEE ════════ */
-        .hd-marquee-container {
+        /* ════════ UPGRADED TECH MARQUEE ════════ */
+        .marquee-wrap {
           position: relative;
           width: 100%;
           overflow: hidden;
           padding: 4px 0 10px;
-          mask-image: linear-gradient(90deg, transparent 0%, black 8%, black 92%, transparent 100%);
-          -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 8%, black 92%, transparent 100%);
         }
-        .hd-marquee-track {
+
+        .marquee-track {
           display: flex;
+          gap: 10px;
           width: max-content;
-          gap: 8px;
-          animation: marqueeLoop 24s linear infinite;
+          animation: marquee-scroll 18s linear infinite;
         }
-        .hd-marquee-container:hover .hd-marquee-track,
-        .hd-marquee-container:active .hd-marquee-track {
+
+        .marquee-wrap:hover .marquee-track,
+        .marquee-wrap:active .marquee-track {
           animation-play-state: paused;
         }
-        @keyframes marqueeLoop {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
+
+        @keyframes marquee-scroll {
+          from { transform: translateX(0); }
+          to { transform: translateX(-50%); }
         }
-        .hd-tech-chip {
+
+        .tech-pill {
           display: inline-flex;
           align-items: center;
-          gap: 5px;
-          padding: 4px 10px;
-          border-radius: 8px;
-          font-size: 10.5px;
+          gap: 6px;
+          background: var(--surface-1, var(--bg-secondary, #f8fafc));
+          border: 1px solid var(--border, var(--border-color, #e2e8f0));
+          border-radius: 999px;
+          padding: 6px 14px;
+          font-size: 12px;
           font-weight: 500;
+          color: var(--text-primary);
           white-space: nowrap;
-          background: var(--bg-secondary, #FFFFFF);
-          border: 1.5px solid var(--border-color, #CBD5E1);
-          color: var(--text-secondary, #374151);
-          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+          transition: transform 0.15s ease;
         }
-        [data-theme="dark"] .hd-tech-chip {
-          background: var(--bg-secondary, #161B22);
-          border: 1.5px solid rgba(255, 255, 255, 0.14);
-          color: #E5E7EB;
+
+        .tech-pill:active {
+          transform: scale(0.96);
         }
-        .hd-tech-chip:active { transform: scale(0.95); }
+
+        [data-theme="dark"] .tech-pill {
+          background: var(--surface-1, #22242a);
+          border-color: var(--border, rgba(255, 255, 255, 0.12));
+          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .tech-pill i {
+          font-size: 14px;
+          color: var(--text-secondary);
+        }
+
+        [data-theme="dark"] .tech-pill i {
+          color: #94a3b8;
+        }
+
+        .marquee-fade {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          width: 28px;
+          pointer-events: none;
+          z-index: 2;
+        }
+
+        .marquee-fade--left {
+          left: 0;
+          background: linear-gradient(to right, var(--bg-primary, #ffffff), transparent);
+        }
+
+        .marquee-fade--right {
+          right: 0;
+          background: linear-gradient(to left, var(--bg-primary, #ffffff), transparent);
+        }
+
+        [data-theme="dark"] .marquee-fade--left {
+          background: linear-gradient(to right, var(--bg-primary, #0f1115), transparent);
+        }
+
+        [data-theme="dark"] .marquee-fade--right {
+          background: linear-gradient(to left, var(--bg-primary, #0f1115), transparent);
+        }
 
         /* ════════ HORIZONTAL FEATURED PROJECTS CAROUSEL ════════ */
         .hd-feat-header {
@@ -590,27 +633,17 @@ export default function MobileDashboard({ onNavClick }) {
                 Core Tech Stack
               </span>
             </div>
-            <div className="hd-marquee-container">
-              <div className="hd-marquee-track">
-                {/* 1st copy */}
-                {TECH_STACK.map((tech, i) => (
-                  <span
-                    key={`tech-1-${i}`}
-                    className="hd-tech-chip"
-                  >
-                    {tech.label}
-                  </span>
-                ))}
-                {/* 2nd copy for seamless infinite loop */}
-                {TECH_STACK.map((tech, i) => (
-                  <span
-                    key={`tech-2-${i}`}
-                    className="hd-tech-chip"
-                  >
-                    {tech.label}
+            <div className="marquee-wrap">
+              <div className="marquee-track">
+                {[...TECH_STACK, ...TECH_STACK].map((tech, i) => (
+                  <span key={i} className="tech-pill">
+                    <i className={`ti ${tech.icon}`} aria-hidden="true" />
+                    {tech.name}
                   </span>
                 ))}
               </div>
+              <div className="marquee-fade marquee-fade--left" />
+              <div className="marquee-fade marquee-fade--right" />
             </div>
 
             <div className="hd-divider" />
