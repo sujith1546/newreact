@@ -390,37 +390,42 @@ export default function MobileDashboard({ onNavClick }) {
           to { transform: translateX(-50%); }
         }
 
+        .tech-box,
         .tech-pill {
           display: inline-flex;
           align-items: center;
           gap: 6px;
           background: var(--surface-1, var(--bg-secondary, #f8fafc));
           border: 1px solid var(--border, var(--border-color, #e2e8f0));
-          border-radius: 999px;
-          padding: 6px 14px;
-          font-size: 12px;
-          font-weight: 500;
+          border-radius: 8px;
+          padding: 5.5px 11px;
+          font-size: 11.5px;
+          font-weight: 600;
           color: var(--text-primary);
           white-space: nowrap;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-          transition: transform 0.15s ease;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+          transition: transform 0.15s ease, border-color 0.15s ease;
         }
 
+        .tech-box:active,
         .tech-pill:active {
           transform: scale(0.96);
         }
 
+        [data-theme="dark"] .tech-box,
         [data-theme="dark"] .tech-pill {
           background: var(--surface-1, #22242a);
           border-color: var(--border, rgba(255, 255, 255, 0.12));
-          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
         }
 
+        .tech-box i,
         .tech-pill i {
-          font-size: 14px;
+          font-size: 13.5px;
           color: var(--text-secondary);
         }
 
+        [data-theme="dark"] .tech-box i,
         [data-theme="dark"] .tech-pill i {
           color: #94a3b8;
         }
@@ -636,7 +641,7 @@ export default function MobileDashboard({ onNavClick }) {
             <div className="marquee-wrap">
               <div className="marquee-track">
                 {[...TECH_STACK, ...TECH_STACK].map((tech, i) => (
-                  <span key={i} className="tech-pill">
+                  <span key={i} className="tech-box">
                     <i className={`ti ${tech.icon}`} aria-hidden="true" />
                     {tech.name}
                   </span>
