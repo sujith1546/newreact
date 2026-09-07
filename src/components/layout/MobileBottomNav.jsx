@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Award, FileText, Share, X, Moon, Sun, FileDown, Settings, ChevronLeft, ChevronDown, ChevronRight, Monitor, Bell, Wand2, Globe, Trash2, User, UserPlus, Copy, Check, MapPin, School, Sparkles, Atom, HelpCircle, Zap, BookOpen, Code2, ExternalLink, Star, Info, Navigation, Layers, Shield, Clock, Compass, RefreshCw, Lock } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { Home, Cpu, Briefcase, Mail, MoreHorizontal, GraduationCap, Award, FileText, Share, X, Moon, Sun, FileDown, Settings, ChevronLeft, ChevronDown, ChevronRight, Monitor, Bell, Wand2, Globe, Trash2, User, UserPlus, Copy, Check, MapPin, School, Sparkles, Atom, HelpCircle, Zap, BookOpen, Code2, ExternalLink, Star, Info, Navigation, Layers, Shield, Clock, Compass, RefreshCw, Lock, GitCommit, GitBranch, ArrowUpRight, Activity, CheckCircle2, Loader2 } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
 import { 
   IconHome, 
@@ -40,11 +41,85 @@ export default function MobileBottomNav({ activeSection, onNavClick }) {
   const { isModuleEnabled, notifyModuleDisabled } = useModuleStatus();
   const navigate = useNavigate();
   const dragControls = useDragControls();
+  const githubDragControls = useDragControls();
 
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isUpdatesOpen, setIsUpdatesOpen] = useState(false);
   const [isGithubStatsOpen, setIsGithubStatsOpen] = useState(false);
+
+  // GitHub Commits & Live Activity State
+  const [ghCommits, setGhCommits] = useState([
+    {
+      sha: 'e36daa7',
+      message: 'fix(mobile): resolve Framer Motion touch gestures & smooth bottom sheet',
+      date: '2026-08-03T11:20:00Z',
+      url: 'https://github.com/sujith1546/newreact'
+    },
+    {
+      sha: '9f46d3b',
+      message: 'feat: mobile UI optimizations, Dynamic Island polish & Bento metrics',
+      date: '2026-08-03T09:45:00Z',
+      url: 'https://github.com/sujith1546/newreact'
+    },
+    {
+      sha: '766e710',
+      message: 'refactor: simplify dashboard panels and enhance skills radar animations',
+      date: '2026-08-02T18:15:00Z',
+      url: 'https://github.com/sujith1546/newreact'
+    },
+    {
+      sha: '39b49ca',
+      message: 'perf: core theme tokens, responsive carousels and offline PWA cache',
+      date: '2026-08-02T14:10:00Z',
+      url: 'https://github.com/sujith1546/newreact'
+    }
+  ]);
+  const [ghLoading, setGhLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isGithubStatsOpen) return;
+    let active = true;
+    setGhLoading(true);
+    fetch('https://api.github.com/users/sujith1546/events/public', {
+      headers: { Accept: 'application/vnd.github.v3+json' }
+    })
+      .then(res => res.ok ? res.json() : Promise.reject(res))
+      .then(events => {
+        if (!active || !Array.isArray(events)) return;
+        const pushEvents = events.filter(e => e.type === 'PushEvent');
+        const live = [];
+        pushEvents.forEach(pe => {
+          if (pe.payload && pe.payload.commits) {
+            pe.payload.commits.forEach(c => {
+              live.push({
+                sha: c.sha ? c.sha.substring(0, 7) : 'head',
+                message: c.message || 'Updated codebase',
+                date: pe.created_at,
+                url: `https://github.com/${pe.repo ? pe.repo.name : 'sujith1546/newreact'}/commit/${c.sha}`
+              });
+            });
+          }
+        });
+        if (live.length > 0) setGhCommits(live.slice(0, 5));
+      })
+      .catch(() => {})
+      .finally(() => { if (active) setGhLoading(false); });
+
+    return () => { active = false; };
+  }, [isGithubStatsOpen]);
+
+  const formatGhTimeAgo = (dateStr) => {
+    if (!dateStr) return 'recently';
+    const diffSec = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+    if (diffSec < 60) return `${Math.max(1, diffSec)}s ago`;
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) return `${diffMin}m ago`;
+    const diffHr = Math.floor(diffMin / 60);
+    if (diffHr < 24) return `${diffHr}h ago`;
+    const diffDay = Math.floor(diffHr / 24);
+    return `${diffDay}d ago`;
+  };
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [copiedEmail, setCopiedEmail] = useState(false);
@@ -639,135 +714,233 @@ END:VCARD`;
         handleExploreClick={handleExploreClick}
       />
 
-      {/* GitHub Stats Slide-Up Drawer */}
-      <AnimatePresence>
-        {isGithubStatsOpen && (
-          <>
-            <motion.div
-              className="more-overlay-backdrop"
-              style={{ zIndex: 102 }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsGithubStatsOpen(false)}
-            />
-            <motion.div
-              className="more-overlay-sheet"
-              style={{ zIndex: 103 }}
-              role="dialog"
-              aria-modal="true"
-              aria-label="GitHub Stats"
-              initial={{ y: '100%' }}
-              animate={{ y: 0 }}
-              exit={{ y: '100%' }}
-              transition={{ type: 'spring', damping: 32, stiffness: 350, mass: 0.9 }}
-              drag="y"
-              dragConstraints={{ top: 0, bottom: 0 }}
-              dragElastic={{ top: 0, bottom: 0.35 }}
-              onDragEnd={(_, info) => { if (info.offset.y > 100 || info.velocity.y > 500) setIsGithubStatsOpen(false); }}
-            >
-              <div className="drawer-handle" />
-              <div className="drawer-header">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div style={{
-                    width: 36, height: 36, borderRadius: 10,
-                    background: theme === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center'
-                  }}>
-                    <FaGithub size={18} style={{ color: 'var(--text-primary)' }} />
-                  </div>
-                  <div>
-                    <p className="drawer-header-title">GitHub</p>
-                    <p className="drawer-header-sub">@sujith1546</p>
-                  </div>
-                </div>
-                <button className="drawer-close-btn" onClick={() => setIsGithubStatsOpen(false)}>
-                  <X size={16} />
-                </button>
-              </div>
-
-              <div className="drawer-scroll-area" style={{ padding: '16px 18px 28px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-
-                {/* Quick stats row */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
-                  {[
-                    { label: 'Repos', value: '15+' },
-                    { label: 'Commits', value: '200+' },
-                    { label: 'Stars', value: '10+' },
-                  ].map(s => (
-                    <div key={s.label} style={{
-                      background: 'var(--bg-primary)', border: '1px solid var(--border-color)',
-                      borderRadius: 14, padding: '12px 10px', textAlign: 'center'
-                    }}>
-                      <p style={{ margin: 0, fontSize: 18, fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>{s.value}</p>
-                      <p style={{ margin: '2px 0 0', fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{s.label}</p>
-                    </div>
-                  ))}
+      {/* ── GITHUB STATS & COMMITS SLIDE-UP SHEET (Mobile Only Portal) ── */}
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {isGithubStatsOpen && (
+            <div style={{ position: 'relative', zIndex: 99999 }}>
+              <motion.div
+                className="gh-sheet-backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.22, ease: 'easeOut' }}
+                onClick={() => setIsGithubStatsOpen(false)}
+              />
+              <motion.div
+                className="gh-sheet"
+                role="dialog"
+                aria-modal="true"
+                aria-label="GitHub Profile & Activity"
+                initial={{ y: '100%' }}
+                animate={{ y: 0 }}
+                exit={{ y: '100%', transition: { duration: 0.22, ease: [0.32, 0.72, 0, 1] } }}
+                transition={{ type: 'spring', damping: 30, stiffness: 320, mass: 0.85 }}
+                drag="y"
+                dragControls={githubDragControls}
+                dragListener={false}
+                dragConstraints={{ top: 0, bottom: 0 }}
+                dragElastic={{ top: 0, bottom: 0.5 }}
+                onDragEnd={(_, info) => {
+                  if (info.offset.y > 100 || info.velocity.y > 500) setIsGithubStatsOpen(false);
+                }}
+              >
+                {/* Dedicated Touch Handle Bar */}
+                <div
+                  className="gh-sheet-handle-bar"
+                  onPointerDown={(e) => githubDragControls.start(e)}
+                >
+                  <div className="gh-sheet-handle" />
                 </div>
 
-                {/* Stats image — with loading + error states */}
-                {(() => {
-                  const themeParam = theme === 'dark' ? 'dark' : 'default';
-                  const statsUrl = `https://github-readme-stats.vercel.app/api?username=sujith1546&show_icons=true&theme=${themeParam}&hide_border=true&rank_icon=github&include_all_commits=true`;
-                  const langsUrl = `https://github-readme-stats.vercel.app/api/top-langs/?username=sujith1546&layout=compact&theme=${themeParam}&hide_border=true&langs_count=6`;
-                  return (
-                    <>
-                      <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 16, overflow: 'hidden', minHeight: 180, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <img
-                          src={statsUrl}
-                          alt="GitHub Stats"
-                          style={{ width: '100%', height: 'auto', display: 'block' }}
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                            e.currentTarget.nextSibling.style.display = 'flex';
-                          }}
-                        />
-                        <div style={{ display: 'none', flexDirection: 'column', alignItems: 'center', gap: 8, padding: 24, color: 'var(--text-secondary)' }}>
-                          <FaGithub size={28} style={{ opacity: 0.3 }} />
-                          <p style={{ margin: 0, fontSize: 13, fontWeight: 500 }}>Stats unavailable right now</p>
-                        </div>
-                      </div>
-
-                      <div style={{ background: 'var(--bg-primary)', border: '1px solid var(--border-color)', borderRadius: 16, overflow: 'hidden', minHeight: 140, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <img
-                          src={langsUrl}
-                          alt="Top Languages"
-                          style={{ width: '100%', height: 'auto', display: 'block' }}
-                          onError={(e) => {
-                            e.currentTarget.style.display = 'none';
-                            e.currentTarget.nextSibling.style.display = 'flex';
-                          }}
-                        />
-                        <div style={{ display: 'none', flexDirection: 'column', alignItems: 'center', gap: 8, padding: 24, color: 'var(--text-secondary)' }}>
-                          <p style={{ margin: 0, fontSize: 13, fontWeight: 500 }}>Languages unavailable</p>
-                        </div>
-                      </div>
-                    </>
-                  );
-                })()}
-
-                {/* Open profile button */}
-                <a
-                  href="https://github.com/sujith1546"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                    padding: '14px', background: '#0f0f0f',
-                    color: '#fff', borderRadius: 14, fontWeight: 700, fontSize: 14,
-                    textDecoration: 'none', letterSpacing: '-0.01em',
-                    boxShadow: '0 4px 16px rgba(0,0,0,0.25)'
+                {/* Header (also draggable) */}
+                <div
+                  className="gh-sheet-header"
+                  onPointerDown={(e) => {
+                    if (!e.target.closest('.gh-sheet-close')) {
+                      githubDragControls.start(e);
+                    }
                   }}
                 >
-                  <FaGithub size={16} />
-                  Open GitHub Profile
-                </a>
+                  <div className="gh-sheet-header-left">
+                    <div className="gh-sheet-header-icon">
+                      <FaGithub size={17} />
+                    </div>
+                    <div className="gh-sheet-title">
+                      <h3>GitHub Activity</h3>
+                      <p>
+                        <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
+                        @sujith1546 · Public Activity
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    className="gh-sheet-close"
+                    onClick={() => setIsGithubStatsOpen(false)}
+                    aria-label="Close GitHub sheet"
+                  >
+                    <X size={15} />
+                  </button>
+                </div>
 
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+                {/* Body / Scroll Area */}
+                <div className="gh-sheet-body">
+                  <div className="gh-sheet-content">
+
+                    {/* Hero Identity Card */}
+                    <div className="gh-hero-card">
+                      <div className="gh-hero-avatar-wrap">
+                        <img src="/IMG_0322.jpg" alt="Sujith Thota" className="gh-hero-avatar" />
+                        <span className="gh-hero-live-badge" />
+                      </div>
+                      <div className="gh-hero-info">
+                        <div className="gh-hero-name-row">
+                          <span className="gh-hero-name">Sujith Thota</span>
+                          <span className="gh-hero-tag">@sujith1546</span>
+                        </div>
+                        <p className="gh-hero-bio">Full-Stack &amp; AI Engineer · Building reactive web apps</p>
+                        <div className="gh-hero-meta">
+                          <span className="gh-meta-pill">
+                            <GitBranch size={10} style={{ color: '#10b981' }} />
+                            main branch active
+                          </span>
+                          <span className="gh-meta-pill">
+                            <Activity size={10} style={{ color: '#3b82f6' }} />
+                            Public activity
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bento Stats Grid */}
+                    <div className="gh-bento-grid">
+                      <div className="gh-bento-card gh-bento-blue">
+                        <div className="gh-bento-head">
+                          <span className="gh-bento-label">Repositories</span>
+                          <Code2 size={13} />
+                        </div>
+                        <span className="gh-bento-val">15+</span>
+                        <span className="gh-bento-sub">Public repos</span>
+                      </div>
+
+                      <div className="gh-bento-card gh-bento-amber">
+                        <div className="gh-bento-head">
+                          <span className="gh-bento-label">Contributions</span>
+                          <GitCommit size={13} />
+                        </div>
+                        <span className="gh-bento-val">200+</span>
+                        <span className="gh-bento-sub">Yearly commits</span>
+                      </div>
+
+                      <div className="gh-bento-card gh-bento-purple">
+                        <div className="gh-bento-head">
+                          <span className="gh-bento-label">Earned Stars</span>
+                          <Star size={13} />
+                        </div>
+                        <span className="gh-bento-val">10+</span>
+                        <span className="gh-bento-sub">Community stars</span>
+                      </div>
+
+                      <div className="gh-bento-card gh-bento-green">
+                        <div className="gh-bento-head">
+                          <span className="gh-bento-label">Pipeline Status</span>
+                          <CheckCircle2 size={13} />
+                        </div>
+                        <span className="gh-bento-val">100%</span>
+                        <span className="gh-bento-sub">CI/CD passing</span>
+                      </div>
+                    </div>
+
+                    {/* Live Commits List */}
+                    <div className="gh-section-box">
+                      <div className="gh-section-box-header">
+                        <div className="gh-section-box-title">
+                          <GitCommit size={12} style={{ color: '#3b82f6' }} />
+                          <span>Recent Commits &amp; Activity</span>
+                        </div>
+                        {ghLoading && <Loader2 size={12} className="spin" style={{ color: 'var(--text-muted)' }} />}
+                      </div>
+
+                      <div className="gh-commits-list">
+                        {ghCommits.map((c, idx) => (
+                          <a
+                            key={c.sha || idx}
+                            href={c.url || `https://github.com/sujith1546/newreact/commit/${c.sha}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="gh-commit-row"
+                          >
+                            <div className="gh-commit-left">
+                              <span className="gh-commit-sha">{c.sha}</span>
+                              <span className="gh-commit-msg">{c.message}</span>
+                            </div>
+                            <div className="gh-commit-right">
+                              <span className="gh-commit-time">{formatGhTimeAgo(c.date)}</span>
+                              <ArrowUpRight size={11} className="gh-commit-arrow" />
+                            </div>
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Primary Tech Stack Breakdown */}
+                    <div className="gh-section-box">
+                      <div className="gh-section-box-header">
+                        <div className="gh-section-box-title">
+                          <Zap size={12} style={{ color: '#f59e0b' }} />
+                          <span>Primary Language Breakdown</span>
+                        </div>
+                        <span className="gh-stack-count">4 core languages</span>
+                      </div>
+
+                      <div className="gh-stack-bar">
+                        <div style={{ width: '42%', background: '#3b82f6' }} title="Python 42%" />
+                        <div style={{ width: '34%', background: '#f59e0b' }} title="JavaScript 34%" />
+                        <div style={{ width: '15%', background: '#8b5cf6' }} title="TypeScript 15%" />
+                        <div style={{ width: '9%', background: '#10b981' }} title="HTML/CSS 9%" />
+                      </div>
+
+                      <div className="gh-stack-legend">
+                        <span className="gh-legend-item"><span className="gh-legend-dot" style={{ background: '#3b82f6' }} />Python 42%</span>
+                        <span className="gh-legend-item"><span className="gh-legend-dot" style={{ background: '#f59e0b' }} />JavaScript 34%</span>
+                        <span className="gh-legend-item"><span className="gh-legend-dot" style={{ background: '#8b5cf6' }} />TypeScript 15%</span>
+                        <span className="gh-legend-item"><span className="gh-legend-dot" style={{ background: '#10b981' }} />HTML/CSS 9%</span>
+                      </div>
+                    </div>
+
+                    {/* Action CTA Buttons */}
+                    <div className="gh-actions-row">
+                      <a
+                        href="https://github.com/sujith1546"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="gh-action-primary"
+                      >
+                        <FaGithub size={15} />
+                        <span>Open GitHub Profile</span>
+                        <ExternalLink size={13} style={{ marginLeft: 'auto', opacity: 0.8 }} />
+                      </a>
+
+                      <a
+                        href="https://github.com/sujith1546/newreact"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="gh-action-secondary"
+                      >
+                        <Code2 size={14} />
+                        <span>Portfolio Code</span>
+                        <ArrowUpRight size={13} style={{ marginLeft: 'auto', opacity: 0.8 }} />
+                      </a>
+                    </div>
+
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
 
       {/* Updates Slide-Up Drawer */}
@@ -1309,6 +1482,526 @@ END:VCARD`;
 
         [data-theme="dark"] .tile span {
           color: #9CA3AF !important;
+        }
+
+        /* ════════ GITHUB SLIDE-UP BOTTOM SHEET ════════ */
+        .gh-sheet-backdrop {
+          position: fixed !important;
+          inset: 0 !important;
+          background: rgba(0, 0, 0, 0.55) !important;
+          backdrop-filter: blur(12px) !important;
+          -webkit-backdrop-filter: blur(12px) !important;
+          z-index: 99998 !important;
+        }
+
+        .gh-sheet {
+          position: fixed !important;
+          bottom: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          width: 100% !important;
+          z-index: 99999 !important;
+          background: #FFFFFF !important;
+          border-top: 1.5px solid var(--border-color, #E2E8F0) !important;
+          border-top-left-radius: 24px !important;
+          border-top-right-radius: 24px !important;
+          box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.28), 0 -1px 0 rgba(255, 255, 255, 0.08) !important;
+          display: flex !important;
+          flex-direction: column !important;
+          max-height: min(84dvh, 720px) !important;
+          min-height: 52dvh !important;
+          touch-action: pan-y !important;
+          box-sizing: border-box !important;
+          overflow: hidden !important;
+        }
+
+        [data-theme="dark"] .gh-sheet {
+          background: #161B22 !important;
+          border-top-color: rgba(255, 255, 255, 0.14) !important;
+          box-shadow: 0 -18px 50px rgba(0, 0, 0, 0.65), 0 -1px 0 rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .gh-sheet-handle-bar {
+          width: 100% !important;
+          display: flex !important;
+          justify-content: center !important;
+          align-items: center !important;
+          padding: 10px 0 6px !important;
+          cursor: grab !important;
+          touch-action: none !important;
+          user-select: none !important;
+          -webkit-user-select: none !important;
+        }
+        .gh-sheet-handle-bar:active { cursor: grabbing !important; }
+
+        .gh-sheet-handle {
+          width: 38px !important;
+          height: 4.5px !important;
+          border-radius: 999px !important;
+          background: var(--border-color, #CBD5E1) !important;
+          transition: background 0.2s ease, transform 0.2s ease !important;
+        }
+        .gh-sheet-handle-bar:active .gh-sheet-handle {
+          transform: scaleX(1.15) !important;
+          background: var(--primary-blue, #3B82F6) !important;
+        }
+        [data-theme="dark"] .gh-sheet-handle {
+          background: rgba(255, 255, 255, 0.25) !important;
+        }
+
+        .gh-sheet-header {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: space-between !important;
+          padding: 4px 16px 12px !important;
+          border-bottom: 1px solid var(--border-color, #E2E8F0) !important;
+          flex-shrink: 0 !important;
+          cursor: grab !important;
+          touch-action: none !important;
+          user-select: none !important;
+          -webkit-user-select: none !important;
+        }
+        .gh-sheet-header:active { cursor: grabbing !important; }
+
+        .gh-sheet-header-left {
+          display: flex !important;
+          align-items: center !important;
+          gap: 10px !important;
+          flex: 1 !important;
+          min-width: 0 !important;
+        }
+
+        .gh-sheet-header-icon {
+          width: 32px !important;
+          height: 32px !important;
+          border-radius: 10px !important;
+          background: #0F172A !important;
+          color: #FFFFFF !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          flex-shrink: 0 !important;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25) !important;
+        }
+        [data-theme="dark"] .gh-sheet-header-icon {
+          background: #F8FAFC !important;
+          color: #0F172A !important;
+        }
+
+        .gh-sheet-title h3 {
+          font-size: 13.5px !important;
+          font-weight: 800 !important;
+          color: var(--text-primary, #111827) !important;
+          margin: 0 !important;
+          letter-spacing: -0.015em !important;
+          line-height: 1.25 !important;
+        }
+        [data-theme="dark"] .gh-sheet-title h3 {
+          color: #F9FAFB !important;
+        }
+        .gh-sheet-title p {
+          font-size: 9.5px !important;
+          font-weight: 700 !important;
+          color: #10B981 !important;
+          margin: 1px 0 0 !important;
+          display: flex !important;
+          align-items: center !important;
+          gap: 4px !important;
+          letter-spacing: 0.02em !important;
+        }
+
+        .gh-sheet-close {
+          width: 30px !important;
+          height: 30px !important;
+          border-radius: 50% !important;
+          background: var(--bg-primary, #F3F4F6) !important;
+          border: 1px solid var(--border-color, #CBD5E1) !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          color: var(--text-secondary, #6B7280) !important;
+          cursor: pointer !important;
+          flex-shrink: 0 !important;
+          margin-left: 8px !important;
+          transition: transform 0.15s ease, background 0.15s ease !important;
+          -webkit-tap-highlight-color: transparent !important;
+        }
+        .gh-sheet-close:active {
+          transform: scale(0.9) !important;
+        }
+        [data-theme="dark"] .gh-sheet-close {
+          background: rgba(255, 255, 255, 0.08) !important;
+          border-color: rgba(255, 255, 255, 0.14) !important;
+          color: #D1D5DB !important;
+        }
+
+        .gh-sheet-body {
+          flex: 1 !important;
+          overflow-y: auto !important;
+          padding: 0 !important;
+          display: flex !important;
+          flex-direction: column !important;
+          overscroll-behavior: contain !important;
+          -webkit-overflow-scrolling: touch !important;
+        }
+        .gh-sheet-body::-webkit-scrollbar { display: none !important; }
+
+        .gh-sheet-content {
+          padding: 12px 16px max(24px, env(safe-area-inset-bottom, 24px)) !important;
+          display: flex !important;
+          flex-direction: column !important;
+          gap: 12px !important;
+        }
+
+        /* ── Hero Profile Card inside Sheet ── */
+        .gh-hero-card {
+          display: flex !important;
+          align-items: center !important;
+          gap: 12px !important;
+          padding: 12px 14px !important;
+          background: var(--bg-secondary, #F8FAFC) !important;
+          border: 1.2px solid var(--border-color, #E2E8F0) !important;
+          border-radius: 16px !important;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02) !important;
+        }
+        [data-theme="dark"] .gh-hero-card {
+          background: rgba(255, 255, 255, 0.03) !important;
+          border-color: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .gh-hero-avatar-wrap {
+          position: relative !important;
+          flex-shrink: 0 !important;
+        }
+        .gh-hero-avatar {
+          width: 46px !important;
+          height: 46px !important;
+          border-radius: 14px !important;
+          object-fit: cover !important;
+          border: 1.5px solid var(--border-color, #CBD5E1) !important;
+          display: block !important;
+        }
+        .gh-hero-live-badge {
+          position: absolute !important;
+          bottom: -2px !important;
+          right: -2px !important;
+          width: 10px !important;
+          height: 10px !important;
+          border-radius: 50% !important;
+          background: #10B981 !important;
+          border: 2px solid var(--bg-secondary, #FFFFFF) !important;
+        }
+
+        .gh-hero-info {
+          flex: 1 !important;
+          min-width: 0 !important;
+          display: flex !important;
+          flex-direction: column !important;
+          gap: 2px !important;
+        }
+        .gh-hero-name-row {
+          display: flex !important;
+          align-items: center !important;
+          gap: 6px !important;
+        }
+        .gh-hero-name {
+          font-size: 13.5px !important;
+          font-weight: 800 !important;
+          color: var(--text-primary, #111827) !important;
+          letter-spacing: -0.01em !important;
+        }
+        [data-theme="dark"] .gh-hero-name {
+          color: #F9FAFB !important;
+        }
+        .gh-hero-tag {
+          font-size: 10px !important;
+          font-weight: 600 !important;
+          color: var(--text-muted, #64748B) !important;
+        }
+        .gh-hero-bio {
+          font-size: 10.5px !important;
+          color: var(--text-secondary, #475569) !important;
+          line-height: 1.35 !important;
+          margin: 0 !important;
+        }
+        [data-theme="dark"] .gh-hero-bio {
+          color: #94A3B8 !important;
+        }
+        .gh-hero-meta {
+          display: flex !important;
+          align-items: center !important;
+          gap: 6px !important;
+          margin-top: 4px !important;
+        }
+        .gh-meta-pill {
+          display: inline-flex !important;
+          align-items: center !important;
+          gap: 4px !important;
+          font-size: 8.5px !important;
+          font-weight: 700 !important;
+          color: var(--text-secondary, #475569) !important;
+          background: var(--bg-primary, #FFFFFF) !important;
+          border: 1px solid var(--border-color, #E2E8F0) !important;
+          padding: 2px 6px !important;
+          border-radius: 6px !important;
+        }
+        [data-theme="dark"] .gh-meta-pill {
+          background: rgba(255, 255, 255, 0.05) !important;
+          border-color: rgba(255, 255, 255, 0.1) !important;
+          color: #CBD5E1 !important;
+        }
+
+        /* ── Bento Stats Grid ── */
+        .gh-bento-grid {
+          display: grid !important;
+          grid-template-columns: repeat(4, 1fr) !important;
+          gap: 8px !important;
+        }
+        .gh-bento-card {
+          display: flex !important;
+          flex-direction: column !important;
+          padding: 9px 8px !important;
+          border-radius: 12px !important;
+          border: 1.2px solid var(--border-color, #E2E8F0) !important;
+          background: var(--bg-secondary, #F8FAFC) !important;
+          gap: 1px !important;
+        }
+        [data-theme="dark"] .gh-bento-card {
+          background: rgba(255, 255, 255, 0.03) !important;
+          border-color: rgba(255, 255, 255, 0.1) !important;
+        }
+        .gh-bento-head {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: space-between !important;
+          margin-bottom: 3px !important;
+        }
+        .gh-bento-label {
+          font-size: 8px !important;
+          font-weight: 700 !important;
+          text-transform: uppercase !important;
+          letter-spacing: 0.05em !important;
+          color: var(--text-muted, #64748B) !important;
+          white-space: nowrap !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+        }
+        .gh-bento-val {
+          font-size: 15px !important;
+          font-weight: 800 !important;
+          line-height: 1.1 !important;
+          letter-spacing: -0.02em !important;
+          color: var(--text-primary, #111827) !important;
+        }
+        [data-theme="dark"] .gh-bento-val {
+          color: #F9FAFB !important;
+        }
+        .gh-bento-sub {
+          font-size: 7.5px !important;
+          font-weight: 600 !important;
+          color: var(--text-muted, #94A3B8) !important;
+          white-space: nowrap !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+        }
+
+        .gh-bento-blue .gh-bento-head svg { color: #3B82F6 !important; }
+        .gh-bento-amber .gh-bento-head svg { color: #F59E0B !important; }
+        .gh-bento-purple .gh-bento-head svg { color: #8B5CF6 !important; }
+        .gh-bento-green .gh-bento-head svg { color: #10B981 !important; }
+
+        /* ── Section Box Container ── */
+        .gh-section-box {
+          display: flex !important;
+          flex-direction: column !important;
+          padding: 11px 12px !important;
+          background: var(--bg-secondary, #F8FAFC) !important;
+          border: 1.2px solid var(--border-color, #E2E8F0) !important;
+          border-radius: 14px !important;
+          gap: 8px !important;
+        }
+        [data-theme="dark"] .gh-section-box {
+          background: rgba(255, 255, 255, 0.02) !important;
+          border-color: rgba(255, 255, 255, 0.09) !important;
+        }
+        .gh-section-box-header {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: space-between !important;
+        }
+        .gh-section-box-title {
+          display: flex !important;
+          align-items: center !important;
+          gap: 6px !important;
+          font-size: 9.5px !important;
+          font-weight: 800 !important;
+          text-transform: uppercase !important;
+          letter-spacing: 0.06em !important;
+          color: var(--text-secondary, #475569) !important;
+        }
+        [data-theme="dark"] .gh-section-box-title {
+          color: #94A3B8 !important;
+        }
+        .gh-stack-count {
+          font-size: 8.5px !important;
+          font-weight: 600 !important;
+          color: var(--text-muted, #94A3B8) !important;
+        }
+
+        /* Commits list */
+        .gh-commits-list {
+          display: flex !important;
+          flex-direction: column !important;
+          gap: 6px !important;
+        }
+        .gh-commit-row {
+          display: flex !important;
+          align-items: center !important;
+          justify-content: space-between !important;
+          gap: 8px !important;
+          padding: 6px 8px !important;
+          background: var(--bg-primary, #FFFFFF) !important;
+          border: 1px solid var(--border-color, #E2E8F0) !important;
+          border-radius: 8px !important;
+          text-decoration: none !important;
+          color: inherit !important;
+          transition: transform 0.12s ease, border-color 0.12s ease !important;
+          -webkit-tap-highlight-color: transparent !important;
+        }
+        .gh-commit-row:active {
+          transform: scale(0.98) !important;
+        }
+        [data-theme="dark"] .gh-commit-row {
+          background: rgba(255, 255, 255, 0.04) !important;
+          border-color: rgba(255, 255, 255, 0.08) !important;
+        }
+        .gh-commit-left {
+          display: flex !important;
+          align-items: center !important;
+          gap: 7px !important;
+          flex: 1 !important;
+          min-width: 0 !important;
+        }
+        .gh-commit-sha {
+          font-family: monospace !important;
+          font-size: 9px !important;
+          font-weight: 700 !important;
+          color: #3B82F6 !important;
+          background: rgba(59, 130, 246, 0.1) !important;
+          border: 1px solid rgba(59, 130, 246, 0.25) !important;
+          padding: 1px 5px !important;
+          border-radius: 4px !important;
+          flex-shrink: 0 !important;
+        }
+        .gh-commit-msg {
+          font-size: 10px !important;
+          font-weight: 600 !important;
+          color: var(--text-primary, #1E293B) !important;
+          white-space: nowrap !important;
+          overflow: hidden !important;
+          text-overflow: ellipsis !important;
+        }
+        [data-theme="dark"] .gh-commit-msg {
+          color: #F1F5F9 !important;
+        }
+        .gh-commit-right {
+          display: flex !important;
+          align-items: center !important;
+          gap: 4px !important;
+          flex-shrink: 0 !important;
+        }
+        .gh-commit-time {
+          font-size: 8.5px !important;
+          font-weight: 500 !important;
+          color: var(--text-muted, #94A3B8) !important;
+        }
+        .gh-commit-arrow {
+          color: var(--text-muted, #94A3B8) !important;
+        }
+
+        /* Stack bar */
+        .gh-stack-bar {
+          display: flex !important;
+          height: 6px !important;
+          border-radius: 3px !important;
+          overflow: hidden !important;
+          background: var(--border-color, #E2E8F0) !important;
+        }
+        .gh-stack-legend {
+          display: flex !important;
+          flex-wrap: wrap !important;
+          gap: 8px !important;
+        }
+        .gh-legend-item {
+          display: inline-flex !important;
+          align-items: center !important;
+          gap: 4px !important;
+          font-size: 9px !important;
+          font-weight: 600 !important;
+          color: var(--text-secondary, #475569) !important;
+        }
+        [data-theme="dark"] .gh-legend-item {
+          color: #94A3B8 !important;
+        }
+        .gh-legend-dot {
+          width: 6px !important;
+          height: 6px !important;
+          border-radius: 50% !important;
+          display: inline-block !important;
+        }
+
+        /* Action Buttons */
+        .gh-actions-row {
+          display: flex !important;
+          gap: 8px !important;
+          margin-top: 2px !important;
+        }
+        .gh-action-primary {
+          flex: 1 !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          gap: 6px !important;
+          background: #0F172A !important;
+          color: #FFFFFF !important;
+          font-size: 11.5px !important;
+          font-weight: 700 !important;
+          padding: 10px 12px !important;
+          border-radius: 12px !important;
+          text-decoration: none !important;
+          box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18) !important;
+          transition: transform 0.12s ease !important;
+          -webkit-tap-highlight-color: transparent !important;
+        }
+        .gh-action-primary:active { transform: scale(0.98) !important; }
+        [data-theme="dark"] .gh-action-primary {
+          background: #FFFFFF !important;
+          color: #0F172A !important;
+          box-shadow: 0 4px 14px rgba(255, 255, 255, 0.15) !important;
+        }
+
+        .gh-action-secondary {
+          flex: 1 !important;
+          display: flex !important;
+          align-items: center !important;
+          justify-content: center !important;
+          gap: 6px !important;
+          background: var(--bg-secondary, #F8FAFC) !important;
+          border: 1.2px solid var(--border-color, #E2E8F0) !important;
+          color: var(--text-primary, #0F172A) !important;
+          font-size: 11.5px !important;
+          font-weight: 700 !important;
+          padding: 10px 12px !important;
+          border-radius: 12px !important;
+          text-decoration: none !important;
+          transition: transform 0.12s ease !important;
+          -webkit-tap-highlight-color: transparent !important;
+        }
+        .gh-action-secondary:active { transform: scale(0.98) !important; }
+        [data-theme="dark"] .gh-action-secondary {
+          background: rgba(255, 255, 255, 0.05) !important;
+          border-color: rgba(255, 255, 255, 0.12) !important;
+          color: #F8FAFC !important;
         }
       `}</style>
     </>

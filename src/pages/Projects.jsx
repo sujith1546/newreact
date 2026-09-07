@@ -28,7 +28,7 @@ function getBadgeTheme(category = '') {
   return 'green';
 }
 
-/* ─── Mobile Featured-Projects Carousel (clean, executive card design) ─── */
+/* ─── Mobile Featured-Projects Carousel (Education snap-card mirror) ─── */
 function MobileCarousel({ projects, onOpen }) {
   const [activeIdx, setActiveIdx] = useState(0);
   const trackRef = useRef(null);
@@ -37,7 +37,7 @@ function MobileCarousel({ projects, onOpen }) {
     if (!trackRef.current) return;
     const { scrollLeft, offsetWidth } = trackRef.current;
     const card = trackRef.current.querySelector('.mpj-feat-slide');
-    const cardWidth = card ? card.offsetWidth + 10 : offsetWidth * 0.84;
+    const cardWidth = card ? card.offsetWidth + 12 : offsetWidth * 0.85;
     const idx = Math.round(scrollLeft / cardWidth);
     setActiveIdx(Math.min(Math.max(0, idx), projects.length - 1));
   };
@@ -55,29 +55,36 @@ function MobileCarousel({ projects, onOpen }) {
 
   return (
     <div>
-      {/* Section header with counter + arrows */}
-      <div className="mpj-feat-header">
-        <p className="mpj-section-label" style={{ margin: 0 }}>
-          <Star size={11} style={{ color: '#f59e0b' }} />
-          All Projects
-        </p>
-        <div className="mpj-feat-controls">
-          <span className="mpj-feat-counter">{activeIdx + 1} / {projects.length}</span>
+      {/* Header with Title & Controls matching Education */}
+      <div className="mpj-mobile-header">
+        <div className="mpj-mobile-title-wrap">
+          <div className="mpj-mobile-icon-box">
+            <Sparkles size={15} />
+          </div>
+          <div>
+            <h2 className="mpj-mobile-heading">Featured Projects</h2>
+            <p className="mpj-mobile-sub">Production apps &amp; intelligent systems</p>
+          </div>
+        </div>
+        <div className="mpj-mobile-controls">
+          <span className="mpj-mobile-counter">
+            {activeIdx + 1} / {projects.length}
+          </span>
           <button
-            className="mpj-feat-arrow"
+            className="mpj-nav-btn"
             onClick={() => scrollTo(Math.max(0, activeIdx - 1))}
             disabled={activeIdx === 0}
             aria-label="Previous project"
           >
-            <ChevronLeft size={13} />
+            <ChevronLeft size={14} />
           </button>
           <button
-            className="mpj-feat-arrow"
+            className="mpj-nav-btn"
             onClick={() => scrollTo(Math.min(projects.length - 1, activeIdx + 1))}
             disabled={activeIdx === projects.length - 1}
             aria-label="Next project"
           >
-            <ChevronRight size={13} />
+            <ChevronRight size={14} />
           </button>
         </div>
       </div>
@@ -94,11 +101,17 @@ function MobileCarousel({ projects, onOpen }) {
             ? project.tags.split(',').slice(0, 4).map(t => t.trim())
             : [];
 
-          // Build badge text
+          // Category icon
+          const CategoryIcon = category === 'AI & ML' ? Brain : category === 'Full Stack' ? Code2 : Database;
+
+          // Metric or score badge
           const metricMatch = (project.description || '').match(/(\d+[%.+k]+)/i);
           const metric = project.stats?.[0]?.value || (metricMatch ? metricMatch[1] : null);
-          const liveLabel = project.liveUrl ? '🚀 Live' : '⚡ Featured';
-          const badge = metric ? `${liveLabel} · ${metric}` : `${liveLabel} · ${category}`;
+          const hasScore = Boolean(metric || project.liveUrl);
+          const scoreText = metric ? metric : (project.liveUrl ? 'Live' : null);
+
+          // Subtitle / Architecture summary
+          const subText = project.subtitle || (techTags.length >= 2 ? `${techTags[0]} · ${techTags[1]}` : category);
 
           return (
             <div
@@ -106,46 +119,54 @@ function MobileCarousel({ projects, onOpen }) {
               className="mpj-feat-slide"
               onClick={() => onOpen(project)}
             >
-              {/* Badge top row */}
+              {/* Top Row: Category Badge + Score/Metric Badge */}
               <div className="mpj-feat-top-row">
                 <div className={`mpj-feat-badge mpj-feat-badge--${badgeTheme}`}>
                   <span className="mpj-badge-dot" />
-                  {badge}
+                  {category}
                 </div>
+                {hasScore && (
+                  <div className="mpj-feat-score">
+                    <Star size={10} style={{ color: '#F59E0B' }} />
+                    <span>{scoreText}</span>
+                  </div>
+                )}
               </div>
 
               {/* Title */}
               <h3 className="mpj-feat-title">{project.title}</h3>
 
-              {/* Description */}
+              {/* Subtitle / Tech Spec */}
+              <p className="mpj-feat-sub">
+                <CategoryIcon size={10} style={{ flexShrink: 0 }} />
+                <span>{subText}</span>
+              </p>
+
+              {/* Description (3 lines clamped) */}
               <p className="mpj-feat-desc">{project.description || ''}</p>
 
-              {/* Tech tags */}
-              <div className="mpj-feat-tags">
-                {techTags.map(t => (
-                  <span key={t} className="mpj-feat-tag">
-                    {t}
-                  </span>
-                ))}
-              </div>
+              {/* Tech Tags */}
+              {techTags.length > 0 && (
+                <div className="mpj-feat-tags">
+                  {techTags.map(t => (
+                    <span key={t} className="mpj-feat-tag">
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              )}
 
-              {/* Actions row */}
+              {/* Actions Row */}
               <div className="mpj-feat-actions" onClick={(e) => e.stopPropagation()}>
-                <button
-                  className="mpj-feat-action-primary"
-                  onClick={() => onOpen(project)}
-                >
-                  <ExternalLink size={12} />
-                  View Case Study
-                </button>
-                <div style={{ display: 'flex', gap: '6px' }}>
+                <div className="mpj-feat-links">
                   {project.githubUrl && (
                     <button
                       className="mpj-feat-icon-btn"
                       onClick={(e) => { e.stopPropagation(); window.open(project.githubUrl, '_blank', 'noopener,noreferrer'); }}
-                      aria-label="GitHub"
+                      aria-label="GitHub Repository"
+                      title="GitHub"
                     >
-                      <FaGithub size={13} />
+                      <FaGithub size={12} />
                     </button>
                   )}
                   {project.liveUrl && (
@@ -153,11 +174,20 @@ function MobileCarousel({ projects, onOpen }) {
                       className="mpj-feat-icon-btn"
                       onClick={(e) => { e.stopPropagation(); window.open(project.liveUrl, '_blank', 'noopener,noreferrer'); }}
                       aria-label="Live Demo"
+                      title="Live Demo"
                     >
-                      <ExternalLink size={13} />
+                      <ExternalLink size={12} />
                     </button>
                   )}
                 </div>
+
+                <button
+                  className="mpj-feat-action-btn"
+                  onClick={() => onOpen(project)}
+                >
+                  <span>View Case Study</span>
+                  <ChevronRight size={12} />
+                </button>
               </div>
             </div>
           );
@@ -614,57 +644,126 @@ export default function Projects() {
           [data-theme="dark"] .mpj-filter-count { background: rgba(255,255,255,0.12); }
           .mpj-filter-chip--active .mpj-filter-count { background: rgba(255,255,255,0.25); color: #fff; }
 
-          /* ── Carousel header row ── */
-          .mpj-feat-header {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 0 4px;
+          /* ── Mobile Carousel Header ── */
+          .mpj-mobile-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 0 2px;
           }
-          .mpj-feat-controls { display: flex; align-items: center; gap: 5px; }
-          .mpj-feat-counter {
-            font-size: 9.5px; font-weight: 700; color: var(--text-muted);
-            padding: 2px 7px; border-radius: 6px; background: var(--bg-secondary);
+          .mpj-mobile-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+          }
+          .mpj-mobile-icon-box {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary-blue, #3B82F6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+          }
+          [data-theme="dark"] .mpj-mobile-icon-box {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60A5FA;
+          }
+          .mpj-mobile-heading {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin: 0;
+            line-height: 1.2;
+            letter-spacing: -0.01em;
+          }
+          .mpj-mobile-sub {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin: 1px 0 0;
+            line-height: 1.2;
+          }
+          .mpj-mobile-controls {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+          }
+          .mpj-mobile-counter {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+            background: var(--bg-secondary);
             border: 1px solid var(--border-color);
+            padding: 2px 8px;
+            border-radius: 20px;
+            letter-spacing: 0.03em;
           }
-          .mpj-feat-arrow {
-            width: 24px; height: 24px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            background: var(--bg-secondary); border: 1px solid var(--border-color);
-            color: var(--text-secondary); cursor: pointer; padding: 0;
-            transition: background 0.15s, opacity 0.15s;
+          .mpj-nav-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.15s ease, background 0.15s ease;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
           }
-          .mpj-feat-arrow:active { background: var(--bg-primary); }
-          .mpj-feat-arrow:disabled { opacity: 0.3; cursor: default; }
+          .mpj-nav-btn:active:not(:disabled) {
+            transform: scale(0.92);
+          }
+          .mpj-nav-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+          }
 
-          /* ── Horizontal snap track ── */
+          /* ── Snap Track ── */
           .mpj-feat-track {
-            display: flex; overflow-x: auto;
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
             scroll-snap-type: x mandatory;
             scroll-padding-left: 2px;
+            margin: 0;
+            padding: 4px 2px 14px;
             -webkit-overflow-scrolling: touch;
-            gap: 10px; padding: 4px 2px 6px;
-            -ms-overflow-style: none; scrollbar-width: none;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
           }
-          .mpj-feat-track::-webkit-scrollbar { display: none; }
-          .mpj-feat-track::after { content: ''; flex: 0 0 4px; }
+          .mpj-feat-track::-webkit-scrollbar {
+            display: none;
+          }
+          .mpj-feat-track::after {
+            content: '';
+            flex: 0 0 4px;
+          }
 
-          /* ── Individual slide card ── */
+          /* ── Individual snap card (mirrors .medu-snap-card) ── */
           .mpj-feat-slide {
-            min-width: 85%; max-width: 85%;
+            flex: 0 0 85%;
+            min-width: 85%;
+            max-width: 85%;
             scroll-snap-align: start;
-            border-radius: 16px;
-            border: 1.5px solid var(--border-color, #CBD5E1);
+            box-sizing: border-box;
             background: var(--bg-secondary, #FFFFFF);
+            border: 1.5px solid var(--border-color, #CBD5E1);
+            border-radius: 16px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
             padding: 14px 15px;
-            position: relative;
-            overflow: hidden;
-            flex-shrink: 0;
-            box-sizing: border-box;
             display: flex;
             flex-direction: column;
             cursor: pointer;
             transition: transform 0.15s ease, border-color 0.15s ease;
             -webkit-tap-highlight-color: transparent;
+            position: relative;
+            overflow: hidden;
           }
           .mpj-feat-slide:active {
             transform: scale(0.985);
@@ -680,6 +779,7 @@ export default function Projects() {
             align-items: center;
             justify-content: space-between;
             margin-bottom: 8px;
+            gap: 6px;
           }
 
           .mpj-feat-badge {
@@ -692,7 +792,7 @@ export default function Projects() {
             font-size: 9.5px;
             font-weight: 600;
             letter-spacing: 0.02em;
-            width: fit-content;
+            white-space: nowrap;
           }
           .mpj-badge-dot {
             width: 4.5px;
@@ -734,14 +834,45 @@ export default function Projects() {
             color: #34D399;
           }
 
+          .mpj-feat-score {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1.2px solid rgba(245, 158, 11, 0.3);
+            color: #D97706;
+            font-size: 9.5px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 12px;
+            white-space: nowrap;
+          }
+          [data-theme="dark"] .mpj-feat-score {
+            background: rgba(245, 158, 11, 0.16);
+            border-color: rgba(245, 158, 11, 0.35);
+            color: #FBBF24;
+          }
+
           .mpj-feat-title {
             font-size: 14.5px;
             font-weight: 700;
             color: var(--text-primary);
-            margin: 0 0 5px;
+            margin: 0 0 4px;
             letter-spacing: -0.015em;
+            line-height: 1.25;
+          }
+
+          .mpj-feat-sub {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 10.5px;
+            font-weight: 600;
+            color: var(--primary-blue, #3B82F6);
+            margin: 0 0 8px;
             line-height: 1.3;
           }
+
           .mpj-feat-desc {
             font-size: 11px;
             color: var(--text-secondary);
@@ -753,12 +884,14 @@ export default function Projects() {
             -webkit-box-orient: vertical;
             overflow: hidden;
           }
+
           .mpj-feat-tags {
             display: flex;
             flex-wrap: wrap;
             gap: 5px;
             margin-bottom: 12px;
           }
+
           .mpj-feat-tag {
             font-size: 9px;
             font-weight: 500;
@@ -774,38 +907,25 @@ export default function Projects() {
             border-color: rgba(255, 255, 255, 0.12);
             color: var(--text-muted, #9CA3AF);
           }
+
           .mpj-feat-actions {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 6px;
             margin-top: auto;
             padding-top: 4px;
           }
-          .mpj-feat-action-primary {
-            display: inline-flex;
+
+          .mpj-feat-links {
+            display: flex;
             align-items: center;
-            gap: 5px;
-            font-size: 11px;
-            font-weight: 600;
-            border-radius: 8px;
-            padding: 6px 12px;
-            background: var(--primary-blue, #3B82F6);
-            color: #ffffff;
-            border: none;
-            cursor: pointer;
-            box-shadow: 0 2px 6px rgba(59, 130, 246, 0.25);
-            transition: transform 0.15s ease, opacity 0.15s ease;
-            -webkit-tap-highlight-color: transparent;
+            gap: 6px;
           }
-          .mpj-feat-action-primary:active {
-            transform: scale(0.96);
-            opacity: 0.9;
-          }
+
           .mpj-feat-icon-btn {
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
+            width: 26px;
+            height: 26px;
+            border-radius: 7px;
             border: 1px solid var(--border-color);
             background: var(--bg-primary);
             color: var(--text-secondary);
@@ -814,12 +934,31 @@ export default function Projects() {
             justify-content: center;
             cursor: pointer;
             transition: all 0.15s ease;
+            padding: 0;
             -webkit-tap-highlight-color: transparent;
           }
           .mpj-feat-icon-btn:active {
             color: var(--primary-blue);
             border-color: var(--primary-blue);
-            transform: scale(0.94);
+            transform: scale(0.92);
+          }
+
+          .mpj-feat-action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 10.5px;
+            font-weight: 600;
+            color: var(--primary-blue, #3B82F6);
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            transition: opacity 0.15s;
+            -webkit-tap-highlight-color: transparent;
+          }
+          .mpj-feat-action-btn:active {
+            opacity: 0.7;
           }
 
           /* ── Dots pagination ── */
@@ -828,8 +967,8 @@ export default function Projects() {
             align-items: center;
             justify-content: center;
             gap: 5px;
-            margin-top: 8px;
-            margin-bottom: 4px;
+            margin-top: 6px;
+            margin-bottom: 14px;
           }
           .mpj-feat-dot {
             width: 5px;

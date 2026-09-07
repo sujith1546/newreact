@@ -22,6 +22,7 @@ export { default as WelcomeModal } from './widgets/WelcomeModal';
 export { default as QRModal } from './widgets/QRModal';
 export { default as MobileStatusPanel } from './widgets/MobileStatusPanel';
 export { default as MobileDashboard } from './widgets/MobileDashboard';
+export { default as HeroStats } from './widgets/HeroStats';
 export { default as ScheduleUpcomingModal } from './widgets/ScheduleUpcomingModal';
 export { default as GitHubCommitsModal } from './widgets/GitHubCommitsModal';
 export { default as UpdatesModal } from './widgets/UpdatesModal';

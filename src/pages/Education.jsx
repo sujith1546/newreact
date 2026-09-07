@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { MapPin, Trophy, Laptop, BookOpen, School, X, Hand, ChevronRight, ChevronLeft, ChevronDown, Loader2, GraduationCap, Award } from 'lucide-react';
 import { ScrollReveal, EducationArrowFlow } from '../components';
 import useRealtimeData from '../hooks/useRealtimeData';
@@ -219,6 +219,7 @@ export default function Education() {
   const sheetContentRef = useRef(null);
   const [mobileActiveIdx, setMobileActiveIdx] = useState(0);
   const mobileTrackRef = useRef(null);
+  const dragControls = useDragControls();
 
   const handleMobileScroll = () => {
     const track = mobileTrackRef.current;
@@ -259,12 +260,40 @@ export default function Education() {
       setTimelineData([]);
     }
   }, [rawEducation]);
+
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 900);
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 900;
+      setIsMobile(mobile);
+      if (!mobile) {
+        setSelectedItem(null);
+      }
+    };
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Lock body scroll and listen for Escape key when mobile detail sheet is open
+  useEffect(() => {
+    if (isMobile && selectedItem) {
+      const originalOverflow = document.body.style.overflow;
+      const originalTouchAction = document.body.style.touchAction;
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+
+      const handleKeyDown = (e) => {
+        if (e.key === 'Escape') setSelectedItem(null);
+      };
+      window.addEventListener('keydown', handleKeyDown);
+
+      return () => {
+        document.body.style.overflow = originalOverflow;
+        document.body.style.touchAction = originalTouchAction;
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, [isMobile, selectedItem]);
 
   useEffect(() => {
     if (selectedItem) {
@@ -1289,44 +1318,94 @@ export default function Education() {
           .dsheet-backdrop {
             position: fixed; inset: 0;
             background: rgba(0,0,0,.65);
-            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
             will-change: opacity, backdrop-filter; transform: translateZ(0);
             z-index: 10000;
           }
           .dsheet {
             position: fixed; bottom: 0; left: 0; right: 0; z-index: 10001;
-            background: var(--bg-secondary); border-top-left-radius: 22px; border-top-right-radius: 22px;
+            background: var(--bg-secondary, #ffffff);
+            border-top-left-radius: 26px; border-top-right-radius: 26px;
+            border-top: 1px solid var(--border-color, rgba(0,0,0,0.1));
             will-change: transform; transform: translateZ(0); backface-visibility: hidden;
-            box-shadow: 0 -16px 48px rgba(0,0,0,.25), 0 -1px 0 rgba(255,255,255,.06);
+            box-shadow: 0 -16px 48px rgba(0,0,0,.28), 0 -1px 0 rgba(255,255,255,.08);
             display: flex; flex-direction: column;
-            max-height: 66vh; max-height: 66dvh;
+            max-height: min(78dvh, 680px);
+            min-height: 48dvh;
             height: auto;
+            touch-action: pan-y;
+          }
+          [data-theme="dark"] .dsheet {
+            background: #161B22;
+            border-top-color: rgba(255,255,255,0.14);
+            box-shadow: 0 -18px 50px rgba(0,0,0,.55), 0 -1px 0 rgba(255,255,255,.1);
+          }
+          .dsheet-handle-bar {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px 0 6px;
+            cursor: grab;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+          }
+          .dsheet-handle-bar:active {
+            cursor: grabbing;
           }
           .dsheet-handle {
-            width: 32px; height: 3.5px; border-radius: 2px; background: var(--border-color);
-            margin: 8px auto 2px; flex-shrink: 0;
+            width: 38px; height: 4.5px; border-radius: 999px;
+            background: var(--border-color, #cbd5e1);
+            transition: background 0.2s ease, transform 0.2s ease;
+          }
+          .dsheet-handle-bar:active .dsheet-handle {
+            transform: scaleX(1.15);
+            background: var(--primary-blue, #3b82f6);
+          }
+          [data-theme="dark"] .dsheet-handle {
+            background: rgba(255,255,255,0.25);
           }
           .dsheet-header {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 8px 14px 8px; border-bottom: 1px solid var(--border-color); flex-shrink: 0;
+            padding: 4px 16px 12px; border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+            cursor: grab;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
           }
-          .dsheet-header-left { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+          .dsheet-header:active {
+            cursor: grabbing;
+          }
+          .dsheet-header-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
           .dsheet-header-icon {
-            width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0;
+            width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
             display: flex; align-items: center; justify-content: center;
           }
-          .dsheet-title h3 { font-size: 13px; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: -.015em; line-height: 1.2; }
-          .dsheet-title p { font-size: 8.5px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; letter-spacing: .05em; margin: 0; }
+          .dsheet-title h3 { font-size: 13.5px; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: -.015em; line-height: 1.25; }
+          .dsheet-title p { font-size: 9px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; letter-spacing: .05em; margin: 1px 0 0; }
           .dsheet-close {
-            width: 22px; height: 22px; border-radius: 11px; background: var(--bg-primary);
+            width: 30px; height: 30px; border-radius: 50%; background: var(--bg-primary);
             border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center;
-            color: var(--text-secondary); cursor: pointer; flex-shrink: 0; margin-left: 6px;
+            color: var(--text-secondary); cursor: pointer; flex-shrink: 0; margin-left: 8px;
+            transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
+            -webkit-tap-highlight-color: transparent;
+          }
+          .dsheet-close:active {
+            transform: scale(0.9);
+            color: var(--text-primary);
           }
           .dsheet-body {
             flex: 1; overflow-y: auto; padding: 0; display: flex; flex-direction: column; position: relative;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
           }
           .dsheet-body::-webkit-scrollbar { display: none; }
-          .dsheet-content { padding: 8px 12px 18px; display: flex; flex-direction: column; gap: 8px; }
+          .dsheet-content {
+            padding: 12px 16px max(24px, env(safe-area-inset-bottom, 24px));
+            display: flex; flex-direction: column; gap: 12px;
+          }
           
           .dsheet-section-label {
             font-size: 8.5px; font-weight: 800; color: var(--text-muted);
@@ -1615,10 +1694,10 @@ export default function Education() {
         )}
       </div>
 
-      {/* ── DETAIL SHEET (Mobile) ── */}
-      {typeof document !== 'undefined' && createPortal(
+      {/* ── DETAIL SHEET (Strictly Mobile Only) ── */}
+      {isMobile && typeof document !== 'undefined' && createPortal(
         <AnimatePresence>
-          {selectedItem && (() => {
+          {isMobile && selectedItem && (() => {
             const itemIndex = timelineData.indexOf(selectedItem);
             const accents = ['#3b82f6', '#eab308', '#10b981', '#8b5cf6'];
             const accent = accents[itemIndex % accents.length];
@@ -1627,33 +1706,57 @@ export default function Education() {
             <div style={{ position: 'relative', zIndex: 9999 }}>
               <motion.div
                 className="dsheet-backdrop"
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.22, ease: 'easeOut' }}
                 onClick={() => setSelectedItem(null)}
               />
               <motion.div
                 className="dsheet"
-                initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-                transition={{ type: 'spring', damping: 32, stiffness: 350, mass: 0.9 }}
+                initial={{ y: '100%' }}
+                animate={{ y: 0 }}
+                exit={{ y: '100%', transition: { duration: 0.22, ease: [0.32, 0.72, 0, 1] } }}
+                transition={{ type: 'spring', damping: 30, stiffness: 320, mass: 0.85 }}
                 drag="y"
+                dragControls={dragControls}
+                dragListener={false}
                 dragConstraints={{ top: 0, bottom: 0 }}
-                dragElastic={{ top: 0, bottom: 0.4 }}
-                onDragEnd={(_, info) => { if (info.offset.y > 120 || info.velocity.y > 600) setSelectedItem(null); }}
+                dragElastic={{ top: 0, bottom: 0.5 }}
+                onDragEnd={(_, info) => { if (info.offset.y > 100 || info.velocity.y > 500) setSelectedItem(null); }}
               >
-                <div className="dsheet-handle" />
+                {/* Dedicated Touch Handle Bar */}
+                <div 
+                  className="dsheet-handle-bar"
+                  onPointerDown={(e) => dragControls.start(e)}
+                >
+                  <div className="dsheet-handle" />
+                </div>
 
-                {/* Header with accent icon */}
-                <div className="dsheet-header">
+                {/* Header with accent icon (also draggable) */}
+                <div 
+                  className="dsheet-header"
+                  onPointerDown={(e) => {
+                    if (!e.target.closest('.dsheet-close')) {
+                      dragControls.start(e);
+                    }
+                  }}
+                >
                   <div className="dsheet-header-left">
                     <div className="dsheet-header-icon" style={{ background: accent + '18', color: accent, border: `1px solid ${accent}30` }}>
-                      <Icon size={15} />
+                      <Icon size={16} />
                     </div>
                     <div className="dsheet-title">
                       <h3>{selectedItem.title}</h3>
                       <p>{selectedItem.institution}</p>
                     </div>
                   </div>
-                  <button className="dsheet-close" onClick={() => setSelectedItem(null)}>
-                    <X size={14} />
+                  <button 
+                    className="dsheet-close" 
+                    onClick={() => setSelectedItem(null)}
+                    aria-label="Close details"
+                  >
+                    <X size={15} />
                   </button>
                 </div>
 

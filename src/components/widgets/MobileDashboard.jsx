@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Loader2, ArrowDown, ChevronLeft, ChevronRight, Clock, Send, FileText, Zap, Code2, Database, Brain, Globe, ExternalLink, Star, TrendingUp, Award, Briefcase, GraduationCap, Sparkles, ArrowUpRight } from 'lucide-react';
+import { MapPin, Loader2, ArrowDown, ChevronLeft, ChevronRight, Clock, Send, FileText, Zap, Code2, Database, Brain, Globe, ExternalLink, Star, TrendingUp, Award, Briefcase, GraduationCap, Sparkles, ArrowUpRight, User, Languages } from 'lucide-react';
 import useGlitchText from '../../hooks/useGlitchText';
 import useRealtimeData from '../../hooks/useRealtimeData';
 import { useLocalTime } from '../../hooks/useLocalTime';
+import HeroStats from './HeroStats';
 
 /* ── Robust Count-up hook ─────────────────────────────────── */
 function useCountUp(target, duration = 900) {
@@ -68,16 +69,6 @@ const milestones = [
     targetPage: "skills",
   },
   {
-    id: 'hackathon',
-    icon: Award,
-    badge: "SIH Winner",
-    heading: "Smart India Hackathon winner",
-    desc: "Spearheaded architecture for an AI disaster coordination platform in a 36-hour sprint, winning SIH.",
-    tags: ["Team Lead", "36h Sprint", "Disaster AI"],
-    linkLabel: "Moments",
-    targetPage: "moments",
-  },
-  {
     id: 'internship',
     icon: Briefcase,
     badge: "Industry · Cognizant",
@@ -128,7 +119,7 @@ export default function MobileDashboard({ onNavClick }) {
     const track = trackRef.current;
     if (!track) return;
     const card = track.querySelector('.milestone-card');
-    const cardWidth = card ? card.offsetWidth + 12 : 1;
+    const cardWidth = card ? card.offsetWidth + 10 : 1;
     const index = Math.round(track.scrollLeft / cardWidth);
     setActiveMilestone(Math.max(0, Math.min(index, milestones.length - 1)));
   };
@@ -137,7 +128,7 @@ export default function MobileDashboard({ onNavClick }) {
     const track = trackRef.current;
     if (!track) return;
     const card = track.querySelector('.milestone-card');
-    const cardWidth = card ? card.offsetWidth + 12 : 1;
+    const cardWidth = card ? card.offsetWidth + 10 : 1;
     track.scrollTo({ left: idx * cardWidth, behavior: 'smooth' });
     setActiveMilestone(idx);
   };
@@ -207,120 +198,7 @@ export default function MobileDashboard({ onNavClick }) {
           display: flex; align-items: center; gap: 6px;
         }
 
-        /* ════════ PROFILE SECTION ════════ */
-        .hd-profile {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-          padding: 6px 14px 6px;
-        }
-        .hd-profile-left {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          flex: 1;
-          min-width: 0;
-        }
-        .hd-avatar-wrap {
-          position: relative;
-          flex-shrink: 0;
-        }
-        .hd-avatar {
-          width: 66px;
-          height: 66px;
-          border-radius: 18px;
-          object-fit: cover;
-          border: 2px solid var(--border-color, #CBD5E1);
-          background: var(--bg-secondary);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-          display: block;
-        }
-        .hd-profile-info {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-          flex: 1;
-          min-width: 0;
-        }
-        .hd-name {
-          font-size: 19px;
-          font-weight: 800;
-          color: var(--text-primary);
-          letter-spacing: -.04em;
-          margin: 0;
-          line-height: 1.15;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-        .hd-role {
-          font-size: 10.5px;
-          color: var(--text-secondary);
-          margin: 0;
-          font-weight: 600;
-          display: flex;
-          align-items: center;
-          gap: 5px;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-        .hd-location {
-          display: flex;
-          align-items: center;
-          gap: 4px;
-          font-size: 9.5px;
-          color: var(--text-muted);
-          margin: 0;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-        .hd-profile-right {
-          display: flex;
-          flex-direction: column;
-          align-items: flex-end;
-          gap: 5px;
-          flex-shrink: 0;
-        }
-        .hd-avail {
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          background: rgba(16,185,129,.12);
-          border: 1px solid rgba(16,185,129,.3);
-          border-radius: 20px;
-          padding: 3px 8px;
-          font-size: 8.5px;
-          font-weight: 700;
-          color: #10b981;
-          white-space: nowrap;
-        }
-        .hd-avail-dot {
-          width: 5px;
-          height: 5px;
-          border-radius: 50%;
-          background: #10b981;
-          animation: hd-pulse 2s ease-in-out infinite;
-        }
-        .hd-time-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          font-size: 8.5px;
-          font-weight: 600;
-          color: var(--text-muted);
-          background: var(--bg-secondary);
-          border: 1px solid var(--border-color);
-          border-radius: 12px;
-          padding: 2px 7px;
-          white-space: nowrap;
-        }
-        @keyframes hd-pulse {
-          0%,100% { opacity:1; transform:scale(1); }
-          50%      { opacity:.4; transform:scale(1.6); }
-        }
+
 
         /* ════════ UNIFIED SECTION HEADINGS SYSTEM ════════ */
         .hd-section-bar {
@@ -358,201 +236,134 @@ export default function MobileDashboard({ onNavClick }) {
           border-color: rgba(255, 255, 255, 0.14);
         }
 
-        .hd-bio {
-          padding: 2px 14px 12px;
-          font-size: 11.5px;
-          color: var(--text-secondary);
-          line-height: 1.6;
-          margin: 0;
-        }
-
-        .hd-bento-strip {
-          display: flex;
-          overflow-x: auto;
-          scroll-snap-type: x mandatory;
-          scroll-padding-left: 14px;
-          -webkit-overflow-scrolling: touch;
-          gap: 10px;
-          padding: 2px 14px 8px;
-          margin-bottom: 2px;
-          scrollbar-width: none;
-          -ms-overflow-style: none;
-        }
-        .hd-bento-strip::-webkit-scrollbar {
-          display: none;
-        }
-        .hd-bento-strip::after {
-          content: '';
-          flex: 0 0 4px;
-        }
-        .hd-bento-card {
-          flex: 0 0 144px;
-          scroll-snap-align: start;
+        /* ════════ ABOUT ME CLEAN ORGANIC SECTION ════════ */
+        .about-clean-wrap {
           display: flex;
           flex-direction: column;
-          padding: 12px 13px;
-          border-radius: 14px;
-          border: 1.5px solid var(--border-color, #CBD5E1);
-          background: var(--bg-secondary, #FFFFFF);
-          position: relative;
-          overflow: hidden;
-          gap: 2px;
-          cursor: pointer;
-          outline: none;
-          text-align: left;
-          font-family: inherit;
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
-          transition: transform 0.15s ease, border-color 0.15s ease;
-          -webkit-tap-highlight-color: transparent;
+          gap: 10px;
+          padding: 2px 14px 12px;
+          width: 100%;
+          box-sizing: border-box;
         }
-        .hd-bento-card:active {
-          transform: scale(0.97);
+
+        .about-clean-bio {
+          font-size: 13px;
+          font-weight: 450;
+          line-height: 1.6;
+          color: var(--text-secondary, #475569);
+          margin: 0;
+          letter-spacing: -0.01em;
         }
-        [data-theme="dark"] .hd-bento-card {
-          background: var(--bg-secondary, #161B22);
-          border: 1.5px solid rgba(255, 255, 255, 0.15);
-          box-shadow: 0 2px 10px rgba(0, 0, 0, 0.25);
+
+        [data-theme="dark"] .about-clean-bio {
+          color: #cbd5e1;
         }
-        .hd-bento-card-header {
+
+        .about-clean-tags {
           display: flex;
           align-items: center;
-          justify-content: space-between;
-          margin-bottom: 5px;
-        }
-        .hd-bento-icon-wrap {
-          width: 26px;
-          height: 26px;
-          border-radius: 7px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-        }
-        .hd-bento-jump {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: var(--text-muted, #9CA3AF);
-          opacity: 0.7;
-          transition: opacity 0.15s ease, transform 0.15s ease;
-        }
-        .hd-bento-card:hover .hd-bento-jump,
-        .hd-bento-card:active .hd-bento-jump {
-          opacity: 1;
-          transform: translate(1px, -1px);
+          gap: 6px;
+          flex-wrap: wrap;
         }
 
-        /* ── Semantic Card Variants ── */
-        /* Blue (Education) */
-        .hd-bento-card--blue .hd-bento-icon-wrap {
-          background: rgba(59, 130, 246, 0.10);
-          border: 1.2px solid rgba(59, 130, 246, 0.28);
-          color: #2563EB;
-        }
-        [data-theme="dark"] .hd-bento-card--blue .hd-bento-icon-wrap {
-          background: rgba(59, 130, 246, 0.18);
-          border-color: rgba(59, 130, 246, 0.35);
-          color: #60A5FA;
-        }
-        .hd-bento-card--blue:hover .hd-bento-jump { color: #3B82F6; }
-        .hd-bento-card--blue .hd-bento-dot { background: #3B82F6; }
-
-        /* Amber (Certifications) */
-        .hd-bento-card--amber .hd-bento-icon-wrap {
-          background: rgba(245, 158, 11, 0.10);
-          border: 1.2px solid rgba(245, 158, 11, 0.28);
-          color: #D97706;
-        }
-        [data-theme="dark"] .hd-bento-card--amber .hd-bento-icon-wrap {
-          background: rgba(245, 158, 11, 0.18);
-          border-color: rgba(245, 158, 11, 0.35);
-          color: #FBBF24;
-        }
-        .hd-bento-card--amber:hover .hd-bento-jump { color: #F59E0B; }
-        .hd-bento-card--amber .hd-bento-dot { background: #F59E0B; }
-
-        /* Purple (Shipped Apps) */
-        .hd-bento-card--purple .hd-bento-icon-wrap {
-          background: rgba(139, 92, 246, 0.10);
-          border: 1.2px solid rgba(139, 92, 246, 0.28);
-          color: #7C3AED;
-        }
-        [data-theme="dark"] .hd-bento-card--purple .hd-bento-icon-wrap {
-          background: rgba(139, 92, 246, 0.18);
-          border-color: rgba(139, 92, 246, 0.35);
-          color: #A78BFA;
-        }
-        .hd-bento-card--purple:hover .hd-bento-jump { color: #8B5CF6; }
-        .hd-bento-card--purple .hd-bento-dot { background: #8B5CF6; }
-
-        /* Green (Availability) */
-        .hd-bento-card--green .hd-bento-icon-wrap {
-          background: rgba(16, 185, 129, 0.10);
-          border: 1.2px solid rgba(16, 185, 129, 0.28);
-          color: #059669;
-        }
-        [data-theme="dark"] .hd-bento-card--green .hd-bento-icon-wrap {
-          background: rgba(16, 185, 129, 0.18);
-          border-color: rgba(16, 185, 129, 0.35);
-          color: #34D399;
-        }
-        .hd-bento-card--green:hover .hd-bento-jump { color: #10B981; }
-        .hd-bento-card--green .hd-bento-dot { background: #10B981; }
-
-        .hd-bento-val {
-          font-size: 21px;
-          font-weight: 800;
-          letter-spacing: -0.03em;
-          line-height: 1.1;
-          color: var(--text-primary, #111827);
-          font-feature-settings: "tnum";
-        }
-        [data-theme="dark"] .hd-bento-val {
-          color: #F9FAFB;
-        }
-        .hd-bento-label {
+        .about-tag {
           font-size: 10px;
           font-weight: 600;
-          letter-spacing: 0.02em;
-          color: var(--text-muted, #6B7280);
-          margin-top: 1px;
+          padding: 2.5px 8px;
+          border-radius: 999px;
+          letter-spacing: 0.01em;
           white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
         }
-        [data-theme="dark"] .hd-bento-label {
-          color: #9CA3AF;
+
+        .about-tag--blue {
+          background: rgba(59, 130, 246, 0.12);
+          color: #2563eb;
+          border: 0.5px solid rgba(59, 130, 246, 0.25);
         }
-        .hd-bento-badge {
+
+        [data-theme="dark"] .about-tag--blue {
+          background: rgba(59, 130, 246, 0.18);
+          color: #60a5fa;
+          border-color: rgba(59, 130, 246, 0.35);
+        }
+
+        .about-tag--purple {
+          background: rgba(139, 92, 246, 0.12);
+          color: #7c3aed;
+          border: 0.5px solid rgba(139, 92, 246, 0.25);
+        }
+
+        [data-theme="dark"] .about-tag--purple {
+          background: rgba(139, 92, 246, 0.18);
+          color: #c084fc;
+          border-color: rgba(139, 92, 246, 0.35);
+        }
+
+        .about-tag--green {
+          background: rgba(16, 185, 129, 0.12);
+          color: #059669;
+          border: 0.5px solid rgba(16, 185, 129, 0.25);
+        }
+
+        [data-theme="dark"] .about-tag--green {
+          background: rgba(16, 185, 129, 0.18);
+          color: #34d399;
+          border-color: rgba(16, 185, 129, 0.35);
+        }
+
+        .about-clean-meta {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding-top: 2px;
+          flex-wrap: wrap;
+        }
+
+        .about-meta-item {
           display: inline-flex;
           align-items: center;
-          gap: 4px;
-          font-size: 8.5px;
-          font-weight: 500;
-          letter-spacing: 0.01em;
-          padding: 2px 7px;
-          border-radius: 6px;
-          margin-top: 5px;
-          width: fit-content;
-          background: var(--bg-primary, #F9FAFB);
-          border: 1px solid var(--border-color, #CBD5E1);
-          color: var(--text-secondary, #4B5563);
-          white-space: nowrap;
+          gap: 5px;
         }
-        [data-theme="dark"] .hd-bento-badge {
-          background: var(--bg-primary, #0D1117);
-          border-color: rgba(255, 255, 255, 0.12);
-          color: #9CA3AF;
-        }
-        .hd-bento-dot {
-          width: 4px;
-          height: 4px;
-          border-radius: 50%;
+
+        .about-meta-icon {
+          color: var(--text-muted, #64748b);
           flex-shrink: 0;
         }
-        .hd-bento-dot.active {
-          animation: hd-pulse 2s ease-in-out infinite;
+
+        [data-theme="dark"] .about-meta-icon {
+          color: #94a3b8;
         }
+
+        .about-meta-label {
+          font-size: 11px;
+          color: var(--text-muted, #64748b);
+          margin-right: 2px;
+        }
+
+        [data-theme="dark"] .about-meta-label {
+          color: #94a3b8;
+        }
+
+        .about-meta-value {
+          font-size: 12px;
+          font-weight: 600;
+          color: var(--text-primary, #0f172a);
+        }
+
+        [data-theme="dark"] .about-meta-value {
+          color: #f1f5f9;
+        }
+
+        .about-meta-divider {
+          width: 3px;
+          height: 3px;
+          border-radius: 50%;
+          background: var(--text-muted, #64748b);
+          opacity: 0.4;
+          flex-shrink: 0;
+        }
+
+
 
         /* ════════ SINGLE-LINE INFINITE TECH MARQUEE ════════ */
         .hd-marquee-container {
@@ -687,13 +498,7 @@ export default function MobileDashboard({ onNavClick }) {
           background: var(--border-color); border: none; padding: 0;
           cursor: pointer; transition: all 0.2s ease;
         }
-        /* ── BIO ── */
-        .hd-bio {
-          padding: 4px 16px 12px;
-          font-size: 11.5px; color: var(--text-secondary);
-          line-height: 1.6; margin: 0;
-        }
-        
+
         /* ── SWIPE HINT ── */
         .swipe-hint {
           display: flex; align-items: center; justify-content: center;
@@ -726,147 +531,55 @@ export default function MobileDashboard({ onNavClick }) {
               )}
             </div>
 
-            {/* ── Profile ─────────────────────────────────────────────── */}
-            <div className="hd-profile">
-              <div className="hd-profile-left">
-                <div className="hd-avatar-wrap">
-                  <img src="/IMG_0322.jpg" alt="Sujith Thota" className="hd-avatar" id="profile-avatar-img" />
-                </div>
-                <div className="hd-profile-info">
-                  <h1 className="hd-name">{nameText}</h1>
-                  <p className="hd-role">
-                    <Brain size={11} style={{ color: '#8b5cf6', flexShrink: 0 }} />
-                    <span>Data Science · Dev</span>
-                  </p>
-                  <p className="hd-location">
-                    <MapPin size={10} style={{ flexShrink: 0 }} />
-                    <span>VIT University, Vellore</span>
-                  </p>
-                </div>
-              </div>
-
-              {/* Top-Right Badges: Open to Opportunities & Time */}
-              <div className="hd-profile-right">
-                {(settings === null || settings.is_available_for_hire) && (
-                  <div className="hd-avail">
-                    <div className="hd-avail-dot" />
-                    Open to Hire
-                  </div>
-                )}
-                <div className="hd-time-badge">
-                  <Clock size={9} style={{ color: 'var(--primary-blue)' }} />
-                  <span>{localTime} IST</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="hd-divider" />
-
-            {/* ── At a Glance Metrics Strip ── */}
-            <div className="hd-section-bar">
-              <span className="hd-section-title">
-                <TrendingUp size={11} style={{ color: 'var(--primary-blue, #3B82F6)' }} />
-                At a Glance
-              </span>
-              <span className="hd-section-badge">4 metrics</span>
-            </div>
-
-            <div className="hd-bento-strip">
-              {/* 1. CGPA */}
-              <motion.button
-                className="hd-bento-card hd-bento-card--blue"
-                whileTap={{ scale: 0.96 }}
-                onClick={() => onNavClick && onNavClick('education')}
-                aria-label="View Education details"
-              >
-                <div className="hd-bento-card-header">
-                  <div className="hd-bento-icon-wrap">
-                    <GraduationCap size={14} />
-                  </div>
-                  <span className="hd-bento-jump"><ArrowUpRight size={12} /></span>
-                </div>
-                <span className="hd-bento-val">{cgpa}</span>
-                <span className="hd-bento-label">VIT CGPA</span>
-                <span className="hd-bento-badge">
-                  <span className="hd-bento-dot" />
-                  Top 5% · B.Tech
-                </span>
-              </motion.button>
-
-              {/* 2. Certifications */}
-              <motion.button
-                className="hd-bento-card hd-bento-card--amber"
-                whileTap={{ scale: 0.96 }}
-                onClick={() => onNavClick && onNavClick('certifications')}
-                aria-label="View Certifications"
-              >
-                <div className="hd-bento-card-header">
-                  <div className="hd-bento-icon-wrap">
-                    <Award size={14} />
-                  </div>
-                  <span className="hd-bento-jump"><ArrowUpRight size={12} /></span>
-                </div>
-                <span className="hd-bento-val">{certs}+</span>
-                <span className="hd-bento-label">Certifications</span>
-                <span className="hd-bento-badge">
-                  <span className="hd-bento-dot" />
-                  AWS &amp; AI Spec
-                </span>
-              </motion.button>
-
-              {/* 3. Projects */}
-              <motion.button
-                className="hd-bento-card hd-bento-card--purple"
-                whileTap={{ scale: 0.96 }}
-                onClick={() => onNavClick && onNavClick('projects')}
-                aria-label="View ML Projects"
-              >
-                <div className="hd-bento-card-header">
-                  <div className="hd-bento-icon-wrap">
-                    <Code2 size={14} />
-                  </div>
-                  <span className="hd-bento-jump"><ArrowUpRight size={12} /></span>
-                </div>
-                <span className="hd-bento-val">{projs}+</span>
-                <span className="hd-bento-label">Shipped Apps</span>
-                <span className="hd-bento-badge">
-                  <span className="hd-bento-dot" />
-                  Full-stack &amp; AI
-                </span>
-              </motion.button>
-
-              {/* 4. Live Availability / Status */}
-              <motion.button
-                className="hd-bento-card hd-bento-card--green"
-                whileTap={{ scale: 0.96 }}
-                onClick={() => onNavClick && onNavClick('contact')}
-                aria-label="Contact / Hire"
-              >
-                <div className="hd-bento-card-header">
-                  <div className="hd-bento-icon-wrap">
-                    <Zap size={14} />
-                  </div>
-                  <span className="hd-bento-jump"><ArrowUpRight size={12} /></span>
-                </div>
-                <span className="hd-bento-val">100%</span>
-                <span className="hd-bento-label">Availability</span>
-                <span className="hd-bento-badge">
-                  <span className="hd-bento-dot active" />
-                  Open for Roles
-                </span>
-              </motion.button>
-            </div>
+            {/* ── Unified Hero + At a Glance Stats Section ── */}
+            <HeroStats
+              name={nameText || "Sujith Thota"}
+              role="Data science & dev"
+              location="VIT University, Vellore"
+              available={settings === null || settings.is_available_for_hire}
+              avatarUrl="/IMG_0322.jpg"
+              cgpa={cgpa}
+              cgpaMax={10}
+              cgpaPercentile="Top 5%"
+              certifications={`${certs}+`}
+              apps={`${projs}+`}
+              status="Open"
+              onNavClick={onNavClick}
+            />
 
             <div className="hd-divider" />
 
             {/* ── About Me ─────────────────────────────────────────────── */}
             <div className="hd-section-bar">
               <span className="hd-section-title">
-                <Code2 size={11} style={{ color: '#6366f1' }} />
+                <User size={12} style={{ color: 'var(--primary-blue, #3b82f6)' }} />
                 About Me
               </span>
             </div>
-            <p className="hd-bio" dangerouslySetInnerHTML={{ __html: settings?.hero_headline || 'I build modern web applications and explore machine learning to solve real-world problems.' }} />
+
+            <div className="about-clean-wrap">
+              <p className="about-clean-bio">
+                {settings?.hero_headline || "I build modern web applications, blending clean engineering with a product mindset — currently exploring where AI meets everyday tools."}
+              </p>
+              <div className="about-clean-tags">
+                <span className="about-tag about-tag--blue">Full-stack</span>
+                <span className="about-tag about-tag--purple">AI/ML</span>
+                <span className="about-tag about-tag--green">Data science</span>
+              </div>
+              <div className="about-clean-meta">
+                <div className="about-meta-item">
+                  <MapPin size={13} className="about-meta-icon" />
+                  <span className="about-meta-label">Based in</span>
+                  <span className="about-meta-value">Vellore, India</span>
+                </div>
+                <div className="about-meta-divider" />
+                <div className="about-meta-item">
+                  <Languages size={13} className="about-meta-icon" />
+                  <span className="about-meta-label">Speaks</span>
+                  <span className="about-meta-value">English, Telugu</span>
+                </div>
+              </div>
+            </div>
 
             <div className="hd-divider" />
 
@@ -909,7 +622,29 @@ export default function MobileDashboard({ onNavClick }) {
                   <Sparkles size={11} style={{ color: '#8b5cf6' }} />
                   Key Milestones
                 </span>
-                <span className="hd-section-badge">{activeMilestone + 1} / {milestones.length}</span>
+                <div className="milestone-scroll-controls">
+                  <button
+                    type="button"
+                    className="milestone-nav-btn"
+                    onClick={() => scrollToMilestone(Math.max(0, activeMilestone - 1))}
+                    disabled={activeMilestone === 0}
+                    aria-label="Previous milestone"
+                  >
+                    <ChevronLeft size={13} />
+                  </button>
+                  <span className="milestone-counter-badge">
+                    {activeMilestone + 1} / {milestones.length}
+                  </span>
+                  <button
+                    type="button"
+                    className="milestone-nav-btn"
+                    onClick={() => scrollToMilestone(Math.min(milestones.length - 1, activeMilestone + 1))}
+                    disabled={activeMilestone === milestones.length - 1}
+                    aria-label="Next milestone"
+                  >
+                    <ChevronRight size={13} />
+                  </button>
+                </div>
               </div>
 
               <div className="milestones-track" ref={trackRef} onScroll={handleMilestonesScroll}>
@@ -960,15 +695,6 @@ export default function MobileDashboard({ onNavClick }) {
 
         <style>{`
           .milestones-wrap {
-            padding: 4px 0;
-            border-radius: 0;
-            background: transparent;
-            margin-top: 4px;
-            margin-bottom: 4px;
-            box-sizing: border-box;
-          }
-
-          .milestones-wrap {
             padding: 2px 0;
             border-radius: 0;
             background: transparent;
@@ -980,6 +706,83 @@ export default function MobileDashboard({ onNavClick }) {
           [data-theme="dark"] .milestones-wrap {
             background: transparent;
             border: none;
+          }
+
+          .milestone-scroll-controls {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+          }
+
+          .milestone-counter-badge {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted, #6B7280);
+            background: var(--bg-secondary, #F3F4F6);
+            border: 1.2px solid var(--border-color, #CBD5E1);
+            padding: 2px 8px;
+            border-radius: 20px;
+            min-width: 32px;
+            text-align: center;
+            font-feature-settings: "tnum";
+            line-height: 1.2;
+          }
+
+          [data-theme="dark"] .milestone-counter-badge {
+            color: var(--text-muted, #9CA3AF);
+            background: var(--bg-secondary, rgba(255, 255, 255, 0.06));
+            border-color: rgba(255, 255, 255, 0.14);
+          }
+
+          .milestone-nav-btn {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-secondary, #FFFFFF);
+            border: 1.2px solid var(--border-color, #CBD5E1);
+            color: var(--text-secondary, #4B5563);
+            cursor: pointer;
+            padding: 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+            transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+            -webkit-tap-highlight-color: transparent;
+          }
+
+          .milestone-nav-btn:hover:not(:disabled) {
+            background: var(--bg-primary, #F9FAFB);
+            color: #3b82f6;
+            border-color: #3b82f6;
+          }
+
+          .milestone-nav-btn:active:not(:disabled) {
+            transform: scale(0.92);
+            background: var(--bg-primary, #F3F4F6);
+          }
+
+          .milestone-nav-btn:disabled {
+            opacity: 0.28;
+            cursor: not-allowed;
+            box-shadow: none;
+          }
+
+          [data-theme="dark"] .milestone-nav-btn {
+            background: var(--bg-secondary, #161B22);
+            border-color: rgba(255, 255, 255, 0.15);
+            color: #CBD5E1;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+          }
+
+          [data-theme="dark"] .milestone-nav-btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.08);
+            color: #60A5FA;
+            border-color: #60A5FA;
+          }
+
+          [data-theme="dark"] .milestone-nav-btn:active:not(:disabled) {
+            background: rgba(255, 255, 255, 0.04);
           }
 
           .milestones-track {

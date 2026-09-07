@@ -1,6 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { ScrollReveal } from '../components';
-import { Loader2, Award, ChevronLeft, ChevronRight } from 'lucide-react';
+import { 
+  Loader2, Award, ChevronLeft, ChevronRight, 
+  ShieldCheck, Copy, Check, ExternalLink, X, 
+  Calendar, CheckCircle2 
+} from 'lucide-react';
 import useRealtimeData from '../hooks/useRealtimeData';
 
 const DEFAULT_CERTIFICATIONS = [
@@ -93,13 +99,18 @@ const COLORS = {
   },
 };
 
-function CertCard({ cert, isMobile = false }) {
+function CertCard({ cert, isMobile = false, onVerifyClick }) {
   const { id, issuer, title, description, skills, issuedDate, credentialId, verifyUrl, icon, color } = cert;
   const c = COLORS[color] || COLORS.accent;
 
   return (
     <div
-      className="cert-card-container"
+      className={`cert-card-container${isMobile ? ' cert-card-mobile' : ''}`}
+      onClick={() => {
+        if (isMobile && onVerifyClick) {
+          onVerifyClick(cert);
+        }
+      }}
       onMouseEnter={e => {
         if (!isMobile) {
           e.currentTarget.style.transform = 'translateY(-4px)';
@@ -111,6 +122,10 @@ function CertCard({ cert, isMobile = false }) {
           e.currentTarget.style.transform = 'translateY(0)';
           e.currentTarget.style.boxShadow = 'none';
         }
+      }}
+      style={{
+        cursor: isMobile ? 'pointer' : 'default',
+        WebkitTapHighlightColor: 'transparent',
       }}
     >
       <div
@@ -229,7 +244,32 @@ function CertCard({ cert, isMobile = false }) {
             )}
           </div>
 
-          {verifyUrl && (
+          {isMobile ? (
+            <button
+              type="button"
+              className="cert-mobile-verify-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onVerifyClick) onVerifyClick(cert);
+              }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                fontSize: '11px',
+                fontWeight: '600',
+                color: c.verifyColor,
+                background: 'none',
+                border: 'none',
+                padding: '4px 6px',
+                cursor: 'pointer',
+                WebkitTapHighlightColor: 'transparent',
+              }}
+            >
+              <span>Verify</span>
+              <ChevronRight size={13} />
+            </button>
+          ) : verifyUrl ? (
             <a
               href={verifyUrl}
               target="_blank"
@@ -238,7 +278,7 @@ function CertCard({ cert, isMobile = false }) {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '5px',
-                fontSize: isMobile ? '12px' : '13.5px',
+                fontSize: '13.5px',
                 fontWeight: '600',
                 color: c.verifyColor,
                 textDecoration: 'none',
@@ -250,9 +290,9 @@ function CertCard({ cert, isMobile = false }) {
               onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
             >
               Verify
-              <i className="ti ti-external-link" style={{ fontSize: isMobile ? '12px' : '14px' }} aria-hidden="true" />
+              <i className="ti ti-external-link" style={{ fontSize: '14px' }} aria-hidden="true" />
             </a>
-          )}
+          ) : null}
         </div>
       </div>
     </div>
@@ -263,13 +303,50 @@ export default function Certifications() {
   const { data: dbData, loading } = useRealtimeData('certifications', { orderColumn: 'display_order', ascending: true });
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth <= 900);
   const [activeIdx, setActiveIdx] = useState(0);
+  const [selectedCert, setSelectedCert] = useState(null);
+  const [copiedId, setCopiedId] = useState(false);
   const trackRef = useRef(null);
+  const dragControls = useDragControls();
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 900);
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 900;
+      setIsMobile(mobile);
+      if (!mobile) setSelectedCert(null);
+    };
+    handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Lock body scroll and listen for Escape key when mobile verification sheet is open
+  useEffect(() => {
+    if (isMobile && selectedCert) {
+      const origOverflow = document.body.style.overflow;
+      const origTouchAction = document.body.style.touchAction;
+      document.body.style.overflow = 'hidden';
+      document.body.style.touchAction = 'none';
+
+      const handleKeyDown = (e) => {
+        if (e.key === 'Escape') setSelectedCert(null);
+      };
+      window.addEventListener('keydown', handleKeyDown);
+
+      return () => {
+        document.body.style.overflow = origOverflow;
+        document.body.style.touchAction = origTouchAction;
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    }
+  }, [isMobile, selectedCert]);
+
+  const handleCopyId = (id) => {
+    if (!id) return;
+    navigator.clipboard.writeText(id).then(() => {
+      setCopiedId(true);
+      setTimeout(() => setCopiedId(false), 2000);
+    }).catch(() => {});
+  };
 
   const handleScroll = () => {
     const track = trackRef.current;
@@ -344,7 +421,11 @@ export default function Certifications() {
           width: 100%;
           box-sizing: border-box;
           box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
-          transition: transform 0.22s ease, box-shadow 0.22s ease;
+          transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.2s ease;
+        }
+
+        .cert-card-container.cert-card-mobile:active {
+          transform: scale(0.985);
         }
 
         [data-theme="dark"] .cert-card-container {
@@ -547,6 +628,223 @@ export default function Certifications() {
           width: 14px;
           border-radius: 3px;
         }
+
+        /* ── MOBILE SLIDE-UP VERIFICATION SHEET ── */
+        .dsheet-backdrop {
+          position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+          backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+          z-index: 10000;
+        }
+        .dsheet {
+          position: fixed; bottom: 0; left: 0; right: 0;
+          max-height: min(78dvh, 680px);
+          min-height: 48dvh;
+          height: auto;
+          background: var(--bg-secondary, #FFFFFF);
+          border-top: 1px solid var(--border-color, #CBD5E1);
+          border-top-left-radius: 24px; border-top-right-radius: 24px;
+          box-shadow: 0 -10px 40px rgba(0,0,0,0.18);
+          z-index: 10001;
+          display: flex; flex-direction: column;
+          overflow: hidden;
+          box-sizing: border-box;
+        }
+        [data-theme="dark"] .dsheet {
+          background: var(--bg-secondary, #161B22);
+          border-top-color: rgba(255,255,255,0.12);
+          box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+        }
+        .dsheet-handle-bar {
+          width: 100%; padding: 12px 0 6px;
+          display: flex; align-items: center; justify-content: center;
+          cursor: grab; flex-shrink: 0;
+          touch-action: none; user-select: none; -webkit-user-select: none;
+        }
+        .dsheet-handle-bar:active { cursor: grabbing; }
+        .dsheet-handle {
+          width: 38px; height: 4.5px; border-radius: 999px;
+          background: var(--border-color, #cbd5e1);
+          transition: background 0.2s ease, transform 0.2s ease;
+        }
+        .dsheet-handle-bar:active .dsheet-handle {
+          transform: scaleX(1.15);
+          background: var(--primary-blue, #3b82f6);
+        }
+        [data-theme="dark"] .dsheet-handle {
+          background: rgba(255,255,255,0.25);
+        }
+        .dsheet-header {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 4px 16px 12px; border-bottom: 1px solid var(--border-color);
+          flex-shrink: 0;
+          cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none;
+        }
+        .dsheet-header:active { cursor: grabbing; }
+        .dsheet-header-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+        .dsheet-header-icon {
+          width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+          display: flex; align-items: center; justify-content: center;
+        }
+        .dsheet-title h3 {
+          font-size: 13.5px; font-weight: 800; color: var(--text-primary); margin: 0;
+          letter-spacing: -.015em; line-height: 1.25;
+        }
+        .dsheet-title p {
+          font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin: 2px 0 0;
+          display: flex; align-items: center;
+        }
+        .dsheet-close {
+          width: 30px; height: 30px; border-radius: 50%; background: var(--bg-primary);
+          border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center;
+          color: var(--text-secondary); cursor: pointer; flex-shrink: 0; margin-left: 8px;
+          transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .dsheet-close:active {
+          transform: scale(0.9);
+          color: var(--text-primary);
+        }
+        .dsheet-body {
+          flex: 1; overflow-y: auto; padding: 0; display: flex; flex-direction: column; position: relative;
+          overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+        }
+        .dsheet-body::-webkit-scrollbar { display: none; }
+        .dsheet-content {
+          padding: 12px 16px max(24px, env(safe-area-inset-bottom, 24px));
+          display: flex; flex-direction: column; gap: 12px;
+        }
+        .dsheet-section-label {
+          font-size: 8.5px; font-weight: 800; color: var(--text-muted);
+          text-transform: uppercase; letter-spacing: .08em; margin: 0 0 5px;
+        }
+        .dsheet-desc {
+          font-size: 11.5px; line-height: 1.55; color: var(--text-secondary); margin: 0;
+        }
+
+        /* Hero Verification Card inside Sheet */
+        .cert-sheet-hero {
+          background: var(--bg-primary, #F9FAFB);
+          border: 1px solid var(--border-color, #E5E7EB);
+          border-radius: 14px;
+          padding: 10px 12px;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+        [data-theme="dark"] .cert-sheet-hero {
+          background: #0D1117;
+          border-color: rgba(255, 255, 255, 0.12);
+        }
+        .cert-sheet-hero-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 9.5px;
+          font-weight: 700;
+          color: #16a34a;
+          letter-spacing: 0.04em;
+        }
+        .cert-sheet-hero-rows {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
+          padding-top: 6px;
+          border-top: 1px dashed var(--border-color, #E5E7EB);
+        }
+        [data-theme="dark"] .cert-sheet-hero-rows {
+          border-top-color: rgba(255, 255, 255, 0.1);
+        }
+        .cert-sheet-hero-meta {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+        .cert-sheet-meta-label {
+          font-size: 8.5px;
+          font-weight: 700;
+          color: var(--text-muted);
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+        }
+        .cert-sheet-id-wrap {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+        }
+        .cert-sheet-id {
+          font-family: "JetBrains Mono", "SF Mono", monospace;
+          font-size: 10px;
+          font-weight: 700;
+          color: var(--text-primary);
+          background: var(--bg-secondary);
+          border: 1px solid var(--border-color);
+          padding: 1px 5px;
+          border-radius: 4px;
+        }
+        .cert-sheet-copy-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 3px;
+          background: var(--bg-secondary);
+          border: 1px solid var(--border-color);
+          border-radius: 4px;
+          padding: 1px 5px;
+          font-size: 8.5px;
+          font-weight: 600;
+          color: var(--text-secondary);
+          cursor: pointer;
+          transition: background 0.15s ease;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .cert-sheet-copy-btn:active {
+          transform: scale(0.95);
+        }
+        .cert-sheet-meta-val {
+          font-size: 10.5px;
+          font-weight: 600;
+          color: var(--text-primary);
+        }
+
+        /* Skills tags in sheet */
+        .cert-sheet-tags {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 5px;
+        }
+        .cert-sheet-tag {
+          display: inline-flex;
+          align-items: center;
+          font-size: 9px;
+          font-weight: 600;
+          padding: 2.5px 8px;
+          border-radius: 6px;
+          border: 1px solid;
+          line-height: 1.3;
+        }
+
+        /* Official Action CTA Button */
+        .cert-sheet-cta-btn {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          width: 100%;
+          box-sizing: border-box;
+          padding: 10px 14px;
+          border-radius: 12px;
+          font-size: 11.5px;
+          font-weight: 700;
+          color: #ffffff !important;
+          text-decoration: none;
+          cursor: pointer;
+          border: none;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+          transition: transform 0.15s ease, opacity 0.15s ease;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .cert-sheet-cta-btn:active {
+          transform: scale(0.98);
+          opacity: 0.9;
+        }
       `}</style>
 
       {isMobile ? (
@@ -589,7 +887,7 @@ export default function Certifications() {
           <div className="cert-mobile-track" ref={trackRef} onScroll={handleScroll}>
             {certifications.map((cert, idx) => (
               <div key={cert.id || cert.credentialId || idx} className="cert-mobile-card-slot">
-                <CertCard cert={cert} isMobile={true} />
+                <CertCard cert={cert} isMobile={true} onVerifyClick={setSelectedCert} />
               </div>
             ))}
           </div>
@@ -612,6 +910,188 @@ export default function Certifications() {
             <CertCard key={cert.id || cert.credentialId} cert={cert} isMobile={false} />
           ))}
         </div>
+      )}
+
+      {/* ── MOBILE VERIFICATION SLIDE-UP SHEET ── */}
+      {isMobile && typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {isMobile && selectedCert && (() => {
+            const c = COLORS[selectedCert.color] || COLORS.accent;
+            return (
+              <div style={{ position: 'relative', zIndex: 10000 }}>
+                <motion.div
+                  className="dsheet-backdrop"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.22, ease: 'easeOut' }}
+                  onClick={() => setSelectedCert(null)}
+                />
+                <motion.div
+                  className="dsheet"
+                  initial={{ y: '100%' }}
+                  animate={{ y: 0 }}
+                  exit={{ y: '100%', transition: { duration: 0.22, ease: [0.32, 0.72, 0, 1] } }}
+                  transition={{ type: 'spring', damping: 30, stiffness: 320, mass: 0.85 }}
+                  drag="y"
+                  dragControls={dragControls}
+                  dragListener={false}
+                  dragConstraints={{ top: 0, bottom: 0 }}
+                  dragElastic={{ top: 0, bottom: 0.5 }}
+                  onDragEnd={(_, info) => { if (info.offset.y > 100 || info.velocity.y > 500) setSelectedCert(null); }}
+                >
+                  {/* Dedicated Touch Handle Bar */}
+                  <div
+                    className="dsheet-handle-bar"
+                    onPointerDown={(e) => dragControls.start(e)}
+                  >
+                    <div className="dsheet-handle" />
+                  </div>
+
+                  {/* Header with accent icon (also draggable) */}
+                  <div
+                    className="dsheet-header"
+                    onPointerDown={(e) => {
+                      if (!e.target.closest('.dsheet-close')) {
+                        dragControls.start(e);
+                      }
+                    }}
+                  >
+                    <div className="dsheet-header-left">
+                      <div
+                        className="dsheet-header-icon"
+                        style={{
+                          background: c.headerBg,
+                          border: `1.5px solid ${c.badgeBorder}`,
+                          color: c.badgeIcon,
+                        }}
+                      >
+                        <i className={`ti ${selectedCert.icon || 'ti-award'}`} style={{ fontSize: '18px' }} />
+                      </div>
+                      <div className="dsheet-title">
+                        <h3>{selectedCert.title}</h3>
+                        <p style={{ color: c.issuerColor }}>
+                          <ShieldCheck size={11} style={{ display: 'inline', marginRight: 4, verticalAlign: '-1px' }} />
+                          {selectedCert.issuer} · Verified Credential
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      className="dsheet-close"
+                      onClick={() => setSelectedCert(null)}
+                      aria-label="Close verification drawer"
+                    >
+                      <X size={15} />
+                    </button>
+                  </div>
+
+                  {/* Body */}
+                  <div className="dsheet-body">
+                    <div className="dsheet-content">
+                      {/* Hero Verification Card */}
+                      <div className="cert-sheet-hero">
+                        <div className="cert-sheet-hero-badge">
+                          <ShieldCheck size={15} style={{ color: '#16a34a' }} />
+                          <span>AUTHENTIC VERIFIED CREDENTIAL</span>
+                        </div>
+                        <div className="cert-sheet-hero-rows">
+                          <div className="cert-sheet-hero-meta">
+                            <span className="cert-sheet-meta-label">Credential ID</span>
+                            <div className="cert-sheet-id-wrap">
+                              <code className="cert-sheet-id">{selectedCert.credentialId}</code>
+                              <button
+                                className="cert-sheet-copy-btn"
+                                onClick={() => handleCopyId(selectedCert.credentialId)}
+                                title="Copy Credential ID"
+                              >
+                                {copiedId ? (
+                                  <>
+                                    <Check size={10} style={{ color: '#16a34a' }} />
+                                    <span style={{ color: '#16a34a' }}>Copied</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Copy size={10} />
+                                    <span>Copy ID</span>
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="cert-sheet-hero-meta">
+                            <span className="cert-sheet-meta-label">Issued Date</span>
+                            <span className="cert-sheet-meta-val">
+                              <Calendar size={11} style={{ display: 'inline', marginRight: 4, verticalAlign: '-1px', color: 'var(--text-muted)' }} />
+                              {selectedCert.issuedDate}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Overview */}
+                      <div>
+                        <p className="dsheet-section-label">Credential Overview</p>
+                        <p className="dsheet-desc">{selectedCert.description}</p>
+                      </div>
+
+                      {/* Skills */}
+                      {selectedCert.skills && selectedCert.skills.length > 0 && (
+                        <div>
+                          <p className="dsheet-section-label">Verified Competencies</p>
+                          <div className="cert-sheet-tags">
+                            {selectedCert.skills.map((skill) => (
+                              <span
+                                key={skill}
+                                className="cert-sheet-tag"
+                                style={{
+                                  borderColor: c.pillBorder,
+                                  color: c.pillColor,
+                                  background: c.headerBg,
+                                }}
+                              >
+                                <CheckCircle2 size={10} style={{ marginRight: 3, verticalAlign: '-1px' }} />
+                                {skill}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Official Registry Action Button */}
+                      <div>
+                        <p className="dsheet-section-label">Official Authentication Registry</p>
+                        {selectedCert.verifyUrl ? (
+                          <a
+                            href={selectedCert.verifyUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="cert-sheet-cta-btn"
+                            style={{
+                              background: c.badgeBorder,
+                            }}
+                          >
+                            <ShieldCheck size={15} />
+                            <span>Verify on {selectedCert.issuer} Registry</span>
+                            <ExternalLink size={13} style={{ marginLeft: 'auto' }} />
+                          </a>
+                        ) : (
+                          <p style={{ fontSize: '11px', color: 'var(--text-muted)', margin: 0 }}>
+                            Accredited credential on file.
+                          </p>
+                        )}
+                        <p style={{ fontSize: '9.5px', color: 'var(--text-muted)', marginTop: '6px', lineHeight: 1.4 }}>
+                          Direct lookup on the issuer's verification authority (e.g., Coursera, Oracle, Credential.net).
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
+            );
+          })()}
+        </AnimatePresence>,
+        document.body
       )}
     </ScrollReveal>
   );
