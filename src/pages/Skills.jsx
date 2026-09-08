@@ -323,15 +323,6 @@ function SkillsRadarChart({ categories }) {
   );
 }
 
-const profAccents = [
-  { color: '#3b82f6', glow: 'rgba(59, 130, 246, 0.25)', border: 'rgba(59, 130, 246, 0.35)' },
-  { color: '#10b981', glow: 'rgba(16, 185, 129, 0.25)', border: 'rgba(16, 185, 129, 0.35)' },
-  { color: '#8b5cf6', glow: 'rgba(139, 92, 246, 0.25)', border: 'rgba(139, 92, 246, 0.35)' },
-  { color: '#f59e0b', glow: 'rgba(245, 158, 11, 0.25)', border: 'rgba(245, 158, 11, 0.35)' },
-  { color: '#06b6d4', glow: 'rgba(6, 182, 212, 0.25)', border: 'rgba(6, 182, 212, 0.35)' },
-  { color: '#ec4899', glow: 'rgba(236, 72, 153, 0.25)', border: 'rgba(236, 72, 153, 0.35)' },
-];
-
 function MobileProficiencyCarousel({ topSkills, onOpenSkill }) {
   const trackRef = useRef(null);
   const [activeIdx, setActiveIdx] = useState(0);
@@ -363,7 +354,7 @@ function MobileProficiencyCarousel({ topSkills, onOpenSkill }) {
       {/* Header with counter and arrow controls */}
       <div className="sk-prof-feat-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <Star size={13} style={{ color: '#f59e0b', fill: '#f59e0b' }} />
+          <Star size={13} style={{ color: 'var(--primary-blue)', fill: 'var(--primary-blue)' }} />
           <span className="sk-prof-feat-title-text">Top Technical Proficiencies</span>
         </div>
         <div className="sk-prof-feat-controls">
@@ -392,48 +383,26 @@ function MobileProficiencyCarousel({ topSkills, onOpenSkill }) {
       {/* Snap-scroll horizontal track */}
       <div className="sk-prof-feat-track" ref={trackRef} onScroll={handleScroll}>
         {topSkills.map((skill, i) => {
-          const accentObj = profAccents[i % profAccents.length];
-          const accent = accentObj.color;
-          const lc = levelColor[skill.level] || levelColor.Intermediate;
           const tools = Array.isArray(skill.relatedTools) ? skill.relatedTools.slice(0, 3) : [];
 
           return (
             <div
               key={skill.id || skill.name}
               className="sk-prof-feat-slide"
-              style={{
-                background: `linear-gradient(135deg, ${accent}14, ${accentObj.glow}08), var(--bg-secondary)`,
-                borderColor: accentObj.border,
-              }}
             >
-              {/* Glow blob bottom-right */}
-              <div
-                className="sk-prof-feat-bg"
-                style={{ background: `radial-gradient(circle, ${accentObj.glow}35, transparent 70%)` }}
-              />
-
               {/* Top metadata pill row */}
               <div className="sk-prof-feat-top-row">
-                <span
-                  className="sk-prof-feat-badge"
-                  style={{ color: lc.text, background: lc.bg, borderColor: `${lc.ring}45` }}
-                >
+                <span className="sk-prof-feat-badge">
                   ⚡ {skill.level}
                 </span>
-                <span
-                  className="sk-prof-feat-pct"
-                  style={{ color: accent, background: `${accent}18`, borderColor: `${accent}35` }}
-                >
+                <span className="sk-prof-feat-pct">
                   {skill.percent}% Mastery
                 </span>
               </div>
 
               {/* Skill identity header */}
               <div className="sk-prof-feat-identity">
-                <div
-                  className="sk-prof-feat-icon"
-                  style={{ background: `${accent}18`, color: accent, borderColor: `${accent}35` }}
-                >
+                <div className="sk-prof-feat-icon">
                   {skill.name.slice(0, 2).toUpperCase()}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -457,7 +426,6 @@ function MobileProficiencyCarousel({ topSkills, onOpenSkill }) {
                 <div className="sk-prof-feat-bar">
                   <motion.div
                     className="sk-prof-feat-fill"
-                    style={{ background: `linear-gradient(90deg, ${accent}, #10b981)` }}
                     initial={{ width: 0 }}
                     animate={{ width: `${skill.percent}%` }}
                     transition={{ duration: 0.8, delay: 0.1 + i * 0.05, ease: [0.16, 1, 0.3, 1] }}
@@ -477,7 +445,6 @@ function MobileProficiencyCarousel({ topSkills, onOpenSkill }) {
                     <span
                       key={`${t}-${tidx}`}
                       className="sk-prof-feat-tag"
-                      style={{ color: accent, background: `${accent}12`, borderColor: `${accent}25` }}
                     >
                       {t}
                     </span>
@@ -485,7 +452,6 @@ function MobileProficiencyCarousel({ topSkills, onOpenSkill }) {
                 </div>
                 <button
                   className="sk-prof-feat-action"
-                  style={{ background: `${accent}18`, borderColor: `${accent}35`, color: accent }}
                   onClick={() => onOpenSkill(skill)}
                 >
                   Inspect
@@ -502,11 +468,7 @@ function MobileProficiencyCarousel({ topSkills, onOpenSkill }) {
         {topSkills.map((p, idx) => (
           <button
             key={p.id || p.name}
-            className="sk-prof-feat-dot"
-            style={{
-              background: idx === activeIdx ? profAccents[idx % profAccents.length].color : undefined,
-              width: idx === activeIdx ? '18px' : '6px',
-            }}
+            className={`sk-prof-feat-dot ${idx === activeIdx ? 'active' : ''}`}
             onClick={() => scrollTo(idx)}
             aria-label={`Go to skill ${idx + 1}`}
           />
@@ -518,6 +480,7 @@ function MobileProficiencyCarousel({ topSkills, onOpenSkill }) {
 
 export default function Skills() {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
+  const [activeTab, setActiveTab] = useState('categories'); // 'categories' | 'skills'
   const [activeCategory, setActiveCategory] = useState(null);  // category object
   const [activeSkill,    setActiveSkill]    = useState(null);  // skill object
   const [desktopView, setDesktopView] = useState('grid'); // 'grid' | 'radar'
@@ -681,41 +644,158 @@ export default function Skills() {
         /* ============ MOBILE — redesigned ============ */
         @media (max-width: 900px) {
 
+          /* Mobile Container — fixed full height */
+          .sk-mob-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden;
+            box-sizing: border-box;
+            padding-bottom: 2px;
+          }
+
           /* Hero header */
           .sk-mob-header {
             text-align: center;
-            margin-bottom: 14px;
+            margin-bottom: 8px;
+            flex-shrink: 0;
           }
           .sk-mob-eyebrow {
-            font-size: 10px; font-weight: 800; letter-spacing: .22em;
+            font-size: 9.5px; font-weight: 800; letter-spacing: .22em;
             text-transform: uppercase; color: var(--text-muted);
-            margin: 0 0 6px;
+            margin: 0 0 3px;
           }
           .sk-mob-title {
-            font-size: 22px; font-weight: 800; color: var(--text-primary);
-            margin: 0 0 8px; letter-spacing: -0.025em; line-height: 1.2;
+            font-size: 20px; font-weight: 800; color: var(--text-primary);
+            margin: 0 0 3px; letter-spacing: -0.025em; line-height: 1.2;
           }
           .sk-mob-subtitle {
-            font-size: 12px; color: var(--text-secondary);
-            margin: 0; line-height: 1.55;
+            font-size: 11.5px; color: var(--text-secondary);
+            margin: 0; line-height: 1.4;
           }
 
-          /* Quick stats pill row */
-          .sk-stats-bar {
-            display: flex; gap: 6px; margin-bottom: 14px;
+          /* Quick stats divider row */
+          .sk-stats-divider-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            margin-bottom: 8px;
+            padding: 4px 0;
+            flex-shrink: 0;
           }
-          .sk-stat-pill {
-            flex: 1; display: flex; flex-direction: column; align-items: center;
-            justify-content: center; gap: 1px;
-            padding: 8px 4px; border-radius: 12px;
-            background: var(--bg-secondary); border: 1px solid var(--border-color);
+          .sk-stat-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 2px;
+            padding: 2px 4px;
           }
-          .sk-stat-val {
-            font-size: 17px; font-weight: 800; line-height: 1;
+          .sk-stat-col:not(:last-child) {
+            border-right: 1px solid var(--border-color);
+          }
+          .sk-stat-num {
+            font-size: 16px;
+            font-weight: 800;
+            line-height: 1.1;
           }
           .sk-stat-lbl {
-            font-size: 9px; font-weight: 700; color: var(--text-muted);
-            text-transform: uppercase; letter-spacing: .06em;
+            font-size: 9px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: .06em;
+          }
+
+          /* View Tab Toggle */
+          /* Centered toggle wrapper */
+          .sk-tab-toggle-wrap {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 8px;
+            flex-shrink: 0;
+            width: 100%;
+          }
+
+          /* Compact capsule track */
+          .sk-tab-toggle {
+            display: inline-flex;
+            align-items: center;
+            position: relative;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 999px;
+            padding: 3px;
+            gap: 2px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+          }
+
+          [data-theme="dark"] .sk-tab-toggle {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+          }
+
+          /* Individual tab button */
+          .sk-tab-btn {
+            position: relative;
+            border: none;
+            cursor: pointer;
+            background: transparent;
+            border-radius: 999px;
+            padding: 5px 14px;
+            font-size: 11.5px;
+            font-weight: 500;
+            color: var(--text-muted);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+            z-index: 1;
+          }
+
+          .sk-tab-btn-content {
+            position: relative;
+            z-index: 2;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+          }
+
+          .sk-tab-btn--active {
+            color: var(--text-primary);
+            font-weight: 600;
+          }
+
+          .sk-tab-btn--active .sk-tab-icon {
+            color: var(--primary-blue);
+          }
+
+          /* Floating elevated pill background */
+          .sk-tab-pill-bg {
+            position: absolute;
+            inset: 0;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 999px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+            z-index: 1;
+          }
+
+          [data-theme="dark"] .sk-tab-pill-bg {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+          }
+
+          /* Tab content area */
+          .sk-tab-content {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
           }
 
           /* Category cards 2-col bento grid */
@@ -723,7 +803,9 @@ export default function Skills() {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 8px;
-            margin-bottom: 14px;
+            flex: 1;
+            min-height: 0;
+            align-content: stretch;
           }
 
           /* Base category card */
@@ -731,15 +813,15 @@ export default function Skills() {
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
             border-radius: 14px;
-            padding: 12px 10px 10px;
+            padding: 10px 10px 8px;
             display: flex; flex-direction: column;
-            gap: 8px;
+            gap: 6px;
             cursor: pointer;
             text-align: left;
             outline: none;
             position: relative;
             overflow: hidden;
-            min-height: 148px;
+            min-height: 0;
             -webkit-tap-highlight-color: transparent;
             transition: border-color 0.2s;
           }
@@ -749,70 +831,68 @@ export default function Skills() {
           .sk-cat-card--full {
             grid-column: 1 / -1;
             flex-direction: row;
-            align-items: flex-start;
-            min-height: auto;
-            padding: 12px;
-            gap: 12px;
+            align-items: center;
+            min-height: 0;
+            padding: 8px 12px;
+            gap: 10px;
           }
           .sk-cat-card--full .sk-cat-icon-box { flex-shrink: 0; }
-          .sk-cat-card--full .sk-cat-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 7px; }
+          .sk-cat-card--full .sk-cat-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
 
 
-          .sk-cat-stripe {
-            position: absolute; top: 0; left: 0; right: 0;
-            height: 2.5px; border-radius: 16px 16px 0 0;
-          }
-          .sk-cat-glow {
-            position: absolute; bottom: -20px; right: -20px;
-            width: 80px; height: 80px; border-radius: 50%;
-            pointer-events: none;
-          }
-
-          .sk-cat-header-row {
-            display: flex; align-items: center; gap: 8px;
-          }
           .sk-cat-icon-box {
-            width: 30px; height: 30px; border-radius: 8px;
+            width: 28px; height: 28px; border-radius: 8px;
             display: flex; align-items: center; justify-content: center;
-            border: 1px solid; flex-shrink: 0;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--primary-blue);
+            flex-shrink: 0;
+            transition: all 0.2s ease;
           }
-          .sk-cat-title-group { flex: 1; min-width: 0; }
-          .sk-cat-main { display: flex; flex-direction: column; gap: 8px; }
+          [data-theme="dark"] .sk-cat-icon-box {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.1);
+            color: var(--primary-blue);
+          }
+          .sk-cat-card:hover .sk-cat-icon-box,
+          .sk-cat-card:active .sk-cat-icon-box {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.25);
+          }
+          .sk-cat-main { display: flex; flex-direction: column; gap: 6px; }
           .sk-cat-name {
-            font-size: 12px; font-weight: 800;
+            font-size: 12.5px; font-weight: 600;
             color: var(--text-primary);
-            margin: 0; line-height: 1.2; letter-spacing: -0.01em;
+            margin: 0; line-height: 1.25; letter-spacing: -0.01em;
           }
           .sk-cat-count-badge {
-            font-size: 8.5px; font-weight: 700;
-            padding: 1px 6px; border-radius: 20px;
-            border: 1px solid; margin-top: 3px;
+            font-size: 8.5px; font-weight: 500;
+            padding: 1.5px 6px; border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-muted);
+            margin-top: 2px;
             width: fit-content; display: inline-block;
           }
           .sk-cat-chevron {
-            color: var(--text-muted); flex-shrink: 0; margin-left: auto;
+            color: var(--text-muted); opacity: 0.5; flex-shrink: 0; margin-left: auto;
           }
 
-          /* Level distribution bar */
+          /* Clean single-track level bar */
           .sk-cat-level-row {
             display: flex; align-items: center; gap: 6px;
           }
           .sk-cat-level-bar {
-            flex: 1; height: 4px; border-radius: 2px;
+            flex: 1; height: 3px; border-radius: 2px;
             background: var(--border-color); overflow: hidden;
-            display: flex;
           }
-          .sk-cat-level-seg { height: 100%; }
-          .sk-cat-level-legend {
-            display: flex; gap: 8px;
+          .sk-cat-level-fill {
+            height: 100%; border-radius: 2px;
+            background: linear-gradient(90deg, var(--primary-blue), #10b981);
           }
-          .sk-cat-legend-item {
-            display: flex; align-items: center; gap: 3px;
-            font-size: 8.5px; font-weight: 600; color: var(--text-muted);
-          }
-          .sk-cat-legend-dot {
-            width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+          .sk-cat-level-text {
+            font-size: 8.5px; font-weight: 500; color: var(--text-muted);
+            white-space: nowrap;
           }
 
           /* Mini skill tags preview */
@@ -820,16 +900,26 @@ export default function Skills() {
             display: flex; gap: 4px; flex-wrap: wrap;
           }
           .sk-cat-preview-tag {
-            font-size: 8.5px; font-weight: 700;
-            padding: 2px 6px; border-radius: 5px;
+            font-size: 8.5px; font-weight: 500;
+            padding: 1.5px 5.5px; border-radius: 5px;
             background: var(--bg-primary); border: 1px solid var(--border-color);
             color: var(--text-secondary); white-space: nowrap;
           }
+          .sk-cat-preview-tag--more {
+            color: var(--text-muted); font-weight: 600;
+          }
 
           /* ============ TOP TECHNICAL PROFICIENCIES CAROUSEL ============ */
+          .sk-mob-carousel-container {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+          }
           .sk-prof-feat-wrapper {
-            margin-top: 4px;
-            margin-bottom: 14px;
+            margin-top: 0;
+            margin-bottom: 0;
           }
           .sk-prof-feat-header {
             display: flex;
@@ -896,7 +986,8 @@ export default function Skills() {
             max-width: 85%;
             scroll-snap-align: start;
             border-radius: 18px;
-            border: 1px solid;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
             padding: 14px;
             position: relative;
             overflow: hidden;
@@ -905,16 +996,7 @@ export default function Skills() {
             display: flex;
             flex-direction: column;
             gap: 9px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-          }
-          .sk-prof-feat-bg {
-            position: absolute;
-            bottom: -24px;
-            right: -24px;
-            width: 110px;
-            height: 110px;
-            border-radius: 50%;
-            pointer-events: none;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
           }
           .sk-prof-feat-top-row {
             display: flex;
@@ -927,21 +1009,23 @@ export default function Skills() {
             align-items: center;
             gap: 4px;
             border-radius: 20px;
-            padding: 2px 8px;
-            border: 1px solid;
+            padding: 2.5px 8px;
+            border: 1px solid rgba(16, 185, 129, 0.25);
             font-size: 8.5px;
-            font-weight: 800;
-            letter-spacing: 0.04em;
+            font-weight: 700;
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.08);
           }
           .sk-prof-feat-pct {
             display: inline-flex;
             align-items: center;
             border-radius: 20px;
-            padding: 2px 8px;
-            border: 1px solid;
-            font-size: 9.5px;
-            font-weight: 800;
-            letter-spacing: 0.02em;
+            padding: 2.5px 8px;
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            font-size: 9px;
+            font-weight: 700;
+            color: var(--primary-blue);
+            background: rgba(59, 130, 246, 0.08);
           }
           .sk-prof-feat-identity {
             display: flex;
@@ -957,20 +1041,22 @@ export default function Skills() {
             justify-content: center;
             font-size: 11px;
             font-weight: 800;
-            border: 1px solid;
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            background: rgba(59, 130, 246, 0.08);
+            color: var(--primary-blue);
             flex-shrink: 0;
           }
           .sk-prof-feat-name {
             font-size: 15px;
-            font-weight: 800;
+            font-weight: 700;
             color: var(--text-primary);
             margin: 0 0 2px;
             letter-spacing: -0.015em;
           }
           .sk-prof-feat-meta {
             font-size: 10px;
-            color: var(--text-secondary);
-            font-weight: 600;
+            color: var(--text-muted);
+            font-weight: 500;
             display: flex;
             align-items: center;
             gap: 6px;
@@ -979,14 +1065,15 @@ export default function Skills() {
             margin: 2px 0;
           }
           .sk-prof-feat-bar {
-            height: 5px;
-            border-radius: 3px;
+            height: 4px;
+            border-radius: 2px;
             background: var(--border-color);
             overflow: hidden;
           }
           .sk-prof-feat-fill {
             height: 100%;
-            border-radius: 3px;
+            border-radius: 2px;
+            background: linear-gradient(90deg, var(--primary-blue), #10b981);
           }
           .sk-prof-feat-desc {
             font-size: 11px;
@@ -1014,10 +1101,12 @@ export default function Skills() {
           }
           .sk-prof-feat-tag {
             font-size: 8.5px;
-            font-weight: 700;
+            font-weight: 500;
             border-radius: 6px;
-            padding: 2px 6px;
-            border: 1px solid;
+            padding: 2.5px 7px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-secondary);
             white-space: nowrap;
           }
           .sk-prof-feat-action {
@@ -1025,16 +1114,21 @@ export default function Skills() {
             align-items: center;
             gap: 4px;
             font-size: 10.5px;
-            font-weight: 700;
+            font-weight: 600;
             border-radius: 8px;
             padding: 5px 10px;
-            border: 1px solid;
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            background: rgba(59, 130, 246, 0.08);
+            color: var(--primary-blue);
             cursor: pointer;
-            transition: transform 0.15s;
+            transition: transform 0.15s, background 0.15s;
             -webkit-tap-highlight-color: transparent;
             flex-shrink: 0;
           }
-          .sk-prof-feat-action:active { transform: scale(0.95); }
+          .sk-prof-feat-action:active {
+            transform: scale(0.95);
+            background: rgba(59, 130, 246, 0.15);
+          }
 
           /* Dots pagination */
           .sk-prof-feat-dots {
@@ -1046,13 +1140,18 @@ export default function Skills() {
             margin-bottom: 2px;
           }
           .sk-prof-feat-dot {
-            height: 6px;
+            width: 5px;
+            height: 5px;
             border-radius: 3px;
             background: var(--border-color);
             border: none;
             padding: 0;
             cursor: pointer;
             transition: all 0.2s ease;
+          }
+          .sk-prof-feat-dot.active {
+            background: var(--primary-blue);
+            width: 14px;
           }
 
           /* ============ SHARED SHEET CHROME ============ */
@@ -1238,7 +1337,7 @@ export default function Skills() {
         }
       `}</style>
 
-      <motion.div className="skills-page" style={{ height: !isMobile ? '100%' : 'auto', overflow: !isMobile ? 'hidden' : 'visible' }} variants={!isMobile ? containerVariants : undefined} initial={!isMobile ? "hidden" : undefined} animate={!isMobile ? "visible" : undefined}>
+      <motion.div className="skills-page" style={{ height: '100%', overflow: 'hidden' }} variants={!isMobile ? containerVariants : undefined} initial={!isMobile ? "hidden" : undefined} animate={!isMobile ? "visible" : undefined}>
 
         {!isMobile && skillCategories.length > 0 && (
           <motion.div 
@@ -1448,7 +1547,7 @@ export default function Skills() {
             )}
           </AnimatePresence>
         ) : (
-          <div style={{ padding: '4px 0 60px' }}>
+          <div className="sk-mob-container">
 
             {/* ── Hero Header ── */}
             <div className="sk-mob-header">
@@ -1459,185 +1558,175 @@ export default function Skills() {
               </p>
             </div>
 
-            {/* ── Quick Stats Pills ── */}
+            {/* ── Quick Stats Divider Row ── */}
             {(() => {
               const total = skillCategories.reduce((a, c) => a + (c.skills?.length || 0), 0);
               const advanced = skillCategories.flatMap(c => c.skills).filter(s => s.level === 'Advanced').length;
               return (
-                <div className="sk-stats-bar">
-                  <div className="sk-stat-pill">
-                    <span className="sk-stat-val" style={{ color: '#3b82f6' }}>{total}</span>
+                <div className="sk-stats-divider-row">
+                  <div className="sk-stat-col">
+                    <span className="sk-stat-num">{total}</span>
                     <span className="sk-stat-lbl">Skills</span>
                   </div>
-                  <div className="sk-stat-pill">
-                    <span className="sk-stat-val" style={{ color: '#10b981' }}>{advanced}</span>
+                  <div className="sk-stat-col">
+                    <span className="sk-stat-num">{advanced}</span>
                     <span className="sk-stat-lbl">Advanced</span>
                   </div>
-                  <div className="sk-stat-pill">
-                    <span className="sk-stat-val" style={{ color: '#8b5cf6' }}>{skillCategories.length}</span>
+                  <div className="sk-stat-col">
+                    <span className="sk-stat-num">{skillCategories.length}</span>
                     <span className="sk-stat-lbl">Categories</span>
                   </div>
                 </div>
               );
             })()}
 
-            {/* ── Mobile Search Bar ── */}
-            <div style={{ position: 'relative', marginBottom: 12 }}>
-              <Search size={14} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search skills (e.g. Python, SQL, React)..."
-                style={{
-                  width: '100%', height: 38,
-                  paddingLeft: 34, paddingRight: 30,
-                  borderRadius: 12,
-                  border: '1px solid var(--border-color)',
-                  backgroundColor: 'var(--bg-secondary)',
-                  color: 'var(--text-primary)',
-                  fontSize: 12, fontWeight: 500, outline: 'none',
-                  boxSizing: 'border-box'
-                }}
-              />
-              {searchQuery && (
+            {/* ── View Tab Toggle ── */}
+            <div className="sk-tab-toggle-wrap">
+              <div className="sk-tab-toggle" role="tablist">
                 <button
                   type="button"
-                  onClick={() => setSearchQuery('')}
-                  style={{
-                    position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
-                    background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex'
-                  }}
+                  role="tab"
+                  aria-selected={activeTab === 'categories'}
+                  className={`sk-tab-btn ${activeTab === 'categories' ? 'sk-tab-btn--active' : ''}`}
+                  onClick={() => setActiveTab('categories')}
                 >
-                  <X size={14} />
+                  {activeTab === 'categories' && (
+                    <motion.div
+                      layoutId="skActiveTabPill"
+                      className="sk-tab-pill-bg"
+                      transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                    />
+                  )}
+                  <span className="sk-tab-btn-content">
+                    <LayoutGrid size={13} className="sk-tab-icon" />
+                    <span>Categories</span>
+                  </span>
                 </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={activeTab === 'skills'}
+                  className={`sk-tab-btn ${activeTab === 'skills' ? 'sk-tab-btn--active' : ''}`}
+                  onClick={() => setActiveTab('skills')}
+                >
+                  {activeTab === 'skills' && (
+                    <motion.div
+                      layoutId="skActiveTabPill"
+                      className="sk-tab-pill-bg"
+                      transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                    />
+                  )}
+                  <span className="sk-tab-btn-content">
+                    <Star size={13} className="sk-tab-icon" />
+                    <span>Top Skills</span>
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* ── Tab Content Area ── */}
+            <div className="sk-tab-content">
+              {activeTab === 'categories' ? (
+                <div className="skills-mobile-list">
+                  {skillCategories.map((category, idx) => {
+                    const Icon = categoryIconMap[category.id] || categoryIconMap.languages;
+                    const isFull = category.id === 'exploring';
+                    // Regular cards show 2 chips; full-width shows 3
+                    const topSkills = category.skills.slice(0, isFull ? 3 : 2);
+                    const advCount = category.skills.filter(s => s.level === 'Advanced').length;
+                    const total = category.skills.length || 1;
+                    const pct = Math.round((advCount / total) * 100);
+
+                    return (
+                      <motion.button
+                        key={category.id}
+                        className={`sk-cat-card${isFull ? ' sk-cat-card--full' : ''}`}
+                        onClick={() => setActiveCategory(category)}
+                        whileTap={{ scale: 0.972 }}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: idx * 0.04, type: 'spring', stiffness: 400, damping: 28 }}
+                      >
+                        {/* Icon box — clean subtle styling */}
+                        <div className="sk-cat-icon-box">
+                          <Icon size={15} />
+                        </div>
+
+                        {/* Main content area */}
+                        <div className="sk-cat-main">
+                          {/* Title + count badge */}
+                          <div>
+                            <p className="sk-cat-name">{category.title}</p>
+                            <span className="sk-cat-count-badge">
+                              {category.skills.length} skills
+                            </span>
+                          </div>
+
+                          {/* Clean single-track level bar */}
+                          <div className="sk-cat-level-row">
+                            <div className="sk-cat-level-bar">
+                              <div
+                                className="sk-cat-level-fill"
+                                style={{ width: `${pct}%` }}
+                              />
+                            </div>
+                            <span className="sk-cat-level-text">
+                              {advCount > 0 ? `${advCount} adv` : `${category.skills.length} skills`}
+                            </span>
+                          </div>
+
+                          {/* Preview chips */}
+                          <div className="sk-cat-preview-tags">
+                            {topSkills.map(s => (
+                              <span
+                                key={s.id || s.name}
+                                className="sk-cat-preview-tag"
+                              >
+                                {s.name}
+                              </span>
+                            ))}
+                            {category.skills.length > (isFull ? 3 : 2) && (
+                              <span className="sk-cat-preview-tag sk-cat-preview-tag--more">
+                                +{category.skills.length - (isFull ? 3 : 2)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Chevron — only on non-full cards, bottom-right aligned */}
+                        {!isFull && (
+                          <ChevronRight size={13} className="sk-cat-chevron" style={{ position: 'absolute', bottom: 10, right: 10 }} />
+                        )}
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="sk-mob-carousel-container">
+                  {(() => {
+                    const allSkills = skillCategories.flatMap(c => c.skills);
+                    const topSkills = [...allSkills]
+                      .filter(s => s.percent > 0)
+                      .sort((a, b) => (b.percent || 0) - (a.percent || 0))
+                      .slice(0, 6);
+                    if (topSkills.length === 0) {
+                      return (
+                        <div style={{ textAlign: 'center', padding: '30px 0', color: 'var(--text-muted)', fontSize: '12px' }}>
+                          No proficiencies found.
+                        </div>
+                      );
+                    }
+                    return (
+                      <MobileProficiencyCarousel
+                        topSkills={topSkills}
+                        onOpenSkill={setActiveSkill}
+                      />
+                    );
+                  })()}
+                </div>
               )}
             </div>
-
-            {/* ── 2-column Category Card Grid ── */}
-            <div className="skills-mobile-list">
-              {skillCategories.map((category, idx) => {
-                const Icon = categoryIconMap[category.id] || categoryIconMap.languages;
-                const accentColors = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#6366f1'];
-                const accent = accentColors[idx % accentColors.length];
-                const isFull = category.id === 'exploring';
-                // Regular cards show 2 chips; full-width shows 3
-                const topSkills = category.skills.slice(0, isFull ? 3 : 2);
-                const advCount = category.skills.filter(s => s.level === 'Advanced').length;
-                const intCount = category.skills.filter(s => s.level === 'Intermediate').length;
-                const lrnCount = category.skills.filter(s => s.level === 'Learning').length;
-                const total = category.skills.length || 1;
-
-                return (
-                  <motion.button
-                    key={category.id}
-                    className={`sk-cat-card${isFull ? ' sk-cat-card--full' : ''}`}
-                    onClick={() => setActiveCategory(category)}
-                    whileTap={{ scale: 0.972 }}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.05, type: 'spring', stiffness: 400, damping: 28 }}
-                  >
-                    <div className="sk-cat-stripe" style={{ background: accent }} />
-                    <div className="sk-cat-glow" style={{ background: `radial-gradient(circle, ${accent}20, transparent 70%)` }} />
-
-                    {/* Icon box — always visible */}
-                    <div className="sk-cat-icon-box" style={{ background: `${accent}15`, borderColor: `${accent}30`, color: accent }}>
-                      <Icon size={16} />
-                    </div>
-
-                    {/* Main content area (flex column for normal, flex child for full-width) */}
-                    <div className="sk-cat-main">
-                      {/* Title + count badge */}
-                      <div>
-                        <p className="sk-cat-name">{category.title}</p>
-                        <span
-                          className="sk-cat-count-badge"
-                          style={{ color: accent, background: `${accent}12`, borderColor: `${accent}25` }}
-                        >
-                          {category.skills.length} skills
-                        </span>
-                      </div>
-
-                      {/* Level distribution bar */}
-                      <div className="sk-cat-level-row">
-                        <div className="sk-cat-level-bar">
-                          <div className="sk-cat-level-seg" style={{ width: `${(advCount / total) * 100}%`, background: '#16a34a' }} />
-                          <div className="sk-cat-level-seg" style={{ width: `${(intCount / total) * 100}%`, background: '#eab308' }} />
-                          <div className="sk-cat-level-seg" style={{ width: `${(lrnCount / total) * 100}%`, background: '#6366f1' }} />
-                        </div>
-                        <div className="sk-cat-level-legend">
-                          {advCount > 0 && <span className="sk-cat-legend-item"><span className="sk-cat-legend-dot" style={{ background: '#16a34a' }} />{advCount}</span>}
-                          {intCount > 0 && <span className="sk-cat-legend-item"><span className="sk-cat-legend-dot" style={{ background: '#eab308' }} />{intCount}</span>}
-                        </div>
-                      </div>
-
-                      {/* Preview chips */}
-                      <div className="sk-cat-preview-tags">
-                        {topSkills.map(s => (
-                          <span
-                            key={s.id || s.name}
-                            className="sk-cat-preview-tag"
-                            style={
-                              searchQuery && s.name.toLowerCase().includes(searchQuery.toLowerCase())
-                                ? { background: accent, color: '#fff', borderColor: accent }
-                                : {}
-                            }
-                          >
-                            {s.name}
-                          </span>
-                        ))}
-                        {category.skills.length > (isFull ? 3 : 2) && (
-                          <span className="sk-cat-preview-tag" style={{ color: accent, fontWeight: 800 }}>+{category.skills.length - (isFull ? 3 : 2)}</span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Chevron — only on non-full cards, bottom-right aligned */}
-                    {!isFull && (
-                      <ChevronRight size={13} className="sk-cat-chevron" style={{ position: 'absolute', bottom: 10, right: 10 }} />
-                    )}
-                  </motion.button>
-                );
-              })}
-            </div>
-
-            {/* ── Live Top Proficiencies Snap-Scroll Carousel ── */}
-            {(() => {
-              const allSkills = skillCategories.flatMap(c => c.skills);
-              const topSkills = [...allSkills]
-                .filter(s => s.percent > 0)
-                .sort((a, b) => (b.percent || 0) - (a.percent || 0))
-                .slice(0, 6);
-              if (topSkills.length === 0) return null;
-              return (
-                <MobileProficiencyCarousel
-                  topSkills={topSkills}
-                  onOpenSkill={setActiveSkill}
-                />
-              );
-            })()}
           </div>
-        )}
-
-        {/* Swipe Hint */}
-        {isMobile && (
-          <motion.div
-            className="swipe-hint"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.4 }}
-          >
-            <div className="swipe-hint-icon">
-              <motion.div animate={{ x: [-3, 2, -3] }} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}>
-                <ChevronLeft size={16} />
-              </motion.div>
-              <motion.div animate={{ x: [3, -2, 3] }} transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}>
-                <ChevronRight size={16} />
-              </motion.div>
-            </div>
-            <span>Swipe or use nav to explore</span>
-          </motion.div>
         )}
       </motion.div>
 
