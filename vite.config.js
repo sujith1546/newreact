@@ -30,6 +30,19 @@ function localApiDevPlugin() {
         res.setHeader('Access-Control-Allow-Origin', '*');
         res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-portfolio-session');
 
+        if (!res.status) {
+          res.status = function(code) {
+            this.statusCode = code;
+            return this;
+          };
+        }
+        if (!res.json) {
+          res.json = function(data) {
+            this.setHeader('Content-Type', 'application/json');
+            return this.end(JSON.stringify(data));
+          };
+        }
+
         if (req.method === 'OPTIONS') {
           res.statusCode = 200;
           return res.end();

@@ -2,6 +2,10 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
+import { initDiagnosticsTelemetry } from './core/diagnostics/diagnosticsEngine'
+
+// Initialize real-time bug & telemetry interception engine across website
+initDiagnosticsTelemetry();
 
 // Clear legacy dev service workers in development mode to prevent localhost route hijacking
 if (import.meta.env.DEV && 'serviceWorker' in navigator) {

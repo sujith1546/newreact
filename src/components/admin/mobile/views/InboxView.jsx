@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import MessagesAdmin from '../../panels/MessagesAdmin';
 import AiChatsPanel from '../../panels/AiChatsPanel';
+import haptic from '../../../../lib/haptics';
 
 const INBOX_TABS = [
   { key: 'messages', label: 'Messages', icon: 'ti-message-circle' },
@@ -11,16 +12,13 @@ const INBOX_TABS = [
 export default function InboxView({ activeSubTab = 'messages', onSelectSubTab, unreadMessagesCount = 0 }) {
   return (
     <div className="admin-mobile-view" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
-      {/* Sub-tab Pills Switcher with Animated Pill */}
+      {/* Segmented Control Bar */}
       <div style={{
         display: 'flex',
         gap: 6,
-        padding: '10px 14px',
-        overflowX: 'auto',
-        WebkitOverflowScrolling: 'touch',
-        scrollbarWidth: 'none',
-        borderBottom: '1px solid var(--pcms-line-soft)',
-        background: 'var(--pcms-bg-2)',
+        padding: '8px 14px',
+        borderBottom: '1px solid var(--border-color, rgba(255,255,255,0.08))',
+        background: 'var(--bg-secondary, #18191d)',
         flexShrink: 0,
       }}>
         {INBOX_TABS.map((tab) => {
@@ -28,17 +26,21 @@ export default function InboxView({ activeSubTab = 'messages', onSelectSubTab, u
           return (
             <button
               key={tab.key}
-              onClick={() => onSelectSubTab(tab.key)}
+              type="button"
+              onClick={() => {
+                haptic.light();
+                onSelectSubTab(tab.key);
+              }}
               style={{
                 position: 'relative',
                 display: 'flex',
                 alignItems: 'center',
-                gap: 7,
-                padding: '7px 13px',
-                borderRadius: 20,
+                gap: 6,
+                padding: '6px 14px',
+                borderRadius: 18,
                 border: 'none',
                 background: 'transparent',
-                color: isActive ? 'var(--pcms-accent)' : 'var(--pcms-muted)',
+                color: isActive ? 'var(--primary-blue, #3b82f6)' : 'var(--text-muted, #94a3b8)',
                 fontSize: 12,
                 fontWeight: isActive ? 700 : 500,
                 cursor: 'pointer',
@@ -49,13 +51,14 @@ export default function InboxView({ activeSubTab = 'messages', onSelectSubTab, u
               {isActive ? (
                 <motion.div
                   layoutId="inboxSubTabPill"
-                  transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+                  transition={{ type: 'spring', stiffness: 450, damping: 32 }}
                   style={{
                     position: 'absolute',
                     inset: 0,
-                    borderRadius: 20,
-                    background: 'var(--pcms-accent-dim)',
-                    border: '1px solid var(--pcms-accent)',
+                    borderRadius: 18,
+                    background: 'var(--primary-blue-subtle, rgba(59, 130, 246, 0.12))',
+                    border: '1px solid rgba(59, 130, 246, 0.25)',
+                    zIndex: 0,
                   }}
                 />
               ) : (
@@ -63,23 +66,24 @@ export default function InboxView({ activeSubTab = 'messages', onSelectSubTab, u
                   style={{
                     position: 'absolute',
                     inset: 0,
-                    borderRadius: 20,
-                    background: 'var(--pcms-panel)',
-                    border: '1px solid var(--pcms-line)',
+                    borderRadius: 18,
+                    background: 'var(--bg-primary, rgba(255,255,255,0.04))',
+                    border: '1px solid var(--border-color, rgba(255,255,255,0.08))',
+                    zIndex: 0,
                   }}
                 />
               )}
-              <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 7 }}>
+              <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
                 <i className={`ti ${tab.icon}`} style={{ fontSize: 13, opacity: isActive ? 1 : 0.7 }} />
                 <span>{tab.label}</span>
                 {tab.key === 'messages' && unreadMessagesCount > 0 && (
                   <span style={{
                     background: '#ef4444',
-                    color: '#fff',
-                    fontSize: 10,
+                    color: '#ffffff',
+                    fontSize: 9.5,
                     fontWeight: 800,
-                    padding: '1px 6px',
-                    borderRadius: 10,
+                    padding: '1px 5px',
+                    borderRadius: 8,
                     marginLeft: 2,
                   }}>
                     {unreadMessagesCount}
@@ -99,7 +103,7 @@ export default function InboxView({ activeSubTab = 'messages', onSelectSubTab, u
         minHeight: 0,
         overflowY: 'auto',
         WebkitOverflowScrolling: 'touch',
-        padding: '14px 14px 110px',
+        padding: '12px 14px 130px',
       }}>
         {activeSubTab === 'messages' ? <MessagesAdmin /> : <AiChatsPanel />}
       </div>

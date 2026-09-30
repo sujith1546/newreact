@@ -1,112 +1,142 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
-  Briefcase, MessageSquare, Zap, Star, TrendingUp, Clock,
-  ArrowRight, ChevronRight, Users, Activity, Eye, Plus, RefreshCw
+  Briefcase, MessageSquare, Zap, Star,
+  ArrowRight, ChevronRight, Users, Activity, Eye, RefreshCw
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useDashboardStats } from '../shared/useDashboardStats';
 import { supabase } from '../../../lib/supabaseClient';
 import haptic from '../../../lib/haptics';
 
-// -- Stat Card Component --
-function StatCard({ icon: Icon, label, value, sub, color, route, delay }) {
+// ── Executive Stat Card Component ──
+function StatCard({ icon: Icon, label, value, sub, route, delay }) {
   const navigate = useNavigate();
   return (
     <motion.button
-      initial={{ opacity: 0, y: 14 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, type: 'spring', stiffness: 300, damping: 26 }}
-      whileTap={{ scale: 0.93 }}
+      transition={{ delay, duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+      whileTap={{ scale: 0.96 }}
       onClick={() => { haptic.light(); if (route) navigate(route); }}
       style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: 10,
-        padding: '14px 14px 12px',
-        borderRadius: 18,
-        background: 'var(--pcms-panel, rgba(255,255,255,0.04))',
-        border: '1px solid var(--pcms-line-soft, rgba(255,255,255,0.09))',
-        boxShadow: `0 4px 18px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.06)`,
+        justifyContent: 'space-between',
+        gap: 12,
+        padding: '13px 13px 11px',
+        borderRadius: 16,
+        background: 'var(--bg-secondary, #18191d)',
+        border: '1px solid var(--border-color, rgba(255,255,255,0.1))',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
         cursor: 'pointer',
         textAlign: 'left',
         width: '100%',
+        boxSizing: 'border-box',
         position: 'relative',
-        overflow: 'hidden',
+        transition: 'border-color 0.15s ease',
       }}
     >
-      {/* Ambient glow blob */}
-      <div style={{
-        position: 'absolute',
-        top: -16, right: -16,
-        width: 60, height: 60,
-        borderRadius: '50%',
-        background: color,
-        opacity: 0.12,
-        filter: 'blur(14px)',
-        pointerEvents: 'none',
-      }} />
-      <div style={{
-        width: 34, height: 34, borderRadius: 11,
-        background: `${color}22`,
-        border: `1px solid ${color}40`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color,
-        flexShrink: 0,
-      }}>
-        <Icon size={17} strokeWidth={2.2} />
+      {/* Top Row: Icon & Chevron */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+        <div style={{
+          width: 30,
+          height: 30,
+          borderRadius: 9,
+          background: 'var(--primary-blue-subtle, rgba(59, 130, 246, 0.12))',
+          border: '1px solid rgba(59, 130, 246, 0.2)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'var(--primary-blue, #3b82f6)',
+          flexShrink: 0,
+        }}>
+          <Icon size={15} />
+        </div>
+        <ChevronRight size={13} style={{ color: 'var(--text-muted, #64748b)', opacity: 0.6 }} />
       </div>
+
+      {/* Value & Label */}
       <div>
-        <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--pcms-text, #ffffff)', lineHeight: 1, fontFamily: "'Space Grotesk', sans-serif" }}>
+        <div style={{
+          fontSize: 22,
+          fontWeight: 700,
+          color: 'var(--text-primary, #ffffff)',
+          lineHeight: 1.1,
+          letterSpacing: '-0.03em',
+        }}>
           {value}
         </div>
-        <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--pcms-muted, #a1a1aa)', marginTop: 2 }}>{label}</div>
+        <div style={{
+          fontSize: 11,
+          fontWeight: 600,
+          color: 'var(--text-muted, #94a3b8)',
+          marginTop: 3,
+        }}>
+          {label}
+        </div>
         {sub && (
-          <div style={{ fontSize: 10, color, fontWeight: 700, marginTop: 4, display: 'flex', alignItems: 'center', gap: 3 }}>
-            <TrendingUp size={9} />
+          <div style={{
+            fontSize: 9.5,
+            color: 'var(--text-secondary, #cbd5e1)',
+            fontWeight: 500,
+            marginTop: 4,
+          }}>
             {sub}
           </div>
         )}
       </div>
-      <ChevronRight size={13} color="var(--pcms-muted)" style={{ position: 'absolute', bottom: 12, right: 12 }} />
     </motion.button>
   );
 }
 
-// -- Activity Feed Item --
-function ActivityItem({ icon, label, time, color, delay }) {
+// ── Activity Feed Item ──
+function ActivityItem({ icon, label, time, delay }) {
   return (
     <motion.div
-      initial={{ opacity: 0, x: -8 }}
+      initial={{ opacity: 0, x: -6 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ delay, ease: 'easeOut' }}
-      style={{ display: 'flex', alignItems: 'center', gap: 11, paddingBottom: 12 }}
+      transition={{ delay, duration: 0.2 }}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10,
+        padding: '8px 0',
+        borderBottom: '1px solid var(--border-color, rgba(255,255,255,0.06))',
+      }}
     >
       <div style={{
-        width: 30, height: 30, borderRadius: '50%',
-        background: `${color}18`,
-        border: `1px solid ${color}30`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        flexShrink: 0, color,
+        width: 28,
+        height: 28,
+        borderRadius: 8,
+        background: 'var(--bg-primary, rgba(255,255,255,0.04))',
+        border: '1px solid var(--border-color, rgba(255,255,255,0.1))',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexShrink: 0,
+        color: 'var(--primary-blue, #3b82f6)',
       }}>
         {icon}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--pcms-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <div style={{
+          fontSize: 12,
+          fontWeight: 600,
+          color: 'var(--text-primary, #ffffff)',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        }}>
           {label}
         </div>
-        <div style={{ fontSize: 10, color: 'var(--pcms-muted)', marginTop: 1 }}>{time}</div>
+        <div style={{ fontSize: 10, color: 'var(--text-muted, #64748b)', marginTop: 1 }}>{time}</div>
       </div>
-      {/* Timeline line */}
-      <div style={{
-        position: 'absolute', left: 27, top: 30, width: 1, height: 12,
-        background: 'var(--pcms-line-soft, rgba(255,255,255,0.07))',
-      }} />
     </motion.div>
   );
 }
 
-// -- Main MobileHomeShell Component --
+// ── Main MobileHomeShell Component ──
 export default function MobileHomeShell() {
   const navigate = useNavigate();
   const stats = useDashboardStats();
@@ -152,126 +182,126 @@ export default function MobileHomeShell() {
       icon: <MessageSquare size={13} />,
       label: `Message from ${m.name || m.email || 'Visitor'}`,
       time: formatRelativeTime(m.created_at),
-      color: '#6366f1',
     })),
     ...recentProjects.map((p) => ({
       key: `proj-${p.id}`,
       icon: <Briefcase size={13} />,
       label: `Project: ${p.title}`,
       time: formatRelativeTime(p.created_at),
-      color: '#10b981',
     })),
-  ].sort((a, b) => 0); // keep order as-is (already sorted by time)
+  ];
 
   const STAT_CARDS = [
     {
       icon: Briefcase,
       label: 'Projects',
       value: stats.loading ? '–' : stats.projectCount,
-      sub: 'Total showcased',
-      color: '#10b981',
+      sub: 'Showcased apps',
       route: '/admin/dashboard/projects',
     },
     {
       icon: MessageSquare,
       label: 'Unread',
       value: stats.loading ? '–' : stats.unreadMessages,
-      sub: stats.unreadMessages > 0 ? 'Need reply' : 'All caught up',
-      color: '#6366f1',
+      sub: stats.unreadMessages > 0 ? 'Pending reply' : 'All caught up',
       route: '/admin/dashboard/messages',
     },
     {
       icon: Zap,
       label: 'Updates',
       value: stats.loading ? '–' : stats.updateCount,
-      sub: 'Published',
-      color: '#f59e0b',
+      sub: 'Published posts',
       route: '/admin/dashboard/updates',
     },
     {
       icon: Star,
       label: 'Skills',
       value: stats.loading ? '–' : stats.skillCount,
-      sub: 'In your stack',
-      color: '#06b6d4',
+      sub: 'Core tech stack',
       route: '/admin/dashboard/skills',
     },
   ];
 
   const QUICK_LAUNCH = [
-    { label: 'Projects', icon: Briefcase, route: '/admin/dashboard/projects', color: '#10b981' },
-    { label: 'Messages', icon: MessageSquare, route: '/admin/dashboard/messages', color: '#6366f1' },
-    { label: 'Updates', icon: Zap, route: '/admin/dashboard/updates', color: '#f59e0b' },
-    { label: 'Skills', icon: Star, route: '/admin/dashboard/skills', color: '#06b6d4' },
-    { label: 'Preview', icon: Eye, route: '/admin/dashboard/preview', color: '#8b5cf6' },
-    { label: 'Sessions', icon: Users, route: '/admin/dashboard/home', color: '#ec4899' },
+    { label: 'Projects', icon: Briefcase, route: '/admin/dashboard/projects' },
+    { label: 'Messages', icon: MessageSquare, route: '/admin/dashboard/messages' },
+    { label: 'Updates', icon: Zap, route: '/admin/dashboard/updates' },
+    { label: 'Skills', icon: Star, route: '/admin/dashboard/skills' },
+    { label: 'Preview', icon: Eye, route: '/admin/dashboard/preview' },
+    { label: 'Sessions', icon: Users, route: '/admin/dashboard/home' },
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20, paddingBottom: 4 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 18, width: '100%', boxSizing: 'border-box' }}>
 
       {/* ── STAT CARD GRID ── */}
       <section>
-        <SectionHeader icon={<Activity size={13} color="#10b981" />} title="Live Overview" />
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+        <SectionHeader icon={<Activity size={12} style={{ color: 'var(--primary-blue, #3b82f6)' }} />} title="Overview" />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 9 }}>
           {STAT_CARDS.map((card, i) => (
-            <StatCard key={card.label} {...card} delay={i * 0.05} />
+            <StatCard key={card.label} {...card} delay={i * 0.03} />
           ))}
         </div>
       </section>
 
       {/* ── QUICK LAUNCH GRID ── */}
       <section>
-        <SectionHeader icon={<Zap size={13} color="#f59e0b" />} title="Quick Launch" />
+        <SectionHeader icon={<Zap size={12} style={{ color: 'var(--primary-blue, #3b82f6)' }} />} title="Quick Launch" />
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
           {QUICK_LAUNCH.map((item, i) => (
             <motion.button
               key={item.label}
-              initial={{ opacity: 0, scale: 0.88 }}
+              initial={{ opacity: 0, scale: 0.92 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.1 + i * 0.04, type: 'spring', stiffness: 360, damping: 28 }}
-              whileTap={{ scale: 0.88 }}
+              transition={{ delay: 0.08 + i * 0.02, duration: 0.2 }}
+              whileTap={{ scale: 0.94 }}
               onClick={() => { haptic.light(); navigate(item.route); }}
               style={{
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: 7,
-                padding: '12px 6px',
-                borderRadius: 16,
-                background: 'var(--pcms-panel, rgba(255,255,255,0.04))',
-                border: '1px solid var(--pcms-line-soft, rgba(255,255,255,0.09))',
+                gap: 6,
+                padding: '11px 6px',
+                borderRadius: 14,
+                background: 'var(--bg-secondary, #18191d)',
+                border: '1px solid var(--border-color, rgba(255,255,255,0.1))',
                 cursor: 'pointer',
-                color: 'var(--pcms-text)',
+                color: 'var(--text-primary)',
+                boxSizing: 'border-box',
               }}
             >
               <div style={{
-                width: 36, height: 36, borderRadius: 12,
-                background: `${item.color}1a`,
-                border: `1px solid ${item.color}35`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: item.color,
+                width: 32,
+                height: 32,
+                borderRadius: 9,
+                background: 'var(--bg-primary, rgba(255,255,255,0.04))',
+                border: '1px solid var(--border-color, rgba(255,255,255,0.1))',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'var(--primary-blue, #3b82f6)',
               }}>
-                <item.icon size={17} strokeWidth={2.2} />
+                <item.icon size={15} />
               </div>
-              <span style={{ fontSize: 10.5, fontWeight: 700, color: 'var(--pcms-text)' }}>{item.label}</span>
+              <span style={{ fontSize: 10.5, fontWeight: 600, color: 'var(--text-primary)' }}>{item.label}</span>
             </motion.button>
           ))}
         </div>
       </section>
 
-      {/* ── TODAY'S ACTIVITY FEED ── */}
+      {/* ── RECENT ACTIVITY FEED ── */}
       <section>
         <SectionHeader
-          icon={<Clock size={13} color="#8b5cf6" />}
+          icon={<Activity size={12} style={{ color: 'var(--primary-blue, #3b82f6)' }} />}
           title="Recent Activity"
           action={
             <button
+              type="button"
               onClick={() => { haptic.light(); navigate('/admin/dashboard/messages'); }}
               style={{
                 display: 'flex', alignItems: 'center', gap: 3,
                 background: 'transparent', border: 'none',
-                fontSize: 10.5, fontWeight: 600, color: '#6366f1', cursor: 'pointer',
+                fontSize: 10.5, fontWeight: 600, color: 'var(--primary-blue, #3b82f6)', cursor: 'pointer',
               }}
             >
               View all <ArrowRight size={10} />
@@ -279,21 +309,21 @@ export default function MobileHomeShell() {
           }
         />
         <div style={{
-          padding: '12px 14px 8px',
-          borderRadius: 18,
-          background: 'var(--pcms-panel, rgba(255,255,255,0.03))',
-          border: '1px solid var(--pcms-line-soft, rgba(255,255,255,0.08))',
-          position: 'relative',
+          padding: '8px 14px',
+          borderRadius: 16,
+          background: 'var(--bg-secondary, #18191d)',
+          border: '1px solid var(--border-color, rgba(255,255,255,0.1))',
+          boxSizing: 'border-box',
         }}>
           {loadingFeed ? (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0' }}>
-              <RefreshCw size={16} color="var(--pcms-muted)" className="spinning" />
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '16px 0' }}>
+              <RefreshCw size={15} color="var(--text-muted)" className="spinning" />
             </div>
           ) : activityFeed.length === 0 ? (
             <EmptyFeedState />
           ) : (
             activityFeed.map(({ key, ...itemProps }, i) => (
-              <ActivityItem key={key} {...itemProps} delay={0.05 + i * 0.06} />
+              <ActivityItem key={key} {...itemProps} delay={i * 0.04} />
             ))
           )}
         </div>
@@ -305,10 +335,22 @@ export default function MobileHomeShell() {
 // ── Helpers ──
 function SectionHeader({ icon, title, action }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, paddingLeft: 2 }}>
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 8,
+      padding: '0 2px',
+    }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
         {icon}
-        <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--pcms-muted)' }}>
+        <span style={{
+          fontSize: 10.5,
+          fontWeight: 700,
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          color: 'var(--text-muted, #94a3b8)',
+        }}>
           {title}
         </span>
       </div>
@@ -319,10 +361,10 @@ function SectionHeader({ icon, title, action }) {
 
 function EmptyFeedState() {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '14px 0 8px', gap: 6 }}>
-      <div style={{ fontSize: 26 }}>📭</div>
-      <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--pcms-muted)' }}>No recent activity</span>
-      <span style={{ fontSize: 10, color: 'var(--pcms-muted)', opacity: 0.7 }}>Changes will appear here in real time</span>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '16px 0 10px', gap: 4 }}>
+      <div style={{ fontSize: 24 }}>📭</div>
+      <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--text-muted)' }}>No recent activity</span>
+      <span style={{ fontSize: 10, color: 'var(--text-muted)', opacity: 0.8 }}>Events synchronize in real time</span>
     </div>
   );
 }

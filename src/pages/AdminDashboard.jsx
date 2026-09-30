@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { Sun, Moon, ExternalLink, Eye, Lock, Zap, Sparkles, RefreshCw, LogOut } from 'lucide-react';
+import { Sun, Moon, ExternalLink, Eye, Lock, Zap, Sparkles, RefreshCw, LogOut, Search, Download, AlertTriangle, ShieldCheck, Monitor, Smartphone } from 'lucide-react';
 import MessagesAdmin, { UnreadBadge } from '../components/admin/panels/MessagesAdmin';
 import MobileShell from '../components/admin/mobile/MobileShell';
 import HomePanel from '../components/admin/panels/HomePanel';
@@ -18,25 +18,105 @@ import UpdatesPanel from '../components/admin/panels/UpdatesPanel';
 import MomentsPanel from '../components/admin/panels/MomentsPanel';
 import AiChatsPanel from '../components/admin/panels/AiChatsPanel';
 import PortfolioPreviewPanel from '../components/admin/panels/PortfolioPreviewPanel';
+import DiagnosticsPanel from '../components/admin/panels/DiagnosticsPanel';
+import { subscribeDiagnostics } from '../core/diagnostics/diagnosticsEngine';
 import { NAV_GROUPS, ALL_NAV_ITEMS } from '../components/admin/shared/constants';
 import { useDashboardStats } from '../components/admin/shared/useDashboardStats';
 import { useSiteStatus } from '../components/SiteDisabledGate';
 import useSessionLifecycle from '../hooks/useSessionLifecycle';
 import AdminLockScreen from '../components/admin/shared/AdminLockScreen';
-import { motion } from 'framer-motion';
+import AdminCommandPalette from '../components/admin/shared/AdminCommandPalette';
+import AdminModeTransitionHUD from '../components/admin/shared/AdminModeTransitionHUD';
+import { exportPortfolioSnapshot } from '../lib/snapshotManager';
+import { motion, AnimatePresence } from 'framer-motion';
 
-function AdminDashboardDesktop() {
+function DiagnosticsBadge() {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    return subscribeDiagnostics((state) => {
+      const active = state.issues.filter((i) => !i.resolved).length;
+      setCount(active);
+    });
+  }, []);
+
+  if (count === 0) return null;
+
+  return (
+    <span style={{
+      background: 'rgba(244, 63, 94, 0.15)',
+      border: '1px solid rgba(244, 63, 94, 0.35)',
+      color: '#f43f5e',
+      fontSize: 10,
+      fontWeight: 800,
+      padding: '1px 6px',
+      borderRadius: 10,
+      display: 'inline-flex',
+      alignItems: 'center',
+    }}>
+      {count}
+    </span>
+  );
+}
+
+function AdminDashboardDesktop({ modePreference = 'auto', onSetModePreference }) {
   const navigate = useNavigate();
   const { tab } = useParams();
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const siteStatus = useSiteStatus();
   const [lastLogin, setLastLogin] = useState(null);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isBackingUp, setIsBackingUp] = useState(false);
+  const [backupToast, setBackupToast] = useState(null);
 
   const isLocked = siteStatus.siteDisabled || siteStatus.maintenance;
 
   const VALID_TABS = ALL_NAV_ITEMS.map(n => n.key);
   const activeTab = VALID_TABS.includes(tab) ? tab : "home";
+
+  // Global Command Palette shortcut (⌘K / Ctrl+K)
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen(prev => !prev);
+      }
+    }
+
+    function handleCustomOpen() {
+      setIsCommandPaletteOpen(true);
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('open-admin-command-palette', handleCustomOpen);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('open-admin-command-palette', handleCustomOpen);
+    };
+  }, []);
+
+  const handleExportBackup = async () => {
+    setIsBackingUp(true);
+    try {
+      await exportPortfolioSnapshot();
+      setBackupToast('Backup saved!');
+      setTimeout(() => setBackupToast(null), 2500);
+    } catch (_) {}
+    setIsBackingUp(false);
+  };
+
+  const handleToggleStealthMode = async () => {
+    const nextState = !siteStatus.siteDisabled;
+    if (!window.confirm(nextState ? 'Activate Emergency Stealth Mode? The live portfolio will be immediately locked into maintenance.' : 'Deactivate Stealth Mode? The portfolio will become publicly visible.')) {
+      return;
+    }
+
+    try {
+      await supabase.from('site_settings').update({ site_disabled: nextState }).eq('id', 1);
+      window.dispatchEvent(new CustomEvent('pcms_data_updated', { detail: { table: 'site_settings' } }));
+    } catch (_) {}
+  };
 
   useEffect(() => {
     if (!tab || !VALID_TABS.includes(tab)) {
@@ -144,6 +224,11 @@ function AdminDashboardDesktop() {
                       {item.key === 'messages' && (
                         <div style={{ marginLeft: 'auto' }}>
                           <UnreadBadge />
+                        </div>
+                      )}
+                      {item.key === 'diagnostics' && (
+                        <div style={{ marginLeft: 'auto' }}>
+                          <DiagnosticsBadge />
                         </div>
                       )}
                     </button>
@@ -306,6 +391,112 @@ function AdminDashboardDesktop() {
           </div>
 
           <div className="pcms-topbar-right">
+            {/* Universal Command Palette Trigger */}
+            <button
+              type="button"
+              onClick={() => setIsCommandPaletteOpen(true)}
+              className="pcms-pill-btn"
+              title="Open Universal Command Center (Ctrl+K or ⌘K)"
+              style={{
+                background: 'var(--pcms-panel-2)',
+                border: '1px solid var(--pcms-line)',
+                color: 'var(--pcms-text)',
+                padding: '6px 12px',
+                gap: 8,
+              }}
+            >
+              <Search size={13} style={{ color: 'var(--primary-blue, #3b82f6)' }} />
+              <span style={{ fontSize: 12, fontWeight: 500 }}>Quick Search...</span>
+              <kbd style={{
+                fontSize: 10,
+                padding: '1px 5px',
+                borderRadius: 4,
+                background: 'var(--pcms-line)',
+                color: 'var(--pcms-muted)',
+                fontFamily: 'inherit',
+                fontWeight: 700,
+              }}>
+                ⌘K
+              </kbd>
+            </button>
+
+            {/* Viewport Mode Switcher */}
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              padding: 2,
+              borderRadius: 8,
+              background: 'var(--pcms-panel-2)',
+              border: '1px solid var(--pcms-line)',
+              gap: 2,
+            }}>
+              <button
+                type="button"
+                onClick={() => onSetModePreference?.('auto')}
+                title="Auto Responsive Mode"
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: 6,
+                  border: 'none',
+                  background: modePreference === 'auto' ? 'var(--pcms-panel)' : 'transparent',
+                  color: modePreference === 'auto' ? 'var(--primary-blue, #3b82f6)' : 'var(--pcms-muted)',
+                  fontWeight: modePreference === 'auto' ? 700 : 500,
+                  fontSize: 11,
+                  cursor: 'pointer',
+                  boxShadow: modePreference === 'auto' ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                Auto
+              </button>
+              <button
+                type="button"
+                onClick={() => onSetModePreference?.('desktop')}
+                title="Force Desktop Workspace"
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: 6,
+                  border: 'none',
+                  background: modePreference === 'desktop' ? 'var(--pcms-panel)' : 'transparent',
+                  color: modePreference === 'desktop' ? 'var(--primary-blue, #3b82f6)' : 'var(--pcms-muted)',
+                  fontWeight: modePreference === 'desktop' ? 700 : 500,
+                  fontSize: 11,
+                  cursor: 'pointer',
+                  boxShadow: modePreference === 'desktop' ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                <Monitor size={12} />
+                <span>Desktop</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onSetModePreference?.('mobile')}
+                title="Switch to Mobile View"
+                style={{
+                  padding: '4px 8px',
+                  borderRadius: 6,
+                  border: 'none',
+                  background: modePreference === 'mobile' ? 'var(--pcms-panel)' : 'transparent',
+                  color: modePreference === 'mobile' ? 'var(--primary-blue, #3b82f6)' : 'var(--pcms-muted)',
+                  fontWeight: modePreference === 'mobile' ? 700 : 500,
+                  fontSize: 11,
+                  cursor: 'pointer',
+                  boxShadow: modePreference === 'mobile' ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                <Smartphone size={12} />
+                <span>Mobile</span>
+              </button>
+            </div>
+
             {/* Live Telemetry Pill */}
             <div style={{
               display: 'flex',
@@ -323,6 +514,36 @@ function AdminDashboardDesktop() {
               <span>● Live Socket ~14ms</span>
             </div>
 
+            {/* 1-Click JSON Backup */}
+            <button
+              type="button"
+              onClick={handleExportBackup}
+              disabled={isBackingUp}
+              className="pcms-pill-btn"
+              title="Export complete portfolio JSON snapshot"
+              style={{ background: 'rgba(99, 102, 241, 0.08)', border: '1px solid rgba(99, 102, 241, 0.2)', color: '#6366f1' }}
+            >
+              {isBackingUp ? <RefreshCw size={13} className="spin" /> : <Download size={13} />}
+              <span>{backupToast || 'Backup (.json)'}</span>
+            </button>
+
+            {/* Emergency Stealth Kill-Switch */}
+            <button
+              type="button"
+              onClick={handleToggleStealthMode}
+              className="pcms-pill-btn"
+              title={siteStatus.siteDisabled ? 'Stealth Mode is Active (Site is Locked)' : 'Activate Emergency Stealth Mode'}
+              style={{
+                background: siteStatus.siteDisabled ? 'rgba(239, 68, 68, 0.15)' : 'rgba(245, 158, 11, 0.08)',
+                border: `1px solid ${siteStatus.siteDisabled ? 'rgba(239, 68, 68, 0.35)' : 'rgba(245, 158, 11, 0.25)'}`,
+                color: siteStatus.siteDisabled ? '#ef4444' : '#d97706',
+                fontWeight: siteStatus.siteDisabled ? 700 : 500,
+              }}
+            >
+              <AlertTriangle size={13} />
+              <span>{siteStatus.siteDisabled ? '🚨 Stealth Mode ON' : 'Stealth Switch'}</span>
+            </button>
+
             {/* Quick Action Launchers */}
             <button
               type="button"
@@ -336,23 +557,13 @@ function AdminDashboardDesktop() {
 
             <button
               type="button"
-              onClick={() => navigate('/admin/dashboard/updates')}
-              className="pcms-pill-btn"
-              style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.25)', color: '#10b981' }}
-            >
-              <Sparkles size={13} />
-              <span>+ Broadcast Update</span>
-            </button>
-
-            <button
-              type="button"
               onClick={() => lockSession('manual')}
               className="pcms-pill-btn"
               title="Lock Admin Session Screen"
               style={{ background: 'rgba(99, 102, 241, 0.08)', border: '1px solid rgba(99, 102, 241, 0.2)', color: '#818cf8' }}
             >
               <Lock size={13} />
-              <span>Lock Screen</span>
+              <span>Lock</span>
             </button>
 
             {/* Live Site / Preview button */}
@@ -369,7 +580,7 @@ function AdminDashboardDesktop() {
                 }}
               >
                 <Lock size={13} />
-                <span>Site Locked — Preview</span>
+                <span>Locked — Preview</span>
               </button>
             ) : (
               <a href="/" target="_blank" rel="noreferrer" className="pcms-pill-btn">
@@ -395,8 +606,16 @@ function AdminDashboardDesktop() {
           {activeTab === "certifications"  && <CertificationsPanel />}
           {activeTab === "education"       && <EducationPanel />}
           {activeTab === "moments"         && <MomentsPanel />}
+          {activeTab === "diagnostics"     && <DiagnosticsPanel />}
         </div>
       </main>
+
+      {/* Universal Command Palette Spotlight Modal */}
+      <AdminCommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        onLockSession={lockSession}
+      />
 
       {/* Enterprise Session Lock Screen Overlay */}
       {isSessionScreenLocked && (
@@ -431,32 +650,129 @@ export {
 };
 
 export default function AdminDashboard() {
-  const [isMobile, setIsMobile] = useState(() => {
-    if (typeof window !== 'undefined') return window.innerWidth <= 768;
+  const [modePreference, setModePreference] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('pcms_device_mode_pref') || 'auto';
+    }
+    return 'auto';
+  });
+
+  const [responsiveIsMobile, setResponsiveIsMobile] = useState(() => {
+    if (typeof window !== 'undefined') return window.innerWidth <= 900;
     return false;
   });
 
+  // Hysteresis Resize Engine (880px / 920px) to eliminate boundary thrashing
   useEffect(() => {
     document.documentElement.classList.add('admin-mode');
     document.body.classList.add('admin-mode');
 
+    let rafId = null;
     let timeoutId = null;
+
     const handleResize = () => {
       if (timeoutId) clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
-        setIsMobile(window.innerWidth <= 768);
-      }, 50);
+        if (rafId) cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(() => {
+          const w = window.innerWidth;
+          setResponsiveIsMobile(prev => {
+            // Hysteresis deadband: switch to mobile at <= 880, switch to desktop at >= 920
+            if (prev && w >= 920) return false;
+            if (!prev && w <= 880) return true;
+            return prev;
+          });
+        });
+      }, 35);
     };
 
-    window.addEventListener('resize', handleResize);
+    window.addEventListener('resize', handleResize, { passive: true });
     return () => {
-      document.documentElement.classList.remove('admin-mode');
-      document.body.classList.remove('admin-mode');
       window.removeEventListener('resize', handleResize);
       if (timeoutId) clearTimeout(timeoutId);
+      if (rafId) cancelAnimationFrame(rafId);
+      document.documentElement.classList.remove('admin-mode');
+      document.body.classList.remove('admin-mode');
     };
   }, []);
 
-  if (isMobile) return <MobileShell />;
-  return <AdminDashboardDesktop />;
+  // Determine effective mobile mode
+  const effectiveIsMobile = modePreference === 'mobile'
+    ? true
+    : modePreference === 'desktop'
+    ? false
+    : responsiveIsMobile;
+
+  // Cinematic Mode Transition Graphic HUD Trigger
+  const [showHud, setShowHud] = useState(false);
+  const isInitialMount = useRef(true);
+  const prevModeRef = useRef(effectiveIsMobile);
+
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    if (prevModeRef.current !== effectiveIsMobile) {
+      prevModeRef.current = effectiveIsMobile;
+      setShowHud(true);
+      const timer = setTimeout(() => setShowHud(false), 750);
+      return () => clearTimeout(timer);
+    }
+  }, [effectiveIsMobile]);
+
+  const handleSetModePreference = (pref) => {
+    setModePreference(pref);
+    try {
+      localStorage.setItem('pcms_device_mode_pref', pref);
+    } catch (_) {}
+  };
+
+  useEffect(() => {
+    const handleExternalSet = (e) => {
+      if (e.detail?.mode) handleSetModePreference(e.detail.mode);
+    };
+    window.addEventListener('pcms_set_device_mode', handleExternalSet);
+    return () => window.removeEventListener('pcms_set_device_mode', handleExternalSet);
+  }, []);
+
+  return (
+    <>
+      {/* Apple-style floating Mode Switch Graphic HUD */}
+      <AdminModeTransitionHUD
+        targetMode={effectiveIsMobile ? 'mobile' : 'desktop'}
+        isVisible={showHud}
+      />
+
+      {/* Smooth Shell Transition Container */}
+      <AnimatePresence mode="wait" initial={false}>
+        {effectiveIsMobile ? (
+          <motion.div
+            key="admin-mobile-shell"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.16, ease: 'easeOut' }}
+            style={{ width: '100vw', height: '100vh', overflow: 'hidden' }}
+          >
+            <MobileShell onSwitchToDesktop={() => handleSetModePreference('desktop')} />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="admin-desktop-shell"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.16, ease: 'easeOut' }}
+            style={{ width: '100vw', height: '100vh', overflow: 'hidden' }}
+          >
+            <AdminDashboardDesktop
+              modePreference={modePreference}
+              onSetModePreference={handleSetModePreference}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
+  );
 }

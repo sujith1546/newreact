@@ -1,6 +1,5 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Sparkles, Filter } from 'lucide-react';
 import ProjectsPanel from '../../panels/ProjectsPanel';
 import UpdatesPanel from '../../panels/UpdatesPanel';
 import SkillsPanel from '../../panels/SkillsPanel';
@@ -23,7 +22,6 @@ const CONTENT_TABS = [
 export default function ContentView({ activeSubTab = 'projects', onSelectSubTab }) {
   const touchStartXRef = useRef(0);
   const touchStartYRef = useRef(0);
-  const [filterMode, setFilterMode] = useState('all');
 
   const currentIndex = CONTENT_TABS.findIndex((t) => t.key === activeSubTab);
 
@@ -40,11 +38,9 @@ export default function ContentView({ activeSubTab = 'projects', onSelectSubTab 
     // Only trigger if horizontal swipe is dominant
     if (Math.abs(diffX) > 60 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
       if (diffX < 0 && currentIndex < CONTENT_TABS.length - 1) {
-        // Swipe Left -> Next Tab
         haptic.light();
         onSelectSubTab(CONTENT_TABS[currentIndex + 1].key);
       } else if (diffX > 0 && currentIndex > 0) {
-        // Swipe Right -> Previous Tab
         haptic.light();
         onSelectSubTab(CONTENT_TABS[currentIndex - 1].key);
       }
@@ -55,16 +51,16 @@ export default function ContentView({ activeSubTab = 'projects', onSelectSubTab 
 
   return (
     <div className="admin-mobile-view" style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}>
-      {/* Horizontal Carousel Sub-tab Bar with Animated Pill */}
+      {/* Horizontal Apple-Style Sub-tab Bar */}
       <div style={{
         display: 'flex',
         gap: 6,
-        padding: '10px 14px',
+        padding: '8px 12px',
         overflowX: 'auto',
         WebkitOverflowScrolling: 'touch',
         scrollbarWidth: 'none',
-        borderBottom: '1px solid var(--pcms-line-soft)',
-        background: 'var(--pcms-bg-2)',
+        borderBottom: '1px solid var(--border-color, rgba(255,255,255,0.08))',
+        background: 'var(--bg-secondary, #18191d)',
         flexShrink: 0,
       }}>
         {CONTENT_TABS.map((tab) => {
@@ -72,6 +68,7 @@ export default function ContentView({ activeSubTab = 'projects', onSelectSubTab 
           return (
             <button
               key={tab.key}
+              type="button"
               onClick={() => {
                 haptic.light();
                 onSelectSubTab(tab.key);
@@ -80,13 +77,13 @@ export default function ContentView({ activeSubTab = 'projects', onSelectSubTab 
                 position: 'relative',
                 display: 'flex',
                 alignItems: 'center',
-                gap: 7,
-                padding: '7px 13px',
-                borderRadius: 20,
+                gap: 6,
+                padding: '6px 12px',
+                borderRadius: 18,
                 border: 'none',
                 background: 'transparent',
-                color: isActive ? 'var(--pcms-accent)' : 'var(--pcms-muted)',
-                fontSize: 12,
+                color: isActive ? 'var(--primary-blue, #3b82f6)' : 'var(--text-muted, #94a3b8)',
+                fontSize: 11.5,
                 fontWeight: isActive ? 700 : 500,
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
@@ -97,13 +94,14 @@ export default function ContentView({ activeSubTab = 'projects', onSelectSubTab 
               {isActive ? (
                 <motion.div
                   layoutId="contentSubTabPill"
-                  transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+                  transition={{ type: 'spring', stiffness: 450, damping: 32 }}
                   style={{
                     position: 'absolute',
                     inset: 0,
-                    borderRadius: 20,
-                    background: 'var(--pcms-accent-dim)',
-                    border: '1px solid var(--pcms-accent)',
+                    borderRadius: 18,
+                    background: 'var(--primary-blue-subtle, rgba(59, 130, 246, 0.12))',
+                    border: '1px solid rgba(59, 130, 246, 0.25)',
+                    zIndex: 0,
                   }}
                 />
               ) : (
@@ -111,13 +109,14 @@ export default function ContentView({ activeSubTab = 'projects', onSelectSubTab 
                   style={{
                     position: 'absolute',
                     inset: 0,
-                    borderRadius: 20,
-                    background: 'var(--pcms-panel)',
-                    border: '1px solid var(--pcms-line)',
+                    borderRadius: 18,
+                    background: 'var(--bg-primary, rgba(255,255,255,0.04))',
+                    border: '1px solid var(--border-color, rgba(255,255,255,0.08))',
+                    zIndex: 0,
                   }}
                 />
               )}
-              <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 7 }}>
+              <span style={{ position: 'relative', zIndex: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
                 <i className={`ti ${tab.icon}`} style={{ fontSize: 13, opacity: isActive ? 1 : 0.7 }} />
                 <span>{tab.label}</span>
               </span>
@@ -138,15 +137,15 @@ export default function ContentView({ activeSubTab = 'projects', onSelectSubTab 
           minHeight: 0,
           overflowY: 'auto',
           WebkitOverflowScrolling: 'touch',
-          padding: '14px 14px 110px',
+          padding: '12px 14px 130px',
         }}
       >
         <AnimatePresence mode="wait">
           <motion.div
             key={activeSubTab}
-            initial={{ opacity: 0, x: 12 }}
+            initial={{ opacity: 0, x: 10 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -12 }}
+            exit={{ opacity: 0, x: -10 }}
             transition={{ duration: 0.18, ease: 'easeOut' }}
             style={{ width: '100%' }}
           >

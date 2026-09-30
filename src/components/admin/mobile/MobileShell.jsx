@@ -4,7 +4,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { useTheme } from '../../../context/ThemeContext';
 import { useDashboardStats } from '../shared/useDashboardStats';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
-import { LogOut, Plus, ShieldCheck, Briefcase, Eye, MessageSquare, Zap, Star, Sun, Moon, RefreshCw, CheckCircle2, Sparkles, Activity, Settings, X, ExternalLink, Bell } from 'lucide-react';
+import { LogOut, Plus, ShieldCheck, Briefcase, Eye, MessageSquare, Zap, Star, Sun, Moon, RefreshCw, CheckCircle2, Sparkles, Activity, Settings, X, ExternalLink, Bell, Search, Monitor, Bug } from 'lucide-react';
 import SwipeableTabs from './SwipeableTabs';
 import MobileNav from './MobileNav';
 import HomeView from './views/HomeView';
@@ -15,6 +15,7 @@ import haptic from '../../../lib/haptics';
 import { globalDataCache, fetchPromises } from '../../../hooks/useRealtimeData';
 import useSessionLifecycle from '../../../hooks/useSessionLifecycle';
 import AdminLockScreen from '../shared/AdminLockScreen';
+import AdminCommandPalette from '../shared/AdminCommandPalette';
 
 const TAB_TO_CATEGORY = {
   home: 'home',
@@ -30,11 +31,13 @@ const TAB_TO_CATEGORY = {
   theme: 'system',
   settings: 'system',
   auth_security: 'system',
+  diagnostics: 'system',
 };
 
 const SPEED_DIAL_ACTIONS = [
   { icon: Briefcase, label: 'New Project', subtitle: 'Add showcase work', color: '#10b981', route: '/admin/dashboard/projects' },
   { icon: MessageSquare, label: 'Messages', subtitle: 'Inquiries & leads', color: '#6366f1', route: '/admin/dashboard/messages' },
+  { icon: Bug, label: 'Bug Diagnostics', subtitle: 'Live issue radar', color: '#f43f5e', route: '/admin/dashboard/diagnostics' },
   { icon: Zap, label: 'Publish Update', subtitle: 'Changelog & news', color: '#f59e0b', route: '/admin/dashboard/updates' },
   { icon: Star, label: 'Tech Skills', subtitle: 'Stack & proficiency', color: '#06b6d4', route: '/admin/dashboard/skills' },
   { icon: Eye, label: 'Site Preview', subtitle: 'Open public website', color: '#8b5cf6', route: '/admin/dashboard/preview' },
@@ -101,6 +104,7 @@ export default function MobileShell() {
   const speedDialDragControls = useDragControls();
   const [isAvatarMenuOpen, setIsAvatarMenuOpen] = useState(false);
   const avatarMenuRef = useRef(null);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
 
   // Notification Centre State
   const [isNotifOpen, setIsNotifOpen] = useState(false);
@@ -282,53 +286,112 @@ export default function MobileShell() {
 
   return (
     <div className="admin-mobile-shell pcms-scope">
-      {/* Interactive Dynamic Island Top Bar */}
+      {/* ── Executive Topbar ── */}
       <header style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '12px 16px 10px',
-        background: 'var(--pcms-bg, #0c0c10)',
-        borderBottom: '1px solid var(--pcms-line-soft, rgba(255,255,255,0.06))',
+        padding: '12px 16px',
+        background: 'var(--bg-primary, #0f1115)',
+        borderBottom: '1px solid var(--border-color, rgba(255,255,255,0.1))',
         position: 'relative',
         zIndex: 100,
         flexShrink: 0,
+        boxSizing: 'border-box',
+        width: '100%',
       }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-          <div style={{ fontSize: 10.5, color: 'var(--pcms-muted)', fontWeight: 500, letterSpacing: '0.04em' }}>
+        {/* Left: Subtitle & Greeting */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+          <div style={{
+            fontSize: 10,
+            fontWeight: 600,
+            textTransform: 'uppercase',
+            letterSpacing: '0.06em',
+            color: 'var(--text-muted, #94a3b8)',
+          }}>
             {getDateStr()}
           </div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--pcms-text)', lineHeight: 1.2, fontFamily: "'Space Grotesk', sans-serif" }}>
-            {getGreeting()}, {firstName} 👋
+          <div style={{
+            fontSize: 15,
+            fontWeight: 700,
+            color: 'var(--text-primary, #ffffff)',
+            lineHeight: 1.25,
+            letterSpacing: '-0.02em',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}>
+            {getGreeting()}, {firstName}
           </div>
         </div>
 
-        {/* Dynamic Island Status Pill, Bell & Avatar Menu */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {/* Dynamic Island Capsule */}
-          <motion.div
+        {/* Right: Telemetry Pill, Notification Bell, Avatar Menu */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          {/* Realtime Live Latency Pill */}
+          <motion.button
             whileTap={{ scale: 0.94 }}
             onClick={handleIntelligentRefresh}
-            className="dynamic-island-capsule"
-            title="Realtime Cloud Diagnostics"
+            type="button"
+            title="Sync & Diagnostics"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 5,
+              padding: '4px 9px',
+              borderRadius: 20,
+              background: 'var(--bg-secondary, rgba(255,255,255,0.06))',
+              border: '1px solid var(--border-color, rgba(255,255,255,0.12))',
+              color: 'var(--text-secondary, #cbd5e1)',
+              fontSize: 11,
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
           >
-            <span className="live-socket-dot" />
-            <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--pcms-text, #ffffff)' }}>
-              18ms
-            </span>
+            <span style={{
+              width: 6,
+              height: 6,
+              borderRadius: '50%',
+              background: '#10b981',
+              boxShadow: '0 0 6px #10b981',
+            }} />
+            <span style={{ fontFeatureSettings: '"tnum"' }}>18ms</span>
             {stats.unreadMessages > 0 && (
               <span style={{
                 background: '#ef4444',
-                color: '#fff',
+                color: '#ffffff',
                 fontSize: 9,
                 fontWeight: 800,
                 padding: '1px 5px',
                 borderRadius: 8,
+                marginLeft: 2,
               }}>
-                💬 {stats.unreadMessages}
+                {stats.unreadMessages}
               </span>
             )}
-          </motion.div>
+          </motion.button>
+
+          {/* Quick Search Command Palette Trigger */}
+          <motion.button
+            whileTap={{ scale: 0.88 }}
+            onClick={() => { haptic.light(); setIsCommandPaletteOpen(true); }}
+            aria-label="Quick Search (Command Palette)"
+            style={{
+              position: 'relative',
+              width: 34,
+              height: 34,
+              borderRadius: '50%',
+              background: 'var(--bg-secondary, rgba(255,255,255,0.06))',
+              border: '1px solid var(--border-color, rgba(255,255,255,0.12))',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              color: 'var(--text-secondary, #cbd5e1)',
+              transition: 'background 0.15s, border-color 0.15s',
+            }}
+          >
+            <Search size={14} />
+          </motion.button>
 
           {/* Notification Bell */}
           <motion.button
@@ -337,80 +400,139 @@ export default function MobileShell() {
             aria-label="Notification centre"
             style={{
               position: 'relative',
-              width: 34, height: 34, borderRadius: 17,
-              background: 'var(--pcms-panel, rgba(255,255,255,0.06))',
-              border: '1px solid var(--pcms-line, rgba(255,255,255,0.1))',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', color: 'var(--pcms-text)',
+              width: 34,
+              height: 34,
+              borderRadius: '50%',
+              background: 'var(--bg-secondary, rgba(255,255,255,0.06))',
+              border: '1px solid var(--border-color, rgba(255,255,255,0.12))',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              color: 'var(--text-secondary, #cbd5e1)',
+              transition: 'background 0.15s, border-color 0.15s',
             }}
           >
-            <Bell size={15} />
+            <Bell size={14} />
             {!notifRead && notifications.length > 0 && (
               <span style={{
-                position: 'absolute', top: 2, right: 2,
-                width: 8, height: 8, borderRadius: 4,
-                background: '#ef4444', border: '1.5px solid var(--pcms-bg)',
+                position: 'absolute',
+                top: 3,
+                right: 3,
+                width: 7,
+                height: 7,
+                borderRadius: '50%',
+                background: '#ef4444',
+                border: '1.5px solid var(--bg-primary, #0f1115)',
               }} />
             )}
           </motion.button>
 
-          {/* User Profile Avatar */}
+          {/* User Profile Avatar with dropdown */}
           <div ref={avatarMenuRef} style={{ position: 'relative' }}>
-            <button
+            <motion.button
+              whileTap={{ scale: 0.92 }}
               onClick={() => setIsAvatarMenuOpen(v => !v)}
               aria-label="Account menu"
               style={{
-                width: 36, height: 36, borderRadius: 18,
-                background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                border: '2px solid rgba(99,102,241,0.4)',
-                color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: '0 4px 12px rgba(99,102,241,0.35)',
-                fontFamily: "'Space Grotesk', sans-serif",
+                width: 34,
+                height: 34,
+                borderRadius: '50%',
+                background: 'linear-gradient(135deg, var(--primary-blue, #3b82f6), #6366f1)',
+                border: '1.5px solid var(--border-color, rgba(255,255,255,0.2))',
+                color: '#ffffff',
+                fontSize: 12,
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 2px 8px rgba(59, 130, 246, 0.25)',
               }}
             >
               {initials}
-            </button>
+            </motion.button>
+
             <AnimatePresence>
               {isAvatarMenuOpen && (
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.92, y: -6 }}
+                  initial={{ opacity: 0, scale: 0.94, y: -4 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.92, y: -6 }}
-                  transition={{ duration: 0.15 }}
+                  exit={{ opacity: 0, scale: 0.94, y: -4 }}
+                  transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
                   style={{
-                    position: 'absolute', top: 44, right: 0, width: 200,
-                    background: 'var(--pcms-panel, #18181c)',
-                    border: '1px solid var(--pcms-line, rgba(255,255,255,0.12))',
-                    borderRadius: 14, boxShadow: '0 16px 40px rgba(0,0,0,0.5)',
-                    overflow: 'hidden', zIndex: 9500,
+                    position: 'absolute',
+                    top: 42,
+                    right: 0,
+                    width: 210,
+                    background: 'var(--bg-secondary, #18191d)',
+                    border: '1px solid var(--border-color, rgba(255,255,255,0.12))',
+                    borderRadius: 14,
+                    boxShadow: '0 16px 36px rgba(0,0,0,0.35)',
+                    overflow: 'hidden',
+                    zIndex: 9500,
                   }}
                 >
-                  <div style={{ padding: '12px 14px 10px', borderBottom: '1px solid var(--pcms-line-soft)' }}>
-                    <div style={{ fontSize: 10, color: 'var(--pcms-muted)', fontWeight: 500, marginBottom: 2 }}>Signed in as</div>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--pcms-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <div style={{ padding: '12px 14px 10px', borderBottom: '1px solid var(--border-color, rgba(255,255,255,0.08))' }}>
+                    <div style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 500, marginBottom: 2 }}>Signed in as</div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {user?.email || 'admin@portfolio.com'}
                     </div>
                   </div>
-                  <button onClick={() => { toggleTheme(); setIsAvatarMenuOpen(false); }}
-                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', background: 'transparent', border: 'none', color: 'var(--pcms-text)', fontSize: 13, fontWeight: 500, cursor: 'pointer', textAlign: 'left' }}>
-                    {theme === 'dark' ? <Sun size={16} color="#f59e0b" /> : <Moon size={16} color="#6366f1" />}
-                    {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+                  <button
+                    type="button"
+                    onClick={() => { toggleTheme(); setIsAvatarMenuOpen(false); }}
+                    style={{
+                      width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '10px 14px', background: 'transparent', border: 'none',
+                      color: 'var(--text-primary)', fontSize: 12.5, fontWeight: 500,
+                      cursor: 'pointer', textAlign: 'left',
+                    }}
+                  >
+                    {theme === 'dark' ? <Sun size={15} color="#f59e0b" /> : <Moon size={15} color="#3b82f6" />}
+                    <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
                   </button>
-                  <button onClick={() => { setIsAvatarMenuOpen(false); lockSession('manual'); }}
-                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', background: 'transparent', border: 'none', color: '#818cf8', fontSize: 13, fontWeight: 500, cursor: 'pointer', textAlign: 'left' }}>
-                    <ShieldCheck size={16} color="#818cf8" />
-                    Lock Screen
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsAvatarMenuOpen(false);
+                      window.dispatchEvent(new CustomEvent('pcms_set_device_mode', { detail: { mode: 'desktop' } }));
+                    }}
+                    style={{
+                      width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '10px 14px', background: 'transparent', border: 'none',
+                      color: 'var(--text-primary)', fontSize: 12.5, fontWeight: 500,
+                      cursor: 'pointer', textAlign: 'left',
+                    }}
+                  >
+                    <Monitor size={15} color="var(--primary-blue, #3b82f6)" />
+                    <span>Switch to Desktop View</span>
                   </button>
-                  <button onClick={() => { setIsAvatarMenuOpen(false); window.dispatchEvent(new CustomEvent('open-admin-login')); }}
-                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', background: 'transparent', border: 'none', color: 'var(--pcms-text)', fontSize: 13, fontWeight: 500, cursor: 'pointer', textAlign: 'left' }}>
-                    <ShieldCheck size={16} color="#6366f1" />
-                    Switch Account
+                  <button
+                    type="button"
+                    onClick={() => { setIsAvatarMenuOpen(false); lockSession('manual'); }}
+                    style={{
+                      width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '10px 14px', background: 'transparent', border: 'none',
+                      color: 'var(--text-primary)', fontSize: 12.5, fontWeight: 500,
+                      cursor: 'pointer', textAlign: 'left',
+                    }}
+                  >
+                    <ShieldCheck size={15} color="var(--primary-blue, #3b82f6)" />
+                    <span>Lock Screen</span>
                   </button>
-                  <button onClick={handleLogout}
-                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px 12px', background: 'transparent', border: 'none', color: '#ef4444', fontSize: 13, fontWeight: 600, cursor: 'pointer', textAlign: 'left' }}>
-                    <LogOut size={16} color="#ef4444" />
-                    Log Out
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    style={{
+                      width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '10px 14px 12px', background: 'transparent', border: 'none',
+                      color: '#ef4444', fontSize: 12.5, fontWeight: 600,
+                      cursor: 'pointer', textAlign: 'left',
+                    }}
+                  >
+                    <LogOut size={15} color="#ef4444" />
+                    <span>Log Out</span>
                   </button>
                 </motion.div>
               )}
@@ -418,8 +540,6 @@ export default function MobileShell() {
           </div>
         </div>
       </header>
-
-      {/* Main Swipeable Content with Pull-To-Refresh */}
 
       {/* ── Notification Centre Bottom Sheet ── */}
       <AnimatePresence>
@@ -431,31 +551,34 @@ export default function MobileShell() {
               exit={{ opacity: 0 }}
               onClick={() => setIsNotifOpen(false)}
               style={{
-                position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)',
-                backdropFilter: 'blur(6px)', zIndex: 10100,
+                position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)',
+                backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', zIndex: 10100,
               }}
             />
             <motion.div
               initial={{ y: '100%', opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: '100%', opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 340, damping: 34 }}
+              transition={{ type: 'spring', stiffness: 350, damping: 32 }}
               style={{
-                position: 'fixed', bottom: 0, left: 14, right: 14,
-                borderRadius: '22px 22px 0 0',
-                background: 'var(--pcms-panel, #18181c)',
-                border: '1px solid var(--pcms-line, rgba(255,255,255,0.12))',
-                zIndex: 10101, padding: '14px 16px 40px',
-                maxHeight: '70vh', overflowY: 'auto',
+                position: 'fixed', bottom: 0, left: 0, right: 0,
+                borderRadius: '20px 20px 0 0',
+                background: 'var(--bg-secondary, #18191d)',
+                border: '1px solid var(--border-color, rgba(255,255,255,0.12))',
+                borderBottom: 'none',
+                zIndex: 10101, padding: '12px 16px 36px',
+                maxHeight: '72vh', overflowY: 'auto',
+                boxShadow: '0 -10px 30px rgba(0,0,0,0.4)',
               }}
             >
               {/* Drag Handle */}
-              <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.18)', margin: '0 auto 14px' }} />
+              <div style={{ width: 36, height: 4, borderRadius: 2, background: 'var(--border-strong, rgba(255,255,255,0.2))', margin: '0 auto 12px' }} />
+              
               {/* Header */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Bell size={16} color="#6366f1" />
-                  <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--pcms-text)' }}>Notifications</span>
+                  <Bell size={15} style={{ color: 'var(--primary-blue, #3b82f6)' }} />
+                  <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text-primary)' }}>Notifications</span>
                   {notifications.length > 0 && (
                     <span style={{ fontSize: 10, fontWeight: 800, background: '#ef4444', color: '#fff', padding: '1px 6px', borderRadius: 8 }}>
                       {notifications.length}
@@ -463,18 +586,20 @@ export default function MobileShell() {
                   )}
                 </div>
                 <button
+                  type="button"
                   onClick={() => { setNotifications([]); setNotifRead(true); }}
-                  style={{ background: 'transparent', border: 'none', fontSize: 11, fontWeight: 600, color: '#6366f1', cursor: 'pointer' }}
+                  style={{ background: 'transparent', border: 'none', fontSize: 11, fontWeight: 600, color: 'var(--primary-blue, #3b82f6)', cursor: 'pointer' }}
                 >
                   Clear all
                 </button>
               </div>
+
               {/* Notification list */}
               {notifications.length === 0 ? (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '20px 0', gap: 8 }}>
-                  <div style={{ fontSize: 32 }}>🔔</div>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--pcms-muted)' }}>All caught up!</span>
-                  <span style={{ fontSize: 11, color: 'var(--pcms-muted)', opacity: 0.7 }}>Database changes will appear here in real time</span>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '24px 0', gap: 6 }}>
+                  <div style={{ fontSize: 28 }}>🔔</div>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-muted)' }}>All caught up!</span>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)', opacity: 0.8 }}>Database events synchronize here in real time</span>
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -484,22 +609,22 @@ export default function MobileShell() {
                     return (
                       <motion.div
                         key={notif.id}
-                        initial={{ opacity: 0, x: -10 }}
+                        initial={{ opacity: 0, x: -8 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.04 }}
+                        transition={{ delay: i * 0.03 }}
                         style={{
-                          display: 'flex', alignItems: 'center', gap: 12,
-                          padding: '10px 12px', borderRadius: 14,
-                          background: 'var(--pcms-bg-2, rgba(255,255,255,0.04))',
-                          border: '1px solid var(--pcms-line-soft, rgba(255,255,255,0.07))',
+                          display: 'flex', alignItems: 'center', gap: 10,
+                          padding: '10px 12px', borderRadius: 12,
+                          background: 'var(--bg-primary, rgba(255,255,255,0.03))',
+                          border: '1px solid var(--border-color, rgba(255,255,255,0.08))',
                         }}
                       >
-                        <div style={{ fontSize: 18, flexShrink: 0 }}>{notif.icon}</div>
+                        <div style={{ fontSize: 16, flexShrink: 0 }}>{notif.icon}</div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--pcms-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                             {notif.label}
                           </div>
-                          <div style={{ fontSize: 10, color: 'var(--pcms-muted)', marginTop: 2 }}>{timeStr}</div>
+                          <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{timeStr}</div>
                         </div>
                       </motion.div>
                     );
@@ -542,7 +667,7 @@ export default function MobileShell() {
         />
       </main>
 
-      {/* iOS-Grade Quick Actions & Live Diagnostics Sheet */}
+      {/* ── Refined Quick Actions & Live Diagnostics Sheet ── */}
       <AnimatePresence>
         {isSpeedDialOpen && (
           <>
@@ -556,7 +681,7 @@ export default function MobileShell() {
                 position: 'fixed',
                 inset: 0,
                 zIndex: 9990,
-                background: 'rgba(0, 0, 0, 0.68)',
+                background: 'rgba(0, 0, 0, 0.65)',
                 backdropFilter: 'blur(10px)',
                 WebkitBackdropFilter: 'blur(10px)',
               }}
@@ -582,18 +707,18 @@ export default function MobileShell() {
               style={{
                 position: 'fixed',
                 bottom: 'max(76px, calc(68px + env(safe-area-inset-bottom, 12px)))',
-                left: 14,
-                right: 14,
-                width: 'calc(100% - 28px)',
-                maxWidth: 'calc(100% - 28px)',
+                left: 12,
+                right: 12,
+                width: 'calc(100% - 24px)',
+                maxWidth: 'calc(100% - 24px)',
                 margin: '0 auto',
                 zIndex: 9995,
                 display: 'flex',
                 flexDirection: 'column',
-                background: 'var(--pcms-panel, #16161b)',
-                border: '1px solid var(--pcms-line, rgba(255,255,255,0.14))',
-                borderRadius: 24,
-                boxShadow: '0 20px 48px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.05)',
+                background: 'var(--bg-secondary, #18191d)',
+                border: '1px solid var(--border-color, rgba(255,255,255,0.12))',
+                borderRadius: 22,
+                boxShadow: '0 20px 48px rgba(0,0,0,0.5)',
                 maxHeight: 'min(520px, 78vh)',
                 overflow: 'hidden',
               }}
@@ -612,10 +737,10 @@ export default function MobileShell() {
               >
                 <div
                   style={{
-                    width: 40,
-                    height: 5,
-                    borderRadius: 3,
-                    background: 'rgba(255, 255, 255, 0.22)',
+                    width: 36,
+                    height: 4,
+                    borderRadius: 2,
+                    background: 'var(--border-strong, rgba(255, 255, 255, 0.2))',
                   }}
                 />
               </div>
@@ -623,8 +748,8 @@ export default function MobileShell() {
               {/* Header */}
               <div
                 style={{
-                  padding: '6px 20px 14px',
-                  borderBottom: '1px solid var(--pcms-line-soft, rgba(255,255,255,0.08))',
+                  padding: '6px 16px 12px',
+                  borderBottom: '1px solid var(--border-color, rgba(255,255,255,0.08))',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
@@ -637,103 +762,80 @@ export default function MobileShell() {
                       width: 32,
                       height: 32,
                       borderRadius: 10,
-                      background: 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.15))',
-                      border: '1px solid rgba(99,102,241,0.3)',
-                      color: 'var(--primary-blue, #6366f1)',
+                      background: 'var(--primary-blue-subtle, rgba(59, 130, 246, 0.12))',
+                      border: '1px solid rgba(59, 130, 246, 0.25)',
+                      color: 'var(--primary-blue, #3b82f6)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                     }}
                   >
-                    <Sparkles size={17} />
+                    <Sparkles size={16} />
                   </div>
                   <div>
-                    <h3 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: 'var(--pcms-text, #ffffff)', letterSpacing: '-0.02em', fontFamily: "'Space Grotesk', sans-serif" }}>
-                      Control & Actions
+                    <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
+                      Quick Actions
                     </h3>
-                    <p style={{ margin: '1px 0 0', fontSize: 10.5, color: 'var(--pcms-muted, #a1a1aa)', fontWeight: 500 }}>
-                      Quick shortcuts & live sync
+                    <p style={{ margin: '1px 0 0', fontSize: 10.5, color: 'var(--text-muted)', fontWeight: 500 }}>
+                      Fast shortcuts & cloud sync
                     </p>
                   </div>
                 </div>
                 <button
+                  type="button"
                   onClick={() => setIsSpeedDialOpen(false)}
                   style={{
-                    width: 30,
-                    height: 30,
-                    borderRadius: 15,
-                    background: 'rgba(255,255,255,0.08)',
-                    border: 'none',
+                    width: 28,
+                    height: 28,
+                    borderRadius: '50%',
+                    background: 'var(--bg-primary, rgba(255,255,255,0.08))',
+                    border: '1px solid var(--border-color, rgba(255,255,255,0.1))',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    color: 'var(--pcms-muted, #a1a1aa)',
+                    color: 'var(--text-muted)',
                     cursor: 'pointer',
                   }}
                 >
-                  <X size={16} />
+                  <X size={14} />
                 </button>
               </div>
 
               {/* Scrollable Body */}
-              <div style={{ padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 12, overflowY: 'auto' }}>
+              <div style={{ padding: '14px', display: 'flex', flexDirection: 'column', gap: 12, overflowY: 'auto' }}>
                 
-                {/* 1. NEW UPDATES LOADED & FULL REFRESH BANNER (When updates arrive) */}
+                {/* 1. Pending updates notification banner */}
                 <AnimatePresence>
                   {hasPendingUpdate && (
                     <motion.div
-                      initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                      initial={{ opacity: 0, scale: 0.96, y: -6 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                      exit={{ opacity: 0, scale: 0.96, y: -6 }}
                       style={{
                         padding: '12px 14px',
-                        borderRadius: 18,
-                        background: 'linear-gradient(135deg, rgba(16,185,129,0.22), rgba(6,182,212,0.18))',
-                        border: '1px solid rgba(16,185,129,0.5)',
-                        boxShadow: '0 8px 24px rgba(16,185,129,0.28)',
+                        borderRadius: 14,
+                        background: 'rgba(16, 185, 129, 0.1)',
+                        border: '1px solid rgba(16, 185, 129, 0.35)',
                         display: 'flex',
                         flexDirection: 'column',
-                        gap: 10,
+                        gap: 8,
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <span style={{ width: 8, height: 8, borderRadius: 4, background: '#10b981', boxShadow: '0 0 10px #10b981', display: 'inline-block' }} />
-                          <span style={{ fontSize: 13, fontWeight: 800, color: '#ffffff' }}>
-                            New Updates Loaded!
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                          <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px #10b981' }} />
+                          <span style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--text-primary)' }}>
+                            New Updates Available
                           </span>
                         </div>
-                        <span style={{ fontSize: 9.5, fontWeight: 700, background: '#10b981', color: '#fff', padding: '2px 8px', borderRadius: 10, textTransform: 'uppercase' }}>
-                          {pendingUpdatesCount} New Change{pendingUpdatesCount > 1 ? 's' : ''}
+                        <span style={{ fontSize: 9.5, fontWeight: 700, background: '#10b981', color: '#fff', padding: '1px 6px', borderRadius: 8 }}>
+                          {pendingUpdatesCount} {pendingUpdatesCount > 1 ? 'Changes' : 'Change'}
                         </span>
                       </div>
 
-                      {/* Updated Entities Chips */}
-                      {pendingChangesList.length > 0 && (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                          {pendingChangesList.map((item) => (
-                            <span
-                              key={item}
-                              style={{
-                                fontSize: 10,
-                                fontWeight: 700,
-                                padding: '2px 8px',
-                                borderRadius: 8,
-                                background: 'rgba(255,255,255,0.15)',
-                                color: '#ffffff',
-                                border: '1px solid rgba(255,255,255,0.25)',
-                              }}
-                            >
-                              ✨ {item}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Full Website Refresh & Soft Sync Button Group */}
                       <div style={{ display: 'flex', gap: 8, marginTop: 2 }}>
                         <motion.button
-                          whileTap={{ scale: 0.94 }}
+                          whileTap={{ scale: 0.95 }}
                           onClick={handleFullWebsiteRefresh}
                           disabled={isFullReloading}
                           style={{
@@ -742,32 +844,30 @@ export default function MobileShell() {
                             alignItems: 'center',
                             justifyContent: 'center',
                             gap: 6,
-                            padding: '9px 12px',
-                            borderRadius: 13,
-                            background: 'linear-gradient(135deg, #10b981, #059669)',
-                            border: '1px solid rgba(255,255,255,0.35)',
+                            padding: '8px 12px',
+                            borderRadius: 10,
+                            background: '#10b981',
+                            border: 'none',
                             color: '#ffffff',
                             fontSize: 12,
-                            fontWeight: 700,
+                            fontWeight: 600,
                             cursor: 'pointer',
-                            boxShadow: '0 4px 16px rgba(16,185,129,0.4)',
                           }}
                         >
-                          <RefreshCw size={14} className={isFullReloading ? 'spinning' : ''} />
-                          <span>{isFullReloading ? 'Reloading Website...' : 'Refresh Website Now'}</span>
+                          <RefreshCw size={13} className={isFullReloading ? 'spinning' : ''} />
+                          <span>{isFullReloading ? 'Reloading...' : 'Reload & Apply'}</span>
                         </motion.button>
-
                         <motion.button
-                          whileTap={{ scale: 0.94 }}
+                          whileTap={{ scale: 0.95 }}
                           onClick={handleIntelligentRefresh}
                           disabled={isSyncing}
                           style={{
-                            padding: '9px 12px',
-                            borderRadius: 13,
-                            background: 'rgba(255,255,255,0.12)',
-                            border: '1px solid rgba(255,255,255,0.2)',
-                            color: '#ffffff',
-                            fontSize: 11.5,
+                            padding: '8px 12px',
+                            borderRadius: 10,
+                            background: 'var(--bg-primary)',
+                            border: '1px solid var(--border-color)',
+                            color: 'var(--text-primary)',
+                            fontSize: 12,
                             fontWeight: 600,
                             cursor: 'pointer',
                           }}
@@ -779,28 +879,28 @@ export default function MobileShell() {
                   )}
                 </AnimatePresence>
 
-                {/* 2. Live Cloud Sync & Diagnostics Hub */}
+                {/* 2. Live Cloud Sync Status Hub */}
                 <motion.div
                   layout
                   style={{
-                    padding: '11px 13px',
-                    borderRadius: 18,
-                    background: 'var(--pcms-bg-2, rgba(255,255,255,0.04))',
-                    border: '1px solid var(--pcms-line-soft, rgba(255,255,255,0.09))',
+                    padding: '10px 12px',
+                    borderRadius: 14,
+                    background: 'var(--bg-primary, rgba(255,255,255,0.03))',
+                    border: '1px solid var(--border-color, rgba(255,255,255,0.08))',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    gap: 12,
+                    gap: 10,
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
                     <div
                       style={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: 13,
-                        background: 'rgba(99,102,241,0.18)',
-                        color: 'var(--primary-blue, #6366f1)',
+                        width: 32,
+                        height: 32,
+                        borderRadius: 10,
+                        background: 'var(--primary-blue-subtle, rgba(59, 130, 246, 0.12))',
+                        color: 'var(--primary-blue, #3b82f6)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -810,42 +910,34 @@ export default function MobileShell() {
                       <motion.div
                         animate={isSyncing ? { rotate: 360 } : { rotate: 0 }}
                         transition={isSyncing ? { repeat: Infinity, duration: 0.75, ease: 'linear' } : {}}
-                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                       >
                         {syncFeedback === 'success' ? (
-                          <CheckCircle2 size={19} color="#10b981" />
+                          <CheckCircle2 size={16} color="#10b981" />
                         ) : (
-                          <RefreshCw size={18} />
+                          <RefreshCw size={15} />
                         )}
                       </motion.div>
                     </div>
                     <div style={{ minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--pcms-text, #ffffff)', whiteSpace: 'nowrap' }}>
-                          {syncFeedback === 'success'
-                            ? 'Synchronized'
-                            : 'Live & In-Sync'}
+                        <span style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--text-primary)' }}>
+                          {syncFeedback === 'success' ? 'Synchronized' : 'Cloud Sync Connected'}
                         </span>
-                        <span
-                          style={{
-                            fontSize: 9,
-                            fontWeight: 800,
-                            background: 'rgba(99,102,241,0.2)',
-                            color: 'var(--primary-blue, #6366f1)',
-                            border: '1px solid rgba(99,102,241,0.3)',
-                            padding: '1px 6px',
-                            borderRadius: 8,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.04em',
-                          }}
-                        >
+                        <span style={{
+                          fontSize: 8.5,
+                          fontWeight: 700,
+                          background: 'rgba(16, 185, 129, 0.12)',
+                          color: '#10b981',
+                          border: '1px solid rgba(16, 185, 129, 0.25)',
+                          padding: '1px 5px',
+                          borderRadius: 6,
+                          textTransform: 'uppercase',
+                        }}>
                           Active
                         </span>
                       </div>
-                      <p style={{ margin: '2px 0 0', fontSize: 10.5, color: 'var(--pcms-muted, #a1a1aa)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {syncFeedback === 'success'
-                          ? 'All caches & stats updated'
-                          : `Last synced: ${formatSyncTime(lastSyncedAt)} • ~18ms latency`}
+                      <p style={{ margin: '1px 0 0', fontSize: 10, color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {formatSyncTime(lastSyncedAt)} • Realtime socket
                       </p>
                     </div>
                   </div>
@@ -857,44 +949,43 @@ export default function MobileShell() {
                     style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: 6,
-                      padding: '7px 13px',
-                      borderRadius: 12,
-                      background: 'var(--pcms-line-soft, rgba(255,255,255,0.08))',
-                      border: '1px solid var(--pcms-line, rgba(255,255,255,0.12))',
-                      color: 'var(--pcms-text, #ffffff)',
-                      fontSize: 11.5,
-                      fontWeight: 700,
+                      gap: 5,
+                      padding: '6px 11px',
+                      borderRadius: 10,
+                      background: 'var(--bg-secondary)',
+                      border: '1px solid var(--border-color)',
+                      color: 'var(--text-primary)',
+                      fontSize: 11,
+                      fontWeight: 600,
                       cursor: 'pointer',
                       flexShrink: 0,
                     }}
                   >
-                    <RefreshCw size={12} className={isSyncing ? 'spinning' : ''} />
-                    <span>{isSyncing ? 'Syncing...' : 'Sync'}</span>
+                    <RefreshCw size={11} className={isSyncing ? 'spinning' : ''} />
+                    <span>Sync</span>
                   </motion.button>
                 </motion.div>
 
-                {/* 3. Section Header */}
+                {/* 3. Section Title */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2px' }}>
-                  <span style={{ fontSize: 10.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--pcms-muted)' }}>
-                    Quick Navigation & Create
+                  <span style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)' }}>
+                    Quick Actions & Navigate
                   </span>
-                  <span style={{ fontSize: 10, color: 'var(--pcms-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <Activity size={11} color="#10b981" />
-                    Realtime
+                  <span style={{ fontSize: 9.5, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 3 }}>
+                    <Activity size={10} color="#10b981" />
+                    Live
                   </span>
                 </div>
 
-                {/* 4. Rich 2x3 Interactive Action Tiles */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 9 }}>
+                {/* 4. Refined 2x3 Interactive Action Tiles */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
                   {SPEED_DIAL_ACTIONS.map((action, idx) => (
                     <motion.button
                       key={action.label}
                       whileTap={{ scale: 0.94 }}
-                      whileHover={{ scale: 1.02 }}
-                      initial={{ opacity: 0, y: 12 }}
+                      initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.03 }}
+                      transition={{ delay: idx * 0.02 }}
                       onClick={() => {
                         haptic.light();
                         setIsSpeedDialOpen(false);
@@ -904,38 +995,37 @@ export default function MobileShell() {
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'flex-start',
-                        gap: 7,
-                        padding: '12px 13px',
-                        borderRadius: 17,
-                        background: 'var(--pcms-bg-2, rgba(255,255,255,0.04))',
-                        border: '1px solid var(--pcms-line-soft, rgba(255,255,255,0.08))',
-                        color: 'var(--pcms-text)',
+                        gap: 6,
+                        padding: '11px 12px',
+                        borderRadius: 14,
+                        background: 'var(--bg-primary, rgba(255,255,255,0.03))',
+                        border: '1px solid var(--border-color, rgba(255,255,255,0.08))',
+                        color: 'var(--text-primary)',
                         cursor: 'pointer',
                         textAlign: 'left',
-                        boxShadow: '0 4px 14px rgba(0,0,0,0.15)',
-                        transition: 'all 0.2s ease',
+                        transition: 'border-color 0.15s ease',
                       }}
                     >
                       <div
                         style={{
-                          width: 34,
-                          height: 34,
-                          borderRadius: 11,
-                          background: `${action.color}1c`,
-                          border: `1px solid ${action.color}38`,
-                          color: action.color,
+                          width: 32,
+                          height: 32,
+                          borderRadius: 9,
+                          background: 'var(--primary-blue-subtle, rgba(59, 130, 246, 0.12))',
+                          border: '1px solid rgba(59, 130, 246, 0.2)',
+                          color: 'var(--primary-blue, #3b82f6)',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                         }}
                       >
-                        <action.icon size={17} strokeWidth={2.2} />
+                        <action.icon size={16} />
                       </div>
                       <div>
-                        <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--pcms-text, #ffffff)' }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-primary)' }}>
                           {action.label}
                         </div>
-                        <div style={{ fontSize: 10, color: 'var(--pcms-muted, #a1a1aa)', marginTop: 1 }}>
+                        <div style={{ fontSize: 9.5, color: 'var(--text-muted)', marginTop: 1 }}>
                           {action.subtitle}
                         </div>
                       </div>
@@ -949,14 +1039,14 @@ export default function MobileShell() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    padding: '9px 13px',
-                    borderRadius: 15,
-                    background: 'rgba(255,255,255,0.03)',
-                    border: '1px solid var(--pcms-line-soft, rgba(255,255,255,0.06))',
-                    marginTop: 1,
+                    padding: '8px 12px',
+                    borderRadius: 12,
+                    background: 'var(--bg-primary, rgba(255,255,255,0.02))',
+                    border: '1px solid var(--border-color, rgba(255,255,255,0.06))',
                   }}
                 >
                   <button
+                    type="button"
                     onClick={() => {
                       haptic.light();
                       toggleTheme();
@@ -964,22 +1054,23 @@ export default function MobileShell() {
                     style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: 7,
+                      gap: 6,
                       background: 'transparent',
                       border: 'none',
-                      color: 'var(--pcms-text)',
-                      fontSize: 11.5,
+                      color: 'var(--text-primary)',
+                      fontSize: 11,
                       fontWeight: 600,
                       cursor: 'pointer',
                     }}
                   >
-                    {theme === 'dark' ? <Sun size={14} color="#f59e0b" /> : <Moon size={14} color="#6366f1" />}
+                    {theme === 'dark' ? <Sun size={13} color="#f59e0b" /> : <Moon size={13} color="#3b82f6" />}
                     <span>{theme === 'dark' ? 'Light' : 'Dark'} Mode</span>
                   </button>
 
-                  <div style={{ width: 1, height: 14, background: 'var(--pcms-line-soft)' }} />
+                  <div style={{ width: 1, height: 12, background: 'var(--border-color)' }} />
 
                   <button
+                    type="button"
                     onClick={() => {
                       haptic.light();
                       setIsSpeedDialOpen(false);
@@ -988,16 +1079,16 @@ export default function MobileShell() {
                     style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: 6,
+                      gap: 5,
                       background: 'transparent',
                       border: 'none',
-                      color: 'var(--primary-blue, #6366f1)',
-                      fontSize: 11.5,
+                      color: 'var(--primary-blue, #3b82f6)',
+                      fontSize: 11,
                       fontWeight: 600,
                       cursor: 'pointer',
                     }}
                   >
-                    <ExternalLink size={13} />
+                    <ExternalLink size={12} />
                     <span>Open Website</span>
                   </button>
                 </div>
@@ -1015,6 +1106,13 @@ export default function MobileShell() {
         isSpeedDialOpen={isSpeedDialOpen}
         onToggleSpeedDial={() => setIsSpeedDialOpen((v) => !v)}
         hasPendingUpdate={hasPendingUpdate}
+      />
+
+      {/* Universal Command Palette Spotlight Modal */}
+      <AdminCommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        onLockSession={lockSession}
       />
 
       {/* Enterprise Session Lock Screen Overlay */}

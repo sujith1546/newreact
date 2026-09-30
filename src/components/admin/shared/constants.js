@@ -35,6 +35,7 @@ export const NAV_GROUPS = [
     items: [
       { key: "settings", label: "Settings", icon: "ti-settings", color: "#8B5CF6" },
       { key: "auth_security", label: "Sign-In Security", icon: "ti-shield-lock", color: "#EF4444" },
+      { key: "diagnostics", label: "Bug Diagnostics", icon: "ti-bug", color: "#F43F5E" },
     ]
   },
 ];

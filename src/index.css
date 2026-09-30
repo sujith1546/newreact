@@ -60,6 +60,14 @@ html.admin-mode, body.admin-mode {
   touch-action: pan-y !important;
 }
 
+.admin-shell-transition-wrapper {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  overflow: hidden !important;
+}
+
 .admin-mobile-shell,
 .admin-mobile-shell.pcms-scope {
   position: fixed !important;
@@ -93,34 +101,40 @@ html.admin-mode, body.admin-mode {
   max-width: calc(100% - 28px) !important;
   margin: 0 auto !important;
   bottom: max(12px, env(safe-area-inset-bottom, 12px)) !important;
-  /* Slightly taller to accommodate elevated center button */
-  padding: 6px 6px !important;
+  padding: 4px 6px !important;
   overflow: visible !important;
+  background: var(--bg-glass, rgba(24, 25, 29, 0.88)) !important;
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12)) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-radius: 22px !important;
+  box-shadow: var(--shadow-lg, 0 10px 30px rgba(0, 0, 0, 0.25)) !important;
 }
 
-/* Admin nav tab: icon-only by default, label appears only when active (handled in JSX) */
+[data-theme="light"] .admin-mobile-shell .mobile-nav-capsule {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Admin nav tab */
 .admin-mobile-shell .admin-nav-tab {
   gap: 1px;
-  padding: 8px 2px 6px !important;
-  min-height: 52px;
+  padding: 6px 2px !important;
+  min-height: 48px;
 }
 
-/* Upgraded gradient shimmer active pill */
+/* Refined active pill matching site */
 .admin-mobile-shell .admin-active-pill {
-  background: linear-gradient(
-    135deg,
-    rgba(99, 102, 241, 0.18) 0%,
-    rgba(139, 92, 246, 0.12) 100%
-  ) !important;
-  border: 1px solid rgba(99, 102, 241, 0.28) !important;
-  box-shadow:
-    0 2px 12px rgba(99, 102, 241, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+  background: var(--primary-blue-subtle, rgba(59, 130, 246, 0.12)) !important;
+  border: 1px solid rgba(59, 130, 246, 0.25) !important;
+  border-radius: 14px !important;
+  box-shadow: none !important;
 }
 
-/* Active tab icon glow accent color */
+/* Active tab icon accent color */
 .admin-mobile-shell .nav-capsule-tab-active {
-  color: #6366f1 !important;
+  color: var(--primary-blue, #3b82f6) !important;
 }
 
 /* Pulsing unread badge ring on Inbox */

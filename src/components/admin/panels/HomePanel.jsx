@@ -7,8 +7,11 @@ import { motion } from 'framer-motion';
 import {
   MessageSquare, Briefcase, FileText, Zap, Brain, Star,
   Award, ArrowRight, TrendingUp, Globe, Shield, Activity,
-  Plus, ChevronRight, Loader2
+  Plus, ChevronRight, Loader2, RefreshCw, CheckCircle2, AlertCircle
 } from 'lucide-react';
+import RecruiterFunnelWidget from './RecruiterFunnelWidget';
+import SecurityShieldWidget from './SecurityShieldWidget';
+import { runPortfolioHealthAudit } from '../../../lib/adminAiService';
 
 /* ── Animated counter hook ── */
 function useCounter(end, duration = 1200, loading = false) {
@@ -188,6 +191,21 @@ export default function HomePanel({ isMobile = false }) {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   const firstName = user?.email?.split('@')[0]?.split('.')?.[0] || 'Admin';
+  const [auditResult, setAuditResult] = useState({
+    score: 96,
+    status: 'Optimal',
+    issues: [],
+  });
+  const [runningAudit, setRunningAudit] = useState(false);
+
+  const handleRunAiAudit = async () => {
+    setRunningAudit(true);
+    try {
+      const res = await runPortfolioHealthAudit();
+      setAuditResult(res);
+    } catch (_) {}
+    setRunningAudit(false);
+  };
 
   /* Load recent audit activity */
   useEffect(() => {
@@ -400,6 +418,11 @@ export default function HomePanel({ isMobile = false }) {
         })}
       </div>
 
+      {/* Recruiter Telemetry & Live Conversion Funnel */}
+      <div style={{ marginBottom: 16 }}>
+        <RecruiterFunnelWidget />
+      </div>
+
       {/* Bottom Grid */}
       <div
         className="pcms-home-bottom-grid"
@@ -409,6 +432,7 @@ export default function HomePanel({ isMobile = false }) {
           gap: 16,
           width: '100%',
           boxSizing: 'border-box',
+          marginBottom: 16,
         }}
       >
         {/* Atom Admin AI Auditor */}
@@ -427,21 +451,58 @@ export default function HomePanel({ isMobile = false }) {
               <div className="pcms-panel-icon" style={{ background: 'rgba(6,182,212,0.15)', color: '#06b6d4' }}><Brain size={15} /></div>
               <div>
                 <div className="pcms-panel-title">Atom AI Portfolio Auditor</div>
-                <div className="pcms-panel-subtitle">1-Click AI SEO & Link Health Audit</div>
+                <div className="pcms-panel-subtitle">Real-Time AI SEO & Link Health Diagnostic</div>
               </div>
             </div>
           </div>
           <div className="pcms-panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div style={{ fontSize: 12, color: 'var(--pcms-muted)', lineHeight: 1.5 }}>
-              Scan your portfolio content for missing project GitHub links, unread recruiter messages, or site feature status.
+              Audits all portfolio projects for missing demo links, unread recruiter messages, or incomplete SEO tags.
             </div>
+
+            {auditResult?.issues?.length > 0 && (
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 5,
+                background: 'var(--pcms-panel)',
+                padding: '8px 10px',
+                borderRadius: 8,
+                border: '1px solid var(--pcms-line)',
+              }}>
+                {auditResult.issues.slice(0, 2).map((iss) => (
+                  <div key={iss.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 11 }}>
+                    <span style={{ color: iss.severity === 'high' ? '#ef4444' : '#f59e0b', display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <AlertCircle size={11} />
+                      <span style={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{iss.label}</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/admin/dashboard/${iss.fixTab}`)}
+                      style={{ background: 'none', border: 'none', color: 'var(--primary-blue)', fontSize: 10.5, fontWeight: 700, cursor: 'pointer' }}
+                    >
+                      Fix →
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: '#10b981', background: 'rgba(16,185,129,0.12)', padding: '3px 8px', borderRadius: 6 }}>
-                Score: 98/100 (Optimal)
+              <span style={{
+                fontSize: 11,
+                fontWeight: 700,
+                color: auditResult?.score >= 90 ? '#10b981' : '#f59e0b',
+                background: auditResult?.score >= 90 ? 'rgba(16,185,129,0.12)' : 'rgba(245,158,11,0.12)',
+                padding: '3px 8px',
+                borderRadius: 6
+              }}>
+                Score: {auditResult?.score || 96}/100 ({auditResult?.status || 'Optimal'})
               </span>
               <button
                 type="button"
-                onClick={() => navigate('/admin/dashboard/chats')}
+                onClick={handleRunAiAudit}
+                disabled={runningAudit}
                 style={{
                   padding: '6px 12px',
                   borderRadius: 8,
@@ -456,8 +517,8 @@ export default function HomePanel({ isMobile = false }) {
                   gap: 4,
                 }}
               >
-                <Brain size={13} />
-                <span>Run AI Audit</span>
+                {runningAudit ? <Loader2 size={13} className="spin" /> : <Brain size={13} />}
+                <span>{runningAudit ? 'Auditing...' : 'Run AI Audit'}</span>
               </button>
             </div>
           </div>
@@ -592,6 +653,11 @@ export default function HomePanel({ isMobile = false }) {
             </div>
           </div>
         </motion.div>
+      </div>
+
+      {/* Enterprise Security Fortress & Anomaly Shield */}
+      <div style={{ marginTop: 16 }}>
+        <SecurityShieldWidget />
       </div>
     </div>
   );

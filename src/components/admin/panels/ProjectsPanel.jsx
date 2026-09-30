@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabaseClient';
 import { notifyDataMutation } from '../../../lib/syncDispatcher';
-import { Loader2, Star, Edit3, Trash2, Plus, X } from 'lucide-react';
+import { Loader2, Star, Edit3, Trash2, Plus, X, Sparkles, Wand2, Eye, EyeOff, Tag, ExternalLink } from 'lucide-react';
 import { styles, MODAL_STYLES } from '../shared/constants';
 import { PanelCard, EmptyState, StatCard } from '../shared/components';
+import { polishProjectDescription, suggestTechStack } from '../../../lib/adminAiService';
 
 export default function ProjectsPanel() {
   const [projects, setProjects] = useState([]);
@@ -20,6 +21,17 @@ export default function ProjectsPanel() {
   const [tagInput, setTagInput] = useState('');
   const [checkingUrls, setCheckingUrls] = useState(false);
   const [urlStatuses, setUrlStatuses] = useState({});
+
+  // AI & Live Preview State
+  const [polishingDesc, setPolishingDesc] = useState(false);
+  const [suggestingTags, setSuggestingTags] = useState(false);
+  const [showCardPreview, setShowCardPreview] = useState(false);
+
+  useEffect(() => {
+    const handleOpenNew = () => openModal();
+    window.addEventListener('pcms_open_new_project', handleOpenNew);
+    return () => window.removeEventListener('pcms_open_new_project', handleOpenNew);
+  }, []);
 
   const PRESET_TECH_STACK = ['React', 'TypeScript', 'Node.js', 'Python', 'Supabase', 'PyTorch', 'TailwindCSS', 'PostgreSQL', 'Docker', 'Next.js', 'FastAPI'];
 
@@ -99,6 +111,43 @@ export default function ProjectsPanel() {
   };
 
   const closeModal = () => { setIsModalOpen(false); setEditingProject(null); };
+
+  const handleAiPolish = async () => {
+    if (!formData.title.trim() && !formData.description.trim()) {
+      showToast('Please enter a project title or rough notes first', 'error');
+      return;
+    }
+    setPolishingDesc(true);
+    try {
+      const polished = await polishProjectDescription(formData.title, formData.description);
+      if (polished) {
+        setFormData(prev => ({ ...prev, description: polished }));
+        showToast('✨ AI enhanced project description!');
+      }
+    } catch (err) {
+      showToast(err.message || 'Failed to polish with AI', 'error');
+    }
+    setPolishingDesc(false);
+  };
+
+  const handleAiSuggestTags = async () => {
+    if (!formData.title.trim()) {
+      showToast('Please enter a project title first', 'error');
+      return;
+    }
+    setSuggestingTags(true);
+    try {
+      const tags = await suggestTechStack(formData.title, formData.description);
+      if (tags && tags.length > 0) {
+        const merged = Array.from(new Set([...formData.tags, ...tags]));
+        setFormData(prev => ({ ...prev, tags: merged }));
+        showToast(`🏷️ Suggested ${tags.length} tech tags!`);
+      }
+    } catch (err) {
+      showToast('Could not suggest tags', 'error');
+    }
+    setSuggestingTags(false);
+  };
 
   const handleTagKeyDown = (e) => {
     if ((e.key === 'Enter' || e.key === ',') && tagInput.trim()) {
@@ -341,13 +390,63 @@ export default function ProjectsPanel() {
                   <p style={{ fontSize: 11, color: 'var(--pcms-muted)', margin: '2px 0 0' }}>{editingProject ? `Editing: ${editingProject.title}` : 'Add a new project to your portfolio'}</p>
                 </div>
               </div>
-              <button onClick={closeModal} className="pcms-icon-btn">
-                <X size={18} />
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <button
+                  type="button"
+                  onClick={() => setShowCardPreview(p => !p)}
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: 8,
+                    background: showCardPreview ? 'rgba(59, 130, 246, 0.15)' : 'var(--pcms-panel)',
+                    border: `1px solid ${showCardPreview ? 'var(--primary-blue, #3b82f6)' : 'var(--pcms-line)'}`,
+                    color: showCardPreview ? 'var(--primary-blue, #3b82f6)' : 'var(--pcms-text)',
+                    fontSize: 11,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 5,
+                  }}
+                >
+                  {showCardPreview ? <EyeOff size={12} /> : <Eye size={12} />}
+                  <span>{showCardPreview ? 'Hide Preview' : 'Live Card Preview'}</span>
+                </button>
+                <button onClick={closeModal} className="pcms-icon-btn">
+                  <X size={18} />
+                </button>
+              </div>
             </div>
 
             {/* Modal Body */}
             <div style={modalBody}>
+              {/* Live Preview Card */}
+              {showCardPreview && (
+                <div style={{
+                  background: 'var(--pcms-panel-2)',
+                  border: '1.5px dashed var(--pcms-accent, #6366f1)',
+                  borderRadius: 12,
+                  padding: '14px 16px',
+                  marginBottom: 12,
+                }}>
+                  <div style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', color: 'var(--pcms-accent, #6366f1)', marginBottom: 4, letterSpacing: '0.04em' }}>
+                    ✦ Public Portfolio Card Live Preview
+                  </div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--pcms-text)' }}>
+                    {formData.title || 'Untitled Project'}
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--pcms-muted)', marginTop: 4, lineHeight: 1.5 }}>
+                    {formData.description || 'Project description will appear here as you type...'}
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 8 }}>
+                    {(formData.tags || []).map(t => (
+                      <span key={t} style={{ fontSize: 10.5, fontWeight: 600, padding: '2px 7px', borderRadius: 4, background: 'var(--pcms-panel)', border: '1px solid var(--pcms-line)', color: 'var(--pcms-text)' }}>
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Title */}
               <div>
                 <label style={labelStyle}>Project Title <span style={{ color: '#ef4444' }}>*</span></label>
@@ -362,7 +461,32 @@ export default function ProjectsPanel() {
 
               {/* Description */}
               <div>
-                <label style={labelStyle}>Description</label>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <label style={labelStyle}>Description</label>
+                  <button
+                    type="button"
+                    onClick={handleAiPolish}
+                    disabled={polishingDesc}
+                    title="Generate high-impact recruiter summary using Groq LLaMA 3.1"
+                    style={{
+                      padding: '3px 9px',
+                      borderRadius: 6,
+                      background: 'rgba(99, 102, 241, 0.12)',
+                      border: '1px solid rgba(99, 102, 241, 0.25)',
+                      color: '#6366f1',
+                      fontSize: 11,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    {polishingDesc ? <Loader2 size={11} className="spin" /> : <Sparkles size={11} />}
+                    <span>{polishingDesc ? 'Polishing...' : '✨ AI Polish Description'}</span>
+                  </button>
+                </div>
                 <textarea
                   style={{ ...inputStyle, minHeight: 85, resize: 'vertical', lineHeight: 1.6 }}
                   value={formData.description}
@@ -373,7 +497,32 @@ export default function ProjectsPanel() {
 
               {/* Tags */}
               <div>
-                <label style={labelStyle}>Tags</label>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <label style={labelStyle}>Tags</label>
+                  <button
+                    type="button"
+                    onClick={handleAiSuggestTags}
+                    disabled={suggestingTags}
+                    title="Automatically analyze title and description to detect tech stack"
+                    style={{
+                      padding: '3px 9px',
+                      borderRadius: 6,
+                      background: 'rgba(6, 182, 212, 0.12)',
+                      border: '1px solid rgba(6, 182, 212, 0.25)',
+                      color: '#06b6d4',
+                      fontSize: 11,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    {suggestingTags ? <Loader2 size={11} className="spin" /> : <Wand2 size={11} />}
+                    <span>{suggestingTags ? 'Detecting...' : '🏷️ AI Suggest Tags'}</span>
+                  </button>
+                </div>
                 <div style={{
                   display: 'flex', flexWrap: 'wrap', gap: 6, padding: '8px 12px',
                   borderRadius: 8, border: '1px solid var(--pcms-line)',

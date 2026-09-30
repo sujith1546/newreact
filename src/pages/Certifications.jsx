@@ -8,6 +8,7 @@ import {
   Calendar, CheckCircle2 
 } from 'lucide-react';
 import useRealtimeData from '../hooks/useRealtimeData';
+import MultiStateVerificationBadge from '../components/ui/MultiStateVerificationBadge';
 
 const DEFAULT_CERTIFICATIONS = [
   {
@@ -135,21 +136,13 @@ function CertCard({ cert, isMobile = false, onVerifyClick }) {
           position: 'relative',
         }}
       >
-        <span
-          className="cert-verified-badge"
-          style={{
-            position: 'absolute',
-            top: isMobile ? '14px' : '16px',
-            right: isMobile ? '14px' : '16px',
-            border: `1px solid ${c.pillBorder}`,
-            padding: isMobile ? '3px 9px' : '4px 11px',
-            fontSize: isMobile ? '10px' : '11px',
-            color: c.pillColor,
-          }}
-        >
-          <i className="ti ti-shield-check" style={{ fontSize: isMobile ? '12px' : '13px' }} aria-hidden="true" />
-          Verified
-        </span>
+        <MultiStateVerificationBadge
+          issuer={issuer}
+          credentialId={credentialId}
+          verifyUrl={verifyUrl}
+          theme={c}
+          isMobile={isMobile}
+        />
 
         <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '12px' : '16px' }}>
           <div
@@ -162,7 +155,7 @@ function CertCard({ cert, isMobile = false, onVerifyClick }) {
           >
             <i className={`ti ${icon}`} style={{ fontSize: isMobile ? '22px' : '26px', color: c.badgeIcon }} aria-hidden="true" />
           </div>
-          <div style={{ minWidth: 0, flex: 1, paddingRight: isMobile ? '68px' : '0' }}>
+          <div style={{ minWidth: 0, flex: 1, paddingRight: isMobile ? '76px' : '90px' }}>
             <p style={{
               margin: '0 0 3px',
               fontSize: isMobile ? '9.5px' : '10.5px',

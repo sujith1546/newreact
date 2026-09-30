@@ -1,5 +1,6 @@
 import React from "react";
 import RouteErrorFallback from "./RouteErrorFallback";
+import { reportDiagnosticsIssue } from "../../core/diagnostics/diagnosticsEngine";
 
 export default class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -13,6 +14,17 @@ export default class ErrorBoundary extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     console.error("ErrorBoundary caught an error:", error, errorInfo);
+    try {
+      reportDiagnosticsIssue({
+        type: 'runtime',
+        severity: 'critical',
+        title: `React Component Crash: ${error?.name || 'Render Error'}`,
+        message: error?.message || 'Component failed to render and was caught by ErrorBoundary.',
+        source: 'React ErrorBoundary',
+        stack: (error?.stack || '') + (errorInfo?.componentStack ? `\nComponent Stack:${errorInfo.componentStack}` : ''),
+        fixActionLabel: 'Inspect Component Stack',
+      });
+    } catch (_) {}
   }
 
   resetErrorBoundary = () => {

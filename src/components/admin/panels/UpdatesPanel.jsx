@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabaseClient';
 import { notifyDataMutation } from '../../../lib/syncDispatcher';
-import { Loader2, Edit3, Trash2, Zap, X, Plus, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Edit3, Trash2, Zap, X, Plus, Eye, EyeOff, Sparkles } from 'lucide-react';
 import { styles } from '../shared/constants';
 import { PanelCard, EmptyState } from '../shared/components';
+import { draftSiteUpdate } from '../../../lib/adminAiService';
 
 const LOCAL_UPDATES_KEY = 'pcms_local_updates';
 
@@ -34,6 +35,13 @@ export default function UpdatesPanel() {
   const [expandedId, setExpandedId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [toast, setToast] = useState(null);
+  const [draftingAi, setDraftingAi] = useState(false);
+
+  useEffect(() => {
+    const handleOpenNew = () => openModal();
+    window.addEventListener('pcms_open_new_update', handleOpenNew);
+    return () => window.removeEventListener('pcms_open_new_update', handleOpenNew);
+  }, []);
 
   const EMPTY_FORM = {
     version: 'v2.4.0',
@@ -506,7 +514,46 @@ export default function UpdatesPanel() {
 
               {/* Description */}
               <div>
-                <label style={labelStyle}>Short Overview Description</label>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <label style={labelStyle}>Short Overview Description</label>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!formData.title.trim()) {
+                        showToast('Please enter a release title first', 'error');
+                        return;
+                      }
+                      setDraftingAi(true);
+                      try {
+                        const res = await draftSiteUpdate(formData.title);
+                        if (res) {
+                          setFormData(p => ({ ...p, description: res }));
+                          showToast('🚀 AI drafted release announcement!');
+                        }
+                      } catch (err) {
+                        showToast('Could not draft with AI', 'error');
+                      }
+                      setDraftingAi(false);
+                    }}
+                    disabled={draftingAi}
+                    style={{
+                      padding: '3px 9px',
+                      borderRadius: 6,
+                      background: 'rgba(245, 158, 11, 0.12)',
+                      border: '1px solid rgba(245, 158, 11, 0.25)',
+                      color: '#f59e0b',
+                      fontSize: 11,
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4,
+                    }}
+                  >
+                    {draftingAi ? <Loader2 size={11} className="spin" /> : <Sparkles size={11} />}
+                    <span>{draftingAi ? 'Drafting...' : '🚀 AI Draft Announcement'}</span>
+                  </button>
+                </div>
                 <textarea style={{ ...inputStyle, resize: 'vertical' }} rows={2} value={formData.description} onChange={e => setFormData(p => ({ ...p, description: e.target.value }))} placeholder="Brief summary of what this release brings..." />
               </div>
 
