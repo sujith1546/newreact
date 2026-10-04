@@ -68,8 +68,8 @@ const COLORS = {
     badgeIcon: '#1d4ed8',
     pillBorder: '#93c5fd',
     pillColor: '#1d4ed8',
-    issuerColor: '#1d4ed8',
-    verifyColor: '#1d4ed8',
+    issuerColor: 'var(--primary-blue, #3b82f6)',
+    verifyColor: 'var(--primary-blue, #3b82f6)',
   },
   danger: {
     headerBg: '#fee2e2',
@@ -77,8 +77,8 @@ const COLORS = {
     badgeIcon: '#dc2626',
     pillBorder: '#fca5a5',
     pillColor: '#dc2626',
-    issuerColor: '#dc2626',
-    verifyColor: '#1d4ed8',
+    issuerColor: 'var(--primary-blue, #3b82f6)',
+    verifyColor: 'var(--primary-blue, #3b82f6)',
   },
   success: {
     headerBg: '#dcfce7',
@@ -86,8 +86,8 @@ const COLORS = {
     badgeIcon: '#16a34a',
     pillBorder: '#86efac',
     pillColor: '#15803d',
-    issuerColor: '#15803d',
-    verifyColor: '#1d4ed8',
+    issuerColor: 'var(--primary-blue, #3b82f6)',
+    verifyColor: 'var(--primary-blue, #3b82f6)',
   },
   warning: {
     headerBg: '#fef9c3',
@@ -95,8 +95,8 @@ const COLORS = {
     badgeIcon: '#ca8a04',
     pillBorder: '#fde047',
     pillColor: '#854d0e',
-    issuerColor: '#854d0e',
-    verifyColor: '#1d4ed8',
+    issuerColor: 'var(--primary-blue, #3b82f6)',
+    verifyColor: 'var(--primary-blue, #3b82f6)',
   },
 };
 
@@ -231,7 +231,7 @@ function CertCard({ cert, isMobile = false, onVerifyClick }) {
                 fontSize: isMobile ? '9.5px' : '10.5px',
                 color: 'var(--text-muted)',
                 fontWeight: '600',
-                fontFamily: '"JetBrains Mono", "SF Mono", monospace',
+                fontFamily: 'var(--font-mono, "JetBrains Mono", "SF Mono", monospace)',
                 lineHeight: '1.4',
               }}>ID  {credentialId}</p>
             )}
@@ -432,15 +432,15 @@ export default function Certifications() {
           transition: background 0.2s ease;
         }
 
-        .cert-card-header--accent { background: #dbeafe; }
-        .cert-card-header--danger { background: #fee2e2; }
-        .cert-card-header--success { background: #dcfce7; }
-        .cert-card-header--warning { background: #fef9c3; }
+        .cert-card-header--accent { background: rgba(59, 130, 246, 0.06); }
+        .cert-card-header--danger { background: rgba(239, 68, 68, 0.06); }
+        .cert-card-header--success { background: rgba(16, 185, 129, 0.06); }
+        .cert-card-header--warning { background: rgba(245, 158, 11, 0.06); }
 
-        [data-theme="dark"] .cert-card-header--accent { background: rgba(59, 130, 246, 0.16) !important; }
-        [data-theme="dark"] .cert-card-header--danger { background: rgba(239, 68, 68, 0.16) !important; }
-        [data-theme="dark"] .cert-card-header--success { background: rgba(16, 185, 129, 0.16) !important; }
-        [data-theme="dark"] .cert-card-header--warning { background: rgba(245, 158, 11, 0.16) !important; }
+        [data-theme="dark"] .cert-card-header--accent { background: rgba(59, 130, 246, 0.07) !important; }
+        [data-theme="dark"] .cert-card-header--danger { background: rgba(239, 68, 68, 0.07) !important; }
+        [data-theme="dark"] .cert-card-header--success { background: rgba(16, 185, 129, 0.07) !important; }
+        [data-theme="dark"] .cert-card-header--warning { background: rgba(245, 158, 11, 0.07) !important; }
 
         .cert-badge-circle {
           border-radius: 50%;

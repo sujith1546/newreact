@@ -1,13 +1,16 @@
 // src/pages/Skills.jsx
-// Mobile: 2-level drill-down — compact category grid (no scroll) → skill-list sheet → skill-detail sheet
+// Mobile: SkillsMobile — continuous donut + category pills (no scroll) → slide-up category sheet → SkillDetailDrawer
 // Desktop: unchanged 2-col card grid
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronRight, ChevronDown, Star, Layers, Clock, Briefcase, ChevronLeft, Loader2, LayoutGrid, PieChart, Search } from 'lucide-react';
 import { ScrollReveal, SkillTooltip } from '../components';
 import { categoryIconMap } from '../components/ui/skillIcons';
+import SkillDetailDrawer from '../components/ui/SkillDetailDrawer';
+import CategorySheet from './CategorySheet';
+import SkillsMobile, { toMobileCategories } from './SkillsMobile';
 import useRealtimeData from '../hooks/useRealtimeData';
 
 const categoryMeta = {
@@ -484,6 +487,7 @@ export default function Skills() {
   const [activeCategory, setActiveCategory] = useState(null);  // category object
   const [activeSkill,    setActiveSkill]    = useState(null);  // skill object
   const [desktopView, setDesktopView] = useState('grid'); // 'grid' | 'radar'
+  const [desktopDrawer, setDesktopDrawer] = useState(null); // { skill, categoryId } — desktop slide-over
   const [searchQuery, setSearchQuery] = useState('');
   const [hasCatScrolled,  setHasCatScrolled]  = useState(false);
   const [isCatScrollable, setIsCatScrollable] = useState(false);
@@ -581,6 +585,52 @@ export default function Skills() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  const mobileCategories = useMemo(() => toMobileCategories(skillCategories), [skillCategories]);
+
+  // Per-skill slide-over drawer (shared by desktop and mobile)
+  const drawerCatIdx = desktopDrawer ? skillCategories.findIndex(c => c.id === desktopDrawer.categoryId) : -1;
+  const drawerCat = drawerCatIdx >= 0 ? skillCategories[drawerCatIdx] : null;
+  // Re-resolve the skill from live data so realtime updates are reflected
+  const drawerSkill = drawerCat ? (drawerCat.skills.find(s => s.id === desktopDrawer.skill.id) || desktopDrawer.skill) : null;
+  const skillDrawer = (
+    <SkillDetailDrawer
+      skill={drawerSkill}
+      category={drawerCat}
+      onClose={() => setDesktopDrawer(null)}
+      onNavigate={(s) => setDesktopDrawer(d => (d ? { ...d, skill: s } : d))}
+    />
+  );
+
+  const [mobileCatIdx, setMobileCatIdx] = useState(null);
+  const isSheetOpen = mobileCatIdx !== null;
+  const nCats = mobileCategories.length;
+
+  // ── Mobile: donut + pills + slide-up category sheet ──
+  if (isMobile) {
+    return (
+      <>
+        <SkillsMobile
+          categories={mobileCategories}
+          selectedKey={isSheetOpen ? mobileCategories[mobileCatIdx]?.key : null}
+          onSelectCategory={(cat, i) => setMobileCatIdx(i)}
+        />
+        <CategorySheet
+          category={isSheetOpen ? mobileCategories[mobileCatIdx] : null}
+          open={isSheetOpen}
+          onClose={() => setMobileCatIdx(null)}
+          onPrev={() => setMobileCatIdx((i) => (i + nCats - 1) % nCats)}
+          onNext={() => setMobileCatIdx((i) => (i + 1) % nCats)}
+          onSelectSkill={(skill, cat) => {
+            const resolvedSkill = skill.raw || skill;
+            const categoryId = cat?.source?.id || cat?.key;
+            setDesktopDrawer({ skill: resolvedSkill, categoryId });
+          }}
+        />
+        {skillDrawer}
+      </>
+    );
+  }
 
   return (
     <ScrollReveal>
@@ -1337,7 +1387,7 @@ export default function Skills() {
         }
       `}</style>
 
-      <motion.div className="skills-page" style={{ height: '100%', overflow: 'hidden' }} variants={!isMobile ? containerVariants : undefined} initial={!isMobile ? "hidden" : undefined} animate={!isMobile ? "visible" : undefined}>
+      <motion.div className="skills-page" style={{ height: '100%', overflow: isMobile ? 'auto' : 'hidden' }} variants={!isMobile ? containerVariants : undefined} initial={!isMobile ? "hidden" : undefined} animate={!isMobile ? "visible" : undefined}>
 
         {!isMobile && skillCategories.length > 0 && (
           <motion.div 
@@ -1525,6 +1575,16 @@ export default function Skills() {
                               <SkillTooltip skill={skill}>
                                 <span
                                   className="skill-pill"
+                                  role="button"
+                                  tabIndex={0}
+                                  aria-haspopup="dialog"
+                                  onClick={() => setDesktopDrawer({ skill, categoryId: category.id })}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                      e.preventDefault();
+                                      setDesktopDrawer({ skill, categoryId: category.id });
+                                    }
+                                  }}
                                   style={isMatch ? {
                                     backgroundColor: 'var(--primary-blue)',
                                     color: '#ffffff',
@@ -1546,414 +1606,12 @@ export default function Skills() {
               </motion.div>
             )}
           </AnimatePresence>
-        ) : (
-          <div className="sk-mob-container">
-
-            {/* ── Hero Header ── */}
-            <div className="sk-mob-header">
-              <p className="sk-mob-eyebrow">Skills &amp; Expertise</p>
-              <h1 className="sk-mob-title">Tech Stack &amp; Proficiencies</h1>
-              <p className="sk-mob-subtitle">
-                {skillCategories.reduce((a, c) => a + (c.skills?.length || 0), 0)} skills across {skillCategories.length} categories — from ML to full-stack.
-              </p>
-            </div>
-
-            {/* ── Quick Stats Divider Row ── */}
-            {(() => {
-              const total = skillCategories.reduce((a, c) => a + (c.skills?.length || 0), 0);
-              const advanced = skillCategories.flatMap(c => c.skills).filter(s => s.level === 'Advanced').length;
-              return (
-                <div className="sk-stats-divider-row">
-                  <div className="sk-stat-col">
-                    <span className="sk-stat-num">{total}</span>
-                    <span className="sk-stat-lbl">Skills</span>
-                  </div>
-                  <div className="sk-stat-col">
-                    <span className="sk-stat-num">{advanced}</span>
-                    <span className="sk-stat-lbl">Advanced</span>
-                  </div>
-                  <div className="sk-stat-col">
-                    <span className="sk-stat-num">{skillCategories.length}</span>
-                    <span className="sk-stat-lbl">Categories</span>
-                  </div>
-                </div>
-              );
-            })()}
-
-            {/* ── View Tab Toggle ── */}
-            <div className="sk-tab-toggle-wrap">
-              <div className="sk-tab-toggle" role="tablist">
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={activeTab === 'categories'}
-                  className={`sk-tab-btn ${activeTab === 'categories' ? 'sk-tab-btn--active' : ''}`}
-                  onClick={() => setActiveTab('categories')}
-                >
-                  {activeTab === 'categories' && (
-                    <motion.div
-                      layoutId="skActiveTabPill"
-                      className="sk-tab-pill-bg"
-                      transition={{ type: 'spring', stiffness: 450, damping: 35 }}
-                    />
-                  )}
-                  <span className="sk-tab-btn-content">
-                    <LayoutGrid size={13} className="sk-tab-icon" />
-                    <span>Categories</span>
-                  </span>
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={activeTab === 'skills'}
-                  className={`sk-tab-btn ${activeTab === 'skills' ? 'sk-tab-btn--active' : ''}`}
-                  onClick={() => setActiveTab('skills')}
-                >
-                  {activeTab === 'skills' && (
-                    <motion.div
-                      layoutId="skActiveTabPill"
-                      className="sk-tab-pill-bg"
-                      transition={{ type: 'spring', stiffness: 450, damping: 35 }}
-                    />
-                  )}
-                  <span className="sk-tab-btn-content">
-                    <Star size={13} className="sk-tab-icon" />
-                    <span>Top Skills</span>
-                  </span>
-                </button>
-              </div>
-            </div>
-
-            {/* ── Tab Content Area ── */}
-            <div className="sk-tab-content">
-              {activeTab === 'categories' ? (
-                <div className="skills-mobile-list">
-                  {skillCategories.map((category, idx) => {
-                    const Icon = categoryIconMap[category.id] || categoryIconMap.languages;
-                    const isFull = category.id === 'exploring';
-                    // Regular cards show 2 chips; full-width shows 3
-                    const topSkills = category.skills.slice(0, isFull ? 3 : 2);
-                    const advCount = category.skills.filter(s => s.level === 'Advanced').length;
-                    const total = category.skills.length || 1;
-                    const pct = Math.round((advCount / total) * 100);
-
-                    return (
-                      <motion.button
-                        key={category.id}
-                        className={`sk-cat-card${isFull ? ' sk-cat-card--full' : ''}`}
-                        onClick={() => setActiveCategory(category)}
-                        whileTap={{ scale: 0.972 }}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: idx * 0.04, type: 'spring', stiffness: 400, damping: 28 }}
-                      >
-                        {/* Icon box — clean subtle styling */}
-                        <div className="sk-cat-icon-box">
-                          <Icon size={15} />
-                        </div>
-
-                        {/* Main content area */}
-                        <div className="sk-cat-main">
-                          {/* Title + count badge */}
-                          <div>
-                            <p className="sk-cat-name">{category.title}</p>
-                            <span className="sk-cat-count-badge">
-                              {category.skills.length} skills
-                            </span>
-                          </div>
-
-                          {/* Clean single-track level bar */}
-                          <div className="sk-cat-level-row">
-                            <div className="sk-cat-level-bar">
-                              <div
-                                className="sk-cat-level-fill"
-                                style={{ width: `${pct}%` }}
-                              />
-                            </div>
-                            <span className="sk-cat-level-text">
-                              {advCount > 0 ? `${advCount} adv` : `${category.skills.length} skills`}
-                            </span>
-                          </div>
-
-                          {/* Preview chips */}
-                          <div className="sk-cat-preview-tags">
-                            {topSkills.map(s => (
-                              <span
-                                key={s.id || s.name}
-                                className="sk-cat-preview-tag"
-                              >
-                                {s.name}
-                              </span>
-                            ))}
-                            {category.skills.length > (isFull ? 3 : 2) && (
-                              <span className="sk-cat-preview-tag sk-cat-preview-tag--more">
-                                +{category.skills.length - (isFull ? 3 : 2)}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Chevron — only on non-full cards, bottom-right aligned */}
-                        {!isFull && (
-                          <ChevronRight size={13} className="sk-cat-chevron" style={{ position: 'absolute', bottom: 10, right: 10 }} />
-                        )}
-                      </motion.button>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="sk-mob-carousel-container">
-                  {(() => {
-                    const allSkills = skillCategories.flatMap(c => c.skills);
-                    const topSkills = [...allSkills]
-                      .filter(s => s.percent > 0)
-                      .sort((a, b) => (b.percent || 0) - (a.percent || 0))
-                      .slice(0, 6);
-                    if (topSkills.length === 0) {
-                      return (
-                        <div style={{ textAlign: 'center', padding: '30px 0', color: 'var(--text-muted)', fontSize: '12px' }}>
-                          No proficiencies found.
-                        </div>
-                      );
-                    }
-                    return (
-                      <MobileProficiencyCarousel
-                        topSkills={topSkills}
-                        onOpenSkill={setActiveSkill}
-                      />
-                    );
-                  })()}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
+        ) : null}
       </motion.div>
 
-      {/* ── Portalled sheets (mobile only) ── */}
-      {typeof document !== 'undefined' && isMobile && createPortal(
-        <>
-          {/* ══ LEVEL 1: Category Sheet ══ */}
-          <AnimatePresence>
-            {activeCategory && !activeSkill && (
-              <div style={{ position: 'relative', zIndex: 9998 }}>
-                <motion.div
-                  className="sk-sheet-overlay"
-                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                  onClick={() => setActiveCategory(null)}
-                />
-                <motion.div
-                  className="sk-sheet sk-sheet--cat"
-                  initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-                  transition={{ type: 'tween', ease: [0.16, 1, 0.3, 1], duration: 0.38 }}
-                >
-                  {/* Colored accent top bar */}
-                  {(() => {
-                    const catAccents = ['#3b82f6', '#8b5cf6', '#10b981', '#f59e0b', '#6366f1'];
-                    const catIdx = skillCategories.findIndex(c => c.id === activeCategory.id);
-                    const accent = catAccents[catIdx % catAccents.length];
-                    return <div className="sk-sheet-accent" style={{ background: `linear-gradient(90deg, ${accent}, ${accent}60)` }} />;
-                  })()}
-                  <div className="sk-sheet-handle" />
-                  <div className="sk-sheet-header">
-                    <div className="sk-sheet-header-left">
-                      <div>
-                        <h2>{activeCategory.title}</h2>
-                        <div className="sk-sheet-subtitle">{activeCategory.skills.length} skills in this category</div>
-                      </div>
-                    </div>
-                    <button className="sk-sheet-close" onClick={() => setActiveCategory(null)}>
-                      <X size={15} />
-                    </button>
-                  </div>
+      {/* ── Desktop: per-skill slide-over drawer ── */}
+      {skillDrawer}
 
-                  <div className="sk-sheet-body" ref={catSheetRef} onScroll={e => { if(e.target.scrollTop > 10 && !hasCatScrolled) setHasCatScrolled(true); }}>
-                    <div className="sk-skill-group-label">All {activeCategory.skills.length} skills</div>
-                    <div className="sk-skills-card">
-                      {activeCategory.skills.map((skill, si) => {
-                        const lc = levelColor[skill.level] || levelColor.Intermediate;
-                        return (
-                          <button key={skill.id} className="sk-skill-row" onClick={() => setActiveSkill(skill)}>
-                            <div className="sk-skill-row-left">
-                              <div className="sk-skill-row-icon" style={{ background: lc.bg, color: lc.text, borderColor: lc.ring + '40' }}>
-                                {skill.name.slice(0, 2).toUpperCase()}
-                              </div>
-                              <div className="sk-skill-row-text">
-                                <h4>{skill.name}</h4>
-                                <p>{skill.description ? skill.description.slice(0, 52) + (skill.description.length > 52 ? '…' : '') : `${skill.years || '—'} • ${skill.projectCount || 0}+ projects`}</p>
-                              </div>
-                            </div>
-                            <div className="sk-skill-row-right">
-                              <span className="sk-level-badge" style={{ background: lc.bg, color: lc.text, borderColor: lc.ring + '50' }}>{skill.level}</span>
-                              <div className="sk-bar-mini">
-                                <motion.div
-                                  className="sk-bar-mini-fill"
-                                  style={{ background: lc.ring }}
-                                  initial={{ width: 0 }}
-                                  animate={{ width: skill.percent + '%' }}
-                                  transition={{ duration: 0.7, delay: si * 0.04, ease: [0.16, 1, 0.3, 1] }}
-                                />
-                              </div>
-                              <ChevronRight size={14} style={{ color: 'var(--text-muted)' }} />
-                            </div>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <AnimatePresence>
-                    {isCatScrollable && !hasCatScrolled && (
-                      <motion.div className="sk-scroll-hint" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
-                        <motion.div animate={{ y: [0, 6, 0] }} transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                          <span style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '.05em', textTransform: 'uppercase', marginBottom: '2px' }}>Scroll</span>
-                          <ChevronDown size={16} />
-                        </motion.div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              </div>
-            )}
-          </AnimatePresence>
-
-          {/* ══ LEVEL 2: Skill Detail Sheet ══ */}
-          <AnimatePresence>
-            {activeSkill && (
-              <div style={{ position: 'relative', zIndex: 9999 }}>
-                <motion.div
-                  className="sk-sheet-overlay"
-                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                  onClick={() => setActiveSkill(null)}
-                />
-                <motion.div
-                  className="sk-sheet sk-sheet--skill"
-                  initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
-                  transition={{ type: 'tween', ease: [0.16, 1, 0.3, 1], duration: 0.38 }}
-                >
-                  {/* Level-colored accent top bar */}
-                  <div
-                    className="sk-sheet-accent"
-                    style={{ background: `linear-gradient(90deg, ${(levelColor[activeSkill.level] || levelColor.Intermediate).ring}, ${(levelColor[activeSkill.level] || levelColor.Intermediate).ring}60)` }}
-                  />
-                  <div className="sk-sheet-handle" />
-                  <div className="sk-sheet-header">
-                    <div className="sk-sheet-header-left">
-                      <button
-                        onClick={() => setActiveSkill(null)}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary-blue)', display: 'flex', alignItems: 'center', gap: 3, fontWeight: 700, fontSize: 13, padding: 0 }}
-                      >
-                        <ChevronLeft size={16} />
-                        Back
-                      </button>
-                      <div>
-                        <h2 style={{ marginLeft: 4 }}>{activeSkill.name}</h2>
-                      </div>
-                    </div>
-                    <button className="sk-sheet-close" onClick={() => { setActiveSkill(null); }}>
-                      <X size={15} />
-                    </button>
-                  </div>
-
-                  <div className="sk-detail-body" ref={skillSheetRef} onScroll={e => { if(e.target.scrollTop > 10 && !hasSkillScrolled) setHasSkillScrolled(true); }}>
-                    {/* Hero ring */}
-                    <div className="sk-detail-hero">
-                      <div className="sk-ring-wrap">
-                        <ProgressRing
-                          percent={activeSkill.percent}
-                          color={(levelColor[activeSkill.level] || levelColor.Intermediate).ring}
-                          size={90}
-                        />
-                        <div className="sk-ring-label">
-                          <span className="sk-ring-pct">{activeSkill.percent}%</span>
-                          <span className="sk-ring-sub">mastery</span>
-                        </div>
-                      </div>
-                      <div className="sk-meta-list">
-                        <div className="sk-meta-row">
-                          <Clock size={14} />
-                          <span><strong>{String(activeSkill.years || '0').replace(/(\s*yrs?)+$/i, '')} yrs</strong> experience</span>
-                        </div>
-                        <div className="sk-meta-row">
-                          <Briefcase size={14} />
-                          <span><strong>{activeSkill.projectCount}+</strong> projects</span>
-                        </div>
-                        <div className="sk-meta-row">
-                          <Star size={14} />
-                          <span
-                            style={{
-                              fontWeight: 800, fontSize: 12,
-                              color: (levelColor[activeSkill.level] || levelColor.Intermediate).text,
-                              background: (levelColor[activeSkill.level] || levelColor.Intermediate).bg,
-                              padding: '2px 8px', borderRadius: 20,
-                              border: `1px solid ${(levelColor[activeSkill.level] || levelColor.Intermediate).ring}40`
-                            }}
-                          >
-                            {activeSkill.level}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {activeSkill.description && (
-                      <div>
-                        <p className="sk-section-label">About</p>
-                        <p className="sk-desc-card">{activeSkill.description}</p>
-                      </div>
-                    )}
-
-                    {activeSkill.relatedTools && activeSkill.relatedTools.length > 0 && (
-                      <div>
-                        <p className="sk-section-label">Ecosystem</p>
-                        <div className="sk-tags">
-                          {activeSkill.relatedTools.map((t, idx) => {
-                            const toolColors = ['#3b82f6','#10b981','#8b5cf6','#f59e0b','#06b6d4','#ef4444','#ec4899'];
-                            const col = toolColors[idx % toolColors.length];
-                            return (
-                              <span
-                                key={`${t}-${idx}`}
-                                className="sk-tag"
-                                style={{ color: col, background: `${col}12`, borderColor: `${col}30` }}
-                              >
-                                {t}
-                              </span>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    )}
-
-                    {activeSkill.projects && activeSkill.projects.length > 0 && (
-                      <div>
-                        <p className="sk-section-label">Used in</p>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                          {activeSkill.projects.map((p, idx) => (
-                            <div key={`${p}-${idx}`} className="sk-project-row">
-                              <Layers size={14} />{p}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <AnimatePresence>
-                    {isSkillScrollable && !hasSkillScrolled && (
-                      <motion.div className="sk-scroll-hint" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
-                        <motion.div animate={{ y: [0, 6, 0] }} transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                          <span style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '.05em', textTransform: 'uppercase', marginBottom: '2px' }}>Scroll</span>
-                          <ChevronDown size={16} />
-                        </motion.div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              </div>
-            )}
-          </AnimatePresence>
-        </>,
-        document.body
-      )}
-    </ScrollReveal>
+          </ScrollReveal>
   );
 }

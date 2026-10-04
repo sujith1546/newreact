@@ -1,0 +1,129 @@
+/* Tokens: mapped to portfolio theme variables */
+.sp {
+  --sp-bg: var(--bg-primary, #fafafa);
+  --sp-card: var(--bg-secondary, #ffffff);
+  --sp-fg: var(--text-primary, #0a0a0a);
+  --sp-mute: var(--text-muted, #71717a);
+  --sp-line: var(--border-color, #e4e4e7);
+  --sp-track: #ececf0;
+  --sp-accent: var(--primary-blue, #3b82f6);
+
+  /* Real heights of the mobile top header and bottom nav */
+  --header-h: 48px;
+  --bottomnav-h: 68px;
+
+  width: 100%;
+  height: 100%;
+  height: calc(100dvh - var(--header-h) - var(--bottomnav-h));
+  max-height: calc(100dvh - var(--header-h) - var(--bottomnav-h));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px 12px;
+  overflow: hidden;
+  box-sizing: border-box;
+  background: var(--sp-bg);
+  color: var(--sp-fg);
+  font-variant-numeric: tabular-nums;
+  font-family: inherit;
+}
+
+[data-theme="dark"] .sp, .dark .sp, :root[data-theme="dark"] .sp {
+  --sp-bg: var(--bg-primary, #0b0b0e);
+  --sp-card: var(--bg-secondary, #131316);
+  --sp-fg: var(--text-primary, #fafafa);
+  --sp-mute: var(--text-muted, #a1a1aa);
+  --sp-line: var(--border-color, #26262b);
+  --sp-track: #26262b;
+}
+
+/* Ensure parent #skills wrapper in PortfolioLayout doesn't add scrollbars */
+@media (max-width: 900px) {
+  #skills.text-content:has(.sp) {
+    zoom: 1 !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: calc(100dvh - 48px - 68px) !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+}
+
+.sp *, .sp *::before, .sp *::after { box-sizing: border-box; }
+
+/* Intro */
+.sp-intro { flex: none; text-align: center; }
+.sp-intro h1 { font-size: 20px; font-weight: 800; letter-spacing: -.02em; margin: 0; line-height: 1.2; color: var(--sp-fg); }
+.sp-intro p { margin: 3px 0 0; font-size: 11.5px; line-height: 1.35; color: var(--sp-mute); }
+
+/* Donut: a square that fits whatever space is left */
+.sp-wrap { flex: 1; min-height: 0; container-type: size; display: grid; place-items: center; }
+.sp-chart { position: relative; width: min(100cqw, 100cqh); height: min(100cqw, 100cqh); }
+.sp-chart svg { width: 100%; height: 100%; overflow: visible; }
+.sp-seg {
+  cursor: pointer; outline: none;
+  transition: transform .45s cubic-bezier(.34,1.56,.64,1), opacity .3s;
+  -webkit-tap-highlight-color: transparent;
+}
+.sp-seg:hover, .sp-seg:focus-visible, .sp-seg.sel { transform: translate(var(--tx), var(--ty)); }
+.sp-chart.dim .sp-seg:not(.sel) { opacity: .28; }
+.sp-f {
+  fill: none; stroke: var(--c); stroke-width: 24; stroke-dasharray: 100; stroke-dashoffset: 100;
+  transition: stroke-dashoffset 1.1s cubic-bezier(.22,1,.36,1);
+}
+.sp-seg:focus-visible .sp-f { stroke-width: 30; }
+.sp-sep { stroke: var(--sp-bg); stroke-width: 2.5; pointer-events: none; }
+.sp-hit { fill: none; stroke: transparent; stroke-width: 44; pointer-events: stroke; }
+.sp-disc { fill: var(--sp-card); stroke: var(--sp-line); stroke-width: 1; }
+.sp-tk { stroke: var(--sp-line); stroke-width: 1.2; stroke-linecap: round; }
+
+.sp-center {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 0 24%; text-align: center; pointer-events: none;
+}
+.sp-cn { min-height: 13px; font-size: 9.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--sp-mute); }
+.sp-cp { margin-top: 2px; font-size: clamp(36px, 14cqw, 54px); font-weight: 800; letter-spacing: -.045em; line-height: 1.05; color: var(--sp-fg); }
+.sp-cp small { margin-left: 1px; font-size: .4em; opacity: .5; color: inherit; }
+.sp-cs { margin-top: 3px; font-size: 10.5px; color: var(--sp-mute); }
+
+/* Insight chip */
+.sp-insight {
+  flex: none; align-self: center; height: 30px; display: flex; align-items: center; gap: 8px; padding: 0 13px;
+  border: 1px solid var(--sp-line); border-radius: 99px; background: var(--sp-card);
+  font-size: 11px; color: var(--sp-mute);
+}
+.sp-insight i { width: 7px; height: 7px; border-radius: 50%; background: var(--ic, var(--sp-accent)); flex: none; }
+.sp-insight b { font-weight: 700; color: var(--sp-fg); }
+
+/* Category pills: 3 + 2 */
+.sp-pills { flex: none; display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.sp-p {
+  grid-column: span 2; height: 56px; display: flex; flex-direction: column; justify-content: center; gap: 6px;
+  padding: 0 11px; text-align: left; cursor: pointer; font: inherit; color: var(--sp-fg);
+  border: 1px solid var(--sp-line); border-radius: 14px; background: var(--sp-card);
+  transition: transform .3s cubic-bezier(.34,1.56,.64,1), border-color .2s, box-shadow .2s;
+  -webkit-tap-highlight-color: transparent;
+}
+.sp-p:nth-child(n+4) { grid-column: span 3; }
+.sp-p:active { transform: scale(.96); }
+.sp-p.sel { border-color: var(--c); box-shadow: 0 8px 18px -12px var(--c); }
+.sp-pt { display: flex; align-items: center; gap: 6px; font-size: 10.5px; font-weight: 600; color: var(--sp-mute); white-space: nowrap; }
+.sp-pt i { width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--c); }
+/* Skill count as a small chip so it never runs into the name */
+.sp-pt em {
+  margin-left: auto; min-width: 16px; padding: 1px 5px; border-radius: 99px; text-align: center;
+  font-style: normal; font-size: 10px; font-weight: 700; color: var(--sp-mute); background: var(--sp-track);
+}
+.sp-pb { display: flex; align-items: center; gap: 8px; }
+.sp-pb b { min-width: 30px; font-size: 14px; font-weight: 800; letter-spacing: -.02em; color: var(--sp-fg); }
+.sp-bar { flex: 1; height: 4px; overflow: hidden; border-radius: 4px; background: var(--sp-track); }
+.sp-bar i { display: block; height: 100%; width: 0; border-radius: 4px; background: var(--c); transition: width 1s cubic-bezier(.22,1,.36,1) .5s; }
+
+/* Focus + reduced motion */
+.sp-seg:focus-visible, .sp-p:focus-visible { outline: 2px solid var(--sp-accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  .sp *, .sp *::before { transition-duration: .01s !important; transition-delay: 0s !important; animation: none !important; }
+}

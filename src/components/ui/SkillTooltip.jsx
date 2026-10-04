@@ -166,6 +166,7 @@ export default function SkillTooltip({ skill, children }) {
         onMouseLeave={hide}
         onFocus={show}
         onBlur={hide}
+        onClick={hide}
       >
         <span aria-describedby={open ? tooltipId : undefined}>{children}</span>
 

@@ -13,6 +13,7 @@ import { contactFormLimiter } from '../utils/rateLimiter';
 import { logSecurityEvent } from '../lib/auditLogger';
 import { fireContactSuccessConfetti } from '../utils/confetti';
 import ContactFaqDrawer from '../components/ui/ContactFaqDrawer';
+import ContactMobile from './ContactMobile';
 
 const DESKS = [
   {
@@ -66,7 +67,19 @@ function getSessionToken() {
   return token;
 }
 
+function useIsMobile(max = 768) {
+  const [m, setM] = useState(() => typeof window !== 'undefined' && window.matchMedia(`(max-width:${max}px)`).matches);
+  useEffect(() => {
+    const q = window.matchMedia(`(max-width:${max}px)`);
+    const on = (e) => setM(e.matches);
+    q.addEventListener("change", on);
+    return () => q.removeEventListener("change", on);
+  }, [max]);
+  return m;
+}
+
 export default function Contact() {
+  const isMobileScreen = useIsMobile(768);
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth <= 900);
 
   useEffect(() => {
@@ -348,6 +361,19 @@ export default function Contact() {
       </button>
     </form>
   );
+
+  if (isMobileScreen) {
+    return (
+      <div className="contact-mobile-wrapper" style={{ height: '100%', width: '100%', overflow: 'hidden' }}>
+        <ContactMobile onOpenFaq={() => setIsFaqOpen(true)} />
+        <ContactFaqDrawer
+          isOpen={isFaqOpen}
+          onClose={() => setIsFaqOpen(false)}
+          onSelectDesk={() => setIsFaqOpen(false)}
+        />
+      </div>
+    );
+  }
 
   return (
     <ScrollReveal>
