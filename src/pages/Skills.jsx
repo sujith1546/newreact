@@ -6,7 +6,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronRight, ChevronDown, Star, Layers, Clock, Briefcase, ChevronLeft, Loader2, LayoutGrid, PieChart, Search } from 'lucide-react';
-import { ScrollReveal, SkillTooltip } from '../components';
+import { ScrollReveal, SkillTooltip, RollingText } from '../components';
 import { categoryIconMap } from '../components/ui/skillIcons';
 import SkillDetailDrawer from '../components/ui/SkillDetailDrawer';
 import CategorySheet from './CategorySheet';
@@ -1386,8 +1386,36 @@ export default function Skills() {
           }
         }
       `}</style>
+      <style>{`
+        /* ── RollingText global styles ── */
+        .rolling-text-root {
+          display: inline-block;
+          max-width: 100%;
+          text-align: left;
+          font-size: clamp(20px, 3vw, 32px);
+          font-weight: 800;
+          letter-spacing: -0.04em;
+          line-height: 1;
+          text-transform: uppercase;
+          --rolling-accent: var(--primary-blue, #007bff);
+        }
+      `}</style>
 
       <motion.div className="skills-page" style={{ height: '100%', overflow: isMobile ? 'auto' : 'hidden' }} variants={!isMobile ? containerVariants : undefined} initial={!isMobile ? "hidden" : undefined} animate={!isMobile ? "visible" : undefined}>
+
+        {/* ── Rolling text section title (desktop only) ── */}
+        {!isMobile && (
+          <motion.div
+            variants={!isMobile ? itemVariants : undefined}
+            style={{ marginBottom: '-4px' }}
+          >
+            <RollingText
+              text="MY SKILLS"
+              speed={0.06}
+              duration={3}
+            />
+          </motion.div>
+        )}
 
         {!isMobile && skillCategories.length > 0 && (
           <motion.div 

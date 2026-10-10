@@ -48,6 +48,7 @@ export { default as EmailDomainSuggest } from './ui/EmailDomainSuggest';
 export { default as CharacterCounter } from './ui/CharacterCounter';
 export { default as InquiryTypeSelector } from './ui/InquiryTypeSelector';
 export { default as CopyButton } from './ui/CopyButton';
+export { RollingText } from './ui/RollingText';
 
 // 5. Guards & Security
 export * from './MaintenanceGate';

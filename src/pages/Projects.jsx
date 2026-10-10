@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { ScrollReveal } from '../components';
+import { ScrollReveal, RollingText } from '../components';
 import { ChevronLeft, ChevronRight, ExternalLink, Zap, Brain, Code2, Database, Sparkles, Search, X, Star } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
 import { motion } from 'framer-motion';
@@ -987,6 +987,30 @@ export default function Projects() {
           }
         }
       `}</style>
+      <style>{`
+        /* ── RollingText styles (Projects) ── */
+        .rolling-text-root {
+          display: inline-block;
+          max-width: 100%;
+          text-align: left;
+          font-size: clamp(20px, 3vw, 32px);
+          font-weight: 800;
+          letter-spacing: -0.04em;
+          line-height: 1;
+          text-transform: uppercase;
+          --rolling-accent: var(--primary-blue, #007bff);
+        }
+      `}</style>
+
+      {/* Desktop-only RollingText section title */}
+      {!isMobile && (
+        <div style={{ marginBottom: '16px' }}>
+          <RollingText text="MY PROJECTS" speed={0.06} duration={3} />
+          <p style={{ fontSize: '13.5px', color: 'var(--text-secondary)', margin: '8px 0 0' }}>
+            Featured applications, machine learning systems &amp; open source work
+          </p>
+        </div>
+      )}
 
       {/* Content Rendering based on Loading State */}
       {loading ? (

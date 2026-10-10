@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { ScrollReveal } from '../components';
+import { ScrollReveal, RollingText } from '../components';
 import { 
   Briefcase, Loader2, Calendar, Send, FileText, 
   Clock, ArrowRight, Building2, ChevronLeft, ChevronRight, X
@@ -670,13 +670,27 @@ export default function Experience() {
           }
         }
       `}</style>
+      <style>{`
+        /* ── RollingText styles (Experience) ── */
+        .rolling-text-root {
+          display: inline-block;
+          max-width: 100%;
+          text-align: left;
+          font-size: clamp(20px, 3vw, 32px);
+          font-weight: 800;
+          letter-spacing: -0.04em;
+          line-height: 1;
+          text-transform: uppercase;
+          --rolling-accent: var(--primary-blue, #007bff);
+        }
+      `}</style>
       
       <div className="exp-page">
         {/* Desktop Header */}
         {!isMobile && (
-          <div className="exp-header">
-            <h1>Experience</h1>
-            <p>My professional journey &amp; career timeline</p>
+          <div className="exp-header" style={{ marginBottom: '8px' }}>
+            <RollingText text="EXPERIENCE" speed={0.06} duration={3} />
+            <p style={{ marginTop: '8px' }}>My professional journey &amp; career timeline</p>
           </div>
         )}
 

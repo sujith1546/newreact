@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
-import { ScrollReveal } from '../components';
+import { ScrollReveal, RollingText } from '../components';
 import { 
   Loader2, Award, ChevronLeft, ChevronRight, 
   ShieldCheck, Copy, Check, ExternalLink, X, 
@@ -839,6 +839,30 @@ export default function Certifications() {
           opacity: 0.9;
         }
       `}</style>
+      <style>{`
+        /* ── RollingText styles (Certifications) ── */
+        .rolling-text-root {
+          display: inline-block;
+          max-width: 100%;
+          text-align: left;
+          font-size: clamp(20px, 3vw, 32px);
+          font-weight: 800;
+          letter-spacing: -0.04em;
+          line-height: 1;
+          text-transform: uppercase;
+          --rolling-accent: var(--primary-blue, #007bff);
+        }
+      `}</style>
+
+      {/* Desktop-only RollingText section title */}
+      {!isMobile && (
+        <div className="cert-header" style={{ marginBottom: '16px' }}>
+          <RollingText text="CERTIFICATIONS" speed={0.05} duration={3} />
+          <p style={{ fontSize: '13.5px', color: 'var(--text-secondary)', margin: '8px 0 0' }}>
+            Verified technical credentials &amp; professional accreditations
+          </p>
+        </div>
+      )}
 
       {isMobile ? (
         <div className="cert-mobile-wrap">

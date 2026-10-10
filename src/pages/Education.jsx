@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { MapPin, Trophy, Laptop, BookOpen, School, X, Hand, ChevronRight, ChevronLeft, ChevronDown, Loader2, GraduationCap, Award } from 'lucide-react';
-import { ScrollReveal, EducationArrowFlow } from '../components';
+import { ScrollReveal, EducationArrowFlow, RollingText } from '../components';
 import useRealtimeData from '../hooks/useRealtimeData';
 
 const iconMap = {
@@ -1476,8 +1476,29 @@ export default function Education() {
           }
         }
       `}</style>
+      <style>{`
+        /* ── RollingText styles (Education) ── */
+        .rolling-text-root {
+          display: inline-block;
+          max-width: 100%;
+          text-align: left;
+          font-size: clamp(20px, 3vw, 32px);
+          font-weight: 800;
+          letter-spacing: -0.04em;
+          line-height: 1;
+          text-transform: uppercase;
+          --rolling-accent: var(--primary-blue, #007bff);
+        }
+      `}</style>
 
       <div className="edu-page">
+        {/* Desktop-only RollingText section title */}
+        {!isMobile && (
+          <div className="edu-header">
+            <RollingText text="EDUCATION" speed={0.06} duration={3} />
+            <p style={{ marginTop: '8px' }}>Academic background &amp; lifelong learning journey</p>
+          </div>
+        )}
 
         {/* Horizontal Progress Rail */}
         {loading ? (

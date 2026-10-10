@@ -418,10 +418,87 @@ export default function PortfolioLayout() {
       <header className="mobile-top-header">
         <div className="mh-left">
           <div className="mh-beacon-wrap">
-            <button className="mh-avatar-btn" onClick={() => setIsStatusOpen(true)} aria-label="Availability status">
-              <div className="mh-avatar-ring" />
-              <img src="/profile_photo.png" alt="Sujith Thota" className="mh-avatar-img" />
-            </button>
+            <motion.button
+              className="mh-avatar-btn"
+              onClick={() => setIsStatusOpen(true)}
+              aria-label="Availability status"
+              whileTap={{ scale: 0.93 }}
+              style={{
+                position: 'relative',
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                cursor: 'pointer',
+                width: 36,
+                height: 36,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {/* Static Black and White ST Monogram Badge */}
+              <div
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: '50%',
+                  background: 'linear-gradient(145deg, #18181b 0%, #09090b 100%)',
+                  border: '1.5px solid rgba(255, 255, 255, 0.22)',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  position: 'relative',
+                  overflow: 'hidden',
+                }}
+              >
+                {/* Subtle glass gloss highlight */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '46%',
+                    borderRadius: '50% 50% 0 0',
+                    background: 'linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0) 100%)',
+                    pointerEvents: 'none',
+                  }}
+                />
+                <span
+                  style={{
+                    color: '#ffffff',
+                    fontWeight: 800,
+                    fontSize: 12.5,
+                    letterSpacing: '0.06em',
+                    fontFamily: "'Space Grotesk', 'Inter', -apple-system, sans-serif",
+                    lineHeight: 1,
+                    textShadow: '0 1px 2px rgba(0, 0, 0, 0.8)',
+                    userSelect: 'none',
+                    position: 'relative',
+                    zIndex: 1,
+                  }}
+                >
+                  ST
+                </span>
+              </div>
+
+              {/* Status beacon dot */}
+              <span
+                style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  right: 0,
+                  width: 9.5,
+                  height: 9.5,
+                  borderRadius: '50%',
+                  background: '#22c55e',
+                  border: '2px solid var(--bg-primary, #ffffff)',
+                  animation: 'mh-dot-pulse 2.2s infinite',
+                  zIndex: 4,
+                }}
+              />
+            </motion.button>
           </div>
           <div className="mh-title-wrap">
             <AnimatePresence mode="wait">
@@ -471,6 +548,18 @@ export default function PortfolioLayout() {
           )}
         </div>
       </header>
+
+      {/* Status beacon pulse animation */}
+      <style>{`
+        .mh-avatar-btn::after {
+          display: none !important;
+        }
+        @keyframes mh-dot-pulse {
+          0%   { box-shadow: 0 0 0 0 rgba(34,197,94,0.6); }
+          70%  { box-shadow: 0 0 0 5px rgba(34,197,94,0); }
+          100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+        }
+      `}</style>
 
       <ParticleCanvas />
       <Sidebar activeSection={activeSection} onNavClick={handleNavClick} />

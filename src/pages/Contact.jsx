@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Briefcase, Users, CreditCard, MessageSquare, ArrowLeft, Send, Check, Loader2, HelpCircle
 } from 'lucide-react';
-import { ScrollReveal } from '../components';
+import { ScrollReveal, RollingText } from '../components';
 import EmailDomainSuggest from '../components/ui/EmailDomainSuggest';
 import CharacterCounter from '../components/ui/CharacterCounter';
 import { computePow, generateChallenge } from '../utils/sha256pow';
@@ -377,11 +377,31 @@ export default function Contact() {
 
   return (
     <ScrollReveal>
+      <style>{`
+        /* ── RollingText styles (Contact) ── */
+        .rolling-text-root {
+          display: inline-block;
+          max-width: 100%;
+          text-align: center;
+          font-size: clamp(20px, 3vw, 32px);
+          font-weight: 800;
+          letter-spacing: -0.04em;
+          line-height: 1;
+          text-transform: uppercase;
+          --rolling-accent: var(--primary-blue, #007bff);
+        }
+      `}</style>
       <div style={{ maxWidth: '780px', margin: '0 auto', padding: isMobile ? '12px 12px 100px' : '8px 16px 32px', minHeight: '75vh', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
         <div style={{ textAlign: 'center', marginBottom: isMobile ? '18px' : '26px' }}>
-          <p style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: '0.22em', textTransform: 'uppercase', margin: '0 0 6px' }}>GET IN TOUCH</p>
-          <h1 style={{ fontSize: isMobile ? '22px' : '26px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 8px', letterSpacing: '-0.025em', lineHeight: 1.2 }}>Let's route this to the right desk.</h1>
-          <p style={{ fontSize: isMobile ? '12px' : '13px', color: 'var(--text-secondary)', margin: '0 auto', maxWidth: '500px', lineHeight: 1.55 }}>Pick what best describes why you're reaching out to send a message directly.</p>
+          <div style={{ marginBottom: '8px' }}>
+            <RollingText text="GET IN TOUCH" speed={0.06} duration={3} />
+          </div>
+          <p style={{ fontSize: isMobile ? '13px' : '14.5px', fontWeight: 600, color: 'var(--text-primary)', margin: '0 0 4px', letterSpacing: '-0.01em' }}>
+            Let's route this to the right desk.
+          </p>
+          <p style={{ fontSize: isMobile ? '12px' : '13px', color: 'var(--text-secondary)', margin: '0 auto', maxWidth: '500px', lineHeight: 1.55 }}>
+            Pick what best describes why you're reaching out to send a message directly.
+          </p>
         </div>
 
         {isMobile ? (
