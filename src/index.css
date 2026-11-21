@@ -365,7 +365,8 @@ body {
 @media (min-width: 901px) {
   .main-content:has(#about),
   .main-content:has(#updates),
-  .main-content:has(#moments) {
+  .main-content:has(#moments),
+  .main-content:has(#education) {
     overflow-y: hidden !important;
   }
 }
@@ -391,11 +392,25 @@ body {
   display: flex;
   flex-direction: column;
   padding: 78px 20px 20px 20px;
+  min-height: 0;
 }
 
 @media (max-width: 900px) {
   .scroll-container {
     padding: 12px;
+  }
+}
+
+/* Education desktop: make the motion wrapper fill the scroll-container height */
+@media (min-width: 901px) {
+  .scroll-container:has(#education) {
+    padding-bottom: 12px;
+  }
+  #education.text-content.wide-content {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    flex: 1;
   }
 }
 

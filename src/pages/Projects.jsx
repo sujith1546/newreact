@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { ScrollReveal, RollingText } from '../components';
 import { ChevronLeft, ChevronRight, ExternalLink, Zap, Brain, Code2, Database, Sparkles, Search, X, Star } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import useRealtimeData from '../hooks/useRealtimeData';
 
 // Modular Sub-Components
@@ -1117,25 +1117,44 @@ export default function Projects() {
         </div>
       ) : (
         /* Desktop Grid View - Upgraded Cards */
-        <div className="projects-grid">
-          {(projectsData || []).map((project) => (
-            <ProjectCard
-              key={project.id || project.title}
-              project={project}
-              onCardClick={setSelectedProject}
-            />
-          ))}
+        <div className="pc-grid">
+          {(projectsData || []).map((project) => {
+            const cat = getProjectCategory(project);
+            const topStat = project.stats?.[0];
+            const metricText = topStat
+              ? `${topStat.prefix || ''}${topStat.value}${topStat.suffix || ''} ${topStat.label}`
+              : (project.metric || null);
+            const pipelineList = (project.pipeline || []).map((s) => (typeof s === 'string' ? s : s.label || s.name));
+            const techList = Array.isArray(project.tags) ? project.tags : [];
+
+            return (
+              <ProjectCard
+                key={project.id || project.title}
+                category={cat}
+                title={project.title}
+                description={project.description}
+                metric={metricText}
+                pipeline={pipelineList}
+                tech={techList}
+                link={`/projects/${project.id || project.title}`}
+                github={project.githubUrl || project.github}
+                onCardClick={() => setSelectedProject(project)}
+              />
+            );
+          })}
         </div>
       )}
 
-      {/* Accessible Desktop Detail Modal & Mobile Bottom Sheet */}
-      {selectedProject && (
-        <ProjectModal
-          project={selectedProject}
-          onClose={() => setSelectedProject(null)}
-          isMobile={isMobile}
-        />
-      )}
+      {/* Accessible Desktop Detail Slide Drawer & Mobile Bottom Sheet */}
+      <AnimatePresence>
+        {selectedProject && (
+          <ProjectModal
+            project={selectedProject}
+            onClose={() => setSelectedProject(null)}
+            isMobile={isMobile}
+          />
+        )}
+      </AnimatePresence>
     </ScrollReveal>
   );
 }

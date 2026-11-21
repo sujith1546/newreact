@@ -659,7 +659,6 @@ export default function Moments() {
         {/* ── 1. Header with Title & Metrics ── */}
         <header className="mc-header">
           <div className="mc-hero-left">
-            <div className="hero-stamp-badge">est. archive &mdash; updated live</div>
             <h1 className="mc-title">Life in moments</h1>
           </div>
           <div className="mc-metrics">

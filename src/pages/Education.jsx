@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { MapPin, Trophy, Laptop, BookOpen, School, X, Hand, ChevronRight, ChevronLeft, ChevronDown, Loader2, GraduationCap, Award } from 'lucide-react';
-import { ScrollReveal, EducationArrowFlow, RollingText } from '../components';
+import { ScrollReveal, RollingText } from '../components';
 import useRealtimeData from '../hooks/useRealtimeData';
 
 const iconMap = {
@@ -327,17 +327,17 @@ export default function Education() {
         .edu-page {
           width: 100%;
           height: 100%;
-          min-height: calc(100vh - 120px);
           box-sizing: border-box;
           display: flex;
           flex-direction: column;
           gap: 12px;
+          overflow: hidden;
         }
 
         /* Header */
         .edu-header {
           flex-shrink: 0;
-          margin-bottom: 12px;
+          margin-bottom: 6px;
         }
         .edu-header h1 {
           font-size: 28px;
@@ -354,12 +354,13 @@ export default function Education() {
         /* Progress Rail */
         .edu-rail {
           position: relative;
-          margin: 16px 0 24px;
-          height: 60px;
+          margin: 8px 0 16px;
+          height: 56px;
           display: flex;
           flex-direction: column;
           justify-content: flex-start;
           width: 100%;
+          flex-shrink: 0;
         }
         .edu-rail-line-container {
           position: absolute;
@@ -495,7 +496,8 @@ export default function Education() {
           grid-template-columns: repeat(4, 1fr);
           gap: 12px;
           flex: 1;
-          align-content: flex-start;
+          min-height: 0;
+          align-content: stretch;
           width: 100%;
           min-width: 0;
         }
@@ -503,7 +505,8 @@ export default function Education() {
         /* 3D Flip Card Container */
         .edu-flip-card {
           perspective: 1200px;
-          height: 380px; /* Reduced to fit screen */
+          height: 100%;
+          min-height: 0;
           width: 100%;
         }
         
@@ -788,49 +791,6 @@ export default function Education() {
           width: fit-content;
           background: rgba(59, 130, 246, 0.08);
           color: var(--primary-blue);
-        }
-
-        /* Arrow Flow Component */
-        .education-arrow-flow {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          flex-wrap: wrap;
-          gap: 8px;
-          background: rgba(255, 255, 255, 0.6);
-          backdrop-filter: blur(12px);
-          -webkit-backdrop-filter: blur(12px);
-          border: 1px solid rgba(0,0,0,0.06);
-          border-radius: 12px;
-          padding: 16px 24px;
-        }
-        .arrow-flow-item-wrapper {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-        }
-        .arrow-flow-item {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 6px;
-        }
-        .arrow-flow-item svg {
-          color: var(--text-secondary);
-        }
-        .arrow-flow-item span {
-          font-size: 11px;
-          color: var(--text-secondary);
-        }
-        .arrow-flow-item.active svg,
-        .arrow-flow-item.active span {
-          color: var(--primary-blue);
-        }
-        .arrow-flow-item.active span {
-          font-weight: 600;
-        }
-        .arrow-flow-connector {
-          color: var(--border-color);
         }
 
         /* Dark mode overrides */
@@ -1719,11 +1679,7 @@ export default function Education() {
           </div>
         )}
 
-        {/* Closing Summary */}
-        <div className="edu-closing-summary" style={{ marginTop: 'auto', paddingTop: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <p className="section-subtitle" style={{ color: '#6b7280', fontSize: '13px', marginBottom: '8px', textAlign: 'center', fontWeight: 'normal' }}>Your journey at a glance</p>
-          <EducationArrowFlow activeIndex={activeIndex} />
-        </div>
+
         </>
         )}
       </div>

@@ -4,40 +4,52 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
   X, ExternalLink, Code2, Copy, Check, Sparkles,
   MessageSquare, Database, ShieldCheck, TrendingUp, Newspaper,
-  Brain, Eye, Smile, Receipt, Sliders, Layers, GitMerge, Circle, ArrowUpRight
+  Brain, Eye, Smile, Receipt, Sliders, Layers, ArrowRight,
+  Cpu, Terminal, CheckCircle2, ArrowUpRight
 } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
+import { getTechBadge } from './ProjectCard';
 
 const pipelineIconMap = {
   MessageSquare, Database, ShieldCheck, TrendingUp, Newspaper,
-  Brain, Eye, Smile, Receipt, Sliders, Layers
+  Brain, Eye, Smile, Receipt, Sliders, Layers, Cpu
+};
+
+const tagIconMap = {
+  Python: FaPython,
+  React: FaReact,
+  FastAPI: Cpu,
+  TensorFlow: Cpu,
+  ChromaDB: Database,
+  RAG: Database,
+  NLP: Brain,
+  FinBERT: Brain,
+  Scikit: Sliders,
+  XGBoost: Sliders,
+  LightGBM: Sliders,
 };
 
 export default function ProjectModal({ project, onClose, isMobile = false }) {
   const [tab, setTab] = useState(0);
   const [copied, setCopied] = useState(false);
   const triggerElementRef = useRef(null);
-  const modalRef = useRef(null);
+  const drawerRef = useRef(null);
   const prefersReducedMotion = useReducedMotion();
 
-  // Save active element for focus restoration & body lock
+  // Focus trap & body lock
   useEffect(() => {
     triggerElementRef.current = document.activeElement;
-    
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
-    const focusable = modalRef.current?.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    const focusable = drawerRef.current?.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
     focusable?.focus();
 
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
+      if (e.key === 'Escape') onClose();
     };
 
     window.addEventListener('keydown', handleKeyDown);
-
     return () => {
       document.body.style.overflow = originalOverflow;
       window.removeEventListener('keydown', handleKeyDown);
@@ -47,30 +59,29 @@ export default function ProjectModal({ project, onClose, isMobile = false }) {
 
   if (!project) return null;
 
-  // Data normalization logic
-  const refCode = project.ref || `SF-${String(project.id || 4).padStart(2, '0')}`;
-  const category = (project.category || project.tags?.[0] || 'DATA SCIENCE').toUpperCase();
-  const status = project.status || (project.liveUrl ? 'LIVE' : 'FEATURED');
+  // Normalized data matching ProjectCard styles
+  const category = (project.category || project.tags?.[0] || 'AI / ML').toUpperCase();
   const tagline = project.tagline || project.description || '';
 
-  // Metrics / Stats normalization (up to 3 items)
-  const rawMetrics = project.metrics || (project.stats ? project.stats.map(s => ({
+  // Normalized metrics
+  const rawMetrics = project.metrics || (project.stats ? project.stats.map((s) => ({
     label: s.label?.toUpperCase() || 'METRIC',
     value: `${s.prefix || ''}${s.value}${s.suffix || ''}`,
-    note: s.note || 'measured throughput'
+    note: s.note || 'Validated output'
   })) : [
-    { label: 'THROUGHPUT', value: '600+', note: 'sustained req/hr' },
-    { label: 'P95 LATENCY', value: '<2s', note: 'end to end' },
-    { label: 'ACCURACY', value: '0.883', note: 'validated R2 score' }
+    { label: 'THROUGHPUT', value: '600+', note: 'Req / hour' },
+    { label: 'LATENCY', value: '<2s', note: 'End-to-end' },
+    { label: 'ACCURACY', value: '0.883', note: 'R2 Score' }
   ]);
   const metrics = rawMetrics.slice(0, 3);
+  const topMetric = metrics[0]?.value ? `${metrics[0].value} ${metrics[0].label}` : null;
 
-  // Pipeline steps normalization
+  // Normalized pipeline
   const rawPipeline = project.pipeline || [
-    { id: '01', iconName: 'MessageSquare', label: 'Data Ingestion', note: 'raw input stream' },
-    { id: '02', iconName: 'Database', label: 'RAG & Vector Search', note: 'ChromaDB retrieval' },
-    { id: '03', iconName: 'ShieldCheck', label: 'Fraud Detection', note: 'multi-factor scan' },
-    { id: '04', iconName: 'TrendingUp', label: 'Insight Output', note: 'PII redacted' }
+    { label: 'Data Ingestion', iconName: 'MessageSquare', note: 'Raw event stream' },
+    { label: 'Model Processing', iconName: 'Database', note: 'Vector retrieval & inference' },
+    { label: 'Validation Check', iconName: 'ShieldCheck', note: 'Confidence thresholding' },
+    { label: 'Insight Output', iconName: 'TrendingUp', note: 'Structured response' }
   ];
 
   const pipeline = rawPipeline.map((p, i) => {
@@ -85,28 +96,25 @@ export default function ProjectModal({ project, onClose, isMobile = false }) {
     return {
       id: p.id || `0${i + 1}`,
       icon: IconComp,
-      name: p.name || p.label || `Step 0${i + 1}`,
-      note: p.note || 'processed step'
+      name: p.name || p.label || `Stage ${i + 1}`,
+      note: p.note || 'Pipeline processing'
     };
   });
 
-  // Stack normalization
   const stack = project.stack || project.tags || ['Python', 'FastAPI', 'React', 'Scikit-learn'];
 
-  // Architecture normalization
   const architecture = project.architecture ? (
     typeof project.architecture[0] === 'string'
       ? project.architecture.map((stepStr, i) => ({
-          code: `A0${i + 1}`,
-          title: `Layer 0${i + 1}`,
-          body: stepStr
+          code: `L0${i + 1}`,
+          title: `Layer 0${i + 1}: ${stepStr}`,
+          body: `Decoupled service handling ${stepStr.toLowerCase()} with resilient retry policies and streaming telemetry.`
         }))
       : project.architecture
   ) : null;
 
-  // Code snippet normalization
   const codeSnippet = typeof project.code === 'string'
-    ? { filename: 'pipeline_model.py', lang: 'python', snippet: project.code }
+    ? { filename: 'pipeline.py', snippet: project.code }
     : project.code || null;
 
   const sourceUrl = project.links?.source || project.githubUrl;
@@ -120,380 +128,1023 @@ export default function ProjectModal({ project, onClose, isMobile = false }) {
     setTimeout(() => setCopied(false), 1600);
   };
 
-  // Build available tabs dynamically
-  const tabs = ['OVERVIEW'];
-  if (architecture) tabs.push('ARCHITECTURE');
-  if (codeSnippet) tabs.push('CODE');
+  const tabs = ['Overview'];
+  if (pipeline && pipeline.length > 0) tabs.push('Pipeline');
+  if (architecture) tabs.push('Architecture');
+  if (codeSnippet) tabs.push('Code');
 
-  const animationProps = prefersReducedMotion
+  const drawerVariants = prefersReducedMotion
     ? { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 }, transition: { duration: 0.15 } }
     : isMobile
-    ? { initial: { y: '100%' }, animate: { y: 0 }, exit: { y: '100%' }, transition: { type: 'tween', ease: [0.16, 1, 0.3, 1], duration: 0.3 } }
-    : { initial: { scale: 0.96, opacity: 0, y: 12 }, animate: { scale: 1, opacity: 1, y: 0 }, exit: { scale: 0.96, opacity: 0, y: 12 }, transition: { type: 'spring', damping: 28, stiffness: 340 } };
+    ? {
+        initial: { y: '100%' },
+        animate: { y: 0 },
+        exit: { y: '100%' },
+        transition: { type: 'tween', ease: [0.16, 1, 0.3, 1], duration: 0.28 }
+      }
+    : {
+        initial: { x: '100%' },
+        animate: { x: 0 },
+        exit: { x: '100%' },
+        transition: { type: 'spring', damping: 30, stiffness: 320, mass: 0.88 }
+      };
 
   return createPortal(
-    <AnimatePresence>
-      <div className="pm-overlay" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
-        <motion.div
-          ref={modalRef}
-          className={`pm-panel ${isMobile ? 'pm-panel--mobile' : ''}`}
-          role="dialog"
-          aria-modal="true"
-          aria-label={project.title}
-          {...animationProps}
-        >
-          {/* Engineering Spec-Sheet Crop Marks */}
-          <span className="pm-crop pm-crop-tl" />
-          <span className="pm-crop pm-crop-tr" />
-          <span className="pm-crop pm-crop-bl" />
-          <span className="pm-crop pm-crop-br" />
+    <div className="psd-root" role="dialog" aria-modal="true" aria-label={project.title}>
+      {/* Dimmed backdrop blur */}
+      <motion.div
+        className="psd-backdrop"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.22, ease: 'easeOut' }}
+        onClick={onClose}
+      />
 
-          {/* Spec Header */}
-          <div className="pm-head">
-            <div className="pm-head-top">
-              <div className="pm-ref">
-                CASE // <span>{refCode}</span>
-              </div>
-              <div className="pm-status">
-                <span className="pm-status-dot" />
-                {status}
-              </div>
-              <button className="pm-close" onClick={onClose} aria-label="Close modal">
-                <X size={15} />
-              </button>
-            </div>
+      {/* Slide-over Drawer (slides in from right to left) */}
+      <motion.aside
+        ref={drawerRef}
+        className={`psd-panel ${isMobile ? 'psd-panel--mobile' : ''}`}
+        {...drawerVariants}
+      >
+        {/* Accent strip that matches project card */}
+        <div className="psd-accent" />
 
-            <div className="pm-cat">{category}</div>
-            <h1 className="pm-title">{project.title}</h1>
-            <p className="pm-tagline">{tagline}</p>
+        {/* ── 1. Top Header (Identical to ProjectCard top row) ── */}
+        <header className="psd-header">
+          <div className="psd-top-row">
+            <span className="psd-category">
+              <i className="psd-dot" />
+              {category}
+            </span>
+
+            {topMetric && <span className="psd-metric">{topMetric}</span>}
+
+            <button
+              type="button"
+              className="psd-close-btn"
+              onClick={onClose}
+              aria-label="Close case study"
+              title="Press Esc to close"
+            >
+              <X size={15} />
+            </button>
           </div>
 
-          {/* Metric Readouts */}
-          {metrics.length > 0 && (
-            <div className="pm-metrics" style={{ gridTemplateColumns: `repeat(${metrics.length}, 1fr)` }}>
-              {metrics.map((m) => (
-                <div className="pm-metric" key={m.label}>
-                  <div className="pm-metric-ticks">
-                    {Array.from({ length: 10 }).map((_, i) => (
-                      <span key={i} />
-                    ))}
-                  </div>
-                  <div className="pm-metric-value">{m.value}</div>
-                  <div className="pm-metric-label">{m.label}</div>
-                  <div className="pm-metric-note">{m.note}</div>
-                </div>
-              ))}
-            </div>
-          )}
+          <h2 className="psd-title">{project.title}</h2>
+          <p className="psd-desc">{tagline}</p>
+        </header>
 
-          {/* Segmented Tab Control with Sliding Underline */}
-          <div className="pm-tabs" style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}>
-            <div
-              className="pm-tabs-indicator"
-              style={{
-                width: `${100 / tabs.length}%`,
-                transform: `translateX(${tab * 100}%)`
-              }}
-            />
+        {/* ── 2. Metric Boxes Row (Matching --soft card tokens) ── */}
+        {metrics.length > 0 && (
+          <div className="psd-metrics">
+            {metrics.map((m) => (
+              <div className="psd-metric-box" key={m.label}>
+                <span className="psd-metric-val">{m.value}</span>
+                <span className="psd-metric-lbl">{m.label}</span>
+                <span className="psd-metric-note">{m.note}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── 3. Segmented Navigation Tabs ── */}
+        <div className="psd-tabs-wrap">
+          <div className="psd-tabs-nav" style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}>
             {tabs.map((t, i) => (
               <button
                 key={t}
-                className={`pm-tab ${tab === i ? 'pm-tab-active' : ''}`}
+                type="button"
+                className={`psd-tab-btn ${tab === i ? 'active' : ''}`}
                 onClick={() => setTab(i)}
               >
                 {t}
               </button>
             ))}
           </div>
+        </div>
 
-          {/* Body Content */}
-          <div className="pm-body">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={tab}
-                initial={{ opacity: 0, y: 4 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
-                transition={{ duration: 0.16 }}
-              >
-                {tab === 0 && (
-                  <div className="pm-fade">
-                    <div className="pm-section-label">System Signal Path</div>
-                    <div className="pm-pipe">
-                      {pipeline.map((s, i) => {
-                        const Icon = s.icon;
+        {/* ── 4. Scrollable Body ── */}
+        <div className="psd-body">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={tabs[tab]}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.18, ease: 'easeOut' }}
+              className="psd-content"
+            >
+              {/* TAB: OVERVIEW */}
+              {tabs[tab] === 'Overview' && (
+                <>
+                  <section>
+                    <span className="psd-label">About the project</span>
+                    <p className="psd-text">{project.description}</p>
+                  </section>
+
+                  {/* Connected Pipeline Preview inside Overview */}
+                  {pipeline.length > 0 && (
+                    <section>
+                      <div className="psd-flow">
+                        <div className="psd-flow-header">
+                          <span className="psd-flow-label">
+                            <span className="psd-flow-dot" />
+                            Pipeline Architecture
+                          </span>
+                          <span className="psd-flow-count">{pipeline.length} stages</span>
+                        </div>
+                        <div className="psd-flow-track">
+                          {pipeline.map((step, i) => {
+                            const isLast = i === pipeline.length - 1;
+                            return (
+                              <React.Fragment key={step.id + i}>
+                                <div className="psd-flow-node" title={step.name}>
+                                  <span className="psd-flow-badge">{i + 1}</span>
+                                  <span className="psd-flow-text">{step.name}</span>
+                                </div>
+                                {!isLast && (
+                                  <div className="psd-flow-bridge" aria-hidden="true">
+                                    <span className="psd-flow-bridge-line" />
+                                    <span className="psd-flow-bridge-arrow">›</span>
+                                  </div>
+                                )}
+                              </React.Fragment>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </section>
+                  )}
+
+                  <section>
+                    <span className="psd-label">Technologies &amp; Frameworks</span>
+                    <div className="psd-tech">
+                      {stack.map((t, i) => {
+                        const label = typeof t === 'string' ? t : t?.name || t;
+                        const { Icon, color } = getTechBadge(label);
                         return (
-                          <React.Fragment key={s.id + i}>
-                            <div className="pm-node">
-                              <div className="pm-node-id">{s.id}</div>
-                              <div className="pm-node-icon">
-                                <Icon size={16} />
-                              </div>
-                              <div className="pm-node-name">{s.name}</div>
-                              <div className="pm-node-note">{s.note}</div>
+                          <span key={label + i} className="psd-tech-pill">
+                            <Icon size={13} style={{ color, flexShrink: 0 }} aria-hidden="true" />
+                            <span>{label}</span>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </section>
+
+                  <section>
+                    <span className="psd-label">Engineering Highlights</span>
+                    <div className="psd-features">
+                      <div className="psd-feature-item">
+                        <CheckCircle2 size={16} className="psd-feat-icon" />
+                        <div>
+                          <strong>Automated Pipeline Flow</strong>
+                          <p>Low latency execution pipeline with automated validation checkpoints.</p>
+                        </div>
+                      </div>
+                      <div className="psd-feature-item">
+                        <CheckCircle2 size={16} className="psd-feat-icon" />
+                        <div>
+                          <strong>Production Ready Architecture</strong>
+                          <p>Modularized services for high reliability, security, and scalability.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+                </>
+              )}
+
+              {/* TAB: PIPELINE */}
+              {tabs[tab] === 'Pipeline' && (
+                <section>
+                  <span className="psd-label">Pipeline Workflow</span>
+                  <div className="psd-flow" style={{ marginBottom: 16 }}>
+                    <div className="psd-flow-header">
+                      <span className="psd-flow-label">
+                        <span className="psd-flow-dot" />
+                        Connected Stages
+                      </span>
+                      <span className="psd-flow-count">{pipeline.length} stages</span>
+                    </div>
+                    <div className="psd-flow-track">
+                      {pipeline.map((step, i) => {
+                        const isLast = i === pipeline.length - 1;
+                        return (
+                          <React.Fragment key={step.id + i}>
+                            <div className="psd-flow-node" title={step.name}>
+                              <span className="psd-flow-badge">{i + 1}</span>
+                              <span className="psd-flow-text">{step.name}</span>
                             </div>
-                            {i < pipeline.length - 1 && (
-                              <div className="pm-conn">
-                                <span className="pm-conn-line" />
-                                <span className="pm-conn-pulse" style={{ animationDelay: `${i * 0.5}s` }} />
+                            {!isLast && (
+                              <div className="psd-flow-bridge" aria-hidden="true">
+                                <span className="psd-flow-bridge-line" />
+                                <span className="psd-flow-bridge-arrow">›</span>
                               </div>
                             )}
                           </React.Fragment>
                         );
                       })}
                     </div>
-
-                    <div className="pm-section-label pm-mt">Technology Stack</div>
-                    <div className="pm-chips">
-                      {stack.map((s) => (
-                        <span className="pm-chip" key={s}>
-                          {s}
-                        </span>
-                      ))}
-                    </div>
                   </div>
-                )}
 
-                {tab === 1 && architecture && (
-                  <div className="pm-fade pm-arch">
-                    {architecture.map((a) => (
-                      <div className="pm-arch-row" key={a.code || a.title}>
-                        <div className="pm-arch-code">{a.code}</div>
-                        <div>
-                          <div className="pm-arch-title">{a.title}</div>
-                          <p className="pm-arch-body">{a.body}</p>
+                  <div className="psd-stage-details">
+                    {pipeline.map((step, idx) => {
+                      const Icon = step.icon;
+                      return (
+                        <div key={step.id + idx} className="psd-stage-card">
+                          <span className="psd-stage-num">{idx + 1}</span>
+                          <div className="psd-stage-icon">
+                            <Icon size={16} />
+                          </div>
+                          <div className="psd-stage-meta">
+                            <h4 className="psd-stage-title">{step.name}</h4>
+                            <p className="psd-stage-desc">{step.note}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+              )}
+
+              {/* TAB: ARCHITECTURE */}
+              {tabs[tab] === 'Architecture' && architecture && (
+                <section>
+                  <span className="psd-label">Architecture Layers</span>
+                  <div className="psd-arch-list">
+                    {architecture.map((layer, idx) => (
+                      <div key={layer.code || idx} className="psd-arch-card">
+                        <span className="psd-arch-badge">{layer.code}</span>
+                        <div className="psd-arch-content">
+                          <h4 className="psd-arch-title">{layer.title}</h4>
+                          <p className="psd-arch-body">{layer.body}</p>
                         </div>
                       </div>
                     ))}
                   </div>
-                )}
+                </section>
+              )}
 
-                {tab === 2 && codeSnippet && (
-                  <div className="pm-fade">
-                    <div className="pm-term">
-                      <div className="pm-term-bar">
-                        <div className="pm-term-dots">
-                          <span style={{ background: '#ef4444' }} />
-                          <span style={{ background: '#f59e0b' }} />
-                          <span style={{ background: '#10b981' }} />
-                        </div>
-                        <div className="pm-term-file">{codeSnippet.filename}</div>
-                        <button className="pm-term-copy" onClick={handleCopyCode}>
-                          {copied ? <Check size={12} /> : <Copy size={12} />}
-                          {copied ? 'Copied' : 'Copy'}
-                        </button>
+              {/* TAB: CODE */}
+              {tabs[tab] === 'Code' && codeSnippet && (
+                <section>
+                  <span className="psd-label">Source Snippet</span>
+                  <div className="psd-code-box">
+                    <div className="psd-code-header">
+                      <div className="psd-code-dots">
+                        <span className="dot red" />
+                        <span className="dot yellow" />
+                        <span className="dot green" />
                       </div>
-                      <pre className="pm-term-body">
-                        <code>{codeSnippet.snippet}</code>
-                      </pre>
+                      <span className="psd-code-file">{codeSnippet.filename}</span>
+                      <button type="button" className="psd-copy-btn" onClick={handleCopyCode}>
+                        {copied ? <Check size={12} /> : <Copy size={12} />}
+                        <span>{copied ? 'Copied' : 'Copy'}</span>
+                      </button>
                     </div>
+                    <pre className="psd-code-body">
+                      <code>{codeSnippet.snippet}</code>
+                    </pre>
                   </div>
-                )}
-              </motion.div>
-            </AnimatePresence>
-          </div>
+                </section>
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
 
-          {/* Footer Actions */}
-          <div className="pm-foot">
-            {sourceUrl && (
-              <a className="pm-btn pm-btn-ghost" href={sourceUrl} target="_blank" rel="noreferrer">
-                <FaGithub size={14} />
-                Source Code
-              </a>
-            )}
-            {demoUrl && (
-              <a className="pm-btn pm-btn-solid" href={demoUrl} target="_blank" rel="noreferrer">
-                Launch Live Demo
-                <ArrowUpRight size={14} />
-              </a>
-            )}
-          </div>
-        </motion.div>
+        {/* ── 5. Footer Matching ProjectCard Buttons ── */}
+        <footer className="psd-footer">
+          {sourceUrl ? (
+            <a
+              href={sourceUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="pc-btn pc-btn-ghost"
+              aria-label={`View source code for ${project.title}`}
+            >
+              <FaGithub size={14} />
+              GitHub ↗
+            </a>
+          ) : <div />}
 
-        <ModalStyles />
-      </div>
-    </AnimatePresence>,
+          {demoUrl ? (
+            <a
+              href={demoUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="pc-btn"
+              aria-label={`Open live demo for ${project.title}`}
+            >
+              Launch Live Demo <span aria-hidden>→</span>
+            </a>
+          ) : (
+            <span className="psd-internal-label">Internal Project</span>
+          )}
+        </footer>
+      </motion.aside>
+
+      <ProjectDrawerStyles />
+    </div>,
     document.body
   );
 }
 
-/* Theme-Adaptive Engineering Spec-Sheet Styles */
-function ModalStyles() {
+function ProjectDrawerStyles() {
   return (
     <style>{`
-      :root {
-        --pm-bg-panel: var(--bg-secondary);
-        --pm-bg-raise: var(--bg-primary);
-        --pm-line: var(--border-color);
-        --pm-line-soft: color-mix(in srgb, var(--primary-blue) 6%, transparent);
-        --pm-cyan: var(--primary-blue);
-        --pm-cyan-dim: color-mix(in srgb, var(--primary-blue) 25%, transparent);
-        --pm-amber: #10b981;
-        --pm-text: var(--text-primary);
-        --pm-text-mute: var(--text-secondary);
-        --pm-mono: 'JetBrains Mono', 'Fira Code', monospace;
-        --pm-sans: 'Inter', system-ui, sans-serif;
+      /* Tokens identical to ProjectCard.css: white surface, black buttons, blue accent */
+      .psd-panel {
+        --accent: #2563eb;
+        --ink: #0b0b0f;
+        --muted: #5b6270;
+        --line: #e6e8ec;
+        --soft: #f6f7f9;
       }
 
-      .pm-overlay {
-        position: fixed; inset: 0; z-index: 10000;
-        background: rgba(15, 23, 42, var(--modal-backdrop-opacity, 0.55));
-        backdrop-filter: blur(var(--modal-backdrop-blur, var(--glass-blur, 12px)));
-        -webkit-backdrop-filter: blur(var(--modal-backdrop-blur, var(--glass-blur, 12px)));
-        display: flex; align-items: center; justify-content: center;
-        padding: 20px;
+      .psd-root {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        font-family: var(--font-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+        -webkit-font-smoothing: antialiased;
       }
 
-      .pm-panel {
-        position: relative;
-        width: 100%; max-width: 680px;
-        height: min(700px, 92vh);
-        max-height: 92vh;
-        background:
-          repeating-linear-gradient(0deg, var(--pm-line-soft) 0 1px, transparent 1px 28px),
-          repeating-linear-gradient(90deg, var(--pm-line-soft) 0 1px, transparent 1px 28px),
-          var(--pm-bg-panel);
-        border: 1px solid var(--pm-line);
-        box-shadow: 0 24px 70px -12px rgba(0, 0, 0, 0.45);
-        backdrop-filter: blur(var(--modal-card-blur, 16px));
-        -webkit-backdrop-filter: blur(var(--modal-card-blur, 16px));
-        display: flex; flex-direction: column;
-        color: var(--pm-text);
-        border-radius: 14px;
+      .psd-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(11, 11, 15, 0.45);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+      }
+
+      /* Slide-over Drawer Panel */
+      .psd-panel {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 100%;
+        max-width: 500px;
+        background: #fff;
+        border-left: 1px solid var(--line);
+        box-shadow: -12px 0 40px rgba(15, 23, 42, 0.18);
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
         overflow: hidden;
-        font-family: var(--pm-sans);
+        z-index: 100000;
       }
 
-      .pm-crop { position: absolute; width: 14px; height: 14px; border: 1.5px solid var(--pm-cyan); opacity: .85; z-index: 10; pointer-events: none; }
-      .pm-crop-tl { top: -1px; left: -1px; border-right: none; border-bottom: none; }
-      .pm-crop-tr { top: -1px; right: -1px; border-left: none; border-bottom: none; }
-      .pm-crop-bl { bottom: -1px; left: -1px; border-right: none; border-top: none; }
-      .pm-crop-br { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+      .psd-panel--mobile {
+        max-width: 100%;
+      }
 
-      .pm-head { padding: 16px 22px 12px; border-bottom: 1px solid var(--pm-line); flex-shrink: 0; }
-      .pm-head-top { display:flex; align-items:center; gap:12px; margin-bottom: 6px; }
-      .pm-ref { font-family: var(--pm-mono); font-size: 11px; color: var(--pm-text-mute); letter-spacing:.05em; }
-      .pm-ref span { color: var(--pm-cyan); font-weight: 700; }
-      .pm-status {
+      /* Top accent line */
+      .psd-accent {
+        height: 3px;
+        width: 100%;
+        background: var(--accent);
+        flex-shrink: 0;
+      }
+
+      /* Header */
+      .psd-header {
+        padding: 20px 22px 16px;
+        border-bottom: 1px solid var(--line);
+        background: #fff;
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .psd-top-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .psd-category {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .psd-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--accent);
+      }
+
+      .psd-metric {
+        font-size: 11px;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 999px;
+        color: #047857;
+        background: #ecfdf5;
+        border: 1px solid #c7f0de;
+      }
+
+      .psd-close-btn {
         margin-left: auto;
-        display:flex; align-items:center; gap:6px;
-        font-family: var(--pm-mono); font-size: 10px; letter-spacing:.1em;
-        color: var(--pm-amber); border: 1px solid color-mix(in srgb, #10b981 30%, transparent);
-        background: color-mix(in srgb, #10b981 10%, transparent);
-        padding: 2px 8px; border-radius: 4px; font-weight: 700;
-      }
-      .pm-status-dot { width:6px; height:6px; border-radius:50%; background: var(--pm-amber); animation: pm-blink 1.6s infinite; }
-      @keyframes pm-blink { 0%,100%{opacity:1} 50%{opacity:.25} }
-
-      .pm-close {
-        background: transparent; border: 1px solid var(--pm-line); color: var(--pm-text-mute);
-        width: 26px; height: 26px; border-radius: 6px; display:flex; align-items:center; justify-content:center;
-        cursor: pointer; transition: all .15s ease; flex-shrink:0;
-      }
-      .pm-close:hover { color: var(--pm-text); border-color: var(--pm-cyan); transform: rotate(90deg); }
-
-      .pm-cat { font-family: var(--pm-mono); font-size: 10.5px; letter-spacing: .12em; color: var(--pm-cyan); margin-bottom: 3px; font-weight: 700; }
-      .pm-title { font-family: var(--pm-mono); font-weight: 800; font-size: 21px; letter-spacing: -0.015em; margin: 0 0 4px; color: var(--pm-text); }
-      .pm-tagline { font-size: 12.5px; line-height: 1.45; color: var(--pm-text-mute); margin: 0; max-width: 60ch; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-
-      .pm-metrics { display:grid; border-bottom: 1px solid var(--pm-line); flex-shrink: 0; }
-      .pm-metric {
-        position: relative; padding: 8px 16px 8px; border-right: 1px solid var(--pm-line);
-      }
-      .pm-metric:last-child { border-right: none; }
-      .pm-metric-ticks { display:flex; justify-content:space-between; margin-bottom: 4px; }
-      .pm-metric-ticks span { width:1px; height:4px; background: var(--pm-line); }
-      .pm-metric-value { font-family: var(--pm-mono); font-size: 17px; font-weight: 800; color: var(--pm-text); letter-spacing: -0.02em; }
-      .pm-metric-label { font-family: var(--pm-mono); font-size: 9px; letter-spacing: .08em; color: var(--pm-cyan); margin-top: 1px; font-weight: 700; }
-      .pm-metric-note { font-size: 9.5px; color: var(--pm-text-mute); margin-top: 1px; }
-
-      .pm-tabs { display:grid; position: relative; border-bottom: 1px solid var(--pm-line); background: var(--pm-bg-raise); flex-shrink: 0; }
-      .pm-tabs-indicator {
-        position:absolute; bottom:-1px; left:0; height:2px;
-        background: var(--pm-cyan); transition: transform .25s cubic-bezier(.2,.8,.2,1);
-      }
-      .pm-tab {
-        background: transparent; border: none; color: var(--pm-text-mute);
-        font-family: var(--pm-mono); font-size: 11px; letter-spacing: .08em;
-        padding: 9px 8px; cursor: pointer; transition: color .15s ease; font-weight: 600;
-      }
-      .pm-tab-active { color: var(--pm-text); font-weight: 700; }
-
-      .pm-body { padding: 20px 22px; overflow-y: auto; flex: 1 1 auto; min-height: 280px; }
-      .pm-fade { animation: pm-fade .2s ease; }
-      @keyframes pm-fade { from { opacity:0; transform: translateY(4px);} to { opacity:1; transform:none; } }
-
-      .pm-section-label { font-family: var(--pm-mono); font-size: 10px; letter-spacing:.14em; color: var(--pm-text-mute); margin-bottom: 10px; font-weight: 700; text-transform: uppercase; }
-      .pm-mt { margin-top: 20px; }
-
-      .pm-pipe { display:flex; align-items: stretch; gap: 0; overflow-x: auto; padding-bottom: 6px; }
-      .pm-node {
-        flex: 0 0 118px; border: 1px solid var(--pm-line); padding: 10px 12px;
-        background: var(--pm-bg-raise); position: relative; border-radius: 6px;
-      }
-      .pm-node-id { position:absolute; top:6px; right:8px; font-family: var(--pm-mono); font-size: 9px; color: var(--pm-cyan); font-weight: 700; }
-      .pm-node-icon { color: var(--pm-cyan); margin-bottom: 14px; }
-      .pm-node-name { font-size: 12px; font-weight: 700; margin-bottom: 2px; color: var(--pm-text); }
-      .pm-node-note { font-size: 10.5px; color: var(--pm-text-mute); }
-
-      .pm-conn { flex: 0 0 32px; position: relative; display:flex; align-items:center; }
-      .pm-conn-line { position:absolute; left:0; right:0; top:50%; height:1px; background: var(--pm-line); }
-      .pm-conn-pulse {
-        position:absolute; top:50%; width:5px; height:5px; margin-top:-2.5px; border-radius:50%;
-        background: var(--pm-cyan); box-shadow: 0 0 6px 1px var(--pm-cyan-dim);
-        animation: pm-travel 2.2s linear infinite;
-      }
-      @keyframes pm-travel { 0% { left:-2px; opacity:0; } 10%{opacity:1;} 90%{opacity:1;} 100% { left: 100%; opacity:0; } }
-
-      .pm-chips { display:flex; flex-wrap:wrap; gap:8px; }
-      .pm-chip {
-        font-family: var(--pm-mono); font-size: 11px; color: var(--pm-cyan);
-        border: 1px solid color-mix(in srgb, var(--pm-cyan) 25%, var(--pm-line));
-        background: color-mix(in srgb, var(--pm-cyan) 6%, transparent);
-        padding: 5px 10px; border-radius: 6px; font-weight: 600;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 1px solid var(--line);
+        background: #fff;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        padding: 0;
+        transition: all 0.2s ease;
       }
 
-      .pm-arch { display:flex; flex-direction:column; gap: 14px; }
-      .pm-arch-row { display:grid; grid-template-columns: 40px 1fr; gap: 14px; padding: 14px 16px; background: var(--pm-bg-raise); border: 1px solid var(--pm-line); border-radius: 8px; }
-      .pm-arch-code { font-family: var(--pm-mono); font-size: 11px; color: var(--pm-cyan); font-weight: 700; padding-top: 2px; }
-      .pm-arch-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; color: var(--pm-text); }
-      .pm-arch-body { font-size: 12.5px; line-height: 1.55; color: var(--pm-text-mute); margin: 0; }
-
-      .pm-term { border: 1px solid #1e293b; background: #0b1120; border-radius: 8px; overflow: hidden; }
-      .pm-term-bar { display:flex; align-items:center; gap: 10px; padding: 10px 14px; background: #1e293b; border-bottom: 1px solid #334155; }
-      .pm-term-dots { display:flex; gap: 6px; }
-      .pm-term-dots span { width: 9px; height: 9px; border-radius: 50%; }
-      .pm-term-file { font-family: var(--pm-mono); font-size: 11px; color: #94a3b8; margin-left: 4px; font-weight: 600; }
-      .pm-term-copy {
-        margin-left: auto; display:flex; align-items:center; gap: 5px;
-        background: #334155; border: none; color: #f8fafc;
-        font-family: var(--pm-mono); font-size: 10.5px; padding: 4px 10px; border-radius: 4px; cursor: pointer;
-        transition: all .15s ease; font-weight: 700;
+      .psd-close-btn:hover {
+        color: var(--ink);
+        border-color: var(--ink);
+        transform: scale(1.06);
       }
-      .pm-term-copy:hover { background: #475569; }
-      .pm-term-body { margin: 0; padding: 16px; font-family: var(--pm-mono); font-size: 12px; line-height: 1.65; color: #e2e8f0; overflow-x: auto; }
 
-      .pm-foot { display:flex; gap: 10px; padding: 12px 22px; border-top: 1px solid var(--pm-line); background: var(--pm-bg-raise); flex-shrink: 0; position: relative; z-index: 10; }
-      .pm-btn {
-        display:flex; align-items:center; gap: 7px; justify-content:center;
-        font-family: var(--pm-mono); font-size: 11.5px; letter-spacing:.05em;
-        padding: 8px 16px; text-decoration:none; cursor: pointer; transition: all .15s ease; border: 1px solid var(--pm-line);
+      .psd-title {
+        margin: 4px 0 0;
+        font-size: 21px;
+        line-height: 1.25;
+        font-weight: 700;
+        color: var(--ink);
+      }
+
+      .psd-desc {
+        margin: 0;
+        font-size: 13.5px;
+        line-height: 1.55;
+        color: var(--muted);
+      }
+
+      /* Metrics Bar */
+      .psd-metrics {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        padding: 12px 22px;
+        background: var(--soft);
+        border-bottom: 1px solid var(--line);
+        flex-shrink: 0;
+      }
+
+      .psd-metric-box {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 8px 10px;
+        border-radius: 10px;
+        background: #fff;
+        border: 1px solid var(--line);
+      }
+
+      .psd-metric-val {
+        font-size: 16px;
+        font-weight: 800;
+        color: var(--ink);
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+      }
+
+      .psd-metric-lbl {
+        font-size: 9.5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--accent);
+      }
+
+      .psd-metric-note {
+        font-size: 9.5px;
+        color: var(--muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      /* Tabs */
+      .psd-tabs-wrap {
+        padding: 10px 22px 8px;
+        background: #fff;
+        border-bottom: 1px solid var(--line);
+        flex-shrink: 0;
+      }
+
+      .psd-tabs-nav {
+        display: grid;
+        gap: 4px;
+        background: var(--soft);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 3px;
+      }
+
+      .psd-tab-btn {
+        background: transparent;
+        border: none;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 600;
+        padding: 6px 8px;
+        border-radius: 7px;
+        cursor: pointer;
+        transition: all 0.18s ease;
+        text-align: center;
+      }
+
+      .psd-tab-btn:hover {
+        color: var(--ink);
+      }
+
+      .psd-tab-btn.active {
+        background: #fff;
+        color: var(--accent);
+        font-weight: 700;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+      }
+
+      /* Body */
+      .psd-body {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 18px 22px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--line) transparent;
+      }
+
+      .psd-content {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      .psd-label {
+        display: block;
+        margin: 0 0 8px;
+        font-size: 10.5px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #8a92a0;
+      }
+
+      .psd-text {
+        margin: 0;
+        font-size: 13.5px;
+        line-height: 1.6;
+        color: var(--muted);
+      }
+
+      /* Connected Pipeline Styles (Matching ProjectCard.css) */
+      .psd-flow {
+        padding: 11px 13px;
+        background: var(--soft);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+      }
+
+      .psd-flow-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 9px;
+      }
+
+      .psd-flow-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .psd-flow-dot {
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--accent);
+      }
+
+      .psd-flow-count {
+        font-size: 9.5px;
+        font-weight: 600;
+        color: var(--muted);
+        background: color-mix(in srgb, var(--ink) 6%, transparent);
+        padding: 1px 6px;
+        border-radius: 4px;
+      }
+
+      .psd-flow-track {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 2px;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        padding: 2px 0;
+      }
+
+      .psd-flow-track::-webkit-scrollbar {
+        display: none;
+      }
+
+      .psd-flow-node {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 2.5px 7px 2.5px 2.5px;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        flex-shrink: 0;
+      }
+
+      .psd-flow-badge {
+        display: grid;
+        place-items: center;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: var(--accent);
+        color: #fff;
+        font-size: 9px;
+        font-weight: 800;
+        flex-shrink: 0;
+      }
+
+      .psd-flow-text {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--ink);
+        white-space: nowrap;
+      }
+
+      .psd-flow-bridge {
+        display: flex;
+        align-items: center;
+        position: relative;
+        flex: 1;
+        min-width: 8px;
+        max-width: 22px;
+        margin: 0 1px;
+        flex-shrink: 0;
+      }
+
+      .psd-flow-bridge-line {
+        width: 100%;
+        height: 1.5px;
+        background: color-mix(in srgb, var(--accent) 30%, var(--line));
+        border-radius: 1px;
+      }
+
+      .psd-flow-bridge-arrow {
+        position: absolute;
+        right: -2px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 11px;
+        font-weight: 800;
+        color: var(--accent);
+        line-height: 1;
+      }
+
+      /* Detailed Stage List for Pipeline Tab */
+      .psd-stage-details {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .psd-stage-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 14px;
+        border-radius: 12px;
+        background: var(--soft);
+        border: 1px solid var(--line);
+      }
+
+      .psd-stage-num {
+        display: grid;
+        place-items: center;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: var(--accent);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 800;
+        flex-shrink: 0;
+      }
+
+      .psd-stage-icon {
+        color: var(--accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .psd-stage-meta {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .psd-stage-title {
+        margin: 0 0 2px;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--ink);
+      }
+
+      .psd-stage-desc {
+        margin: 0;
+        font-size: 11.5px;
+        color: var(--muted);
+      }
+
+      /* Tech chips (Matching ProjectCard.css) */
+      .psd-tech {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .psd-tech-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6.5px;
+        font-size: 12px;
+        font-weight: 550;
+        padding: 4.5px 10px;
+        color: #374151;
+        background: var(--soft);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        transition: all 0.15s ease;
+      }
+
+      .psd-tech-pill:hover {
+        background: #ffffff;
+        border-color: #cbd5e1;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      }
+
+      .psd-tech-pill span {
+        font-size: 12px;
+        font-weight: 550;
+        color: inherit;
+        line-height: 1;
+      }
+
+      :root[data-theme="dark"] .psd-tech-pill,
+      .dark .psd-tech-pill {
+        color: #cbd2dd;
+        background: #161a22;
+        border-color: var(--line);
+      }
+      :root[data-theme="dark"] .psd-tech-pill:hover,
+      .dark .psd-tech-pill:hover {
+        background: #1c212c;
+        border-color: #3b4354;
+      }
+
+      /* Features */
+      .psd-features {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .psd-feature-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: var(--soft);
+        border: 1px solid var(--line);
+      }
+
+      .psd-feat-icon {
+        color: #047857;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+
+      .psd-feature-item strong {
+        display: block;
+        font-size: 12.5px;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 2px;
+      }
+
+      .psd-feature-item p {
+        margin: 0;
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.45;
+      }
+
+      /* Architecture List */
+      .psd-arch-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .psd-arch-card {
+        display: flex;
+        gap: 12px;
+        padding: 12px 14px;
+        border-radius: 12px;
+        background: var(--soft);
+        border: 1px solid var(--line);
+      }
+
+      .psd-arch-badge {
+        font-size: 10.5px;
+        font-weight: 800;
+        color: var(--accent);
+        background: color-mix(in srgb, var(--accent) 12%, transparent);
+        padding: 2px 7px;
         border-radius: 6px;
-      }
-      .pm-btn-ghost { color: var(--pm-text-mute); background: var(--pm-bg-panel); font-weight: 600; }
-      .pm-btn-ghost:hover { color: var(--pm-text); border-color: var(--pm-cyan); transform: translateY(-1px); }
-      .pm-btn-solid { color: #ffffff !important; background: var(--pm-cyan); border-color: var(--pm-cyan); margin-left: auto; font-weight: 700; box-shadow: 0 4px 12px color-mix(in srgb, var(--pm-cyan) 30%, transparent); }
-      .pm-btn-solid:hover { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 6px 16px color-mix(in srgb, var(--pm-cyan) 45%, transparent); }
-
-      @media (max-width: 560px) {
-        .pm-overlay { padding: 0; align-items: flex-end; }
-        .pm-panel { max-width: 100%; height: 90vh; max-height: 90vh; border-radius: 20px 20px 0 0; }
-        .pm-metrics { grid-template-columns: repeat(3, 1fr); }
-        .pm-title { font-size: 19px; }
+        height: fit-content;
+        flex-shrink: 0;
       }
 
-      .pm-close:focus-visible, .pm-tab:focus-visible, .pm-btn:focus-visible, .pm-term-copy:focus-visible {
-        outline: 1px solid var(--pm-cyan); outline-offset: 2px;
+      .psd-arch-content {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .psd-arch-title {
+        margin: 0 0 3px;
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--ink);
+      }
+
+      .psd-arch-body {
+        margin: 0;
+        font-size: 12px;
+        line-height: 1.45;
+        color: var(--muted);
+      }
+
+      /* Code Snippet */
+      .psd-code-box {
+        border-radius: 12px;
+        border: 1px solid var(--line);
+        background: var(--soft);
+        overflow: hidden;
+      }
+
+      .psd-code-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--line);
+        background: #fff;
+      }
+
+      .psd-code-dots {
+        display: flex;
+        gap: 5px;
+      }
+
+      .psd-code-dots .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+
+      .dot.red { background: #ef4444; }
+      .dot.yellow { background: #f59e0b; }
+      .dot.green { background: #10b981; }
+
+      .psd-code-file {
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--muted);
+        margin-left: 4px;
+      }
+
+      .psd-copy-btn {
+        margin-left: auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 10.5px;
+        font-weight: 600;
+        border: 1px solid var(--line);
+        background: var(--soft);
+        color: var(--ink);
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+
+      .psd-copy-btn:hover {
+        background: var(--ink);
+        color: #fff;
+      }
+
+      .psd-code-body {
+        margin: 0;
+        padding: 14px;
+        font-family: var(--font-mono, monospace);
+        font-size: 12px;
+        line-height: 1.6;
+        color: var(--ink);
+        overflow-x: auto;
+      }
+
+      /* Footer */
+      .psd-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 14px 22px;
+        border-top: 1px solid var(--line);
+        background: #fff;
+        flex-shrink: 0;
+      }
+
+      .psd-internal-label {
+        font-size: 12px;
+        color: var(--muted);
+        font-weight: 500;
+      }
+
+      /* Dark mode matching ProjectCard.css */
+      :root[data-theme="dark"] .psd-panel,
+      .dark .psd-panel {
+        --ink: #f3f4f6;
+        --muted: #a3acba;
+        --line: #2a2f3a;
+        --soft: #161a22;
+        background: #0f1218;
+      }
+
+      :root[data-theme="dark"] .psd-header,
+      .dark .psd-header,
+      :root[data-theme="dark"] .psd-tabs-wrap,
+      .dark .psd-tabs-wrap,
+      :root[data-theme="dark"] .psd-footer,
+      .dark .psd-footer,
+      :root[data-theme="dark"] .psd-code-header,
+      .dark .psd-code-header {
+        background: #0f1218;
+      }
+
+      :root[data-theme="dark"] .psd-metric-box,
+      .dark .psd-metric-box,
+      :root[data-theme="dark"] .psd-close-btn,
+      .dark .psd-close-btn,
+      :root[data-theme="dark"] .psd-tab-btn.active,
+      .dark .psd-tab-btn.active,
+      :root[data-theme="dark"] .psd-flow-node,
+      .dark .psd-flow-node,
+      :root[data-theme="dark"] .psd-tech span,
+      .dark .psd-tech span {
+        background: #161a22;
+        color: #cbd2dd;
+      }
+
+      :root[data-theme="dark"] .psd-metric {
+        background: rgba(16, 185, 129, 0.15);
+        color: #34d399;
+        border-color: rgba(16, 185, 129, 0.3);
+      }
+
+      :root[data-theme="dark"] .psd-btn-ghost {
+        background: #161a22;
+        color: var(--ink);
       }
     `}</style>
   );
