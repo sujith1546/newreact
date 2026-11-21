@@ -15,20 +15,6 @@ const pipelineIconMap = {
   Brain, Eye, Smile, Receipt, Sliders, Layers, Cpu
 };
 
-const tagIconMap = {
-  Python: FaPython,
-  React: FaReact,
-  FastAPI: Cpu,
-  TensorFlow: Cpu,
-  ChromaDB: Database,
-  RAG: Database,
-  NLP: Brain,
-  FinBERT: Brain,
-  Scikit: Sliders,
-  XGBoost: Sliders,
-  LightGBM: Sliders,
-};
-
 export default function ProjectModal({ project, onClose, isMobile = false }) {
   const [tab, setTab] = useState(0);
   const [copied, setCopied] = useState(false);
