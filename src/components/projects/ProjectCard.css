@@ -34,6 +34,7 @@
   border-color: #cfd5de;
   box-shadow: 0 12px 28px -12px rgba(15, 23, 42, 0.18);
 }
+
 .pc:hover::before {
   width: 100%;
 }
@@ -45,6 +46,7 @@
   justify-content: space-between;
   gap: 8px;
 }
+
 .pc-category {
   display: inline-flex;
   align-items: center;
@@ -55,12 +57,14 @@
   text-transform: uppercase;
   color: var(--muted);
 }
+
 .pc-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
   background: var(--accent);
 }
+
 .pc-metric {
   font-size: 11px;
   font-weight: 600;
@@ -79,6 +83,7 @@
   font-weight: 700;
   color: var(--ink);
 }
+
 .pc-desc {
   margin: 0;
   font-size: 14px;
@@ -97,12 +102,14 @@
   border: 1px solid var(--line);
   border-radius: 12px;
 }
+
 .pc-flow-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 9px;
 }
+
 .pc-flow-label {
   display: inline-flex;
   align-items: center;
@@ -113,12 +120,14 @@
   text-transform: uppercase;
   color: var(--muted);
 }
+
 .pc-flow-dot {
   width: 5px;
   height: 5px;
   border-radius: 50%;
   background: var(--accent);
 }
+
 .pc-flow-count {
   font-size: 9.5px;
   font-weight: 600;
@@ -127,6 +136,7 @@
   padding: 1px 6px;
   border-radius: 4px;
 }
+
 .pc-flow-track {
   display: flex;
   align-items: center;
@@ -137,9 +147,11 @@
   -ms-overflow-style: none;
   padding: 2px 0;
 }
+
 .pc-flow-track::-webkit-scrollbar {
   display: none;
 }
+
 .pc-flow-node {
   display: inline-flex;
   align-items: center;
@@ -152,10 +164,12 @@
   flex-shrink: 0;
   transition: transform 0.15s ease, border-color 0.15s ease;
 }
+
 .pc-flow-node:hover {
   border-color: var(--accent);
   transform: translateY(-1px);
 }
+
 .pc-flow-badge {
   display: grid;
   place-items: center;
@@ -168,12 +182,14 @@
   font-weight: 800;
   flex-shrink: 0;
 }
+
 .pc-flow-text {
   font-size: 11px;
   font-weight: 600;
   color: var(--ink);
   white-space: nowrap;
 }
+
 .pc-flow-bridge {
   display: flex;
   align-items: center;
@@ -184,12 +200,14 @@
   margin: 0 1px;
   flex-shrink: 0;
 }
+
 .pc-flow-bridge-line {
   width: 100%;
   height: 1.5px;
   background: color-mix(in srgb, var(--ink) 20%, var(--line));
   border-radius: 1px;
 }
+
 .pc-flow-bridge-arrow {
   position: absolute;
   right: -2px;
@@ -207,6 +225,7 @@
   flex-wrap: wrap;
   gap: 6px;
 }
+
 .pc-tech-pill {
   display: inline-flex;
   align-items: center;
@@ -220,11 +239,13 @@
   border-radius: 8px;
   transition: all 0.15s ease;
 }
+
 .pc-tech-pill:hover {
   background: #ffffff;
   border-color: #cbd5e1;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
 }
+
 .pc-tech-pill span {
   font-size: 12px;
   font-weight: 550;
@@ -235,11 +256,117 @@
 /* footer */
 .pc-footer {
   display: flex;
+  align-items: center;
   gap: 8px;
   margin-top: auto;
   padding-top: 14px;
   border-top: 1px solid var(--line);
 }
+
+/* ── View Case Study button (outline → fill on hover) ── */
+.pc-view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  padding: 9px 15px;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--ink);
+  background: transparent;
+  border: 1.5px solid var(--ink);
+  border-radius: 10px;
+  text-decoration: none;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  transition:
+    background 0.22s ease,
+    color 0.22s ease,
+    border-color 0.22s ease,
+    box-shadow 0.22s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.pc-view-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--ink);
+  transform: translateX(-101%);
+  transition: transform 0.26s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 0;
+}
+
+.pc-view-btn:hover::after {
+  transform: translateX(0);
+}
+
+.pc-view-btn-text,
+.pc-view-btn-icon {
+  position: relative;
+  z-index: 1;
+  transition: color 0.22s ease;
+}
+
+.pc-view-btn-text {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+}
+
+.pc-view-btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+  flex-shrink: 0;
+  transition:
+    background 0.22s ease,
+    transform 0.22s ease,
+    color 0.22s ease;
+}
+
+.pc-view-btn:hover {
+  color: #fff;
+  border-color: var(--ink);
+  box-shadow: 0 4px 14px -4px rgba(11, 11, 15, 0.3);
+}
+
+.pc-view-btn:hover .pc-view-btn-icon {
+  background: rgba(255, 255, 255, 0.18);
+  transform: translateX(2px);
+}
+
+/* ── GitHub ghost button ── */
+.pc-gh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 13px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+  background: transparent;
+  border: 1.5px solid var(--line);
+  border-radius: 10px;
+  text-decoration: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.pc-gh-btn:hover {
+  color: var(--ink);
+  border-color: var(--ink);
+  background: var(--soft);
+}
+
+/* Legacy .pc-btn kept for drawer footer reuse */
 .pc-btn {
   display: inline-flex;
   align-items: center;
@@ -253,39 +380,14 @@
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
 }
-.pc-btn-primary {
-  color: #fff;
-  background: var(--ink);
-}
-.pc-btn-primary:hover {
-  background: var(--accent);
-  transform: translateY(-1px);
-}
-.pc-btn-arrow {
-  transition: transform 0.2s ease;
-  display: inline-block;
-}
-.pc-btn-primary:hover .pc-btn-arrow {
-  transform: translateX(3px);
-}
-/* Keep old .pc-btn without subclass still working as primary */
-.pc-btn:not(.pc-btn-ghost):not(.pc-btn-primary) {
-  color: #fff;
-  background: var(--ink);
-}
-.pc-btn:not(.pc-btn-ghost):not(.pc-btn-primary):hover {
-  background: var(--accent);
-}
-.pc-btn-ghost {
-  color: var(--ink);
-  background: #fff;
-  border: 1px solid var(--line);
-}
-.pc-btn-ghost:hover {
-  background: var(--ink);
-  color: #fff;
-  border-color: var(--ink);
-}
+.pc-btn-primary { color: #fff; background: var(--ink); }
+.pc-btn-primary:hover { background: var(--accent); transform: translateY(-1px); }
+.pc-btn-arrow { transition: transform 0.2s ease; display: inline-block; }
+.pc-btn-primary:hover .pc-btn-arrow { transform: translateX(3px); }
+.pc-btn:not(.pc-btn-ghost):not(.pc-btn-primary) { color: #fff; background: var(--ink); }
+.pc-btn:not(.pc-btn-ghost):not(.pc-btn-primary):hover { background: var(--accent); }
+.pc-btn-ghost { color: var(--ink); background: #fff; border: 1px solid var(--line); }
+.pc-btn-ghost:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
 
 /* dark mode (your page has a theme toggle) */
 :root[data-theme="dark"] .pc,
@@ -296,25 +398,30 @@
   --soft: #161a22;
   background: #0f1218;
 }
+
 :root[data-theme="dark"] .pc-flow-node,
 .dark .pc-flow-node {
   background: #141720;
 }
+
 :root[data-theme="dark"] .pc-flow-bridge-line,
 .dark .pc-flow-bridge-line {
   background: color-mix(in srgb, var(--accent) 45%, var(--line));
 }
+
 /* Primary button in dark mode: light surface, dark text */
 :root[data-theme="dark"] .pc-btn-primary,
 .dark .pc-btn-primary {
   background: #f3f4f6;
   color: #0b0b0f;
 }
+
 :root[data-theme="dark"] .pc-btn-primary:hover,
 .dark .pc-btn-primary:hover {
   background: var(--accent);
   color: #fff;
 }
+
 /* Ghost button in dark mode */
 :root[data-theme="dark"] .pc-btn-ghost,
 .dark .pc-btn-ghost {
@@ -322,17 +429,20 @@
   color: #f3f4f6;
   border-color: var(--line);
 }
+
 :root[data-theme="dark"] .pc-btn-ghost:hover,
 .dark .pc-btn-ghost:hover {
   background: #f3f4f6;
   color: #0b0b0f;
 }
+
 :root[data-theme="dark"] .pc-tech-pill,
 .dark .pc-tech-pill {
   color: #cbd2dd;
   background: #161a22;
   border-color: var(--line);
 }
+
 :root[data-theme="dark"] .pc-tech-pill:hover,
 .dark .pc-tech-pill:hover {
   background: #1c212c;
@@ -344,4 +454,35 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
   gap: 20px;
+}
+
+/* ── Dark mode: new view / gh buttons ── */
+:root[data-theme="dark"] .pc-view-btn,
+.dark .pc-view-btn {
+  color: var(--ink);
+  border-color: color-mix(in srgb, var(--ink) 40%, transparent);
+}
+:root[data-theme="dark"] .pc-view-btn::after,
+.dark .pc-view-btn::after {
+  background: #f1f3f7;
+}
+:root[data-theme="dark"] .pc-view-btn:hover,
+.dark .pc-view-btn:hover {
+  color: #0b0b0f;
+}
+:root[data-theme="dark"] .pc-view-btn-icon,
+.dark .pc-view-btn-icon {
+  background: color-mix(in srgb, #f1f3f7 12%, transparent);
+}
+:root[data-theme="dark"] .pc-gh-btn,
+.dark .pc-gh-btn {
+  color: var(--muted);
+  border-color: var(--line);
+  background: transparent;
+}
+:root[data-theme="dark"] .pc-gh-btn:hover,
+.dark .pc-gh-btn:hover {
+  color: var(--ink);
+  border-color: var(--muted);
+  background: #161a22;
 }
