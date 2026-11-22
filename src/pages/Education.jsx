@@ -741,34 +741,16 @@ export default function Education() {
           cursor: pointer;
         }
 
-        /* Vertical left accent bar that smoothly grows top → bottom on hover / active */
-        .edu-card::before {
-          content: "";
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 3.5px;
-          height: 0;
-          background: #2563eb;
-          border-radius: 0 2px 2px 0;
-          transition: height 0.32s cubic-bezier(0.4, 0, 0.2, 1);
-          z-index: 2;
-        }
-
         .edu-card:hover {
           transform: translateY(-3px);
           border-color: #c8cdd6;
           box-shadow: 0 12px 28px -8px rgba(15, 23, 42, 0.10), 0 4px 6px -2px rgba(15, 23, 42, 0.03);
         }
 
-        .edu-card:hover::before,
-        .edu-card.active-card::before {
-          height: 100%;
-        }
-
+        /* Clean blue border & subtle elevation when selected */
         .edu-card.active-card {
           border-color: #2563eb;
-          box-shadow: 0 10px 26px -6px rgba(37, 99, 235, 0.16);
+          box-shadow: 0 10px 28px -6px rgba(37, 99, 235, 0.16), 0 0 0 1.5px #2563eb;
         }
 
         /* Top Row: Graphic Icon Badge + Badges */
@@ -1193,18 +1175,15 @@ export default function Education() {
           border-color: rgba(255, 255, 255, 0.08);
         }
 
-        [data-theme="dark"] .edu-card::before {
-          background: #3b82f6;
-        }
-
         [data-theme="dark"] .edu-card:hover {
           border-color: rgba(255, 255, 255, 0.2);
           box-shadow: 0 14px 34px -8px rgba(0, 0, 0, 0.5);
         }
 
+        /* Clean blue border & subtle elevation when selected (dark mode) */
         [data-theme="dark"] .edu-card.active-card {
           border-color: #3b82f6;
-          box-shadow: 0 10px 28px -6px rgba(59, 130, 246, 0.22);
+          box-shadow: 0 10px 28px -6px rgba(59, 130, 246, 0.25), 0 0 0 1.5px #3b82f6;
         }
 
         [data-theme="dark"] .edu-icon-box {
