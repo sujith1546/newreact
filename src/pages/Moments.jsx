@@ -1682,17 +1682,23 @@ const CAROUSEL_LIGHTBOX_CSS = `
 .mc-thumb-dock {
   position: absolute;
   bottom: 14px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: var(--bg-glass, rgba(255,255,255,0.85));
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  width: fit-content;
+  max-width: min(calc(100% - 32px), 720px);
+  background: rgba(255, 255, 255, 0.90);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   border: 1px solid var(--ap-line);
-  box-shadow: var(--shadow-lg, 0 10px 30px rgba(0,0,0,0.08));
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.10), 0 1px 4px rgba(0,0,0,0.06);
   border-radius: 14px;
   padding: 6px;
-  max-width: min(calc(100% - 32px), 720px);
   z-index: 20;
+  pointer-events: auto;
+  isolation: isolate;
+  will-change: auto;
 }
 .mc-thumb-track {
   display: flex;
