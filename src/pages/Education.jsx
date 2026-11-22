@@ -269,13 +269,7 @@ function EducationCard({ item, index, activeIndex, flippedIndex, onCardClick, on
           onClick={handleCardClick}
           ref={cardRef}
           onMouseMove={handleMouseMove}
-          style={{
-            '--card-accent': themeColor,
-          }}
         >
-          {/* Subtle top indicator bar */}
-          <div className="edu-card-top-bar" />
-
           {/* Top Row: Graphic Icon Badge + Status Pill / Year */}
           <div className="edu-card-top">
             <div className={`edu-icon-box ${isActive ? 'active' : ''}`}>
@@ -357,9 +351,6 @@ function EducationCard({ item, index, activeIndex, flippedIndex, onCardClick, on
         <div 
           className="edu-flip-card-back" 
           onClick={handleClose}
-          style={{
-            '--card-accent': themeColor,
-          }}
         >
           <div className="back-header">
             <div>
@@ -744,39 +735,40 @@ export default function Education() {
         .edu-card {
           background: var(--bg-secondary, #ffffff);
           border: 1px solid var(--border-color, #e6e8ec);
-          padding: 20px 18px 18px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+          padding: 22px 20px 20px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
           position: relative;
           cursor: pointer;
         }
-        
-        .edu-card:hover {
-          transform: translateY(-4px);
-          border-color: var(--card-accent, #2563eb);
-          box-shadow: 0 14px 30px -8px rgba(15, 23, 42, 0.12), 0 4px 8px -2px rgba(15, 23, 42, 0.04);
-        }
 
-        .edu-card.active-card {
-          border-color: var(--card-accent, #2563eb);
-          box-shadow: 0 12px 28px -6px rgba(37, 99, 235, 0.16), 0 0 0 1px var(--card-accent, #2563eb);
-        }
-
-        /* Top indicator bar */
-        .edu-card-top-bar {
+        /* Subtle left ink bar that grows top → bottom on hover / active (matches ProjectCard) */
+        .edu-card::before {
+          content: "";
           position: absolute;
           top: 0;
           left: 0;
-          right: 0;
-          height: 3.5px;
-          background: var(--card-accent, #2563eb);
-          opacity: 0.85;
-          border-radius: 18px 18px 0 0;
-          transition: opacity 0.25s, height 0.25s;
+          width: 3px;
+          height: 0;
+          background: var(--text-primary, #0b0b0f);
+          border-radius: 0 2px 2px 0;
+          transition: height 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+          z-index: 2;
         }
 
-        .edu-card:hover .edu-card-top-bar {
-          opacity: 1;
-          height: 4.5px;
+        .edu-card:hover {
+          transform: translateY(-3px);
+          border-color: #c8cdd6;
+          box-shadow: 0 12px 28px -8px rgba(15, 23, 42, 0.10), 0 4px 6px -2px rgba(15, 23, 42, 0.03);
+        }
+
+        .edu-card:hover::before,
+        .edu-card.active-card::before {
+          height: 100%;
+        }
+
+        .edu-card.active-card {
+          border-color: var(--text-primary, #0b0b0f);
+          box-shadow: 0 10px 26px -6px rgba(15, 23, 42, 0.12);
         }
 
         /* Top Row: Graphic Icon Badge + Badges */
@@ -789,23 +781,25 @@ export default function Education() {
         }
 
         .edu-icon-box {
-          width: 42px;
-          height: 42px;
-          border-radius: 12px;
+          width: 40px;
+          height: 40px;
+          border-radius: 11px;
           display: flex;
           align-items: center;
           justify-content: center;
-          background: color-mix(in srgb, var(--card-accent, #2563eb) 12%, transparent);
-          color: var(--card-accent, #2563eb);
-          border: 1px solid color-mix(in srgb, var(--card-accent, #2563eb) 22%, transparent);
-          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          background: var(--bg-primary, #f6f7f9);
+          color: var(--text-primary, #0b0b0f);
+          border: 1px solid var(--border-color, #e6e8ec);
+          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
           flex-shrink: 0;
         }
 
-        .edu-card:hover .edu-icon-box {
-          transform: scale(1.06) rotate(-2deg);
-          background: var(--card-accent, #2563eb);
+        .edu-card:hover .edu-icon-box,
+        .edu-card.active-card .edu-icon-box {
+          background: var(--text-primary, #0b0b0f);
           color: #ffffff;
+          border-color: var(--text-primary, #0b0b0f);
+          transform: scale(1.05);
         }
 
         .edu-card-badges {
@@ -823,8 +817,8 @@ export default function Education() {
           font-size: 10px;
           font-weight: 700;
           color: #16a34a;
-          background: rgba(22, 163, 74, 0.1);
-          border: 1px solid rgba(22, 163, 74, 0.25);
+          background: rgba(22, 163, 74, 0.09);
+          border: 1px solid rgba(22, 163, 74, 0.22);
           border-radius: 999px;
           padding: 3px 8px;
           letter-spacing: 0.02em;
@@ -888,7 +882,7 @@ export default function Education() {
         .edu-card-inst {
           font-size: 12.5px;
           font-weight: 600;
-          color: var(--card-accent, #2563eb);
+          color: var(--text-secondary, #475569);
           margin: 0 0 4px;
           line-height: 1.35;
         }
@@ -946,8 +940,8 @@ export default function Education() {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: color-mix(in srgb, var(--card-accent, #2563eb) 12%, transparent);
-          color: var(--card-accent, #2563eb);
+          background: rgba(15, 23, 42, 0.06);
+          color: var(--text-primary, #0b0b0f);
           flex-shrink: 0;
         }
 
@@ -981,7 +975,7 @@ export default function Education() {
           border-radius: 999px;
           font-size: 10px;
           font-weight: 700;
-          color: var(--card-accent, #2563eb);
+          color: var(--text-primary, #0b0b0f);
           font-variant-numeric: tabular-nums;
         }
 
@@ -998,10 +992,15 @@ export default function Education() {
           font-weight: 600;
           padding: 3px 8px;
           border-radius: 999px;
-          background: color-mix(in srgb, var(--card-accent, #2563eb) 8%, transparent);
-          color: var(--card-accent, #2563eb);
-          border: 1px solid color-mix(in srgb, var(--card-accent, #2563eb) 18%, transparent);
+          background: var(--bg-primary, #f6f7f9);
+          color: var(--text-secondary, #475569);
+          border: 1px solid var(--border-color, #e6e8ec);
           white-space: nowrap;
+          transition: border-color 0.2s;
+        }
+
+        .edu-card:hover .edu-tag {
+          border-color: #cbd5e1;
         }
 
         /* Flip Trigger Action */
@@ -1024,9 +1023,9 @@ export default function Education() {
         }
 
         .edu-flip-trigger:hover {
-          background: var(--card-accent, #2563eb);
+          background: var(--text-primary, #0b0b0f);
           color: #ffffff;
-          border-color: var(--card-accent, #2563eb);
+          border-color: var(--text-primary, #0b0b0f);
         }
 
         .edu-flip-icon {
@@ -1041,9 +1040,9 @@ export default function Education() {
         .edu-flip-card-back {
           background: var(--bg-secondary, #ffffff);
           border: 1px solid var(--border-color, #e6e8ec);
-          padding: 20px 18px 18px;
+          padding: 22px 20px 20px;
           transform: rotateY(180deg);
-          box-shadow: 0 4px 18px rgba(0, 0, 0, 0.05);
+          box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
         }
 
         .back-header {
@@ -1061,7 +1060,7 @@ export default function Education() {
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.06em;
-          color: var(--card-accent, #2563eb);
+          color: var(--text-muted, #5b6270);
           display: block;
           margin-bottom: 2px;
         }
@@ -1123,7 +1122,7 @@ export default function Education() {
         .back-stat-val {
           font-size: 14px;
           font-weight: 800;
-          color: var(--card-accent, #2563eb);
+          color: var(--text-primary, #0b0b0f);
           margin: 0 0 2px;
           line-height: 1.2;
         }
@@ -1139,8 +1138,8 @@ export default function Education() {
 
         /* Highlight Box */
         .back-highlight-box {
-          background: color-mix(in srgb, var(--card-accent, #2563eb) 6%, transparent);
-          border: 1px dashed color-mix(in srgb, var(--card-accent, #2563eb) 25%, transparent);
+          background: var(--bg-primary, #f6f7f9);
+          border: 1px dashed var(--border-color, #e6e8ec);
           border-radius: 10px;
           padding: 10px 12px;
           display: flex;
@@ -1150,7 +1149,7 @@ export default function Education() {
         }
 
         .back-highlight-icon {
-          color: var(--card-accent, #2563eb);
+          color: var(--text-muted, #5b6270);
           flex-shrink: 0;
           margin-top: 2px;
         }
@@ -1194,10 +1193,31 @@ export default function Education() {
           border-color: rgba(255, 255, 255, 0.08);
         }
 
-        [data-theme="dark"] .edu-card:hover,
+        [data-theme="dark"] .edu-card::before {
+          background: #ffffff;
+        }
+
+        [data-theme="dark"] .edu-card:hover {
+          border-color: rgba(255, 255, 255, 0.2);
+          box-shadow: 0 14px 34px -8px rgba(0, 0, 0, 0.5);
+        }
+
         [data-theme="dark"] .edu-card.active-card {
-          border-color: var(--card-accent, #2563eb);
-          box-shadow: 0 14px 34px -8px rgba(0, 0, 0, 0.5), 0 0 0 1px var(--card-accent, #2563eb);
+          border-color: rgba(255, 255, 255, 0.35);
+          box-shadow: 0 10px 28px -6px rgba(0, 0, 0, 0.45);
+        }
+
+        [data-theme="dark"] .edu-icon-box {
+          background: rgba(255, 255, 255, 0.04);
+          border-color: rgba(255, 255, 255, 0.08);
+          color: #f1f5f9;
+        }
+
+        [data-theme="dark"] .edu-card:hover .edu-icon-box,
+        [data-theme="dark"] .edu-card.active-card .edu-icon-box {
+          background: #ffffff;
+          color: #0b0b0f;
+          border-color: #ffffff;
         }
 
         [data-theme="dark"] .edu-score-card,
@@ -1206,19 +1226,34 @@ export default function Education() {
         [data-theme="dark"] .back-flip-return,
         [data-theme="dark"] .back-close-btn,
         [data-theme="dark"] .edu-year-pill,
-        [data-theme="dark"] .edu-done-badge {
+        [data-theme="dark"] .edu-done-badge,
+        [data-theme="dark"] .edu-tag,
+        [data-theme="dark"] .back-highlight-box {
           background: rgba(255, 255, 255, 0.04);
           border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        [data-theme="dark"] .edu-score-icon-wrap {
+          background: rgba(255, 255, 255, 0.08);
+          color: #f1f5f9;
         }
 
         [data-theme="dark"] .edu-score-gauge {
           background: rgba(255, 255, 255, 0.08);
           border-color: rgba(255, 255, 255, 0.12);
+          color: #f1f5f9;
+        }
+
+        [data-theme="dark"] .edu-flip-trigger:hover {
+          background: #ffffff;
+          color: #0b0b0f;
+          border-color: #ffffff;
         }
 
         [data-theme="dark"] .back-title,
         [data-theme="dark"] .edu-card-title,
-        [data-theme="dark"] .edu-score-value {
+        [data-theme="dark"] .edu-score-value,
+        [data-theme="dark"] .back-stat-val {
           color: #f1f5f9;
         }
 
