@@ -741,15 +741,15 @@ export default function Education() {
           cursor: pointer;
         }
 
-        /* Subtle left ink bar that grows top → bottom on hover / active (matches ProjectCard) */
+        /* Vertical left accent bar that smoothly grows top → bottom on hover / active */
         .edu-card::before {
           content: "";
           position: absolute;
           top: 0;
           left: 0;
-          width: 3px;
+          width: 3.5px;
           height: 0;
-          background: var(--text-primary, #0b0b0f);
+          background: #2563eb;
           border-radius: 0 2px 2px 0;
           transition: height 0.32s cubic-bezier(0.4, 0, 0.2, 1);
           z-index: 2;
@@ -767,8 +767,8 @@ export default function Education() {
         }
 
         .edu-card.active-card {
-          border-color: var(--text-primary, #0b0b0f);
-          box-shadow: 0 10px 26px -6px rgba(15, 23, 42, 0.12);
+          border-color: #2563eb;
+          box-shadow: 0 10px 26px -6px rgba(37, 99, 235, 0.16);
         }
 
         /* Top Row: Graphic Icon Badge + Badges */
@@ -1194,7 +1194,7 @@ export default function Education() {
         }
 
         [data-theme="dark"] .edu-card::before {
-          background: #ffffff;
+          background: #3b82f6;
         }
 
         [data-theme="dark"] .edu-card:hover {
@@ -1203,8 +1203,8 @@ export default function Education() {
         }
 
         [data-theme="dark"] .edu-card.active-card {
-          border-color: rgba(255, 255, 255, 0.35);
-          box-shadow: 0 10px 28px -6px rgba(0, 0, 0, 0.45);
+          border-color: #3b82f6;
+          box-shadow: 0 10px 28px -6px rgba(59, 130, 246, 0.22);
         }
 
         [data-theme="dark"] .edu-icon-box {
