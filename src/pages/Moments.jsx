@@ -1004,6 +1004,7 @@ export default function Moments() {
 /* ─── Moments Carousel + Lightbox CSS — aligned with site design tokens ───────── */
 const CAROUSEL_LIGHTBOX_CSS = `
 @keyframes fadeRise  { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+@keyframes slideUp   { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
 @keyframes archFloat { 0%{ opacity:1; transform:translate(0,0) scale(1); } 100%{ opacity:0; transform:translate(var(--dx),-46px) scale(1.4); } }
 @keyframes pulseGlow { 0%, 100% { opacity: 0.85; } 50% { opacity: 1; } }
 @keyframes mcLiveDot { 0% { box-shadow: 0 0 0 0 rgba(16,185,129,0.55); } 70% { box-shadow: 0 0 0 6px rgba(16,185,129,0); } 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); } }
@@ -1026,17 +1027,17 @@ const CAROUSEL_LIGHTBOX_CSS = `
 .mc-page {
   --ap-bg: var(--bg-secondary, #ffffff);
   --ap-paper: var(--bg-secondary, #ffffff);
-  --ap-paper-2: var(--bg-primary, #f4f4f4);
+  --ap-paper-2: var(--bg-primary, #f6f7f9);
   --ap-paper-3: var(--bg-tertiary, #f1f5f9);
-  --ap-stage: var(--bg-primary, #f4f4f4);
-  --ap-ink: var(--text-primary, #0f172a);
-  --ap-ink-dim: var(--text-secondary, #475569);
-  --ap-ink-faint: var(--text-muted, #64748b);
-  --ap-line: var(--border-color, #e2e8f0);
-  --ap-line-strong: var(--border-strong, #cbd5e1);
-  --ap-accent: var(--primary-blue, #3b82f6);
-  --ap-accent-subtle: rgba(59, 130, 246, 0.10);
-  --ap-accent-border: rgba(59, 130, 246, 0.28);
+  --ap-stage: var(--bg-primary, #f6f7f9);
+  --ap-ink: var(--text-primary, #0b0b0f);
+  --ap-ink-dim: var(--text-secondary, #5b6270);
+  --ap-ink-faint: var(--text-muted, #8a909c);
+  --ap-line: var(--border-color, #e6e8ec);
+  --ap-line-strong: var(--border-strong, #d0d5de);
+  --ap-accent: #2563eb;
+  --ap-accent-subtle: rgba(37, 99, 235, 0.08);
+  --ap-accent-border: rgba(37, 99, 235, 0.25);
   --ap-font: var(--font-sans, 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif);
   /* Per-moment accent palette (referenced as var(--{color}) from JSX) */
   --rust: #3b82f6;
@@ -1316,7 +1317,7 @@ const CAROUSEL_LIGHTBOX_CSS = `
   width: 100%;
   padding-bottom: 74px; /* Space for floating dock */
   background:
-    radial-gradient(ellipse 60% 55% at 50% 42%, var(--ap-accent-subtle) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 55% at 50% 42%, rgba(37,99,235,0.07) 0%, transparent 70%),
     var(--ap-stage);
 }
 .mc-track-wrapper {
@@ -1423,9 +1424,9 @@ const CAROUSEL_LIGHTBOX_CSS = `
   font-family: var(--font-sans, 'Inter', sans-serif);
   font-size: 56px;
   font-weight: 800;
-  color: var(--primary-blue);
+  color: #2563eb;
   line-height: .6;
-  opacity: .7;
+  opacity: .8;
   margin-bottom: 14px;
 }
 .mc-quote-summary {
@@ -1534,13 +1535,13 @@ const CAROUSEL_LIGHTBOX_CSS = `
   font-weight: 600;
   padding: 4px 10px;
   border-radius: 999px;
-  background: var(--ap-accent);
+  background: #2563eb;
   color: #fff;
   display: inline-flex;
   align-items: center;
   gap: 5px;
   letter-spacing: .02em;
-  box-shadow: 0 4px 12px rgba(59,130,246,0.35);
+  box-shadow: 0 4px 12px rgba(37,99,235,0.3);
 }
 
 /* Expand Cue */
@@ -1586,6 +1587,7 @@ const CAROUSEL_LIGHTBOX_CSS = `
   display: flex;
   flex-direction: column;
   gap: 8px;
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 .mc-slide-title {
   font-family: var(--ap-font);
@@ -1743,7 +1745,7 @@ const CAROUSEL_LIGHTBOX_CSS = `
 .thumb-active-glow {
   position: absolute;
   inset: 0;
-  border: 2px solid var(--ap-accent);
+  border: 2px solid #2563eb;
   border-radius: 8px;
   box-shadow: inset 0 0 0 1px rgba(255,255,255,0.5);
   pointer-events: none;
@@ -1754,9 +1756,9 @@ const CAROUSEL_LIGHTBOX_CSS = `
   position: fixed;
   inset: 0;
   z-index: 99999;
-  background: rgba(15, 23, 42, 0.86);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(11, 11, 15, 0.88);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -1893,9 +1895,9 @@ const CAROUSEL_LIGHTBOX_CSS = `
   max-height: 80vh;
   background: var(--ap-paper);
   border: 1px solid var(--ap-line);
-  border-radius: 16px;
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: var(--modal-shadow, 0 20px 50px rgba(0,0,0,0.6));
+  box-shadow: var(--modal-shadow, 0 24px 60px rgba(0,0,0,0.65));
   display: flex;
   flex-direction: column;
   position: relative;
@@ -1943,9 +1945,9 @@ const CAROUSEL_LIGHTBOX_CSS = `
   font-family: var(--font-sans, 'Inter', sans-serif);
   font-size: 64px;
   font-weight: 800;
-  color: var(--primary-blue);
+  color: #2563eb;
   line-height: .6;
-  opacity: .7;
+  opacity: .8;
   margin-bottom: 16px;
 }
 .lb-quote-text {
@@ -2119,7 +2121,7 @@ const CAROUSEL_LIGHTBOX_CSS = `
 .lb-dock-ring {
   position: absolute;
   inset: 0;
-  border: 2px solid #60a5fa;
+  border: 2px solid #2563eb;
   border-radius: 7px;
   box-shadow: inset 0 0 0 1px rgba(255,255,255,0.4);
   pointer-events: none;
@@ -2159,16 +2161,16 @@ const CAROUSEL_LIGHTBOX_CSS = `
   font-weight: 600;
   height: 36px;
   padding: 0 18px;
-  background: var(--btn-primary-bg, #0f172a);
-  color: var(--btn-primary-text, #fff);
+  background: #0b0b0f;
+  color: #fff;
   border: none;
-  border-radius: 999px;
+  border-radius: 10px;
   cursor: pointer;
   margin-top: 6px;
   transition: background .15s ease, transform .15s ease;
 }
 .empty-reset:hover {
-  background: var(--btn-primary-hover, #1e293b);
+  background: #2563eb;
   transform: translateY(-1px);
 }
 
