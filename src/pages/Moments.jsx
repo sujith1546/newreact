@@ -1322,11 +1322,13 @@ const CAROUSEL_LIGHTBOX_CSS = `
 }
 .mc-track-wrapper {
   width: 100%;
-  height: 100%;
+  height: calc(100% - 74px); /* Stop before the dock zone so drag doesn't fire under dock */
+  flex: 1;
   display: flex;
   align-items: center;
   position: relative;
   cursor: grab;
+  overflow: hidden;
 }
 .mc-track-wrapper:active {
   cursor: grabbing;
@@ -1699,6 +1701,9 @@ const CAROUSEL_LIGHTBOX_CSS = `
   pointer-events: auto;
   isolation: isolate;
   will-change: auto;
+  /* Prevent dock from triggering or receiving drag events from track */
+  touch-action: auto;
+  user-select: none;
 }
 .mc-thumb-track {
   display: flex;
