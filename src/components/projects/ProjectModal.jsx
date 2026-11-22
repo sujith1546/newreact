@@ -686,8 +686,8 @@ function ProjectDrawerStyles() {
         width: 18px;
         height: 18px;
         border-radius: 50%;
-        background: var(--accent-lite);
-        color: var(--accent);
+        background: color-mix(in srgb, var(--ink) 10%, transparent);
+        color: var(--ink);
         flex-shrink: 0;
       }
 
@@ -715,7 +715,7 @@ function ProjectDrawerStyles() {
       .psd-flow-line {
         width: 100%;
         height: 1.5px;
-        background: color-mix(in srgb, var(--accent) 25%, var(--line));
+        background: color-mix(in srgb, var(--ink) 20%, var(--line));
         border-radius: 1px;
         display: block;
       }
@@ -727,7 +727,7 @@ function ProjectDrawerStyles() {
         transform: translateY(-50%);
         font-size: 11px;
         font-weight: 900;
-        color: var(--accent);
+        color: var(--ink);
         line-height: 1;
       }
 
