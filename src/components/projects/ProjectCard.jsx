@@ -143,7 +143,7 @@ export default function ProjectCard({
       <footer className="pc-footer">
         <a
           href={link}
-          className="pc-btn"
+          className="pc-btn pc-btn-primary"
           onClick={(e) => {
             if (onCardClick) {
               e.preventDefault();
@@ -151,9 +151,10 @@ export default function ProjectCard({
             }
           }}
         >
-          View Case Study <span aria-hidden>→</span>
+          <span className="pc-btn-label">View Case Study</span>
+          <span className="pc-btn-arrow" aria-hidden>→</span>
         </a>
-        {github && (
+        {github && github !== '#' && (
           <a href={github} target="_blank" rel="noreferrer" className="pc-btn pc-btn-ghost">
             GitHub ↗
           </a>

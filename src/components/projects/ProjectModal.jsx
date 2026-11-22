@@ -4,15 +4,15 @@ import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
   X, ExternalLink, Code2, Copy, Check, Sparkles,
   MessageSquare, Database, ShieldCheck, TrendingUp, Newspaper,
-  Brain, Eye, Smile, Receipt, Sliders, Layers, ArrowRight,
-  Cpu, Terminal, CheckCircle2, ArrowUpRight
+  Brain, Eye, Smile, Receipt, Sliders, Layers,
+  Cpu, Terminal, CheckCircle2, ArrowUpRight, Zap, Globe
 } from 'lucide-react';
 import { FaGithub } from 'react-icons/fa';
 import { getTechBadge } from './ProjectCard';
 
 const pipelineIconMap = {
   MessageSquare, Database, ShieldCheck, TrendingUp, Newspaper,
-  Brain, Eye, Smile, Receipt, Sliders, Layers, Cpu
+  Brain, Eye, Smile, Receipt, Sliders, Layers, Cpu, Zap, Terminal
 };
 
 export default function ProjectModal({ project, onClose, isMobile = false }) {
@@ -22,19 +22,13 @@ export default function ProjectModal({ project, onClose, isMobile = false }) {
   const drawerRef = useRef(null);
   const prefersReducedMotion = useReducedMotion();
 
-  // Focus trap & body lock
   useEffect(() => {
     triggerElementRef.current = document.activeElement;
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-
     const focusable = drawerRef.current?.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
     focusable?.focus();
-
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') onClose();
-    };
-
+    const handleKeyDown = (e) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', handleKeyDown);
     return () => {
       document.body.style.overflow = originalOverflow;
@@ -45,59 +39,43 @@ export default function ProjectModal({ project, onClose, isMobile = false }) {
 
   if (!project) return null;
 
-  // Normalized data matching ProjectCard styles
-  const category = (project.category || project.tags?.[0] || 'AI / ML').toUpperCase();
+  const category = (project.category || project.tags?.[0] || 'AI / ML');
   const tagline = project.tagline || project.description || '';
 
-  // Normalized metrics
   const rawMetrics = project.metrics || (project.stats ? project.stats.map((s) => ({
-    label: s.label?.toUpperCase() || 'METRIC',
+    label: s.label || 'METRIC',
     value: `${s.prefix || ''}${s.value}${s.suffix || ''}`,
-    note: s.note || 'Validated output'
-  })) : [
-    { label: 'THROUGHPUT', value: '600+', note: 'Req / hour' },
-    { label: 'LATENCY', value: '<2s', note: 'End-to-end' },
-    { label: 'ACCURACY', value: '0.883', note: 'R2 Score' }
-  ]);
+    note: s.note || 'Validated'
+  })) : []);
   const metrics = rawMetrics.slice(0, 3);
-  const topMetric = metrics[0]?.value ? `${metrics[0].value} ${metrics[0].label}` : null;
 
-  // Normalized pipeline
-  const rawPipeline = project.pipeline || [
-    { label: 'Data Ingestion', iconName: 'MessageSquare', note: 'Raw event stream' },
-    { label: 'Model Processing', iconName: 'Database', note: 'Vector retrieval & inference' },
-    { label: 'Validation Check', iconName: 'ShieldCheck', note: 'Confidence thresholding' },
-    { label: 'Insight Output', iconName: 'TrendingUp', note: 'Structured response' }
-  ];
-
+  const rawPipeline = project.pipeline || [];
   const pipeline = rawPipeline.map((p, i) => {
     let IconComp = Sparkles;
     if (p.icon && (typeof p.icon === 'function' || typeof p.icon === 'object')) {
       IconComp = p.icon;
     } else if (p.iconName && pipelineIconMap[p.iconName]) {
       IconComp = pipelineIconMap[p.iconName];
-    } else if (typeof p.icon === 'string' && pipelineIconMap[p.icon]) {
-      IconComp = pipelineIconMap[p.icon];
     }
     return {
-      id: p.id || `0${i + 1}`,
+      id: p.id || `s${i}`,
       icon: IconComp,
       name: p.name || p.label || `Stage ${i + 1}`,
       note: p.note || 'Pipeline processing'
     };
   });
 
-  const stack = project.stack || project.tags || ['Python', 'FastAPI', 'React', 'Scikit-learn'];
+  const stack = project.stack || project.tags || [];
 
-  const architecture = project.architecture ? (
-    typeof project.architecture[0] === 'string'
-      ? project.architecture.map((stepStr, i) => ({
-          code: `L0${i + 1}`,
-          title: `Layer 0${i + 1}: ${stepStr}`,
-          body: `Decoupled service handling ${stepStr.toLowerCase()} with resilient retry policies and streaming telemetry.`
-        }))
-      : project.architecture
-  ) : null;
+  const architecture = project.architecture
+    ? (typeof project.architecture[0] === 'string'
+        ? project.architecture.map((s, i) => ({
+            code: `L0${i + 1}`,
+            title: `Layer ${i + 1}: ${s}`,
+            body: `Decoupled service handling ${s.toLowerCase()} with resilient retry policies and streaming telemetry.`
+          }))
+        : project.architecture)
+    : null;
 
   const codeSnippet = typeof project.code === 'string'
     ? { filename: 'pipeline.py', snippet: project.code }
@@ -107,101 +85,78 @@ export default function ProjectModal({ project, onClose, isMobile = false }) {
   const demoUrl = project.links?.demo || project.liveUrl;
 
   const handleCopyCode = () => {
-    const textToCopy = codeSnippet?.snippet || project.code || '';
-    if (!textToCopy) return;
-    navigator.clipboard.writeText(textToCopy).catch(() => {});
+    const text = codeSnippet?.snippet || '';
+    if (!text) return;
+    navigator.clipboard.writeText(text).catch(() => {});
     setCopied(true);
     setTimeout(() => setCopied(false), 1600);
   };
 
   const tabs = ['Overview'];
-  if (pipeline && pipeline.length > 0) tabs.push('Pipeline');
+  if (pipeline.length > 0) tabs.push('Pipeline');
   if (architecture) tabs.push('Architecture');
   if (codeSnippet) tabs.push('Code');
 
   const drawerVariants = prefersReducedMotion
     ? { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 }, transition: { duration: 0.15 } }
     : isMobile
-    ? {
-        initial: { y: '100%' },
-        animate: { y: 0 },
-        exit: { y: '100%' },
-        transition: { type: 'tween', ease: [0.16, 1, 0.3, 1], duration: 0.28 }
-      }
-    : {
-        initial: { x: '100%' },
-        animate: { x: 0 },
-        exit: { x: '100%' },
-        transition: { type: 'spring', damping: 30, stiffness: 320, mass: 0.88 }
-      };
+    ? { initial: { y: '100%' }, animate: { y: 0 }, exit: { y: '100%' }, transition: { type: 'tween', ease: [0.16, 1, 0.3, 1], duration: 0.3 } }
+    : { initial: { x: '100%' }, animate: { x: 0 }, exit: { x: '100%' }, transition: { type: 'spring', damping: 32, stiffness: 340, mass: 0.85 } };
 
   return createPortal(
     <div className="psd-root" role="dialog" aria-modal="true" aria-label={project.title}>
-      {/* Dimmed backdrop blur */}
+      {/* Backdrop */}
       <motion.div
         className="psd-backdrop"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.22, ease: 'easeOut' }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
         onClick={onClose}
       />
 
-      {/* Slide-over Drawer (slides in from right to left) */}
-      <motion.aside
-        ref={drawerRef}
-        className={`psd-panel ${isMobile ? 'psd-panel--mobile' : ''}`}
-        {...drawerVariants}
-      >
-        {/* Accent strip that matches project card */}
-        <div className="psd-accent" />
+      {/* Drawer */}
+      <motion.aside ref={drawerRef} className={`psd-panel${isMobile ? ' psd-panel--mobile' : ''}`} {...drawerVariants}>
 
-        {/* ── 1. Top Header (Identical to ProjectCard top row) ── */}
+        {/* Top accent gradient bar */}
+        <div className="psd-accent-bar" />
+
+        {/* ── HEADER ── */}
         <header className="psd-header">
-          <div className="psd-top-row">
-            <span className="psd-category">
-              <i className="psd-dot" />
+          <div className="psd-header-top">
+            <span className="psd-category-badge">
+              <span className="psd-cat-dot" />
               {category}
             </span>
-
-            {topMetric && <span className="psd-metric">{topMetric}</span>}
-
-            <button
-              type="button"
-              className="psd-close-btn"
-              onClick={onClose}
-              aria-label="Close case study"
-              title="Press Esc to close"
-            >
-              <X size={15} />
+            <button type="button" className="psd-close" onClick={onClose} aria-label="Close">
+              <X size={14} strokeWidth={2.5} />
             </button>
           </div>
 
           <h2 className="psd-title">{project.title}</h2>
-          <p className="psd-desc">{tagline}</p>
+          <p className="psd-tagline">{tagline}</p>
+
+          {/* Metric pills row */}
+          {metrics.length > 0 && (
+            <div className="psd-metric-row">
+              {metrics.map((m) => (
+                <div className="psd-metric-chip" key={m.label}>
+                  <span className="psd-metric-chip-val">{m.value}</span>
+                  <span className="psd-metric-chip-lbl">{m.label}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </header>
 
-        {/* ── 2. Metric Boxes Row (Matching --soft card tokens) ── */}
-        {metrics.length > 0 && (
-          <div className="psd-metrics">
-            {metrics.map((m) => (
-              <div className="psd-metric-box" key={m.label}>
-                <span className="psd-metric-val">{m.value}</span>
-                <span className="psd-metric-lbl">{m.label}</span>
-                <span className="psd-metric-note">{m.note}</span>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* ── 3. Segmented Navigation Tabs ── */}
-        <div className="psd-tabs-wrap">
-          <div className="psd-tabs-nav" style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}>
+        {/* ── TABS ── */}
+        <div className="psd-tabs-bar">
+          <div className="psd-tabs-track" style={{ gridTemplateColumns: `repeat(${tabs.length}, 1fr)` }}>
             {tabs.map((t, i) => (
               <button
                 key={t}
                 type="button"
-                className={`psd-tab-btn ${tab === i ? 'active' : ''}`}
+                className={`psd-tab${tab === i ? ' psd-tab--active' : ''}`}
                 onClick={() => setTab(i)}
               >
                 {t}
@@ -210,49 +165,47 @@ export default function ProjectModal({ project, onClose, isMobile = false }) {
           </div>
         </div>
 
-        {/* ── 4. Scrollable Body ── */}
+        {/* ── BODY ── */}
         <div className="psd-body">
           <AnimatePresence mode="wait">
             <motion.div
               key={tabs[tab]}
-              initial={{ opacity: 0, y: 6 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.18, ease: 'easeOut' }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.16, ease: 'easeOut' }}
               className="psd-content"
             >
+
               {/* TAB: OVERVIEW */}
               {tabs[tab] === 'Overview' && (
                 <>
-                  <section>
-                    <span className="psd-label">About the project</span>
-                    <p className="psd-text">{project.description}</p>
+                  {/* About */}
+                  <section className="psd-section">
+                    <span className="psd-section-label">About</span>
+                    <p className="psd-about-text">{project.description}</p>
                   </section>
 
-                  {/* Connected Pipeline Preview inside Overview */}
+                  {/* Pipeline mini-map */}
                   {pipeline.length > 0 && (
-                    <section>
-                      <div className="psd-flow">
-                        <div className="psd-flow-header">
-                          <span className="psd-flow-label">
-                            <span className="psd-flow-dot" />
-                            Pipeline Architecture
-                          </span>
-                          <span className="psd-flow-count">{pipeline.length} stages</span>
-                        </div>
+                    <section className="psd-section">
+                      <span className="psd-section-label">Pipeline</span>
+                      <div className="psd-flow-box">
                         <div className="psd-flow-track">
                           {pipeline.map((step, i) => {
                             const isLast = i === pipeline.length - 1;
+                            const Icon = step.icon;
                             return (
                               <React.Fragment key={step.id + i}>
                                 <div className="psd-flow-node" title={step.name}>
-                                  <span className="psd-flow-badge">{i + 1}</span>
+                                  <span className="psd-flow-icon"><Icon size={11} /></span>
+                                  <span className="psd-flow-num">{i + 1}</span>
                                   <span className="psd-flow-text">{step.name}</span>
                                 </div>
                                 {!isLast && (
                                   <div className="psd-flow-bridge" aria-hidden="true">
-                                    <span className="psd-flow-bridge-line" />
-                                    <span className="psd-flow-bridge-arrow">›</span>
+                                    <span className="psd-flow-line" />
+                                    <span className="psd-flow-arrow">›</span>
                                   </div>
                                 )}
                               </React.Fragment>
@@ -263,37 +216,41 @@ export default function ProjectModal({ project, onClose, isMobile = false }) {
                     </section>
                   )}
 
-                  <section>
-                    <span className="psd-label">Technologies &amp; Frameworks</span>
-                    <div className="psd-tech">
-                      {stack.map((t, i) => {
-                        const label = typeof t === 'string' ? t : t?.name || t;
-                        const { Icon, color } = getTechBadge(label);
-                        return (
-                          <span key={label + i} className="psd-tech-pill">
-                            <Icon size={13} style={{ color, flexShrink: 0 }} aria-hidden="true" />
-                            <span>{label}</span>
-                          </span>
-                        );
-                      })}
-                    </div>
-                  </section>
+                  {/* Tech stack */}
+                  {stack.length > 0 && (
+                    <section className="psd-section">
+                      <span className="psd-section-label">Tech Stack</span>
+                      <div className="psd-tech-grid">
+                        {stack.map((t, i) => {
+                          const label = typeof t === 'string' ? t : t?.name || t;
+                          const { Icon, color } = getTechBadge(label);
+                          return (
+                            <span key={label + i} className="psd-tech-pill">
+                              <Icon size={13} style={{ color, flexShrink: 0 }} aria-hidden="true" />
+                              <span>{label}</span>
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </section>
+                  )}
 
-                  <section>
-                    <span className="psd-label">Engineering Highlights</span>
-                    <div className="psd-features">
-                      <div className="psd-feature-item">
-                        <CheckCircle2 size={16} className="psd-feat-icon" />
+                  {/* Key highlights */}
+                  <section className="psd-section">
+                    <span className="psd-section-label">Highlights</span>
+                    <div className="psd-highlights">
+                      <div className="psd-hl-item">
+                        <span className="psd-hl-icon"><CheckCircle2 size={14} /></span>
                         <div>
-                          <strong>Automated Pipeline Flow</strong>
-                          <p>Low latency execution pipeline with automated validation checkpoints.</p>
+                          <strong>End-to-end ML Pipeline</strong>
+                          <p>Fully automated data ingestion, transformation, and inference with sub-second SLA.</p>
                         </div>
                       </div>
-                      <div className="psd-feature-item">
-                        <CheckCircle2 size={16} className="psd-feat-icon" />
+                      <div className="psd-hl-item">
+                        <span className="psd-hl-icon"><CheckCircle2 size={14} /></span>
                         <div>
-                          <strong>Production Ready Architecture</strong>
-                          <p>Modularized services for high reliability, security, and scalability.</p>
+                          <strong>Production-Grade Architecture</strong>
+                          <p>Modular, horizontally scalable services with rate limiting, PII masking, and retry logic.</p>
                         </div>
                       </div>
                     </div>
@@ -303,29 +260,25 @@ export default function ProjectModal({ project, onClose, isMobile = false }) {
 
               {/* TAB: PIPELINE */}
               {tabs[tab] === 'Pipeline' && (
-                <section>
-                  <span className="psd-label">Pipeline Workflow</span>
-                  <div className="psd-flow" style={{ marginBottom: 16 }}>
-                    <div className="psd-flow-header">
-                      <span className="psd-flow-label">
-                        <span className="psd-flow-dot" />
-                        Connected Stages
-                      </span>
-                      <span className="psd-flow-count">{pipeline.length} stages</span>
-                    </div>
+                <section className="psd-section">
+                  <span className="psd-section-label">Pipeline Stages</span>
+                  {/* Visual flow */}
+                  <div className="psd-flow-box" style={{ marginBottom: 14 }}>
                     <div className="psd-flow-track">
                       {pipeline.map((step, i) => {
                         const isLast = i === pipeline.length - 1;
+                        const Icon = step.icon;
                         return (
                           <React.Fragment key={step.id + i}>
                             <div className="psd-flow-node" title={step.name}>
-                              <span className="psd-flow-badge">{i + 1}</span>
+                              <span className="psd-flow-icon"><Icon size={11} /></span>
+                              <span className="psd-flow-num">{i + 1}</span>
                               <span className="psd-flow-text">{step.name}</span>
                             </div>
                             {!isLast && (
                               <div className="psd-flow-bridge" aria-hidden="true">
-                                <span className="psd-flow-bridge-line" />
-                                <span className="psd-flow-bridge-arrow">›</span>
+                                <span className="psd-flow-line" />
+                                <span className="psd-flow-arrow">›</span>
                               </div>
                             )}
                           </React.Fragment>
@@ -334,18 +287,21 @@ export default function ProjectModal({ project, onClose, isMobile = false }) {
                     </div>
                   </div>
 
-                  <div className="psd-stage-details">
+                  {/* Stage detail cards */}
+                  <div className="psd-stage-list">
                     {pipeline.map((step, idx) => {
                       const Icon = step.icon;
                       return (
                         <div key={step.id + idx} className="psd-stage-card">
-                          <span className="psd-stage-num">{idx + 1}</span>
-                          <div className="psd-stage-icon">
-                            <Icon size={16} />
+                          <div className="psd-stage-num-wrap">
+                            <span className="psd-stage-num">{idx + 1}</span>
+                          </div>
+                          <div className="psd-stage-icon-wrap">
+                            <Icon size={15} />
                           </div>
                           <div className="psd-stage-meta">
                             <h4 className="psd-stage-title">{step.name}</h4>
-                            <p className="psd-stage-desc">{step.note}</p>
+                            <p className="psd-stage-note">{step.note}</p>
                           </div>
                         </div>
                       );
@@ -356,15 +312,15 @@ export default function ProjectModal({ project, onClose, isMobile = false }) {
 
               {/* TAB: ARCHITECTURE */}
               {tabs[tab] === 'Architecture' && architecture && (
-                <section>
-                  <span className="psd-label">Architecture Layers</span>
+                <section className="psd-section">
+                  <span className="psd-section-label">System Architecture</span>
                   <div className="psd-arch-list">
                     {architecture.map((layer, idx) => (
                       <div key={layer.code || idx} className="psd-arch-card">
                         <span className="psd-arch-badge">{layer.code}</span>
-                        <div className="psd-arch-content">
+                        <div className="psd-arch-body">
                           <h4 className="psd-arch-title">{layer.title}</h4>
-                          <p className="psd-arch-body">{layer.body}</p>
+                          <p className="psd-arch-text">{layer.body}</p>
                         </div>
                       </div>
                     ))}
@@ -374,62 +330,50 @@ export default function ProjectModal({ project, onClose, isMobile = false }) {
 
               {/* TAB: CODE */}
               {tabs[tab] === 'Code' && codeSnippet && (
-                <section>
-                  <span className="psd-label">Source Snippet</span>
+                <section className="psd-section">
+                  <span className="psd-section-label">Code Snippet</span>
                   <div className="psd-code-box">
                     <div className="psd-code-header">
                       <div className="psd-code-dots">
-                        <span className="dot red" />
-                        <span className="dot yellow" />
-                        <span className="dot green" />
+                        <span className="psd-dot-red" />
+                        <span className="psd-dot-yellow" />
+                        <span className="psd-dot-green" />
                       </div>
-                      <span className="psd-code-file">{codeSnippet.filename}</span>
+                      <span className="psd-code-filename">{codeSnippet.filename}</span>
                       <button type="button" className="psd-copy-btn" onClick={handleCopyCode}>
-                        {copied ? <Check size={12} /> : <Copy size={12} />}
-                        <span>{copied ? 'Copied' : 'Copy'}</span>
+                        {copied ? <Check size={11} /> : <Copy size={11} />}
+                        <span>{copied ? 'Copied!' : 'Copy'}</span>
                       </button>
                     </div>
-                    <pre className="psd-code-body">
-                      <code>{codeSnippet.snippet}</code>
-                    </pre>
+                    <pre className="psd-code-body"><code>{codeSnippet.snippet}</code></pre>
                   </div>
                 </section>
               )}
+
             </motion.div>
           </AnimatePresence>
         </div>
 
-        {/* ── 5. Footer Matching ProjectCard Buttons ── */}
+        {/* ── FOOTER ── */}
         <footer className="psd-footer">
-          {sourceUrl ? (
-            <a
-              href={sourceUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="pc-btn pc-btn-ghost"
-              aria-label={`View source code for ${project.title}`}
-            >
+          {sourceUrl && sourceUrl !== '#' ? (
+            <a href={sourceUrl} target="_blank" rel="noreferrer" className="psd-btn psd-btn-ghost">
               <FaGithub size={14} />
-              GitHub ↗
+              GitHub
             </a>
           ) : <div />}
 
-          {demoUrl ? (
-            <a
-              href={demoUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="pc-btn"
-              aria-label={`Open live demo for ${project.title}`}
-            >
-              Launch Live Demo <span aria-hidden>→</span>
+          {demoUrl && demoUrl !== '#' ? (
+            <a href={demoUrl} target="_blank" rel="noreferrer" className="psd-btn psd-btn-primary">
+              <Globe size={13} />
+              Live Demo <span aria-hidden>→</span>
             </a>
           ) : (
-            <span className="psd-internal-label">Internal Project</span>
+            <span className="psd-internal-tag">Internal Project</span>
           )}
         </footer>
-      </motion.aside>
 
+      </motion.aside>
       <ProjectDrawerStyles />
     </div>,
     document.body
@@ -439,15 +383,20 @@ export default function ProjectModal({ project, onClose, isMobile = false }) {
 function ProjectDrawerStyles() {
   return (
     <style>{`
-      /* Tokens identical to ProjectCard.css: white surface, black buttons, blue accent */
+      /* ── Design tokens (match ProjectCard.css exactly) ── */
       .psd-panel {
         --accent: #2563eb;
+        --accent-lite: rgba(37,99,235,0.1);
         --ink: #0b0b0f;
         --muted: #5b6270;
         --line: #e6e8ec;
         --soft: #f6f7f9;
+        --green: #047857;
+        --green-bg: #ecfdf5;
+        --green-border: #c7f0de;
       }
 
+      /* ── Root overlay ── */
       .psd-root {
         position: fixed;
         inset: 0;
@@ -459,322 +408,291 @@ function ProjectDrawerStyles() {
       .psd-backdrop {
         position: fixed;
         inset: 0;
-        background: rgba(11, 11, 15, 0.45);
-        backdrop-filter: blur(6px);
-        -webkit-backdrop-filter: blur(6px);
+        background: rgba(11, 11, 15, 0.42);
+        backdrop-filter: blur(5px);
+        -webkit-backdrop-filter: blur(5px);
       }
 
-      /* Slide-over Drawer Panel */
+      /* ── Panel ── */
       .psd-panel {
         position: fixed;
-        top: 0;
-        right: 0;
-        bottom: 0;
+        top: 0; right: 0; bottom: 0;
         width: 100%;
-        max-width: 500px;
+        max-width: 490px;
         background: #fff;
         border-left: 1px solid var(--line);
-        box-shadow: -12px 0 40px rgba(15, 23, 42, 0.18);
+        box-shadow: -16px 0 48px -4px rgba(15,23,42,0.16);
         display: flex;
         flex-direction: column;
-        box-sizing: border-box;
-        overflow: hidden;
         z-index: 100000;
+        overflow: hidden;
+        box-sizing: border-box;
       }
 
       .psd-panel--mobile {
         max-width: 100%;
+        top: auto;
+        border-left: none;
+        border-top: 1px solid var(--line);
+        border-radius: 20px 20px 0 0;
+        height: 92dvh;
       }
 
-      /* Top accent line */
-      .psd-accent {
+      /* Accent gradient bar at top */
+      .psd-accent-bar {
         height: 3px;
-        width: 100%;
-        background: var(--accent);
         flex-shrink: 0;
+        background: linear-gradient(90deg, var(--accent) 0%, #7c3aed 60%, #06b6d4 100%);
       }
 
-      /* Header */
+      /* ── HEADER ── */
       .psd-header {
-        padding: 20px 22px 16px;
+        padding: 18px 22px 16px;
         border-bottom: 1px solid var(--line);
-        background: #fff;
         flex-shrink: 0;
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 10px;
+        background: #fff;
       }
 
-      .psd-top-row {
+      .psd-header-top {
         display: flex;
         align-items: center;
+        justify-content: space-between;
         gap: 10px;
       }
 
-      .psd-category {
+      .psd-category-badge {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
+        gap: 7px;
         font-size: 11px;
-        font-weight: 600;
-        letter-spacing: 0.06em;
+        font-weight: 700;
+        letter-spacing: 0.07em;
         text-transform: uppercase;
         color: var(--muted);
       }
 
-      .psd-dot {
+      .psd-cat-dot {
+        display: inline-block;
         width: 7px;
         height: 7px;
         border-radius: 50%;
         background: var(--accent);
+        flex-shrink: 0;
       }
 
-      .psd-metric {
-        font-size: 11px;
-        font-weight: 600;
-        padding: 4px 10px;
-        border-radius: 999px;
-        color: #047857;
-        background: #ecfdf5;
-        border: 1px solid #c7f0de;
-      }
-
-      .psd-close-btn {
-        margin-left: auto;
-        width: 30px;
-        height: 30px;
+      .psd-close {
+        width: 28px;
+        height: 28px;
         border-radius: 50%;
         border: 1px solid var(--line);
-        background: #fff;
+        background: var(--soft);
         color: var(--muted);
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
         padding: 0;
-        transition: all 0.2s ease;
+        flex-shrink: 0;
+        transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
       }
 
-      .psd-close-btn:hover {
-        color: var(--ink);
+      .psd-close:hover {
+        background: var(--ink);
+        color: #fff;
         border-color: var(--ink);
-        transform: scale(1.06);
+        transform: rotate(90deg) scale(1.05);
       }
 
       .psd-title {
-        margin: 4px 0 0;
-        font-size: 21px;
-        line-height: 1.25;
-        font-weight: 700;
-        color: var(--ink);
-      }
-
-      .psd-desc {
         margin: 0;
-        font-size: 13.5px;
-        line-height: 1.55;
+        font-size: 22px;
+        font-weight: 800;
+        line-height: 1.2;
+        color: var(--ink);
+        letter-spacing: -0.02em;
+      }
+
+      .psd-tagline {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.6;
         color: var(--muted);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
       }
 
-      /* Metrics Bar */
-      .psd-metrics {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
-        padding: 12px 22px;
-        background: var(--soft);
-        border-bottom: 1px solid var(--line);
-        flex-shrink: 0;
-      }
-
-      .psd-metric-box {
+      /* Metric pills row */
+      .psd-metric-row {
         display: flex;
-        flex-direction: column;
-        gap: 2px;
-        padding: 8px 10px;
-        border-radius: 10px;
-        background: #fff;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .psd-metric-chip {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 5px;
+        padding: 5px 11px;
+        border-radius: 999px;
+        background: var(--soft);
         border: 1px solid var(--line);
       }
 
-      .psd-metric-val {
-        font-size: 16px;
+      .psd-metric-chip-val {
+        font-size: 14px;
         font-weight: 800;
         color: var(--ink);
         letter-spacing: -0.02em;
-        line-height: 1.2;
+        line-height: 1;
       }
 
-      .psd-metric-lbl {
-        font-size: 9.5px;
-        font-weight: 700;
+      .psd-metric-chip-lbl {
+        font-size: 10px;
+        font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.06em;
         color: var(--accent);
       }
 
-      .psd-metric-note {
-        font-size: 9.5px;
-        color: var(--muted);
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      /* Tabs */
-      .psd-tabs-wrap {
+      /* ── TABS ── */
+      .psd-tabs-bar {
         padding: 10px 22px 8px;
-        background: #fff;
         border-bottom: 1px solid var(--line);
         flex-shrink: 0;
+        background: #fff;
       }
 
-      .psd-tabs-nav {
+      .psd-tabs-track {
         display: grid;
-        gap: 4px;
+        gap: 3px;
         background: var(--soft);
         border: 1px solid var(--line);
         border-radius: 10px;
         padding: 3px;
       }
 
-      .psd-tab-btn {
+      .psd-tab {
         background: transparent;
         border: none;
-        color: var(--muted);
         font-size: 12px;
         font-weight: 600;
+        color: var(--muted);
         padding: 6px 8px;
         border-radius: 7px;
         cursor: pointer;
-        transition: all 0.18s ease;
+        transition: all 0.16s ease;
         text-align: center;
+        letter-spacing: 0.01em;
       }
 
-      .psd-tab-btn:hover {
-        color: var(--ink);
-      }
+      .psd-tab:hover { color: var(--ink); }
 
-      .psd-tab-btn.active {
+      .psd-tab--active {
         background: #fff;
         color: var(--accent);
         font-weight: 700;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+        box-shadow: 0 1px 4px rgba(0,0,0,0.09);
       }
 
-      /* Body */
+      /* ── BODY ── */
       .psd-body {
         flex: 1;
         min-height: 0;
         overflow-y: auto;
-        padding: 18px 22px;
+        padding: 20px 22px;
         scrollbar-width: thin;
         scrollbar-color: var(--line) transparent;
       }
 
+      .psd-body::-webkit-scrollbar { width: 4px; }
+      .psd-body::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+
       .psd-content {
         display: flex;
         flex-direction: column;
-        gap: 18px;
+        gap: 20px;
       }
 
-      .psd-label {
+      /* ── Sections ── */
+      .psd-section {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .psd-section-label {
         display: block;
-        margin: 0 0 8px;
-        font-size: 10.5px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
+        margin-bottom: 10px;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.1em;
         text-transform: uppercase;
-        color: #8a92a0;
+        color: #9aa2b4;
       }
 
-      .psd-text {
+      .psd-about-text {
         margin: 0;
         font-size: 13.5px;
-        line-height: 1.6;
+        line-height: 1.65;
         color: var(--muted);
       }
 
-      /* Connected Pipeline Styles (Matching ProjectCard.css) */
-      .psd-flow {
-        padding: 11px 13px;
+      /* ── Pipeline flow box ── */
+      .psd-flow-box {
+        padding: 12px 14px;
         background: var(--soft);
         border: 1px solid var(--line);
         border-radius: 12px;
       }
 
-      .psd-flow-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 9px;
-      }
-
-      .psd-flow-label {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 10px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--muted);
-      }
-
-      .psd-flow-dot {
-        width: 5px;
-        height: 5px;
-        border-radius: 50%;
-        background: var(--accent);
-      }
-
-      .psd-flow-count {
-        font-size: 9.5px;
-        font-weight: 600;
-        color: var(--muted);
-        background: color-mix(in srgb, var(--ink) 6%, transparent);
-        padding: 1px 6px;
-        border-radius: 4px;
-      }
-
       .psd-flow-track {
         display: flex;
         align-items: center;
-        justify-content: space-between;
         gap: 2px;
         overflow-x: auto;
         scrollbar-width: none;
-        -ms-overflow-style: none;
         padding: 2px 0;
       }
 
-      .psd-flow-track::-webkit-scrollbar {
-        display: none;
-      }
+      .psd-flow-track::-webkit-scrollbar { display: none; }
 
       .psd-flow-node {
         display: inline-flex;
         align-items: center;
         gap: 5px;
-        padding: 2.5px 7px 2.5px 2.5px;
+        padding: 3px 9px 3px 4px;
         background: #fff;
         border: 1px solid var(--line);
         border-radius: 999px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        flex-shrink: 0;
+        transition: border-color 0.15s ease, transform 0.15s ease;
+        cursor: default;
+      }
+
+      .psd-flow-node:hover {
+        border-color: var(--accent);
+        transform: translateY(-1px);
+      }
+
+      .psd-flow-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--accent-lite);
+        color: var(--accent);
         flex-shrink: 0;
       }
 
-      .psd-flow-badge {
-        display: grid;
-        place-items: center;
-        width: 16px;
-        height: 16px;
-        border-radius: 50%;
-        background: var(--accent);
-        color: #fff;
-        font-size: 9px;
-        font-weight: 800;
-        flex-shrink: 0;
+      .psd-flow-num {
+        display: none;
       }
 
       .psd-flow-text {
@@ -789,32 +707,111 @@ function ProjectDrawerStyles() {
         align-items: center;
         position: relative;
         flex: 1;
-        min-width: 8px;
-        max-width: 22px;
-        margin: 0 1px;
+        min-width: 10px;
+        max-width: 24px;
         flex-shrink: 0;
       }
 
-      .psd-flow-bridge-line {
+      .psd-flow-line {
         width: 100%;
         height: 1.5px;
-        background: color-mix(in srgb, var(--accent) 30%, var(--line));
+        background: color-mix(in srgb, var(--accent) 25%, var(--line));
         border-radius: 1px;
+        display: block;
       }
 
-      .psd-flow-bridge-arrow {
+      .psd-flow-arrow {
         position: absolute;
         right: -2px;
         top: 50%;
         transform: translateY(-50%);
         font-size: 11px;
-        font-weight: 800;
+        font-weight: 900;
         color: var(--accent);
         line-height: 1;
       }
 
-      /* Detailed Stage List for Pipeline Tab */
-      .psd-stage-details {
+      /* ── Tech pills ── */
+      .psd-tech-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+      }
+
+      .psd-tech-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 500;
+        padding: 5px 11px;
+        color: #374151;
+        background: var(--soft);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        transition: all 0.15s ease;
+      }
+
+      .psd-tech-pill:hover {
+        background: #fff;
+        border-color: #cbd5e1;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      }
+
+      .psd-tech-pill span {
+        font-size: 12px;
+        font-weight: 500;
+        color: inherit;
+        line-height: 1;
+      }
+
+      /* ── Highlights ── */
+      .psd-highlights {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .psd-hl-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 11px;
+        padding: 11px 13px;
+        background: var(--soft);
+        border: 1px solid var(--line);
+        border-radius: 11px;
+      }
+
+      .psd-hl-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        border-radius: 7px;
+        background: var(--green-bg);
+        border: 1px solid var(--green-border);
+        color: var(--green);
+        flex-shrink: 0;
+      }
+
+      .psd-hl-item strong {
+        display: block;
+        font-size: 12.5px;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 3px;
+      }
+
+      .psd-hl-item p {
+        margin: 0;
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      /* ── Pipeline tab: stage cards ── */
+      .psd-stage-list {
         display: flex;
         flex-direction: column;
         gap: 8px;
@@ -824,37 +821,44 @@ function ProjectDrawerStyles() {
         display: flex;
         align-items: center;
         gap: 12px;
-        padding: 10px 14px;
-        border-radius: 12px;
+        padding: 11px 14px;
         background: var(--soft);
         border: 1px solid var(--line);
+        border-radius: 12px;
+        transition: border-color 0.15s ease;
+      }
+
+      .psd-stage-card:hover { border-color: var(--accent); }
+
+      .psd-stage-num-wrap {
+        flex-shrink: 0;
       }
 
       .psd-stage-num {
         display: grid;
         place-items: center;
-        width: 22px;
-        height: 22px;
+        width: 24px;
+        height: 24px;
         border-radius: 50%;
         background: var(--accent);
         color: #fff;
         font-size: 11px;
         font-weight: 800;
-        flex-shrink: 0;
       }
 
-      .psd-stage-icon {
-        color: var(--accent);
+      .psd-stage-icon-wrap {
         display: flex;
         align-items: center;
         justify-content: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 9px;
+        background: var(--accent-lite);
+        color: var(--accent);
         flex-shrink: 0;
       }
 
-      .psd-stage-meta {
-        flex: 1;
-        min-width: 0;
-      }
+      .psd-stage-meta { flex: 1; min-width: 0; }
 
       .psd-stage-title {
         margin: 0 0 2px;
@@ -863,97 +867,14 @@ function ProjectDrawerStyles() {
         color: var(--ink);
       }
 
-      .psd-stage-desc {
+      .psd-stage-note {
         margin: 0;
         font-size: 11.5px;
         color: var(--muted);
+        line-height: 1.4;
       }
 
-      /* Tech chips (Matching ProjectCard.css) */
-      .psd-tech {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-      }
-
-      .psd-tech-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 6.5px;
-        font-size: 12px;
-        font-weight: 550;
-        padding: 4.5px 10px;
-        color: #374151;
-        background: var(--soft);
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        transition: all 0.15s ease;
-      }
-
-      .psd-tech-pill:hover {
-        background: #ffffff;
-        border-color: #cbd5e1;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-      }
-
-      .psd-tech-pill span {
-        font-size: 12px;
-        font-weight: 550;
-        color: inherit;
-        line-height: 1;
-      }
-
-      :root[data-theme="dark"] .psd-tech-pill,
-      .dark .psd-tech-pill {
-        color: #cbd2dd;
-        background: #161a22;
-        border-color: var(--line);
-      }
-      :root[data-theme="dark"] .psd-tech-pill:hover,
-      .dark .psd-tech-pill:hover {
-        background: #1c212c;
-        border-color: #3b4354;
-      }
-
-      /* Features */
-      .psd-features {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-
-      .psd-feature-item {
-        display: flex;
-        align-items: flex-start;
-        gap: 10px;
-        padding: 10px 12px;
-        border-radius: 10px;
-        background: var(--soft);
-        border: 1px solid var(--line);
-      }
-
-      .psd-feat-icon {
-        color: #047857;
-        flex-shrink: 0;
-        margin-top: 1px;
-      }
-
-      .psd-feature-item strong {
-        display: block;
-        font-size: 12.5px;
-        font-weight: 700;
-        color: var(--ink);
-        margin-bottom: 2px;
-      }
-
-      .psd-feature-item p {
-        margin: 0;
-        font-size: 12px;
-        color: var(--muted);
-        line-height: 1.45;
-      }
-
-      /* Architecture List */
+      /* ── Architecture ── */
       .psd-arch-list {
         display: flex;
         flex-direction: column;
@@ -962,49 +883,47 @@ function ProjectDrawerStyles() {
 
       .psd-arch-card {
         display: flex;
-        gap: 12px;
-        padding: 12px 14px;
-        border-radius: 12px;
+        gap: 13px;
+        padding: 13px 14px;
         background: var(--soft);
         border: 1px solid var(--line);
+        border-radius: 12px;
       }
 
       .psd-arch-badge {
-        font-size: 10.5px;
+        font-size: 10px;
         font-weight: 800;
         color: var(--accent);
-        background: color-mix(in srgb, var(--accent) 12%, transparent);
-        padding: 2px 7px;
+        background: var(--accent-lite);
+        padding: 3px 8px;
         border-radius: 6px;
         height: fit-content;
         flex-shrink: 0;
+        letter-spacing: 0.04em;
       }
 
-      .psd-arch-content {
-        flex: 1;
-        min-width: 0;
-      }
+      .psd-arch-body { flex: 1; min-width: 0; }
 
       .psd-arch-title {
-        margin: 0 0 3px;
+        margin: 0 0 4px;
         font-size: 13px;
         font-weight: 700;
         color: var(--ink);
       }
 
-      .psd-arch-body {
+      .psd-arch-text {
         margin: 0;
         font-size: 12px;
-        line-height: 1.45;
         color: var(--muted);
+        line-height: 1.5;
       }
 
-      /* Code Snippet */
+      /* ── Code ── */
       .psd-code-box {
         border-radius: 12px;
         border: 1px solid var(--line);
-        background: var(--soft);
         overflow: hidden;
+        background: var(--soft);
       }
 
       .psd-code-header {
@@ -1016,34 +935,24 @@ function ProjectDrawerStyles() {
         background: #fff;
       }
 
-      .psd-code-dots {
-        display: flex;
-        gap: 5px;
-      }
+      .psd-code-dots { display: flex; gap: 5px; }
+      .psd-dot-red   { width: 9px; height: 9px; border-radius: 50%; background: #ef4444; }
+      .psd-dot-yellow{ width: 9px; height: 9px; border-radius: 50%; background: #f59e0b; }
+      .psd-dot-green { width: 9px; height: 9px; border-radius: 50%; background: #10b981; }
 
-      .psd-code-dots .dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-      }
-
-      .dot.red { background: #ef4444; }
-      .dot.yellow { background: #f59e0b; }
-      .dot.green { background: #10b981; }
-
-      .psd-code-file {
+      .psd-code-filename {
         font-size: 11px;
         font-weight: 600;
         color: var(--muted);
         margin-left: 4px;
+        flex: 1;
       }
 
       .psd-copy-btn {
-        margin-left: auto;
         display: inline-flex;
         align-items: center;
         gap: 4px;
-        padding: 3px 8px;
+        padding: 3px 9px;
         border-radius: 6px;
         font-size: 10.5px;
         font-weight: 600;
@@ -1054,22 +963,20 @@ function ProjectDrawerStyles() {
         transition: all 0.15s ease;
       }
 
-      .psd-copy-btn:hover {
-        background: var(--ink);
-        color: #fff;
-      }
+      .psd-copy-btn:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
 
       .psd-code-body {
         margin: 0;
         padding: 14px;
-        font-family: var(--font-mono, monospace);
+        font-family: var(--font-mono, 'Fira Code', 'Cascadia Code', monospace);
         font-size: 12px;
-        line-height: 1.6;
+        line-height: 1.65;
         color: var(--ink);
         overflow-x: auto;
+        white-space: pre;
       }
 
-      /* Footer */
+      /* ── FOOTER ── */
       .psd-footer {
         display: flex;
         align-items: center;
@@ -1081,56 +988,161 @@ function ProjectDrawerStyles() {
         flex-shrink: 0;
       }
 
-      .psd-internal-label {
+      /* Buttons - identical to .pc-btn in ProjectCard.css */
+      .psd-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 9px 16px;
+        font-size: 13px;
+        font-weight: 600;
+        border-radius: 10px;
+        text-decoration: none;
+        transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+        cursor: pointer;
+        border: none;
+      }
+
+      .psd-btn span {
+        transition: transform 0.2s ease;
+        display: inline-block;
+      }
+
+      .psd-btn-primary {
+        background: var(--ink);
+        color: #fff;
+      }
+
+      .psd-btn-primary:hover {
+        background: var(--accent);
+      }
+
+      .psd-btn-primary:hover span {
+        transform: translateX(3px);
+      }
+
+      .psd-btn-ghost {
+        background: #fff;
+        color: var(--ink);
+        border: 1px solid var(--line);
+      }
+
+      .psd-btn-ghost:hover {
+        background: var(--ink);
+        color: #fff;
+        border-color: var(--ink);
+      }
+
+      .psd-internal-tag {
         font-size: 12px;
         color: var(--muted);
         font-weight: 500;
+        font-style: italic;
       }
 
-      /* Dark mode matching ProjectCard.css */
+      /* ── DARK MODE ── */
       :root[data-theme="dark"] .psd-panel,
       .dark .psd-panel {
-        --ink: #f3f4f6;
+        --ink: #f1f3f7;
         --muted: #a3acba;
-        --line: #2a2f3a;
-        --soft: #161a22;
-        background: #0f1218;
+        --line: #252c3a;
+        --soft: #141820;
+        --accent-lite: rgba(37,99,235,0.15);
+        background: #0d1017;
       }
 
       :root[data-theme="dark"] .psd-header,
       .dark .psd-header,
-      :root[data-theme="dark"] .psd-tabs-wrap,
-      .dark .psd-tabs-wrap,
+      :root[data-theme="dark"] .psd-tabs-bar,
+      .dark .psd-tabs-bar,
       :root[data-theme="dark"] .psd-footer,
       .dark .psd-footer,
       :root[data-theme="dark"] .psd-code-header,
       .dark .psd-code-header {
-        background: #0f1218;
+        background: #0d1017;
+        border-color: var(--line);
       }
 
-      :root[data-theme="dark"] .psd-metric-box,
-      .dark .psd-metric-box,
-      :root[data-theme="dark"] .psd-close-btn,
-      .dark .psd-close-btn,
-      :root[data-theme="dark"] .psd-tab-btn.active,
-      .dark .psd-tab-btn.active,
       :root[data-theme="dark"] .psd-flow-node,
-      .dark .psd-flow-node,
-      :root[data-theme="dark"] .psd-tech span,
-      .dark .psd-tech span {
-        background: #161a22;
-        color: #cbd2dd;
+      .dark .psd-flow-node {
+        background: #141820;
+        border-color: var(--line);
       }
 
-      :root[data-theme="dark"] .psd-metric {
-        background: rgba(16, 185, 129, 0.15);
-        color: #34d399;
-        border-color: rgba(16, 185, 129, 0.3);
+      :root[data-theme="dark"] .psd-metric-chip,
+      .dark .psd-metric-chip {
+        background: #141820;
+        border-color: var(--line);
       }
 
-      :root[data-theme="dark"] .psd-btn-ghost {
-        background: #161a22;
+      :root[data-theme="dark"] .psd-metric-chip-val,
+      .dark .psd-metric-chip-val {
         color: var(--ink);
+      }
+
+      :root[data-theme="dark"] .psd-tech-pill,
+      .dark .psd-tech-pill {
+        color: #c5cdd9;
+        background: #141820;
+        border-color: var(--line);
+      }
+
+      :root[data-theme="dark"] .psd-tech-pill:hover,
+      .dark .psd-tech-pill:hover {
+        background: #1a2030;
+        border-color: #3a4255;
+      }
+
+      :root[data-theme="dark"] .psd-btn-ghost,
+      .dark .psd-btn-ghost {
+        background: #141820;
+        color: var(--ink);
+        border-color: var(--line);
+      }
+
+      :root[data-theme="dark"] .psd-btn-ghost:hover,
+      .dark .psd-btn-ghost:hover {
+        background: var(--ink);
+        color: #0d1017;
+        border-color: var(--ink);
+      }
+
+      :root[data-theme="dark"] .psd-btn-primary,
+      .dark .psd-btn-primary {
+        background: #f1f3f7;
+        color: #0d1017;
+      }
+
+      :root[data-theme="dark"] .psd-btn-primary:hover,
+      .dark .psd-btn-primary:hover {
+        background: var(--accent);
+        color: #fff;
+      }
+
+      :root[data-theme="dark"] .psd-close,
+      .dark .psd-close {
+        background: #141820;
+        border-color: var(--line);
+      }
+
+      :root[data-theme="dark"] .psd-tab--active,
+      .dark .psd-tab--active {
+        background: #1a2030;
+      }
+
+      :root[data-theme="dark"] .psd-code-body,
+      .dark .psd-code-body {
+        color: #d1d9e8;
+      }
+
+      :root[data-theme="dark"] .psd-hl-item,
+      .dark .psd-hl-item,
+      :root[data-theme="dark"] .psd-stage-card,
+      .dark .psd-stage-card,
+      :root[data-theme="dark"] .psd-arch-card,
+      .dark .psd-arch-card {
+        background: #141820;
+        border-color: var(--line);
       }
     `}</style>
   );
