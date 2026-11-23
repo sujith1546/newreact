@@ -129,10 +129,8 @@ export default function ProjectCard({
         <div className="pc-tech">
           {tech.map((t, i) => {
             const label = typeof t === "string" ? t : t?.name || t;
-            const { Icon, color } = getTechBadge(label);
             return (
               <span key={label + i} className="pc-tech-pill">
-                <Icon size={13} style={{ color, flexShrink: 0 }} aria-hidden="true" />
                 <span>{label}</span>
               </span>
             );
