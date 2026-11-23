@@ -167,29 +167,12 @@ function CertCard({ cert, isMobile = false, onVerifyClick }) {
         flexGrow: 1
       }}>
         <p style={{
-          margin: '0 0 12px',
+          margin: '0 0 16px',
           fontSize: isMobile ? '12px' : '13.5px',
           color: 'var(--text-secondary)',
           lineHeight: '1.55',
           flexGrow: 1,
         }}>{description}</p>
-
-        {skills && skills.length > 0 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: isMobile ? '14px' : '18px' }}>
-            {skills.map(skill => (
-              <span key={skill} style={{
-                fontSize: isMobile ? '10px' : '11.5px',
-                fontWeight: '500',
-                color: 'var(--text-secondary)',
-                background: 'var(--bg-primary)',
-                border: '1px solid var(--border-color)',
-                borderRadius: '999px',
-                padding: isMobile ? '3px 10px' : '4px 13px',
-                lineHeight: '1.3',
-              }}>{skill}</span>
-            ))}
-          </div>
-        )}
 
         <div style={{
           display: 'flex',
@@ -1461,29 +1444,6 @@ export default function Certifications() {
                       {activeCert.description}
                     </p>
                   </div>
-
-                  {/* Skills / Competencies */}
-                  {activeCert.skills && activeCert.skills.length > 0 && (
-                    <div className="cert-skills-wrap">
-                      <p className="cert-section-heading">Verified Competencies</p>
-                      <div className="cert-skills-pills">
-                        {activeCert.skills.map((skill) => (
-                          <span
-                            key={skill}
-                            className="cert-skill-pill"
-                            style={{
-                              borderColor: activeColor.pillBorder,
-                              color: activeColor.pillColor,
-                              background: activeColor.headerBg,
-                            }}
-                          >
-                            <CheckCircle2 size={10} style={{ marginRight: 3, verticalAlign: '-1px' }} />
-                            {skill}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
 
                   {/* Official Registry Link CTA */}
                   <div>
