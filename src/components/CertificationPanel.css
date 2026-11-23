@@ -1,5 +1,5 @@
 .cv-root {
-  --cv-panel-w: 460px;
+  --cv-panel-w: 620px;
   --cv-bg: var(--bg-secondary, #ffffff);
   --cv-bg-soft: var(--bg-primary, #f8fafc);
   --cv-border: var(--border-color, #e2e8f0);
@@ -231,7 +231,7 @@
   overflow: hidden;
   display: grid;
   place-items: center;
-  max-height: 230px;
+  max-height: 340px;
   position: relative;
   user-select: none;
   -webkit-user-select: none;
@@ -240,7 +240,7 @@
 .cv-preview img {
   width: 100%;
   height: auto;
-  max-height: 230px;
+  max-height: 340px;
   display: block;
   object-fit: contain;
   pointer-events: none;
