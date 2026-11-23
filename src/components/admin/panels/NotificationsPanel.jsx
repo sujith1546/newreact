@@ -90,20 +90,21 @@ export default function NotificationsPanel() {
       try {
         const [{ data: msgs }, { data: acts }] = await Promise.all([
           supabase.from('contact_messages').select('id, name, email, created_at').order('created_at', { ascending: false }).limit(8),
-          supabase.from('recruiter_actions').select('id, action_type, created_at').order('created_at', { ascending: false }).limit(8),
+          supabase.from('recruiter_events').select('id, event_type, created_at').order('created_at', { ascending: false }).limit(8),
         ]);
         const events = [
           ...(msgs || []).map(m => ({ id: `msg-${m.id}`, label: `Inbound message from ${m.name || m.email}`, ts: m.created_at, color: '#6366F1' })),
           ...(acts || []).map(a => ({
             id: `act-${a.id}`,
             ts: a.created_at,
-            color: a.action_type === 'resume_download' ? '#10B981' : '#F59E0B',
+            color: a.event_type === 'resume_download' ? '#10B981' : '#F59E0B',
             label: {
               resume_download: 'Resume downloaded by recruiter',
               github_click: 'GitHub repository clicked',
               linkedin_click: 'LinkedIn profile clicked',
+              contact_click: 'Contact inquiry submitted',
               contact_submit: 'Contact form submitted'
-            }[a.action_type] || a.action_type,
+            }[a.event_type] || a.event_type,
           })),
         ].sort((a, b) => new Date(b.ts) - new Date(a.ts)).slice(0, 12);
 

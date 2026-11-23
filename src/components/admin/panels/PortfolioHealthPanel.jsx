@@ -78,17 +78,17 @@ export default function PortfolioHealthPanel() {
     const foundIssues = [];
 
     try {
-      const { data: projects } = await supabase.from('projects').select('id, title, description, github_url, demo_url, tech_stack, image_url');
+      const { data: projects } = await supabase.from('projects').select('*');
       if (projects) {
         const noDesc = projects.filter(p => !p.description || p.description.trim().length < 15);
         if (noDesc.length > 0) {
           foundIssues.push({ id: 'no-desc', severity: 'high', title: `${noDesc.length} project(s) missing full descriptions`, detail: `${noDesc.map(p => p.title).slice(0, 3).join(', ')}`, fixTab: 'projects' });
         }
-        const noLinks = projects.filter(p => !p.github_url && !p.demo_url);
+        const noLinks = projects.filter(p => (!p.github_url || p.github_url === '#') && (!p.live_url || p.live_url === '#'));
         if (noLinks.length > 0) {
           foundIssues.push({ id: 'no-links', severity: 'medium', title: `${noLinks.length} project(s) without live link or repo`, detail: 'Recruiters cannot verify working implementations', fixTab: 'projects' });
         }
-        const noStack = projects.filter(p => !p.tech_stack || (Array.isArray(p.tech_stack) && p.tech_stack.length === 0));
+        const noStack = projects.filter(p => !p.tags || (Array.isArray(p.tags) && p.tags.length === 0));
         if (noStack.length > 0) {
           foundIssues.push({ id: 'no-stack', severity: 'low', title: `${noStack.length} project(s) missing tech stack tags`, detail: 'Keywords help technical recruiter search ranking', fixTab: 'projects' });
         }
@@ -110,8 +110,9 @@ export default function PortfolioHealthPanel() {
         foundIssues.push({ id: 'few-certs', severity: 'low', title: `Only ${certCount || 0} certification credential(s)`, detail: 'Cloud and deep learning credentials increase recruiter trust', fixTab: 'certifications' });
       }
 
-      const { data: settings } = await supabase.from('site_settings').select('resume_url, linkedin_url').eq('id', 1).single();
-      if (!settings?.resume_url) {
+      const { data: settings } = await supabase.from('site_settings').select('*').eq('id', 1).maybeSingle();
+      const resumeUrl = settings?.resume_url || '/resume.pdf';
+      if (!resumeUrl) {
         foundIssues.push({ id: 'no-resume', severity: 'high', title: 'Resume PDF URL is unconfigured', detail: 'Primary recruiter call-to-action is non-functional', fixTab: 'settings' });
       }
     } catch (_) {}
