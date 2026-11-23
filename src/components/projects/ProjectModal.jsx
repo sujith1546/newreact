@@ -236,7 +236,7 @@ export default function ProjectModal({ project, onClose, isMobile = false }) {
                   )}
 
                   {/* Key highlights */}
-                  <section className="psd-section">
+                  <section className="psd-section psd-section--grow">
                     <span className="psd-section-label">Highlights</span>
                     <div className="psd-highlights">
                       <div className="psd-hl-item">
@@ -607,6 +607,8 @@ function ProjectDrawerStyles() {
         padding: 13px 20px;
         scrollbar-width: thin;
         scrollbar-color: var(--line) transparent;
+        display: flex;
+        flex-direction: column;
       }
 
       .psd-body::-webkit-scrollbar { width: 4px; }
@@ -616,12 +618,18 @@ function ProjectDrawerStyles() {
         display: flex;
         flex-direction: column;
         gap: 12px;
+        flex: 1;
       }
 
       /* ── Sections ── */
       .psd-section {
         display: flex;
         flex-direction: column;
+      }
+
+      /* Last section grows to fill remaining body space, eliminating empty gap */
+      .psd-section--grow {
+        flex: 1;
       }
 
       .psd-section-label {
