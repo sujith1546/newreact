@@ -153,7 +153,7 @@ export default function CertificationPanel({ cert, onClose }) {
           {/* 1. Certificate preview */}
           {cert.image && (
             <section
-              className="cv-card cv-card--soft"
+              className="cv-card cv-card--soft cv-card--preview"
               onContextMenu={(e) => { e.preventDefault(); return false; }}
               onDragStart={(e) => { e.preventDefault(); return false; }}
             >
