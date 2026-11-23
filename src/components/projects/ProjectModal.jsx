@@ -175,52 +175,83 @@ export default function ProjectModal({ project, onClose, isMobile = false }) {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.16, ease: 'easeOut' }}
               className="psd-content"
-              style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}
             >
 
               {/* TAB: OVERVIEW */}
               {tabs[tab] === 'Overview' && (
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {/* About */}
-                  <section className="psd-section">
-                    <span className="psd-section-label">About</span>
+                <>
+                  {/* About & Specs */}
+                  <section className="psd-card">
+                    <div className="psd-card-header">
+                      <span className="psd-eyebrow">
+                        <Sparkles size={12} /> Overview &amp; Specs
+                      </span>
+                      <span className="psd-badge-active">
+                        <span className="psd-dot-pulse" /> Production Ready
+                      </span>
+                    </div>
                     <p className="psd-about-text">{project.description}</p>
+                    <div className="psd-specs-grid">
+                      <div>
+                        <span className="psd-spec-label">DOMAIN</span>
+                        <span className="psd-spec-val">{category}</span>
+                      </div>
+                      <div>
+                        <span className="psd-spec-label">DEVELOPER</span>
+                        <span className="psd-spec-val">Thota Sujith Reddy</span>
+                      </div>
+                      <div>
+                        <span className="psd-spec-label">PRIMARY METRIC</span>
+                        <span className="psd-spec-val">{metrics[0]?.value ? `${metrics[0].value} ${metrics[0].label}` : 'Optimized SLA'}</span>
+                      </div>
+                      <div>
+                        <span className="psd-spec-label">STATUS</span>
+                        <span className="psd-spec-val">{demoUrl && demoUrl !== '#' ? 'Live Deployment' : 'Internal Service'}</span>
+                      </div>
+                    </div>
                   </section>
 
                   {/* Pipeline mini-map */}
                   {pipeline.length > 0 && (
-                    <section className="psd-section">
-                      <span className="psd-section-label">Pipeline</span>
-                      <div className="psd-flow-box">
-                        <div className="psd-flow-track">
-                          {pipeline.map((step, i) => {
-                            const isLast = i === pipeline.length - 1;
-                            const Icon = step.icon;
-                            return (
-                              <React.Fragment key={step.id + i}>
-                                <div className="psd-flow-node" title={step.name}>
-                                  <span className="psd-flow-icon"><Icon size={11} /></span>
-                                  <span className="psd-flow-num">{i + 1}</span>
-                                  <span className="psd-flow-text">{step.name}</span>
+                    <section className="psd-card">
+                      <div className="psd-card-header">
+                        <span className="psd-eyebrow">
+                          <Zap size={12} /> Pipeline Workflow
+                        </span>
+                        <span className="psd-card-count">{pipeline.length} stages</span>
+                      </div>
+                      <div className="psd-flow-track">
+                        {pipeline.map((step, i) => {
+                          const isLast = i === pipeline.length - 1;
+                          const Icon = step.icon;
+                          return (
+                            <React.Fragment key={step.id + i}>
+                              <div className="psd-flow-node" title={step.name}>
+                                <span className="psd-flow-icon"><Icon size={11} /></span>
+                                <span className="psd-flow-text">{step.name}</span>
+                              </div>
+                              {!isLast && (
+                                <div className="psd-flow-bridge" aria-hidden="true">
+                                  <span className="psd-flow-line" />
+                                  <span className="psd-flow-arrow">›</span>
                                 </div>
-                                {!isLast && (
-                                  <div className="psd-flow-bridge" aria-hidden="true">
-                                    <span className="psd-flow-line" />
-                                    <span className="psd-flow-arrow">›</span>
-                                  </div>
-                                )}
-                              </React.Fragment>
-                            );
-                          })}
-                        </div>
+                              )}
+                            </React.Fragment>
+                          );
+                        })}
                       </div>
                     </section>
                   )}
 
                   {/* Tech stack */}
                   {stack.length > 0 && (
-                    <section className="psd-section">
-                      <span className="psd-section-label">Tech Stack</span>
+                    <section className="psd-card">
+                      <div className="psd-card-header">
+                        <span className="psd-eyebrow">
+                          <Layers size={12} /> Tech Stack &amp; Tools
+                        </span>
+                        <span className="psd-card-count">{stack.length} technologies</span>
+                      </div>
                       <div className="psd-tech-grid">
                         {stack.map((t, i) => {
                           const label = typeof t === 'string' ? t : t?.name || t;
@@ -237,18 +268,23 @@ export default function ProjectModal({ project, onClose, isMobile = false }) {
                   )}
 
                   {/* Key highlights */}
-                  <section className="psd-section psd-section--grow">
-                    <span className="psd-section-label">Highlights</span>
+                  <section className="psd-card psd-card--fill">
+                    <div className="psd-card-header">
+                      <span className="psd-eyebrow">
+                        <ShieldCheck size={12} /> Key Highlights
+                      </span>
+                      <span className="psd-card-count">System Quality</span>
+                    </div>
                     <div className="psd-highlights">
                       <div className="psd-hl-item">
-                        <span className="psd-hl-icon"><CheckCircle2 size={14} /></span>
+                        <span className="psd-hl-icon"><CheckCircle2 size={13} /></span>
                         <div>
                           <strong>End-to-end ML Pipeline</strong>
                           <p>Fully automated data ingestion, transformation, and inference with sub-second SLA.</p>
                         </div>
                       </div>
                       <div className="psd-hl-item">
-                        <span className="psd-hl-icon"><CheckCircle2 size={14} /></span>
+                        <span className="psd-hl-icon"><CheckCircle2 size={13} /></span>
                         <div>
                           <strong>Production-Grade Architecture</strong>
                           <p>Modular, horizontally scalable services with rate limiting, PII masking, and retry logic.</p>
@@ -256,7 +292,7 @@ export default function ProjectModal({ project, onClose, isMobile = false }) {
                       </div>
                     </div>
                   </section>
-                </div>
+                </>
               )}
 
               {/* TAB: PIPELINE */}
@@ -357,21 +393,28 @@ export default function ProjectModal({ project, onClose, isMobile = false }) {
 
         {/* ── FOOTER ── */}
         <footer className="psd-footer">
-          {sourceUrl && sourceUrl !== '#' ? (
-            <a href={sourceUrl} target="_blank" rel="noreferrer" className="psd-btn psd-btn-ghost">
-              <FaGithub size={14} />
-              GitHub
-            </a>
-          ) : <div />}
-
-          {demoUrl && demoUrl !== '#' ? (
-            <a href={demoUrl} target="_blank" rel="noreferrer" className="psd-btn psd-btn-primary">
-              <Globe size={13} />
-              Live Demo <span aria-hidden>→</span>
-            </a>
-          ) : (
-            <span className="psd-internal-tag">Internal Project</span>
-          )}
+          <div className="psd-footer-card">
+            <div className="psd-footer-text">
+              <span className="psd-footer-title">Project Deployment</span>
+              <span className="psd-footer-sub">Direct access to source code &amp; live platform.</span>
+            </div>
+            <div className="psd-footer-actions">
+              {sourceUrl && sourceUrl !== '#' && (
+                <a href={sourceUrl} target="_blank" rel="noreferrer" className="psd-btn psd-btn-ghost">
+                  <FaGithub size={13} />
+                  <span>GitHub</span>
+                </a>
+              )}
+              {demoUrl && demoUrl !== '#' ? (
+                <a href={demoUrl} target="_blank" rel="noreferrer" className="psd-btn psd-btn-primary">
+                  <Globe size={13} />
+                  <span>Live Demo</span> <span aria-hidden>→</span>
+                </a>
+              ) : (
+                <span className="psd-internal-badge">Internal Project</span>
+              )}
+            </div>
+          </div>
         </footer>
 
       </motion.aside>
@@ -419,7 +462,7 @@ function ProjectDrawerStyles() {
         position: fixed;
         top: 0; right: 0; bottom: 0;
         width: 100%;
-        max-width: 580px;
+        max-width: 620px;
         background: #fff;
         border-left: 1px solid var(--line);
         box-shadow: -16px 0 48px -4px rgba(15,23,42,0.16);
@@ -605,7 +648,7 @@ function ProjectDrawerStyles() {
         flex: 1;
         min-height: 0;
         overflow-y: auto;
-        padding: 13px 20px;
+        padding: 12px 18px 12px;
         scrollbar-width: thin;
         scrollbar-color: var(--line) transparent;
         display: flex;
@@ -618,36 +661,115 @@ function ProjectDrawerStyles() {
       .psd-content {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 10px;
         flex: 1;
       }
 
-      /* ── Sections ── */
-      .psd-section {
+      /* ── Soft Cards (matches CertificationPanel .cv-card) ── */
+      .psd-card {
+        background: var(--soft);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 11px 13px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        box-sizing: border-box;
+        flex-shrink: 0;
+      }
+
+      /* Last card stretches to fill all available space to bottom, zero empty gap */
+      .psd-card--fill {
+        flex: 1;
+        min-height: 120px;
         display: flex;
         flex-direction: column;
       }
 
-      /* Last section grows to fill remaining body space, eliminating empty gap */
-      .psd-section--grow {
-        flex: 1;
+      .psd-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        flex-shrink: 0;
       }
 
-      .psd-section-label {
-        display: block;
-        margin-bottom: 6px;
+      .psd-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
         font-size: 10px;
         font-weight: 800;
-        letter-spacing: 0.1em;
+        letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: #9aa2b4;
+        color: var(--muted);
+      }
+
+      .psd-card-count {
+        font-size: 10px;
+        font-weight: 600;
+        color: var(--muted);
+        background: color-mix(in srgb, var(--ink) 6%, transparent);
+        padding: 2px 7px;
+        border-radius: 999px;
+      }
+
+      .psd-badge-active {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--green);
+        background: var(--green-bg);
+        border: 1px solid var(--green-border);
+        padding: 2px 8px;
+        border-radius: 999px;
+      }
+
+      .psd-dot-pulse {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--green);
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--green) 30%, transparent);
       }
 
       .psd-about-text {
         margin: 0;
-        font-size: 13px;
-        line-height: 1.6;
+        font-size: 12.5px;
+        line-height: 1.55;
         color: var(--muted);
+      }
+
+      /* Specifications 4-column grid (matches Authenticity grid) */
+      .psd-specs-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        padding-top: 8px;
+        border-top: 1px solid color-mix(in srgb, var(--line) 80%, transparent);
+        margin-top: 2px;
+      }
+
+      .psd-spec-label {
+        display: block;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #9aa2b4;
+        margin-bottom: 2px;
+      }
+
+      .psd-spec-val {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--ink);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       /* ── Pipeline flow box ── */
@@ -755,7 +877,7 @@ function ProjectDrawerStyles() {
         font-weight: 500;
         padding: 3px 9px;
         color: #374151;
-        background: var(--soft);
+        background: #fff;
         border: 1px solid var(--line);
         border-radius: 8px;
         transition: all 0.15s ease;
@@ -778,17 +900,21 @@ function ProjectDrawerStyles() {
       .psd-highlights {
         display: flex;
         flex-direction: column;
-        gap: 7px;
+        gap: 6px;
+        flex: 1;
+        justify-content: space-evenly;
       }
 
       .psd-hl-item {
         display: flex;
-        align-items: flex-start;
+        align-items: center;
         gap: 10px;
-        padding: 9px 11px;
-        background: var(--soft);
+        padding: 8px 11px;
+        background: #fff;
         border: 1px solid var(--line);
-        border-radius: 11px;
+        border-radius: 9px;
+        flex: 1;
+        min-height: 0;
       }
 
       .psd-hl-icon {
@@ -814,9 +940,9 @@ function ProjectDrawerStyles() {
 
       .psd-hl-item p {
         margin: 0;
-        font-size: 11.5px;
+        font-size: 11px;
         color: var(--muted);
-        line-height: 1.45;
+        line-height: 1.4;
       }
 
       /* ── Pipeline tab: stage cards ── */
@@ -985,27 +1111,75 @@ function ProjectDrawerStyles() {
         white-space: pre;
       }
 
-      /* ── FOOTER ── */
+      /* ── FOOTER (matches CertificationPanel .cv-footer) ── */
       .psd-footer {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-        padding: 10px 20px 13px;
+        padding: 12px 18px 14px;
         border-top: 1px solid var(--line);
         background: #fff;
         flex-shrink: 0;
+      }
+
+      .psd-footer-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        width: 100%;
+        padding: 10px 14px;
+        background: color-mix(in srgb, var(--accent) 4%, var(--soft));
+        border: 1px solid color-mix(in srgb, var(--accent) 18%, var(--line));
+        border-radius: 12px;
+        box-sizing: border-box;
+      }
+
+      .psd-footer-text {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        min-width: 0;
+      }
+
+      .psd-footer-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--ink);
+        line-height: 1.2;
+      }
+
+      .psd-footer-sub {
+        font-size: 11px;
+        color: var(--muted);
+        line-height: 1.3;
+      }
+
+      .psd-footer-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+
+      .psd-internal-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 12px;
+        font-size: 11px;
+        font-weight: 600;
+        border-radius: 8px;
+        background: color-mix(in srgb, var(--ink) 6%, transparent);
+        color: var(--muted);
+        border: 1px solid var(--line);
       }
 
       /* Buttons - identical to .pc-btn in ProjectCard.css */
       .psd-btn {
         display: inline-flex;
         align-items: center;
-        gap: 7px;
-        padding: 9px 16px;
-        font-size: 13px;
+        gap: 6px;
+        padding: 8px 14px;
+        font-size: 12px;
         font-weight: 600;
-        border-radius: 10px;
+        border-radius: 8px;
         text-decoration: none;
         transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
         cursor: pointer;
@@ -1042,13 +1216,6 @@ function ProjectDrawerStyles() {
         border-color: var(--ink);
       }
 
-      .psd-internal-tag {
-        font-size: 12px;
-        color: var(--muted);
-        font-weight: 500;
-        font-style: italic;
-      }
-
       /* ── DARK MODE ── */
       :root[data-theme="dark"] .psd-panel,
       .dark .psd-panel {
@@ -1072,9 +1239,27 @@ function ProjectDrawerStyles() {
         border-color: var(--line);
       }
 
+      :root[data-theme="dark"] .psd-card,
+      .dark .psd-card {
+        background: #141820;
+        border-color: var(--line);
+      }
+
+      :root[data-theme="dark"] .psd-footer-card,
+      .dark .psd-footer-card {
+        background: color-mix(in srgb, var(--accent) 8%, #141820);
+        border-color: color-mix(in srgb, var(--accent) 22%, rgba(255, 255, 255, 0.12));
+      }
+
+      :root[data-theme="dark"] .psd-hl-item,
+      .dark .psd-hl-item {
+        background: #0d1017;
+        border-color: var(--line);
+      }
+
       :root[data-theme="dark"] .psd-flow-node,
       .dark .psd-flow-node {
-        background: #141820;
+        background: #0d1017;
         border-color: var(--line);
       }
 
@@ -1092,7 +1277,7 @@ function ProjectDrawerStyles() {
       :root[data-theme="dark"] .psd-tech-pill,
       .dark .psd-tech-pill {
         color: #c5cdd9;
-        background: #141820;
+        background: #0d1017;
         border-color: var(--line);
       }
 
@@ -1144,8 +1329,6 @@ function ProjectDrawerStyles() {
         color: #d1d9e8;
       }
 
-      :root[data-theme="dark"] .psd-hl-item,
-      .dark .psd-hl-item,
       :root[data-theme="dark"] .psd-stage-card,
       .dark .psd-stage-card,
       :root[data-theme="dark"] .psd-arch-card,
