@@ -840,8 +840,8 @@ function ProjectDrawerStyles() {
         width: 24px;
         height: 24px;
         border-radius: 50%;
-        background: var(--accent);
-        color: #fff;
+        background: #0b0b0f;
+        color: #ffffff !important;
         font-size: 11px;
         font-weight: 800;
       }

@@ -195,10 +195,11 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: var(--ink);
-  color: #fff;
+  background: #0b0b0f;
+  color: #ffffff !important;
   font-size: 9px;
   font-weight: 800;
+  line-height: 1;
   flex-shrink: 0;
 }
 
@@ -421,6 +422,13 @@
 :root[data-theme="dark"] .pc-flow-node,
 .dark .pc-flow-node {
   background: #141720;
+}
+
+:root[data-theme="dark"] .pc-flow-badge,
+.dark .pc-flow-badge {
+  background: #000000;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 :root[data-theme="dark"] .pc-flow-bridge-line,
