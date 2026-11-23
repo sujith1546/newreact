@@ -418,7 +418,7 @@ function ProjectDrawerStyles() {
         position: fixed;
         top: 0; right: 0; bottom: 0;
         width: 100%;
-        max-width: 490px;
+        max-width: 580px;
         background: #fff;
         border-left: 1px solid var(--line);
         box-shadow: -16px 0 48px -4px rgba(15,23,42,0.16);
@@ -447,12 +447,12 @@ function ProjectDrawerStyles() {
 
       /* ── HEADER ── */
       .psd-header {
-        padding: 18px 22px 16px;
+        padding: 12px 20px 10px;
         border-bottom: 1px solid var(--line);
         flex-shrink: 0;
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 7px;
         background: #fff;
       }
 
@@ -508,7 +508,7 @@ function ProjectDrawerStyles() {
 
       .psd-title {
         margin: 0;
-        font-size: 22px;
+        font-size: 19px;
         font-weight: 800;
         line-height: 1.2;
         color: var(--ink);
@@ -517,8 +517,8 @@ function ProjectDrawerStyles() {
 
       .psd-tagline {
         margin: 0;
-        font-size: 13px;
-        line-height: 1.6;
+        font-size: 12.5px;
+        line-height: 1.55;
         color: var(--muted);
         display: -webkit-box;
         -webkit-line-clamp: 2;
@@ -529,7 +529,7 @@ function ProjectDrawerStyles() {
       /* Metric pills row */
       .psd-metric-row {
         display: flex;
-        gap: 8px;
+        gap: 7px;
         flex-wrap: wrap;
       }
 
@@ -537,14 +537,14 @@ function ProjectDrawerStyles() {
         display: inline-flex;
         align-items: baseline;
         gap: 5px;
-        padding: 5px 11px;
+        padding: 4px 9px;
         border-radius: 999px;
         background: var(--soft);
         border: 1px solid var(--line);
       }
 
       .psd-metric-chip-val {
-        font-size: 14px;
+        font-size: 13px;
         font-weight: 800;
         color: var(--ink);
         letter-spacing: -0.02em;
@@ -561,7 +561,7 @@ function ProjectDrawerStyles() {
 
       /* ── TABS ── */
       .psd-tabs-bar {
-        padding: 10px 22px 8px;
+        padding: 7px 20px 6px;
         border-bottom: 1px solid var(--line);
         flex-shrink: 0;
         background: #fff;
@@ -604,7 +604,7 @@ function ProjectDrawerStyles() {
         flex: 1;
         min-height: 0;
         overflow-y: auto;
-        padding: 20px 22px;
+        padding: 13px 20px;
         scrollbar-width: thin;
         scrollbar-color: var(--line) transparent;
       }
@@ -615,7 +615,7 @@ function ProjectDrawerStyles() {
       .psd-content {
         display: flex;
         flex-direction: column;
-        gap: 20px;
+        gap: 12px;
       }
 
       /* ── Sections ── */
@@ -626,7 +626,7 @@ function ProjectDrawerStyles() {
 
       .psd-section-label {
         display: block;
-        margin-bottom: 10px;
+        margin-bottom: 6px;
         font-size: 10px;
         font-weight: 800;
         letter-spacing: 0.1em;
@@ -636,14 +636,14 @@ function ProjectDrawerStyles() {
 
       .psd-about-text {
         margin: 0;
-        font-size: 13.5px;
-        line-height: 1.65;
+        font-size: 13px;
+        line-height: 1.6;
         color: var(--muted);
       }
 
       /* ── Pipeline flow box ── */
       .psd-flow-box {
-        padding: 12px 14px;
+        padding: 9px 12px;
         background: var(--soft);
         border: 1px solid var(--line);
         border-radius: 12px;
@@ -735,16 +735,16 @@ function ProjectDrawerStyles() {
       .psd-tech-grid {
         display: flex;
         flex-wrap: wrap;
-        gap: 7px;
+        gap: 6px;
       }
 
       .psd-tech-pill {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
-        font-size: 12px;
+        gap: 5px;
+        font-size: 11.5px;
         font-weight: 500;
-        padding: 5px 11px;
+        padding: 3px 9px;
         color: #374151;
         background: var(--soft);
         border: 1px solid var(--line);
@@ -759,7 +759,7 @@ function ProjectDrawerStyles() {
       }
 
       .psd-tech-pill span {
-        font-size: 12px;
+        font-size: 11.5px;
         font-weight: 500;
         color: inherit;
         line-height: 1;
@@ -769,14 +769,14 @@ function ProjectDrawerStyles() {
       .psd-highlights {
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 7px;
       }
 
       .psd-hl-item {
         display: flex;
         align-items: flex-start;
-        gap: 11px;
-        padding: 11px 13px;
+        gap: 10px;
+        padding: 9px 11px;
         background: var(--soft);
         border: 1px solid var(--line);
         border-radius: 11px;
@@ -786,8 +786,8 @@ function ProjectDrawerStyles() {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 24px;
-        height: 24px;
+        width: 22px;
+        height: 22px;
         border-radius: 7px;
         background: var(--green-bg);
         border: 1px solid var(--green-border);
@@ -797,17 +797,17 @@ function ProjectDrawerStyles() {
 
       .psd-hl-item strong {
         display: block;
-        font-size: 12.5px;
+        font-size: 12px;
         font-weight: 700;
         color: var(--ink);
-        margin-bottom: 3px;
+        margin-bottom: 2px;
       }
 
       .psd-hl-item p {
         margin: 0;
-        font-size: 12px;
+        font-size: 11.5px;
         color: var(--muted);
-        line-height: 1.5;
+        line-height: 1.45;
       }
 
       /* ── Pipeline tab: stage cards ── */
@@ -982,7 +982,7 @@ function ProjectDrawerStyles() {
         align-items: center;
         justify-content: space-between;
         gap: 10px;
-        padding: 14px 22px;
+        padding: 10px 20px 13px;
         border-top: 1px solid var(--line);
         background: #fff;
         flex-shrink: 0;
