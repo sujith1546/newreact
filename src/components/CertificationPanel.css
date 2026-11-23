@@ -1,5 +1,5 @@
 .cv-root {
-  --cv-panel-w: 620px;
+  --cv-panel-w: 640px;
   --cv-bg: var(--bg-secondary, #ffffff);
   --cv-bg-soft: var(--bg-primary, #f8fafc);
   --cv-border: var(--border-color, #e2e8f0);
@@ -15,7 +15,7 @@
   --cv-footer-bg: color-mix(in srgb, var(--primary-blue, #3b82f6) 4%, var(--bg-primary, #ffffff));
   --cv-footer-border: color-mix(in srgb, var(--primary-blue, #3b82f6) 18%, var(--border-color, #e2e8f0));
   --cv-backdrop: rgba(0, 0, 0, 0.55);
-  --cv-radius: 16px;
+  --cv-radius: 14px;
   position: fixed;
   inset: 0;
   z-index: 100000;
@@ -84,7 +84,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 22px 16px;
+  padding: 14px 20px 12px;
   border-bottom: 1px solid var(--cv-divider);
   flex-shrink: 0;
 }
@@ -114,7 +114,7 @@
 
 .cv-title {
   margin: 0;
-  font-size: 16px;
+  font-size: 15.5px;
   font-weight: 800;
   letter-spacing: -0.015em;
   color: var(--cv-text);
@@ -123,13 +123,13 @@
 
 .cv-subtitle {
   margin: 2px 0 0;
-  font-size: 11.5px;
+  font-size: 11px;
   color: var(--cv-muted);
 }
 
 .cv-close {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
   border: 1px solid var(--cv-border);
   background: var(--cv-bg-soft);
@@ -152,14 +152,14 @@
   transform: scale(0.92);
 }
 
-/* Body */
+/* Body - tightly adjusted to fit viewport without scrolling */
 .cv-body {
   flex: 1;
   overflow-y: auto;
-  padding: 16px 20px 20px;
+  padding: 12px 18px 12px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   overscroll-behavior: contain;
 }
 
@@ -167,7 +167,7 @@
   border: 1px solid var(--cv-border);
   border-radius: var(--cv-radius);
   background: var(--cv-bg-soft);
-  padding: 16px;
+  padding: 11px 14px;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
@@ -186,7 +186,7 @@
 
 .cv-card-title {
   margin: 0;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 700;
   color: var(--cv-text);
 }
@@ -194,8 +194,8 @@
 .cv-eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 10.5px;
+  gap: 5px;
+  font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.06em;
   color: var(--cv-muted);
@@ -205,13 +205,13 @@
 .cv-pill {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   border: 1px solid var(--cv-border);
   background: var(--cv-bg);
   color: var(--cv-text);
   border-radius: 999px;
-  padding: 4px 10px;
-  font-size: 11px;
+  padding: 3px 9px;
+  font-size: 10.5px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -222,16 +222,16 @@
   color: var(--cv-accent, var(--primary-blue));
 }
 
-/* Preview Box - Light card, not dark navy block */
+/* Preview Box - Light card adjusted in height */
 .cv-preview {
-  margin-top: 10px;
+  margin-top: 8px;
   border: 1px solid var(--cv-border);
-  border-radius: 10px;
+  border-radius: 8px;
   background: #ffffff;
   overflow: hidden;
   display: grid;
   place-items: center;
-  max-height: 340px;
+  height: clamp(140px, 20vh, 185px);
   position: relative;
   user-select: none;
   -webkit-user-select: none;
@@ -239,8 +239,8 @@
 
 .cv-preview img {
   width: 100%;
-  height: auto;
-  max-height: 340px;
+  height: 100%;
+  max-height: clamp(140px, 20vh, 185px);
   display: block;
   object-fit: contain;
   pointer-events: none;
@@ -260,8 +260,8 @@
 .cv-auth {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  font-size: 12.5px;
+  gap: 6px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--cv-green-text);
 }
@@ -276,27 +276,27 @@
 }
 
 .cv-badge {
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 700;
   color: var(--cv-green-text);
   background: var(--cv-green-bg);
   border: 1px solid var(--cv-green-border);
   border-radius: 999px;
-  padding: 2.5px 9px;
+  padding: 2px 8px;
   letter-spacing: 0.02em;
 }
 
 .cv-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px 14px;
-  margin: 12px 0 0;
-  padding-top: 12px;
+  gap: 8px 14px;
+  margin: 9px 0 0;
+  padding-top: 9px;
   border-top: 1px solid var(--cv-divider);
 }
 
 .cv-grid dt {
-  font-size: 9px;
+  font-size: 8.5px;
   font-weight: 700;
   letter-spacing: 0.06em;
   color: var(--cv-muted);
@@ -304,15 +304,15 @@
 }
 
 .cv-grid dd {
-  margin: 3px 0 0;
-  font-size: 12.5px;
+  margin: 2px 0 0;
+  font-size: 12px;
   font-weight: 600;
   color: var(--cv-text);
 }
 
 .cv-grid dd.cv-muted {
   margin-top: 1px;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 500;
   color: var(--cv-muted);
 }
@@ -326,22 +326,22 @@
 
 .cv-code {
   font-family: ui-monospace, 'JetBrains Mono', monospace;
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 700;
   background: var(--cv-code-bg);
   border: 1px solid var(--cv-border);
-  border-radius: 5px;
-  padding: 2px 6px;
+  border-radius: 4px;
+  padding: 1.5px 5px;
   color: var(--cv-text);
 }
 
 .cv-icon-btn {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   border: 1px solid var(--cv-border);
   background: var(--cv-bg);
   color: var(--cv-text-2);
-  border-radius: 5px;
+  border-radius: 4px;
   display: grid;
   place-items: center;
   cursor: pointer;
@@ -355,21 +355,21 @@
 }
 
 .cv-copied {
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 700;
   color: var(--cv-green-text);
 }
 
 .cv-text {
-  margin: 6px 0 0;
-  font-size: 12px;
-  line-height: 1.6;
+  margin: 4px 0 0;
+  font-size: 11.5px;
+  line-height: 1.5;
   color: var(--cv-text-2);
 }
 
 /* Footer card pinned at the bottom - matches FAQ drawer "Have another question?" card */
 .cv-footer {
-  padding: 14px 20px 24px;
+  padding: 10px 18px 14px;
   flex-shrink: 0;
   background: var(--cv-bg);
   border-top: 1px solid var(--cv-divider);
@@ -382,20 +382,20 @@
   gap: 12px;
   border: 1px solid var(--cv-footer-border);
   background: var(--cv-footer-bg);
-  border-radius: 12px;
-  padding: 14px 16px;
+  border-radius: 10px;
+  padding: 10px 14px;
 }
 
 .cv-verify-title {
   margin: 0;
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--cv-text);
 }
 
 .cv-verify-sub {
-  margin: 2px 0 0;
-  font-size: 11px;
+  margin: 1px 0 0;
+  font-size: 10.5px;
   color: var(--cv-muted);
 }
 
@@ -408,8 +408,8 @@
   text-decoration: none;
   font-size: 11px;
   font-weight: 700;
-  padding: 7px 13px;
-  border-radius: 8px;
+  padding: 6px 12px;
+  border-radius: 7px;
   white-space: nowrap;
   cursor: pointer;
   transition: filter 0.15s ease, transform 0.15s ease;
