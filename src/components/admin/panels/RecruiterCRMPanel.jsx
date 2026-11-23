@@ -109,7 +109,7 @@ export default function RecruiterCRMPanel() {
   const loadMessages = async () => {
     setLoading(true);
     try {
-      const { data } = await supabase.from('messages').select('*').order('created_at', { ascending: false });
+      const { data } = await supabase.from('contact_messages').select('*').order('created_at', { ascending: false });
       setMessages(data || []);
     } catch (_) {}
     setLoading(false);
@@ -119,7 +119,7 @@ export default function RecruiterCRMPanel() {
 
   const handleMove = async (id, newStatus) => {
     try {
-      await supabase.from('messages').update({ status: newStatus }).eq('id', id);
+      await supabase.from('contact_messages').update({ status: newStatus }).eq('id', id);
     } catch (_) {}
     setMessages(prev => prev.map(m => m.id === id ? { ...m, status: newStatus } : m));
     if (selected?.id === id) setSelected(prev => ({ ...prev, status: newStatus }));
@@ -127,10 +127,10 @@ export default function RecruiterCRMPanel() {
 
   const handleMarkRead = async (id) => {
     try {
-      await supabase.from('messages').update({ read: true }).eq('id', id);
+      await supabase.from('contact_messages').update({ is_read: true }).eq('id', id);
     } catch (_) {}
-    setMessages(prev => prev.map(m => m.id === id ? { ...m, read: true } : m));
-    if (selected?.id === id) setSelected(prev => ({ ...prev, read: true }));
+    setMessages(prev => prev.map(m => m.id === id ? { ...m, is_read: true, read: true } : m));
+    if (selected?.id === id) setSelected(prev => ({ ...prev, is_read: true, read: true }));
   };
 
   const handleCopyTemplate = (template) => {

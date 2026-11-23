@@ -89,7 +89,7 @@ export default function NotificationsPanel() {
     async function loadFeed() {
       try {
         const [{ data: msgs }, { data: acts }] = await Promise.all([
-          supabase.from('messages').select('id, name, email, created_at').order('created_at', { ascending: false }).limit(8),
+          supabase.from('contact_messages').select('id, name, email, created_at').order('created_at', { ascending: false }).limit(8),
           supabase.from('recruiter_actions').select('id, action_type, created_at').order('created_at', { ascending: false }).limit(8),
         ]);
         const events = [

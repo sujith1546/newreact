@@ -6,7 +6,7 @@
 
 import { supabase } from '../../lib/supabaseClient';
 
-const STORAGE_KEY = 'pcms_diagnostics_events_v1';
+const STORAGE_KEY = 'pcms_diagnostics_events_v2';
 const MAX_EVENTS = 150;
 
 // Internal reactive state
@@ -264,7 +264,10 @@ export function initDiagnosticsTelemetry() {
         msg.includes('[Fast Refresh]') ||
         msg.includes('Download the React DevTools') ||
         msg.includes('favicon.ico') ||
-        msg.includes('chrome-extension')
+        msg.includes('chrome-extension') ||
+        msg.includes('Failed to fetch dynamically imported module') ||
+        msg.includes('[ErrorBoundary]') ||
+        msg.includes('Failed to load resource')
       ) {
         return;
       }
@@ -287,11 +290,20 @@ export function initDiagnosticsTelemetry() {
     const url = typeof args[0] === 'string' ? args[0] : args[0]?.url || 'unknown-url';
     const method = (args[1]?.method || 'GET').toUpperCase();
 
+    // Whitelist optional/transient/local endpoints that should not generate error noise
+    const isIgnoredUrl =
+      url.includes('/api/health') ||
+      url.includes('/kb_gaps') ||
+      url.includes('api.github.com') ||
+      url.includes('localhost:5173/@vite') ||
+      url.includes('localhost:5173/src/') ||
+      url.includes('.hot-update.');
+
     try {
       const response = await origFetch.apply(this, args);
 
       // Report HTTP 4xx / 5xx errors
-      if (!response.ok && !url.includes('/api/health')) {
+      if (!response.ok && !isIgnoredUrl) {
         reportDiagnosticsIssue({
           type: 'network',
           severity: response.status >= 500 ? 'critical' : 'error',
@@ -305,7 +317,7 @@ export function initDiagnosticsTelemetry() {
       return response;
     } catch (err) {
       // Network drop or CORS failure
-      if (!err.message?.includes('aborted')) {
+      if (!err.message?.includes('aborted') && !isIgnoredUrl) {
         reportDiagnosticsIssue({
           type: 'network',
           severity: 'error',
@@ -389,10 +401,10 @@ export async function runComprehensiveDeepScan(progressCallback) {
     progressCallback?.(35, 'Verifying GitHub Commits Integration...');
 
     try {
-      const ghRes = await fetch('https://api.github.com/repos/sujith1546/sujith_portfolio/commits?per_page=1', {
+      const ghRes = await fetch('https://api.github.com/repos/sujith1546/newreact/commits?per_page=1', {
         headers: { Accept: 'application/vnd.github.v3+json' },
       });
-      if (!ghRes.ok && ghRes.status !== 403) {
+      if (!ghRes.ok && ghRes.status !== 403 && ghRes.status !== 404) {
         foundIssues.push({
           type: 'network',
           severity: 'warning',
@@ -412,11 +424,11 @@ export async function runComprehensiveDeepScan(progressCallback) {
 
     try {
       const [projRes, skillRes, settingsRes, msgRes, expRes, certRes] = await Promise.all([
-        supabase.from('projects').select('id, title, description, live_url, github_url, tags, image_url'),
+        supabase.from('projects').select('*'),
         supabase.from('skills').select('id, name, proficiency_level, category'),
-        supabase.from('site_settings').select('hero_headline, short_bio, meta_title, meta_description, og_image_url').single(),
-        supabase.from('contact_messages').select('id, read').eq('read', false),
-        supabase.from('experiences').select('id, role, company'),
+        supabase.from('site_settings').select('*').eq('id', 1).maybeSingle(),
+        supabase.from('contact_messages').select('id, is_read').eq('is_read', false),
+        supabase.from('experience').select('id, role, company'),
         supabase.from('certifications').select('id, title, issuer'),
       ]);
 
@@ -495,7 +507,8 @@ export async function runComprehensiveDeepScan(progressCallback) {
       }
 
       // Check SEO & settings
-      if (!settings.short_bio || settings.short_bio.length < 35) {
+      const bio = settings.short_bio || settings.seo_description || (typeof document !== 'undefined' ? document.querySelector('meta[property="og:description"]')?.getAttribute('content') : '') || '';
+      if (!bio || bio.length < 20) {
         foundIssues.push({
           type: 'data',
           severity: 'warning',
@@ -507,7 +520,8 @@ export async function runComprehensiveDeepScan(progressCallback) {
         });
       }
 
-      if (!settings.og_image_url) {
+      const ogImg = settings.og_image_url || settings.seo_og_image || (typeof document !== 'undefined' ? document.querySelector('meta[property="og:image"]')?.getAttribute('content') : '') || '';
+      if (!ogImg) {
         foundIssues.push({
           type: 'data',
           severity: 'info',

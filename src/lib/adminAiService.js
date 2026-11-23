@@ -128,10 +128,10 @@ export async function runPortfolioHealthAudit() {
 
   try {
     const [projectsRes, skillsRes, settingsRes, messagesRes] = await Promise.all([
-      supabase.from('projects').select('id, title, description, live_url, github_url, tags, image_url'),
+      supabase.from('projects').select('*'),
       supabase.from('skills').select('id, name, proficiency_level, category'),
-      supabase.from('site_settings').select('hero_headline, short_bio, meta_title, meta_description, og_image_url').single(),
-      supabase.from('contact_messages').select('id, read').eq('read', false)
+      supabase.from('site_settings').select('*').eq('id', 1).maybeSingle(),
+      supabase.from('contact_messages').select('id, is_read').eq('is_read', false)
     ]);
 
     const projects = projectsRes.data || [];

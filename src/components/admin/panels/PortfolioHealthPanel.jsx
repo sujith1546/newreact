@@ -100,7 +100,7 @@ export default function PortfolioHealthPanel() {
       }
 
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-      const { count: oldUnread } = await supabase.from('messages').select('id', { count: 'exact', head: true }).eq('read', false).lt('created_at', sevenDaysAgo);
+      const { count: oldUnread } = await supabase.from('contact_messages').select('id', { count: 'exact', head: true }).eq('is_read', false).lt('created_at', sevenDaysAgo);
       if ((oldUnread || 0) > 0) {
         foundIssues.push({ id: 'old-unread', severity: 'high', title: `${oldUnread} unread recruiter message(s) older than 7 days`, detail: 'Prompt response time directly impacts interview conversion', fixTab: 'messages' });
       }
