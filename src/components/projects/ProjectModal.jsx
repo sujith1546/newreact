@@ -175,11 +175,12 @@ export default function ProjectModal({ project, onClose, isMobile = false }) {
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.16, ease: 'easeOut' }}
               className="psd-content"
+              style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}
             >
 
               {/* TAB: OVERVIEW */}
               {tabs[tab] === 'Overview' && (
-                <>
+                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {/* About */}
                   <section className="psd-section">
                     <span className="psd-section-label">About</span>
@@ -255,7 +256,7 @@ export default function ProjectModal({ project, onClose, isMobile = false }) {
                       </div>
                     </div>
                   </section>
-                </>
+                </div>
               )}
 
               {/* TAB: PIPELINE */}
