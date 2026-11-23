@@ -1,0 +1,488 @@
+.cv-root {
+  --cv-panel-w: 460px;
+  --cv-bg: var(--bg-secondary, #ffffff);
+  --cv-bg-soft: var(--bg-primary, #f8fafc);
+  --cv-border: var(--border-color, #e2e8f0);
+  --cv-divider: var(--border-color, #e2e8f0);
+  --cv-text: var(--text-primary, #0f172a);
+  --cv-muted: var(--text-muted, #64748b);
+  --cv-text-2: var(--text-secondary, #475569);
+  --cv-code-bg: var(--bg-primary, #f1f5f9);
+  --cv-green: #16a34a;
+  --cv-green-bg: rgba(22, 163, 74, 0.1);
+  --cv-green-border: rgba(22, 163, 74, 0.25);
+  --cv-green-text: #16a34a;
+  --cv-footer-bg: color-mix(in srgb, var(--primary-blue, #3b82f6) 4%, var(--bg-primary, #ffffff));
+  --cv-footer-border: color-mix(in srgb, var(--primary-blue, #3b82f6) 18%, var(--border-color, #e2e8f0));
+  --cv-backdrop: rgba(0, 0, 0, 0.55);
+  --cv-radius: 16px;
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  font-family: inherit;
+  color: var(--cv-text);
+}
+
+/* Map this to how the portfolio switches themes */
+.dark .cv-root,
+[data-theme='dark'] .cv-root,
+:root[data-theme='dark'] .cv-root {
+  --cv-bg: var(--bg-secondary, #18191d);
+  --cv-bg-soft: var(--bg-primary, #0f1115);
+  --cv-border: var(--border-color, rgba(255, 255, 255, 0.12));
+  --cv-divider: var(--border-color, rgba(255, 255, 255, 0.12));
+  --cv-text: var(--text-primary, #ffffff);
+  --cv-muted: var(--text-muted, #94a3b8);
+  --cv-text-2: var(--text-secondary, #cbd5e1);
+  --cv-code-bg: rgba(255, 255, 255, 0.06);
+  --cv-green-bg: rgba(22, 163, 74, 0.16);
+  --cv-green-border: rgba(22, 163, 74, 0.35);
+  --cv-green-text: #4ade80;
+  --cv-footer-bg: color-mix(in srgb, var(--primary-blue, #3b82f6) 8%, var(--bg-primary, #0f1115));
+  --cv-footer-border: color-mix(in srgb, var(--primary-blue, #3b82f6) 22%, var(--border-color, rgba(255, 255, 255, 0.12)));
+  --cv-backdrop: rgba(0, 0, 0, 0.7);
+}
+
+.cv-backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--cv-backdrop);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: cv-fade 0.22s ease-out;
+}
+
+.cv-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: var(--cv-panel-w);
+  display: flex;
+  flex-direction: column;
+  background: var(--cv-bg);
+  border-left: 1px solid var(--cv-border);
+  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.22);
+  outline: none;
+  animation: cv-slide 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+}
+
+@keyframes cv-slide {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes cv-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Header - matches Contact FAQ drawer */
+.cv-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 22px 16px;
+  border-bottom: 1px solid var(--cv-divider);
+  flex-shrink: 0;
+}
+
+.cv-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.cv-chip {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: color-mix(in srgb, var(--cv-accent, var(--primary-blue)) 14%, transparent);
+  color: var(--cv-accent, var(--primary-blue));
+}
+
+.cv-header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.cv-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  color: var(--cv-text);
+  line-height: 1.25;
+}
+
+.cv-subtitle {
+  margin: 2px 0 0;
+  font-size: 11.5px;
+  color: var(--cv-muted);
+}
+
+.cv-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--cv-border);
+  background: var(--cv-bg-soft);
+  color: var(--cv-muted);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.cv-close:hover {
+  transform: scale(1.08);
+  color: var(--cv-text);
+  background: var(--cv-border);
+}
+
+.cv-close:active {
+  transform: scale(0.92);
+}
+
+/* Body */
+.cv-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overscroll-behavior: contain;
+}
+
+.cv-card {
+  border: 1px solid var(--cv-border);
+  border-radius: var(--cv-radius);
+  background: var(--cv-bg-soft);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+.cv-card--soft {
+  background: var(--cv-bg-soft);
+}
+
+.cv-card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cv-card-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cv-text);
+}
+
+.cv-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--cv-muted);
+  text-transform: uppercase;
+}
+
+.cv-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid var(--cv-border);
+  background: var(--cv-bg);
+  color: var(--cv-text);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cv-pill:hover {
+  border-color: var(--cv-accent, var(--primary-blue));
+  color: var(--cv-accent, var(--primary-blue));
+}
+
+/* Preview Box - Light card, not dark navy block */
+.cv-preview {
+  margin-top: 10px;
+  border: 1px solid var(--cv-border);
+  border-radius: 10px;
+  background: #ffffff;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  max-height: 230px;
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.cv-preview img {
+  width: 100%;
+  height: auto;
+  max-height: 230px;
+  display: block;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.cv-preview-glass {
+  position: absolute;
+  inset: 0;
+  background: transparent;
+  z-index: 5;
+  cursor: pointer;
+}
+
+/* Authenticity Card */
+.cv-auth {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--cv-green-text);
+}
+
+.cv-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--cv-green);
+  box-shadow: 0 0 8px var(--cv-green);
+  flex-shrink: 0;
+}
+
+.cv-badge {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--cv-green-text);
+  background: var(--cv-green-bg);
+  border: 1px solid var(--cv-green-border);
+  border-radius: 999px;
+  padding: 2.5px 9px;
+  letter-spacing: 0.02em;
+}
+
+.cv-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 14px;
+  margin: 12px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--cv-divider);
+}
+
+.cv-grid dt {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--cv-muted);
+  text-transform: uppercase;
+}
+
+.cv-grid dd {
+  margin: 3px 0 0;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--cv-text);
+}
+
+.cv-grid dd.cv-muted {
+  margin-top: 1px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--cv-muted);
+}
+
+.cv-id-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.cv-code {
+  font-family: ui-monospace, 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  font-weight: 700;
+  background: var(--cv-code-bg);
+  border: 1px solid var(--cv-border);
+  border-radius: 5px;
+  padding: 2px 6px;
+  color: var(--cv-text);
+}
+
+.cv-icon-btn {
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--cv-border);
+  background: var(--cv-bg);
+  color: var(--cv-text-2);
+  border-radius: 5px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.15s ease;
+}
+
+.cv-icon-btn:hover {
+  color: var(--cv-accent, var(--primary-blue));
+  border-color: var(--cv-accent, var(--primary-blue));
+}
+
+.cv-copied {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--cv-green-text);
+}
+
+.cv-text {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--cv-text-2);
+}
+
+/* Footer card pinned at the bottom - matches FAQ drawer "Have another question?" card */
+.cv-footer {
+  padding: 14px 20px 24px;
+  flex-shrink: 0;
+  background: var(--cv-bg);
+  border-top: 1px solid var(--cv-divider);
+}
+
+.cv-verify {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--cv-footer-border);
+  background: var(--cv-footer-bg);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.cv-verify-title {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--cv-text);
+}
+
+.cv-verify-sub {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: var(--cv-muted);
+}
+
+.cv-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--cv-accent, var(--primary-blue));
+  color: #ffffff !important;
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 7px 13px;
+  border-radius: 8px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: filter 0.15s ease, transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.cv-btn:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.cv-btn:active {
+  transform: scale(0.97);
+}
+
+/* Zoom lightbox */
+.cv-zoom {
+  position: fixed;
+  inset: 0;
+  z-index: 100001;
+  background: rgba(0, 0, 0, 0.82);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.cv-zoom img {
+  max-width: 94vw;
+  max-height: 88vh;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  user-select: none;
+}
+
+.cv-zoom-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 36px;
+  height: 36px;
+}
+
+/* Focus ring */
+.cv-root button:focus-visible,
+.cv-root a:focus-visible {
+  outline: 2px solid var(--cv-accent, var(--primary-blue));
+  outline-offset: 2px;
+}
+
+@media (max-width: 520px) {
+  .cv-header, .cv-footer {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .cv-body {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .cv-verify {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .cv-btn {
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cv-panel, .cv-backdrop {
+    animation: none;
+  }
+}

@@ -1,48 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ScrollReveal, RollingText } from '../components';
 import { 
-  Loader2, Award, ChevronLeft, ChevronRight, 
-  ShieldCheck, Copy, Check, ExternalLink, X, 
-  Calendar, CheckCircle2, Lock, ZoomIn, ZoomOut, User,
-  FileCheck, Shield
+  Award, ChevronLeft, ChevronRight, 
+  ShieldCheck
 } from 'lucide-react';
 import useRealtimeData from '../hooks/useRealtimeData';
 import MultiStateVerificationBadge from '../components/ui/MultiStateVerificationBadge';
-
-const DEFAULT_CERTIFICATIONS = [
-  {
-    id: "google-tf",
-    issuer: "Google for Developers",
-    title: "Artificial Intelligence using Google TensorFlow",
-    description: "Completed the Credit Course on Artificial Intelligence using Google TensorFlow Powered by Google Developers in partnership with SmartBridge (India Edu Program), covering deep learning models, computer vision, and NLP.",
-    skills: ["TensorFlow", "Artificial Intelligence", "Deep Learning", "Computer Vision", "Python"],
-    issuedDate: "August 20, 2024",
-    credentialId: "CC-AI-2024-5653",
-    recipient: "Thota Sujith Reddy (22BDS0250)",
-    partner: "SmartBridge & India Edu Program",
-    certificateImage: "/certificates/google-tensorflow.webp",
-    verifyUrl: "https://smartinternz.com/",
-    icon: "ti-brand-google",
-    color: "accent",
-  },
-  {
-    id: "oracle-genai",
-    issuer: "Oracle University",
-    title: "OCI 2025 Certified Generative AI Professional",
-    description: "Oracle Certified Professional recognized by Oracle Corporation for demonstrated expertise in enterprise generative AI architectures, large language models (LLMs), and cloud AI solutions on Oracle Cloud Infrastructure.",
-    skills: ["Generative AI", "Large Language Models", "OCI", "AI Architecture"],
-    issuedDate: "August 05, 2025",
-    credentialId: "102217725OCI25GAIOCP",
-    recipient: "Thota Sujith Reddy",
-    partner: "Oracle Corporation",
-    certificateImage: "/certificates/oracle-genai.webp",
-    verifyUrl: "https://mylearn.oracle.com/",
-    icon: "ti-cloud",
-    color: "danger",
-  }
-];
+import CertificationPanel from '../components/CertificationPanel';
+import { certifications as CERTIFICATIONS_DATA } from '../data/certifications';
 
 const COLORS = {
   accent: {
@@ -84,14 +49,14 @@ const COLORS = {
 };
 
 function CertCard({ cert, isMobile = false, onVerifyClick }) {
-  const { id, issuer, title, description, skills, issuedDate, credentialId, icon, color } = cert;
+  const { id, issuer, title, description, issuedDate, credentialId, icon, color } = cert;
   const c = COLORS[color] || COLORS.accent;
 
   return (
     <div
       className={`cert-card-container${isMobile ? ' cert-card-mobile' : ''}`}
       onClick={() => {
-        if (onVerifyClick) onVerifyClick(cert);
+        if (onVerifyClick) onVerifyClick(id);
       }}
       onMouseEnter={e => {
         if (!isMobile) {
@@ -125,7 +90,7 @@ function CertCard({ cert, isMobile = false, onVerifyClick }) {
           verifyUrl={cert.verifyUrl}
           theme={c}
           isMobile={isMobile}
-          onOpenDrawer={() => onVerifyClick && onVerifyClick(cert)}
+          onOpenDrawer={() => onVerifyClick && onVerifyClick(id)}
         />
 
         <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '12px' : '16px' }}>
@@ -209,7 +174,7 @@ function CertCard({ cert, isMobile = false, onVerifyClick }) {
             className="cert-verify-trigger-btn"
             onClick={(e) => {
               e.stopPropagation();
-              if (onVerifyClick) onVerifyClick(cert);
+              if (onVerifyClick) onVerifyClick(id);
             }}
             style={{
               display: 'inline-flex',
@@ -253,9 +218,7 @@ export default function Certifications() {
   const { data: dbData } = useRealtimeData('certifications', { orderColumn: 'display_order', ascending: true });
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth <= 900);
   const [activeIdx, setActiveIdx] = useState(0);
-  const [selectedCert, setSelectedCert] = useState(null);
-  const [copiedId, setCopiedId] = useState(false);
-  const [isZoomed, setIsZoomed] = useState(false);
+  const [activeCertId, setActiveCertId] = useState(null);
   const trackRef = useRef(null);
 
   useEffect(() => {
@@ -267,34 +230,13 @@ export default function Certifications() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Lock body scroll and listen for Escape key when verification drawer is open
-  useEffect(() => {
-    if (selectedCert) {
-      const origOverflow = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
+  const handleClose = useCallback(() => {
+    setActiveCertId(null);
+  }, []);
 
-      const handleKeyDown = (e) => {
-        if (e.key === 'Escape') {
-          setSelectedCert(null);
-          setIsZoomed(false);
-        }
-      };
-      window.addEventListener('keydown', handleKeyDown);
-
-      return () => {
-        document.body.style.overflow = origOverflow;
-        window.removeEventListener('keydown', handleKeyDown);
-      };
-    }
-  }, [selectedCert]);
-
-  const handleCopyId = (id) => {
-    if (!id) return;
-    navigator.clipboard.writeText(id).then(() => {
-      setCopiedId(true);
-      setTimeout(() => setCopiedId(false), 2000);
-    }).catch(() => {});
-  };
+  const handleVerify = useCallback((id) => {
+    setActiveCertId(id);
+  }, []);
 
   const handleScroll = () => {
     const track = trackRef.current;
@@ -323,69 +265,49 @@ export default function Certifications() {
         const isGoogle = t.includes('tensorflow') || t.includes('google') || iss.includes('google') || item.id === 'google-tf';
         const isOracle = t.includes('oracle') || t.includes('generative') || iss.includes('oracle') || item.id === 'oracle-genai';
 
-        if (isGoogle) {
+        const base = isGoogle
+          ? CERTIFICATIONS_DATA[0]
+          : isOracle
+          ? CERTIFICATIONS_DATA[1]
+          : null;
+
+        if (base) {
           return {
-            id: item.id || 'google-tf',
-            issuer: 'Google for Developers',
-            title: 'Artificial Intelligence using Google TensorFlow',
-            description: 'Credit Course on Artificial Intelligence using Google TensorFlow Powered by Google Developers in partnership with SmartBridge (India Edu Program), covering deep learning models, computer vision, and NLP.',
-            skills: ['TensorFlow', 'Artificial Intelligence', 'Deep Learning', 'Computer Vision', 'Python'],
-            issuedDate: 'August 20, 2024',
-            credentialId: 'CC-AI-2024-5653',
-            recipient: 'Thota Sujith Reddy (22BDS0250)',
-            partner: 'SmartBridge & India Edu Program',
-            certificateImage: '/certificates/google-tensorflow.webp',
-            verifyUrl: 'https://smartinternz.com/',
-            icon: 'ti-brand-google',
-            color: 'accent',
+            ...base,
+            id: isGoogle ? 'google-tensorflow' : 'oracle-genai',
+            description: item.description || base.overview,
+            color: isGoogle ? 'accent' : 'danger',
+            icon: isGoogle ? 'ti-brand-google' : 'ti-cloud',
           };
         }
 
-        if (isOracle) {
-          return {
-            id: item.id || 'oracle-genai',
-            issuer: 'Oracle University',
-            title: 'OCI 2025 Certified Generative AI Professional',
-            description: 'Oracle Certified Professional credential validating expertise in generative AI architectures, large language models (LLMs), and enterprise AI solutions on Oracle Cloud Infrastructure.',
-            skills: ['Generative AI', 'Large Language Models', 'OCI', 'AI Architecture'],
-            issuedDate: 'August 05, 2025',
-            credentialId: '102217725OCI25GAIOCP',
-            recipient: 'Thota Sujith Reddy',
-            partner: 'Oracle Corporation',
-            certificateImage: '/certificates/oracle-genai.webp',
-            verifyUrl: 'https://mylearn.oracle.com/',
-            icon: 'ti-cloud',
-            color: 'danger',
-          };
-        }
-
-        let derivedSkills = item.skills || item.tags;
-        if (!derivedSkills || derivedSkills.length === 0) {
-          derivedSkills = ['Cloud Architecture', 'Engineering', 'Security'];
-        }
         return {
           id: item.id || `cert-${idx}`,
-          issuer: item.issuer || item.organization || 'Global Issuer',
-          title: item.title || item.name || 'Professional Certificate',
-          description: item.description || 'Verified technical credential.',
-          skills: derivedSkills,
-          issuedDate: item.issuedDate || item.date || '2025',
-          credentialId: item.credentialId || item.credential_id || `ID-${idx + 100}`,
+          issuer: item.issuer || 'Global Issuer',
+          title: item.title || 'Professional Certificate',
           recipient: 'Thota Sujith Reddy',
-          certificateImage: item.badge_image || null,
-          verifyUrl: item.verifyUrl || item.credential_url || item.url || '#',
-          icon: item.icon || (item.issuer?.toLowerCase().includes('oracle') ? 'ti-cloud' : 'ti-brand-google'),
-          color: item.color || (idx % 2 === 0 ? 'accent' : 'danger'),
+          rollNo: '22BDS0250',
+          credentialId: item.credentialId || `ID-${idx + 100}`,
+          issuedDate: item.date || '2025',
+          overview: item.description || 'Verified technical credential.',
+          description: item.description || 'Verified technical credential.',
+          image: item.badge_image || null,
+          verifyUrl: item.credential_url || item.url || '#',
+          accent: idx % 2 === 0 ? '#2f6df6' : '#c74634',
+          accentSoft: idx % 2 === 0 ? '#eaf1ff' : '#fdeeea',
+          icon: item.icon_class || 'ti-award',
+          color: idx % 2 === 0 ? 'accent' : 'danger',
         };
       })
-    : DEFAULT_CERTIFICATIONS;
+    : CERTIFICATIONS_DATA.map((c, idx) => ({
+        ...c,
+        description: c.overview,
+        color: idx % 2 === 0 ? 'accent' : 'danger',
+        icon: idx === 0 ? 'ti-brand-google' : 'ti-cloud',
+      }));
 
-  // Active cert inside the slide drawer
-  const activeCert = selectedCert
-    ? (certifications.find(c => c.id === selectedCert.id) || selectedCert)
-    : null;
-
-  const activeColor = activeCert ? (COLORS[activeCert.color] || COLORS.accent) : COLORS.accent;
+  // Selected certification for the slide panel
+  const activeCert = certifications.find((c) => c.id === activeCertId) ?? null;
 
   return (
     <ScrollReveal className="wide-content">
@@ -595,531 +517,6 @@ export default function Certifications() {
           width: 14px;
           border-radius: 3px;
         }
-
-        /* ── SLIDE LEFT BAR / DRAWER (VIEW-ONLY, SECURE) ── */
-        .cert-drawer-backdrop {
-          position: fixed;
-          inset: 0;
-          background: rgba(10, 15, 29, 0.65);
-          backdrop-filter: blur(6px);
-          -webkit-backdrop-filter: blur(6px);
-          z-index: 10000;
-        }
-
-        .cert-slide-drawer {
-          position: fixed;
-          top: 0;
-          right: 0;
-          bottom: 0;
-          width: min(640px, 100vw);
-          height: 100%;
-          background: var(--bg-secondary, #FFFFFF);
-          border-left: 1.5px solid var(--border-color, #E2E8F0);
-          box-shadow: -16px 0 48px rgba(0, 0, 0, 0.25);
-          z-index: 10001;
-          display: flex;
-          flex-direction: column;
-          overflow: hidden;
-          box-sizing: border-box;
-        }
-
-        [data-theme="dark"] .cert-slide-drawer {
-          background: var(--bg-secondary, #12151C);
-          border-left-color: rgba(255, 255, 255, 0.12);
-          box-shadow: -16px 0 54px rgba(0, 0, 0, 0.65);
-        }
-
-        .cert-drawer-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 16px 20px;
-          border-bottom: 1px solid var(--border-color, #E2E8F0);
-          background: var(--bg-secondary, #FFFFFF);
-          flex-shrink: 0;
-          z-index: 2;
-        }
-
-        [data-theme="dark"] .cert-drawer-header {
-          background: var(--bg-secondary, #12151C);
-          border-bottom-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .cert-drawer-header-left {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          min-width: 0;
-        }
-
-        .cert-drawer-header-icon {
-          width: 36px;
-          height: 36px;
-          border-radius: 10px;
-          background: rgba(16, 185, 129, 0.12);
-          border: 1.5px solid rgba(16, 185, 129, 0.35);
-          color: #10b981;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-        }
-
-        .cert-drawer-title-group h3 {
-          font-size: 13.5px;
-          font-weight: 800;
-          letter-spacing: -0.01em;
-          color: var(--text-primary);
-          margin: 0;
-          line-height: 1.25;
-        }
-
-        .cert-drawer-title-group p {
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 0.05em;
-          text-transform: uppercase;
-          color: #10b981;
-          margin: 2px 0 0;
-          display: flex;
-          align-items: center;
-          gap: 4px;
-        }
-
-        .cert-drawer-close-btn {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          background: var(--bg-primary, #F8FAFC);
-          border: 1px solid var(--border-color, #E2E8F0);
-          border-radius: 8px;
-          padding: 6px 10px;
-          font-size: 11.5px;
-          font-weight: 600;
-          color: var(--text-secondary);
-          cursor: pointer;
-          transition: all 0.18s ease;
-          -webkit-tap-highlight-color: transparent;
-        }
-
-        .cert-drawer-close-btn:hover {
-          background: var(--border-color, #E2E8F0);
-          color: var(--text-primary);
-          transform: scale(1.02);
-        }
-
-        /* Related Certifications Switcher Bar */
-        .cert-drawer-switcher {
-          padding: 12px 20px 10px;
-          background: var(--bg-primary, #F8FAFC);
-          border-bottom: 1px solid var(--border-color, #E2E8F0);
-          flex-shrink: 0;
-        }
-
-        [data-theme="dark"] .cert-drawer-switcher {
-          background: rgba(0, 0, 0, 0.3);
-          border-bottom-color: rgba(255, 255, 255, 0.08);
-        }
-
-        .cert-switcher-label {
-          font-size: 9.5px;
-          font-weight: 800;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          color: var(--text-muted);
-          margin: 0 0 8px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-        }
-
-        .cert-switcher-tabs {
-          display: flex;
-          gap: 8px;
-          overflow-x: auto;
-          padding-bottom: 4px;
-          scrollbar-width: none;
-        }
-        .cert-switcher-tabs::-webkit-scrollbar {
-          display: none;
-        }
-
-        .cert-switcher-tab {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          padding: 7px 12px;
-          border-radius: 10px;
-          background: var(--bg-secondary, #FFFFFF);
-          border: 1.5px solid var(--border-color, #E2E8F0);
-          color: var(--text-secondary);
-          font-size: 11.5px;
-          font-weight: 600;
-          cursor: pointer;
-          white-space: nowrap;
-          transition: all 0.2s ease;
-          user-select: none;
-          -webkit-tap-highlight-color: transparent;
-        }
-
-        .cert-switcher-tab:hover {
-          border-color: var(--primary-blue, #2563eb);
-          color: var(--text-primary);
-        }
-
-        .cert-switcher-tab.active {
-          background: color-mix(in srgb, var(--primary-blue, #2563eb) 8%, var(--bg-secondary));
-          border-color: var(--primary-blue, #2563eb);
-          color: var(--primary-blue, #2563eb);
-          box-shadow: 0 2px 10px color-mix(in srgb, var(--primary-blue, #2563eb) 18%, transparent);
-        }
-
-        .cert-tab-dot {
-          width: 6px;
-          height: 6px;
-          border-radius: 50%;
-          background: #10b981;
-          box-shadow: 0 0 8px #10b981;
-        }
-
-        /* Scrollable Drawer Body */
-        .cert-drawer-body {
-          flex: 1;
-          overflow-y: auto;
-          padding: 18px 20px 28px;
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-          overscroll-behavior: contain;
-          -webkit-overflow-scrolling: touch;
-        }
-
-        /* ── VIEW ONLY PROTECTED CERTIFICATE FRAME ── */
-        .cert-viewer-frame {
-          background: #0f172a;
-          border: 1.5px solid rgba(255, 255, 255, 0.14);
-          border-radius: 16px;
-          padding: 10px;
-          box-shadow: 0 16px 36px -8px rgba(0, 0, 0, 0.38);
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          position: relative;
-          overflow: hidden;
-          user-select: none;
-          -webkit-user-select: none;
-        }
-
-        .cert-viewer-toolbar {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 2px 4px 4px;
-        }
-
-        .cert-viewer-tag {
-          display: inline-flex;
-          align-items: center;
-          gap: 5px;
-          background: rgba(16, 185, 129, 0.16);
-          border: 1px solid rgba(16, 185, 129, 0.32);
-          color: #34d399;
-          font-size: 9.5px;
-          font-weight: 700;
-          letter-spacing: 0.05em;
-          text-transform: uppercase;
-          padding: 2.5px 7px;
-          border-radius: 6px;
-        }
-
-        .cert-zoom-btn {
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          background: rgba(255, 255, 255, 0.08);
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          color: #e2e8f0;
-          font-size: 10.5px;
-          font-weight: 600;
-          padding: 3px 8px;
-          border-radius: 6px;
-          cursor: pointer;
-          transition: background 0.15s ease;
-        }
-        .cert-zoom-btn:hover {
-          background: rgba(255, 255, 255, 0.16);
-        }
-
-        /* Document Viewport - Strictly View Only */
-        .cert-doc-viewport {
-          position: relative;
-          width: 100%;
-          border-radius: 10px;
-          overflow: hidden;
-          background: #020617;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          min-height: 250px;
-          max-height: 440px;
-          user-select: none;
-          -webkit-user-select: none;
-          -webkit-touch-callout: none;
-        }
-
-        .cert-doc-img {
-          width: 100%;
-          height: auto;
-          max-height: 430px;
-          object-fit: contain;
-          display: block;
-          pointer-events: none;
-          user-select: none;
-          -webkit-user-select: none;
-          -webkit-user-drag: none;
-          transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .cert-doc-img.zoomed {
-          transform: scale(1.42);
-        }
-
-        /* Transparent Anti-Copy / Anti-Download Glass Shield */
-        .cert-security-glass {
-          position: absolute;
-          inset: 0;
-          z-index: 10;
-          background: transparent;
-          cursor: default;
-          user-select: none;
-          -webkit-user-select: none;
-          -webkit-touch-callout: none;
-        }
-
-        /* Diagonal Security Watermark */
-        .cert-watermark-overlay {
-          position: absolute;
-          inset: 0;
-          z-index: 8;
-          pointer-events: none;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transform: rotate(-14deg);
-          opacity: 0.085;
-          font-size: 11px;
-          font-weight: 900;
-          letter-spacing: 0.16em;
-          text-transform: uppercase;
-          color: #ffffff;
-          white-space: nowrap;
-          user-select: none;
-        }
-
-        .cert-protected-footer {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 5px;
-          font-size: 10px;
-          font-weight: 600;
-          color: #94a3b8;
-          padding: 4px 0 2px;
-          letter-spacing: 0.02em;
-        }
-
-        /* ── TELEMETRY & METADATA SECTION ── */
-        .cert-telemetry-box {
-          background: var(--bg-primary, #F8FAFC);
-          border: 1px solid var(--border-color, #E2E8F0);
-          border-radius: 14px;
-          padding: 14px;
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-        }
-
-        [data-theme="dark"] .cert-telemetry-box {
-          background: #0D1117;
-          border-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .cert-telemetry-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding-bottom: 10px;
-          border-bottom: 1px dashed var(--border-color, #E2E8F0);
-        }
-
-        [data-theme="dark"] .cert-telemetry-header {
-          border-bottom-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .cert-telemetry-status {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          font-size: 10px;
-          font-weight: 800;
-          letter-spacing: 0.05em;
-          text-transform: uppercase;
-          color: #10b981;
-        }
-
-        .cert-pulse-dot {
-          width: 7px;
-          height: 7px;
-          border-radius: 50%;
-          background: #10b981;
-          box-shadow: 0 0 10px #10b981;
-          animation: certPulse 2s infinite ease-in-out;
-        }
-
-        @keyframes certPulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.45; transform: scale(0.85); }
-        }
-
-        .cert-status-badge {
-          font-size: 9px;
-          font-weight: 700;
-          color: var(--primary-blue, #2563eb);
-          background: color-mix(in srgb, var(--primary-blue, #2563eb) 10%, transparent);
-          border: 1px solid color-mix(in srgb, var(--primary-blue, #2563eb) 25%, transparent);
-          padding: 2px 8px;
-          border-radius: 999px;
-        }
-
-        .cert-meta-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 10px;
-        }
-
-        .cert-meta-item {
-          display: flex;
-          flex-direction: column;
-          gap: 3px;
-        }
-
-        .cert-meta-label {
-          font-size: 8.5px;
-          font-weight: 800;
-          color: var(--text-muted);
-          text-transform: uppercase;
-          letter-spacing: 0.06em;
-        }
-
-        .cert-meta-value {
-          font-size: 11.5px;
-          font-weight: 700;
-          color: var(--text-primary);
-          display: flex;
-          align-items: center;
-          gap: 5px;
-        }
-
-        .cert-id-badge-wrap {
-          display: flex;
-          align-items: center;
-          gap: 5px;
-        }
-
-        .cert-id-code {
-          font-family: "JetBrains Mono", "SF Mono", monospace;
-          font-size: 10.5px;
-          font-weight: 700;
-          color: var(--text-primary);
-          background: var(--bg-secondary);
-          border: 1px solid var(--border-color);
-          padding: 2px 6px;
-          border-radius: 4px;
-        }
-
-        .cert-copy-btn {
-          display: inline-flex;
-          align-items: center;
-          gap: 3px;
-          background: var(--bg-secondary);
-          border: 1px solid var(--border-color);
-          border-radius: 4px;
-          padding: 2px 6px;
-          font-size: 9px;
-          font-weight: 600;
-          color: var(--text-secondary);
-          cursor: pointer;
-          transition: background 0.15s ease;
-          -webkit-tap-highlight-color: transparent;
-        }
-
-        .cert-copy-btn:hover {
-          color: var(--primary-blue, #2563eb);
-          border-color: var(--primary-blue, #2563eb);
-        }
-
-        /* Competencies & Tags */
-        .cert-skills-wrap {
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-        }
-
-        .cert-section-heading {
-          font-size: 9px;
-          font-weight: 800;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          color: var(--text-muted);
-          margin: 0;
-        }
-
-        .cert-skills-pills {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 5px;
-        }
-
-        .cert-skill-pill {
-          display: inline-flex;
-          align-items: center;
-          font-size: 10px;
-          font-weight: 600;
-          padding: 3px 9px;
-          border-radius: 6px;
-          border: 1px solid;
-          line-height: 1.3;
-        }
-
-        /* Registry Action Button */
-        .cert-registry-btn {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 8px;
-          width: 100%;
-          box-sizing: border-box;
-          padding: 11px 16px;
-          border-radius: 12px;
-          font-size: 12px;
-          font-weight: 700;
-          color: #ffffff !important;
-          text-decoration: none;
-          cursor: pointer;
-          border: none;
-          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
-          transition: transform 0.15s ease, opacity 0.15s ease;
-          -webkit-tap-highlight-color: transparent;
-        }
-
-        .cert-registry-btn:hover {
-          opacity: 0.94;
-          transform: translateY(-1px);
-        }
-
-        .cert-registry-btn:active {
-          transform: scale(0.98);
-        }
       `}</style>
       <style>{`
         /* ── RollingText styles (Certifications) ── */
@@ -1198,8 +595,8 @@ export default function Certifications() {
           {/* Swipeable Snap Track */}
           <div className="cert-mobile-track" ref={trackRef} onScroll={handleScroll}>
             {certifications.map((cert, idx) => (
-              <div key={cert.id || cert.credentialId || idx} className="cert-mobile-card-slot">
-                <CertCard cert={cert} isMobile={true} onVerifyClick={setSelectedCert} />
+              <div key={cert.id || idx} className="cert-mobile-card-slot">
+                <CertCard cert={cert} isMobile={true} onVerifyClick={handleVerify} />
               </div>
             ))}
           </div>
@@ -1220,260 +617,17 @@ export default function Certifications() {
         <div className="cert-desktop-grid">
           {certifications.map(cert => (
             <CertCard
-              key={cert.id || cert.credentialId}
+              key={cert.id}
               cert={cert}
               isMobile={false}
-              onVerifyClick={setSelectedCert}
+              onVerifyClick={handleVerify}
             />
           ))}
         </div>
       )}
 
-      {/* ── SLIDE LEFT BAR: VERIFICATION & CREDENTIAL DRAWER (STRICTLY VIEW ONLY) ── */}
-      {typeof document !== 'undefined' && createPortal(
-        <AnimatePresence>
-          {selectedCert && activeCert && (
-            <div style={{ position: 'relative', zIndex: 10000 }}>
-              {/* Dark Blur Backdrop */}
-              <motion.div
-                className="cert-drawer-backdrop"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.22, ease: 'easeOut' }}
-                onClick={() => {
-                  setSelectedCert(null);
-                  setIsZoomed(false);
-                }}
-              />
-
-              {/* Slide Left Drawer Bar */}
-              <motion.div
-                className="cert-slide-drawer"
-                initial={{ x: '100%' }}
-                animate={{ x: 0 }}
-                exit={{ x: '100%' }}
-                transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-              >
-                {/* Header */}
-                <div className="cert-drawer-header">
-                  <div className="cert-drawer-header-left">
-                    <div className="cert-drawer-header-icon">
-                      <ShieldCheck size={20} />
-                    </div>
-                    <div className="cert-drawer-title-group">
-                      <h3>Certificate Verification</h3>
-                      <p>
-                        <span className="cert-pulse-dot" />
-                        Live Registry Verified
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    className="cert-drawer-close-btn"
-                    onClick={() => {
-                      setSelectedCert(null);
-                      setIsZoomed(false);
-                    }}
-                    aria-label="Close verification drawer"
-                  >
-                    <span>Esc</span>
-                    <X size={15} />
-                  </button>
-                </div>
-
-                {/* Related Certifications Bar */}
-                <div className="cert-drawer-switcher">
-                  <div className="cert-switcher-label">
-                    <span>Related Certifications</span>
-                    <span>{certifications.length} Credentials Available</span>
-                  </div>
-                  <div className="cert-switcher-tabs">
-                    {certifications.map((item) => {
-                      const isActive = activeCert.id === item.id;
-                      return (
-                        <button
-                          key={item.id}
-                          type="button"
-                          className={`cert-switcher-tab ${isActive ? 'active' : ''}`}
-                          onClick={() => {
-                            setSelectedCert(item);
-                            setIsZoomed(false);
-                          }}
-                        >
-                          <span className="cert-tab-dot" />
-                          <i className={`ti ${item.icon}`} style={{ fontSize: '13px' }} />
-                          <span>{item.issuer}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Scrollable Content Body */}
-                <div className="cert-drawer-body">
-                  {/* Protected Certificate Document Viewer */}
-                  {activeCert.certificateImage ? (
-                    <div
-                      className="cert-viewer-frame"
-                      onContextMenu={(e) => { e.preventDefault(); return false; }}
-                      onDragStart={(e) => { e.preventDefault(); return false; }}
-                    >
-                      <div className="cert-viewer-toolbar">
-                        <span className="cert-viewer-tag">
-                          <FileCheck size={11} />
-                          Official Document
-                        </span>
-                        <button
-                          type="button"
-                          className="cert-zoom-btn"
-                          onClick={() => setIsZoomed(!isZoomed)}
-                          title={isZoomed ? "Reset Zoom" : "Zoom into certificate"}
-                        >
-                          {isZoomed ? <ZoomOut size={12} /> : <ZoomIn size={12} />}
-                          <span>{isZoomed ? 'Fit View' : 'Zoom In'}</span>
-                        </button>
-                      </div>
-
-                      {/* Viewport with transparent protective shield overlay */}
-                      <div
-                        className="cert-doc-viewport"
-                        onContextMenu={(e) => { e.preventDefault(); return false; }}
-                        onDragStart={(e) => { e.preventDefault(); return false; }}
-                      >
-                        <img
-                          src={activeCert.certificateImage}
-                          alt={`${activeCert.title} Certificate`}
-                          className={`cert-doc-img ${isZoomed ? 'zoomed' : ''}`}
-                          draggable={false}
-                          onContextMenu={(e) => { e.preventDefault(); return false; }}
-                          onDragStart={(e) => { e.preventDefault(); return false; }}
-                        />
-
-                        {/* Transparent security glass intercepting right-click & drag events */}
-                        <div
-                          className="cert-security-glass"
-                          onContextMenu={(e) => { e.preventDefault(); return false; }}
-                          onDragStart={(e) => { e.preventDefault(); return false; }}
-                        />
-
-                        {/* Security Watermark */}
-                        <div className="cert-watermark-overlay">
-                          OFFICIAL SECURE PREVIEW • THOTA SUJITH REDDY • VERIFIED CREDENTIAL
-                        </div>
-                      </div>
-
-                      <div className="cert-protected-footer">
-                        <Lock size={12} />
-                        <span>Protected Document • Secure View Only</span>
-                      </div>
-                    </div>
-                  ) : null}
-
-                  {/* Verification Telemetry Box */}
-                  <div className="cert-telemetry-box">
-                    <div className="cert-telemetry-header">
-                      <div className="cert-telemetry-status">
-                        <span className="cert-pulse-dot" />
-                        <span>AUTHENTICITY CONFIRMED</span>
-                      </div>
-                      <span className="cert-status-badge">Active Status</span>
-                    </div>
-
-                    <div className="cert-meta-grid">
-                      <div className="cert-meta-item">
-                        <span className="cert-meta-label">Recipient Name</span>
-                        <span className="cert-meta-value">
-                          <User size={13} style={{ color: 'var(--primary-blue, #2563eb)' }} />
-                          {activeCert.recipient || 'Thota Sujith Reddy'}
-                        </span>
-                      </div>
-
-                      <div className="cert-meta-item">
-                        <span className="cert-meta-label">Credential ID</span>
-                        <div className="cert-id-badge-wrap">
-                          <code className="cert-id-code">{activeCert.credentialId}</code>
-                          <button
-                            type="button"
-                            className="cert-copy-btn"
-                            onClick={() => handleCopyId(activeCert.credentialId)}
-                            title="Copy ID"
-                          >
-                            {copiedId ? (
-                              <>
-                                <Check size={10} style={{ color: '#10b981' }} />
-                                <span style={{ color: '#10b981' }}>Copied</span>
-                              </>
-                            ) : (
-                              <>
-                                <Copy size={10} />
-                                <span>Copy</span>
-                              </>
-                            )}
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="cert-meta-item">
-                        <span className="cert-meta-label">Issuing Authority</span>
-                        <span className="cert-meta-value">
-                          <Award size={13} style={{ color: 'var(--primary-blue, #2563eb)' }} />
-                          {activeCert.issuer}
-                        </span>
-                      </div>
-
-                      <div className="cert-meta-item">
-                        <span className="cert-meta-label">Issued Date</span>
-                        <span className="cert-meta-value">
-                          <Calendar size={13} style={{ color: 'var(--text-muted)' }} />
-                          {activeCert.issuedDate}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Overview */}
-                  <div>
-                    <p className="cert-section-heading" style={{ marginBottom: '6px' }}>Credential Overview</p>
-                    <p style={{
-                      margin: 0,
-                      fontSize: '12px',
-                      lineHeight: '1.6',
-                      color: 'var(--text-secondary)'
-                    }}>
-                      {activeCert.description}
-                    </p>
-                  </div>
-
-                  {/* Official Registry Link CTA */}
-                  <div>
-                    <p className="cert-section-heading" style={{ marginBottom: '8px' }}>Official Registry Authority</p>
-                    {activeCert.verifyUrl ? (
-                      <a
-                        href={activeCert.verifyUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="cert-registry-btn"
-                        style={{
-                          background: activeColor.badgeBorder || 'var(--primary-blue, #2563eb)',
-                        }}
-                      >
-                        <Shield size={15} />
-                        <span>Verify on {activeCert.issuer} Registry</span>
-                        <ExternalLink size={13} style={{ marginLeft: 'auto' }} />
-                      </a>
-                    ) : null}
-                    <p style={{ fontSize: '9.5px', color: 'var(--text-muted)', marginTop: '6px', lineHeight: 1.4 }}>
-                      Direct cryptographic lookup on the official issuing platform.
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>,
-        document.body
-      )}
+      {/* ── CERTIFICATION VERIFICATION PANEL (MATCHING CONTACT FAQ DRAWER) ── */}
+      <CertificationPanel cert={activeCert} onClose={handleClose} />
     </ScrollReveal>
   );
 }
