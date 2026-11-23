@@ -7,7 +7,8 @@ import { motion } from 'framer-motion';
 import {
   MessageSquare, Briefcase, FileText, Zap, Brain, Star,
   Award, ArrowRight, TrendingUp, Globe, Shield, Activity,
-  Plus, ChevronRight, Loader2, RefreshCw, CheckCircle2, AlertCircle
+  Plus, ChevronRight, Loader2, RefreshCw, CheckCircle2, AlertCircle,
+  Sparkles, BarChart2, Users, Heart
 } from 'lucide-react';
 import RecruiterFunnelWidget from './RecruiterFunnelWidget';
 import SecurityShieldWidget from './SecurityShieldWidget';
@@ -288,12 +289,14 @@ export default function HomePanel({ isMobile = false }) {
   ];
 
   const quickActions = [
+    { icon: Sparkles, label: 'AI Co-Pilot', sub: 'Polish copy with AI', color: '#8B5CF6', tab: 'copilot' },
+    { icon: BarChart2, label: 'Visitor Analytics', sub: 'Real-time telemetry', color: '#10B981', tab: 'analytics' },
+    { icon: Users, label: 'Recruiter CRM', sub: 'Manage candidate pipeline', color: '#6366F1', tab: 'crm' },
+    { icon: Heart, label: 'Health Score', sub: 'Automated content audit', color: '#EC4899', tab: 'health' },
     { icon: Plus, label: 'Add New Project', sub: 'Showcase your latest work', color: '#10B981', tab: 'projects' },
     { icon: MessageSquare, label: 'View Messages', sub: `${stats.unreadMessages} unread`, color: '#6366F1', tab: 'messages' },
     { icon: Zap, label: 'Post an Update', sub: 'Announce something new', color: '#F59E0B', tab: 'updates' },
-    { icon: Award, label: 'Add Certification', sub: 'Update credentials', color: '#F97316', tab: 'certifications' },
     { icon: Shield, label: 'Site Settings', sub: 'Configure & maintain', color: '#8B5CF6', tab: 'settings' },
-    { icon: Shield, label: 'Admin Login', sub: 'Switch account or re-auth', color: '#EC4899', route: '/admin/login' },
   ];
 
   function fmtActivityAction(action) {
@@ -488,16 +491,23 @@ export default function HomePanel({ isMobile = false }) {
               </div>
             )}
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-              <span style={{
-                fontSize: 11,
-                fontWeight: 700,
-                color: auditResult?.score >= 90 ? '#10b981' : '#f59e0b',
-                background: auditResult?.score >= 90 ? 'rgba(16,185,129,0.12)' : 'rgba(245,158,11,0.12)',
-                padding: '3px 8px',
-                borderRadius: 6
-              }}>
-                Score: {auditResult?.score || 96}/100 ({auditResult?.status || 'Optimal'})
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+              <span
+                onClick={() => navigate('/admin/dashboard/health')}
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: auditResult?.score >= 90 ? '#10b981' : '#f59e0b',
+                  background: auditResult?.score >= 90 ? 'rgba(16,185,129,0.12)' : 'rgba(245,158,11,0.12)',
+                  padding: '3px 8px',
+                  borderRadius: 6,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4
+                }}
+              >
+                Score: {auditResult?.score || 96}/100 ({auditResult?.status || 'Optimal'}) →
               </span>
               <button
                 type="button"

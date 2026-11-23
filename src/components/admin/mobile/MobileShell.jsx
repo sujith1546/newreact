@@ -19,9 +19,13 @@ import AdminCommandPalette from '../shared/AdminCommandPalette';
 
 const TAB_TO_CATEGORY = {
   home: 'home',
+  analytics: 'home',
   messages: 'inbox',
   chats: 'inbox',
+  crm: 'inbox',
+  notifications: 'inbox',
   projects: 'content',
+  copilot: 'content',
   updates: 'content',
   skills: 'content',
   experience: 'content',
@@ -29,6 +33,8 @@ const TAB_TO_CATEGORY = {
   certifications: 'content',
   preview: 'content',
   theme: 'system',
+  theme_studio: 'system',
+  health: 'system',
   settings: 'system',
   auth_security: 'system',
   diagnostics: 'system',

@@ -3,24 +3,24 @@ export const NAV_GROUPS = [
     label: "Overview",
     items: [
       { key: "home", label: "Home", icon: "ti-home", color: "#6366F1" },
+      { key: "analytics", label: "Visitor Analytics", icon: "ti-chart-bar", color: "#10B981" },
+      { key: "health", label: "Health & Audit", icon: "ti-activity", color: "#10B981" },
     ]
   },
   {
-    label: "Preview",
+    label: "Recruiter Hub",
     items: [
-      { key: "preview", label: "Portfolio Preview", icon: "ti-eye", color: "#8B5CF6" },
-    ]
-  },
-  {
-    label: "Inbox",
-    items: [
+      { key: "crm", label: "Recruiter CRM", icon: "ti-users", color: "#6366F1" },
       { key: "messages", label: "Messages", icon: "ti-message-circle", color: "#6366F1" },
       { key: "chats", label: "AI Chats", icon: "ti-messages", color: "#8B5CF6" },
+      { key: "notifications", label: "Notifications", icon: "ti-bell", color: "#F59E0B" },
     ]
   },
   {
-    label: "Content",
+    label: "Content Studio",
     items: [
+      { key: "copilot", label: "AI Co-Pilot", icon: "ti-sparkles", color: "#8B5CF6" },
+      { key: "theme_studio", label: "Theme Studio", icon: "ti-palette", color: "#EC4899" },
       { key: "projects", label: "Projects", icon: "ti-briefcase", color: "#10B981" },
       { key: "updates", label: "Updates", icon: "ti-bolt", color: "#F59E0B" },
       { key: "skills", label: "Skills", icon: "ti-star", color: "#06B6D4" },
@@ -28,6 +28,12 @@ export const NAV_GROUPS = [
       { key: "education", label: "Education", icon: "ti-book", color: "#EC4899" },
       { key: "certifications", label: "Certifications", icon: "ti-certificate", color: "#F97316" },
       { key: "moments", label: "Moments", icon: "ti-sparkles", color: "#8B5CF6" },
+    ]
+  },
+  {
+    label: "Preview",
+    items: [
+      { key: "preview", label: "Portfolio Preview", icon: "ti-eye", color: "#8B5CF6" },
     ]
   },
   {

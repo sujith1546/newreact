@@ -19,6 +19,12 @@ import MomentsPanel from '../components/admin/panels/MomentsPanel';
 import AiChatsPanel from '../components/admin/panels/AiChatsPanel';
 import PortfolioPreviewPanel from '../components/admin/panels/PortfolioPreviewPanel';
 import DiagnosticsPanel from '../components/admin/panels/DiagnosticsPanel';
+import AiCopilotPanel from '../components/admin/panels/AiCopilotPanel';
+import AnalyticsPanel from '../components/admin/panels/AnalyticsPanel';
+import RecruiterCRMPanel from '../components/admin/panels/RecruiterCRMPanel';
+import NotificationsPanel from '../components/admin/panels/NotificationsPanel';
+import ThemeStudioPanel from '../components/admin/panels/ThemeStudioPanel';
+import PortfolioHealthPanel from '../components/admin/panels/PortfolioHealthPanel';
 import { subscribeDiagnostics } from '../core/diagnostics/diagnosticsEngine';
 import { NAV_GROUPS, ALL_NAV_ITEMS } from '../components/admin/shared/constants';
 import { useDashboardStats } from '../components/admin/shared/useDashboardStats';
@@ -593,7 +599,13 @@ function AdminDashboardDesktop({ modePreference = 'auto', onSetModePreference })
 
         {/* Panel Content */}
         <div className={`admin-body${activeTab === 'preview' ? ' no-padding' : ''}`}>
-          {activeTab === "home"           && <HomePanel />}
+          {activeTab === "home"            && <HomePanel />}
+          {activeTab === "analytics"       && <AnalyticsPanel />}
+          {activeTab === "health"          && <PortfolioHealthPanel />}
+          {activeTab === "crm"             && <RecruiterCRMPanel />}
+          {activeTab === "copilot"         && <AiCopilotPanel />}
+          {activeTab === "notifications"   && <NotificationsPanel />}
+          {activeTab === "theme_studio"    && <ThemeStudioPanel />}
           {activeTab === "preview"         && <PortfolioPreviewPanel />}
           {activeTab === "messages"        && <MessagesAdmin />}
           {activeTab === "projects"        && <ProjectsPanel />}
@@ -647,6 +659,12 @@ export {
   ExperiencePanel,
   CertificationsPanel,
   EducationPanel,
+  AiCopilotPanel,
+  AnalyticsPanel,
+  RecruiterCRMPanel,
+  NotificationsPanel,
+  ThemeStudioPanel,
+  PortfolioHealthPanel,
 };
 
 export default function AdminDashboard() {
