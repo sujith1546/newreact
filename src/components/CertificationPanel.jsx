@@ -60,20 +60,33 @@ export default function CertificationPanel({ cert, onClose }) {
   const [zoomed, setZoomed] = useState(false);
   const open = Boolean(cert);
 
-  // Esc to close, focus handling, scroll lock
+  // Scroll lock and focus restoration for panel open/close
   useEffect(() => {
-    if (!open) return undefined;
+    if (!open) return;
     returnFocusRef.current = document.activeElement;
     panelRef.current?.focus();
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      returnFocusRef.current?.focus?.();
+    };
+  }, [open]);
+
+  // Keyboard listener: Esc to close zoom or panel, Tab to cycle focus
+  useEffect(() => {
+    if (!open) return;
+
     const onKey = (e) => {
       if (e.key === 'Escape') {
-        if (zoomed) setZoomed(false);
-        else onClose();
+        if (zoomed) {
+          setZoomed(false);
+        } else {
+          onClose();
+        }
       }
-      if (e.key === 'Tab' && panelRef.current) {
+      if (e.key === 'Tab' && panelRef.current && !zoomed) {
         const focusable = panelRef.current.querySelectorAll(
           'button, a[href], [tabindex]:not([tabindex="-1"])'
         );
@@ -90,13 +103,7 @@ export default function CertificationPanel({ cert, onClose }) {
       }
     };
     document.addEventListener('keydown', onKey);
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = prevOverflow;
-      returnFocusRef.current?.focus?.();
-      setZoomed(false);
-      setCopied(false);
-    };
+    return () => document.removeEventListener('keydown', onKey);
   }, [open, onClose, zoomed]);
 
   if (!open) return null;
@@ -264,16 +271,23 @@ export default function CertificationPanel({ cert, onClose }) {
           onContextMenu={(e) => { e.preventDefault(); return false; }}
           onDragStart={(e) => { e.preventDefault(); return false; }}
         >
-          <img
-            src={cert.image}
-            alt={`${cert.title} certificate, enlarged`}
-            draggable={false}
+          <div
+            className="cv-zoom-inner"
+            onClick={(e) => e.stopPropagation()}
             onContextMenu={(e) => { e.preventDefault(); return false; }}
             onDragStart={(e) => { e.preventDefault(); return false; }}
-          />
+          >
+            <img
+              src={cert.image}
+              alt={`${cert.title} certificate, enlarged`}
+              draggable={false}
+              onContextMenu={(e) => { e.preventDefault(); return false; }}
+              onDragStart={(e) => { e.preventDefault(); return false; }}
+            />
+          </div>
           <button
             type="button"
-            className="cv-close cv-zoom-close"
+            className="cv-zoom-close"
             aria-label="Close zoom"
             onClick={() => setZoomed(false)}
           >
