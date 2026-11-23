@@ -36,6 +36,7 @@ export default function MultiStateVerificationBadge({
   verifyUrl = '',
   theme = {},
   isMobile = false,
+  onOpenDrawer,
 }) {
   const [badgeState, setBadgeState] = useState('idle');
   const timerRef = useRef(null);
@@ -43,6 +44,11 @@ export default function MultiStateVerificationBadge({
 
   const handleClick = (e) => {
     e.stopPropagation();
+
+    if (onOpenDrawer) {
+      onOpenDrawer();
+      return;
+    }
 
     if (badgeState === 'verified' && verifyUrl) {
       window.open(verifyUrl, '_blank', 'noopener,noreferrer');
