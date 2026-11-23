@@ -743,8 +743,8 @@ export default function Education() {
 
         .edu-card:hover {
           transform: translateY(-3px);
-          border-color: #c8cdd6;
-          box-shadow: 0 12px 28px -8px rgba(15, 23, 42, 0.10), 0 4px 6px -2px rgba(15, 23, 42, 0.03);
+          border-color: var(--primary-blue, #2563eb);
+          box-shadow: 0 6px 20px color-mix(in srgb, var(--primary-blue, #2563eb) 12%, transparent);
         }
 
         /* Clean blue border & subtle elevation when selected */
@@ -1176,8 +1176,8 @@ export default function Education() {
         }
 
         [data-theme="dark"] .edu-card:hover {
-          border-color: rgba(255, 255, 255, 0.2);
-          box-shadow: 0 14px 34px -8px rgba(0, 0, 0, 0.5);
+          border-color: var(--primary-blue, #3b82f6);
+          box-shadow: 0 6px 20px color-mix(in srgb, var(--primary-blue, #3b82f6) 12%, transparent);
         }
 
         /* Clean blue border & subtle elevation when selected (dark mode) */
