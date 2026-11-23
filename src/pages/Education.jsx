@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
-import { 
-  MapPin, Trophy, Laptop, BookOpen, School, X, Hand, ChevronRight, 
-  ChevronLeft, ChevronDown, Loader2, GraduationCap, Award, Calendar, 
-  RotateCcw, Sparkles, Check 
+import {
+  MapPin, Trophy, Laptop, BookOpen, School, X, Hand, ChevronRight,
+  ChevronLeft, ChevronDown, Loader2, GraduationCap, Award, Calendar,
+  RotateCcw, Sparkles, Check
 } from 'lucide-react';
 import { ScrollReveal, RollingText } from '../components';
 import useRealtimeData from '../hooks/useRealtimeData';
@@ -58,7 +58,7 @@ const DEFAULT_EDUCATION = [
     institution: "Viswabharathi High School",
     location: "Gudivada",
     description: "Achieved a perfect GPA in board examinations. Built a strong foundation in Mathematics, Science, and English while actively participating in school extracurricular activities.",
-    score: "10/10 GPA — 100%",
+    score: "10.0 / 10 GPA",
     progress: 100,
     icon_class: "Trophy",
     theme_color: "#d97706",
@@ -89,7 +89,7 @@ const DEFAULT_EDUCATION = [
     institution: "Narayana Junior College",
     location: "Vijayawada",
     description: "Completed MPC stream with focus on engineering entrance preparation. Maintained excellent academics while preparing for JEE and EAMCET competitive exams.",
-    score: "92.7% — 927/1000",
+    score: "92.7% · 927/1000",
     progress: 93,
     icon_class: "BookOpen",
     theme_color: "#059669",
@@ -120,7 +120,7 @@ const DEFAULT_EDUCATION = [
     institution: "VIT University",
     location: "Katpadi, Vellore",
     description: "Pursuing B.Tech in Computer Science & Engineering. Gaining deep expertise in DSA, software development, and emerging technologies. Actively involved in coding competitions and technical projects.",
-    score: "CGPA: 8.7 / 10",
+    score: "8.7 / 10 CGPA",
     progress: 87,
     icon_class: "Laptop",
     theme_color: "#2563eb",
@@ -253,11 +253,11 @@ function EducationCard({ item, index, activeIndex, flippedIndex, onCardClick, on
   const isCurrent = item.id === 'btech' || (item.year && item.year.includes('2026'));
   const themeColor = item.color || item.theme_color || '#2563eb';
   const stats = item.backStats || item.back_stats || [];
-  const highlights = Array.isArray(item.highlights) 
-    ? item.highlights 
-    : typeof item.highlights === 'string' 
-    ? item.highlights.split(',').map(h => h.trim()) 
-    : [];
+  const highlights = Array.isArray(item.highlights)
+    ? item.highlights
+    : typeof item.highlights === 'string'
+      ? item.highlights.split(',').map(h => h.trim())
+      : [];
 
   return (
     <motion.div className="edu-flip-card" variants={cardVariants}>
@@ -311,18 +311,24 @@ function EducationCard({ item, index, activeIndex, flippedIndex, onCardClick, on
 
           {/* Score & Progress Graphic Banner */}
           {item.score && (
-            <div className="edu-score-card">
+            <div
+              className="edu-score-card"
+              style={{ '--card-theme': themeColor }}
+            >
               <div className="edu-score-left">
                 <div className="edu-score-icon-wrap">
-                  <Award size={14} />
+                  <Award size={15} />
                 </div>
                 <div className="edu-score-info">
-                  <span className="edu-score-label">ACADEMIC PERFORMANCE</span>
-                  <span className="edu-score-value">{item.score}</span>
+                  <span className="edu-score-label">Academic Standing</span>
+                  <span className="edu-score-value">
+                    {(item.score || '').replace(/\s*—\s*\d+%$/i, '')}
+                  </span>
                 </div>
               </div>
               {item.progress && (
                 <div className="edu-score-gauge">
+                  <span className="edu-gauge-dot" />
                   <span className="edu-gauge-num">{item.progress}%</span>
                 </div>
               )}
@@ -348,8 +354,8 @@ function EducationCard({ item, index, activeIndex, flippedIndex, onCardClick, on
         </div>
 
         {/* BACK FACE */}
-        <div 
-          className="edu-flip-card-back" 
+        <div
+          className="edu-flip-card-back"
           onClick={handleClose}
         >
           <div className="back-header">
@@ -900,65 +906,84 @@ export default function Education() {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: 8px;
-          padding: 8px 10px;
-          background: var(--bg-primary, #f6f7f9);
-          border: 1px solid var(--border-color, #e6e8ec);
-          border-radius: 10px;
+          gap: 10px;
+          padding: 8px 11px;
+          background: color-mix(in srgb, var(--card-theme, var(--primary-blue)) 4%, var(--bg-primary, #f6f7f9));
+          border: 1px solid color-mix(in srgb, var(--card-theme, var(--primary-blue)) 14%, var(--border-color, #e6e8ec));
+          border-radius: 11px;
           margin-bottom: 12px;
+          transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .edu-card:hover .edu-score-card {
+          border-color: color-mix(in srgb, var(--card-theme, var(--primary-blue)) 30%, var(--border-color, #e6e8ec));
         }
 
         .edu-score-left {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 9px;
           min-width: 0;
         }
 
         .edu-score-icon-wrap {
-          width: 26px;
-          height: 26px;
-          border-radius: 7px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: rgba(15, 23, 42, 0.06);
-          color: var(--text-primary, #0b0b0f);
+          width: 28px;
+          height: 28px;
+          border-radius: 8px;
+          display: grid;
+          place-items: center;
+          background: color-mix(in srgb, var(--card-theme, var(--primary-blue)) 12%, transparent);
+          color: var(--card-theme, var(--primary-blue));
           flex-shrink: 0;
         }
 
         .edu-score-info {
           display: flex;
           flex-direction: column;
+          gap: 1px;
           min-width: 0;
         }
 
         .edu-score-label {
-          font-size: 8px;
+          font-size: 8.5px;
           font-weight: 700;
-          letter-spacing: 0.05em;
+          letter-spacing: 0.07em;
           color: var(--text-muted, #8a909c);
           text-transform: uppercase;
+          line-height: 1.1;
         }
 
         .edu-score-value {
-          font-size: 11.5px;
+          font-size: 12px;
           font-weight: 700;
           color: var(--text-primary, #0b0b0f);
+          letter-spacing: -0.01em;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
+          line-height: 1.25;
         }
 
         .edu-score-gauge {
-          background: var(--bg-secondary, #ffffff);
-          border: 1px solid var(--border-color, #e6e8ec);
-          padding: 2px 7px;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          background: color-mix(in srgb, var(--card-theme, var(--primary-blue)) 9%, var(--bg-secondary, #ffffff));
+          border: 1px solid color-mix(in srgb, var(--card-theme, var(--primary-blue)) 22%, var(--border-color, #e6e8ec));
+          padding: 3px 8px;
           border-radius: 999px;
-          font-size: 10px;
+          font-size: 10.5px;
           font-weight: 700;
-          color: var(--text-primary, #0b0b0f);
+          color: var(--card-theme, var(--primary-blue));
           font-variant-numeric: tabular-nums;
+          flex-shrink: 0;
+        }
+
+        .edu-gauge-dot {
+          width: 5px;
+          height: 5px;
+          border-radius: 50%;
+          background: currentColor;
         }
 
         /* Tags */
@@ -1199,7 +1224,26 @@ export default function Education() {
           border-color: #ffffff;
         }
 
-        [data-theme="dark"] .edu-score-card,
+        [data-theme="dark"] .edu-score-card {
+          background: color-mix(in srgb, var(--card-theme, var(--primary-blue)) 8%, rgba(255, 255, 255, 0.03));
+          border-color: color-mix(in srgb, var(--card-theme, var(--primary-blue)) 20%, rgba(255, 255, 255, 0.08));
+        }
+
+        [data-theme="dark"] .edu-card:hover .edu-score-card {
+          border-color: color-mix(in srgb, var(--card-theme, var(--primary-blue)) 40%, rgba(255, 255, 255, 0.15));
+        }
+
+        [data-theme="dark"] .edu-score-icon-wrap {
+          background: color-mix(in srgb, var(--card-theme, var(--primary-blue)) 18%, transparent);
+          color: var(--card-theme, #60a5fa);
+        }
+
+        [data-theme="dark"] .edu-score-gauge {
+          background: color-mix(in srgb, var(--card-theme, var(--primary-blue)) 15%, rgba(255, 255, 255, 0.04));
+          border-color: color-mix(in srgb, var(--card-theme, var(--primary-blue)) 30%, rgba(255, 255, 255, 0.12));
+          color: var(--card-theme, #60a5fa);
+        }
+
         [data-theme="dark"] .back-stat-cell,
         [data-theme="dark"] .edu-flip-trigger,
         [data-theme="dark"] .back-flip-return,
@@ -1210,17 +1254,6 @@ export default function Education() {
         [data-theme="dark"] .back-highlight-box {
           background: rgba(255, 255, 255, 0.04);
           border-color: rgba(255, 255, 255, 0.08);
-        }
-
-        [data-theme="dark"] .edu-score-icon-wrap {
-          background: rgba(255, 255, 255, 0.08);
-          color: #f1f5f9;
-        }
-
-        [data-theme="dark"] .edu-score-gauge {
-          background: rgba(255, 255, 255, 0.08);
-          border-color: rgba(255, 255, 255, 0.12);
-          color: #f1f5f9;
         }
 
         [data-theme="dark"] .edu-flip-trigger:hover {
@@ -1891,14 +1924,14 @@ export default function Education() {
                       <div style={{ opacity: 0.8, fontSize: '10px' }}>{item.institution}</div>
                     </div>
 
-                {/* Clickable node button */}
-                <button 
-                  className={`edu-rail-dot ${index === activeIndex ? 'active' : ''}`}
-                  onClick={() => handleCardClick(index)}
-                  aria-label={`Show ${item.title}`}
-                >
-                  {index + 1}
-                </button>
+                    {/* Clickable node button */}
+                    <button
+                      className={`edu-rail-dot ${index === activeIndex ? 'active' : ''}`}
+                      onClick={() => handleCardClick(index)}
+                      aria-label={`Show ${item.title}`}
+                    >
+                      {index + 1}
+                    </button>
 
                     {/* Year Label */}
                     <span
@@ -2241,3 +2274,4 @@ export default function Education() {
     </ScrollReveal>
   );
 }
+
