@@ -2,9 +2,9 @@ import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import {
-  MapPin, Trophy, Laptop, BookOpen, School, X, Hand, ChevronRight,
+  MapPin, Trophy, Laptop, BookOpen, School, X, ChevronRight,
   ChevronLeft, ChevronDown, Loader2, GraduationCap, Award, Calendar,
-  RotateCcw, Sparkles, Check
+  RotateCcw, Sparkles, Check, Star, TrendingUp, Zap
 } from 'lucide-react';
 import { ScrollReveal, RollingText } from '../components';
 import useRealtimeData from '../hooks/useRealtimeData';
@@ -58,7 +58,7 @@ const DEFAULT_EDUCATION = [
     institution: "Viswabharathi High School",
     location: "Gudivada",
     description: "Achieved a perfect GPA in board examinations. Built a strong foundation in Mathematics, Science, and English while actively participating in school extracurricular activities.",
-    score: "10.0 / 10 GPA",
+    score: "10/10 GPA",
     progress: 100,
     icon_class: "Trophy",
     theme_color: "#d97706",
@@ -123,20 +123,20 @@ const DEFAULT_EDUCATION = [
     score: "8.7 / 10 CGPA",
     progress: 87,
     icon_class: "Laptop",
-    theme_color: "#2563eb",
-    color: "#2563eb",
+    theme_color: "#6366f1",
+    color: "#6366f1",
     bg_color: "#eff6ff",
-    text_color: "#1d4ed8",
+    text_color: "#4f46e5",
     highlights: ["CS & Engineering", "DSA & Dev", "AI & ML"],
     back_stats: [
       { label: "CGPA", value: "8.7" },
-      { label: "Projects", value: "3" },
-      { label: "Hackathons", value: "2" }
+      { label: "Projects", value: "3+" },
+      { label: "Hackathons", value: "2+" }
     ],
     backStats: [
       { label: "CGPA", value: "8.7" },
-      { label: "Projects", value: "3" },
-      { label: "Hackathons", value: "2" }
+      { label: "Projects", value: "3+" },
+      { label: "Hackathons", value: "2+" }
     ],
     highlight_text: "Actively involved in coding competitions and technical projects.",
     highlight: "Actively involved in coding competitions and technical projects.",
@@ -144,114 +144,11 @@ const DEFAULT_EDUCATION = [
   }
 ];
 
-const RING_RADIUS = 27;
-const RING_CIRC = 2 * Math.PI * RING_RADIUS;
-
-function ScoreRing({ percent, color, size = 46 }) {
-  const offset = RING_CIRC - (percent / 100) * RING_CIRC;
-  return (
-    <div style={{ position: "relative", width: size, height: size, flexShrink: 0 }}>
-      <svg width={size} height={size} viewBox="0 0 64 64">
-        <circle
-          cx="32" cy="32" r={RING_RADIUS}
-          fill="none" stroke="var(--border-color, #e5e5e5)" strokeWidth="6"
-        />
-        <circle
-          cx="32" cy="32" r={RING_RADIUS}
-          fill="none" stroke={color} strokeWidth="6"
-          strokeDasharray={RING_CIRC}
-          strokeDashoffset={offset}
-          strokeLinecap="round"
-          transform="rotate(-90 32 32)"
-          style={{ transition: "stroke-dashoffset 0.6s ease" }}
-        />
-      </svg>
-      <div style={{
-        position: "absolute", inset: 0, display: "flex",
-        flexDirection: "column", alignItems: "center", justifyContent: "center"
-      }}>
-        <span style={{ fontSize: size <= 50 ? 11.5 : 14, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1 }}>{percent}%</span>
-        <span style={{ fontSize: size <= 50 ? 7.5 : 9, color: "var(--text-muted)", fontWeight: 600 }}>score</span>
-      </div>
-    </div>
-  );
-}
-
-function TimelineStrip({ stages, activeId }) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", marginTop: 5 }}>
-      {stages.map((s, i) => (
-        <div key={s.id} style={{ display: "flex", alignItems: "center", flex: i === stages.length - 1 ? "none" : 1 }}>
-          <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center" }}>
-            <div style={{
-              width: s.id === activeId ? 8 : 6,
-              height: s.id === activeId ? 8 : 6,
-              borderRadius: "50%",
-              background: s.id === activeId ? s.color : "var(--border-color)",
-              marginBottom: 3,
-              transition: "all 0.3s ease"
-            }} />
-            <div style={{
-              fontSize: 8.5,
-              fontWeight: s.id === activeId ? 700 : 500,
-              color: s.id === activeId ? "var(--text-primary)" : "var(--text-muted)",
-              letterSpacing: "-0.01em"
-            }}>{s.shortLabel}</div>
-          </div>
-          {i < stages.length - 1 && (
-            <div style={{ flex: 1, height: 1.5, background: "var(--border-color)", margin: "0 6px", alignSelf: "flex-start", marginTop: 3 }} />
-          )}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function SectionLabel({ children }) {
-  return <div className="dsheet-section-label" style={{ marginBottom: 3, marginTop: 7 }}>{children}</div>;
-}
-
-const containerVariants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.08, delayChildren: 0.04 } },
-};
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 16 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } },
-};
-
-function EducationCard({ item, index, activeIndex, flippedIndex, onCardClick, onFlip, onClose }) {
-  const isActive = index === activeIndex;
-  const isFlipped = index === flippedIndex;
+// Vertical timeline card component
+function TimelineCard({ item, index, isLast, isActive, onSelect }) {
   const Icon = iconMap[item.icon_class] || School;
-  const cardRef = useRef(null);
-
-  const handleMouseMove = (e) => {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    cardRef.current.style.setProperty('--mouse-x', `${x}px`);
-    cardRef.current.style.setProperty('--mouse-y', `${y}px`);
-  };
-
-  const handleCardClick = () => {
-    onCardClick(index);
-  };
-
-  const handleFlip = (e) => {
-    e.stopPropagation();
-    onFlip(index);
-  };
-
-  const handleClose = (e) => {
-    e.stopPropagation();
-    onClose();
-  };
-
   const isCurrent = item.id === 'btech' || (item.year && item.year.includes('2026'));
-  const themeColor = item.color || item.theme_color || '#2563eb';
+  const themeColor = item.color || item.theme_color || '#6366f1';
   const stats = item.backStats || item.back_stats || [];
   const highlights = Array.isArray(item.highlights)
     ? item.highlights
@@ -260,180 +157,383 @@ function EducationCard({ item, index, activeIndex, flippedIndex, onCardClick, on
       : [];
 
   return (
-    <motion.div className="edu-flip-card" variants={cardVariants}>
-      <div className={`edu-flip-card-inner ${isFlipped ? "flipped" : ""}`}>
-
-        {/* FRONT FACE */}
+    <motion.div
+      className="edu-timeline-row"
+      initial={{ opacity: 0, x: -24 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.5, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
+    >
+      {/* Left: connector line + dot */}
+      <div className="edu-timeline-spine">
         <div
-          className={`edu-flip-card-front edu-card ${isActive ? 'active-card' : ''}`}
-          onClick={handleCardClick}
-          ref={cardRef}
-          onMouseMove={handleMouseMove}
+          className={`edu-spine-dot ${isActive ? 'active' : ''}`}
+          style={{ '--dot-color': themeColor }}
         >
-          {/* Top Row: Graphic Icon Badge + Status Pill / Year */}
-          <div className="edu-card-top">
-            <div className={`edu-icon-box ${isActive ? 'active' : ''}`}>
-              <Icon size={20} />
-            </div>
-            <div className="edu-card-badges">
-              {isCurrent ? (
-                <span className="edu-live-badge">
-                  <span className="edu-live-dot" />
-                  Pursuing
-                </span>
-              ) : (
-                <span className="edu-done-badge">
-                  <Check size={10} />
-                  Completed
-                </span>
-              )}
-              <span className={`edu-year-pill ${isActive ? 'active' : ''}`}>
-                <Calendar size={10} />
-                {item.year}
+          <Icon size={14} />
+        </div>
+        {!isLast && <div className="edu-spine-line" />}
+      </div>
+
+      {/* Right: card */}
+      <motion.div
+        className={`edu-timeline-card ${isActive ? 'active' : ''}`}
+        style={{ '--card-accent': themeColor }}
+        onClick={() => onSelect(index)}
+        whileHover={{ y: -2 }}
+        transition={{ duration: 0.2 }}
+      >
+        {/* Card header */}
+        <div className="edu-tc-header">
+          <div className="edu-tc-meta">
+            {isCurrent ? (
+              <span className="edu-badge-live">
+                <span className="edu-live-pulse" />
+                Pursuing
               </span>
+            ) : (
+              <span className="edu-badge-done">
+                <Check size={9} />
+                Completed
+              </span>
+            )}
+            <span className="edu-badge-year">
+              <Calendar size={9} />
+              {item.year}
+            </span>
+          </div>
+          <div
+            className="edu-tc-icon"
+            style={{ background: `${themeColor}18`, borderColor: `${themeColor}30`, color: themeColor }}
+          >
+            <Icon size={18} />
+          </div>
+        </div>
+
+        {/* Title */}
+        <div className="edu-tc-titles">
+          <h3 className="edu-tc-degree">{item.title}</h3>
+          <p className="edu-tc-institution">{item.institution}</p>
+          <p className="edu-tc-location">
+            <MapPin size={10} />
+            <span>{item.location}</span>
+          </p>
+        </div>
+
+        {/* Score banner */}
+        {item.score && (
+          <div className="edu-tc-score" style={{ '--score-color': themeColor }}>
+            <div className="edu-score-left">
+              <div className="edu-score-icon" style={{ color: themeColor }}>
+                <Award size={13} />
+              </div>
+              <div>
+                <div className="edu-score-label-sm">Academic Performance</div>
+                <div className="edu-score-val">{item.score}</div>
+              </div>
+            </div>
+            {item.progress && (
+              <div className="edu-progress-pill" style={{ color: themeColor, borderColor: `${themeColor}30`, background: `${themeColor}12` }}>
+                <TrendingUp size={10} />
+                <span>{item.progress}%</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Description */}
+        <p className="edu-tc-desc">{item.description}</p>
+
+        {/* Stats chips */}
+        {stats.length > 0 && (
+          <div className="edu-tc-stats">
+            {stats.map(s => (
+              <div key={s.label} className="edu-stat-chip">
+                <span className="edu-stat-val">{s.value}</span>
+                <span className="edu-stat-lbl">{s.label}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Highlight tags */}
+        {highlights.length > 0 && (
+          <div className="edu-tc-tags">
+            {highlights.slice(0, 4).map(h => (
+              <span key={h} className="edu-tc-tag">{h}</span>
+            ))}
+          </div>
+        )}
+
+        {/* Hover CTA */}
+        <div className="edu-tc-cta">
+          <span>View Details</span>
+          <ChevronRight size={12} />
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// Summary header stats
+function SummaryBar({ data }) {
+  const current = data.find(d => d.id === 'btech');
+  return (
+    <div className="edu-summary-bar">
+      <div className="edu-summary-item">
+        <span className="edu-summary-val">{data.length}</span>
+        <span className="edu-summary-lbl">Milestones</span>
+      </div>
+      <div className="edu-summary-divider" />
+      <div className="edu-summary-item">
+        <span className="edu-summary-val">8.7</span>
+        <span className="edu-summary-lbl">Current CGPA</span>
+      </div>
+      <div className="edu-summary-divider" />
+      <div className="edu-summary-item">
+        <span className="edu-summary-val">10/10</span>
+        <span className="edu-summary-lbl">10th GPA</span>
+      </div>
+      <div className="edu-summary-divider" />
+      <div className="edu-summary-item">
+        <span className="edu-summary-val">16+</span>
+        <span className="edu-summary-lbl">Years Learning</span>
+      </div>
+    </div>
+  );
+}
+
+// Detail sheet for selected item (desktop)
+function DetailPanel({ item, onClose }) {
+  const Icon = iconMap[item.icon_class] || School;
+  const themeColor = item.color || item.theme_color || '#6366f1';
+  const stats = item.backStats || item.back_stats || [];
+  const highlights = Array.isArray(item.highlights)
+    ? item.highlights
+    : typeof item.highlights === 'string'
+      ? item.highlights.split(',').map(h => h.trim())
+      : [];
+
+  return (
+    <motion.div
+      className="edu-detail-panel"
+      initial={{ opacity: 0, x: 24, scale: 0.98 }}
+      animate={{ opacity: 1, x: 0, scale: 1 }}
+      exit={{ opacity: 0, x: 24, scale: 0.98 }}
+      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+      style={{ '--panel-accent': themeColor }}
+    >
+      {/* Panel header */}
+      <div className="edp-header">
+        <div className="edp-header-icon" style={{ background: `${themeColor}18`, borderColor: `${themeColor}30`, color: themeColor }}>
+          <Icon size={22} />
+        </div>
+        <div className="edp-header-text">
+          <h2 className="edp-title">{item.title}</h2>
+          <p className="edp-inst">{item.institution}</p>
+        </div>
+        <button className="edp-close" onClick={onClose} aria-label="Close">
+          <X size={15} />
+        </button>
+      </div>
+
+      {/* Accent line */}
+      <div className="edp-accent-line" style={{ background: `linear-gradient(90deg, ${themeColor}, transparent)` }} />
+
+      {/* Meta row */}
+      <div className="edp-meta-row">
+        <div className="edp-meta-item">
+          <Calendar size={12} />
+          <span>{item.year}</span>
+        </div>
+        <div className="edp-meta-item">
+          <MapPin size={12} />
+          <span>{item.location}</span>
+        </div>
+        {item.score && (
+          <div className="edp-meta-item" style={{ color: themeColor }}>
+            <Award size={12} />
+            <span>{item.score}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Progress bar */}
+      {item.progress && (
+        <div className="edp-prog-wrap">
+          <div className="edp-prog-label">
+            <span>Academic Performance</span>
+            <span style={{ color: themeColor, fontWeight: 700 }}>{item.progress}%</span>
+          </div>
+          <div className="edp-prog-track">
+            <motion.div
+              className="edp-prog-fill"
+              style={{ background: themeColor }}
+              initial={{ width: 0 }}
+              animate={{ width: `${item.progress}%` }}
+              transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Stats */}
+      {stats.length > 0 && (
+        <div className="edp-section">
+          <div className="edp-section-label">At a Glance</div>
+          <div className="edp-stats-grid">
+            {stats.map(s => (
+              <div key={s.label} className="edp-stat-cell" style={{ '--stat-color': themeColor }}>
+                <span className="edp-stat-val">{s.value}</span>
+                <span className="edp-stat-lbl">{s.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Description */}
+      <div className="edp-section">
+        <div className="edp-section-label">About</div>
+        <p className="edp-desc">{item.description}</p>
+      </div>
+
+      {/* Highlights */}
+      {highlights.length > 0 && (
+        <div className="edp-section">
+          <div className="edp-section-label">Highlights</div>
+          <div className="edp-highlights">
+            {highlights.map(h => (
+              <div key={h} className="edp-highlight-item" style={{ borderColor: `${themeColor}25`, color: themeColor }}>
+                <Zap size={10} />
+                <span>{h}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Key achievement */}
+      {(item.highlight || item.highlight_text) && (
+        <div className="edp-quote" style={{ borderColor: `${themeColor}30`, background: `${themeColor}08` }}>
+          <Sparkles size={13} style={{ color: themeColor, flexShrink: 0 }} />
+          <p>{item.highlight || item.highlight_text}</p>
+        </div>
+      )}
+    </motion.div>
+  );
+}
+
+// Mobile bottom sheet for selected item
+function MobileDetailSheet({ item, onClose, dragControls }) {
+  const Icon = iconMap[item.icon_class] || School;
+  const themeColor = item.color || item.theme_color || '#6366f1';
+  const stats = item.backStats || item.back_stats || [];
+  const highlights = Array.isArray(item.highlights)
+    ? item.highlights
+    : typeof item.highlights === 'string'
+      ? item.highlights.split(',').map(h => h.trim())
+      : [];
+
+  return (
+    <>
+      <motion.div
+        className="edu-sheet-backdrop"
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        transition={{ duration: 0.22 }}
+        onClick={onClose}
+      />
+      <motion.div
+        className="edu-sheet"
+        initial={{ y: '100%' }} animate={{ y: 0 }}
+        exit={{ y: '100%', transition: { duration: 0.22, ease: [0.32, 0.72, 0, 1] } }}
+        transition={{ type: 'spring', damping: 30, stiffness: 320, mass: 0.85 }}
+        drag="y" dragControls={dragControls} dragListener={false}
+        dragConstraints={{ top: 0, bottom: 0 }} dragElastic={{ top: 0, bottom: 0.5 }}
+        onDragEnd={(_, info) => { if (info.offset.y > 100 || info.velocity.y > 500) onClose(); }}
+      >
+        <div className="edu-sheet-handle-bar" onPointerDown={e => dragControls.start(e)}>
+          <div className="edu-sheet-handle" />
+        </div>
+
+        <div className="edu-sheet-header" onPointerDown={e => { if (!e.target.closest('.edu-sheet-close')) dragControls.start(e); }}>
+          <div className="edu-sheet-header-left">
+            <div className="edu-sheet-icon" style={{ background: `${themeColor}18`, borderColor: `${themeColor}30`, color: themeColor }}>
+              <Icon size={16} />
+            </div>
+            <div>
+              <h3 className="edu-sheet-title">{item.title}</h3>
+              <p className="edu-sheet-inst">{item.institution}</p>
             </div>
           </div>
+          <button className="edu-sheet-close" onClick={onClose}><X size={15} /></button>
+        </div>
 
-          {/* Title & Institution with Location */}
-          <div className="edu-title-group">
-            <h3 className="edu-card-title">{item.title}</h3>
-            <p className="edu-card-inst">{item.institution}</p>
-            <p className="edu-card-loc">
-              <MapPin size={11} />
-              <span>{item.location}</span>
-            </p>
-          </div>
+        <div className="edu-sheet-body">
+          <div className="edu-sheet-content">
 
-          <hr className="edu-sep" />
+            {/* Meta */}
+            <div className="edu-sheet-meta">
+              <span className="edu-sheet-meta-item"><Calendar size={11} />{item.year}</span>
+              <span className="edu-sheet-meta-item"><MapPin size={11} />{item.location}</span>
+            </div>
 
-          {/* Description */}
-          <p className="edu-card-desc">{item.description}</p>
-
-          {/* Score & Progress Graphic Banner */}
-          {item.score && (
-            <div
-              className="edu-score-card"
-              style={{ '--card-theme': themeColor }}
-            >
-              <div className="edu-score-left">
-                <div className="edu-score-icon-wrap">
-                  <Award size={15} />
+            {/* Progress */}
+            {item.progress && (
+              <div className="edu-sheet-prog">
+                <div className="edu-sheet-prog-label">
+                  <span>Academic Performance</span>
+                  <span style={{ color: themeColor }}>{item.progress}%</span>
                 </div>
-                <div className="edu-score-info">
-                  <span className="edu-score-label">Academic Standing</span>
-                  <span className="edu-score-value">
-                    {(item.score || '').replace(/\s*—\s*\d+%$/i, '')}
-                  </span>
+                <div className="edu-sheet-prog-track">
+                  <motion.div
+                    style={{ height: '100%', background: themeColor, borderRadius: 3 }}
+                    initial={{ width: 0 }} animate={{ width: `${item.progress}%` }}
+                    transition={{ duration: 0.7, delay: 0.1 }}
+                  />
                 </div>
               </div>
-              {item.progress && (
-                <div className="edu-score-gauge">
-                  <span className="edu-gauge-dot" />
-                  <span className="edu-gauge-num">{item.progress}%</span>
-                </div>
-              )}
-            </div>
-          )}
+            )}
 
-          {/* Coursework / Highlights Tags */}
-          {highlights.length > 0 && (
-            <div className="edu-tags">
-              {highlights.slice(0, 3).map((h) => (
-                <span key={h} className="edu-tag">
-                  {h}
-                </span>
-              ))}
-            </div>
-          )}
+            {/* Stats */}
+            {stats.length > 0 && (
+              <div className="edu-sheet-stats">
+                {stats.map(s => (
+                  <div key={s.label} className="edu-sheet-stat">
+                    <span className="edu-sheet-stat-val" style={{ color: themeColor }}>{s.value}</span>
+                    <span className="edu-sheet-stat-lbl">{s.label}</span>
+                  </div>
+                ))}
+              </div>
+            )}
 
-          {/* Bottom Flip Trigger Action */}
-          <div className="edu-flip-trigger" onClick={handleFlip}>
-            <span>Academic Stats</span>
-            <RotateCcw size={12} className="edu-flip-icon" />
+            {/* Description */}
+            <p className="edu-sheet-desc">{item.description}</p>
+
+            {/* Highlights */}
+            {highlights.length > 0 && (
+              <div className="edu-sheet-tags">
+                {highlights.map(h => (
+                  <span key={h} className="edu-sheet-tag" style={{ borderColor: `${themeColor}25`, color: themeColor, background: `${themeColor}10` }}>{h}</span>
+                ))}
+              </div>
+            )}
+
           </div>
         </div>
-
-        {/* BACK FACE */}
-        <div
-          className="edu-flip-card-back"
-          onClick={handleClose}
-        >
-          <div className="back-header">
-            <div>
-              <span className="back-degree-type">{item.shortLabel || item.short_label || 'Milestone'}</span>
-              <h4 className="back-title">{item.title}</h4>
-              <p className="back-inst">{item.institution}</p>
-            </div>
-            <button className="back-close-btn" onClick={handleClose} aria-label="Close card">
-              <X size={14} />
-            </button>
-          </div>
-
-          {/* 3 Bento Stats Grid */}
-          {stats.length > 0 && (
-            <div className="back-stats-grid">
-              {stats.map((stat) => (
-                <div key={stat.label} className="back-stat-cell">
-                  <p className="back-stat-val">{stat.value}</p>
-                  <p className="back-stat-lbl">{stat.label}</p>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Highlight Quote Block */}
-          {(item.highlight || item.highlight_text) && (
-            <div className="back-highlight-box">
-              <Sparkles size={14} className="back-highlight-icon" />
-              <p className="back-highlight-text">{item.highlight || item.highlight_text}</p>
-            </div>
-          )}
-
-          {/* Flip Return Action */}
-          <div className="back-flip-return" onClick={handleClose}>
-            <RotateCcw size={12} />
-            <span>Return to Overview</span>
-          </div>
-        </div>
-
-      </div>
-    </motion.div>
+      </motion.div>
+    </>
   );
 }
 
 export default function Education() {
   const { data: rawEducation, loading } = useRealtimeData('education', { orderColumn: 'display_order', ascending: true });
   const [timelineData, setTimelineData] = useState(DEFAULT_EDUCATION);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [flippedIndex, setFlippedIndex] = useState(null);
+  const [activeIndex, setActiveIndex] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
-  const [sheetScrolled, setSheetScrolled] = useState(false);
-  const [sheetScrollable, setSheetScrollable] = useState(false);
-  const sheetContentRef = useRef(null);
   const [mobileActiveIdx, setMobileActiveIdx] = useState(0);
   const mobileTrackRef = useRef(null);
   const dragControls = useDragControls();
-
-  const handleMobileScroll = () => {
-    const track = mobileTrackRef.current;
-    if (!track) return;
-    const { scrollLeft, offsetWidth } = track;
-    const card = track.querySelector('.medu-snap-card');
-    const cardWidth = card ? card.offsetWidth + 12 : offsetWidth * 0.85;
-    const idx = Math.round(scrollLeft / cardWidth);
-    setMobileActiveIdx(Math.min(Math.max(0, idx), timelineData.length - 1));
-  };
-
-  const scrollToMobileStage = (idx) => {
-    const track = mobileTrackRef.current;
-    if (!track) return;
-    const cards = track.querySelectorAll('.medu-snap-card');
-    if (cards[idx]) {
-      cards[idx].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
-      setMobileActiveIdx(idx);
-    }
-  };
 
   useEffect(() => {
     if (rawEducation && rawEducation.length > 0) {
@@ -443,7 +543,7 @@ export default function Education() {
         color: d.theme_color || d.color,
         bg: d.bg_color || d.bg,
         textColor: d.text_color || d.textColor,
-        backStats: d.back_stats || d.backStats || [],
+        backStats: Array.isArray(d.back_stats) ? d.back_stats : (d.backStats || []),
         highlight: d.highlight_text || d.highlight
       }));
       setTimelineData(mapped);
@@ -454,1824 +554,1064 @@ export default function Education() {
     const handleResize = () => {
       const mobile = window.innerWidth <= 900;
       setIsMobile(mobile);
-      if (!mobile) {
-        setSelectedItem(null);
-      }
+      if (!mobile) setSelectedItem(null);
     };
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Lock body scroll and listen for Escape key when mobile detail sheet is open
   useEffect(() => {
     if (isMobile && selectedItem) {
-      const originalOverflow = document.body.style.overflow;
-      const originalTouchAction = document.body.style.touchAction;
+      const prev = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
-      document.body.style.touchAction = 'none';
-
-      const handleKeyDown = (e) => {
-        if (e.key === 'Escape') setSelectedItem(null);
-      };
-      window.addEventListener('keydown', handleKeyDown);
-
-      return () => {
-        document.body.style.overflow = originalOverflow;
-        document.body.style.touchAction = originalTouchAction;
-        window.removeEventListener('keydown', handleKeyDown);
-      };
+      const onKey = e => { if (e.key === 'Escape') setSelectedItem(null); };
+      window.addEventListener('keydown', onKey);
+      return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
     }
   }, [isMobile, selectedItem]);
 
-  useEffect(() => {
-    if (selectedItem) {
-      setSheetScrolled(false);
-      setSheetScrollable(false);
-      setTimeout(() => {
-        if (sheetContentRef.current) {
-          const { scrollHeight, clientHeight } = sheetContentRef.current;
-          setSheetScrollable(scrollHeight > clientHeight + 5);
-        }
-      }, 200);
-    }
-  }, [selectedItem]);
+  const handleMobileScroll = () => {
+    const track = mobileTrackRef.current;
+    if (!track) return;
+    const card = track.querySelector('.medu-card');
+    const cardWidth = card ? card.offsetWidth + 12 : track.offsetWidth * 0.85;
+    setMobileActiveIdx(Math.min(Math.max(0, Math.round(track.scrollLeft / cardWidth)), timelineData.length - 1));
+  };
 
-  const handleCardClick = (idx) => {
-    setActiveIndex(idx);
-    if (flippedIndex !== null && flippedIndex !== idx) {
-      setFlippedIndex(null); // Unflip previously flipped card
+  const scrollToMobile = idx => {
+    const track = mobileTrackRef.current;
+    if (!track) return;
+    const cards = track.querySelectorAll('.medu-card');
+    if (cards[idx]) {
+      cards[idx].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+      setMobileActiveIdx(idx);
     }
   };
 
-  const handleFlip = (idx) => {
-    setActiveIndex(idx);
-    setFlippedIndex(idx);
+  const handleCardSelect = idx => {
+    setActiveIndex(prev => prev === idx ? null : idx);
+    setSelectedItem(timelineData[idx]);
   };
 
   return (
     <ScrollReveal>
       <style>{`
-        /* Page */
+        /* ═══════════════════════════════════════════
+           EDUCATION PAGE — Premium Dark Design
+           ═══════════════════════════════════════════ */
+
         .edu-page {
           width: 100%;
-          min-height: 100%;
           box-sizing: border-box;
           display: flex;
           flex-direction: column;
-          gap: 16px;
-          padding-bottom: 24px;
+          gap: 20px;
+          padding-bottom: 0;
         }
 
-        /* Header */
-        .edu-header {
+        /* ── Page header ── */
+        .edu-page-header {
           flex-shrink: 0;
-          margin-bottom: 4px;
         }
-        .edu-header h1 {
-          font-size: 28px;
-          font-weight: 700;
+        .edu-page-eyebrow {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 10px;
+          font-weight: 800;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          color: var(--primary-blue, #6366f1);
+          margin-bottom: 8px;
+          padding: 4px 10px;
+          border-radius: 999px;
+          border: 1px solid rgba(99, 102, 241, 0.25);
+          background: rgba(99, 102, 241, 0.08);
+        }
+        .edu-page-title {
+          font-size: clamp(24px, 3.5vw, 36px);
+          font-weight: 800;
           color: var(--text-primary);
-          margin: 0 0 5px;
+          margin: 0 0 6px;
+          letter-spacing: -0.03em;
+          line-height: 1.1;
+          font-family: 'Space Grotesk', 'Inter', sans-serif;
         }
-        .edu-header p {
-          font-size: 13.5px;
-          color: var(--text-secondary);
+        .edu-page-sub {
+          font-size: 14px;
+          color: var(--text-secondary, #94a3b8);
           margin: 0;
+          line-height: 1.6;
         }
 
-        /* Progress Rail */
-        .edu-rail {
-          position: relative;
-          margin: 6px 0 16px;
-          height: 56px;
+        /* ── Summary stats bar ── */
+        .edu-summary-bar {
           display: flex;
-          flex-direction: column;
-          justify-content: flex-start;
-          width: 100%;
+          align-items: center;
+          gap: 0;
+          background: var(--card-bg, #1a1f2e);
+          border: 1px solid var(--border-color, #2a2f3e);
+          border-radius: 14px;
+          padding: 14px 20px;
           flex-shrink: 0;
         }
-        .edu-rail-line-container {
-          position: absolute;
-          top: 13px; /* aligns with center of 28px nodes */
-          left: 12.5%;
-          right: 12.5%;
-          height: 3px;
-          background: var(--border-color, #e6e8ec);
-          border-radius: 999px;
-          z-index: 1;
+        [data-theme="dark"] .edu-summary-bar {
+          background: rgba(255,255,255,0.03);
+          border-color: rgba(255,255,255,0.08);
         }
-        .edu-rail-line-active {
-          position: absolute;
-          top: 0;
-          left: 0;
-          height: 100%;
-          background: linear-gradient(90deg, #2563eb, #7c3aed);
-          box-shadow: 0 0 10px rgba(37, 99, 235, 0.4);
-          transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-          border-radius: 999px;
-        }
-        .edu-rail-dots {
-          position: relative;
-          z-index: 2;
-          display: grid;
-          width: 100%;
-        }
-        .edu-rail-dot-wrap {
+        .edu-summary-item {
+          flex: 1;
           display: flex;
           flex-direction: column;
           align-items: center;
-          position: relative;
+          gap: 2px;
         }
-        .edu-rail-dot {
-          width: 26px;
-          height: 26px;
-          border-radius: 50%;
-          background: var(--bg-secondary, #ffffff);
-          border: 2px solid var(--border-color, #cbd5e1);
-          cursor: pointer;
-          padding: 0;
-          outline: none;
-          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-          position: relative;
+        .edu-summary-val {
+          font-size: 20px;
+          font-weight: 800;
+          color: var(--text-primary);
+          letter-spacing: -0.03em;
+          font-family: 'Space Grotesk', 'Inter', sans-serif;
+        }
+        .edu-summary-lbl {
+          font-size: 10px;
+          font-weight: 600;
+          color: var(--text-muted, #64748b);
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
+          white-space: nowrap;
+        }
+        .edu-summary-divider {
+          width: 1px;
+          height: 32px;
+          background: var(--border-color, #2a2f3e);
+          flex-shrink: 0;
+          margin: 0 4px;
+        }
+        [data-theme="dark"] .edu-summary-divider {
+          background: rgba(255,255,255,0.08);
+        }
+
+        /* ── Main layout: timeline + detail panel ── */
+        .edu-main-layout {
+          display: flex;
+          gap: 20px;
+          align-items: flex-start;
+        }
+
+        /* ── Vertical timeline ── */
+        .edu-timeline-wrap {
+          flex: 1;
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 0;
+        }
+
+        .edu-timeline-row {
+          display: flex;
+          gap: 16px;
+          align-items: flex-start;
+        }
+
+        /* Spine */
+        .edu-timeline-spine {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          flex-shrink: 0;
+          width: 36px;
+          padding-top: 20px;
+        }
+
+        .edu-spine-dot {
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-          font-size: 11px;
-          font-weight: 700;
-          color: var(--text-muted, #5b6270);
+          border: 1.5px solid rgba(255,255,255,0.1);
+          background: var(--card-bg, #1a1f2e);
+          color: var(--text-muted);
+          flex-shrink: 0;
+          transition: all 0.3s ease;
+          position: relative;
+          z-index: 1;
         }
-        .edu-rail-dot:hover {
-          border-color: #2563eb;
-          color: #2563eb;
-          transform: scale(1.12);
-          box-shadow: 0 0 12px rgba(37, 99, 235, 0.25);
+        [data-theme="dark"] .edu-spine-dot {
+          background: rgba(255,255,255,0.04);
+          border-color: rgba(255,255,255,0.09);
         }
-        .edu-rail-dot.active {
-          background: #2563eb;
-          border-color: #2563eb;
-          color: #ffffff;
-          box-shadow: 0 0 0 5px rgba(37, 99, 235, 0.2);
-          transform: scale(1.1);
-        }
-        
-        /* Glow Pulse Ring */
-        .edu-rail-dot.active::after {
-          content: '';
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          border-radius: 50%;
-          border: 1px solid #2563eb;
-          animation: dotPulse 2s infinite ease-out;
-        }
-        @keyframes dotPulse {
-          0% { transform: scale(1); opacity: 1; }
-          100% { transform: scale(2); opacity: 0; }
+        .edu-spine-dot.active {
+          background: var(--dot-color);
+          border-color: var(--dot-color);
+          color: #fff;
+          box-shadow: 0 0 0 4px color-mix(in srgb, var(--dot-color) 20%, transparent),
+                      0 4px 16px color-mix(in srgb, var(--dot-color) 35%, transparent);
         }
 
-        /* Year Labels Underneath */
-        .edu-rail-dot-label {
-          margin-top: 7px;
-          font-size: 11px;
-          font-weight: 500;
-          color: var(--text-muted, #5b6270);
-          transition: all 0.25s ease;
-          cursor: pointer;
-          user-select: none;
-        }
-        .edu-rail-dot-label.active {
-          color: #2563eb;
-          font-weight: 700;
-        }
-
-        /* Hover Tooltip */
-        .edu-rail-dot-tooltip {
-          position: absolute;
-          bottom: 100%;
-          margin-bottom: 8px;
-          background: rgba(11, 11, 15, 0.95);
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-          color: #ffffff;
-          padding: 6px 12px;
-          border-radius: 8px;
-          font-size: 11px;
-          text-align: center;
-          box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-          border: 1px solid rgba(255,255,255,0.1);
-          opacity: 0;
-          pointer-events: none;
-          transform: translateY(6px);
-          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-          z-index: 20;
-          white-space: nowrap;
-        }
-        .edu-rail-dot-tooltip::after {
-          content: '';
-          position: absolute;
-          top: 100%;
-          left: 50%;
-          transform: translateX(-50%);
-          border-width: 4px;
-          border-style: solid;
-          border-color: rgba(11, 11, 15, 0.95) transparent transparent transparent;
-        }
-        .edu-rail-dot-wrap:hover .edu-rail-dot-tooltip {
-          opacity: 1;
-          transform: translateY(0);
-        }
-
-        /* Grid */
-        .edu-grid {
-          display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: 16px;
+        .edu-spine-line {
+          width: 2px;
           flex: 1;
-          width: 100%;
+          min-height: 24px;
+          background: linear-gradient(to bottom, var(--border-color, #2a2f3e), transparent);
+          margin: 6px 0;
+        }
+        [data-theme="dark"] .edu-spine-line {
+          background: linear-gradient(to bottom, rgba(255,255,255,0.09), transparent);
+        }
+
+        /* ── Timeline card ── */
+        .edu-timeline-card {
+          flex: 1;
           min-width: 0;
-          align-items: stretch;
-        }
-        @media (max-width: 1200px) and (min-width: 901px) {
-          .edu-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 16px;
-          }
-        }
-
-        /* 3D Flip Card Container */
-        .edu-flip-card {
-          perspective: 1200px;
-          min-height: 440px;
-          height: 100%;
-          width: 100%;
-        }
-        
-        .edu-flip-card-inner {
-          position: relative;
-          width: 100%;
-          height: 100%;
-          transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-          transform-style: preserve-3d;
-        }
-        
-        .edu-flip-card-inner.flipped {
-          transform: rotateY(180deg);
-        }
-        
-        .edu-flip-card-front,
-        .edu-flip-card-back {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          backface-visibility: hidden;
-          -webkit-backface-visibility: hidden;
-          border-radius: 18px;
-          box-sizing: border-box;
-          display: flex;
-          flex-direction: column;
-          overflow: hidden;
-          transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
-        }
-
-        /* Front Cards (.edu-card) */
-        .edu-card {
-          background: var(--bg-secondary, #ffffff);
-          border: 1px solid var(--border-color, #e6e8ec);
-          padding: 22px 20px 20px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
-          position: relative;
+          background: var(--card-bg, #ffffff);
+          border: 1px solid var(--border-color, #e0e0e0);
+          border-radius: 16px;
+          padding: 18px 20px;
+          margin-bottom: 16px;
           cursor: pointer;
+          transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+          position: relative;
+          overflow: hidden;
+        }
+        [data-theme="dark"] .edu-timeline-card {
+          background: rgba(255,255,255,0.03);
+          border-color: rgba(255,255,255,0.08);
+        }
+        .edu-timeline-card::before {
+          content: '';
+          position: absolute;
+          left: 0; top: 0; bottom: 0;
+          width: 3px;
+          background: var(--card-accent, #6366f1);
+          border-radius: 3px 0 0 3px;
+          opacity: 0;
+          transition: opacity 0.25s ease;
+        }
+        .edu-timeline-card:hover,
+        .edu-timeline-card.active {
+          border-color: var(--card-accent, #6366f1);
+          box-shadow: 0 8px 32px color-mix(in srgb, var(--card-accent, #6366f1) 12%, transparent),
+                      inset 0 0 0 1px color-mix(in srgb, var(--card-accent, #6366f1) 10%, transparent);
+        }
+        .edu-timeline-card:hover::before,
+        .edu-timeline-card.active::before {
+          opacity: 1;
         }
 
-        .edu-card:hover {
-          transform: translateY(-3px);
-          border-color: var(--primary-blue, #2563eb);
-          box-shadow: 0 6px 20px color-mix(in srgb, var(--primary-blue, #2563eb) 12%, transparent);
-        }
-
-        /* Clean blue border & subtle elevation when selected */
-        .edu-card.active-card {
-          border-color: #2563eb;
-          box-shadow: 0 10px 28px -6px rgba(37, 99, 235, 0.16), 0 0 0 1.5px #2563eb;
-        }
-
-        /* Top Row: Graphic Icon Badge + Badges */
-        .edu-card-top {
+        /* Card header */
+        .edu-tc-header {
           display: flex;
           align-items: center;
           justify-content: space-between;
+          margin-bottom: 12px;
           gap: 10px;
-          margin-bottom: 14px;
         }
-
-        .edu-icon-box {
-          width: 40px;
-          height: 40px;
-          border-radius: 11px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: var(--bg-primary, #f6f7f9);
-          color: var(--text-primary, #0b0b0f);
-          border: 1px solid var(--border-color, #e6e8ec);
-          transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-          flex-shrink: 0;
-        }
-
-        .edu-card:hover .edu-icon-box,
-        .edu-card.active-card .edu-icon-box {
-          background: var(--text-primary, #0b0b0f);
-          color: #ffffff;
-          border-color: var(--text-primary, #0b0b0f);
-          transform: scale(1.05);
-        }
-
-        .edu-card-badges {
+        .edu-tc-meta {
           display: flex;
           align-items: center;
           gap: 6px;
           flex-wrap: wrap;
-          justify-content: flex-end;
+        }
+        .edu-tc-icon {
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
+          border: 1px solid;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+          transition: transform 0.2s ease;
+        }
+        .edu-timeline-card:hover .edu-tc-icon {
+          transform: scale(1.08) rotate(-3deg);
         }
 
-        .edu-live-badge {
+        /* Badges */
+        .edu-badge-live {
           display: inline-flex;
           align-items: center;
           gap: 5px;
-          font-size: 10px;
+          font-size: 9.5px;
           font-weight: 700;
           color: #16a34a;
-          background: rgba(22, 163, 74, 0.09);
-          border: 1px solid rgba(22, 163, 74, 0.22);
+          background: rgba(22,163,74,0.1);
+          border: 1px solid rgba(22,163,74,0.25);
           border-radius: 999px;
-          padding: 3px 8px;
-          letter-spacing: 0.02em;
+          padding: 2.5px 8px;
+          letter-spacing: 0.03em;
         }
-
-        .edu-live-dot {
-          width: 5px;
-          height: 5px;
-          border-radius: 50%;
+        .edu-live-pulse {
+          width: 5px; height: 5px; border-radius: 50%;
           background: #16a34a;
           animation: livePulse 1.8s infinite;
         }
-
         @keyframes livePulse {
-          0% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.6); }
-          70% { box-shadow: 0 0 0 5px rgba(22, 163, 74, 0); }
-          100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+          0% { box-shadow: 0 0 0 0 rgba(22,163,74,0.6); }
+          70% { box-shadow: 0 0 0 5px rgba(22,163,74,0); }
+          100% { box-shadow: 0 0 0 0 rgba(22,163,74,0); }
         }
-
-        .edu-done-badge {
+        .edu-badge-done {
           display: inline-flex;
           align-items: center;
           gap: 4px;
-          font-size: 10px;
+          font-size: 9.5px;
           font-weight: 600;
-          color: var(--text-muted, #5b6270);
-          background: var(--bg-primary, #f6f7f9);
-          border: 1px solid var(--border-color, #e6e8ec);
+          color: var(--text-muted);
+          background: var(--border-color, rgba(0,0,0,0.05));
+          border: 1px solid var(--border-color);
           border-radius: 999px;
-          padding: 3px 8px;
+          padding: 2.5px 8px;
         }
-
-        .edu-year-pill {
+        [data-theme="dark"] .edu-badge-done {
+          background: rgba(255,255,255,0.05);
+          border-color: rgba(255,255,255,0.1);
+        }
+        .edu-badge-year {
           display: inline-flex;
           align-items: center;
           gap: 4px;
-          font-size: 10px;
+          font-size: 9.5px;
           font-weight: 600;
-          color: var(--text-secondary, #475569);
-          background: var(--bg-primary, #f6f7f9);
-          border: 1px solid var(--border-color, #e6e8ec);
+          color: var(--text-secondary);
+          background: var(--border-color, rgba(0,0,0,0.05));
+          border: 1px solid var(--border-color);
           border-radius: 999px;
-          padding: 3px 8px;
-          white-space: nowrap;
+          padding: 2.5px 8px;
+        }
+        [data-theme="dark"] .edu-badge-year {
+          background: rgba(255,255,255,0.05);
+          border-color: rgba(255,255,255,0.1);
         }
 
         /* Titles */
-        .edu-title-group {
-          margin-bottom: 12px;
-        }
-
-        .edu-card-title {
-          font-size: 15px;
+        .edu-tc-titles { margin-bottom: 12px; }
+        .edu-tc-degree {
+          font-size: 15.5px;
           font-weight: 700;
-          color: var(--text-primary, #0b0b0f);
+          color: var(--text-primary);
           margin: 0 0 4px;
+          letter-spacing: -0.02em;
           line-height: 1.3;
-          letter-spacing: -0.015em;
+          font-family: 'Space Grotesk', 'Inter', sans-serif;
         }
-
-        .edu-card-inst {
+        .edu-tc-institution {
           font-size: 12.5px;
           font-weight: 600;
-          color: var(--text-secondary, #475569);
+          color: var(--text-secondary);
           margin: 0 0 4px;
-          line-height: 1.35;
         }
-
-        .edu-card-loc {
+        .edu-tc-location {
           display: flex;
           align-items: center;
           gap: 4px;
           font-size: 11px;
-          color: var(--text-muted, #5b6270);
+          color: var(--text-muted);
           margin: 0;
         }
 
-        .edu-sep {
-          border: none;
-          border-top: 1px solid var(--border-color, #e6e8ec);
-          margin: 0 0 12px;
-        }
-
-        .edu-card-desc {
-          font-size: 11.5px;
-          color: var(--text-secondary, #475569);
-          line-height: 1.55;
-          margin: 0 0 12px;
-          display: -webkit-box;
-          -webkit-line-clamp: 3;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-
-        /* Score Performance Graphic Banner */
-        .edu-score-card {
+        /* Score */
+        .edu-tc-score {
           display: flex;
           align-items: center;
           justify-content: space-between;
           gap: 10px;
           padding: 8px 11px;
-          background: color-mix(in srgb, var(--card-theme, var(--primary-blue)) 4%, var(--bg-primary, #f6f7f9));
-          border: 1px solid color-mix(in srgb, var(--card-theme, var(--primary-blue)) 14%, var(--border-color, #e6e8ec));
-          border-radius: 11px;
-          margin-bottom: 12px;
-          transition: border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+          background: color-mix(in srgb, var(--score-color, #6366f1) 5%, var(--border-color, #f0f0f0));
+          border: 1px solid color-mix(in srgb, var(--score-color, #6366f1) 15%, var(--border-color, #e0e0e0));
+          border-radius: 10px;
+          margin-bottom: 10px;
         }
-
-        .edu-card:hover .edu-score-card {
-          border-color: color-mix(in srgb, var(--card-theme, var(--primary-blue)) 30%, var(--border-color, #e6e8ec));
+        [data-theme="dark"] .edu-tc-score {
+          background: color-mix(in srgb, var(--score-color, #6366f1) 10%, rgba(255,255,255,0.03));
+          border-color: color-mix(in srgb, var(--score-color, #6366f1) 20%, rgba(255,255,255,0.08));
         }
-
         .edu-score-left {
           display: flex;
           align-items: center;
-          gap: 9px;
+          gap: 8px;
           min-width: 0;
         }
-
-        .edu-score-icon-wrap {
-          width: 28px;
-          height: 28px;
-          border-radius: 8px;
-          display: grid;
-          place-items: center;
-          background: color-mix(in srgb, var(--card-theme, var(--primary-blue)) 12%, transparent);
-          color: var(--card-theme, var(--primary-blue));
+        .edu-score-icon {
+          width: 26px; height: 26px; border-radius: 7px;
+          display: flex; align-items: center; justify-content: center;
+          background: color-mix(in srgb, currentColor 12%, transparent);
           flex-shrink: 0;
         }
-
-        .edu-score-info {
-          display: flex;
-          flex-direction: column;
-          gap: 1px;
-          min-width: 0;
-        }
-
-        .edu-score-label {
+        .edu-score-label-sm {
           font-size: 8.5px;
           font-weight: 700;
-          letter-spacing: 0.07em;
-          color: var(--text-muted, #8a909c);
           text-transform: uppercase;
+          letter-spacing: 0.07em;
+          color: var(--text-muted);
           line-height: 1.1;
         }
-
-        .edu-score-value {
+        .edu-score-val {
           font-size: 12px;
           font-weight: 700;
-          color: var(--text-primary, #0b0b0f);
-          letter-spacing: -0.01em;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
+          color: var(--text-primary);
           line-height: 1.25;
+          letter-spacing: -0.01em;
         }
-
-        .edu-score-gauge {
+        .edu-progress-pill {
           display: inline-flex;
           align-items: center;
-          gap: 5px;
-          background: color-mix(in srgb, var(--card-theme, var(--primary-blue)) 9%, var(--bg-secondary, #ffffff));
-          border: 1px solid color-mix(in srgb, var(--card-theme, var(--primary-blue)) 22%, var(--border-color, #e6e8ec));
-          padding: 3px 8px;
-          border-radius: 999px;
+          gap: 4px;
           font-size: 10.5px;
           font-weight: 700;
-          color: var(--card-theme, var(--primary-blue));
-          font-variant-numeric: tabular-nums;
+          border: 1px solid;
+          border-radius: 999px;
+          padding: 3px 8px;
+          white-space: nowrap;
           flex-shrink: 0;
         }
 
-        .edu-gauge-dot {
-          width: 5px;
-          height: 5px;
-          border-radius: 50%;
-          background: currentColor;
+        /* Description */
+        .edu-tc-desc {
+          font-size: 12px;
+          color: var(--text-secondary);
+          line-height: 1.6;
+          margin: 0 0 12px;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+
+        /* Stats */
+        .edu-tc-stats {
+          display: flex;
+          gap: 8px;
+          margin-bottom: 10px;
+          flex-wrap: wrap;
+        }
+        .edu-stat-chip {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 6px 10px;
+          background: var(--border-color, rgba(0,0,0,0.04));
+          border: 1px solid var(--border-color);
+          border-radius: 9px;
+          min-width: 44px;
+        }
+        [data-theme="dark"] .edu-stat-chip {
+          background: rgba(255,255,255,0.04);
+          border-color: rgba(255,255,255,0.08);
+        }
+        .edu-stat-val {
+          font-size: 13px;
+          font-weight: 800;
+          color: var(--text-primary);
+          letter-spacing: -0.02em;
+          line-height: 1.1;
+        }
+        .edu-stat-lbl {
+          font-size: 8.5px;
+          font-weight: 600;
+          color: var(--text-muted);
+          text-transform: uppercase;
+          letter-spacing: 0.04em;
         }
 
         /* Tags */
-        .edu-tags {
+        .edu-tc-tags {
           display: flex;
           flex-wrap: wrap;
           gap: 5px;
-          margin-bottom: 14px;
+          margin-bottom: 12px;
         }
-
-        .edu-tag {
+        .edu-tc-tag {
           font-size: 10px;
           font-weight: 600;
-          padding: 3px 8px;
+          padding: 3px 9px;
           border-radius: 999px;
-          background: var(--bg-primary, #f6f7f9);
-          color: var(--text-secondary, #475569);
-          border: 1px solid var(--border-color, #e6e8ec);
+          background: var(--border-color, rgba(0,0,0,0.04));
+          border: 1px solid var(--border-color);
+          color: var(--text-secondary);
           white-space: nowrap;
-          transition: border-color 0.2s;
+        }
+        [data-theme="dark"] .edu-tc-tag {
+          background: rgba(255,255,255,0.04);
+          border-color: rgba(255,255,255,0.1);
+          color: var(--text-muted);
         }
 
-        .edu-card:hover .edu-tag {
-          border-color: #cbd5e1;
-        }
-
-        /* Flip Trigger Action */
-        .edu-flip-trigger {
-          margin-top: auto;
+        /* CTA row */
+        .edu-tc-cta {
           display: flex;
           align-items: center;
-          justify-content: center;
-          gap: 6px;
-          padding: 8px 12px;
-          border-radius: 10px;
-          background: var(--bg-primary, #f6f7f9);
-          border: 1px solid var(--border-color, #e6e8ec);
-          color: var(--text-primary, #0b0b0f);
+          justify-content: flex-end;
+          gap: 4px;
           font-size: 11px;
           font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          user-select: none;
+          color: var(--card-accent, #6366f1);
+          opacity: 0;
+          transition: opacity 0.2s ease;
+        }
+        .edu-timeline-card:hover .edu-tc-cta {
+          opacity: 1;
         }
 
-        .edu-flip-trigger:hover {
-          background: var(--text-primary, #0b0b0f);
-          color: #ffffff;
-          border-color: var(--text-primary, #0b0b0f);
+        /* ── Detail panel (desktop) ── */
+        .edu-detail-panel {
+          width: 320px;
+          flex-shrink: 0;
+          background: var(--card-bg, #ffffff);
+          border: 1px solid var(--border-color);
+          border-radius: 18px;
+          padding: 20px;
+          position: sticky;
+          top: 20px;
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+          overflow: hidden;
+        }
+        [data-theme="dark"] .edu-detail-panel {
+          background: rgba(255,255,255,0.03);
+          border-color: rgba(255,255,255,0.08);
         }
 
-        .edu-flip-icon {
-          transition: transform 0.3s ease;
-        }
-
-        .edu-flip-trigger:hover .edu-flip-icon {
-          transform: rotate(-180deg);
-        }
-
-        /* BACK FACE */
-        .edu-flip-card-back {
-          background: var(--bg-secondary, #ffffff);
-          border: 1px solid var(--border-color, #e6e8ec);
-          padding: 22px 20px 20px;
-          transform: rotateY(180deg);
-          box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
-        }
-
-        .back-header {
+        .edp-header {
           display: flex;
           align-items: flex-start;
-          justify-content: space-between;
-          gap: 8px;
-          margin-bottom: 14px;
-          padding-bottom: 10px;
-          border-bottom: 1px solid var(--border-color, #e6e8ec);
+          gap: 12px;
         }
-
-        .back-degree-type {
-          font-size: 9.5px;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.06em;
-          color: var(--text-muted, #5b6270);
-          display: block;
-          margin-bottom: 2px;
+        .edp-header-icon {
+          width: 44px; height: 44px; border-radius: 12px;
+          border: 1px solid;
+          display: flex; align-items: center; justify-content: center;
+          flex-shrink: 0;
         }
-
-        .back-title {
-          font-size: 14px;
-          font-weight: 700;
-          color: var(--text-primary, #0b0b0f);
-          margin: 0 0 2px;
-          line-height: 1.3;
+        .edp-header-text { flex: 1; min-width: 0; }
+        .edp-title {
+          font-size: 15px; font-weight: 800;
+          color: var(--text-primary);
+          margin: 0 0 3px;
+          letter-spacing: -0.02em;
+          line-height: 1.25;
+          font-family: 'Space Grotesk', 'Inter', sans-serif;
         }
-
-        .back-inst {
-          font-size: 11px;
-          color: var(--text-muted, #5b6270);
+        .edp-inst {
+          font-size: 11.5px;
+          color: var(--text-secondary);
           margin: 0;
         }
-
-        .back-close-btn {
-          width: 28px;
-          height: 28px;
-          border-radius: 50%;
-          border: 1px solid var(--border-color, #e6e8ec);
-          background: var(--bg-primary, #f6f7f9);
-          color: var(--text-secondary, #475569);
-          display: flex;
-          align-items: center;
-          justify-content: center;
+        .edp-close {
+          width: 28px; height: 28px; border-radius: 50%;
+          border: 1px solid var(--border-color);
+          background: var(--border-color, rgba(0,0,0,0.05));
+          color: var(--text-secondary);
+          display: flex; align-items: center; justify-content: center;
           cursor: pointer;
           transition: all 0.15s ease;
           flex-shrink: 0;
         }
-
-        .back-close-btn:hover {
-          background: var(--border-color, #e6e8ec);
-          color: var(--text-primary, #0b0b0f);
+        [data-theme="dark"] .edp-close {
+          background: rgba(255,255,255,0.05);
+          border-color: rgba(255,255,255,0.1);
+        }
+        .edp-close:hover {
+          background: var(--text-primary);
+          color: var(--bg-primary);
+          border-color: var(--text-primary);
         }
 
-        /* Bento Stats */
-        .back-stats-grid {
+        .edp-accent-line {
+          height: 2px;
+          border-radius: 2px;
+          margin: -6px 0;
+        }
+
+        .edp-meta-row {
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+        }
+        .edp-meta-item {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 11.5px;
+          color: var(--text-secondary);
+        }
+        .edp-meta-item svg { color: var(--text-muted); flex-shrink: 0; }
+
+        .edp-prog-wrap {
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+        }
+        .edp-prog-label {
+          display: flex;
+          justify-content: space-between;
+          font-size: 10.5px;
+          font-weight: 600;
+          color: var(--text-secondary);
+        }
+        .edp-prog-track {
+          height: 5px;
+          background: var(--border-color);
+          border-radius: 3px;
+          overflow: hidden;
+        }
+        [data-theme="dark"] .edp-prog-track {
+          background: rgba(255,255,255,0.08);
+        }
+        .edp-prog-fill { height: 100%; border-radius: 3px; }
+
+        .edp-section { display: flex; flex-direction: column; gap: 7px; }
+        .edp-section-label {
+          font-size: 9px;
+          font-weight: 800;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          color: var(--text-muted);
+        }
+        .edp-desc {
+          font-size: 12px;
+          color: var(--text-secondary);
+          line-height: 1.6;
+          margin: 0;
+        }
+
+        .edp-stats-grid {
           display: grid;
           grid-template-columns: repeat(3, 1fr);
           gap: 6px;
-          margin-bottom: 14px;
         }
-
-        .back-stat-cell {
-          background: var(--bg-primary, #f6f7f9);
-          border: 1px solid var(--border-color, #e6e8ec);
+        .edp-stat-cell {
+          background: var(--border-color, rgba(0,0,0,0.04));
+          border: 1px solid var(--border-color);
           border-radius: 10px;
-          padding: 8px 4px;
+          padding: 8px 6px;
           text-align: center;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
+          display: flex; flex-direction: column; align-items: center; gap: 2px;
+        }
+        [data-theme="dark"] .edp-stat-cell {
+          background: rgba(255,255,255,0.04);
+          border-color: rgba(255,255,255,0.08);
+        }
+        .edp-stat-val {
+          font-size: 15px; font-weight: 800;
+          color: var(--stat-color, var(--text-primary));
+          letter-spacing: -0.02em;
+          line-height: 1.1;
+        }
+        .edp-stat-lbl {
+          font-size: 8px; font-weight: 600;
+          color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;
         }
 
-        .back-stat-val {
-          font-size: 14px;
-          font-weight: 800;
-          color: var(--text-primary, #0b0b0f);
-          margin: 0 0 2px;
-          line-height: 1.2;
+        .edp-highlights { display: flex; flex-direction: column; gap: 5px; }
+        .edp-highlight-item {
+          display: flex; align-items: center; gap: 7px;
+          font-size: 11.5px; font-weight: 600;
+          padding: 6px 10px;
+          border: 1px solid;
+          border-radius: 8px;
+          background: color-mix(in srgb, currentColor 6%, transparent);
         }
 
-        .back-stat-lbl {
-          font-size: 8.5px;
-          font-weight: 600;
-          color: var(--text-muted, #5b6270);
-          text-transform: uppercase;
-          letter-spacing: 0.04em;
-          margin: 0;
-        }
-
-        /* Highlight Box */
-        .back-highlight-box {
-          background: var(--bg-primary, #f6f7f9);
-          border: 1px dashed var(--border-color, #e6e8ec);
-          border-radius: 10px;
+        .edp-quote {
+          display: flex; align-items: flex-start; gap: 8px;
           padding: 10px 12px;
-          display: flex;
-          align-items: flex-start;
-          gap: 8px;
-          margin-bottom: 14px;
-        }
-
-        .back-highlight-icon {
-          color: var(--text-muted, #5b6270);
-          flex-shrink: 0;
-          margin-top: 2px;
-        }
-
-        .back-highlight-text {
-          font-size: 11px;
-          line-height: 1.5;
-          color: var(--text-secondary, #475569);
-          margin: 0;
-          font-style: italic;
-        }
-
-        /* Flip Back Action */
-        .back-flip-return {
-          margin-top: auto;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 6px;
-          padding: 8px 12px;
+          border: 1px solid;
           border-radius: 10px;
-          background: var(--bg-primary, #f6f7f9);
-          border: 1px solid var(--border-color, #e6e8ec);
-          color: var(--text-secondary, #475569);
-          font-size: 11px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          user-select: none;
+        }
+        .edp-quote p {
+          font-size: 11.5px;
+          font-style: italic;
+          color: var(--text-secondary);
+          line-height: 1.55;
+          margin: 0;
         }
 
-        .back-flip-return:hover {
-          background: var(--border-color, #e6e8ec);
-          color: var(--text-primary, #0b0b0f);
+        /* ── Loading / empty ── */
+        .edu-loading {
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          padding: 60px 0;
         }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+        .edu-loading svg { animation: spin 1s linear infinite; }
 
-        /* Dark mode overrides */
-        [data-theme="dark"] .edu-card,
-        [data-theme="dark"] .edu-flip-card-back {
-          background: var(--bg-secondary, #12141a);
-          border-color: rgba(255, 255, 255, 0.08);
-        }
-
-        [data-theme="dark"] .edu-card:hover {
-          border-color: var(--primary-blue, #3b82f6);
-          box-shadow: 0 6px 20px color-mix(in srgb, var(--primary-blue, #3b82f6) 12%, transparent);
-        }
-
-        /* Clean blue border & subtle elevation when selected (dark mode) */
-        [data-theme="dark"] .edu-card.active-card {
-          border-color: #3b82f6;
-          box-shadow: 0 10px 28px -6px rgba(59, 130, 246, 0.25), 0 0 0 1.5px #3b82f6;
-        }
-
-        [data-theme="dark"] .edu-icon-box {
-          background: rgba(255, 255, 255, 0.04);
-          border-color: rgba(255, 255, 255, 0.08);
-          color: #f1f5f9;
-        }
-
-        [data-theme="dark"] .edu-card:hover .edu-icon-box,
-        [data-theme="dark"] .edu-card.active-card .edu-icon-box {
-          background: #ffffff;
-          color: #0b0b0f;
-          border-color: #ffffff;
-        }
-
-        [data-theme="dark"] .edu-score-card {
-          background: color-mix(in srgb, var(--card-theme, var(--primary-blue)) 8%, rgba(255, 255, 255, 0.03));
-          border-color: color-mix(in srgb, var(--card-theme, var(--primary-blue)) 20%, rgba(255, 255, 255, 0.08));
-        }
-
-        [data-theme="dark"] .edu-card:hover .edu-score-card {
-          border-color: color-mix(in srgb, var(--card-theme, var(--primary-blue)) 40%, rgba(255, 255, 255, 0.15));
-        }
-
-        [data-theme="dark"] .edu-score-icon-wrap {
-          background: color-mix(in srgb, var(--card-theme, var(--primary-blue)) 18%, transparent);
-          color: var(--card-theme, #60a5fa);
-        }
-
-        [data-theme="dark"] .edu-score-gauge {
-          background: color-mix(in srgb, var(--card-theme, var(--primary-blue)) 15%, rgba(255, 255, 255, 0.04));
-          border-color: color-mix(in srgb, var(--card-theme, var(--primary-blue)) 30%, rgba(255, 255, 255, 0.12));
-          color: var(--card-theme, #60a5fa);
-        }
-
-        [data-theme="dark"] .back-stat-cell,
-        [data-theme="dark"] .edu-flip-trigger,
-        [data-theme="dark"] .back-flip-return,
-        [data-theme="dark"] .back-close-btn,
-        [data-theme="dark"] .edu-year-pill,
-        [data-theme="dark"] .edu-done-badge,
-        [data-theme="dark"] .edu-tag,
-        [data-theme="dark"] .back-highlight-box {
-          background: rgba(255, 255, 255, 0.04);
-          border-color: rgba(255, 255, 255, 0.08);
-        }
-
-        [data-theme="dark"] .edu-flip-trigger:hover {
-          background: #ffffff;
-          color: #0b0b0f;
-          border-color: #ffffff;
-        }
-
-        [data-theme="dark"] .back-title,
-        [data-theme="dark"] .edu-card-title,
-        [data-theme="dark"] .edu-score-value,
-        [data-theme="dark"] .back-stat-val {
-          color: #f1f5f9;
-        }
-
-        [data-theme="dark"] .edu-card-desc,
-        [data-theme="dark"] .back-highlight-text {
-          color: #94a3b8;
-        }
-
-        [data-theme="dark"] .edu-sep,
-        [data-theme="dark"] .back-header {
-          border-color: rgba(255, 255, 255, 0.08);
-        }
-
-        [data-theme="dark"] .edu-rail-line-container {
-          background: rgba(255, 255, 255, 0.1);
-        }
-        [data-theme="dark"] .edu-rail-dot {
-          background: #181d26;
-          border-color: rgba(255, 255, 255, 0.16);
-          color: #94a3b8;
-        }
-        [data-theme="dark"] .edu-rail-dot.active {
-          background: #2563eb;
-          border-color: #2563eb;
-          color: #ffffff;
-        }
-        /* ============ MOBILE LAYOUT ============ */
-        .edu-mobile-wrap { display: none; }
+        /* ═══════════════════════════════════════════
+           MOBILE LAYOUT
+           ═══════════════════════════════════════════ */
         @media (max-width: 900px) {
-          .edu-page {
-            min-height: auto !important;
-            height: auto !important;
-            overflow: visible !important;
-          }
-          .edu-header h1 { font-size: 16px; margin-bottom: 4px; }
-          .edu-header p { font-size: 10px; line-height: 1.4; }
-          .edu-rail, .edu-grid, .education-arrow-flow, .section-subtitle, .edu-closing-summary, .mobile-edu-feed { display: none !important; }
+          .edu-main-layout { flex-direction: column; gap: 0; }
+          .edu-detail-panel { display: none !important; }
+          .edu-summary-bar { padding: 10px 14px; gap: 0; border-radius: 12px; }
+          .edu-summary-val { font-size: 16px; }
+          .edu-summary-lbl { font-size: 8.5px; letter-spacing: 0.04em; }
 
-          .edu-mobile-wrap {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            box-sizing: border-box;
-            padding: 4px 0 20px;
-          }
-
-          .edu-mobile-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 2px 2px 14px;
-            gap: 8px;
-          }
-
-          .edu-mobile-title-wrap {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-          }
-
-          .edu-mobile-icon-box {
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
-            background: rgba(59, 130, 246, 0.12);
-            border: 1.2px solid rgba(59, 130, 246, 0.25);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            color: var(--primary-blue, #3B82F6);
-          }
-
-          .edu-mobile-heading {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin: 0;
-            line-height: 1.2;
-            letter-spacing: -0.01em;
-          }
-
-          .edu-mobile-sub {
-            font-size: 10px;
-            color: var(--text-muted);
-            margin: 1px 0 0;
-            line-height: 1.2;
-          }
-
-          .edu-mobile-controls {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-          }
-
-          .edu-mobile-counter {
-            font-size: 10px;
-            font-weight: 700;
-            color: var(--text-muted);
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            padding: 2px 8px;
-            border-radius: 20px;
-            letter-spacing: 0.03em;
-          }
-
-          .edu-nav-btn {
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: transform 0.15s ease, background 0.15s ease;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
-          }
-
-          .edu-nav-btn:active:not(:disabled) {
-            transform: scale(0.92);
-          }
-
-          .edu-nav-btn:disabled {
-            opacity: 0.35;
-            cursor: not-allowed;
-          }
-
-          /* ── Snap Track ── */
-          .edu-mobile-track {
+          /* Snap carousel */
+          .medu-track {
             display: flex;
             gap: 12px;
             overflow-x: auto;
             scroll-snap-type: x mandatory;
-            scroll-padding-left: 2px;
-            margin: 0;
-            padding: 4px 2px 14px;
             -webkit-overflow-scrolling: touch;
             -ms-overflow-style: none;
             scrollbar-width: none;
+            padding: 4px 2px 10px;
           }
+          .medu-track::-webkit-scrollbar { display: none; }
+          .medu-track::after { content: ''; flex: 0 0 4px; }
 
-          .edu-mobile-track::-webkit-scrollbar {
-            display: none;
-          }
-
-          .edu-mobile-track::after {
-            content: '';
-            flex: 0 0 4px;
-          }
-
-          /* ── Snap Card ── */
-          .medu-snap-card {
+          .medu-card {
             flex: 0 0 85%;
             min-width: 85%;
-            max-width: 85%;
             scroll-snap-align: start;
-            box-sizing: border-box;
-            background: var(--bg-secondary, #FFFFFF);
-            border: 1.5px solid var(--border-color, #CBD5E1);
-            border-radius: 16px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
-            padding: 14px 15px;
-            display: flex;
-            flex-direction: column;
-            cursor: pointer;
-            transition: transform 0.15s ease, border-color 0.15s ease;
-            -webkit-tap-highlight-color: transparent;
-          }
-
-          .medu-snap-card:active {
-            transform: scale(0.985);
-          }
-
-          [data-theme="dark"] .medu-snap-card {
-            background: var(--bg-secondary, #161B22);
-            border-color: rgba(255, 255, 255, 0.14);
-            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.28);
-          }
-
-          .medu-snap-top {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            gap: 6px;
-          }
-
-          .medu-snap-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            border-radius: 12px;
-            padding: 2.5px 8px;
-            border: 1.2px solid;
-            font-size: 9.5px;
-            font-weight: 600;
-            letter-spacing: 0.02em;
-            white-space: nowrap;
-          }
-
-          .medu-badge-dot {
-            width: 4.5px;
-            height: 4.5px;
-            border-radius: 50%;
-            background: currentColor;
-          }
-
-          .medu-snap-badge--blue {
-            background: rgba(59, 130, 246, 0.08);
-            border-color: rgba(59, 130, 246, 0.25);
-            color: #2563EB;
-          }
-          [data-theme="dark"] .medu-snap-badge--blue {
-            background: rgba(59, 130, 246, 0.15);
-            border-color: rgba(59, 130, 246, 0.32);
-            color: #60A5FA;
-          }
-
-          .medu-snap-badge--purple {
-            background: rgba(99, 102, 241, 0.08);
-            border-color: rgba(99, 102, 241, 0.25);
-            color: #6366F1;
-          }
-          [data-theme="dark"] .medu-snap-badge--purple {
-            background: rgba(99, 102, 241, 0.15);
-            border-color: rgba(99, 102, 241, 0.32);
-            color: #818CF8;
-          }
-
-          .medu-snap-badge--green {
-            background: rgba(16, 185, 129, 0.08);
-            border-color: rgba(16, 185, 129, 0.25);
-            color: #059669;
-          }
-          [data-theme="dark"] .medu-snap-badge--green {
-            background: rgba(16, 185, 129, 0.15);
-            border-color: rgba(16, 185, 129, 0.32);
-            color: #34D399;
-          }
-
-          .medu-snap-score {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            background: rgba(245, 158, 11, 0.1);
-            border: 1.2px solid rgba(245, 158, 11, 0.3);
-            color: #D97706;
-            font-size: 9.5px;
-            font-weight: 700;
-            padding: 2px 7px;
-            border-radius: 12px;
-            white-space: nowrap;
-          }
-
-          [data-theme="dark"] .medu-snap-score {
-            background: rgba(245, 158, 11, 0.16);
-            border-color: rgba(245, 158, 11, 0.35);
-            color: #FBBF24;
-          }
-
-          .medu-snap-title {
-            font-size: 14.5px;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin: 0 0 4px;
-            letter-spacing: -0.015em;
-            line-height: 1.25;
-          }
-
-          .medu-snap-inst {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 10.5px;
-            font-weight: 600;
-            color: var(--primary-blue, #3B82F6);
-            margin: 0 0 8px;
-            line-height: 1.3;
-          }
-
-          .medu-snap-desc {
-            font-size: 11px;
-            color: var(--text-secondary);
-            line-height: 1.5;
-            margin: 0 0 10px;
-            flex: 1;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-          }
-
-          .medu-snap-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            margin-bottom: 12px;
-          }
-
-          .medu-snap-tag {
-            font-size: 9px;
-            font-weight: 500;
-            border-radius: 5px;
-            padding: 2px 7px;
-            border: 1px solid var(--border-color, #CBD5E1);
-            background: var(--bg-primary, #F9FAFB);
-            color: var(--text-muted, #6B7280);
-            line-height: 1.25;
-          }
-
-          [data-theme="dark"] .medu-snap-tag {
-            background: var(--bg-primary, #0D1117);
-            border-color: rgba(255, 255, 255, 0.12);
-            color: var(--text-muted, #9CA3AF);
-          }
-
-          .medu-snap-actions {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            margin-top: auto;
-            padding-top: 4px;
-          }
-
-          .medu-snap-action-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 10.5px;
-            font-weight: 600;
-            color: var(--primary-blue, #3B82F6);
-            background: none;
-            border: none;
-            padding: 0;
-            cursor: pointer;
-            transition: opacity 0.15s;
-          }
-          .medu-snap-action-btn:active {
-            opacity: 0.7;
-          }
-
-          /* ── Dots pagination ── */
-          .edu-mobile-dots {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            margin-top: 6px;
-            margin-bottom: 14px;
-          }
-
-          .edu-mobile-dot {
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
-            background: var(--border-color, #E5E7EB);
-            border: none;
-            padding: 0;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-          }
-
-          .edu-mobile-dot.active {
-            background: var(--primary-blue, #3B82F6);
-            width: 14px;
-            border-radius: 3px;
-          }
-
-          /* ── Academic Specialization Bento Hub ── */
-          .edu-bento-hub {
-            background: var(--bg-secondary);
+            background: var(--card-bg, #ffffff);
             border: 1.5px solid var(--border-color);
             border-radius: 16px;
-            padding: 12px 14px;
+            padding: 16px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+            gap: 10px;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            transition: transform 0.15s ease;
           }
-
-          [data-theme="dark"] .edu-bento-hub {
-            background: var(--bg-secondary, #161B22);
-            border-color: rgba(255, 255, 255, 0.14);
-            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+          [data-theme="dark"] .medu-card {
+            background: rgba(255,255,255,0.03);
+            border-color: rgba(255,255,255,0.09);
           }
+          .medu-card:active { transform: scale(0.985); }
 
-          .edu-bento-hub-header {
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
+          .medu-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+          .medu-badges { display: flex; gap: 5px; align-items: center; }
+          .medu-year-badge {
+            font-size: 9px; font-weight: 700; border-radius: 999px;
+            padding: 2px 8px; border: 1.5px solid;
+          }
+          .medu-score-tag {
+            display: inline-flex; align-items: center; gap: 3px;
+            font-size: 9px; font-weight: 700;
+            background: rgba(234,179,8,0.1); border: 1px solid rgba(234,179,8,0.3);
+            color: #ca8a04; border-radius: 999px; padding: 2px 7px;
+          }
+          [data-theme="dark"] .medu-score-tag { color: #fbbf24; background: rgba(234,179,8,0.15); }
+
+          .medu-icon-box {
+            width: 32px; height: 32px; border-radius: 9px; border: 1px solid;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+          }
+          .medu-degree { font-size: 14px; font-weight: 700; color: var(--text-primary); margin: 0; letter-spacing: -0.015em; }
+          .medu-inst { font-size: 11px; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; margin: 0; }
+          .medu-desc {
+            font-size: 11.5px; color: var(--text-secondary); line-height: 1.5; margin: 0;
+            display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+          }
+          .medu-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+          .medu-tag {
+            font-size: 9.5px; font-weight: 500; padding: 2px 8px; border-radius: 999px;
+            border: 1px solid var(--border-color); background: var(--border-color, rgba(0,0,0,0.05));
             color: var(--text-muted);
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 6px;
+          }
+          [data-theme="dark"] .medu-tag { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
+          .medu-cta {
+            display: flex; align-items: center; justify-content: flex-end;
+            gap: 4px; font-size: 10.5px; font-weight: 600; margin-top: auto;
           }
 
-          .edu-bento-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-          }
-
-          .edu-bento-item {
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 8px 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-          }
-
-          [data-theme="dark"] .edu-bento-item {
-            background: #0D1117;
-            border-color: rgba(255, 255, 255, 0.12);
-          }
-
-          .edu-bento-val {
-            font-size: 12.5px;
-            font-weight: 800;
-            color: var(--text-primary);
-            letter-spacing: -0.01em;
-          }
-
-          .edu-bento-label {
-            font-size: 9px;
-            color: var(--text-muted);
-            font-weight: 500;
-            line-height: 1.3;
-          }
-          .medu-overview-title {
-            font-size: 9.5px; font-weight: 800; text-transform: uppercase;
-            letter-spacing: 0.08em; color: var(--text-muted); margin: 0;
-            display: flex; align-items: center; gap: 5px;
-          }
-          .medu-overview-desc {
-            font-size: 11px; color: var(--text-secondary); line-height: 1.5; margin: 0;
-          }
-
-          /* PREMIUM ANIMATED DETAIL SHEET */
-          .dsheet-backdrop {
-            position: fixed; inset: 0;
-            background: rgba(0,0,0,.65);
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            will-change: opacity, backdrop-filter; transform: translateZ(0);
-            z-index: 10000;
-          }
-          .dsheet {
-            position: fixed; bottom: 0; left: 0; right: 0; z-index: 10001;
-            background: var(--bg-secondary, #ffffff);
-            border-top-left-radius: 26px; border-top-right-radius: 26px;
-            border-top: 1px solid var(--border-color, rgba(0,0,0,0.1));
-            will-change: transform; transform: translateZ(0); backface-visibility: hidden;
-            box-shadow: 0 -16px 48px rgba(0,0,0,.28), 0 -1px 0 rgba(255,255,255,.08);
-            display: flex; flex-direction: column;
-            max-height: min(78dvh, 680px);
-            min-height: 48dvh;
-            height: auto;
-            touch-action: pan-y;
-          }
-          [data-theme="dark"] .dsheet {
-            background: #161B22;
-            border-top-color: rgba(255,255,255,0.14);
-            box-shadow: 0 -18px 50px rgba(0,0,0,.55), 0 -1px 0 rgba(255,255,255,.1);
-          }
-          .dsheet-handle-bar {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 10px 0 6px;
-            cursor: grab;
-            touch-action: none;
-            user-select: none;
-            -webkit-user-select: none;
-          }
-          .dsheet-handle-bar:active {
-            cursor: grabbing;
-          }
-          .dsheet-handle {
-            width: 38px; height: 4.5px; border-radius: 999px;
-            background: var(--border-color, #cbd5e1);
-            transition: background 0.2s ease, transform 0.2s ease;
-          }
-          .dsheet-handle-bar:active .dsheet-handle {
-            transform: scaleX(1.15);
-            background: var(--primary-blue, #3b82f6);
-          }
-          [data-theme="dark"] .dsheet-handle {
-            background: rgba(255,255,255,0.25);
-          }
-          .dsheet-header {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 4px 16px 12px; border-bottom: 1px solid var(--border-color);
-            flex-shrink: 0;
-            cursor: grab;
-            touch-action: none;
-            user-select: none;
-            -webkit-user-select: none;
-          }
-          .dsheet-header:active {
-            cursor: grabbing;
-          }
-          .dsheet-header-left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
-          .dsheet-header-icon {
-            width: 30px; height: 30px; border-radius: 9px; flex-shrink: 0;
+          /* Dots */
+          .medu-dots {
             display: flex; align-items: center; justify-content: center;
+            gap: 5px; margin: 4px 0 12px;
           }
-          .dsheet-title h3 { font-size: 13.5px; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: -.015em; line-height: 1.25; }
-          .dsheet-title p { font-size: 9px; font-weight: 700; color: var(--primary-blue); text-transform: uppercase; letter-spacing: .05em; margin: 1px 0 0; }
-          .dsheet-close {
-            width: 30px; height: 30px; border-radius: 50%; background: var(--bg-primary);
-            border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center;
-            color: var(--text-secondary); cursor: pointer; flex-shrink: 0; margin-left: 8px;
-            transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease;
+          .medu-dot {
+            width: 5px; height: 5px; border-radius: 50%;
+            background: var(--border-color); border: none; padding: 0; cursor: pointer;
+            transition: all 0.2s ease;
+          }
+          .medu-dot.active {
+            background: var(--primary-blue, #6366f1);
+            width: 14px; border-radius: 3px;
+          }
+
+          /* Mobile nav controls */
+          .medu-controls {
+            display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;
+          }
+          .medu-heading { font-size: 13px; font-weight: 700; color: var(--text-primary); margin: 0; }
+          .medu-nav-row { display: flex; align-items: center; gap: 6px; }
+          .medu-counter {
+            font-size: 10px; font-weight: 700; color: var(--text-muted);
+            background: var(--border-color, rgba(0,0,0,0.05)); border: 1px solid var(--border-color);
+            padding: 2px 8px; border-radius: 20px; letter-spacing: 0.03em;
+          }
+          [data-theme="dark"] .medu-counter { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
+          .medu-nav-btn {
+            width: 28px; height: 28px; border-radius: 8px;
+            border: 1px solid var(--border-color); background: var(--card-bg, #fff);
+            color: var(--text-primary); display: flex; align-items: center; justify-content: center;
+            cursor: pointer; padding: 0; transition: transform 0.15s;
             -webkit-tap-highlight-color: transparent;
           }
-          .dsheet-close:active {
-            transform: scale(0.9);
-            color: var(--text-primary);
-          }
-          .dsheet-body {
-            flex: 1; overflow-y: auto; padding: 0; display: flex; flex-direction: column; position: relative;
-            overscroll-behavior: contain;
-            -webkit-overflow-scrolling: touch;
-          }
-          .dsheet-body::-webkit-scrollbar { display: none; }
-          .dsheet-content {
-            padding: 12px 16px max(24px, env(safe-area-inset-bottom, 24px));
-            display: flex; flex-direction: column; gap: 12px;
-          }
-          
-          .dsheet-section-label {
-            font-size: 8.5px; font-weight: 800; color: var(--text-muted);
-            text-transform: uppercase; letter-spacing: .08em; margin: 0 0 4px;
-          }
+          [data-theme="dark"] .medu-nav-btn { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
+          .medu-nav-btn:active { transform: scale(0.9); }
+          .medu-nav-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
-          /* Hero stat card */
-          .edu-hero-card {
-            display: flex; align-items: center; gap: 10px; padding: 10px;
-            background: var(--bg-primary); border: 1px solid var(--border-color);
-            border-radius: 12px;
+          /* Mobile bottom sheet */
+          .edu-sheet-backdrop {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 10000;
           }
-          .edu-hero-icon-wrap {
-            width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
-            display: flex; align-items: center; justify-content: center;
-            position: relative; overflow: hidden;
+          .edu-sheet {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            z-index: 10001;
+            background: var(--bg-secondary, #ffffff);
+            border-top-left-radius: 24px; border-top-right-radius: 24px;
+            border-top: 1px solid var(--border-color);
+            box-shadow: 0 -16px 48px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column;
+            max-height: 75dvh;
+            touch-action: pan-y;
           }
-          .edu-hero-icon-bg { position: absolute; inset: 0; }
-          .edu-hero-icon-wrap svg { position: relative; z-index: 1; }
-          .edu-hero-meta { flex: 1; display: flex; flex-direction: column; gap: 6px; }
-          .edu-hero-meta-row { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-secondary); }
-          .edu-hero-meta-row svg { color: var(--text-muted); flex-shrink: 0; }
-          .edu-hero-meta-row strong { color: var(--text-primary); font-weight: 700; }
-
-          /* Progress bar in sheet */
-          .edu-sheet-prog-wrap { display: flex; flex-direction: column; gap: 4px; }
-          .edu-sheet-prog-label {
-            display: flex; justify-content: space-between;
-            font-size: 10px; font-weight: 700; color: var(--text-secondary);
+          [data-theme="dark"] .edu-sheet {
+            background: #161b22;
+            border-top-color: rgba(255,255,255,0.12);
           }
-          .edu-sheet-prog-track {
-            height: 5px; background: var(--border-color); border-radius: 3px; overflow: hidden;
+          .edu-sheet-handle-bar {
+            display: flex; justify-content: center; align-items: center;
+            padding: 10px 0 6px; cursor: grab; touch-action: none; user-select: none;
           }
-          .edu-sheet-prog-fill {
-            height: 100%; border-radius: 3px;
+          .edu-sheet-handle {
+            width: 36px; height: 4px; border-radius: 999px;
+            background: var(--border-color); transition: background 0.2s;
           }
-
-          .dsheet-desc { font-size: 11px; line-height: 1.5; color: var(--text-secondary); margin: 0; }
-
-          .edu-detail-tags { display: flex; flex-wrap: wrap; gap: 5px; }
-          .edu-detail-tag {
-            font-size: 9.5px; font-weight: 600; padding: 3px 9px; border-radius: 14px;
-            background: var(--bg-primary); border: 1px solid var(--border-color);
+          [data-theme="dark"] .edu-sheet-handle { background: rgba(255,255,255,0.2); }
+          .edu-sheet-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 4px 16px 12px;
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0; cursor: grab; touch-action: none; user-select: none;
+          }
+          [data-theme="dark"] .edu-sheet-header { border-bottom-color: rgba(255,255,255,0.1); }
+          .edu-sheet-header-left { display: flex; align-items: center; gap: 10px; }
+          .edu-sheet-icon {
+            width: 32px; height: 32px; border-radius: 9px; border: 1px solid;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+          }
+          .edu-sheet-title { font-size: 13.5px; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: -0.015em; }
+          .edu-sheet-inst { font-size: 10px; color: var(--text-secondary); margin: 1px 0 0; }
+          .edu-sheet-close {
+            width: 28px; height: 28px; border-radius: 50%;
+            background: var(--border-color, rgba(0,0,0,0.05)); border: 1px solid var(--border-color);
             color: var(--text-secondary);
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
           }
-
-          .ps-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-          .ps-stat {
-            background: var(--bg-primary); border: 1px solid var(--border-color);
-            border-radius: 10px; padding: 7px 6px;
-            display: flex; flex-direction: column; align-items: center; gap: 1px;
+          [data-theme="dark"] .edu-sheet-close { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.12); }
+          .edu-sheet-body { flex: 1; overflow-y: auto; overscroll-behavior: contain; }
+          .edu-sheet-body::-webkit-scrollbar { display: none; }
+          .edu-sheet-content { padding: 14px 16px max(24px, env(safe-area-inset-bottom, 24px)); display: flex; flex-direction: column; gap: 12px; }
+          .edu-sheet-meta { display: flex; gap: 8px; flex-wrap: wrap; }
+          .edu-sheet-meta-item {
+            display: inline-flex; align-items: center; gap: 4px;
+            font-size: 11px; color: var(--text-secondary);
+            background: var(--border-color, rgba(0,0,0,0.05)); border: 1px solid var(--border-color);
+            padding: 3px 9px; border-radius: 999px;
           }
-          .ps-stat-label { font-size: 8px; color: var(--text-muted); margin: 0; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
-          .ps-stat-value { font-size: 13.5px; font-weight: 900; color: var(--text-primary); margin: 0; line-height: 1.1; }
-
-          .mesh-gradient {
-            position: absolute; width: 200%; height: 200%;
-            background: radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.15), transparent 60%), radial-gradient(circle at 80% 20%, rgba(234, 179, 8, 0.15), transparent 50%);
-            animation: meshFlow 8s ease infinite alternate;
+          [data-theme="dark"] .edu-sheet-meta-item { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); }
+          .edu-sheet-prog { display: flex; flex-direction: column; gap: 5px; }
+          .edu-sheet-prog-label { display: flex; justify-content: space-between; font-size: 10.5px; font-weight: 600; color: var(--text-secondary); }
+          .edu-sheet-prog-track { height: 5px; background: var(--border-color); border-radius: 3px; overflow: hidden; }
+          [data-theme="dark"] .edu-sheet-prog-track { background: rgba(255,255,255,0.08); }
+          .edu-sheet-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+          .edu-sheet-stat {
+            background: var(--border-color, rgba(0,0,0,0.04)); border: 1px solid var(--border-color);
+            border-radius: 10px; padding: 8px 4px; text-align: center;
+            display: flex; flex-direction: column; align-items: center; gap: 2px;
           }
-          @keyframes meshFlow { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(-20%, -20%) scale(1.1); } }
-
-          .dsheet-scroll-hint {
-            position: absolute; bottom: 0; left: 0; right: 0; height: 70px;
-            background: linear-gradient(to top, var(--bg-secondary) 30%, transparent);
-            display: flex; justify-content: center; align-items: flex-end; padding-bottom: 12px;
-            pointer-events: none; color: var(--text-secondary); z-index: 100;
-          }
+          [data-theme="dark"] .edu-sheet-stat { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }
+          .edu-sheet-stat-val { font-size: 14px; font-weight: 800; letter-spacing: -0.02em; }
+          .edu-sheet-stat-lbl { font-size: 8.5px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+          .edu-sheet-desc { font-size: 11.5px; color: var(--text-secondary); line-height: 1.55; margin: 0; }
+          .edu-sheet-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+          .edu-sheet-tag { font-size: 10px; font-weight: 600; padding: 3px 10px; border-radius: 999px; border: 1px solid; }
         }
-      `}</style>
-      <style>{`
-        /* ── RollingText styles (Education) ── */
-        .rolling-text-root {
-          display: inline-block;
-          max-width: 100%;
-          text-align: left;
-          font-size: clamp(20px, 3vw, 32px);
-          font-weight: 800;
-          letter-spacing: -0.04em;
-          line-height: 1;
-          text-transform: uppercase;
-          --rolling-accent: var(--primary-blue, #007bff);
+
+        @media (min-width: 901px) {
+          .edu-mobile-only { display: none !important; }
+        }
+        @media (max-width: 900px) {
+          .edu-desktop-only { display: none !important; }
+          .edu-timeline-wrap { display: none !important; }
+          .edu-summary-bar { margin-bottom: 16px; }
         }
       `}</style>
 
       <div className="edu-page">
-        {/* Desktop-only RollingText section title */}
-        {!isMobile && (
-          <div className="edu-header">
-            <RollingText text="EDUCATION" speed={0.06} duration={3} />
-            <p style={{ marginTop: '8px' }}>Academic background &amp; lifelong learning journey</p>
-          </div>
-        )}
 
-        {/* Horizontal Progress Rail */}
+        {/* Page header — desktop only */}
+        <div className="edu-page-header edu-desktop-only">
+          <RollingText text="EDUCATION" speed={0.06} duration={3} />
+          <p className="edu-page-sub" style={{ marginTop: 8 }}>Academic background & lifelong learning journey</p>
+        </div>
+
+        {/* Mobile header */}
+        <div className="edu-mobile-only" style={{ marginBottom: 4 }}>
+          <div className="edu-page-eyebrow">
+            <GraduationCap size={11} />
+            Academic Journey
+          </div>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text-primary)', margin: '4px 0 6px', letterSpacing: '-0.025em' }}>
+            Education & Milestones
+          </h1>
+          <p style={{ fontSize: 12, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>
+            Swipe to explore degrees, honors & academic highlights.
+          </p>
+        </div>
+
+        {/* Loading state */}
         {loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '40px 0' }}>
-            <Loader2 className="spin" size={32} color="var(--primary-blue)" />
+          <div className="edu-loading">
+            <Loader2 size={32} color="var(--primary-blue)" />
           </div>
         ) : timelineData.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+          <div style={{ textAlign: 'center', padding: '60px 0', color: 'var(--text-muted)' }}>
             No education entries found.
           </div>
         ) : (
           <>
-            <div className="edu-rail">
-              <div className="edu-rail-line-container">
-                <div
-                  className="edu-rail-line-active"
-                  style={{ width: `${(activeIndex / Math.max(1, timelineData.length - 1)) * 100}%` }}
-                ></div>
-              </div>
-              <div className="edu-rail-dots" style={{ gridTemplateColumns: `repeat(${timelineData.length}, 1fr)` }}>
+            {/* Summary Stats Bar */}
+            <SummaryBar data={timelineData} />
+
+            {/* ── DESKTOP: timeline + detail panel ── */}
+            <div className="edu-main-layout edu-desktop-only">
+              {/* Left: vertical timeline */}
+              <div className="edu-timeline-wrap">
                 {timelineData.map((item, index) => (
-                  <div key={item.id} className="edu-rail-dot-wrap">
-                    {/* Floating Preview Tooltip */}
-                    <div className="edu-rail-dot-tooltip">
-                      <div style={{ fontWeight: '700', marginBottom: '2px' }}>{item.title}</div>
-                      <div style={{ opacity: 0.8, fontSize: '10px' }}>{item.institution}</div>
+                  <TimelineCard
+                    key={item.id || index}
+                    item={item}
+                    index={index}
+                    isLast={index === timelineData.length - 1}
+                    isActive={activeIndex === index}
+                    onSelect={idx => {
+                      setActiveIndex(prev => prev === idx ? null : idx);
+                      setSelectedItem(prev => prev?.id === item.id ? null : item);
+                    }}
+                  />
+                ))}
+              </div>
+
+              {/* Right: sticky detail panel */}
+              <AnimatePresence mode="wait">
+                {selectedItem && (
+                  <DetailPanel
+                    key={selectedItem.id}
+                    item={selectedItem}
+                    onClose={() => { setSelectedItem(null); setActiveIndex(null); }}
+                  />
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* ── MOBILE: horizontal snap carousel ── */}
+            <div className="edu-mobile-only">
+              <div className="medu-controls">
+                <h2 className="medu-heading">Academic Timeline</h2>
+                <div className="medu-nav-row">
+                  <span className="medu-counter">{mobileActiveIdx + 1} / {timelineData.length}</span>
+                  <button className="medu-nav-btn" onClick={() => scrollToMobile(Math.max(0, mobileActiveIdx - 1))} disabled={mobileActiveIdx === 0} aria-label="Previous">
+                    <ChevronLeft size={14} />
+                  </button>
+                  <button className="medu-nav-btn" onClick={() => scrollToMobile(Math.min(timelineData.length - 1, mobileActiveIdx + 1))} disabled={mobileActiveIdx === timelineData.length - 1} aria-label="Next">
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="medu-track" ref={mobileTrackRef} onScroll={handleMobileScroll}>
+                {timelineData.map((item, index) => {
+                  const Icon = iconMap[item.icon_class] || School;
+                  const themeColor = item.color || item.theme_color || '#6366f1';
+                  const isCurrent = item.id === 'btech' || (item.year && item.year.includes('2026'));
+                  const highlights = Array.isArray(item.highlights)
+                    ? item.highlights.slice(0, 4)
+                    : typeof item.highlights === 'string'
+                      ? item.highlights.split(',').slice(0, 4).map(h => h.trim())
+                      : [];
+
+                  return (
+                    <div key={item.id || index} className="medu-card" onClick={() => setSelectedItem(item)}>
+                      <div className="medu-top">
+                        <div className="medu-badges">
+                          {isCurrent ? (
+                            <span className="edu-badge-live"><span className="edu-live-pulse" />Pursuing</span>
+                          ) : (
+                            <span className="edu-badge-done"><Check size={9} />Done</span>
+                          )}
+                          {item.score && (
+                            <span className="medu-score-tag">
+                              <Trophy size={9} style={{ color: '#f59e0b' }} />
+                              {item.score}
+                            </span>
+                          )}
+                        </div>
+                        <div className="medu-icon-box" style={{ background: `${themeColor}15`, borderColor: `${themeColor}30`, color: themeColor }}>
+                          <Icon size={16} />
+                        </div>
+                      </div>
+                      <h3 className="medu-degree">{item.title}</h3>
+                      <p className="medu-inst">
+                        <MapPin size={10} style={{ flexShrink: 0 }} />
+                        {item.institution}{item.location ? ` · ${item.location}` : ''}
+                      </p>
+                      <p className="medu-desc">{item.description}</p>
+                      {highlights.length > 0 && (
+                        <div className="medu-tags">
+                          {highlights.map(h => <span key={h} className="medu-tag">{h}</span>)}
+                        </div>
+                      )}
+                      <div className="medu-cta" style={{ color: themeColor }}>
+                        <span>View Details</span>
+                        <ChevronRight size={11} />
+                      </div>
                     </div>
+                  );
+                })}
+              </div>
 
-                    {/* Clickable node button */}
-                    <button
-                      className={`edu-rail-dot ${index === activeIndex ? 'active' : ''}`}
-                      onClick={() => handleCardClick(index)}
-                      aria-label={`Show ${item.title}`}
-                    >
-                      {index + 1}
-                    </button>
-
-                    {/* Year Label */}
-                    <span
-                      className={`edu-rail-dot-label ${index === activeIndex ? 'active' : ''}`}
-                      onClick={() => handleCardClick(index)}
-                    >
-                      {item?.year ? (item.year.includes(' – ') ? item.year.split(' – ')[1] : item.year) : ''}
-                    </span>
-                  </div>
+              <div className="medu-dots">
+                {timelineData.map((_, i) => (
+                  <button key={i} className={`medu-dot ${i === mobileActiveIdx ? 'active' : ''}`} onClick={() => scrollToMobile(i)} aria-label={`Go to ${i + 1}`} />
                 ))}
               </div>
             </div>
-
-            {/* Grid */}
-            <motion.div
-              className="edu-grid"
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-            >
-              {timelineData.map((item, index) => (
-                <EducationCard
-                  key={item.id}
-                  item={item}
-                  index={index}
-                  activeIndex={activeIndex}
-                  flippedIndex={flippedIndex}
-                  onCardClick={handleCardClick}
-                  onFlip={handleFlip}
-                  onClose={() => setFlippedIndex(null)}
-                />
-              ))}
-            </motion.div>
-
-            {/* ── MOBILE SNAP CAROUSEL VIEW ── */}
-            {isMobile && (
-              <div className="edu-mobile-wrap">
-                {/* Mobile Hero Header */}
-                <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-                  <p style={{ fontSize: '10px', fontWeight: 800, color: 'var(--text-muted)', letterSpacing: '0.22em', textTransform: 'uppercase', margin: '0 0 6px' }}>
-                    ACADEMIC FOUNDATION
-                  </p>
-                  <h1 style={{ fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 8px', letterSpacing: '-0.025em', lineHeight: 1.2 }}>
-                    Degrees, Honors &amp; Studies
-                  </h1>
-                  <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '0 auto', lineHeight: 1.55 }}>
-                    Swipe to explore academic milestones, university coursework, and honors.
-                  </p>
-                </div>
-
-                {/* Header with Title & Controls */}
-                <div className="edu-mobile-header">
-                  <div className="edu-mobile-title-wrap">
-                    <div className="edu-mobile-icon-box">
-                      <GraduationCap size={15} />
-                    </div>
-                    <div>
-                      <h2 className="edu-mobile-heading">Academic Journey</h2>
-                      <p className="edu-mobile-sub">Degrees, milestones &amp; academic honors</p>
-                    </div>
-                  </div>
-                  <div className="edu-mobile-controls">
-                    <span className="edu-mobile-counter">
-                      {mobileActiveIdx + 1} / {timelineData.length}
-                    </span>
-                    <button
-                      className="edu-nav-btn"
-                      onClick={() => scrollToMobileStage(Math.max(0, mobileActiveIdx - 1))}
-                      disabled={mobileActiveIdx === 0}
-                      aria-label="Previous education milestone"
-                    >
-                      <ChevronLeft size={14} />
-                    </button>
-                    <button
-                      className="edu-nav-btn"
-                      onClick={() => scrollToMobileStage(Math.min(timelineData.length - 1, mobileActiveIdx + 1))}
-                      disabled={mobileActiveIdx === timelineData.length - 1}
-                      aria-label="Next education milestone"
-                    >
-                      <ChevronRight size={14} />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Horizontal Snap Track */}
-                <div className="edu-mobile-track" ref={mobileTrackRef} onScroll={handleMobileScroll}>
-                  {timelineData.map((item, index) => {
-                    const Icon = iconMap[item.icon_class] || School;
-                    const isBTech = (item.title || '').toLowerCase().includes('b.tech') || (item.title || '').toLowerCase().includes('computer');
-                    const badgeTheme = isBTech ? 'blue' : index === 1 ? 'purple' : 'green';
-                    const highlights = Array.isArray(item.highlights)
-                      ? item.highlights.slice(0, 4)
-                      : typeof item.highlights === 'string'
-                        ? item.highlights.split(',').slice(0, 4).map(h => h.trim())
-                        : [];
-
-                    return (
-                      <div
-                        key={item.id || index}
-                        className="medu-snap-card"
-                        onClick={() => setSelectedItem(item)}
-                      >
-                        {/* Top Row: Year/Stage Badge + Score Badge */}
-                        <div className="medu-snap-top">
-                          <div className={`medu-snap-badge medu-snap-badge--${badgeTheme}`}>
-                            <span className="medu-badge-dot" />
-                            {item.year || item.shortLabel || 'Milestone'}
-                          </div>
-                          {item.score && (
-                            <div className="medu-snap-score">
-                              <Trophy size={10} style={{ color: '#F59E0B' }} />
-                              <span>{item.score}</span>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Title */}
-                        <h3 className="medu-snap-title">{item.title}</h3>
-
-                        {/* Institution & Location */}
-                        <p className="medu-snap-inst">
-                          <MapPin size={10} style={{ flexShrink: 0 }} />
-                          <span>{item.institution}{item.location ? ` · ${item.location}` : ''}</span>
-                        </p>
-
-                        {/* Description */}
-                        <p className="medu-snap-desc">{item.description}</p>
-
-                        {/* Highlights / Coursework Tags */}
-                        {highlights.length > 0 && (
-                          <div className="medu-snap-tags">
-                            {highlights.map(h => (
-                              <span key={h} className="medu-snap-tag">
-                                {h}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Action Row */}
-                        <div className="medu-snap-actions" onClick={(e) => e.stopPropagation()}>
-                          <button
-                            className="medu-snap-action-btn"
-                            onClick={() => setSelectedItem(item)}
-                          >
-                            <span>View Breakdown</span>
-                            <ChevronRight size={12} />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Pagination Dots */}
-                <div className="edu-mobile-dots">
-                  {timelineData.map((_, i) => (
-                    <button
-                      key={i}
-                      className={`edu-mobile-dot ${i === mobileActiveIdx ? 'active' : ''}`}
-                      onClick={() => scrollToMobileStage(i)}
-                      aria-label={`Go to stage ${i + 1}`}
-                    />
-                  ))}
-                </div>
-
-                {/* Academic Specialization Bento Hub */}
-                <div className="edu-bento-hub">
-                  <div className="edu-bento-hub-header">
-                    <Trophy size={12} style={{ color: '#F59E0B' }} />
-                    <span>Academic Honors &amp; Specialization</span>
-                  </div>
-                  <div className="edu-bento-grid">
-                    <div className="edu-bento-item">
-                      <span className="edu-bento-val">8.7 CGPA</span>
-                      <span className="edu-bento-label">Top 5% · Convocation Honors</span>
-                    </div>
-                    <div className="edu-bento-item">
-                      <span className="edu-bento-val">Data Science</span>
-                      <span className="edu-bento-label">AI, ML &amp; Deep Learning Focus</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-
           </>
         )}
       </div>
 
-      {/* ── DETAIL SHEET (Strictly Mobile Only) ── */}
+      {/* ── Mobile Bottom Sheet ── */}
       {isMobile && typeof document !== 'undefined' && createPortal(
         <AnimatePresence>
-          {isMobile && selectedItem && (() => {
-            const itemIndex = timelineData.indexOf(selectedItem);
-            const accents = ['#3b82f6', '#eab308', '#10b981', '#8b5cf6'];
-            const accent = accents[itemIndex % accents.length];
-            const Icon = iconMap[selectedItem.icon_class] || School;
-            return (
-              <div style={{ position: 'relative', zIndex: 9999 }}>
-                <motion.div
-                  className="dsheet-backdrop"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.22, ease: 'easeOut' }}
-                  onClick={() => setSelectedItem(null)}
-                />
-                <motion.div
-                  className="dsheet"
-                  initial={{ y: '100%' }}
-                  animate={{ y: 0 }}
-                  exit={{ y: '100%', transition: { duration: 0.22, ease: [0.32, 0.72, 0, 1] } }}
-                  transition={{ type: 'spring', damping: 30, stiffness: 320, mass: 0.85 }}
-                  drag="y"
-                  dragControls={dragControls}
-                  dragListener={false}
-                  dragConstraints={{ top: 0, bottom: 0 }}
-                  dragElastic={{ top: 0, bottom: 0.5 }}
-                  onDragEnd={(_, info) => { if (info.offset.y > 100 || info.velocity.y > 500) setSelectedItem(null); }}
-                >
-                  {/* Dedicated Touch Handle Bar */}
-                  <div
-                    className="dsheet-handle-bar"
-                    onPointerDown={(e) => dragControls.start(e)}
-                  >
-                    <div className="dsheet-handle" />
-                  </div>
-
-                  {/* Header with accent icon (also draggable) */}
-                  <div
-                    className="dsheet-header"
-                    onPointerDown={(e) => {
-                      if (!e.target.closest('.dsheet-close')) {
-                        dragControls.start(e);
-                      }
-                    }}
-                  >
-                    <div className="dsheet-header-left">
-                      <div className="dsheet-header-icon" style={{ background: accent + '18', color: accent, border: `1px solid ${accent}30` }}>
-                        <Icon size={16} />
-                      </div>
-                      <div className="dsheet-title">
-                        <h3>{selectedItem.title}</h3>
-                        <p>{selectedItem.institution}</p>
-                      </div>
-                    </div>
-                    <button
-                      className="dsheet-close"
-                      onClick={() => setSelectedItem(null)}
-                      aria-label="Close details"
-                    >
-                      <X size={15} />
-                    </button>
-                  </div>
-
-                  <div
-                    className="dsheet-body"
-                    ref={sheetContentRef}
-                    onScroll={(e) => { if (e.target.scrollTop > 10 && !sheetScrolled) setSheetScrolled(true); }}
-                  >
-                    <div className="dsheet-content">
-
-                      {/* Ring + Meta Box */}
-                      <div style={{ background: "var(--bg-primary)", border: "1px solid var(--border-color)", borderRadius: 14, padding: "10px 12px", display: "flex", gap: 12, alignItems: "center", marginBottom: 2 }}>
-                        {selectedItem.progress != null ? (
-                          <ScoreRing percent={selectedItem.progress} color={selectedItem.color} size={46} />
-                        ) : (
-                          <div style={{ width: 46, height: 46, borderRadius: 12, background: selectedItem.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: `1px solid ${selectedItem.color}30` }}>
-                            <Icon size={22} style={{ color: selectedItem.color }} />
-                          </div>
-                        )}
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)", lineHeight: 1.25 }}>{selectedItem.institution}</div>
-                          <div style={{ fontSize: 10, color: "var(--text-secondary)", marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
-                            <MapPin size={10} /> {selectedItem.location}
-                          </div>
-                          <div style={{ fontSize: 10, color: "var(--text-secondary)", marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
-                            <School size={10} /> {selectedItem.year}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Stats grid */}
-                      <div>
-                        <SectionLabel>at a glance</SectionLabel>
-                        <div className="ps-stats" style={{ gridTemplateColumns: `repeat(${selectedItem.backStats.length}, 1fr)`, gap: 6 }}>
-                          {selectedItem.backStats.map(stat => (
-                            <div key={stat.label} className="ps-stat" style={{ padding: '7px 6px', alignItems: 'center' }}>
-                              <p className="ps-stat-label" style={{ fontSize: 8, textTransform: 'lowercase' }}>{stat.label}</p>
-                              <p className="ps-stat-value" style={{ color: selectedItem.color, fontSize: 13.5, marginTop: 1 }}>{stat.value}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Description */}
-                      <div>
-                        <SectionLabel>about</SectionLabel>
-                        <p className="dsheet-desc" style={{ fontSize: 11 }}>{selectedItem.description}</p>
-                      </div>
-
-                      {/* Highlights */}
-                      <div>
-                        <SectionLabel>highlights</SectionLabel>
-                        <div className="edu-detail-tags">
-                          {selectedItem.highlights.map(h => (
-                            <span key={h} className="edu-detail-tag" style={{ color: selectedItem.textColor, background: selectedItem.bg, border: `1px solid ${selectedItem.color}20`, fontWeight: 600 }}>{h}</span>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Timeline Strip */}
-                      <div>
-                        <SectionLabel>timeline context</SectionLabel>
-                        <TimelineStrip stages={timelineData} activeId={selectedItem.id} />
-                      </div>
-
-                    </div>
-
-                    <AnimatePresence>
-                      {sheetScrollable && !sheetScrolled && (
-                        <motion.div className="dsheet-scroll-hint" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }}>
-                          <motion.div animate={{ y: [0, 6, 0] }} transition={{ repeat: Infinity, duration: 1.5, ease: 'easeInOut' }} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                            <span style={{ fontSize: '10px', fontWeight: 600, letterSpacing: '.05em', textTransform: 'uppercase', marginBottom: '2px' }}>Scroll</span>
-                            <ChevronDown size={16} />
-                          </motion.div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </motion.div>
-              </div>
-            );
-          })()}
+          {isMobile && selectedItem && (
+            <MobileDetailSheet
+              key={selectedItem.id}
+              item={selectedItem}
+              onClose={() => setSelectedItem(null)}
+              dragControls={dragControls}
+            />
+          )}
         </AnimatePresence>,
         document.body
       )}
     </ScrollReveal>
   );
 }
-
